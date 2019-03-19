@@ -61,7 +61,7 @@ TEST(PaymentRequestItemListTest, TestAddItem) {
   PaymentRequestItemList list(nullptr);
 
   std::unique_ptr<views::View> list_view = list.CreateListView();
-  EXPECT_FALSE(list_view->has_children());
+  EXPECT_TRUE(list_view->children().empty());
 
   std::vector<std::unique_ptr<TestListItem>> items;
   items.push_back(std::make_unique<TestListItem>(&list, false));

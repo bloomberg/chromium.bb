@@ -267,7 +267,7 @@ void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
   other_transports_menu_runner_.reset();
 
   delete sheet_;
-  DCHECK(!has_children());
+  DCHECK(children().empty());
 
   sheet_ = new_sheet.get();
   AddChildView(new_sheet.release());

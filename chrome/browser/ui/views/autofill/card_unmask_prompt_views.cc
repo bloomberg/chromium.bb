@@ -344,7 +344,7 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
 }
 
 void CardUnmaskPromptViews::InitIfNecessary() {
-  if (has_children())
+  if (!children().empty())
     return;
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

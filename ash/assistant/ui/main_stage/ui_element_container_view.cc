@@ -165,7 +165,7 @@ void UiElementContainerView::OnResponseChanged(
 
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we we can proceed to add the new response.
-  if (!content_view()->has_children()) {
+  if (content_view()->children().empty()) {
     OnResponseAdded(std::move(pending_response_));
     return;
   }

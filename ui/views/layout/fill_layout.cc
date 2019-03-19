@@ -13,7 +13,7 @@ FillLayout::FillLayout() {}
 FillLayout::~FillLayout() {}
 
 void FillLayout::Layout(View* host) {
-  if (!host->has_children())
+  if (host->children().empty())
     return;
 
   for (int i = 0; i < host->child_count(); ++i)
@@ -21,7 +21,7 @@ void FillLayout::Layout(View* host) {
 }
 
 gfx::Size FillLayout::GetPreferredSize(const View* host) const {
-  if (!host->has_children())
+  if (host->children().empty())
     return gfx::Size();
 
   gfx::Size preferred_size;
@@ -33,7 +33,7 @@ gfx::Size FillLayout::GetPreferredSize(const View* host) const {
 }
 
 int FillLayout::GetPreferredHeightForWidth(const View* host, int width) const {
-  if (!host->has_children())
+  if (host->children().empty())
     return 0;
 
   const gfx::Insets insets = host->GetInsets();

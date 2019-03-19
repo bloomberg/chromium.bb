@@ -380,7 +380,7 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
       continue;
 
     // Add the item to the category contents container.
-    if (item_list_view->has_children())
+    if (!item_list_view->children().empty())
       item_list_view->AddHorizontalSeparator();
     views::StyledLabel* description_label_view =
         item_view->description_label_view();
@@ -476,7 +476,7 @@ void KeyboardShortcutView::ShowSearchResults(
   }
 
   std::vector<base::string16> replacement_strings;
-  if (found_items_list_view->has_children()) {
+  if (!found_items_list_view->children().empty()) {
     replacement_strings.emplace_back(
         base::NumberToString16(number_search_results));
 

@@ -629,7 +629,7 @@ void MenuItemView::ChildrenChanged() {
 }
 
 void MenuItemView::Layout() {
-  if (!has_children())
+  if (children().empty())
     return;
 
   if (IsContainer()) {
@@ -1180,7 +1180,7 @@ int MenuItemView::GetBottomMargin() const {
 }
 
 gfx::Size MenuItemView::GetChildPreferredSize() const {
-  if (!has_children())
+  if (children().empty())
     return gfx::Size();
 
   if (IsContainer())

@@ -93,7 +93,7 @@ bool LocalCardMigrationErrorDialogView::Close() {
 }
 
 void LocalCardMigrationErrorDialogView::Init() {
-  if (has_children())
+  if (!children().empty())
     return;
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();

@@ -178,7 +178,7 @@ View* AXAuraObjCache::GetFocusedView() {
     // focus.
     if (focused_widget->non_client_view() &&
         focused_widget->non_client_view()->client_view() &&
-        focused_widget->non_client_view()->client_view()->has_children()) {
+        !focused_widget->non_client_view()->client_view()->children().empty()) {
       return focused_widget->non_client_view()->client_view()->child_at(0);
     }
 

@@ -117,12 +117,13 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
       0, 0, kHorizontalSeparatorHeight, 0, kDialogSeparatorColor));
 
   dialog_footer_ = new AppInfoFooterPanel(profile, app);
-  dialog_footer_->SetBorder(views::CreateSolidSidedBorder(
-      kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
-  if (!dialog_footer_->has_children()) {
+  if (dialog_footer_->children().empty()) {
     // If there are no controls in the footer, don't add it to the dialog.
     delete dialog_footer_;
     dialog_footer_ = NULL;
+  } else {
+    dialog_footer_->SetBorder(views::CreateSolidSidedBorder(
+        kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
   }
 
   // Make a vertically stacked view of all the panels we want to display in the

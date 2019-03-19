@@ -50,8 +50,7 @@ void TouchSelectionMenuChromeOS::SetActionsForTesting(
   // default action buttons are already added, we should remove the existent
   // buttons if any, and then call CreateButtons, this will call the parent
   // method too.
-  if (has_children())
-    RemoveAllChildViews(/*delete_children=*/true);
+  RemoveAllChildViews(/*delete_children=*/true);
 
   CreateButtons();
 }

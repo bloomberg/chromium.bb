@@ -123,7 +123,7 @@ views::View* FindTopButton(views::View* current_view) {
     views::View* child = current_view->child_at(i);
     if (views::Button::AsButton(child))
       return child;
-    if (child->has_children()) {
+    if (!child->children().empty()) {
       views::View* child_button = FindTopButton(child);
       if (child_button)
         return child_button;

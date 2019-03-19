@@ -69,7 +69,7 @@ bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
 // Convenience functions for walking a View tree.
 const views::View* FirstView(const views::View* view) {
   const views::View* v = view;
-  while (v->has_children())
+  while (!v->children().empty())
     v = v->child_at(0);
   return v;
 }
@@ -3503,7 +3503,7 @@ TEST_F(ViewTest, RemoveAllChildViews) {
   root.RemoveAllChildViews(true);
 
   EXPECT_EQ(0, root.child_count());
-  EXPECT_FALSE(root.has_children());
+  EXPECT_TRUE(root.children().empty());
 }
 
 TEST_F(ViewTest, Contains) {

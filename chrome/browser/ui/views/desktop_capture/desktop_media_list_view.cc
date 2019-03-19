@@ -152,7 +152,7 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
     new_index = std::max(new_index, 0);
     if (index != new_index)
       new_selected = child_at(new_index);
-  } else if (has_children()) {
+  } else if (!children().empty()) {
     new_selected = child_at(0);
   }
 

@@ -160,7 +160,7 @@ class BulletedPermissionsList : public views::View {
                                  views::Label* permission_label,
                                  RevokeButton* revoke_button) {
     // Add a padding row before every item except the first.
-    if (has_children()) {
+    if (!children().empty()) {
       layout_->AddPaddingRow(views::GridLayout::kFixedSize,
                              ChromeLayoutProvider::Get()->GetDistanceMetric(
                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));

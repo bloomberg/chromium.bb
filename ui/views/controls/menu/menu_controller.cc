@@ -2502,7 +2502,7 @@ void MenuController::IncrementSelection(
     }
   }
 
-  if (item->has_children()) {
+  if (!item->children().empty()) {
     Button* button = GetFirstHotTrackedView(item);
     if (button) {
       DCHECK_EQ(hot_button_, button);
@@ -2545,7 +2545,7 @@ void MenuController::SetSelectionIndices(MenuItemView* parent) {
       continue;
 
     bool found_focusable = false;
-    if (item->has_children()) {
+    if (!item->children().empty()) {
       for (View* child = GetInitialFocusableView(item, true); child;
            child = GetNextFocusableView(item, child, true)) {
         ordering.push_back(child);
@@ -2840,7 +2840,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
                                            View* target_menu) {
   View* target = nullptr;
   gfx::Point target_menu_loc(event.location());
-  if (target_menu && target_menu->has_children()) {
+  if (target_menu && !target_menu->children().empty()) {
     // Locate the deepest child view to send events to.  This code assumes we
     // don't have to walk up the tree to find a view interested in events. This
     // is currently true for the cases we are embedding views, but if we embed
