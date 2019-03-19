@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import unittest
+
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_run_unit_tests
 
@@ -14,6 +16,7 @@ from chromite.scripts import cros_run_unit_tests
 class DetermineBoardPackagesTest(cros_test_lib.TestCase):
   """Tests that package determination returns a non-empty set"""
 
+  @unittest.skip('Temporarily skip test (crbug.com/941683)')
   def testNonEmptyPackageSet(self):
     """Asserts that the deps of a known package are non-empty"""
     self.assertTrue(cros_run_unit_tests.determine_board_packages(
