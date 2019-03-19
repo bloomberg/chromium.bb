@@ -1621,8 +1621,9 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
   if (is_search_box_focused || is_folder_header_view_focused)
     return;
 
-  // Do not redirect the arrow keys as they are are used for focus traversal.
-  if (IsUnhandledArrowKeyEvent(*event))
+  // Do not redirect the arrow keys as they are are used for focus traversal and
+  // app movement.
+  if (IsArrowKeyEvent(*event))
     return;
 
   // Redirect key event to |search_box_|.

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
 
@@ -26,6 +27,7 @@
 #include "build/build_config.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/button.h"
@@ -65,6 +67,7 @@ struct GridIndex {
   bool operator<(const GridIndex& other) const {
     return std::tie(page, slot) < std::tie(other.page, other.slot);
   }
+  std::string ToString() const;
 
   int page;  // Which page an item view is on.
   int slot;  // Which slot in the page an item view is in.
@@ -177,8 +180,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  bool OnKeyReleased(const ui::KeyEvent& event) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
   bool CanDrop(const OSExchangeData& data) override;
@@ -203,7 +208,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the ideal bounds of an AppListItemView in AppsGridView coordinates.
   const gfx::Rect& GetIdealBounds(AppListItemView* view) const;
 
-  // Returns the item view of the item at |index|.
+  // Returns the item view of the item at |index|, or nullptr if there is no
+  // view at |index|.
   AppListItemView* GetItemViewAt(int index) const;
 
   // Schedules an animation to show or hide the view.
@@ -387,7 +393,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnPageFlipTimer();
 
   // Updates |model_| to move item represented by |item_view| to |target| slot.
-  void MoveItemInModel(AppListItemView* item_view, const GridIndex& target);
+  // Pushes all items from |item_view|'s GridIndex + 1 to |target| back by 1
+  // GridIndex slot. |clear_overflow| is whether, if |target| is on a full page,
+  // to push the overflow item to the next page.
+  void MoveItemInModel(AppListItemView* item_view,
+                       const GridIndex& target,
+                       bool clear_overflow = true);
 
   // Updates |model_| to move item represented by |item_view| into a folder
   // containing item located at |target| slot, also update |view_model_| for
@@ -519,6 +530,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the grid view is under an OEM folder.
   bool IsUnderOEMFolder();
 
+  // Handles moving the |selected_view_|, triggered by Control+Arrow
+  // up/down/left/right.
+  void HandleKeyboardAppMovement(ui::KeyboardCode key_code);
+
   // Handle vertical focus movement triggered by arrow up and down.
   bool HandleVerticalFocusMovement(bool arrow_up);
 
@@ -534,8 +549,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the last possible visual index to add an item view.
   GridIndex GetLastTargetIndex() const;
 
-  // Returns the last possible visual index to add an item view in the specified
-  // page.
+  // Returns the last possible visual index to add an item view in |page|.
   GridIndex GetLastTargetIndexOfPage(int page) const;
 
   // Returns the target model index if moving the item view to specified target
@@ -568,6 +582,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // index of an item in item list.) This should be used when the item is
   // updated in item list but its item view has not been updated in view model.
   int GetTargetModelIndexFromItemIndex(size_t item_index);
+
+  // Returns the target GridIndex for a keyboard move.
+  GridIndex GetTargetGridIndexForKeyboardMove(ui::KeyboardCode key_code) const;
+
+  // Swaps |selected_view_| and the item at |target_index|.
+  void MoveAppListItemViewForKeyboardMove(const GridIndex& target_index);
 
   // Records the total number of pages, and the number of pages with empty slots
   // for UMA histograms.
@@ -695,6 +715,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Tracks if drag_view_ is dragged out of the folder container bubble
   // when dragging a item inside a folder.
   bool drag_out_of_folder_container_ = false;
+
+  // Whether a sequence of keyboard moves are happening.
+  bool handling_keyboard_move_ = false;
 
   // True if the drag_view_ item is a folder item being dragged for reparenting.
   bool dragging_for_reparent_item_ = false;

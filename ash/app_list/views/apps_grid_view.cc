@@ -238,6 +238,12 @@ int GetCompositorActivatedFrameCount(ui::Compositor* compositor) {
 
 }  // namespace
 
+std::string GridIndex::ToString() const {
+  std::stringstream ss;
+  ss << "Page: " << page << ", Slot: " << slot;
+  return ss.str();
+}
+
 // A layer delegate used for AppsGridView's mask layer, with top and bottom
 // gradient fading out zones.
 class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
@@ -536,9 +542,9 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
 
   // If a drag and drop host is provided, see if the drag operation needs to be
   // forwarded.
-  gfx::Point location_in_screen = drag_point_in_grid_view;
-  views::View::ConvertPointToScreen(this, &location_in_screen);
-  DispatchDragEventToDragAndDropHost(location_in_screen);
+  gfx::Point drag_point_in_screen = drag_point_in_grid_view;
+  views::View::ConvertPointToScreen(this, &drag_point_in_screen);
+  DispatchDragEventToDragAndDropHost(drag_point_in_screen);
   if (drag_and_drop_host_) {
     drag_and_drop_host_->UpdateDragIconProxyByLocation(
         drag_view_->GetIconBoundsInScreen().origin());
@@ -553,7 +559,7 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   if (!drag_view_)
     return;  // Drag canceled.
 
-  gfx::Vector2d drag_vector(point - drag_start_grid_view_);
+  const gfx::Vector2d drag_vector(point - drag_start_grid_view_);
   if (!dragging() && ExceededDragThreshold(drag_vector))
     TryStartDragAndDropHostDrag(pointer, point);
 
@@ -661,6 +667,8 @@ void AppsGridView::EndDrag(bool cancel) {
         // Ensure reorder event has already been announced by the end of drag.
         MaybeCreateReorderAccessibilityEvent();
         MoveItemInModel(drag_view_, drop_target_);
+        RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderByDragInFolder
+                                                    : kReorderByDragInTopLevel);
       }
     }
   }
@@ -725,6 +733,8 @@ const gfx::Rect& AppsGridView::GetIdealBounds(AppListItemView* view) const {
 }
 
 AppListItemView* AppsGridView::GetItemViewAt(int index) const {
+  if (index < 0 || index >= view_model_.view_size())
+    return nullptr;
   return view_model_.view_at(index);
 }
 
@@ -923,12 +933,32 @@ void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
+  // The user may press VKEY_CONTROL before an arrow key when intending to do an
+  // app move with control+arrow.
+  if (event.key_code() == ui::VKEY_CONTROL)
+    return true;
+
+  if (IsArrowKeyEvent(event) && event.IsControlDown()) {
+    HandleKeyboardAppMovement(event.key_code());
+    return true;
+  }
+
   // Let the FocusManager handle Left/Right keys.
   if (!IsUnhandledUpDownKeyEvent(event))
     return false;
 
   return HandleVerticalFocusMovement(event.key_code() ==
                                      ui::VKEY_UP /* arrow_up */);
+}
+
+bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
+  if (event.IsControlDown() || !handling_keyboard_move_)
+    return false;
+
+  handling_keyboard_move_ = false;
+  RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderByKeyboardInFolder
+                                              : kReorderByKeyboardInTopLevel);
+  return false;
 }
 
 void AppsGridView::ViewHierarchyChanged(
@@ -1563,6 +1593,24 @@ bool AppsGridView::IsUnderOEMFolder() {
   return folder_delegate_->IsOEMFolder();
 }
 
+void AppsGridView::HandleKeyboardAppMovement(ui::KeyboardCode key_code) {
+  // TODO(newcomer): Support app movement via key in folders.
+  if (folder_delegate_)
+    return;
+
+  DCHECK(selected_view_);
+  const GridIndex target_index = GetTargetGridIndexForKeyboardMove(key_code);
+
+  if (target_index == GetIndexOfView(selected_view_) ||
+      !IsValidReorderTargetIndex(target_index)) {
+    return;
+  }
+
+  handling_keyboard_move_ = true;
+
+  MoveAppListItemViewForKeyboardMove(target_index);
+}
+
 bool AppsGridView::HandleVerticalFocusMovement(bool arrow_up) {
   views::View* focused = GetFocusManager()->GetFocusedView();
   if (focused->GetClassName() != AppListItemView::kViewClassName)
@@ -1822,13 +1870,8 @@ bool AppsGridView::IsTabletMode() const {
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   // When a drag and drop host is given, the item can be dragged out of the app
   // list window. In that case a proxy widget needs to be used.
-  // Note: This code has very likely to be changed for Windows (non metro mode)
-  // when a |drag_and_drop_host_| gets implemented.
   if (!drag_view_ || !drag_and_drop_host_)
     return;
-
-  gfx::Point screen_location = grid_location;
-  views::View::ConvertPointToScreen(this, &screen_location);
 
   // Determine the mouse offset to the center of the icon so that the drag and
   // drop host follows this layer.
@@ -1948,33 +1991,30 @@ void AppsGridView::OnPageFlipTimer() {
 }
 
 void AppsGridView::MoveItemInModel(AppListItemView* item_view,
-                                   const GridIndex& target) {
+                                   const GridIndex& target,
+                                   bool clear_overflow) {
   int current_model_index = view_model_.GetIndexOfView(item_view);
-  size_t current_item_index;
-  item_list_->FindItemIndex(item_view->item()->id(), &current_item_index);
+  size_t current_item_list_index;
+  item_list_->FindItemIndex(item_view->item()->id(), &current_item_list_index);
   DCHECK_GE(current_model_index, 0);
 
   int target_model_index = GetTargetModelIndexForMove(item_view, target);
-  size_t target_item_index = GetTargetItemIndexForMove(item_view, target);
-
+  size_t target_item_list_index = GetTargetItemIndexForMove(item_view, target);
   // The same item index does not guarantee the same visual index, so move the
   // item visual index here.
   if (!folder_delegate_)
-    view_structure_.Move(item_view, target);
+    view_structure_.Move(item_view, target, clear_overflow);
 
   // Reorder the app list item views in accordance with |view_model_|.
   ReorderChildView(item_view, target_model_index);
 
-  if (target_item_index == current_item_index)
+  if (target_item_list_index == current_item_list_index)
     return;
 
   item_list_->RemoveObserver(this);
-  item_list_->MoveItem(current_item_index, target_item_index);
+  item_list_->MoveItem(current_item_list_index, target_item_list_index);
   view_model_.Move(current_model_index, target_model_index);
   item_list_->AddObserver(this);
-
-  RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderInFolder
-                                              : kReorderInTopLevel);
 }
 
 void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
@@ -2570,6 +2610,128 @@ int AppsGridView::GetTargetModelIndexForMove(AppListItemView* moved_view,
     return view_structure_.GetTargetModelIndexForMove(moved_view, index);
 
   return GetModelIndexFromIndex(index);
+}
+
+GridIndex AppsGridView::GetTargetGridIndexForKeyboardMove(
+    ui::KeyboardCode key_code) const {
+  DCHECK(key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT ||
+         key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN);
+  DCHECK(selected_view_);
+
+  const GridIndex source_index = GetIndexOfView(selected_view_);
+  GridIndex target_index;
+  if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT) {
+    // Define backward key for traversal based on RTL.
+    const ui::KeyboardCode backward =
+        base::i18n::IsRTL() ? ui::VKEY_RIGHT : ui::VKEY_LEFT;
+
+    const int target_model_index = view_model_.GetIndexOfView(selected_view_) +
+                                   ((key_code == backward) ? -1 : 1);
+
+    // A forward move on the last item in |view_model_| should result in page
+    // creation
+    if (target_model_index == view_model_.view_size()) {
+      // If |source_index| is the last item in the grid on a page by itself,
+      // moving right to a new page should be a no-op.
+      if (view_structure_.items_on_page(source_index.page) == 1)
+        return source_index;
+      return GridIndex(pagination_model_.total_pages(), 0);
+    }
+
+    target_index = GetIndexOfView(
+        static_cast<const AppListItemView*>(GetItemViewAt(std::min(
+            std::max(0, target_model_index), view_model_.view_size() - 1))));
+    if (key_code == backward && target_index.page < source_index.page &&
+        !view_structure_.IsFullPage(target_index.page)) {
+      // Apps swap positions if the target page is the same as the
+      // destination page, or the target page is full. If the page is not
+      // full the app is dumped on the page. Increase the slot in this case
+      // to account for the new available spot.
+      ++target_index.slot;
+    }
+    return target_index;
+  }
+
+  // Handle the vertical move. Attempt to place the app in the same column.
+  int target_page = source_index.page;
+  int target_row =
+      source_index.slot / cols_ + (key_code == ui::VKEY_UP ? -1 : 1);
+
+  if (target_row < 0) {
+    // The app will move to the last row of the previous page.
+    --target_page;
+    if (target_page < 0)
+      return source_index;
+
+    // When moving up, place the app in the last row.
+    target_row = (GetItemsNumOfPage(target_page) - 1) / cols_;
+  } else if (target_row > (GetItemsNumOfPage(target_page) - 1) / cols_) {
+    // The app will move to the first row of the next page.
+    ++target_page;
+    if (target_page >= view_structure_.total_pages()) {
+      // If |source_index| page only has one item, moving down to a new page
+      // should be a no-op.
+      if (view_structure_.items_on_page(source_index.page) == 1)
+        return source_index;
+      return GridIndex(target_page, 0);
+    }
+    target_row = 0;
+  }
+
+  // If the app is being moved to a new page there is 1 extra slot available.
+  const int last_slot_in_target_page =
+      view_structure_.items_on_page(target_page) -
+      (source_index.page != target_page ? 0 : 1);
+  // The ideal slot shares a column with |source_index|.
+  const int ideal_slot = target_row * cols_ + source_index.slot % cols_;
+  return GridIndex(target_page, std::min(last_slot_in_target_page, ideal_slot));
+}
+
+void AppsGridView::MoveAppListItemViewForKeyboardMove(
+    const GridIndex& target_index) {
+  DCHECK(selected_view_);
+
+  if (target_index.page == pagination_model_.total_pages())
+    view_structure_.AppendPage();
+
+  AppListItemView* original_selected_view = selected_view_;
+  const GridIndex original_selected_view_index =
+      GetIndexOfView(original_selected_view);
+  // Moving an AppListItemView is either a swap within the origin page, a swap
+  // to a full page, or a dump to a page with room.
+  const bool swap_items =
+      view_structure_.IsFullPage(target_index.page) ||
+      target_index.page == original_selected_view_index.page;
+
+  AppListItemView* target_view = GetViewAtIndex(target_index);
+  // If the move is a two part operation (swap) do not clear the overflow during
+  // the initial move. Clearing the overflow when |target_index| is on a full
+  // page results in the last item being pushed to the next page.
+  MoveItemInModel(selected_view_, target_index, !swap_items /*clear_overflow*/);
+  view_structure_.SaveToMetadata();
+
+  if (swap_items) {
+    DCHECK(target_view);
+    MoveItemInModel(target_view, original_selected_view_index);
+    view_structure_.SaveToMetadata();
+  }
+
+  // Update |pagination_model_| because the move could have resulted in a
+  // page getting collapsed or created.
+  if (view_structure_.total_pages() != pagination_model_.total_pages())
+    pagination_model_.SetTotalPages(view_structure_.total_pages());
+
+  pagination_model_.SelectPage(
+      std::min(view_structure_.total_pages() - 1, target_index.page),
+      false /*animate*/);
+  SetSelectedView(original_selected_view);
+  Layout();
+
+  if (target_index.page != original_selected_view_index.page) {
+    UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
+                              kMoveAppWithKeyboard,
+                              kMaxAppListPageSwitcherSource);
+  }
 }
 
 size_t AppsGridView::GetTargetItemIndexForMove(AppListItemView* moved_view,

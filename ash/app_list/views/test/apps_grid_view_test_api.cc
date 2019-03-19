@@ -57,6 +57,14 @@ int AppsGridViewTestApi::TilesPerPage(int page) const {
   return view_->TilesPerPage(page);
 }
 
+int AppsGridViewTestApi::AppsOnPage(int page) const {
+  return view_->view_structure_.items_on_page(page);
+}
+
+AppListItemView* AppsGridViewTestApi::GetViewAtIndex(GridIndex index) const {
+  return view_->GetViewAtIndex(index);
+}
+
 views::View* AppsGridViewTestApi::GetViewAtVisualIndex(int page,
                                                        int slot) const {
   const std::vector<std::vector<AppListItemView*>>& view_structure =
