@@ -172,8 +172,10 @@ void Service::StartLoader(Loader* loader) {
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
   if (access_token_.empty()) {
+    std::string query_str = base::StrCat({"key=", api_key_});
+    // query_str must remain valid until ReplaceComponents() has returned.
     url::StringPieceReplacements<std::string> add_key;
-    add_key.SetQueryStr(base::StrCat({"key=", api_key_}));
+    add_key.SetQueryStr(query_str);
     resource_request->url = loader->url.ReplaceComponents(add_key);
   } else {
     resource_request->url = loader->url;
