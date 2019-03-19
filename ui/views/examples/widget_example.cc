@@ -34,7 +34,7 @@ class WidgetDialogExample : public DialogDelegateView {
 
 class ModalDialogExample : public WidgetDialogExample {
  public:
-  ModalDialogExample() {}
+  ModalDialogExample() = default;
 
   // WidgetDelegate:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
@@ -50,7 +50,7 @@ WidgetDialogExample::WidgetDialogExample() {
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
-WidgetDialogExample::~WidgetDialogExample() {}
+WidgetDialogExample::~WidgetDialogExample() = default;
 
 base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
@@ -70,8 +70,7 @@ View* WidgetDialogExample::CreateFootnoteView() {
 WidgetExample::WidgetExample() : ExampleBase("Widget") {
 }
 
-WidgetExample::~WidgetExample() {
-}
+WidgetExample::~WidgetExample() = default;
 
 void WidgetExample::CreateExampleView(View* container) {
   container->SetLayoutManager(

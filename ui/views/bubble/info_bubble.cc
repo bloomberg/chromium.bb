@@ -27,7 +27,7 @@ class InfoBubbleFrame : public BubbleFrameView {
  public:
   explicit InfoBubbleFrame(const gfx::Insets& content_margins)
       : BubbleFrameView(gfx::Insets(), content_margins) {}
-  ~InfoBubbleFrame() override {}
+  ~InfoBubbleFrame() override = default;
 
   gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const override {
     return available_bounds_;
@@ -60,7 +60,7 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
   AddChildView(label);
 }
 
-InfoBubble::~InfoBubble() {}
+InfoBubble::~InfoBubble() = default;
 
 void InfoBubble::Show() {
   widget_ = BubbleDialogDelegateView::CreateBubble(this);

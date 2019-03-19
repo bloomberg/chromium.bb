@@ -123,7 +123,7 @@ DialogExample::DialogExample()
           base::ASCIIToUTF16("Fake Modeless (non-bubbles)"),
       }) {}
 
-DialogExample::~DialogExample() {}
+DialogExample::~DialogExample() = default;
 
 void DialogExample::CreateExampleView(View* container) {
   // GridLayout |resize_percent| constants.

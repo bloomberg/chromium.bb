@@ -110,8 +110,8 @@ ExampleVector GetExamplesToShow(ExampleVector extra) {
 // Model for the examples that are being added via AddExample().
 class ComboboxModelExampleList : public ui::ComboboxModel {
  public:
-  ComboboxModelExampleList() {}
-  ~ComboboxModelExampleList() override {}
+  ComboboxModelExampleList() = default;
+  ~ComboboxModelExampleList() override = default;
 
   void SetExamples(ExampleVector examples) {
     example_list_ = std::move(examples);

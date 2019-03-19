@@ -67,7 +67,7 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
   DCHECK(shadow_ < SHADOW_COUNT);
 }
 
-BubbleBorder::~BubbleBorder() {}
+BubbleBorder::~BubbleBorder() = default;
 
 // static
 gfx::Insets BubbleBorder::GetBorderAndShadowInsets(

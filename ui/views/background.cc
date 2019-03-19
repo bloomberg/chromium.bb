@@ -50,7 +50,7 @@ class ThemedSolidBackground : public SolidBackground, public ViewObserver {
     observer_.Add(view);
     OnViewNativeThemeChanged(view);
   }
-  ~ThemedSolidBackground() override {}
+  ~ThemedSolidBackground() override = default;
 
   // ViewObserver:
   void OnViewNativeThemeChanged(View* view) override {
@@ -73,7 +73,7 @@ class BackgroundPainter : public Background {
     DCHECK(painter_);
   }
 
-  ~BackgroundPainter() override {}
+  ~BackgroundPainter() override = default;
 
   void Paint(gfx::Canvas* canvas, View* view) const override {
     Painter::PaintPainterAt(canvas, painter_.get(), view->GetLocalBounds());
@@ -87,7 +87,7 @@ class BackgroundPainter : public Background {
 
 Background::Background() : color_(SK_ColorWHITE) {}
 
-Background::~Background() {}
+Background::~Background() = default;
 
 void Background::SetNativeControlColor(SkColor color) {
   color_ = color;

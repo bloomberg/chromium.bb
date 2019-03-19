@@ -39,7 +39,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     view_->SetFocusBehavior(FocusBehavior::ALWAYS);
     AddChildView(view_);
   }
-  ~TestBubbleDialogDelegateView() override {}
+  ~TestBubbleDialogDelegateView() override = default;
 
   using BubbleDialogDelegateView::SetAnchorView;
 
@@ -93,8 +93,8 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
 class BubbleDialogDelegateViewTest : public ViewsTestBase {
  public:
-  BubbleDialogDelegateViewTest() {}
-  ~BubbleDialogDelegateViewTest() override {}
+  BubbleDialogDelegateViewTest() = default;
+  ~BubbleDialogDelegateViewTest() override = default;
 
   // Creates and shows a test widget that owns its native widget.
   Widget* CreateTestWidget() {

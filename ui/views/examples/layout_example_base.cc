@@ -36,8 +36,8 @@ constexpr gfx::Size kLayoutExampleDefaultChildSize(180, 90);
 // 25%.
 class FullPanel : public View {
  public:
-  FullPanel() {}
-  ~FullPanel() override {}
+  FullPanel() = default;
+  ~FullPanel() override = default;
 
   // View
   void Layout() override;
@@ -167,7 +167,7 @@ Textfield* LayoutExampleBase::ChildPanel::CreateTextfield() {
 
 LayoutExampleBase::LayoutExampleBase(const char* title) : ExampleBase(title) {}
 
-LayoutExampleBase::~LayoutExampleBase() {}
+LayoutExampleBase::~LayoutExampleBase() = default;
 
 Combobox* LayoutExampleBase::CreateCombobox(const base::string16& label_text,
                                             const char* const* items,

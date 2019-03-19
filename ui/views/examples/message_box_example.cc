@@ -18,8 +18,7 @@ namespace examples {
 MessageBoxExample::MessageBoxExample() : ExampleBase("Message Box View") {
 }
 
-MessageBoxExample::~MessageBoxExample() {
-}
+MessageBoxExample::~MessageBoxExample() = default;
 
 void MessageBoxExample::CreateExampleView(View* container) {
   message_box_view_ = new MessageBoxView(

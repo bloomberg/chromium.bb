@@ -72,8 +72,7 @@ class ScrollViewExample::ScrollableView : public View {
 ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {
 }
 
-ScrollViewExample::~ScrollViewExample() {
-}
+ScrollViewExample::~ScrollViewExample() = default;
 
 void ScrollViewExample::CreateExampleView(View* container) {
   wide_ = new LabelButton(this, ASCIIToUTF16("Wide"));

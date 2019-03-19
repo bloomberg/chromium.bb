@@ -78,7 +78,7 @@ class VectorIconGallery : public View,
     color_input_->set_controller(this);
   }
 
-  ~VectorIconGallery() override {}
+  ~VectorIconGallery() override = default;
 
   // TextfieldController implementation.
   void ContentsChanged(Textfield* sender,
@@ -149,7 +149,7 @@ class VectorIconGallery : public View,
 
 VectorExample::VectorExample() : ExampleBase("Vector Icon") {}
 
-VectorExample::~VectorExample() {}
+VectorExample::~VectorExample() = default;
 
 void VectorExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
