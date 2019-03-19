@@ -220,6 +220,14 @@ void AssistantMainStage::OnPendingQueryChanged(
   query_view_->SetQuery(query);
 }
 
+void AssistantMainStage::OnPendingQueryCleared() {
+  // When a pending query is cleared, it may be because the interaction was
+  // cancelled, or because the query was committed. If the query was committed,
+  // reseting the query here will have no visible effect. If the interaction was
+  // cancelled, we set the query here to restore the previously committed query.
+  query_view_->SetQuery(delegate_->GetInteractionModel()->committed_query());
+}
+
 void AssistantMainStage::OnResponseChanged(
     const std::shared_ptr<ash::AssistantResponse>& response) {
   // TODO(wutao): Replace the visibility change by animations.
@@ -259,6 +267,8 @@ void AssistantMainStage::OnUiVisibilityChanged(
 
   progress_indicator_->layer()->SetOpacity(0.f);
   progress_indicator_->layer()->SetTransform(gfx::Transform());
+
+  query_view_->SetQuery(ash::AssistantNullQuery());
 
   UpdateFooter();
 }
