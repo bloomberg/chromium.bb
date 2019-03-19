@@ -14,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/task/sequence_manager/real_time_domain.h"
@@ -24,7 +23,6 @@
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "base/threading/thread_local.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -32,16 +30,6 @@
 
 namespace base {
 namespace sequence_manager {
-namespace {
-
-base::ThreadLocalPointer<internal::SequenceManagerImpl>*
-GetTLSSequenceManagerImpl() {
-  static NoDestructor<ThreadLocalPointer<internal::SequenceManagerImpl>>
-      lazy_tls_ptr;
-  return lazy_tls_ptr.get();
-}
-
-}  // namespace
 
 // This controls how big the the initial for
 // |MainThreadOnly::task_execution_stack| should be. We don't expect to see
@@ -136,11 +124,6 @@ char* PrependHexAddress(char* output, const void* address) {
 
 }  // namespace
 
-// static
-SequenceManagerImpl* SequenceManagerImpl::GetCurrent() {
-  return GetTLSSequenceManagerImpl()->Get();
-}
-
 SequenceManagerImpl::SequenceManagerImpl(
     std::unique_ptr<internal::ThreadController> controller,
     SequenceManager::Settings settings)
@@ -201,10 +184,8 @@ SequenceManagerImpl::~SequenceManagerImpl() {
     observer.WillDestroyCurrentMessageLoop();
 
   // OK, now make it so that no one can find us.
-  if (GetMessagePump()) {
-    DCHECK_EQ(this, GetTLSSequenceManagerImpl()->Get());
-    GetTLSSequenceManagerImpl()->Set(nullptr);
-  }
+  if (GetMessagePump())
+    MessageLoopCurrent::UnbindFromCurrentThreadInternal(this);
 }
 
 SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
@@ -224,7 +205,8 @@ SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateOnCurrentThread(
     SequenceManager::Settings settings) {
-  MessageLoopBase* message_loop_base = GetTLSSequenceManagerImpl()->Get();
+  MessageLoopBase* message_loop_base =
+      MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated();
   std::unique_ptr<SequenceManagerImpl> manager(new SequenceManagerImpl(
       ThreadControllerImpl::Create(message_loop_base, settings.clock),
       std::move(settings)));
@@ -282,11 +264,8 @@ void SequenceManagerImpl::BindToCurrentThread(
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
   main_thread_only().nesting_observer_registered_ = true;
-  if (GetMessagePump()) {
-    DCHECK(!GetTLSSequenceManagerImpl()->Get())
-        << "Can't register a second SequenceManagerImpl on the same thread.";
-    GetTLSSequenceManagerImpl()->Set(this);
-  }
+  if (GetMessagePump())
+    MessageLoopCurrent::BindToCurrentThreadInternal(this);
 }
 
 void SequenceManagerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
