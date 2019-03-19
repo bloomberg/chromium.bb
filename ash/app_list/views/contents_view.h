@@ -58,6 +58,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
    public:
     // Called when search box bounds is updated.
     virtual void OnSearchBoxBoundsUpdated() = 0;
+
+    // Called when the search box is cleaded and deactivated.
+    virtual void OnSearchBoxClearAndDeactivated() = 0;
   };
 
   explicit ContentsView(AppListView* app_list_view);
