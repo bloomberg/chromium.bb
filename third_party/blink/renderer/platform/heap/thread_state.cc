@@ -663,7 +663,8 @@ void ThreadState::ScheduleGCIfNeeded() {
     }
   }
 
-  if (ShouldScheduleIdleGC()) {
+  if (!RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled() &&
+      ShouldScheduleIdleGC()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleGCIfNeeded: Scheduled idle GC";
     ScheduleIdleGC();
