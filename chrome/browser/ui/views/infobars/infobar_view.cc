@@ -163,8 +163,7 @@ void InfoBarView::Layout() {
       OffsetY(close_button_)));
 
   // For accessibility reasons, the close button should come last.
-  DCHECK_EQ(close_button_->parent()->child_count() - 1,
-            close_button_->parent()->GetIndexOf(close_button_));
+  DCHECK_EQ(close_button_, close_button_->parent()->children().back());
 }
 
 void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

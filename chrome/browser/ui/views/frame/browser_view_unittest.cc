@@ -98,10 +98,10 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Find bar host is at the front of the view hierarchy, followed by the
   // infobar container and then top container.
-  EXPECT_EQ(browser_view()->child_count() - 1,
-            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
-  EXPECT_EQ(browser_view()->child_count() - 2,
-            browser_view()->GetIndexOf(browser_view()->infobar_container()));
+  ASSERT_GE(browser_view()->children().size(), 2U);
+  auto child = browser_view()->children().crbegin();
+  EXPECT_EQ(browser_view()->find_bar_host_view(), *child++);
+  EXPECT_EQ(browser_view()->infobar_container(), *child);
 
   // Verify basic layout.
   EXPECT_EQ(0, top_container->x());
@@ -143,10 +143,10 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Find bar host is still at the front of the view hierarchy, followed by the
   // infobar container and then top container.
-  EXPECT_EQ(browser_view()->child_count() - 1,
-            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
-  EXPECT_EQ(browser_view()->child_count() - 2,
-            browser_view()->GetIndexOf(browser_view()->infobar_container()));
+  ASSERT_GE(browser_view()->children().size(), 2U);
+  child = browser_view()->children().crbegin();
+  EXPECT_EQ(browser_view()->find_bar_host_view(), *child++);
+  EXPECT_EQ(browser_view()->infobar_container(), *child);
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());

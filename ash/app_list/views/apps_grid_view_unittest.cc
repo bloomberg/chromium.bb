@@ -269,12 +269,12 @@ class AppsGridViewTest : public views::ViewsTestBase,
     const views::ViewModelT<AppListItemView>* view_model =
         apps_grid_view_->view_model();
     DCHECK_GT(view_model->view_size(), 0);
-    const int initial_index =
-        apps_grid_view_->GetIndexOf(view_model->view_at(0));
-    DCHECK_NE(-1, initial_index);
-    for (int i = 0; i < view_model->view_size(); ++i) {
-      EXPECT_EQ(view_model->view_at(i),
-                apps_grid_view_->child_at(i + initial_index));
+    auto app_iter = apps_grid_view_->FindChild(view_model->view_at(0));
+    DCHECK(app_iter != apps_grid_view_->children().cend());
+    for (int i = 1; i < view_model->view_size(); ++i) {
+      ++app_iter;
+      ASSERT_NE(apps_grid_view_->children().cend(), app_iter);
+      EXPECT_EQ(view_model->view_at(i), *app_iter);
     }
   }
 

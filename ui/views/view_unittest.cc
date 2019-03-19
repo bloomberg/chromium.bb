@@ -79,9 +79,8 @@ const views::View* NextView(const views::View* view) {
   const views::View* parent = v->parent();
   if (!parent)
     return nullptr;
-  const int next = parent->GetIndexOf(v) + 1;
-  return (next == parent->child_count()) ? parent
-                                         : FirstView(parent->child_at(next));
+  const auto next = std::next(parent->FindChild(v));
+  return (next == parent->children().cend()) ? parent : FirstView(*next);
 }
 
 // Convenience functions for walking a Layer tree.
