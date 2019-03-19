@@ -68,6 +68,7 @@ class IOSTranslateDriver : public TranslateDriver,
   const std::string& GetContentsMimeType() override;
   const GURL& GetLastCommittedURL() override;
   const GURL& GetVisibleURL() override;
+  ukm::SourceId GetUkmSourceId() override;
   bool HasCurrentPage() override;
   void OpenUrlInNewTab(const GURL& url) override;
 
