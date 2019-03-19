@@ -164,6 +164,7 @@
         "FrameAttachedToParent",
         "FrameClearedScheduledNavigation",
         "FrameDetachedFromParent",
+        "FrameRequestedNavigation",
         "FrameScheduledNavigation",
         "FrameStartedLoading",
         "FrameStoppedLoading",
