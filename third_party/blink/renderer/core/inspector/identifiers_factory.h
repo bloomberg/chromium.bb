@@ -45,10 +45,10 @@ class CORE_EXPORT IdentifiersFactory {
  public:
   static String CreateIdentifier();
 
-  static String RequestId(DocumentLoader*, unsigned long identifier);
+  static String RequestId(DocumentLoader*, uint64_t identifier);
   // Same as above, but can only be used on reuquests that are guaranteed
   // to be subresources, not main resource.
-  static String SubresourceRequestId(unsigned long identifier);
+  static String SubresourceRequestId(uint64_t identifier);
 
   // Returns embedder-provided frame token that is consistent across processes
   // and can be used for request / call attribution to the context frame.

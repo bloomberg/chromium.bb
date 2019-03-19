@@ -74,11 +74,11 @@ class CORE_EXPORT FrameConsole final
                              SourceLocation*);
 
   void ReportResourceResponseReceived(DocumentLoader*,
-                                      unsigned long request_identifier,
+                                      uint64_t request_identifier,
                                       const ResourceResponse&);
 
   void DidFailLoading(DocumentLoader*,
-                      unsigned long request_identifier,
+                      uint64_t request_identifier,
                       const ResourceError&);
 
   void Trace(blink::Visitor*) override;

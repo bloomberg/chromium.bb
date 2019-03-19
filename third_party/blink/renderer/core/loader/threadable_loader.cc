@@ -113,7 +113,7 @@ class ThreadableLoader::DetachedClient final
       : self_keep_alive_(this), loader_(loader) {}
   ~DetachedClient() override {}
 
-  void DidFinishLoading(unsigned long identifier) override {
+  void DidFinishLoading(uint64_t identifier) override {
     self_keep_alive_.Clear();
   }
   void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
@@ -808,7 +808,7 @@ void ThreadableLoader::HandlePreflightResponse(
 }
 
 void ThreadableLoader::ReportResponseReceived(
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceResponse& response) {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   if (!frame)

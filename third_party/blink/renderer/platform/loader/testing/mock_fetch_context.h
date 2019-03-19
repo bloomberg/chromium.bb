@@ -41,7 +41,7 @@ class MockFetchContext : public FetchContext {
 
   // FetchContext:
   void DispatchWillSendRequest(
-      unsigned long identifier,
+      uint64_t identifier,
       const ResourceRequest& request,
       const ResourceResponse& redirect_response,
       ResourceType,

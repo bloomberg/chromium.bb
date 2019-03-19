@@ -544,7 +544,7 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   return policy != kUse || resource->StillNeedsLoad();
 }
 
-void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
+void ResourceFetcher::RequestLoadStarted(uint64_t identifier,
                                          Resource* resource,
                                          const FetchParameters& params,
                                          RevalidationPolicy policy,
@@ -583,7 +583,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
 }
 
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
-    unsigned long identifier,
+    uint64_t identifier,
     Resource* resource,
     const ResourceRequest& original_request) {
   ResourceRequest request = original_request;
@@ -742,7 +742,7 @@ void ResourceFetcher::RemovePreload(Resource* resource) {
 base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     FetchParameters& params,
     const ResourceFactory& factory,
-    unsigned long identifier,
+    uint64_t identifier,
     WebScopedVirtualTimePauser& virtual_time_pauser) {
   ResourceRequest& resource_request = params.MutableResourceRequest();
   ResourceType resource_type = factory.GetType();
@@ -882,7 +882,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 Resource* ResourceFetcher::RequestResource(FetchParameters& params,
                                            const ResourceFactory& factory,
                                            ResourceClient* client) {
-  unsigned long identifier = CreateUniqueIdentifier();
+  uint64_t identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",

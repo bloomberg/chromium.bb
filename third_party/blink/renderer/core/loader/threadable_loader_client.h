@@ -56,12 +56,12 @@ class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
                                   const ResourceResponse&) {
     return true;
   }
-  virtual void DidReceiveResponse(unsigned long /*identifier*/,
+  virtual void DidReceiveResponse(uint64_t /*identifier*/,
                                   const ResourceResponse&) {}
   virtual void DidStartLoadingResponseBody(BytesConsumer&) {}
   virtual void DidReceiveData(const char*, unsigned /*dataLength*/) {}
   virtual void DidReceiveCachedMetadata(const char*, int /*dataLength*/) {}
-  virtual void DidFinishLoading(unsigned long /*identifier*/) {}
+  virtual void DidFinishLoading(uint64_t /*identifier*/) {}
   virtual void DidFail(const ResourceError&) {}
   virtual void DidFailRedirectCheck() {}
   virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}

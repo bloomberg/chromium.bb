@@ -1670,7 +1670,7 @@ void XMLHttpRequest::DidFailRedirectCheck() {
   HandleNetworkError();
 }
 
-void XMLHttpRequest::DidFinishLoading(unsigned long identifier) {
+void XMLHttpRequest::DidFinishLoading(uint64_t identifier) {
   NETWORK_DVLOG(1) << this << " didFinishLoading(" << identifier << ")";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
 
@@ -1796,7 +1796,7 @@ void XMLHttpRequest::DidSendData(uint64_t bytes_sent,
   }
 }
 
-void XMLHttpRequest::DidReceiveResponse(unsigned long identifier,
+void XMLHttpRequest::DidReceiveResponse(uint64_t identifier,
                                         const ResourceResponse& response) {
   // TODO(yhirano): Remove this CHECK: see https://crbug.com/570946.
   CHECK(&response);

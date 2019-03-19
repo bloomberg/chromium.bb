@@ -103,9 +103,9 @@ class FetchManager::Loader final
 
   // ThreadableLoaderClient implementation.
   bool WillFollowRedirect(const KURL&, const ResourceResponse&) override;
-  void DidReceiveResponse(unsigned long, const ResourceResponse&) override;
+  void DidReceiveResponse(uint64_t, const ResourceResponse&) override;
   void DidStartLoadingResponseBody(BytesConsumer&) override;
-  void DidFinishLoading(unsigned long) override;
+  void DidFinishLoading(uint64_t) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -293,7 +293,7 @@ bool FetchManager::Loader::WillFollowRedirect(
   }
 
   if (redirect_mode == network::mojom::FetchRedirectMode::kManual) {
-    const unsigned long unused = 0;
+    const uint64_t unused = 0;
     // There is no need to read the body of redirect response because there is
     // no way to read the body of opaque-redirect filtered response's internal
     // response.
@@ -316,7 +316,7 @@ bool FetchManager::Loader::WillFollowRedirect(
 }
 
 void FetchManager::Loader::DidReceiveResponse(
-    unsigned long,
+    uint64_t,
     const ResourceResponse& response) {
   // TODO(horo): This check could be false when we will use the response url
   // in service worker responses. (crbug.com/553535)
@@ -501,7 +501,7 @@ void FetchManager::Loader::DidStartLoadingResponseBody(BytesConsumer& body) {
   place_holder_body_ = nullptr;
 }
 
-void FetchManager::Loader::DidFinishLoading(unsigned long) {
+void FetchManager::Loader::DidFinishLoading(uint64_t) {
   DCHECK(!place_holder_body_);
   DCHECK(!failed_);
 

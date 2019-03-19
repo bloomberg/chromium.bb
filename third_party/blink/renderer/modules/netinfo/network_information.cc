@@ -122,7 +122,7 @@ String NetworkInformation::effectiveType() {
   return NetworkStateNotifier::EffectiveConnectionTypeToString(effective_type_);
 }
 
-unsigned long NetworkInformation::rtt() {
+uint32_t NetworkInformation::rtt() {
   MaybeShowWebHoldbackConsoleMsg();
   base::Optional<TimeDelta> override_rtt =
       GetNetworkStateNotifier().GetWebHoldbackHttpRtt();
@@ -173,7 +173,7 @@ void NetworkInformation::ConnectionChange(
   DCHECK(GetExecutionContext()->IsContextThread());
 
   const String host = Host();
-  unsigned long new_http_rtt_msec =
+  uint32_t new_http_rtt_msec =
       GetNetworkStateNotifier().RoundRtt(host, http_rtt);
   double new_downlink_mbps =
       GetNetworkStateNotifier().RoundMbps(host, downlink_mbps);

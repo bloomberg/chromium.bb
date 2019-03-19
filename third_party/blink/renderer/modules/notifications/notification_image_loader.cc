@@ -42,7 +42,7 @@
 namespace {
 
 // 99.9% of all images were fetched successfully in 90 seconds.
-const unsigned long kImageFetchTimeoutInMs = 90000;
+const uint32_t kImageFetchTimeoutInMs = 90000;
 
 }  // namespace
 
@@ -141,8 +141,7 @@ void NotificationImageLoader::DidReceiveData(const char* data,
   data_->Append(data, length);
 }
 
-void NotificationImageLoader::DidFinishLoading(
-    unsigned long resource_identifier) {
+void NotificationImageLoader::DidFinishLoading(uint64_t resource_identifier) {
   // If this has been stopped it is not desirable to trigger further work,
   // there is a shutdown of some sort in progress.
   if (stopped_)

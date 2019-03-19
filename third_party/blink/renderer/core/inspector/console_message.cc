@@ -23,7 +23,7 @@ ConsoleMessage* ConsoleMessage::CreateForRequest(
     const String& message,
     const String& url,
     DocumentLoader* loader,
-    unsigned long request_identifier) {
+    uint64_t request_identifier) {
   ConsoleMessage* console_message = ConsoleMessage::Create(
       source, level, message, SourceLocation::Capture(url, 0, 0));
   console_message->request_identifier_ =

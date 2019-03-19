@@ -46,7 +46,7 @@ String IdentifiersFactory::CreateIdentifier() {
 
 // static
 String IdentifiersFactory::RequestId(DocumentLoader* loader,
-                                     unsigned long identifier) {
+                                     uint64_t identifier) {
   if (!identifier)
     return String();
   if (loader && loader->MainResourceIdentifier() == identifier)
@@ -55,7 +55,7 @@ String IdentifiersFactory::RequestId(DocumentLoader* loader,
 }
 
 // static
-String IdentifiersFactory::SubresourceRequestId(unsigned long identifier) {
+String IdentifiersFactory::SubresourceRequestId(uint64_t identifier) {
   return RequestId(nullptr, identifier);
 }
 

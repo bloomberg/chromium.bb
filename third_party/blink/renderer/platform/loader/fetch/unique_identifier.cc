@@ -34,9 +34,9 @@
 
 namespace blink {
 
-static std::atomic_ulong g_unique_identifier(1);
+static std::atomic_uint64_t g_unique_identifier(1);
 
-unsigned long CreateUniqueIdentifier() {
+uint64_t CreateUniqueIdentifier() {
   return g_unique_identifier.fetch_add(1, std::memory_order_relaxed);
 }
 

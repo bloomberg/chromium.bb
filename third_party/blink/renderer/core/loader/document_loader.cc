@@ -307,7 +307,7 @@ void DocumentLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(use_counter_);
 }
 
-unsigned long DocumentLoader::MainResourceIdentifier() const {
+uint64_t DocumentLoader::MainResourceIdentifier() const {
   return main_resource_identifier_;
 }
 

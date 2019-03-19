@@ -142,7 +142,7 @@ void ProgressTracker::SendFinalProgress() {
   GetLocalFrameClient()->ProgressEstimateChanged(progress_value_);
 }
 
-void ProgressTracker::WillStartLoading(unsigned long identifier,
+void ProgressTracker::WillStartLoading(uint64_t identifier,
                                        ResourceLoadPriority priority) {
   if (!frame_->IsLoading())
     return;
@@ -152,7 +152,7 @@ void ProgressTracker::WillStartLoading(unsigned long identifier,
                                       kProgressItemDefaultEstimatedLength));
 }
 
-void ProgressTracker::IncrementProgress(unsigned long identifier,
+void ProgressTracker::IncrementProgress(uint64_t identifier,
                                         const ResourceResponse& response) {
   ProgressItem* item = progress_items_.at(identifier);
   if (!item)
@@ -165,8 +165,7 @@ void ProgressTracker::IncrementProgress(unsigned long identifier,
   item->estimated_length = estimated_length;
 }
 
-void ProgressTracker::IncrementProgress(unsigned long identifier,
-                                        uint64_t length) {
+void ProgressTracker::IncrementProgress(uint64_t identifier, uint64_t length) {
   ProgressItem* item = progress_items_.at(identifier);
   if (!item)
     return;
@@ -234,7 +233,7 @@ void ProgressTracker::MaybeSendProgress() {
   }
 }
 
-void ProgressTracker::CompleteProgress(unsigned long identifier) {
+void ProgressTracker::CompleteProgress(uint64_t identifier) {
   ProgressItem* item = progress_items_.at(identifier);
   if (!item)
     return;
