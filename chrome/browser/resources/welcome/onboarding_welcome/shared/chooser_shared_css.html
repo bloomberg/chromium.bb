@@ -1,12 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="navi_colors_css.html">
 
 <dom-module id="chooser-shared-css">
   <template>
-    <style>
+    <style include="navi-colors-css">
       :host {
-        color: var(--google-grey-900);
         display: block;
         white-space: nowrap;
       }
@@ -14,10 +15,11 @@
       .option {
         -webkit-appearance: none;
         align-items: center;
-        background: white;
-        border: 1px solid var(--google-grey-refresh-300);
+        background: var(--cr-card-background-color);
+        border: 1px solid var(--navi-border-color);
         border-radius: 8px;
         box-sizing: border-box;
+        color: var(--cr-primary-text-color);
         cursor: pointer;
         display: inline-flex;
         flex-direction: column;
@@ -33,12 +35,12 @@
       }
 
       .option:hover {
-        box-shadow: 0 3px 6px 2px rgba(0, 36, 100, .1);
+        box-shadow: var(--navi-option-box-shadow);
       }
 
       .option[active] {
-        border: 1px solid var(--google-blue-600);
-        color: var(--google-blue-600);
+        border: 1px solid var(--cr-checked-color);
+        color: var(--cr-checked-color);
         font-weight: 500;
       }
 
@@ -47,7 +49,7 @@
       }
 
       .option.keyboard-focused:focus {
-        outline: rgba(26, 115, 232, 0.4) solid 3px;
+        outline: var(--navi-keyboard-focus-color) solid 3px;
       }
 
       .option .option-name {
@@ -68,7 +70,7 @@
       }
 
       .option .option-icon-shadow {
-        background-color: var(--google-grey-refresh-100);
+        background-color: var(--navi-option-icon-shadow-color);
         border-radius: 50%;
         display: flex;
         height: 3rem;
@@ -82,8 +84,8 @@
       }
 
       .option iron-icon {
-        --iron-icon-fill-color: white;
-        background: lightgrey;
+        --iron-icon-fill-color: var(--cr-card-background-color);
+        background: var(--navi-check-icon-color);
         border-radius: 50%;
         display: none;
         height: 0.75rem;
@@ -101,7 +103,7 @@
       }
 
       .option[active] iron-icon[icon='cr:check'] {
-        background: var(--google-blue-600);
+        background: var(--cr-checked-color);
       }
 
       .button-bar {
