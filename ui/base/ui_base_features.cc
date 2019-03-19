@@ -81,7 +81,7 @@ const base::Feature kPointerEventsForTouch = {"PointerEventsForTouch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables using TSF (over IMM32) for IME.
 const base::Feature kTSFImeSupport = {"TSFImeSupport",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsUsingWMPointerForTouch() {
   return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
