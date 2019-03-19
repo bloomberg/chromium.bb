@@ -63,6 +63,8 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
   void BrowserContextShutdown(content::BrowserContext* profile) override;
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
 
   // List of observers. Checks that list is empty on destruction.
   base::ObserverList<Observer, /*check_empty=*/true, /*allow_reentrancy=*/false>

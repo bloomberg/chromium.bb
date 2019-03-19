@@ -8,11 +8,18 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_pref_names.h"
+#include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
+#include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -26,6 +33,27 @@
 
 namespace ios_web_view {
 
+namespace {
+std::unique_ptr<SigninManager> BuildSigninManager(
+    WebViewBrowserState* browser_state) {
+  // Clearing the sign in state on start up greatly simplifies the management of
+  // ChromeWebView's signin state.
+  PrefService* pref_service = browser_state->GetPrefs();
+  pref_service->ClearPref(prefs::kGoogleServicesAccountId);
+  pref_service->ClearPref(prefs::kGoogleServicesUsername);
+  pref_service->ClearPref(prefs::kGoogleServicesUserAccountId);
+
+  std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
+      WebViewSigninClientFactory::GetForBrowserState(browser_state),
+      WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+      WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state),
+      WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(browser_state),
+      signin::AccountConsistencyMethod::kDisabled);
+  service->Initialize(ApplicationContext::GetInstance()->GetLocalState());
+  return service;
+}
+}  // namespace
+
 // Subclass that wraps IdentityManager in a KeyedService (as IdentityManager is
 // a client-side library intended for use by any process, it would be a layering
 // violation for IdentityManager itself to have direct knowledge of
@@ -36,9 +64,12 @@ namespace ios_web_view {
 class IdentityManagerWrapper : public KeyedService,
                                public identity::IdentityManager {
  public:
-  explicit IdentityManagerWrapper(WebViewBrowserState* browser_state)
+  explicit IdentityManagerWrapper(
+      std::unique_ptr<SigninManagerBase> signin_manager,
+      std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator,
+      WebViewBrowserState* browser_state)
       : identity::IdentityManager(
-            WebViewSigninManagerFactory::GetForBrowserState(browser_state),
+            std::move(signin_manager),
             WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
             WebViewAccountFetcherServiceFactory::GetForBrowserState(
                 browser_state),
@@ -46,11 +77,8 @@ class IdentityManagerWrapper : public KeyedService,
                 browser_state),
             WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
                 browser_state),
-            std::make_unique<identity::PrimaryAccountMutatorImpl>(
-                WebViewAccountTrackerServiceFactory::GetForBrowserState(
-                    browser_state),
-                WebViewSigninManagerFactory::GetForBrowserState(browser_state)),
-            nullptr,
+            std::move(primary_account_mutator),
+            /*accounts_mutator=*/nullptr,
             std::make_unique<identity::AccountsCookieMutatorImpl>(
                 WebViewGaiaCookieManagerServiceFactory::GetForBrowserState(
                     browser_state)),
@@ -61,6 +89,11 @@ class IdentityManagerWrapper : public KeyedService,
                     browser_state))) {}
 };
 
+void WebViewIdentityManagerFactory::RegisterBrowserStatePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  SigninManagerBase::RegisterProfilePrefs(registry);
+}
+
 WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
@@ -69,7 +102,7 @@ WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
   DependsOn(WebViewAccountTrackerServiceFactory::GetInstance());
   DependsOn(WebViewGaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(WebViewSigninManagerFactory::GetInstance());
+  DependsOn(WebViewSigninClientFactory::GetInstance());
 }
 
 WebViewIdentityManagerFactory::~WebViewIdentityManagerFactory() {}
@@ -93,14 +126,27 @@ void WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   WebViewAccountTrackerServiceFactory::GetInstance();
   WebViewGaiaCookieManagerServiceFactory::GetInstance();
   WebViewOAuth2TokenServiceFactory::GetInstance();
-  WebViewSigninManagerFactory::GetInstance();
+  WebViewSigninClientFactory::GetInstance();
 }
 
 std::unique_ptr<KeyedService>
 WebViewIdentityManagerFactory::BuildServiceInstanceFor(
-    web::BrowserState* browser_state) const {
-  return std::make_unique<IdentityManagerWrapper>(
-      WebViewBrowserState::FromBrowserState(browser_state));
+    web::BrowserState* context) const {
+  WebViewBrowserState* browser_state =
+      WebViewBrowserState::FromBrowserState(context);
+
+  // Construct the dependencies that IdentityManager will own.
+  std::unique_ptr<SigninManager> signin_manager =
+      BuildSigninManager(browser_state);
+  auto primary_account_mutator =
+      std::make_unique<identity::PrimaryAccountMutatorImpl>(
+          WebViewAccountTrackerServiceFactory::GetForBrowserState(
+              browser_state),
+          signin_manager.get());
+  auto identity_manager = std::make_unique<IdentityManagerWrapper>(
+      std::move(signin_manager), std::move(primary_account_mutator),
+      browser_state);
+  return identity_manager;
 }
 
 }  // namespace ios_web_view

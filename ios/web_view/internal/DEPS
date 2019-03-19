@@ -25,7 +25,6 @@ include_rules = [
   "!components/signin/core/browser/fake_profile_oauth2_token_service.h",
   "!components/signin/core/browser/profile_oauth2_token_service.h",
   "!components/signin/core/browser/fake_signin_manager.h",
-  "!components/signin/core/browser/signin_manager.h",
   "!components/signin/core/browser/signin_manager_base.h",
   "+components/signin/ios",
   "+components/ssl_errors",

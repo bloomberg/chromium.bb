@@ -306,10 +306,11 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       AccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       IdentityManager* identity_manager,
-      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
+      signin::AccountConsistencyMethod account_consistency =
+          signin::AccountConsistencyMethod::kDisabled);
 
   // Constructs this object from the supplied
   // dependencies of IdentityManager and potentially IdentityManager itself.
@@ -327,9 +328,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       AccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
       GaiaCookieManagerService* gaia_cookie_manager_service,
       network::TestURLLoaderFactory* test_url_loader_factory,
+      signin::AccountConsistencyMethod account_consistency,
       std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
       IdentityManager* identity_manager);
 
@@ -365,6 +366,10 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Used to set fake responses for cookie-related requests.
   // This can be null if no TestURLLoaderFactory was passed via the constructor.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
+
+  // This will be null if a TestSigninClient was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<TestSigninClient> owned_signin_client_;
 
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager

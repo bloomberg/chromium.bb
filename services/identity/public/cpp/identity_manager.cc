@@ -40,7 +40,7 @@ const char kSupervisedUserPseudoGaiaID[] = "managed_user_gaia_id";
 }  // namespace
 
 IdentityManager::IdentityManager(
-    SigninManagerBase* signin_manager,
+    std::unique_ptr<SigninManagerBase> signin_manager,
     ProfileOAuth2TokenService* token_service,
     AccountFetcherService* account_fetcher_service,
     AccountTrackerService* account_tracker_service,
@@ -49,7 +49,7 @@ IdentityManager::IdentityManager(
     std::unique_ptr<AccountsMutator> accounts_mutator,
     std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
     std::unique_ptr<DiagnosticsProvider> diagnostics_provider)
-    : signin_manager_(signin_manager),
+    : signin_manager_(std::move(signin_manager)),
       token_service_(token_service),
       account_fetcher_service_(account_fetcher_service),
       account_tracker_service_(account_tracker_service),
@@ -70,6 +70,7 @@ IdentityManager::IdentityManager(
 
 IdentityManager::~IdentityManager() {
   signin_manager_->ClearObserver();
+  signin_manager_->Shutdown();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   account_tracker_service_->RemoveObserver(this);
@@ -379,7 +380,7 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
 }
 
 SigninManagerBase* IdentityManager::GetSigninManager() {
-  return signin_manager_;
+  return signin_manager_.get();
 }
 
 ProfileOAuth2TokenService* IdentityManager::GetTokenService() {
