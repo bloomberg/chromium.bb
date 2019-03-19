@@ -1985,18 +1985,6 @@
             ]
         }
     ],
-    "ExtensionDeveloperModeWarning": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "ExtensionInstallVerification": [
         {
             "platforms": [
