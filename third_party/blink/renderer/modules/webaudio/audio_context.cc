@@ -181,6 +181,8 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Cannot suspend a context that has been closed"));
   } else {
+    suspended_by_user_ = true;
+
     // Stop rendering now.
     if (destination())
       StopRendering();
@@ -209,12 +211,14 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // If we're already running, just resolve; nothing else needs to be
-  // done.
+  // If we're already running, just resolve; nothing else needs to be done.
   if (ContextState() == kRunning) {
     resolver->Resolve();
     return promise;
   }
+
+  suspended_by_user_ = false;
+
   // Restart the destination node to pull on the audio graph.
   if (destination()) {
     MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kContextResume);
@@ -371,7 +375,8 @@ void AudioContext::NotifySourceNodeStart() {
 
   MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kSourceNodeStart);
 
-  if (IsAllowedToStart()) {
+  if (ContextState() == AudioContextState::kSuspended && !suspended_by_user_ &&
+      IsAllowedToStart()) {
     StartRendering();
     SetContextState(kRunning);
   }
