@@ -97,7 +97,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   gpu::ContextResult Initialize(
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
-      SurfaceHandle window,
+      SurfaceHandle surface_handle,
       const ContextCreationAttribs& attribs,
       InProcessCommandBuffer* share_group,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -195,8 +195,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   class SharedImageInterface;
 
   struct InitializeOnGpuThreadParams {
-    bool is_offscreen;
-    SurfaceHandle window;
+    SurfaceHandle surface_handle;
     const ContextCreationAttribs& attribs;
     Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* share_command_buffer;
@@ -204,16 +203,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     gpu::raster::GrShaderCache* gr_shader_cache;
     GpuProcessActivityFlags* activity_flags;
 
-    InitializeOnGpuThreadParams(bool is_offscreen,
-                                SurfaceHandle window,
+    InitializeOnGpuThreadParams(SurfaceHandle surface_handle,
                                 const ContextCreationAttribs& attribs,
                                 Capabilities* capabilities,
                                 InProcessCommandBuffer* share_command_buffer,
                                 ImageFactory* image_factory,
                                 gpu::raster::GrShaderCache* gr_shader_cache,
                                 GpuProcessActivityFlags* activity_flags)
-        : is_offscreen(is_offscreen),
-          window(window),
+        : surface_handle(surface_handle),
           attribs(attribs),
           capabilities(capabilities),
           share_command_buffer(share_command_buffer),
@@ -318,6 +315,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   const CommandBufferId command_buffer_id_;
   const ContextUrl active_url_;
+
+  bool is_offscreen_ = false;
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):

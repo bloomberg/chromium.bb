@@ -330,7 +330,7 @@ InProcessCommandBuffer::CreateCacheUse() {
 gpu::ContextResult InProcessCommandBuffer::Initialize(
     scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
-    SurfaceHandle window,
+    SurfaceHandle surface_handle,
     const ContextCreationAttribs& attribs,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -343,6 +343,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   DCHECK(!share_group || task_executor_ == share_group->task_executor_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::Initialize")
 
+  is_offscreen_ = is_offscreen;
   gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
   gpu_channel_manager_delegate_ = gpu_channel_manager_delegate;
 
@@ -362,8 +363,8 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   }
 
   Capabilities capabilities;
-  InitializeOnGpuThreadParams params(is_offscreen, window, attribs,
-                                     &capabilities, share_group, image_factory,
+  InitializeOnGpuThreadParams params(surface_handle, attribs, &capabilities,
+                                     share_group, image_factory,
                                      gr_shader_cache, activity_flags);
 
   base::OnceCallback<gpu::ContextResult(void)> init_task =
@@ -455,7 +456,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       this, context_group_->memory_tracker());
 
   if (!surface_) {
-    if (params.is_offscreen) {
+    if (is_offscreen_) {
       // TODO(crbug.com/832243): GLES2CommandBufferStub has additional logic for
       // offscreen surfaces that might be needed here.
       surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
@@ -497,7 +498,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           break;
       }
       surface_ = ImageTransportSurface::CreateNativeSurface(
-          gpu_thread_weak_ptr_factory_.GetWeakPtr(), params.window,
+          gpu_thread_weak_ptr_factory_.GetWeakPtr(), params.surface_handle,
           surface_format);
       if (!surface_ || !surface_->Initialize(surface_format)) {
         DestroyOnGpuThread();
@@ -648,7 +649,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   gles2::DisallowedFeatures disallowed_features;
-  auto result = decoder_->Initialize(surface_, context_, params.is_offscreen,
+  auto result = decoder_->Initialize(surface_, context_, is_offscreen_,
                                      disallowed_features, params.attribs);
   if (result != gpu::ContextResult::kSuccess) {
     DestroyOnGpuThread();
@@ -760,6 +761,14 @@ void InProcessCommandBuffer::OnParseError() {
   // Update last_state_ now before notifying client side to save the
   // error and make the race benign.
   UpdateLastStateOnGpuThread();
+
+  // Tell the browser about this context loss so it can determine whether client
+  // APIs like WebGL need to be blocked from automatically running.
+  if (gpu_channel_manager_delegate_) {
+    CommandBuffer::State state = command_buffer_->GetState();
+    gpu_channel_manager_delegate_->DidLoseContext(
+        is_offscreen_, state.context_lost_reason, active_url_.url());
+  }
 
   bool was_lost_by_robustness =
       decoder_ && decoder_->WasContextLostByRobustnessExtension();
