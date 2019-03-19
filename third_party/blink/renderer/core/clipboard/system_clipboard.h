@@ -51,17 +51,25 @@ class CORE_EXPORT SystemClipboard {
                  const KURL& document_url,
                  const String& plain_text,
                  SmartReplaceOption = kCannotSmartReplace);
+  void WriteHTMLNoCommit(const String& markup,
+                         const KURL& document_url,
+                         const String& plain_text,
+                         SmartReplaceOption = kCannotSmartReplace);
 
   String ReadRTF();
 
   SkBitmap ReadImage(mojom::ClipboardBuffer);
+
   // Write the image and its associated tag (bookmark/HTML types).
   void WriteImageWithTag(Image*, const KURL&, const String& title);
+  // Write the image and its associated tag (bookmark/HTML types).
+  void WriteImageWithTagNoCommit(Image*, const KURL&, const String& title);
   // Write the image only.
   void WriteImageNoCommit(const SkBitmap&);
 
   String ReadCustomData(const String& type);
   void WriteDataObject(DataObject*);
+  void WriteDataObjectNoCommit(DataObject*);
 
   // Clipboard write functions that don't commit (explicitly labelled as
   // NoCommit) must use CommitWrite for changes to reach the OS clipboard.
