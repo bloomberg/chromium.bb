@@ -517,8 +517,7 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
   // gcInfoIndex.
   ThreadState::GCSnapshotInfo info(GCInfoTable::Get().GcInfoIndex() + 1);
   String thread_dump_name =
-      String::Format("blink_gc/thread_%lu",
-                     static_cast<unsigned long>(thread_state_->ThreadId()));
+      String("blink_gc/thread_") + String::Number(thread_state_->ThreadId());
   const String heaps_dump_name = thread_dump_name + "/heaps";
   const String classes_dump_name = thread_dump_name + "/classes";
 

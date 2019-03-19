@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 
+#include "base/format_macros.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -61,19 +62,17 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   if (!bucket_thresholds().size()) {
     threshold_substrings.push_back(".All");
   } else {
-    threshold_substrings.push_back(
-        String::Format(".LessThan%lums",
-                       (unsigned long)bucket_thresholds()[0].InMilliseconds()));
+    threshold_substrings.push_back(String::Format(
+        ".LessThan%" PRId64 "ms", bucket_thresholds()[0].InMilliseconds()));
     for (wtf_size_t i = 1; i < bucket_thresholds().size(); ++i) {
-      threshold_substrings.push_back(String::Format(
-          ".%lumsTo%lums",
-          (unsigned long)bucket_thresholds()[i - 1].InMilliseconds(),
-          (unsigned long)bucket_thresholds()[i].InMilliseconds()));
+      threshold_substrings.push_back(
+          String::Format(".%" PRId64 "msTo%" PRId64 "ms",
+                         bucket_thresholds()[i - 1].InMilliseconds(),
+                         bucket_thresholds()[i].InMilliseconds()));
     }
     threshold_substrings.push_back(String::Format(
-        ".MoreThan%lums",
-        (unsigned long)bucket_thresholds()[bucket_thresholds().size() - 1]
-            .InMilliseconds()));
+        ".MoreThan%" PRId64 "ms",
+        bucket_thresholds()[bucket_thresholds().size() - 1].InMilliseconds()));
   }
 
   // Populate all the sub-metrics.
