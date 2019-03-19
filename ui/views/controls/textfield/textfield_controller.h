@@ -90,7 +90,7 @@ class VIEWS_EXPORT TextfieldController {
   virtual void UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {}
 
  protected:
-  virtual ~TextfieldController() {}
+  virtual ~TextfieldController() = default;
 };
 
 }  // namespace views

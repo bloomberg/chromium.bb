@@ -62,7 +62,7 @@ class TestLabelButton : public LabelButton {
 
 class LabelButtonTest : public test::WidgetTest {
  public:
-  LabelButtonTest() {}
+  LabelButtonTest() = default;
 
   // Adds a LabelButton to the test Widget with the STYLE_BUTTON platform style.
   TestLabelButton* AddStyledButton(const char* label, bool is_default) {
@@ -562,7 +562,7 @@ TEST_F(LabelButtonTest, ResetColorsFromNativeTheme) {
 // Test fixture for a LabelButton that has an ink drop configured.
 class InkDropLabelButtonTest : public ViewsTestBase {
  public:
-  InkDropLabelButtonTest() {}
+  InkDropLabelButtonTest() = default;
 
   // ViewsTestBase:
   void SetUp() override {

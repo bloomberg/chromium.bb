@@ -39,7 +39,7 @@ class VIEWS_EXPORT SliderListener {
   virtual void SliderDragEnded(Slider* sender) {}
 
  protected:
-  virtual ~SliderListener() {}
+  virtual ~SliderListener() = default;
 };
 
 class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {

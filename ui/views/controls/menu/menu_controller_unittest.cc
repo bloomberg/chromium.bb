@@ -66,7 +66,7 @@ namespace {
 class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
  public:
   TestMenuControllerDelegate();
-  ~TestMenuControllerDelegate() override {}
+  ~TestMenuControllerDelegate() override = default;
 
   int on_menu_closed_called() { return on_menu_closed_called_; }
 
@@ -129,7 +129,7 @@ void TestMenuControllerDelegate::SiblingMenuCreated(MenuItemView* menu) {}
 class SubmenuViewShown : public SubmenuView {
  public:
   using SubmenuView::SubmenuView;
-  ~SubmenuViewShown() override {}
+  ~SubmenuViewShown() override = default;
   bool IsShowing() override { return true; }
 
  private:
@@ -164,7 +164,7 @@ class TestEventHandler : public ui::EventHandler {
 // A test widget that counts gesture events.
 class GestureTestWidget : public Widget {
  public:
-  GestureTestWidget() {}
+  GestureTestWidget() = default;
 
   void OnGestureEvent(ui::GestureEvent* event) override { ++gesture_count_; }
 
@@ -182,7 +182,7 @@ class TestDragDropClient : public aura::client::DragDropClient {
  public:
   explicit TestDragDropClient(const base::RepeatingClosure& callback)
       : start_drag_and_drop_callback_(callback), drag_in_progress_(false) {}
-  ~TestDragDropClient() override {}
+  ~TestDragDropClient() override = default;
 
   // aura::client::DragDropClient:
   int StartDragAndDrop(const ui::OSExchangeData& data,
@@ -231,8 +231,8 @@ bool TestDragDropClient::IsDragDropInProgress() {
 // release of the ref. Associated tests should not crash.
 class DestructingTestViewsDelegate : public TestViewsDelegate {
  public:
-  DestructingTestViewsDelegate() {}
-  ~DestructingTestViewsDelegate() override {}
+  DestructingTestViewsDelegate() = default;
+  ~DestructingTestViewsDelegate() override = default;
 
   void set_release_ref_callback(
       const base::RepeatingClosure& release_ref_callback) {
@@ -281,7 +281,7 @@ class TestMenuItemViewShown : public MenuItemView {
       : MenuItemView(delegate) {
     submenu_ = new SubmenuViewShown(this);
   }
-  ~TestMenuItemViewShown() override {}
+  ~TestMenuItemViewShown() override = default;
 
   void SetController(MenuController* controller) { set_controller(controller); }
 
@@ -304,7 +304,7 @@ class TestMenuItemViewNotShown : public MenuItemView {
       : MenuItemView(delegate) {
     submenu_ = new SubmenuView(this);
   }
-  ~TestMenuItemViewNotShown() override {}
+  ~TestMenuItemViewNotShown() override = default;
 
   void SetController(MenuController* controller) { set_controller(controller); }
 
@@ -325,7 +325,7 @@ class MenuControllerTest : public ViewsTestBase {
  public:
   MenuControllerTest() : menu_controller_(nullptr) {}
 
-  ~MenuControllerTest() override {}
+  ~MenuControllerTest() override = default;
 
   // ViewsTestBase:
   void SetUp() override {

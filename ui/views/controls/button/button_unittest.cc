@@ -47,8 +47,8 @@ namespace {
 // No-op test double of a ContextMenuController.
 class TestContextMenuController : public ContextMenuController {
  public:
-  TestContextMenuController() {}
-  ~TestContextMenuController() override {}
+  TestContextMenuController() = default;
+  ~TestContextMenuController() override = default;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(View* source,
@@ -65,7 +65,7 @@ class TestButton : public Button, public ButtonListener {
     set_has_ink_drop_action_on_click(has_ink_drop_action_on_click);
   }
 
-  ~TestButton() override {}
+  ~TestButton() override = default;
 
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override {
     if (custom_key_click_action_ == KeyClickAction::CLICK_NONE)
@@ -122,8 +122,8 @@ class TestButton : public Button, public ButtonListener {
 
 class ButtonTest : public ViewsTestBase {
  public:
-  ButtonTest() {}
-  ~ButtonTest() override {}
+  ButtonTest() = default;
+  ~ButtonTest() override = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();

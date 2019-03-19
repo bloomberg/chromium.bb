@@ -67,8 +67,7 @@ Label::Label(const base::string16& text, const CustomFont& font)
   Init(text, font.font_list);
 }
 
-Label::~Label() {
-}
+Label::~Label() = default;
 
 // static
 const gfx::FontList& Label::GetDefaultFontList() {

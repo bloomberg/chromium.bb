@@ -16,8 +16,7 @@ BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
       repeater_(base::BindRepeating(&BaseScrollBarButton::RepeaterNotifyClick,
                                     base::Unretained(this))) {}
 
-BaseScrollBarButton::~BaseScrollBarButton() {
-}
+BaseScrollBarButton::~BaseScrollBarButton() = default;
 
 bool BaseScrollBarButton::OnMousePressed(const ui::MouseEvent& event) {
   Button::NotifyClick(event);

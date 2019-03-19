@@ -25,7 +25,7 @@ class TestPrefixDelegate : public View, public PrefixDelegate {
     rows_.push_back(ASCIIToUTF16("gnu"));
   }
 
-  ~TestPrefixDelegate() override {}
+  ~TestPrefixDelegate() override = default;
 
   int GetRowCount() override { return static_cast<int>(rows_.size()); }
 

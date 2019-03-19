@@ -21,7 +21,7 @@ class NativeViewHost;
 // native view when attached, detached, moved and sized.
 class NativeViewHostWrapper {
  public:
-  virtual ~NativeViewHostWrapper() {}
+  virtual ~NativeViewHostWrapper() = default;
 
   // Called at the end of NativeViewHost::Attach, allowing the wrapper to
   // perform platform-specific operations that need to occur to complete

@@ -171,7 +171,7 @@ namespace internal {
 // shown.
 class DisplayChangeListener {
  public:
-  virtual ~DisplayChangeListener() {}
+  virtual ~DisplayChangeListener() = default;
 
   // Creates the platform specified DisplayChangeListener, or NULL if there
   // isn't one. Caller owns the returned value.
@@ -179,7 +179,7 @@ class DisplayChangeListener {
                                        MenuRunner* runner);
 
  protected:
-  DisplayChangeListener() {}
+  DisplayChangeListener() = default;
 };
 
 }  // namespace internal

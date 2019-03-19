@@ -49,7 +49,7 @@ class MenuRunnerImplInterface {
 
  protected:
   // Call Release() to delete.
-  virtual ~MenuRunnerImplInterface() {}
+  virtual ~MenuRunnerImplInterface() = default;
 };
 
 }  // namespace internal

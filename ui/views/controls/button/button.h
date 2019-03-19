@@ -29,7 +29,7 @@ class VIEWS_EXPORT ButtonListener {
   virtual void ButtonPressed(Button* sender, const ui::Event& event) = 0;
 
  protected:
-  virtual ~ButtonListener() {}
+  virtual ~ButtonListener() = default;
 };
 
 // A View representing a button. A Button is not focusable by default and will

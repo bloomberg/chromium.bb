@@ -31,7 +31,7 @@ class VIEWS_EXPORT MenuButtonListener {
                                    const ui::Event* event) = 0;
 
  protected:
-  virtual ~MenuButtonListener() {}
+  virtual ~MenuButtonListener() = default;
 };
 
 }  // namespace views

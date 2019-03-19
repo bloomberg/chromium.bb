@@ -29,7 +29,7 @@ namespace views {
 class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
  public:
   ClippingWindowDelegate() : native_view_(nullptr) {}
-  ~ClippingWindowDelegate() override {}
+  ~ClippingWindowDelegate() override = default;
 
   void set_native_view(aura::Window* native_view) {
     native_view_ = native_view;

@@ -9,7 +9,7 @@
 
 namespace views {
 
-MenuDelegate::~MenuDelegate() {}
+MenuDelegate::~MenuDelegate() = default;
 
 bool MenuDelegate::IsItemChecked(int id) const {
   return false;

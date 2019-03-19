@@ -65,10 +65,10 @@ bool GetColorFromText(const base::string16& text, SkColor* result) {
 // interface.
 class LocatedEventHandlerView : public views::View {
  public:
-  ~LocatedEventHandlerView() override {}
+  ~LocatedEventHandlerView() override = default;
 
  protected:
-  LocatedEventHandlerView() {}
+  LocatedEventHandlerView() = default;
 
   // Handles an event (mouse or gesture) at the specified location.
   virtual void ProcessEventAtLocation(const gfx::Point& location) = 0;
@@ -401,8 +401,7 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   OnColorChanged(initial_color);
 }
 
-ColorChooserView::~ColorChooserView() {
-}
+ColorChooserView::~ColorChooserView() = default;
 
 void ColorChooserView::OnColorChanged(SkColor color) {
   SkColorToHSV(color, hsv_);

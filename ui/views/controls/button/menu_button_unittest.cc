@@ -42,7 +42,7 @@ class TestMenuButton : public MenuButton {
       : MenuButton(base::string16(ASCIIToUTF16("button")),
                    menu_button_listener) {}
 
-  ~TestMenuButton() override {}
+  ~TestMenuButton() override = default;
 
   void SetInkDrop(std::unique_ptr<InkDrop> ink_drop) {
     InkDropHostViewTestApi(this).SetInkDrop(std::move(ink_drop));
@@ -55,7 +55,7 @@ class TestMenuButton : public MenuButton {
 class MenuButtonTest : public ViewsTestBase {
  public:
   MenuButtonTest() : widget_(nullptr), button_(nullptr), ink_drop_(nullptr) {}
-  ~MenuButtonTest() override {}
+  ~MenuButtonTest() override = default;
 
   void TearDown() override {
     generator_.reset();
@@ -132,7 +132,7 @@ class TestButtonListener : public ButtonListener {
       : last_sender_(nullptr),
         last_sender_state_(Button::STATE_NORMAL),
         last_event_type_(ui::ET_UNKNOWN) {}
-  ~TestButtonListener() override {}
+  ~TestButtonListener() override = default;
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     last_sender_ = sender;
@@ -158,7 +158,7 @@ class TestMenuButtonListener : public MenuButtonListener {
  public:
   TestMenuButtonListener()
       : last_source_(nullptr), last_source_state_(Button::STATE_NORMAL) {}
-  ~TestMenuButtonListener() override {}
+  ~TestMenuButtonListener() override = default;
 
   void OnMenuButtonClicked(MenuButton* source,
                            const gfx::Point& point,
@@ -186,7 +186,7 @@ class PressStateMenuButtonListener : public MenuButtonListener {
   explicit PressStateMenuButtonListener(bool release_lock)
       : menu_button_(nullptr), release_lock_(release_lock) {}
 
-  ~PressStateMenuButtonListener() override {}
+  ~PressStateMenuButtonListener() override = default;
 
   void set_menu_button(MenuButton* menu_button) { menu_button_ = menu_button; }
 
@@ -215,8 +215,8 @@ class PressStateMenuButtonListener : public MenuButtonListener {
 // MenuButtons that can be dragged.
 class TestDragController : public DragController {
  public:
-  TestDragController() {}
-  ~TestDragController() override {}
+  TestDragController() = default;
+  ~TestDragController() override = default;
 
   void WriteDragDataForView(View* sender,
                             const gfx::Point& press_pt,
@@ -276,8 +276,7 @@ TestDragDropClient::TestDragDropClient()
     : drag_in_progress_(false), target_(nullptr) {
 }
 
-TestDragDropClient::~TestDragDropClient() {
-}
+TestDragDropClient::~TestDragDropClient() = default;
 
 int TestDragDropClient::StartDragAndDrop(
     const ui::OSExchangeData& data,
@@ -320,8 +319,8 @@ void TestDragDropClient::OnMouseEvent(ui::MouseEvent* event) {
 
 class TestShowSiblingButtonListener : public MenuButtonListener {
  public:
-  TestShowSiblingButtonListener() {}
-  ~TestShowSiblingButtonListener() override {}
+  TestShowSiblingButtonListener() = default;
+  ~TestShowSiblingButtonListener() override = default;
 
   void OnMenuButtonClicked(MenuButton* source,
                            const gfx::Point& point,

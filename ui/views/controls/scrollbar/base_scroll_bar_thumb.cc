@@ -22,8 +22,7 @@ BaseScrollBarThumb::BaseScrollBarThumb(BaseScrollBar* scroll_bar)
       mouse_offset_(-1),
       state_(Button::STATE_NORMAL) {}
 
-BaseScrollBarThumb::~BaseScrollBarThumb() {
-}
+BaseScrollBarThumb::~BaseScrollBarThumb() = default;
 
 void BaseScrollBarThumb::SetLength(int length) {
   // Make sure the thumb is never sized smaller than its minimum possible

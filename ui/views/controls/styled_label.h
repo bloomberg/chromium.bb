@@ -162,7 +162,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
         : range(range),
           style_info(style_info) {
     }
-    ~StyleRange() {}
+    ~StyleRange() = default;
 
     bool operator<(const StyleRange& other) const;
 

@@ -105,7 +105,7 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
  public:
   WebViewTestWebContentsDelegate() : is_fullscreened_(false) {}
-  ~WebViewTestWebContentsDelegate() override {}
+  ~WebViewTestWebContentsDelegate() override = default;
 
   void set_is_fullscreened(bool fs) { is_fullscreened_ = fs; }
 

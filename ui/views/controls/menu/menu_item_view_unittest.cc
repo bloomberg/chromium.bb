@@ -28,8 +28,8 @@ namespace {
 // A simple View class that will match its height to the available width.
 class SquareView : public views::View {
  public:
-  SquareView() {}
-  ~SquareView() override {}
+  SquareView() = default;
+  ~SquareView() override = default;
 
  private:
   gfx::Size CalculatePreferredSize() const override { return gfx::Size(1, 1); }
@@ -264,8 +264,8 @@ TEST_F(MenuItemViewLayoutTest, ContainerLayoutPassesTrueWidth) {
 
 class MenuItemViewPaintUnitTest : public ViewsTestBase {
  public:
-  MenuItemViewPaintUnitTest() {}
-  ~MenuItemViewPaintUnitTest() override {}
+  MenuItemViewPaintUnitTest() = default;
+  ~MenuItemViewPaintUnitTest() override = default;
 
   MenuItemView* menu_item_view() { return menu_item_view_; }
   MenuRunner* menu_runner() { return menu_runner_.get(); }

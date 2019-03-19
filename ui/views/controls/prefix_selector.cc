@@ -31,8 +31,7 @@ PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
       host_view_(host_view),
       tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
-PrefixSelector::~PrefixSelector() {
-}
+PrefixSelector::~PrefixSelector() = default;
 
 void PrefixSelector::OnViewBlur() {
   ClearText();

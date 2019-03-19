@@ -14,7 +14,7 @@ namespace {
 // scrolling of contents.
 class TestScrollBarController : public views::ScrollBarController {
  public:
-  virtual ~TestScrollBarController() {}
+  virtual ~TestScrollBarController() = default;
 
   void ScrollToPosition(views::ScrollBar* source, int position) override {
     last_source = source;

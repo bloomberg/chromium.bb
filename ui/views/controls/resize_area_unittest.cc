@@ -53,7 +53,7 @@ class TestResizeAreaDelegate : public ResizeAreaDelegate {
 TestResizeAreaDelegate::TestResizeAreaDelegate()
     : resize_amount_(0), done_resizing_(false), on_resize_called_(false) {}
 
-TestResizeAreaDelegate::~TestResizeAreaDelegate() {}
+TestResizeAreaDelegate::~TestResizeAreaDelegate() = default;
 
 void TestResizeAreaDelegate::OnResize(int resize_amount, bool done_resizing) {
   resize_amount_ = resize_amount;
@@ -95,9 +95,9 @@ class ResizeAreaTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(ResizeAreaTest);
 };
 
-ResizeAreaTest::ResizeAreaTest() {}
+ResizeAreaTest::ResizeAreaTest() = default;
 
-ResizeAreaTest::~ResizeAreaTest() {}
+ResizeAreaTest::~ResizeAreaTest() = default;
 
 void ResizeAreaTest::ProcessGesture(ui::EventType type,
                                     const gfx::Vector2dF& delta) {

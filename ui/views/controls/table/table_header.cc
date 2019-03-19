@@ -53,7 +53,7 @@ typedef std::vector<TableView::VisibleColumn> Columns;
 
 TableHeader::TableHeader(TableView* table) : table_(table) {}
 
-TableHeader::~TableHeader() {}
+TableHeader::~TableHeader() = default;
 
 void TableHeader::Layout() {
   SetBounds(x(), y(), table_->width(), GetPreferredSize().height());

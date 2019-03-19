@@ -745,7 +745,7 @@ namespace {
 
 class TableGrouperImpl : public TableGrouper {
  public:
-  TableGrouperImpl() {}
+  TableGrouperImpl() = default;
 
   void SetRanges(const std::vector<int>& ranges) {
     ranges_ = ranges;
@@ -1560,7 +1560,7 @@ class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
  public:
   explicit RemoveFocusChangeListenerDelegate(Widget* widget)
       : widget_(widget), listener_(nullptr) {}
-  ~RemoveFocusChangeListenerDelegate() override {}
+  ~RemoveFocusChangeListenerDelegate() override = default;
 
   // WidgetDelegate overrides:
   void DeleteDelegate() override;

@@ -57,8 +57,7 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
   }
 }
 
-WebDialogView::~WebDialogView() {
-}
+WebDialogView::~WebDialogView() = default;
 
 content::WebContents* WebDialogView::web_contents() {
   return web_view_->web_contents();

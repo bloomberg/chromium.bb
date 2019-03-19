@@ -27,8 +27,7 @@ class NativeViewHostTestBase::NativeViewHostTesting : public NativeViewHost {
 NativeViewHostTestBase::NativeViewHostTestBase() : host_destroyed_count_(0) {
 }
 
-NativeViewHostTestBase::~NativeViewHostTestBase() {
-}
+NativeViewHostTestBase::~NativeViewHostTestBase() = default;
 
 void NativeViewHostTestBase::TearDown() {
   DestroyTopLevel();
