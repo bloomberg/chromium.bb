@@ -1494,11 +1494,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-picture-in-picture",
-    "owners": [ "beaufort.francois@gmail.com", "mlamouri", "media-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-pinch",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -2927,13 +2927,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kHandwritingGesture)},
 #endif  // OS_CHROMEOS
 
-#if !defined(OS_ANDROID)
-    {"enable-picture-in-picture",
-     flag_descriptions::kEnablePictureInPictureName,
-     flag_descriptions::kEnablePictureInPictureDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kPictureInPicture)},
-#endif  // !defined(OS_ANDROID)
-
     {"network-service", flag_descriptions::kEnableNetworkServiceName,
      flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kNetworkService)},
