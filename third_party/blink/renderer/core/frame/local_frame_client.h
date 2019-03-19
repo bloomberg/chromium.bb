@@ -355,6 +355,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual WebContentSettingsClient* GetContentSettingsClient() = 0;
 
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      DocumentLoader*,
       WebApplicationCacheHostClient*) = 0;
 
   virtual void DispatchDidChangeManifest() {}

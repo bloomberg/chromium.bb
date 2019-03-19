@@ -988,10 +988,12 @@ WebContentSettingsClient* LocalFrameClientImpl::GetContentSettingsClient() {
 
 std::unique_ptr<WebApplicationCacheHost>
 LocalFrameClientImpl::CreateApplicationCacheHost(
+    DocumentLoader* loader,
     WebApplicationCacheHostClient* client) {
   if (!web_frame_->Client())
     return nullptr;
-  return web_frame_->Client()->CreateApplicationCacheHost(client);
+  return web_frame_->Client()->CreateApplicationCacheHost(
+      WebDocumentLoaderImpl::FromDocumentLoader(loader), client);
 }
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {

@@ -86,7 +86,8 @@ void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
     request.SetAppCacheHostID(host_id);
 }
 
-void ApplicationCacheHost::WillStartLoadingMainResource(const KURL& url,
+void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
+                                                        const KURL& url,
                                                         const String& method) {
   if (!IsApplicationCacheEnabled())
     return;
@@ -96,7 +97,7 @@ void ApplicationCacheHost::WillStartLoadingMainResource(const KURL& url,
 
   DCHECK(document_loader_->GetFrame());
   LocalFrame& frame = *document_loader_->GetFrame();
-  host_ = frame.Client()->CreateApplicationCacheHost(this);
+  host_ = frame.Client()->CreateApplicationCacheHost(loader, this);
   if (!host_)
     return;
 

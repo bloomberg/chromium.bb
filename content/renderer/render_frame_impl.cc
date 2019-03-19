@@ -3917,14 +3917,13 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
 
 std::unique_ptr<blink::WebApplicationCacheHost>
 RenderFrameImpl::CreateApplicationCacheHost(
+    blink::WebDocumentLoader* document_loader,
     blink::WebApplicationCacheHostClient* client) {
   if (!frame_ || !frame_->View())
     return nullptr;
 
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame_->GetProvisionalDocumentLoader()
-          ? frame_->GetProvisionalDocumentLoader()
-          : frame_->GetDocumentLoader());
+  NavigationState* navigation_state =
+      NavigationState::FromDocumentLoader(document_loader);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame_->GetTaskRunner(blink::TaskType::kNetworking);

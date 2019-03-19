@@ -380,6 +380,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     return nullptr;
   }
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      DocumentLoader*,
       WebApplicationCacheHostClient*) override;
 
   void SetTextCheckerClientForTesting(WebTextCheckClient*);

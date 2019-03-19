@@ -662,6 +662,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& sink_id,
       blink::WebLayerTreeView* layer_tree_view) override;
   std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
+      blink::WebDocumentLoader* document_loader,
       blink::WebApplicationCacheHostClient* client) override;
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient() override;

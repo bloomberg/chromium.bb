@@ -79,6 +79,7 @@ void WorkerShadowPage::DidFinishDocumentLoad() {
 
 std::unique_ptr<WebApplicationCacheHost>
 WorkerShadowPage::CreateApplicationCacheHost(
+    WebDocumentLoader*,
     WebApplicationCacheHostClient* appcache_host_client) {
   DCHECK(IsMainThread());
   return client_->CreateApplicationCacheHost(appcache_host_client);

@@ -1101,8 +1101,10 @@ void DocumentLoader::StartLoadingInternal() {
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   virtual_time_pauser_.PauseVirtualTime();
 
-  if (!archive_)
-    application_cache_host_->WillStartLoadingMainResource(url_, http_method_);
+  if (!archive_) {
+    application_cache_host_->WillStartLoadingMainResource(this, url_,
+                                                          http_method_);
+  }
 
   // Many parties are interested in resource loading, so we will notify
   // them through various DispatchXXX methods on FrameFetchContext.

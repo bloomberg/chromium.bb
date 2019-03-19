@@ -67,6 +67,7 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
 
   // WebLocalFrameClient overrides.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      WebDocumentLoader*,
       WebApplicationCacheHostClient*) override;
   // Note: usually WebLocalFrameClient implementations override
   // WebLocalFrameClient to call Close() on the corresponding WebLocalFrame.
