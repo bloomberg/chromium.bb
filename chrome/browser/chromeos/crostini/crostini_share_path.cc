@@ -43,13 +43,13 @@ void OnSeneschalSharePathResponse(
 
 void OnVmRestartedForSeneschal(
     Profile* profile,
-    std::string vm_name,
+    const std::string& vm_name,
     crostini::CrostiniSharePath::SharePathCallback callback,
     vm_tools::seneschal::SharePathRequest request,
     crostini::CrostiniResult result) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   base::Optional<crostini::VmInfo> vm_info =
-      crostini_manager->GetVmInfo(std::move(vm_name));
+      crostini_manager->GetVmInfo(vm_name);
   if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
     std::move(callback).Run(base::FilePath(), false, "VM could not be started");
     return;
@@ -129,8 +129,9 @@ CrostiniSharePath* CrostiniSharePath::GetForProfile(Profile* profile) {
 CrostiniSharePath::CrostiniSharePath(Profile* profile)
     : profile_(profile),
       mount_event_seneschal_callback_(base::BindRepeating(LogErrorResult)) {
-  if (auto* vmgr = file_manager::VolumeManager::Get(profile_))
+  if (auto* vmgr = file_manager::VolumeManager::Get(profile_)) {
     vmgr->AddObserver(this);
+  }
 }
 
 CrostiniSharePath::~CrostiniSharePath() {}
@@ -139,7 +140,7 @@ void CrostiniSharePath::AddObserver(Observer* obs) {
   observers_.AddObserver(obs);
 }
 
-void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
+void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
                                                const base::FilePath& path,
                                                bool persist,
                                                SharePathCallback callback) {
@@ -259,7 +260,7 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
   if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
     crostini_manager->RestartCrostini(
         vm_name, crostini::kCrostiniDefaultContainerName,
-        base::BindOnce(&OnVmRestartedForSeneschal, profile_, std::move(vm_name),
+        base::BindOnce(&OnVmRestartedForSeneschal, profile_, vm_name,
                        std::move(callback), std::move(request)));
     return;
   }
@@ -271,13 +272,13 @@ void CrostiniSharePath::CallSeneschalSharePath(std::string vm_name,
 }
 
 void CrostiniSharePath::CallSeneschalUnsharePath(
-    std::string vm_name,
+    const std::string& vm_name,
     const base::FilePath& path,
     base::OnceCallback<void(bool, std::string)> callback) {
   // Return success if VM is not currently running.
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
   base::Optional<crostini::VmInfo> vm_info =
-      crostini_manager->GetVmInfo(std::move(vm_name));
+      crostini_manager->GetVmInfo(vm_name);
   if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
     std::move(callback).Run(true, "VM not running");
     return;
@@ -312,17 +313,16 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
       base::BindOnce(&OnSeneschalUnsharePathResponse, std::move(callback)));
 }
 
-void CrostiniSharePath::SharePath(std::string vm_name,
+void CrostiniSharePath::SharePath(const std::string& vm_name,
                                   const base::FilePath& path,
                                   bool persist,
                                   SharePathCallback callback) {
   DCHECK(callback);
-  CallSeneschalSharePath(std::move(vm_name), path, persist,
-                         std::move(callback));
+  CallSeneschalSharePath(vm_name, path, persist, std::move(callback));
 }
 
 void CrostiniSharePath::SharePaths(
-    std::string vm_name,
+    const std::string& vm_name,
     std::vector<base::FilePath> paths,
     bool persist,
     base::OnceCallback<void(bool, std::string)> callback) {
@@ -338,15 +338,16 @@ void CrostiniSharePath::SharePaths(
 }
 
 void CrostiniSharePath::UnsharePath(
-    std::string vm_name,
+    const std::string& vm_name,
     const base::FilePath& path,
     base::OnceCallback<void(bool, std::string)> callback) {
   PrefService* pref_service = profile_->GetPrefs();
   ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
   base::ListValue* shared_paths = update.Get();
-  if (!shared_paths->Remove(base::Value(path.value()), nullptr))
+  if (!shared_paths->Remove(base::Value(path.value()), nullptr)) {
     LOG(WARNING) << "Unshared path not in prefs: " << path.value();
-  CallSeneschalUnsharePath(std::move(vm_name), path, std::move(callback));
+  }
+  CallSeneschalUnsharePath(vm_name, path, std::move(callback));
   for (Observer& observer : observers_) {
     observer.OnUnshare(path);
   }

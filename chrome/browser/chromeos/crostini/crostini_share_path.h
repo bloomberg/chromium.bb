@@ -47,7 +47,7 @@ class CrostiniSharePath : public KeyedService,
   // Share specified absolute |path| with vm. If |persist| is set, the path will
   // be automatically shared at container startup. Callback receives path mapped
   // in container, success bool and failure reason string.
-  void SharePath(std::string vm_name,
+  void SharePath(const std::string& vm_name,
                  const base::FilePath& path,
                  bool persist,
                  SharePathCallback callback);
@@ -55,14 +55,14 @@ class CrostiniSharePath : public KeyedService,
   // Share specified absolute |paths| with vm. If |persist| is set, the paths
   // will be automatically shared at container startup. Callback receives
   // success bool and failure reason string of the first error.
-  void SharePaths(std::string vm_name,
+  void SharePaths(const std::string& vm_name,
                   std::vector<base::FilePath> paths,
                   bool persist,
                   base::OnceCallback<void(bool, std::string)> callback);
 
   // Unshare specified |path| with vm.
   // Callback receives success bool and failure reason string.
-  void UnsharePath(std::string vm_name,
+  void UnsharePath(const std::string& vm_name,
                    const base::FilePath& path,
                    base::OnceCallback<void(bool, std::string)> callback);
 
@@ -87,19 +87,19 @@ class CrostiniSharePath : public KeyedService,
                          const file_manager::Volume& volume) override;
 
   // Allow seneschal callback for mount events to be overridden for testing.
-  void SetMountEventSeneschalCallbackForTesting(
+  void set_mount_event_seneschal_callback_for_testing(
       MountEventSeneschalCallback callback) {
     mount_event_seneschal_callback_ = std::move(callback);
   }
 
  private:
-  void CallSeneschalSharePath(std::string vm_name,
+  void CallSeneschalSharePath(const std::string& vm_name,
                               const base::FilePath& path,
                               bool persist,
                               SharePathCallback callback);
 
   void CallSeneschalUnsharePath(
-      std::string vm_name,
+      const std::string& vm_name,
       const base::FilePath& path,
       base::OnceCallback<void(bool, std::string)> callback);
 
