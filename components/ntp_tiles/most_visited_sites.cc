@@ -263,7 +263,6 @@ void MostVisitedSites::UninitializeCustomLinks() {
   custom_links_action_count_ = -1;
   custom_links_->Uninitialize();
   BuildCurrentTiles();
-  Refresh();
 }
 
 bool MostVisitedSites::IsCustomLinksInitialized() {
@@ -699,8 +698,16 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
 
 void MostVisitedSites::OnCustomLinksChanged() {
   DCHECK(custom_links_);
-  if (custom_links_enabled_ && custom_links_->IsInitialized())
+  if (!custom_links_enabled_)
+    return;
+
+  if (custom_links_->IsInitialized()) {
     BuildCustomLinks(custom_links_->GetLinks());
+  } else {
+    // Since custom links have been uninitialized (e.g. through Chrome sync), we
+    // should show the regular Most Visited tiles.
+    BuildCurrentTiles();
+  }
 }
 
 void MostVisitedSites::BuildCustomLinks(
