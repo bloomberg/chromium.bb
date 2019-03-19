@@ -13,7 +13,6 @@
 #include "third_party/inspector_protocol/encoding/encoding.h"
 
 using inspector_protocol_encoding::span;
-using inspector_protocol_encoding::Status;
 using inspector_protocol_encoding::StreamingParserHandler;
 using inspector_protocol_encoding::cbor::NewCBOREncoder;
 using inspector_protocol_encoding::cbor::ParseCBOR;
@@ -52,7 +51,7 @@ bool EnableInternalDevToolsBinaryProtocol() {
 std::string ConvertCBORToJSON(const std::string& cbor) {
   ContentShellPlatform platform;
   std::string json_message;
-  Status status;
+  inspector_protocol_encoding::Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
       NewJSONEncoder(&platform, &json_message, &status);
   ParseCBOR(
@@ -70,7 +69,7 @@ std::string ConvertCBORToJSON(const std::string& cbor) {
 std::string ConvertJSONToCBOR(const std::string& json) {
   ContentShellPlatform platform;
   std::vector<uint8_t> cbor;
-  Status status;
+  inspector_protocol_encoding::Status status;
   std::unique_ptr<StreamingParserHandler> encoder =
       NewCBOREncoder(&cbor, &status);
   ParseJSON(
