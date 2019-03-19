@@ -298,12 +298,6 @@
       Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về Duyệt web an toàn.</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
 <translation id="1599424828227887013">Bật tính năng Cách ly trang web cho nguồn gốc đã chỉ định trên thiết bị Android</translation>
-<translation id="1608259529294767544">Chính sách này cấp cho Trợ lý Google quyền nghe cụm từ kích hoạt bằng giọng nói.
-
-      Nếu bạn bật chính sách này, thì Trợ lý Google sẽ lắng nghe cụm từ kích hoạt bằng giọng nói đó.
-      Nếu bạn tắt chính sách này, thì Trợ lý Google sẽ không lắng nghe cụm từ kích hoạt bằng giọng nói.
-      Nếu bạn không đặt chính sách này, thì người dùng có thể quyết định liệu có cho phép Trợ lý Google lắng nghe cụm từ kích hoạt bằng giọng nói hay không.
-      </translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
 <translation id="1615221548356595305">Cho phép hợp nhất các đường kết nối HTTP/2 đối với những máy chủ này kể cả khi sử dụng chứng chỉ ứng dụng khách</translation>
 <translation id="1617235075406854669">Bật xóa lịch sử trình duyệt và lịch sử tải xuống</translation>
@@ -493,6 +487,9 @@
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="203096360153626918">Chính sách này không ảnh hưởng đến các ứng dụng Android. Các ứng dụng đó sẽ có thể vào chế độ toàn màn hình ngay cả khi chính sách này được đặt thành <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Đã tắt máy in dành cho doanh nghiệp</translation>
+<translation id="2050629715135525072">Kiểm soát khả năng người dùng kết nối với máy chủ truy cập từ xa để chuyển các tệp giữa máy khách và máy chủ. Chính sách này không áp dụng cho các đường kết nối trợ giúp từ xa không hỗ trợ tính năng chuyển tệp.
+
+          Nếu bạn tắt tùy chọn cài đặt này, thì tính năng chuyển tệp sẽ không hoạt động. Nếu bạn bật hoặc không đặt tùy chọn cài đặt này, thì tính năng chuyển tệp sẽ hoạt động.</translation>
 <translation id="2057317273526988987">Cho phép truy cập vào một danh sách các URL</translation>
 <translation id="206623763829450685">Chỉ định các cơ chế xác thực HTTP mà <ph name="PRODUCT_NAME" /> hỗ trợ.
 
@@ -598,6 +595,7 @@
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockPopups' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="2258126710006312594">Cho phép người dùng truy cập từ xa chuyển tệp từ/đến máy chủ</translation>
 <translation id="2265214338421787313">Chính sách này cho phép quản trị viên chỉ định một trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
 
       Khi bạn đặt chính sách này thành bật, các trang sẽ được phép hiển thị cửa sổ bật lên khi đang hủy tải trang.
@@ -882,6 +880,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chính sách này sẽ không chặn hoạt động kiểm tra bản cập nhật tự động, nhưng các chính sách khác vẫn có thể chặn hoạt động này. Tính năng này chỉ được hỗ trợ trên thiết bị Chrome đã định cấu hình thành kiosk tự động chạy. Chính sách này sẽ không hạn chế các thiết bị khác.</translation>
 <translation id="2823870601012066791">Vị trí sổ đăng ký Windows cho các ứng dụng <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
+<translation id="2836621397261130126">Kiểm soát xem có áp dụng phê duyệt theo chính sách KDC để quyết định việc ủy quyền vé <ph name="KERBEROS" /> hay không.
+
+          Nếu bạn đặt chính sách này thành true, thì quá trình xác thực HTTP sẽ áp dụng phê duyệt theo chính sách KDC, tức là Chrome chỉ ủy quyền thông tin đăng nhập nếu KDC đặt <ph name="OK_AS_DELEGATE" /> trên một vé dịch vụ. Vui lòng truy cập vào https://tools.ietf.org/html/rfc5896.html để biết thêm thông tin. Dịch vụ cũng phải khớp với chính sách 'AuthNegotiateDelegateWhitelist'.
+
+          Nếu bạn không đặt hoặc đặt chính sách này thành false, thì các nền tảng được hỗ trợ sẽ bỏ qua chính sách KDC và chỉ áp dụng chính sách 'AuthNegotiateDelegateWhitelist'.
+
+          Chính sách KDC luôn áp dụng trên Windows.</translation>
 <translation id="2838830882081735096">Không cho phép di chuyển dữ liệu và ARC</translation>
 <translation id="2839294585867804686">Tùy chọn cài đặt tính năng Chia sẻ tệp trong mạng</translation>
 <translation id="2840269525054388612">Chỉ định các máy in mà người dùng có thể sử dụng.
@@ -1488,7 +1493,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm theo hình ảnh sẽ được gửi bằng phương thức GET.
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
-<translation id="427706009709857238">"Cho phép Google truy cập vào Trợ lý để lắng nghe cụm từ kích hoạt bằng giọng nói"</translation>
 <translation id="4285674129118156176">Cho phép người dùng không được liên kết sử dụng ARC</translation>
 <translation id="4298509794364745131">Chỉ định danh sách các ứng dụng có thể bật làm ứng dụng ghi chú trên màn hình khóa của <ph name="PRODUCT_OS_NAME" />.
 
@@ -2500,15 +2504,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Trong trường hợp không được phép đăng nhập vào một tài khoản khác qua chế độ Ẩn danh thì hãy cân nhắc chặn chế độ đó bằng chính sách IncognitoModeAvailability.
 
       Xin lưu ý rằng người dùng sẽ có thể truy cập vào các dịch vụ của Google ở trạng thái chưa được xác thực bằng cách chặn cookie của họ.</translation>
-<translation id="6738326937072482736">Định cấu hình tính sẵn sàng và hành vi của chức năng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Có thể chỉ định từng tùy chọn cài đặt trong thuộc tính JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Nếu đặt thành <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, người dùng có thể kích hoạt luồng powerwash để cài đặt một bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Nếu đặt thành <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, người dùng có thể gọi luồng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> giữ nguyên trạng thái trên toàn thiết bị (bao gồm cả đăng ký doanh nghiệp), nhưng lại mất dữ liệu người dùng. Luồng cập nhật này bắt đầu có từ phiên bản 68.
-
-      Nếu bạn chưa đặt chính sách này, chức năng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sẽ không sử dụng được.</translation>
 <translation id="6757438632136860443">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>

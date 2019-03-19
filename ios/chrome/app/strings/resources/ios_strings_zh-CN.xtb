@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">地址第2行</translation>
 <translation id="3329904751041170572">无法连接到服务器。</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
+<translation id="3371831930909698441">可以翻译。选项位于屏幕底部附近。</translation>
 <translation id="3393920035788932672">允许显示弹出式窗口</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3448016392200048164">分割视图</translation>
@@ -354,9 +355,11 @@
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6445981559479772097">短信已发送。</translation>
 <translation id="6464071786529933911">在新的无痕式标签页中打开</translation>
+<translation id="6476800141292307438">将页面翻译成<ph name="LANGUAGE" />。选项位于屏幕底部附近。</translation>
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6513773942555305766">Chrome 建议的密码：<ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">过去 1 小时</translation>
+<translation id="6610002944194042868">翻译选项</translation>
 <translation id="6642362222295953972">切换到已打开的标签页</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
@@ -377,6 +380,7 @@
 <translation id="6903907808598579934">开启同步功能</translation>
 <translation id="6914583639806229067">搜索您复制的图片</translation>
 <translation id="6914783257214138813">所有能查看此导出文件的人员都能看到您的密码。</translation>
+<translation id="6944369514868857500">另选一个帐号</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6973630695168034713">文件夹</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
@@ -456,6 +460,7 @@
 <translation id="8281781826761538115">默认语言区域 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">全部关闭</translation>
 <translation id="8381750437846184350">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务</translation>
+<translation id="8407669440184693619">未找到任何用于此网站的密码</translation>
 <translation id="842017693807136194">所用登录身份</translation>
 <translation id="8428045167754449968">市/镇</translation>
 <translation id="8428213095426709021">设置</translation>

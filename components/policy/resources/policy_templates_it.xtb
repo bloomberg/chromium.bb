@@ -277,12 +277,6 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
 <translation id="1599424828227887013">Attiva isolamento dei siti per origini specificate su dispositivi Android</translation>
-<translation id="1608259529294767544">Questa norma autorizza l'Assistente Google ad ascoltare la frase di attivazione vocale.
-
-      Se la norma viene attivata, l'Assistente Google ascolta la frase di attivazione vocale.
-      Se la norma viene disattivata, l'Assistente Google non ascolta la frase di attivazione vocale.
-      Se non viene impostata, gli utenti possono decidere se consentire o meno all'Assistente Google di ascoltare la frase di attivazione vocale.
-      </translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
 <translation id="1615221548356595305">Consenti la coalescenza di connessioni HTTP/2 per questi host anche quando sono in uso i certificati client</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
@@ -407,7 +401,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
       Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo all'indirizzo https://accounts.google.com.
       Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
-<translation id="1919802376548418720">Utilizza la norma KDC policy per delegare credenziali.</translation>
+<translation id="1919802376548418720">Utilizza la norma KDC per delegare credenziali.</translation>
 <translation id="1920046221095339924">Consenti la sessione gestita sul dispositivo</translation>
 <translation id="1929709556673267855">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
 
@@ -468,6 +462,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
+<translation id="2050629715135525072">Controlla la capacità di un utente connesso a un host di accesso remoto di trasferire file dal client all'host. Questa norma non si applica alle connessioni di assistenza remota, le quali non supportano il trasferimento di file.
+
+          Se questa impostazione è disattivata, il trasferimento di file non sarà concesso. Se questa impostazione è attivata o non configurata, il trasferimento di file sarà concesso.</translation>
 <translation id="2057317273526988987">Consenti l'accesso a un elenco di URL</translation>
 <translation id="206623763829450685">Consente di specificare gli schemi di autenticazione HTTP supportati da <ph name="PRODUCT_NAME" />.
 
@@ -558,11 +555,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2231817271680715693">Importa cronologia di navigazione dal browser predefinito alla prima esecuzione</translation>
 <translation id="2236488539271255289">Non consentire ai siti di impostare i dati locali</translation>
 <translation id="2240879329269430151">Permette di stabilire se consentire o meno la visualizzazione dei popup nei siti web. La visualizzazione dei popup può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "BlockPopups", che potrà essere modificato dagli utenti.</translation>
-<translation id="2265214338421787313">Questa norma consente all'amministratore di specificare che una pagina può mostrare i popup durante il download.
+<translation id="2258126710006312594">Consenti l'accesso remoto agli utenti per trasferire file da/verso l'host</translation>
+<translation id="2265214338421787313">Questa norma consente all'amministratore di specificare che una pagina può mostrare i popup durante l'unload.
 
-      Quando la norma è impostata su attivata, le pagine possono mostrare i popup mentre vengono scaricati.
+      Quando la norma è impostata su attivata, le pagine possono mostrare i popup mentre viene eseguito l'unload.
 
-      Quando la norma è impostata su disattivata o non impostata, le pagine non possono mostrare i popup mentre vengono scaricati, come da specifiche (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+      Quando la norma è impostata su disattivata o non impostata, le pagine non possono mostrare i popup mentre viene eseguito l'unload, come da specifiche (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
       Nella versione 82 di Chrome, questa norma verrà rimossa.
 
@@ -830,6 +828,13 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme. Questa funzionalità è attiva solo sui dispositivi Chrome configurati come kiosk ad avvio automatico. Gli altri dispositivi non risulteranno limitati da questa norma.</translation>
 <translation id="2823870601012066791">Posizione del Registro di sistema di Windows per client <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
+<translation id="2836621397261130126">Controlla se l'approvazione della norma KDC viene rispettata per decidere se delegare i ticket <ph name="KERBEROS" />.
+
+          Se questa norma viene impostata su true, l'autenticazione HTTP rispetta l'approvazione da parte della norma KDC, ad esempio Chrome delega solo le credenziali se il KDC imposta <ph name="OK_AS_DELEGATE" /> su un ticket di servizio. Per ulteriori informazioni, visita la pagina https://tools.ietf.org/html/rfc5896.html. Il servizio deve corrispondere anche alla norma "AuthNegotiateDelegateWhitelist".
+
+          Se questa norma non viene impostata o viene impostata su false, la norma KDC viene ignorata sulle piattaforme supportate e solo la norma "AuthNegotiateDelegateWhitelist" viene rispettata.
+
+          Su Windows la norma KDC viene sempre rispettata.</translation>
 <translation id="2838830882081735096">Non consentire migrazione dei dati e ARC</translation>
 <translation id="2839294585867804686">Impostazioni di Condivisioni file di rete</translation>
 <translation id="2840269525054388612">Consente di specificare le stampanti utilizzabili dagli utenti.
@@ -1421,7 +1426,6 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di immagini verrà inviata utilizzando il metodo GET.
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
-<translation id="427706009709857238">"Consenti all'Assistente Google di ascoltare la frase di attivazione vocale"</translation>
 <translation id="4285674129118156176">Consenti agli utenti non affiliati di usare ARC</translation>
 <translation id="4298509794364745131">Consente di specificare l'elenco di app che è possibile attivare come app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" />.
 
@@ -2117,7 +2121,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="602728333950205286">URL di ricerca istantanea del provider di ricerca predefinito</translation>
 <translation id="603410445099326293">Parametri per l'URL del suggerimento che utilizza POST</translation>
 <translation id="6034341625190551415">Consente di controllare tipi di account kiosk e sessioni pubbliche.</translation>
-<translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante il download.</translation>
+<translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante l'unload.</translation>
 <translation id="6036523166753287175">Abilita attraversamento firewall da host di accesso remoto</translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
@@ -2372,15 +2376,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Qualora l'accesso a un altro account non debba essere consentito tramite la modalità di navigazione in incognito, potresti bloccare tale modalità usando la norma IncognitoModeAvailability.
 
       Tieni presente che gli utenti potranno accedere ai servizi Google in uno stato non autenticato bloccando i loro cookie.</translation>
-<translation id="6738326937072482736">Consente di configurare la disponibilità e il comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Le impostazioni individuali possono essere specificate nelle proprietà JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, gli utenti potranno attivare il flusso della funzione Powerwash per l'installazione di un aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se viene impostata l'opzione <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, gli utenti potranno richiamare il flusso di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> che conserverà lo stato a livello di dispositivo  (registrazione aziendale compresa), ma che comporta la perdita dei dati degli utenti. Questo flusso di aggiornamento è disponibile a partire dalla versione 68.
-
-      Se la norma non viene impostata, la funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> non sarà disponibile.</translation>
 <translation id="6757438632136860443">Consente di impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se impostata, oppure la configurazione personale dell'utente..</translation>

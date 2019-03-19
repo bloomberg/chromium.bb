@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
-<translation id="111910763555783249">Innstillinger for varsler</translation>
+<translation id="111910763555783249">Varslingsinnstillinger</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{For 1 dag siden}other{For # dager siden}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{for 1 minutt siden}other{for # minutter siden}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
@@ -145,7 +145,6 @@
 <translation id="6808150112686056157">Media – stopp</translation>
 <translation id="6845383723252244143">Velg mappe</translation>
 <translation id="6845533974506654842">trykk</translation>
-<translation id="686304767576508198">Delt av</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 time igjen}other{# timer igjen}}</translation>
 <translation id="688711909580084195">Nettside uten tittel</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB per sek</translation>

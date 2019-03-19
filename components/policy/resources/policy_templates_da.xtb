@@ -283,12 +283,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Aktivér isolering af websites for bestemte websites på Android-enheder</translation>
-<translation id="1608259529294767544">Denne politik giver Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning.
-
-      Hvis politikken er aktiveret, lytter Google Assistent efter den stemmestyrede aktiveringssætning.
-      Hvis politikken er deaktiveret, lytter Google Assistent ikke efter den stemmestyrede aktiveringssætning.
-      Hvis politikken ikke er konfigureret, kan brugerne selv bestemme, om Google Assistent skal lytte efter den stemmestyrede aktiveringssætning.
-      </translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
 <translation id="1615221548356595305">Tillad sammenkædning af HTTP/2-forbindelser for disse hosts, selv når der anvendes klientcertifikater</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
@@ -478,6 +472,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="203096360153626918">Denne politik påvirker ikke Android-apps. De kan åbnes i fuldskærmstilstand, selv hvis denne politik angives som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverede virksomhedsprintere</translation>
+<translation id="2050629715135525072">Styrer en brugers mulighed for at overføre filer mellem klienten og hosten, når vedkommende har forbindelse til en host til fjernadgang. Dette gælder ikke for forbindelser til fjernsupport, som ikke understøtter filoverførsel.
+
+          Hvis denne indstilling er deaktiveret, er filoverførsel ikke tilladt. Hvis indstillingen er aktiveret eller ikke er angivet, er filoverførsel tilladt.</translation>
 <translation id="2057317273526988987">Giv adgang til en liste over webadresser</translation>
 <translation id="206623763829450685">Angiver, hvilke skemaer for HTTP-godkendelse der understøttes af <ph name="PRODUCT_NAME" />.
 
@@ -574,6 +571,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2231817271680715693">Import af browseroversigt fra standardbrowser ved første visning</translation>
 <translation id="2236488539271255289">Tillad ikke, at websites angiver lokale data</translation>
 <translation id="2240879329269430151">Giver dig mulighed for at bestemme, om websites må vise pop op-vinduer. Visning af pop op-vinduer kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "BlockPopups", og brugeren vil kunne ændre den.</translation>
+<translation id="2258126710006312594">Tillad, at brugere med fjernadgang overfører filer til/fra hosten</translation>
 <translation id="2265214338421787313">Denne politik tillader, at en administrator kan angive en side til at vise pop op-vinduer, når den unloades.
 
       Når politikken er angivet som aktiveret, har sider tilladelse til at vise pop op-vinduer, når de unloades.
@@ -846,6 +844,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Automatiske søgninger efter opdateringer blokeres ikke af denne politik, men blokeres muligvis af andre politikker. Denne funktion er kun aktiveret på Chrome-enheder, der er konfigureret som terminaler med automatisk opstart. Andre enheder begrænses ikke af denne politik.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />-klienters placering i Windows-registreringsdatabasen:</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
+<translation id="2836621397261130126">Denne politik styrer, om godkendelse af KDC-politikken overholdes for at beslutte, om <ph name="KERBEROS" />-billetter skal overdrages.
+
+          Hvis politikken er angivet som sand, respekteres godkendelse af KDC-politikken af HTTP-godkendelsen, dvs. Chrome overdrager kun loginoplysninger, hvis KDC angiver <ph name="OK_AS_DELEGATE" /> på en tjenestebillet. Få flere oplysninger på https://tools.ietf.org/html/rfc5896.html. Tjenesten skal også matche politikken "AuthNegotiateDelegateWhitelist".
+
+          Hvis denne politik ikke er angivet eller er angivet som falsk, ignoreres KDC-politikken på understøttede platforme, og kun politikken "AuthNegotiateDelegateWhitelist" overholdes.
+
+          KDC-politikken overholdes altid i Windows.</translation>
 <translation id="2838830882081735096">Tillad ikke datamigrering og ARC</translation>
 <translation id="2839294585867804686">Indstillinger for fildeling via netværk</translation>
 <translation id="2840269525054388612">Angiver, hvilke printere en bruger kan anvende.
@@ -1446,7 +1451,6 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om billedsøgninger ved hjælp af GET-metoden.
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
-<translation id="427706009709857238">"Giv Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning"</translation>
 <translation id="4285674129118156176">Tillad, at brugere uden tilknytning benytter ARC</translation>
 <translation id="4298509794364745131">Specificerer en liste over apps, der kan aktiveres som apps til notatskrivning på <ph name="PRODUCT_OS_NAME" />-låseskærmen.
 
@@ -2413,15 +2417,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis det ikke skal være tilladt at logge ind på en anden konto via inkognitotilstanden, kan du overveje at blokere denne tilstand ved hjælp af politikken IncognitoModeAvailability.
 
       Bemærk, at brugere kan få adgang til Google-tjenester i ikke-godkendt tilstand ved at blokere deres cookies.</translation>
-<translation id="6738326937072482736">Konfigurerer tilgængelighed og adfærd for funktionen til opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
-
-      Individuelle indstillinger kan angives i JSON-egenskaber:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis den er angivet som <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brugerne aktivere Powerwash-processen for at installere en <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmwareopdatering.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Hvis den er angivet som <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, kan brugerne starte processen til <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmwareopdatering, der bevarer tilstanden på hele enheden (bl.a. tilmelding af virksomhed), men medfører tab af brugerdata. Denne opdateringsproces er tilgængelig i version 68 og nyere.
-
-      Hvis politikken ikke er angivet, er funktionen til opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware ikke tilgængelig.</translation>
 <translation id="6757438632136860443">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som har tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet.
 
          Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites enten fra politikken "DefaultPluginsSetting", hvis denne er angivet, og ellers fra brugerens personlige konfiguration.</translation>

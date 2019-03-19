@@ -275,12 +275,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
      Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu Kuvinjari Salama.</translation>
 <translation id="1583248206450240930">Tumia <ph name="PRODUCT_FRAME_NAME" /> kwa chaguomsingi</translation>
 <translation id="1599424828227887013">Washa sera ya Utengaji wa Tovuti katika vyanzo vilivyobainishwa kwenye vifaa vya Android</translation>
-<translation id="1608259529294767544">Sera hii inaipa programu ya Mratibu wa Google ruhusa ya kusikiliza kifungu cha kuwasha sauti.
-
-      Ikiwa sera hii imewashwa, programu ya Mratibu wa Google itasikiliza kifungu cha kuwasha sauti.
-      Ikiwa sera hii imezimwa, programu ya Mratibu wa Google haitasikiliza kifungu cha kuwasha sauti.
-      Iwapo sera haijawekwa, watumiaji wanaweza kuamua ikiwa wataruhusu programu ya Mratibu wa Google isikilize kifungu cha kuwasha sauti.
-      </translation>
 <translation id="1608755754295374538">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa sauti bila ushawishi</translation>
 <translation id="1615221548356595305">Ruhusu kuungana kwa miunganisho ya HTTP/2 ya seva hizi pangishi hata wakati vyeti vya mteja vinatumika</translation>
 <translation id="1617235075406854669">Washa ufutaji wa historia ya upakuaji na kivinjari</translation>
@@ -476,6 +470,9 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguomsingi wa utafutaji</translation>
 <translation id="203096360153626918">Sera hii haiathiri programu za Android kwa njia yoyote. Zitaweza kuwekwa katika hali ya skrini nzima hata kama sera hii imewekwa kuwa <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Printa za biashara zisizotumia sera</translation>
+<translation id="2050629715135525072">Hudhibiti uwezo wa mtumiaji aliyeunganishwa kwenye seva pangishi inayoweza kufikiwa kwa mbali kuhamisha faili kati ya kiteja na seva pangishi. Hali hii haitumiki kwenye miunganisho ya usaidizi wa mbali, ambayo haitumii kipengele cha uhamishaji wa faili.
+
+          Mipangilio hii ikizimwa, hutaruhusiwa kuhamisha faili. Mipangilio hii ikiwashwa au isipowekwa, utaruhusiwa kuhamisha faili.</translation>
 <translation id="2057317273526988987">Ruhusu ufikiaji kwenye orodha ya URL</translation>
 <translation id="206623763829450685">Hubainisha mipango ya uthibitishaji wa HTTP inayotumia na <ph name="PRODUCT_NAME" />.
 
@@ -574,6 +571,7 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2240879329269430151">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kuonyesha ibukizi. Kuonyesha ibukizi kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
 
           Ikiwa sera hii itaachwa bila kuwekwa, 'BlockPopups' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
+<translation id="2258126710006312594">Ruhusu watumiaji walio na idhini ya kufikia kwa mbali kuhamisha au kuhamishia faili kwenye seva pangishi</translation>
 <translation id="2265214338421787313">Sera hii huruhusu msimamizi kubainisha kuwa ukurasa unaweza kuonyesha madirisha ibukizi wakati wa kuondoa.
 
       Sera hii ikiwashwa, kurasa zinaruhusiwa kuonyesha madirisha ibukizi wakati zinaondolewa.
@@ -854,6 +852,13 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
       Hamna ukaguzi wa masasisho ya kiotomatiki utakaozuiliwa na sera hii, lakini unaweza kuzuiliwa na sera zingine. Kipengele hiki kimewashwa tu kwenye vifaa vya Chrome ambavyo vimewekewa mipangilio ya skrini nzima kufunguka kiotomatiki. Vifaa vingine havitazuiwa na sera hii.</translation>
 <translation id="2823870601012066791">Eneo la sajili ya Windows la viteja vya <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
+<translation id="2836621397261130126">Hudhibiti ikiwa uidhinishaji wa sera ya KDC unazingatiwa katika uamuzi wa kutoa tiketi za <ph name="KERBEROS" />.
+
+          Ikiwa sera hii imewekwa kuwa ndivyo, uthibitishaji wa HTTP utazingatia uidhinishaji wa sera ya KDC, kwa mfano, Chrome hutoa tu kitambulisho ikiwa KDC imeweka <ph name="OK_AS_DELEGATE" /> kwenye tiketi ya huduma. Tafadhali angalia https://tools.ietf.org/html/rfc5896.html ili upate maelezo zaidi. Ni sharti huduma ilingane na sera ya 'AuthNegotiateDelegateWhitelist'.
+
+          Ikiwa sera hii haijawekwa au imewekwa kuwa sivyo, sera ya KDC haitazingatiwa kwenye mifumo inayotumika na itazingatia sera ya 'AuthNegotiateDelegateWhitelist' pekee.
+
+          Kwenye Windows, sera KDC huzingatiwa kila wakati.</translation>
 <translation id="2838830882081735096">Usiruhusu uhamishaji data na ARC</translation>
 <translation id="2839294585867804686">Mipangilio ya Faili za Kushiriki katika Mtandao</translation>
 <translation id="2840269525054388612">Hubainisha printa ambazo mtumiaji anaweza kutumia.
@@ -1463,7 +1468,6 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
           Sera hii ni ya hiari. Isipowekwa, ombi la utafutaji kwa picha litatumwa kwa kutumia mbinu ya GET.
 
           Sera hii inatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
-<translation id="427706009709857238">"Ruhusu programu ya Kufikia Mratibu wa Google kusikiliza kifungu cha kuwasha sauti"</translation>
 <translation id="4285674129118156176">Ruhusu watumiaji wasio washirika kutumia ARC</translation>
 <translation id="4298509794364745131">Huzibainisha programu zinazoweza kuwashwa kuwa programu za kuandika madokezo kwenye skrini iliyofungwa ya <ph name="PRODUCT_OS_NAME" />.
 
@@ -2457,14 +2461,6 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
       Katika hali ambapo kuingia katika akaunti tofauti hakuruhusiwa kupitia Hali Fiche, zingatia kuzuia hali hiyo ukitumia sera ya IncognitoModeAvailability.
 
       Kumbuka kwamba watumiaji wataweza kufikia huduma za Google katika hali isiyothibitishwa kwa kuzuia vidakuzi vyao.</translation>
-<translation id="6738326937072482736">Huweka mipangilio ya upatikanaji na utendaji wa kipengele cha kusasisha cha <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Mipangilio mahususi inaweza kubainishwa katika sifa za JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Ikiwekwa kuwa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, watumiaji wataweza kusababisha mtiririko wa powerwash kusakinisha sasisho la kipengele cha <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Ikiwekwa kuwa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, watumiaji wataweza kuanzisha mtiririko wa sasisho la programu ya <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ambalo linahifadhi hali pana ya kifaa (ikiwa ni pamoja na ujumuishaji katika enterprise), lakini linapoteza data ya mtumaji. Mtiririko wa sasisho hili unapatikana kuanzia toleo la 68
-      Ikiwa sera haijawekwa, sasisho la utendaji wa kipengele cha <ph name="TPM_FIRMWARE_UPDATE_TPM" /> halitapatikana.</translation>
 <translation id="6757438632136860443">Hukuruhusu kuweka orodha ya ruwaza za url inayobainisha tovuti zinazoruhusiwa kutumia programu jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
 
           Ikiwa sera hii haitawekwa, thamani chaguomsingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPluginsSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.</translation>

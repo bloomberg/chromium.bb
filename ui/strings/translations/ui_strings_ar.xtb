@@ -145,7 +145,6 @@
 <translation id="6808150112686056157">إيقاف الوسائط</translation>
 <translation id="6845383723252244143">تحديد مجلد</translation>
 <translation id="6845533974506654842">اضغط</translation>
-<translation id="686304767576508198">تمت المشاركة من</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{يتبقى ساعة}zero{يتبقى # من الساعات}two{ يتبقى ساعتان (#)}few{يتبقى # ساعات}many{يتبقى # ساعة}other{يتبقى # من الساعات}}</translation>
 <translation id="688711909580084195">صفحة ويب بدون عنوان</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> بيتابايت/ثانية</translation>

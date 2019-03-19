@@ -292,12 +292,6 @@
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Włącz izolację witryn z określonych źródeł na urządzeniach z Androidem</translation>
-<translation id="1608259529294767544">Ta zasada daje Asystentowi Google uprawnienie do nasłuchiwania wyrażenia aktywującego obsługę komend głosowych.
-
-      Gdy ta zasada jest włączona, Asystent Google będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
-      Gdy ta zasada jest wyłączona, Asystent Google nie będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
-      Gdy zasada jest nieskonfigurowana, użytkownicy mogą wybrać, czy zezwolić Asystentowi Google na nasłuchiwanie wyrażenia aktywującego obsługę komend głosowych.
-      </translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1615221548356595305">Zezwól na zespalanie połączeń HTTP/2 z wymienionymi hostami nawet wtedy, gdy używane są certyfikaty klienta</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
@@ -487,6 +481,9 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Wyłączone drukarki firmowe</translation>
+<translation id="2050629715135525072">Kontroluje możliwość przenoszenia plików między klientem a hostem przez użytkownika połączonego z hostem dostępu zdalnego. Nie dotyczy to połączeń z pomocą zdalną, które nie obsługują przenoszenia plików.
+
+          Wyłączenie tego ustawienia uniemożliwia przenoszenie plików. Gdy to ustawienie jest włączone lub nieskonfigurowane, przenoszenie plików jest możliwe.</translation>
 <translation id="2057317273526988987">Zezwalaj na dostęp do listy adresów URL</translation>
 <translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
 
@@ -584,6 +581,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2231817271680715693">Importuj historię przeglądania z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="2236488539271255289">Nie zezwalaj żadnej witrynie na tworzenie danych lokalnych</translation>
 <translation id="2240879329269430151">Umożliwia określenie, czy w witrynach mogą być pokazywane wyskakujące okienka. Pokazywanie wyskakujących okienek może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „BlockPopups”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="2258126710006312594">Umożliwia użytkownikom korzystającym z dostępu zdalnego przenoszenie plików do/z hosta</translation>
 <translation id="2265214338421787313">Ta zasada umożliwia administratorowi zezwolenie na wyświetlanie wyskakujących okienek przez stronę podczas jej zamykania.
 
       Gdy zasada jest włączona, strony mogą wyświetlać wyskakujące okienka podczas ich zamykania.
@@ -856,6 +854,13 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Zasada nie będzie blokować automatycznego sprawdzania dostępności aktualizacji, ale mogą to powodować inne zasady. Ta funkcja jest dostępna tylko na urządzeniach z Chrome skonfigurowanych jako uruchamiane automatycznie kioski. Ta zasada nie dotyczy innych urządzeń.</translation>
 <translation id="2823870601012066791">Lokalizacja w rejestrze systemu Windows dla klientów <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
+<translation id="2836621397261130126">Określa, czy akceptacja przez zasadę KDC jest uwzględniana podczas podejmowania decyzji o przekazywaniu biletów <ph name="KERBEROS" />.
+
+          Jeśli zasada ma wartość Prawda, podczas uwierzytelniania HTTP respektowana jest akceptacja przez zasadę KDC, tzn. Chrome przekazuje dane logowania tylko wtedy, gdy KDC ustawi <ph name="OK_AS_DELEGATE" /> w bilecie usługi. Więcej informacji znajdziesz na stronie https://tools.ietf.org/html/rfc5896.html Usługa musi również znajdować się na liście zasady „AuthNegotiateDelegateWhitelist”.
+
+          Jeśli ta zasada jest nieskonfigurowana lub ma wartość Fałsz, zasada KDC jest ignorowana na obsługiwanych platformach i respektowana jest tylko zasada „AuthNegotiateDelegateWhitelist”.
+
+          W systemie Windows zasada KDC jest zawsze respektowana.</translation>
 <translation id="2838830882081735096">Nie zezwalaj na migrację danych ani na działanie ARC</translation>
 <translation id="2839294585867804686">Ustawienia sieciowych udziałów plików</translation>
 <translation id="2840269525054388612">Określa drukarki, z których może korzystać użytkownik.
@@ -1453,7 +1458,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwania obrazem są wysyłane przy użyciu metody GET.
 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="427706009709857238">„Zezwól Asystentowi Google na nasłuchiwanie wyrażenia aktywującego obsługę komend głosowych”</translation>
 <translation id="4285674129118156176">Zezwalaj użytkownikom z innych domen na używanie ARC</translation>
 <translation id="4298509794364745131">Określa listę aplikacji, które mogą być włączone jako aplikacje do notatek na ekranie blokady w: <ph name="PRODUCT_OS_NAME" />.
 
@@ -2425,15 +2429,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Aby uniemożliwić logowanie się na inne konto w trybie incognito, można zablokować ten tryb za pomocą zasady IncognitoModeAvailability.
 
       Pamiętaj, że użytkownicy mogą uzyskać dostęp do usług Google w trybie bez uwierzytelniania, jeśli zablokują pliki cookie.</translation>
-<translation id="6738326937072482736">Konfiguruje dostępność i zachowanie funkcji aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Poszczególne ustawienia można określić we właściwościach JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: jeśli ustawiono na wartość <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, użytkownicy mogą wyzwalać procedurę Powerwash, by zainstalować aktualizację oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: jeśli ustawiono na wartość <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, użytkownicy mogą wyzwalać procedurę aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />, która zachowa ogólny stan urządzenia (w tym rejestrację w firmie), ale usunie dane użytkownika. Ten rodzaj aktualizacji jest dostępny od wersji 68.
-
-      Jeśli zasada nie jest ustawiona, funkcja aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" /> nie jest dostępna.</translation>
 <translation id="6757438632136860443">Pozwala utworzyć listę wzorców URL-i określających witryny, które mogą uruchamiać wtyczkę <ph name="FLASH_PLUGIN_NAME" />.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
