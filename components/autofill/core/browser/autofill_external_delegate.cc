@@ -207,6 +207,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     manager_->ShowAutofillSettings(popup_type_ == PopupType::kCreditCards);
   } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
+    AutofillMetrics::LogAutofillFormCleared();
     driver_->RendererShouldClearFilledSection();
   } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY ||
              identifier == POPUP_ITEM_ID_USERNAME_ENTRY) {

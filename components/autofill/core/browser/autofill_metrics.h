@@ -1109,6 +1109,9 @@ class AutofillMetrics {
   // Log the index of the selected Autofill suggestion in the popup.
   static void LogAutofillSuggestionAcceptedIndex(int index);
 
+  // Logs that the user cleared the form.
+  static void LogAutofillFormCleared();
+
   // Log the number of days since an Autocomplete suggestion was last used.
   static void LogAutocompleteDaysSinceLastUse(size_t days);
 

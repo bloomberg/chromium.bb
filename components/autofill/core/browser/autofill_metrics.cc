@@ -1450,6 +1450,11 @@ void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
 }
 
 // static
+void AutofillMetrics::LogAutofillFormCleared() {
+  base::RecordAction(base::UserMetricsAction("Autofill_ClearedForm"));
+}
+
+// static
 void AutofillMetrics::LogNumberOfEditedAutofilledFields(
     size_t num_edited_autofilled_fields,
     bool observed_submission) {
