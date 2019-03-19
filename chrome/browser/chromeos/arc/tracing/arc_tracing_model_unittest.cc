@@ -135,7 +135,7 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   EXPECT_FALSE(ss.str().empty());
 
   // Continue in this test to avoid heavy calculations for building base model.
-  // Make sure we can createe graphics model.
+  // Make sure we can create graphics model.
   ArcTracingGraphicsModel graphics_model;
   ASSERT_TRUE(graphics_model.Build(model));
 
@@ -146,15 +146,17 @@ TEST_F(ArcTracingModelTest, TopLevel) {
        GraphicsEventType::kSurfaceFlingerInvalidationDone,
        GraphicsEventType::kSurfaceFlingerCompositionStart,
        GraphicsEventType::kSurfaceFlingerCompositionDone}));
-  EXPECT_TRUE(
-      ValidateGrahpicsEvent(graphics_model.chrome_top_level(),
-                            {
-                                GraphicsEventType::kChromeOSDraw,
-                                GraphicsEventType::kChromeOSSwap,
-                                GraphicsEventType::kChromeOSWaitForAck,
-                                GraphicsEventType::kChromeOSPresentationDone,
-                                GraphicsEventType::kChromeOSSwapDone,
-                            }));
+  EXPECT_EQ(2U, graphics_model.chrome_top_level().size());
+  for (const auto& chrome_top_level_band : graphics_model.chrome_top_level()) {
+    EXPECT_TRUE(ValidateGrahpicsEvent(
+        chrome_top_level_band, {
+                                   GraphicsEventType::kChromeOSDraw,
+                                   GraphicsEventType::kChromeOSSwap,
+                                   GraphicsEventType::kChromeOSWaitForAck,
+                                   GraphicsEventType::kChromeOSPresentationDone,
+                                   GraphicsEventType::kChromeOSSwapDone,
+                               }));
+  }
   EXPECT_FALSE(graphics_model.view_buffers().empty());
   for (const auto& view : graphics_model.view_buffers()) {
     // At least one buffer.

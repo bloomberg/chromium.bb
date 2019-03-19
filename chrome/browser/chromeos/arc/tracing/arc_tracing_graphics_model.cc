@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 
+#include <algorithm>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/no_destructor.h"
@@ -643,16 +645,38 @@ size_t GetMergeScore(
   return score;
 }
 
-// Helper that performs query in |common_model| and returns sorted list of built
-// events.
-ArcTracingGraphicsModel::BufferEvents GetEventsFromQuery(
-    const ArcTracingModel& common_model,
-    const std::string& query) {
-  ArcTracingGraphicsModel::BufferEvents collector;
-  for (const ArcTracingEvent* event : common_model.Select(query))
-    GetEventMapper().Produce(*event, &collector);
-  SortBufferEventsByTimestamp(&collector);
-  return collector;
+// Helper that performs query in |common_model| for top level Chrome GPU events
+// and returns bands of sorted list of built events.
+std::vector<ArcTracingGraphicsModel::BufferEvents> GetChromeTopLevelEvents(
+    const ArcTracingModel& common_model) {
+  // There is a chance that Chrome top level events may overlap. This may happen
+  // in case on non-trivial GPU load. In this case notification about swap or
+  // presentation done may come after the next frame draw is started. As a
+  // result, it leads to confusion in case displayed on the same event band.
+  // Solution is to allocate extra band and interchange events per buffer.
+  // Events are grouped per frame's id that starts from 0x100000000 and has
+  // monotonous increment. So we can simple keep it in the tree map that
+  // provides us the right ordering.
+  std::map<std::string, std::vector<const ArcTracingEvent*>> per_frame_events;
+
+  for (const ArcTracingEvent* event :
+       common_model.Select(kChromeTopEventsQuery)) {
+    per_frame_events[event->GetId()].emplace_back(event);
+  }
+
+  size_t band_index = 0;
+  std::vector<ArcTracingGraphicsModel::BufferEvents> chrome_top_level;
+  chrome_top_level.resize(2);
+  for (const auto& it_frame : per_frame_events) {
+    for (const ArcTracingEvent* event : it_frame.second)
+      GetEventMapper().Produce(*event, &chrome_top_level[band_index]);
+    band_index = (band_index + 1) % chrome_top_level.size();
+  }
+
+  for (auto& chrome_top_level_band : chrome_top_level)
+    SortBufferEventsByTimestamp(&chrome_top_level_band);
+
+  return chrome_top_level;
 }
 
 // Helper that extracts top level Android events, such as refresh, vsync.
@@ -832,7 +856,7 @@ bool ArcTracingGraphicsModel::Build(const ArcTracingModel& common_model) {
     return false;
   }
 
-  chrome_top_level_ = GetEventsFromQuery(common_model, kChromeTopEventsQuery);
+  chrome_top_level_ = GetChromeTopLevelEvents(common_model);
   if (chrome_top_level_.empty()) {
     LOG(ERROR) << "No Chrome top events";
     return false;
@@ -862,8 +886,10 @@ void ArcTracingGraphicsModel::NormalizeTimestamps() {
   min = std::min(min, android_top_level_.front().timestamp);
   max = std::max(max, android_top_level_.back().timestamp);
 
-  min = std::min(min, chrome_top_level_.front().timestamp);
-  max = std::max(max, chrome_top_level_.back().timestamp);
+  for (const auto& chrome_top_level_band : chrome_top_level_) {
+    min = std::min(min, chrome_top_level_band.front().timestamp);
+    max = std::max(max, chrome_top_level_band.back().timestamp);
+  }
 
   duration_ = max - min + 1;
 
@@ -874,8 +900,10 @@ void ArcTracingGraphicsModel::NormalizeTimestamps() {
     }
   }
 
-  for (auto& event : chrome_top_level_)
-    event.timestamp -= min;
+  for (auto& chrome_top_level_band : chrome_top_level_) {
+    for (auto& event : chrome_top_level_band)
+      event.timestamp -= min;
+  }
   for (auto& event : android_top_level_)
     event.timestamp -= min;
 }
@@ -921,7 +949,12 @@ std::unique_ptr<base::DictionaryValue> ArcTracingGraphicsModel::Serialize()
   root->SetKey(kKeyAndroid, SerializeEvents(android_top_level_));
 
   // Chrome top events
-  root->SetKey(kKeyChrome, SerializeEvents(chrome_top_level_));
+  base::ListValue chrome_top_level_list;
+  for (const auto& chrome_top_level_band : chrome_top_level_) {
+    chrome_top_level_list.GetList().emplace_back(
+        SerializeEvents(chrome_top_level_band));
+  }
+  root->SetKey(kKeyChrome, std::move(chrome_top_level_list));
 
   // Duration.
   root->SetKey(kKeyDuration, base::Value(static_cast<double>(duration_)));
@@ -980,8 +1013,17 @@ bool ArcTracingGraphicsModel::LoadFromJson(const std::string& json_data) {
   if (!LoadEvents(root->FindKey(kKeyAndroid), &android_top_level_))
     return false;
 
-  if (!LoadEvents(root->FindKey(kKeyChrome), &chrome_top_level_))
+  const base::Value* chrome_top_level_list =
+      root->FindKeyOfType(kKeyChrome, base::Value::Type::LIST);
+  if (!chrome_top_level_list || chrome_top_level_list->GetList().empty())
     return false;
+
+  for (const auto& chrome_top_level_entry : chrome_top_level_list->GetList()) {
+    ArcTracingGraphicsModel::BufferEvents chrome_top_level_band;
+    if (!LoadEvents(&chrome_top_level_entry, &chrome_top_level_band))
+      return false;
+    chrome_top_level_.emplace_back(std::move(chrome_top_level_band));
+  }
 
   const base::Value* duration = root->FindKey(kKeyDuration);
   if (!duration || (!duration->is_double() && !duration->is_int()))

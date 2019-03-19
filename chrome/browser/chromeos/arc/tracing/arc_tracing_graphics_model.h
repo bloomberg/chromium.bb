@@ -117,7 +117,9 @@ class ArcTracingGraphicsModel {
 
   const BufferEvents& android_top_level() const { return android_top_level_; }
 
-  const BufferEvents& chrome_top_level() const { return chrome_top_level_; }
+  const std::vector<BufferEvents>& chrome_top_level() const {
+    return chrome_top_level_;
+  }
 
  private:
   // Normalizes timestamp for all events by subtracting the timestamp of the
@@ -132,7 +134,8 @@ class ArcTracingGraphicsModel {
   int GetTaskIdFromBufferName(const std::string& chrome_buffer_name) const;
 
   ViewMap view_buffers_;
-  BufferEvents chrome_top_level_;
+  // To avoid overlapping events are stored interlaced.
+  std::vector<BufferEvents> chrome_top_level_;
   BufferEvents android_top_level_;
   // Total duration of this model.
   uint32_t duration_ = 0;
