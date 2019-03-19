@@ -148,7 +148,8 @@ FileSystemContext::FileSystemContext(
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
     const FileSystemOptions& options)
-    : env_override_(options.is_in_memory()
+    : base::RefCountedDeleteOnSequence<FileSystemContext>(io_task_runner),
+      env_override_(options.is_in_memory()
                         ? leveldb_chrome::NewMemEnv("FileSystem")
                         : nullptr),
       io_task_runner_(io_task_runner),
@@ -511,14 +512,6 @@ FileSystemContext::~FileSystemContext() {
   // TODO(crbug.com/823854) This is a leak. Delete env after the backends have
   // been deleted.
   env_override_.release();
-}
-
-void FileSystemContext::DeleteOnCorrectSequence() const {
-  if (!io_task_runner_->RunsTasksInCurrentSequence() &&
-      io_task_runner_->DeleteSoon(FROM_HERE, this)) {
-    return;
-  }
-  delete this;
 }
 
 FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
