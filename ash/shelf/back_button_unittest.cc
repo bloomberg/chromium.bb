@@ -107,13 +107,17 @@ TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   ui::TestAcceleratorTarget target_back_release;
   controller->Register({accelerator_back_release}, &target_back_release);
 
-  // Verify that by clicking the back button, a back key sequence will be
-  // generated.
+  // Verify that by pressing the back button no event is generated on the press,
+  // but there is one generated on the release.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
-  generator->ClickLeftButton();
+  generator->PressLeftButton();
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  generator->ReleaseLeftButton();
   EXPECT_EQ(1, target_back_press.accelerator_count());
-  EXPECT_EQ(1, target_back_release.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
 }
 
 }  // namespace ash

@@ -38,21 +38,13 @@ BackButton::~BackButton() = default;
 
 void BackButton::OnGestureEvent(ui::GestureEvent* event) {
   ShelfButton::OnGestureEvent(event);
-  if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    GenerateAndSendBackEvent(event->type());
-  }
-}
-
-bool BackButton::OnMousePressed(const ui::MouseEvent& event) {
-  ShelfButton::OnMousePressed(event);
-  GenerateAndSendBackEvent(event.type());
-  return true;
+  if (event->type() == ui::ET_GESTURE_TAP)
+    GenerateAndSendBackEvent();
 }
 
 void BackButton::OnMouseReleased(const ui::MouseEvent& event) {
   ShelfButton::OnMouseReleased(event);
-  GenerateAndSendBackEvent(event.type());
+  GenerateAndSendBackEvent();
 }
 
 void BackButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -67,28 +59,15 @@ const char* BackButton::GetClassName() const {
   return kViewClassName;
 }
 
-void BackButton::GenerateAndSendBackEvent(
-    const ui::EventType& original_event_type) {
-  ui::EventType new_event_type;
-  switch (original_event_type) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_GESTURE_TAP_DOWN:
-      new_event_type = ui::ET_KEY_PRESSED;
-      break;
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_GESTURE_TAP:
-      new_event_type = ui::ET_KEY_RELEASED;
-      base::RecordAction(base::UserMetricsAction("Tablet_BackButton"));
-      break;
-    default:
-      return;
-  }
+void BackButton::GenerateAndSendBackEvent() {
+  base::RecordAction(base::UserMetricsAction("Tablet_BackButton"));
 
   // Send the back event to the root window of the back button's widget.
   const views::Widget* widget = GetWidget();
   if (widget && widget->GetNativeWindow()) {
     aura::Window* root_window = widget->GetNativeWindow()->GetRootWindow();
-    ui::KeyEvent key_event(new_event_type, ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
+                           ui::EF_NONE);
     ignore_result(
         root_window->GetHost()->event_sink()->OnEventFromSource(&key_event));
   }
