@@ -11,9 +11,7 @@
 
 #include "aom_dsp/quantize.h"
 #include "aom_mem/aom_mem.h"
-
-#define EOB_FACTOR 325
-#define SKIP_EOB_FACTOR_ADJUST 200
+#include "av1/encoder/av1_quantize.h"
 
 void quantize_b_adaptive_helper_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr,
