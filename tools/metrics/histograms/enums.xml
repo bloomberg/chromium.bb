@@ -32824,6 +32824,7 @@ from previous Chrome versions.
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
   <int value="207907053"
       label="OmniboxUIExperimentBlueSearchLoopAndSearchQuery:enabled"/>
+  <int value="209792775" label="TabGroupsAndroid:enabled"/>
   <int value="212489101" label="AutofillAssistantChromeEntry:enabled"/>
   <int value="215328738" label="ImprovedGeoLanguageData:disabled"/>
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
@@ -32960,6 +32961,7 @@ from previous Chrome versions.
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
+  <int value="436682243" label="TabGroupsAndroid:disabled"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>

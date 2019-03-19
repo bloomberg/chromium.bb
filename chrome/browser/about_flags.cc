@@ -3374,6 +3374,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tab-grid-layout", flag_descriptions::kTabGridLayoutAndroidName,
      flag_descriptions::kTabGridLayoutAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid)},
+
+    {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
+     flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabGroupsAndroid)},
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)

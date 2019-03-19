@@ -1871,6 +1871,10 @@ const char kTabGridLayoutAndroidName[] = "Tab Grid Layout";
 const char kTabGridLayoutAndroidDescription[] =
     "Allows users to see their tabs in a grid layout in the tab switcher.";
 
+const char kTabGroupsAndroidName[] = "Tab Groups";
+const char kTabGroupsAndroidDescription[] =
+    "Allows users to create groups to better organize their tabs.";
+
 const char kTabGroupsName[] = "Tab Groups";
 const char kTabGroupsDescription[] =
     "Allows users to organize tabs into visually distinct groups, e.g. to "
