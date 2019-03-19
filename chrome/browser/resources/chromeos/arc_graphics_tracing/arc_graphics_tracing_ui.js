@@ -475,9 +475,11 @@ function setGraphicBuffersModel(model) {
   $('arc-event-bands').textContent = '';
 
   var chromeTopBandTitle = new EventBandTitle('Chrome');
-  var chromeTopBand = new EventBand(
-      chromeTopBandTitle, 'arc-events-top-band', model.duration, 20);
-  chromeTopBand.setEvents(model.chrome, 500, 504);
+  for (i = 0; i < model.chrome.length; i++) {
+    var chromeTopBand = new EventBand(
+        chromeTopBandTitle, 'arc-events-top-band', model.duration, 20);
+    chromeTopBand.setEvents(model.chrome[i], 500, 504);
+  }
 
   var androidTopBandTitle = new EventBandTitle('Android');
   var androidTopBand = new EventBand(
