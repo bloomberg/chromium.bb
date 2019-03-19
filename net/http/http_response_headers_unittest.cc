@@ -486,10 +486,7 @@ const struct PersistData persistence_tests[] = {
     {HttpResponseHeaders::PERSIST_SANS_SECURITY_STATE,
      "HTTP/1.1 200 OK\n"
      "Strict-Transport-Security: max-age=1576800\n"
-     "Bar: 1\n"
-     "Public-Key-Pins: max-age=100000; "
-     "pin-sha256=\"1111111111111111111111111111111111111111111=\";"
-     "pin-sha256=\"2222222222222222222222222222222222222222222=\"",
+     "Bar: 1\n",
 
      "HTTP/1.1 200 OK\n"
      "Bar: 1\n"},
