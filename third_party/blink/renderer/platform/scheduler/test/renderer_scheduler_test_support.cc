@@ -126,7 +126,9 @@ class SimplePageScheduler : public PageScheduler {
   void AudioStateChanged(bool is_audio_playing) override {}
   bool IsAudioPlaying() const override { return false; }
   bool IsExemptFromBudgetBasedThrottling() const override { return false; }
-  bool HasActiveConnectionForTest() const override { return false; }
+  bool OptedOutFromAggressiveThrottlingForTest() const override {
+    return false;
+  }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
 
  private:

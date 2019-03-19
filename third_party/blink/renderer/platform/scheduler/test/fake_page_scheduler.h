@@ -71,7 +71,9 @@ class FakePageScheduler final : public PageScheduler {
                               base::OnceClosure callback) override {}
   void SetMaxVirtualTimeTaskStarvationCount(int count) override {}
   void AudioStateChanged(bool is_audio_playing) override {}
-  bool HasActiveConnectionForTest() const override { return false; }
+  bool OptedOutFromAggressiveThrottlingForTest() const override {
+    return false;
+  }
   bool RequestBeginMainFrameNotExpected(bool new_state) override {
     return false;
   }

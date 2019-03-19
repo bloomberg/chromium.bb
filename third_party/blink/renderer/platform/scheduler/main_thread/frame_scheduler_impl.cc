@@ -185,13 +185,14 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              this,
                              &tracing_controller_,
                              YesNoStateToString),
-      active_connection_count_(0),
+      aggressive_throttling_opt_out_count(0),
       subresource_loading_pause_count_(0u),
-      has_active_connection_(false,
-                             "FrameScheduler.HasActiveConnection",
-                             this,
-                             &tracing_controller_,
-                             YesNoStateToString),
+      opted_out_from_aggressive_throttling_(
+          false,
+          "FrameScheduler.AggressiveThrottlingDisabled",
+          this,
+          &tracing_controller_,
+          YesNoStateToString),
       page_frozen_for_tracing_(
           parent_page_scheduler_ ? parent_page_scheduler_->IsFrozen() : true,
           "FrameScheduler.PageFrozen",
@@ -252,8 +253,8 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
   if (parent_page_scheduler_) {
     parent_page_scheduler_->Unregister(this);
 
-    if (has_active_connection())
-      parent_page_scheduler_->OnConnectionUpdated();
+    if (opted_out_from_aggressive_throttling())
+      parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
   }
 }
 
@@ -615,29 +616,31 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
   // TODO(altimin): Rename *ActiveConnection to
   // Enable/DisableAggressiveThrottling.
   if (policy.disable_aggressive_throttling)
-    DidOpenActiveConnection();
+    OnAddedAggressiveThrottlingOptOut();
 }
 
 void FrameSchedulerImpl::OnStoppedUsingFeature(
     SchedulingPolicy::Feature feature,
     const SchedulingPolicy& policy) {
   if (policy.disable_aggressive_throttling)
-    DidCloseActiveConnection();
+    OnRemovedAggressiveThrottlingOptOut();
 }
 
-void FrameSchedulerImpl::DidOpenActiveConnection() {
-  ++active_connection_count_;
-  has_active_connection_ = static_cast<bool>(active_connection_count_);
+void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {
+  ++aggressive_throttling_opt_out_count;
+  opted_out_from_aggressive_throttling_ =
+      static_cast<bool>(aggressive_throttling_opt_out_count);
   if (parent_page_scheduler_)
-    parent_page_scheduler_->OnConnectionUpdated();
+    parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
 }
 
-void FrameSchedulerImpl::DidCloseActiveConnection() {
-  DCHECK_GT(active_connection_count_, 0);
-  --active_connection_count_;
-  has_active_connection_ = static_cast<bool>(active_connection_count_);
+void FrameSchedulerImpl::OnRemovedAggressiveThrottlingOptOut() {
+  DCHECK_GT(aggressive_throttling_opt_out_count, 0);
+  --aggressive_throttling_opt_out_count;
+  opted_out_from_aggressive_throttling_ =
+      static_cast<bool>(aggressive_throttling_opt_out_count);
   if (parent_page_scheduler_)
-    parent_page_scheduler_->OnConnectionUpdated();
+    parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
 }
 
 void FrameSchedulerImpl::AsValueInto(
@@ -755,7 +758,7 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
   if (subresource_loading_paused_ && type == ObserverType::kLoader)
     return SchedulingLifecycleState::kStopped;
   if (type == ObserverType::kLoader &&
-      parent_page_scheduler_->HasActiveConnection()) {
+      parent_page_scheduler_->OptedOutFromAggressiveThrottling()) {
     return SchedulingLifecycleState::kNotThrottled;
   }
   if (parent_page_scheduler_->IsThrottled())
@@ -795,7 +798,7 @@ void FrameSchedulerImpl::UpdateTaskQueueThrottling(
 }
 
 bool FrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
-  return has_active_connection();
+  return opted_out_from_aggressive_throttling();
 }
 
 TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(

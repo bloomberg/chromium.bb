@@ -127,7 +127,7 @@ class PLATFORM_EXPORT PageScheduler {
   // (e.g. due to a page maintaining an active connection).
   virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
 
-  virtual bool HasActiveConnectionForTest() const = 0;
+  virtual bool OptedOutFromAggressiveThrottlingForTest() const = 0;
 
   // Returns true if the request has been succcessfully relayed to the
   // compositor.

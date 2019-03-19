@@ -121,7 +121,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
 
   void UpdatePolicy();
 
-  bool has_active_connection() const { return has_active_connection_; }
+  bool opted_out_from_aggressive_throttling() const {
+    return opted_out_from_aggressive_throttling_;
+  }
 
   void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
 
@@ -220,8 +222,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void AddPauseSubresourceLoadingHandle();
   void RemovePauseSubresourceLoadingHandle();
 
-  void DidOpenActiveConnection();
-  void DidCloseActiveConnection();
+  void OnAddedAggressiveThrottlingOptOut();
+  void OnRemovedAggressiveThrottlingOptOut();
 
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
   CreateResourceLoadingTaskRunnerHandleImpl();
@@ -274,10 +276,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   StateTracer<TracingCategoryName::kInfo> url_tracer_;
   TraceableState<bool, TracingCategoryName::kInfo> task_queues_throttled_;
   // TODO(kraynov): https://crbug.com/827113
-  // Trace active connection count.
-  int active_connection_count_;
+  // Trace the count of aggressive throttling opt outs.
+  int aggressive_throttling_opt_out_count;
   size_t subresource_loading_pause_count_;
-  TraceableState<bool, TracingCategoryName::kInfo> has_active_connection_;
+  TraceableState<bool, TracingCategoryName::kInfo>
+      opted_out_from_aggressive_throttling_;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().

@@ -117,7 +117,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       audio_state_(AudioState::kSilent),
       is_frozen_(false),
       reported_background_throttling_since_navigation_(false),
-      has_active_connection_(false),
+      opted_out_from_aggressive_throttling_(false),
       nested_runloop_(false),
       is_main_frame_local_(false),
       is_throttled_(false),
@@ -397,15 +397,15 @@ void PageSchedulerImpl::OnAudioSilent() {
 }
 
 bool PageSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
-  return has_active_connection_;
+  return opted_out_from_aggressive_throttling_;
 }
 
-bool PageSchedulerImpl::HasActiveConnectionForTest() const {
-  return HasActiveConnection();
+bool PageSchedulerImpl::OptedOutFromAggressiveThrottlingForTest() const {
+  return OptedOutFromAggressiveThrottling();
 }
 
-bool PageSchedulerImpl::HasActiveConnection() const {
-  return has_active_connection_;
+bool PageSchedulerImpl::OptedOutFromAggressiveThrottling() const {
+  return opted_out_from_aggressive_throttling_;
 }
 
 bool PageSchedulerImpl::RequestBeginMainFrameNotExpected(bool new_state) {
@@ -431,14 +431,17 @@ bool PageSchedulerImpl::IsThrottled() const {
   return is_throttled_;
 }
 
-void PageSchedulerImpl::OnConnectionUpdated() {
-  bool has_active_connection = false;
+void PageSchedulerImpl::OnAggressiveThrottlingStatusUpdated() {
+  bool opted_out_from_aggressive_throttling = false;
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
-    has_active_connection |= frame_scheduler->has_active_connection();
+    opted_out_from_aggressive_throttling |=
+        frame_scheduler->opted_out_from_aggressive_throttling();
   }
 
-  if (has_active_connection_ != has_active_connection) {
-    has_active_connection_ = has_active_connection;
+  if (opted_out_from_aggressive_throttling_ !=
+      opted_out_from_aggressive_throttling) {
+    opted_out_from_aggressive_throttling_ =
+        opted_out_from_aggressive_throttling;
     UpdateBackgroundBudgetPoolSchedulingLifecycleState();
   }
 }
@@ -554,7 +557,7 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolSchedulingLifecycleState() {
 
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
-  if (is_throttled_ && !has_active_connection_) {
+  if (is_throttled_ && !opted_out_from_aggressive_throttling_) {
     background_time_budget_pool_->EnableThrottling(&lazy_now);
   } else {
     background_time_budget_pool_->DisableThrottling(&lazy_now);
