@@ -600,9 +600,7 @@ StatusBubbleViews::StatusBubbleViews(views::View* base_view)
     : base_view_(base_view) {}
 
 StatusBubbleViews::~StatusBubbleViews() {
-  CancelExpandTimer();
-  if (popup_)
-    popup_->CloseNow();
+  DestroyPopup();
 }
 
 void StatusBubbleViews::InitPopup() {
@@ -637,12 +635,12 @@ void StatusBubbleViews::InitPopup() {
 }
 
 void StatusBubbleViews::DestroyPopup() {
-  DCHECK(popup_);
   CancelExpandTimer();
   expand_view_.reset();
   view_ = nullptr;
-  popup_->CloseNow();
-  popup_.reset();
+  // Move |popup_| to the stack to avoid reentrancy issues with CloseNow().
+  if (std::unique_ptr<views::Widget> popup = std::move(popup_))
+    popup->CloseNow();
 }
 
 void StatusBubbleViews::Reposition() {
