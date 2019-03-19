@@ -17,6 +17,8 @@ class SendTabToSelfSpecifics;
 
 namespace send_tab_to_self {
 
+constexpr base::TimeDelta kExpiryTime = base::TimeDelta::FromDays(10);
+
 class SendTabToSelfLocal;
 
 // A tab that is being shared. The URL is a unique identifier for an entry, as
@@ -70,6 +72,9 @@ class SendTabToSelfEntry {
   static std::unique_ptr<SendTabToSelfEntry> FromLocalProto(
       const SendTabToSelfLocal& pb_entry,
       base::Time now);
+
+  // Returns if the Entry has expired based on the |current_time|.
+  bool IsExpired(base::Time current_time) const;
 
  private:
   std::string guid_;

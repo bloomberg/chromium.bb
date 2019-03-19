@@ -112,13 +112,18 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
 
       std::unique_ptr<SendTabToSelfEntry> entry =
           SendTabToSelfEntry::FromProto(specifics, clock_->Now());
-      // This entry is new. Add it to the model.
-      added.push_back(entry.get());
-      SendTabToSelfLocal entry_pb = entry->AsLocalProto();
-      entries_[entry->GetGUID()] = std::move(entry);
+      // This entry is new. Add it to the model if it hasn't expired.
+      if (entry->IsExpired(clock_->Now())) {
+        // Remove expired data from server.
+        change_processor()->Delete(guid, batch->GetMetadataChangeList());
+      } else {
+        added.push_back(entry.get());
+        SendTabToSelfLocal entry_pb = entry->AsLocalProto();
+        entries_[entry->GetGUID()] = std::move(entry);
 
-      // Write to the store.
-      batch->WriteData(guid, entry_pb.SerializeAsString());
+        // Write to the store.
+        batch->WriteData(guid, entry_pb.SerializeAsString());
+      }
     }
   }
 
@@ -395,6 +400,8 @@ void SendTabToSelfBridge::OnReadAllMetadata(
   }
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
   NotifySendTabToSelfModelLoaded();
+
+  DoGarbageCollection();
 }
 
 void SendTabToSelfBridge::OnCommit(
@@ -418,6 +425,23 @@ SendTabToSelfEntry* SendTabToSelfBridge::GetMutableEntryByGUID(
     return nullptr;
   }
   return it->second.get();
+}
+
+void SendTabToSelfBridge::DoGarbageCollection() {
+  std::vector<std::string> removed;
+
+  auto entry = entries_.begin();
+  while (entry != entries_.end()) {
+    DCHECK_EQ(entry->first, entry->second->GetGUID());
+    std::string guid = entry->first;
+    bool expired = entry->second->IsExpired(clock_->Now());
+    entry++;
+    if (expired) {
+      DeleteEntry(guid);
+      removed.push_back(guid);
+    }
+  }
+  NotifyRemoteSendTabToSelfEntryDeleted(removed);
 }
 
 }  // namespace send_tab_to_self

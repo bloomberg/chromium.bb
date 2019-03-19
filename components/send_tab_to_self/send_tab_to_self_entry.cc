@@ -131,4 +131,10 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(
   return to_return;
 }
 
+bool SendTabToSelfEntry::IsExpired(base::Time current_time) const {
+  return (current_time.ToDeltaSinceWindowsEpoch() -
+              GetSharedTime().ToDeltaSinceWindowsEpoch() >=
+          kExpiryTime);
+}
+
 }  // namespace send_tab_to_self
