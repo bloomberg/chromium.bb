@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,9 +61,6 @@ class FingerprintChromeOSTest : public testing::Test {
   ~FingerprintChromeOSTest() override = default;
 
   void SetUp() override {
-    // This also initializes DBusThreadManager.
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
     chromeos::BiodClient::InitializeFake();
     fingerprint_ = base::WrapUnique(new FingerprintChromeOS());
   }

@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/biod/constants.pb.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -33,7 +32,7 @@ using AuthScanMatches =
 
 // BiodClient is used to communicate with a biod D-Bus manager
 // interface.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient {
+class COMPONENT_EXPORT(BIOD_CLIENT) BiodClient {
  public:
   // Interface for observing changes from the biometrics manager.
   class Observer {

@@ -11,6 +11,8 @@ component("constants") {
     "//base",
   ]
   sources = [
+    "attestation_constants.cc",
+    "attestation_constants.h",
     "dbus_paths.cc",
     "dbus_paths.h",
     "dbus_switches.cc",

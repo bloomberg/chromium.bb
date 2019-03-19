@@ -11,12 +11,13 @@ component("dbus") {
   output_name = "chromeos_dbus"  # Avoid conflict with //dbus
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
   public_deps = [
+    ":common",
+    "//chromeos/dbus/constants",
     "//dbus",
   ]
   deps = [
     ":attestation_proto",
     ":authpolicy_proto",
-    ":biod_proto",
     ":cicerone_proto",
     ":concierge_proto",
     ":cryptohome_proto",
@@ -32,7 +33,6 @@ component("dbus") {
     ":smbprovider_proto",
     ":vm_applications_apps_proto",
     "//base",
-    "//chromeos/dbus/constants",
     "//components/account_id",
     "//components/device_event_log",
     "//components/policy:cloud_policy_proto_generated_compile",
@@ -53,20 +53,12 @@ component("dbus") {
     "audio_node.h",
     "auth_policy_client.cc",
     "auth_policy_client.h",
-    "biod/biod_client.cc",
-    "biod/biod_client.h",
-    "biod/fake_biod_client.cc",
-    "biod/fake_biod_client.h",
-    "blocking_method_caller.cc",
-    "blocking_method_caller.h",
     "cec_service_client.cc",
     "cec_service_client.h",
     "cicerone_client.cc",
     "cicerone_client.h",
     "concierge_client.cc",
     "concierge_client.h",
-    "constants/attestation_constants.cc",
-    "constants/attestation_constants.h",
     "cras_audio_client.cc",
     "cras_audio_client.h",
     "cros_disks_client.cc",
@@ -81,8 +73,6 @@ component("dbus") {
     "dbus_clients_browser.h",
     "dbus_clients_common.cc",
     "dbus_clients_common.h",
-    "dbus_method_call_status.cc",
-    "dbus_method_call_status.h",
     "dbus_thread_manager.cc",
     "dbus_thread_manager.h",
     "debug_daemon_client.cc",
@@ -181,8 +171,6 @@ component("dbus") {
     "oobe_configuration_client.h",
     "permission_broker_client.cc",
     "permission_broker_client.h",
-    "pipe_reader.cc",
-    "pipe_reader.h",
     "power/fake_power_manager_client.cc",
     "power/fake_power_manager_client.h",
     "power/native_timer.cc",
@@ -236,6 +224,30 @@ component("dbus") {
   ]
 }
 
+component("common") {
+  output_name = "chromeos_dbus_common"
+  defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
+
+  public_deps = [
+    "//chromeos/dbus/constants",
+  ]
+
+  deps = [
+    "//base",
+    "//dbus",
+    "//net",
+  ]
+
+  sources = [
+    "blocking_method_caller.cc",
+    "blocking_method_caller.h",
+    "dbus_method_call_status.cc",
+    "dbus_method_call_status.h",
+    "pipe_reader.cc",
+    "pipe_reader.h",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
   configs += [ "//build/config/linux/dbus" ]
@@ -246,14 +258,9 @@ source_set("test_support") {
     "//dbus:test_support",
   ]
   deps = [
-    ":biod_proto",
     "//base",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-  sources = [
-    "biod/test_utils.cc",
-    "biod/test_utils.h",
   ]
 }
 
@@ -262,13 +269,13 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     ":attestation_proto",
-    ":biod_proto",
     ":dbus",
     ":oobe_config_proto",
     ":power_manager_proto",
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos/dbus/biod:test_support",
     "//components/account_id",
     "//dbus",
     "//dbus:test_support",
@@ -322,15 +329,6 @@ proto_library("authpolicy_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/authpolicy"
-}
-
-proto_library("biod_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/biod/constants.proto",
-    "//third_party/cros_system_api/dbus/biod/messages.proto",
-  ]
-
-  proto_out_dir = "chromeos/dbus/biod"
 }
 
 proto_library("cicerone_proto") {
