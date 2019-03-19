@@ -481,15 +481,16 @@ void DataReductionProxyIOData::MarkProxiesAsBad(
   // Sanity check the inputs, as this data may originate from a lower-privilege
   // process (renderer).
 
-  // The current policy sets this to 5 minutes, so don't allow a bigger
-  // timespan.
-  if (bypass_duration < base::TimeDelta() ||
-      bypass_duration > base::TimeDelta::FromMinutes(5)) {
+  if (bypass_duration < base::TimeDelta()) {
     LOG(ERROR) << "Received bad MarkProxiesAsBad() -- invalid bypass_duration: "
                << bypass_duration;
     std::move(callback).Run();
     return;
   }
+
+  // Limit maximum bypass duration to a day.
+  if (bypass_duration > base::TimeDelta::FromDays(1))
+    bypass_duration = base::TimeDelta::FromDays(1);
 
   // |bad_proxies| should be DRP servers or this API allows marking arbitrary
   // proxies as bad. It is possible that proxies from an older config are

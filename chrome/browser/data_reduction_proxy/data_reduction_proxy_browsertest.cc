@@ -595,6 +595,30 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
   EXPECT_THAT(GetBody(), kDummyBody);
 }
 
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       FallbackProxyUsedWhenBlockForLargeDurationSent) {
+  base::HistogramTester histogram_tester;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  // Sending block=86400 triggers a long bypass event that blocks requests for
+  // a day.
+  SetHeader("block=86400");
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+  EXPECT_THAT(GetBody(), kDummyBody);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.BlockTypePrimary",
+                                      BYPASS_EVENT_TYPE_LONG, 1);
+
+  // Request should still not use proxy.
+  SetHeader("");
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+  EXPECT_THAT(GetBody(), kDummyBody);
+}
+
 class DataReductionProxyResourceTypeBrowsertest
     : public DataReductionProxyBrowsertest {
  public:
