@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
@@ -1066,7 +1068,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_docType(BSTR* doc_type) {
 }
 
 IFACEMETHODIMP
-BrowserAccessibilityComWin::get_nameSpaceURIForID(short name_space_id,
+BrowserAccessibilityComWin::get_nameSpaceURIForID(SHORT name_space_id,
                                                   BSTR* name_space_uri) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NAMESPACE_URI_FOR_ID);
   return E_NOTIMPL;
@@ -1085,11 +1087,11 @@ BrowserAccessibilityComWin::put_alternateViewMediaTypes(
 
 IFACEMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
     BSTR* node_name,
-    short* name_space_id,
+    SHORT* name_space_id,
     BSTR* node_value,
     unsigned int* num_children,
     unsigned int* unique_id,
-    unsigned short* node_type) {
+    USHORT* node_type) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_NODE_INFO);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
   if (!owner())
@@ -1122,12 +1124,11 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nodeInfo(
   return S_OK;
 }
 
-IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
-    unsigned short max_attribs,
-    BSTR* attrib_names,
-    short* name_space_id,
-    BSTR* attrib_values,
-    unsigned short* num_attribs) {
+IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(USHORT max_attribs,
+                                                          BSTR* attrib_names,
+                                                          SHORT* name_space_id,
+                                                          BSTR* attrib_values,
+                                                          USHORT* num_attribs) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ISIMPLEDOMNODE_GET_ATTRIBUTES);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
   if (!owner())
@@ -1140,7 +1141,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
   if (*num_attribs > owner()->GetHtmlAttributes().size())
     *num_attribs = owner()->GetHtmlAttributes().size();
 
-  for (unsigned short i = 0; i < *num_attribs; ++i) {
+  for (USHORT i = 0; i < *num_attribs; ++i) {
     attrib_names[i] = SysAllocString(
         base::UTF8ToUTF16(owner()->GetHtmlAttributes()[i].first).c_str());
     name_space_id[i] = 0;
@@ -1151,9 +1152,9 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
 }
 
 IFACEMETHODIMP BrowserAccessibilityComWin::get_attributesForNames(
-    unsigned short num_attribs,
+    USHORT num_attribs,
     BSTR* attrib_names,
-    short* name_space_id,
+    SHORT* name_space_id,
     BSTR* attrib_values) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ATTRIBUTES_FOR_NAMES);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
@@ -1163,7 +1164,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributesForNames(
   if (!attrib_names || !name_space_id || !attrib_values)
     return E_INVALIDARG;
 
-  for (unsigned short i = 0; i < num_attribs; ++i) {
+  for (USHORT i = 0; i < num_attribs; ++i) {
     name_space_id[i] = 0;
     bool found = false;
     std::string name = base::UTF16ToUTF8((LPCWSTR)attrib_names[i]);
@@ -1183,11 +1184,11 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributesForNames(
 }
 
 IFACEMETHODIMP BrowserAccessibilityComWin::get_computedStyle(
-    unsigned short max_style_properties,
+    USHORT max_style_properties,
     boolean use_alternate_view,
     BSTR* style_properties,
     BSTR* style_values,
-    unsigned short* num_style_properties) {
+    USHORT* num_style_properties) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COMPUTED_STYLE);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
   if (!owner())
@@ -1214,7 +1215,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_computedStyle(
 }
 
 IFACEMETHODIMP BrowserAccessibilityComWin::get_computedStyleForProperties(
-    unsigned short num_style_properties,
+    USHORT num_style_properties,
     boolean use_alternate_view,
     BSTR* style_properties,
     BSTR* style_values) {
@@ -1228,7 +1229,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_computedStyleForProperties(
 
   // We only cache a single style property for now: DISPLAY
 
-  for (unsigned short i = 0; i < num_style_properties; ++i) {
+  for (USHORT i = 0; i < num_style_properties; ++i) {
     base::string16 name = base::ToLowerASCII(
         reinterpret_cast<const base::char16*>(style_properties[i]));
     if (name == L"display") {
@@ -2068,9 +2069,9 @@ HRESULT BrowserAccessibilityComWin::GetStringAttributeAsBstr(
 }
 
 // Pass in prefix with ":" included at the end, e.g. "invalid:".
-bool HasAttribute(std::vector<base::string16>& existing_attributes,
+bool HasAttribute(const std::vector<base::string16>& existing_attributes,
                   base::string16 prefix) {
-  for (base::string16& attr : existing_attributes) {
+  for (const base::string16& attr : existing_attributes) {
     if (base::StartsWith(attr, prefix, base::CompareCase::SENSITIVE))
       return true;
   }

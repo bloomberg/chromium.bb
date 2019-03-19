@@ -1571,9 +1571,9 @@ static AtkObject* AXPlatformNodeAuraLinuxGetCaption(AtkTable* table) {
   return nullptr;
 }
 
-static const gchar* BuildDescriptionFromHeaders(
+static const char* BuildDescriptionFromHeaders(
     AXPlatformNodeDelegate* delegate,
-    std::vector<int32_t>& ids) {
+    const std::vector<int32_t>& ids) {
   std::vector<std::string> names;
   for (const auto& node_id : ids) {
     if (AXPlatformNode* header = delegate->GetFromNodeID(node_id)) {
