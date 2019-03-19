@@ -29,6 +29,8 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
   LoadURL("https://example.com/");
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
 
   main_resource.Complete(
       "(<script>"
@@ -36,10 +38,15 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
       "</script>)");
 
   EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
+  EXPECT_THAT(
+      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
 
   MainFrame().ExecuteScript(WebString("socket.close();"));
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
 }
 
 TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
@@ -50,6 +57,8 @@ TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
   LoadURL("https://example.com/");
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
 
   main_resource.Complete(
       "(<script>"
@@ -57,10 +66,15 @@ TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
       "</script>)");
 
   EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
+  EXPECT_THAT(
+      PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
 
   MainFrame().ExecuteScript(WebString("data_channel.close();"));
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
+  EXPECT_THAT(PageScheduler()->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
 }
 
 }  // namespace blink

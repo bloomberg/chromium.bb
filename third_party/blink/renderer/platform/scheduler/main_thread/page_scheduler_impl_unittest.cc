@@ -1593,6 +1593,43 @@ TEST_F(PageSchedulerImplPageTransitionTest,
               UnorderedElementsAreArray(GetExpectedBuckets()));
 }
 
+TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut) {
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
+
+  frame_scheduler_->OnStartedUsingFeature(
+      SchedulingPolicy::Feature::kWebSocket,
+      {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
+
+  frame_scheduler_->OnStartedUsingFeature(
+      SchedulingPolicy::Feature::kWebRTC,
+      {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket,
+                                    SchedulingPolicy::Feature::kWebRTC));
+
+  frame_scheduler_->OnStoppedUsingFeature(
+      SchedulingPolicy::Feature::kWebSocket,
+      {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
+
+  frame_scheduler_->OnStoppedUsingFeature(
+      SchedulingPolicy::Feature::kWebRTC,
+      {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
+}
+
 }  // namespace page_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

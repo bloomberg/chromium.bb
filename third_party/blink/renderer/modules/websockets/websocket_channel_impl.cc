@@ -222,7 +222,8 @@ bool WebSocketChannelImpl::Connect(
   if (auto* scheduler = execution_context_->GetScheduler()) {
     feature_handle_for_scheduler_ = scheduler->RegisterFeature(
         SchedulingPolicy::Feature::kWebSocket,
-        {SchedulingPolicy::DisableAggressiveThrottling()});
+        {SchedulingPolicy::DisableAggressiveThrottling(),
+         SchedulingPolicy::DisableBackForwardCache()});
   }
 
   if (MixedContentChecker::IsMixedContent(

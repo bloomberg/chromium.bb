@@ -781,7 +781,8 @@ RTCPeerConnection::RTCPeerConnection(
   feature_handle_for_scheduler_ =
       document->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
-          {SchedulingPolicy::DisableAggressiveThrottling()});
+          {SchedulingPolicy::DisableAggressiveThrottling(),
+           SchedulingPolicy::DisableBackForwardCache()});
 }
 
 RTCPeerConnection::~RTCPeerConnection() {

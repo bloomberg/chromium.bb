@@ -10,7 +10,9 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -126,6 +128,12 @@ class PLATFORM_EXPORT PageScheduler {
   // Returns true if the page should be exempted from aggressive throttling
   // (e.g. due to a page maintaining an active connection).
   virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
+
+  // Returns a set of features which at the moment prevent page from going into
+  // back-forward cache. If this list is empty, the page is eligible for
+  // back-forward cache.
+  virtual WTF::HashSet<SchedulingPolicy::Feature>
+  GetActiveFeaturesOptingOutFromBackForwardCache() const = 0;
 
   virtual bool OptedOutFromAggressiveThrottlingForTest() const = 0;
 
