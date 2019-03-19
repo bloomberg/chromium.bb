@@ -2071,6 +2071,9 @@ extern const char kAshNotificationStackingBarRedesignDescription[];
 
 #if defined(TOOLKIT_VIEWS)
 
+extern const char kEnableMDRoundedCornersOnDialogsName[];
+extern const char kEnableMDRoundedCornersOnDialogsDescription[];
+
 extern const char kInstallableInkDropName[];
 extern const char kInstallableInkDropDescription[];
 

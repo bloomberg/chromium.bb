@@ -392,7 +392,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       id_generator_(0),
       pen_processor_(
           &id_generator_,
-          base::FeatureList::IsEnabled(features::kDirectManipulationStylus)),
+          base::FeatureList::IsEnabled(::features::kDirectManipulationStylus)),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
       dwm_transition_desired_(false),
@@ -400,9 +400,9 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       sent_window_size_changing_(false),
       left_button_down_on_caption_(false),
       background_fullscreen_hack_(false),
-      pointer_events_for_touch_(features::IsUsingWMPointerForTouch()),
+      pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()),
       precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
-          features::kPrecisionTouchpadScrollPhase)),
+          ::features::kPrecisionTouchpadScrollPhase)),
       autohide_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {

@@ -182,7 +182,7 @@ ScrollView::ScrollView()
       max_height_(-1),
       hide_horizontal_scrollbar_(false),
       scroll_with_layers_enabled_(base::FeatureList::IsEnabled(
-          features::kUiCompositorScrollWithLayers)) {
+          ::features::kUiCompositorScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);
 
   AddChildView(contents_viewport_);

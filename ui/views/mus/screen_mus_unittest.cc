@@ -31,7 +31,7 @@ using ScreenMusTest = ViewsTestWithDesktopNativeWidget;
 
 TEST_F(ScreenMusTest, PrimaryChangedToExisting) {
   // ScreenMus is only used in multi-process Mash.
-  if (features::IsSingleProcessMash())
+  if (::features::IsSingleProcessMash())
     return;
 
   ScreenMus* screen = static_cast<ScreenMus*>(display::Screen::GetScreen());
@@ -49,7 +49,7 @@ TEST_F(ScreenMusTest, PrimaryChangedToExisting) {
 }
 
 TEST_F(ScreenMusTest, AddAndUpdate) {
-  if (features::IsSingleProcessMash())
+  if (::features::IsSingleProcessMash())
     return;
 
   ScreenMus* screen = static_cast<ScreenMus*>(display::Screen::GetScreen());
@@ -78,7 +78,7 @@ TEST_F(ScreenMusTest, AddAndUpdate) {
 }
 
 TEST_F(ScreenMusTest, SetDisplayForNewWindows) {
-  if (features::IsSingleProcessMash())
+  if (::features::IsSingleProcessMash())
     return;
 
   ScreenMus* screen = static_cast<ScreenMus*>(display::Screen::GetScreen());

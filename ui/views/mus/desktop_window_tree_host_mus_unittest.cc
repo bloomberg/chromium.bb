@@ -532,7 +532,7 @@ TEST_F(DesktopWindowTreeHostMusTestHighDPI, InitializeMenuWithDIPBounds) {
 
 TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
   // No ScreenMus in single process Mash.
-  if (features::IsSingleProcessMash())
+  if (::features::IsSingleProcessMash())
     return;
 
   ScreenMus* screen = MusClientTestApi::screen();

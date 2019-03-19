@@ -33468,6 +33468,7 @@ from previous Chrome versions.
   <int value="1129542111" label="CastAllowAllIPs:disabled"/>
   <int value="1129888794" label="ash-touch-hud"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
+  <int value="1138349838" label="EnableMDRoundedCornersOnDialogs:disabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1142515376" label="enable-nacl"/>
@@ -33612,6 +33613,7 @@ from previous Chrome versions.
   <int value="1352447982" label="enable-lcd-text"/>
   <int value="1353066950"
       label="AutofillDoNotUploadSaveUnsupportedCards:enabled"/>
+  <int value="1353113954" label="EnableMDRoundedCornersOnDialogs:enabled"/>
   <int value="1353629763" label="MediaSessionAccelerators:enabled"/>
   <int value="1355923367" label="CrOSContainer:disabled"/>
   <int value="1359972809" label="enable-gesture-deletion"/>

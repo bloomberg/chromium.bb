@@ -3826,7 +3826,7 @@ class ViewLayerTest : public ViewsTestBase {
 
   virtual void SetUpPixelCanvas() {
     scoped_feature_list_.InitAndDisableFeature(
-        features::kEnablePixelCanvasRecording);
+        ::features::kEnablePixelCanvasRecording);
   }
 
  protected:
@@ -4597,7 +4597,7 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
 
   void SetUpPixelCanvas() override {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kEnablePixelCanvasRecording);
+        ::features::kEnablePixelCanvasRecording);
   }
 
   // Test if the recording rects are same with and without layer.

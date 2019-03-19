@@ -3453,6 +3453,11 @@ extern const char kAshNotificationStackingBarRedesignDescription[] =
 
 #if defined(TOOLKIT_VIEWS)
 
+const char kEnableMDRoundedCornersOnDialogsName[] =
+    "MD corners on secondary UI";
+const char kEnableMDRoundedCornersOnDialogsDescription[] =
+    "Increases corner radius on secondary UI.";
+
 const char kInstallableInkDropName[] = "Use InstallableInkDrop where supported";
 const char kInstallableInkDropDescription[] =
     "InstallableInkDrop is part of an InkDrop refactoring effort. This enables "
