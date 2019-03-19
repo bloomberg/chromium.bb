@@ -473,6 +473,14 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
     return test_paths
 
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    tags = super(WebGLConformanceIntegrationTest, cls).GetPlatformTags(browser)
+    tags.extend(
+        [['no-asan', 'asan'][cls._is_asan],
+         'webgl-version-%d' % cls._webgl_version])
+    return tags
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

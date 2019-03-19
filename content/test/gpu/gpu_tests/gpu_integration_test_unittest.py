@@ -14,6 +14,7 @@ from telemetry.internal.platform import system_info
 
 from gpu_tests import path_util
 from gpu_tests import gpu_integration_test
+from gpu_tests import webgl_conformance_integration_test
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
@@ -68,7 +69,11 @@ class MockBrowser(object):
 
 
 class MockArgs(object):
-  pass
+
+  def __init__(self, is_asan=False, webgl_version='1.0.0'):
+    self.is_asan = is_asan
+    self.webgl_conformance_version = webgl_version
+    self.webgl2_only = False
 
 
 class MockAbstractGpuTestClass(gpu_integration_test.GpuIntegrationTest):
@@ -106,6 +111,22 @@ class MockPossibleBrowser(object):
     return self._returned_browser
 
 
+def _generateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
+  class MockTestCase(test_class, MockAbstractGpuTestClass):
+
+    @classmethod
+    def ExpectationsFiles(cls):
+      return ['example_test_expectations.txt']
+
+  _ = [_ for _ in MockTestCase.GenerateGpuTests(args)]
+  platform = MockPlatform('win', 'win10')
+  browser = MockBrowser(
+      platform, VENDOR_NVIDIA, 0x1cb3, browser_type='release',
+      gl_renderer='ANGLE Direct3D9')
+  possible_browser = MockPossibleBrowser(browser)
+  return set(MockTestCase.GenerateTags(args, possible_browser))
+
+
 class GpuIntegrationTestUnittest(unittest.TestCase):
   def setUp(self):
     self._test_state = {}
@@ -120,9 +141,25 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertFalse(MockTestCaseWithoutExpectationsFile.GenerateTags(
         args, possible_browser))
 
+  def testGenerateWebglConformanceExampleTagsForWebglVersion1andAsan(self):
+    args = MockArgs(is_asan=True, webgl_version='1.0.0')
+    tag_set = _generateNvidiaExampleTagsForTestClassAndArgs(
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
+        args)
+    self.assertTrue(set(['asan', 'webgl-version-1']).issubset(tag_set))
+    self.assertFalse(set(['no-asan', 'webgl-version-2']) & tag_set)
+
+  def testGenerateWebglConformanceExampleTagsForWebglVersion2andNoAsan(self):
+    args = MockArgs(is_asan=False, webgl_version='2.0.0')
+    tag_set = _generateNvidiaExampleTagsForTestClassAndArgs(
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
+        args)
+    self.assertTrue(set(['no-asan', 'webgl-version-2']) .issubset(tag_set))
+    self.assertFalse(set(['asan', 'webgl-version-1']) & tag_set)
+
   def testGenerateNvidiaExampleTags(self):
     args = MockArgs()
-    platform = MockPlatform('mac', 'mojave')
+    platform = MockPlatform('win', 'win10')
     browser = MockBrowser(
         platform, VENDOR_NVIDIA, 0x1cb3, browser_type='release',
         gl_renderer='ANGLE Direct3D9')
@@ -130,8 +167,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEqual(
         set(MockTestCaseWithExpectationsFile.GenerateTags(
             args, possible_browser)),
-        set(['mac', 'mojave', 'release', 'nvidia', 'nvidia-0x1cb3',
-             'd3d9', 'no_passthrough']))
+        set(['win', 'win10', 'release', 'nvidia', 'nvidia-0x1cb3',
+             'd3d9', 'no-passthrough']))
 
   def testGenerateVendorTagUsingVendorString(self):
     args = MockArgs()
@@ -162,7 +199,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             args, possible_browser)),
         set(['mac', 'mojave', 'release', 'imagination',
              'imagination-triangle-monster-3000',
-             'no_angle', 'no_passthrough']))
+             'no-angle', 'no-passthrough']))
 
   def testSimpleIntegrationTest(self):
     self._RunIntegrationTest(
