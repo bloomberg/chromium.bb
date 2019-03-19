@@ -30,6 +30,8 @@
 
 const CGFloat kInfobarHeight = 54;
 
+NSString* const kTranslateInfobarViewId = @"kTranslateInfobarViewId";
+
 namespace {
 
 // Size of the infobar buttons.
@@ -200,6 +202,7 @@ const CGFloat kIconTrailingMargin = 12;
 #pragma mark - Private
 
 - (void)setupSubviews {
+  self.accessibilityIdentifier = kTranslateInfobarViewId;
   [self setAccessibilityViewIsModal:YES];
   NSString* a11yAnnoucement =
       [self a11yAnnouncementFromTranslateInfobarViewState:self.state

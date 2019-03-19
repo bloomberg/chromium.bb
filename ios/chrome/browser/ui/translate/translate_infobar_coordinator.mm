@@ -27,6 +27,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kLanguageSelectorPopupMenuId = @"kLanguageSelectorPopupMenuId";
+NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
+
 @interface TranslateInfobarCoordinator () <LanguageSelectionHandler,
                                            PopupMenuPresenterDelegate,
                                            PopupMenuTableViewControllerDelegate,
@@ -117,7 +120,8 @@
   self.mediator.infobarDelegate = context.languageData;
   self.mediator.unavailableLanguageIndex = context.unavailableLanguageIndex;
 
-  [self presentPopupMenu];
+  [self
+      presentPopupMenuWithAccessibilityIdentifier:kLanguageSelectorPopupMenuId];
 }
 
 - (void)dismissLanguageSelector {
@@ -145,7 +149,8 @@
   self.mediator.infobarDelegate = infobarDelegate;
   self.mediator.unavailableLanguageIndex = -1;
 
-  [self presentPopupMenu];
+  [self
+      presentPopupMenuWithAccessibilityIdentifier:kTranslateOptionsPopupMenuId];
 }
 
 - (void)dismissTranslateOptionSelector {
@@ -226,10 +231,11 @@
 #pragma mark - Private
 
 // Presents a popup menu with animation.
-- (void)presentPopupMenu {
+- (void)presentPopupMenuWithAccessibilityIdentifier:(NSString*)identifier {
   self.viewController = [[PopupMenuTableViewController alloc] init];
   self.viewController.baseViewController = self.baseViewController;
   self.viewController.delegate = self;
+  self.viewController.tableView.accessibilityIdentifier = identifier;
 
   self.mediator.consumer = self.viewController;
 
