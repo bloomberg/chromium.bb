@@ -146,7 +146,9 @@ class CORE_EXPORT NGInlineItem {
   void SetSegmentData(unsigned segment_data);
   static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
                              Vector<NGInlineItem>* items);
+
   RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const;
+
   // Whether the other item has the same RunSegmenter properties or not.
   bool EqualsRunSegment(const NGInlineItem&) const;
 

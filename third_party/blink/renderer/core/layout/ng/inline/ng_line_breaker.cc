@@ -757,7 +757,7 @@ scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
     RunSegmenter::RunSegmenterRange segment_range =
         item.CreateRunSegmenterRange();
     shape_result = shaper_.Shape(&item.Style()->GetFont(), item.Direction(),
-                                 start, end, &segment_range);
+                                 start, end, segment_range);
   } else {
     shape_result = items_data_.segments->ShapeText(
         &shaper_, &item.Style()->GetFont(), item.Direction(), start, end,
