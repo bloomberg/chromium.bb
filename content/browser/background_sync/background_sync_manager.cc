@@ -741,8 +741,6 @@ void BackgroundSyncManager::RegisterDidStore(
   }
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
-                  "failure.";
     BackgroundSyncMetrics::CountRegisterFailure(
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     DisableAndClearManager(base::BindOnce(
@@ -1332,8 +1330,6 @@ void BackgroundSyncManager::EventCompleteDidStore(
   }
 
   if (status_code != blink::ServiceWorkerStatusCode::kOk) {
-    LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
-                  "failure.";
     DisableAndClearManager(std::move(callback));
     return;
   }
