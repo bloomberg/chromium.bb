@@ -27,3 +27,6 @@
 
 # http://crbug.com/943835
 -org.chromium.chrome.browser.widget.OverviewListLayoutTest.testCanSwipeClosed
+
+# http://crbug.com/943847
+-org.chromium.chrome.browser.browserservices.TrustedWebActivityTest.launchesTwa
