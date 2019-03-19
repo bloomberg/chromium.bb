@@ -247,7 +247,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
                                               style_map);
   DCHECK(input);
 
-  thread_ = WebThreadSupportingGC::Create(
+  thread_ = std::make_unique<WebThreadSupportingGC>(
       ThreadCreationParams(WebThreadType::kTestThread));
   base::WaitableEvent waitable_event;
   thread_->PostTask(
