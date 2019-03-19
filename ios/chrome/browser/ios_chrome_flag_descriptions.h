@@ -107,10 +107,6 @@ extern const char kWalletServiceUseSandboxDescription[];
 extern const char kAppLauncherRefreshName[];
 extern const char kAppLauncherRefreshDescription[];
 
-// Title and description for the flag to control the dynamic autofill.
-extern const char kAutofillDynamicFormsName[];
-extern const char kAutofillDynamicFormsDescription[];
-
 // Title and description for the flag to control saving FULL_SERVER_CARDS upon
 // success of credit card upload.
 extern const char kAutofillNoLocalSaveOnUploadSuccessName[];

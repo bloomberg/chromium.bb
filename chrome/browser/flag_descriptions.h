@@ -93,9 +93,6 @@ extern const char kAutofillAssistantChromeEntryDescription[];
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];
 
-extern const char kAutofillDynamicFormsName[];
-extern const char kAutofillDynamicFormsDescription[];
-
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
