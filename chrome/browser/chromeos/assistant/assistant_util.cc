@@ -35,6 +35,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (profile->IsLegacySupervised())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER;
 
+  if (profile->IsChild())
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER;
+
   if (chromeos::DemoSession::IsDeviceInDemoMode())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 

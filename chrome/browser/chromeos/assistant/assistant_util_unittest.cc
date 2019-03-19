@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -195,6 +196,15 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->SetSupervisedUserId("foo");
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER,
+            IsAssistantAllowedForProfile(profile()));
+}
+
+TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_ChildUser) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  profile()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER,
             IsAssistantAllowedForProfile(profile()));
 }
 
