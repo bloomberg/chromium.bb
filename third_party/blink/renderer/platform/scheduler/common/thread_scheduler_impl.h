@@ -51,12 +51,9 @@ class PLATFORM_EXPORT ThreadSchedulerImpl : public ThreadScheduler,
 
   virtual const base::TickClock* GetTickClock() = 0;
 
-  scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
-      override;
-
  protected:
-  ThreadSchedulerImpl();
-  ~ThreadSchedulerImpl() override;
+  ThreadSchedulerImpl() {}
+  ~ThreadSchedulerImpl() override = default;
 };
 
 }  // namespace scheduler

@@ -81,6 +81,12 @@ WebThreadScheduler::CleanupTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadScheduler::DeprecatedDefaultTaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<Thread> WebThreadScheduler::CreateMainThread() {
   NOTREACHED();
   return nullptr;

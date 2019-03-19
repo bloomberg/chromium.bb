@@ -85,6 +85,9 @@ class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
 
   scoped_refptr<NonMainThreadTaskQueue> CreateTaskQueue(const char* name);
 
+  scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner()
+      override;
+
  protected:
   static void RunIdleTask(Thread::IdleTask task, base::TimeTicks deadline);
 

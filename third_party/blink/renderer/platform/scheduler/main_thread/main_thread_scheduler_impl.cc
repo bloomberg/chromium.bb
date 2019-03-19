@@ -639,6 +639,11 @@ MainThreadSchedulerImpl::CleanupTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::DeprecatedDefaultTaskRunner() {
+  return helper_.DeprecatedDefaultTaskRunner();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::VirtualTimeControlTaskRunner() {
   return virtual_time_control_task_queue_->task_runner();
 }
