@@ -84,6 +84,9 @@ using AutoSchedulerLock = internal::BasicAutoLock<SchedulerLock>;
 // Provides the same functionality as base::AutoUnlock for SchedulerLock.
 using AutoSchedulerUnlock = internal::BasicAutoUnlock<SchedulerLock>;
 
+// Provides the same functionality as base::AutoLockMaybe for SchedulerLock.
+using AutoSchedulerLockMaybe = internal::BasicAutoLockMaybe<SchedulerLock>;
+
 // Informs the clang thread safety analysis that an aliased lock is acquired.
 // Because the clang thread safety analysis doesn't understand aliased locks
 // [1], this code wouldn't compile without AnnotateAcquiredLockAlias:

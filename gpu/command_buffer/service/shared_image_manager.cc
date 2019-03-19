@@ -46,14 +46,14 @@ bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
 
 class SharedImageManager::AutoLock {
  public:
-  explicit AutoLock(SharedImageManager* manager) {
-    if (manager->is_thread_safe())
-      auto_lock_.emplace(manager->lock_.value());
-  }
+  explicit AutoLock(SharedImageManager* manager)
+      : auto_lock_(manager->is_thread_safe() ? &manager->lock_.value()
+                                             : nullptr) {}
+
   ~AutoLock() = default;
 
  private:
-  base::Optional<base::AutoLock> auto_lock_;
+  base::AutoLockMaybe auto_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
