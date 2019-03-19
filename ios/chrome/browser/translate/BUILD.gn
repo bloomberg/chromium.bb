@@ -80,6 +80,7 @@ source_set("unit_tests") {
     ":translate",
     "//base",
     "//base/test:test_support",
+    "//components/language/core/browser",
     "//components/translate/core/browser:test_support",
     "//components/translate/ios/browser",
     "//ios/chrome/browser",

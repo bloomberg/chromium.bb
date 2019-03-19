@@ -25,6 +25,7 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/language/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/strings",
@@ -37,6 +38,7 @@ source_set("unit_tests") {
   sources = [
     "baseline_language_model_unittest.cc",
     "heuristic_language_model_unittest.cc",
+    "language_prefs_unittest.cc",
     "url_language_histogram_unittest.cc",
   ]
   deps = [
@@ -45,6 +47,7 @@ source_set("unit_tests") {
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",
+    "//components/sync_preferences:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

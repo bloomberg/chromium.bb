@@ -166,10 +166,10 @@ net::URLRequestContextGetter* WebViewBrowserState::GetRequestContext() {
 
 void WebViewBrowserState::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* pref_registry) {
-  language::RegisterProfilePrefs(pref_registry);
   pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
   pref_registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                                      true);
+  language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
