@@ -20702,7 +20702,7 @@ Called by update_net_error_codes.py.-->
   <int value="1352" label="CSSValueAppearanceNotNone"/>
   <int value="1353" label="CSSValueAppearanceOthers"/>
   <int value="1354" label="CSSValueAppearanceButton"/>
-  <int value="1355" label="CSSValueAppearanceCaret"/>
+  <int value="1355" label="OBSOLETE_CSSValueAppearanceCaret"/>
   <int value="1356" label="CSSValueAppearanceCheckbox"/>
   <int value="1357" label="CSSValueAppearanceMenulist"/>
   <int value="1358" label="CSSValueAppearanceMenulistButton"/>
@@ -22200,23 +22200,28 @@ Called by update_net_error_codes.py.-->
   <int value="2793" label="AnimationFrameCancelledWithinFrame"/>
   <int value="2794" label="SchedulingIsInputPending"/>
   <int value="2795" label="V8StringNormalize"/>
-  <int value="2796" label="CSSValueAppearanceButtonBevel"/>
-  <int value="2797" label="CSSValueAppearanceListitem"/>
-  <int value="2798" label="CSSValueAppearanceMediaControlsBackground"/>
+  <int value="2796" label="OBSOLETE_CSSValueAppearanceButtonBevel"/>
+  <int value="2797" label="OBSOLETE_CSSValueAppearanceListitem"/>
+  <int value="2798" label="OBSOLETE_CSSValueAppearanceMediaControlsBackground"/>
   <int value="2799"
-      label="CSSValueAppearanceMediaControlsFullscreenBackground"/>
-  <int value="2800" label="CSSValueAppearanceMediaCurrentTimeDisplay"/>
-  <int value="2801" label="CSSValueAppearanceMediaEnterFullscreenButton"/>
-  <int value="2802" label="CSSValueAppearanceMediaExitFullscreenButton"/>
-  <int value="2803" label="CSSValueAppearanceMediaMuteButton"/>
-  <int value="2804" label="CSSValueAppearanceMediaOverlayPlayButton"/>
-  <int value="2805" label="CSSValueAppearanceMediaPlayButton"/>
-  <int value="2806" label="CSSValueAppearanceMediaTimeRemainingDisplay"/>
-  <int value="2807" label="CSSValueAppearanceMediaToggleClosedCaptionsButton"/>
-  <int value="2808" label="CSSValueAppearanceMediaVolumeSliderContainer"/>
-  <int value="2809" label="CSSValueAppearanceMenulistTextfield"/>
-  <int value="2810" label="CSSValueAppearanceMenulistText"/>
-  <int value="2811" label="CSSValueAppearanceProgressBarValue"/>
+      label="OBSOLETE_CSSValueAppearanceMediaControlsFullscreenBackground"/>
+  <int value="2800" label="OBSOLETE_CSSValueAppearanceMediaCurrentTimeDisplay"/>
+  <int value="2801"
+      label="OBSOLETE_CSSValueAppearanceMediaEnterFullscreenButton"/>
+  <int value="2802"
+      label="OBSOLETE_CSSValueAppearanceMediaExitFullscreenButton"/>
+  <int value="2803" label="OBSOLETE_CSSValueAppearanceMediaMuteButton"/>
+  <int value="2804" label="OBSOLETE_CSSValueAppearanceMediaOverlayPlayButton"/>
+  <int value="2805" label="OBSOLETE_CSSValueAppearanceMediaPlayButton"/>
+  <int value="2806"
+      label="OBSOLETE_CSSValueAppearanceMediaTimeRemainingDisplay"/>
+  <int value="2807"
+      label="OBSOLETE_CSSValueAppearanceMediaToggleClosedCaptionsButton"/>
+  <int value="2808"
+      label="OBSOLETE_CSSValueAppearanceMediaVolumeSliderContainer"/>
+  <int value="2809" label="OBSOLETE_CSSValueAppearanceMenulistTextfield"/>
+  <int value="2810" label="OBSOLETE_CSSValueAppearanceMenulistText"/>
+  <int value="2811" label="OBSOLETE_CSSValueAppearanceProgressBarValue"/>
   <int value="2812" label="U2FCryptotokenRegister"/>
   <int value="2813" label="U2FCryptotokenSign"/>
   <int value="2814" label="CSSValueAppearanceInnerSpinButton"/>

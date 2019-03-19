@@ -242,35 +242,11 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kButtonPart:
       value_id_ = CSSValueButton;
       break;
-    case kButtonBevelPart:
-      value_id_ = CSSValueButtonBevel;
-      break;
     case kInnerSpinButtonPart:
       value_id_ = CSSValueInnerSpinButton;
       break;
     case kListboxPart:
       value_id_ = CSSValueListbox;
-      break;
-    case kListItemPart:
-      value_id_ = CSSValueListitem;
-      break;
-    case kMediaEnterFullscreenButtonPart:
-      value_id_ = CSSValueMediaEnterFullscreenButton;
-      break;
-    case kMediaExitFullscreenButtonPart:
-      value_id_ = CSSValueMediaExitFullscreenButton;
-      break;
-    case kMediaPlayButtonPart:
-      value_id_ = CSSValueMediaPlayButton;
-      break;
-    case kMediaOverlayPlayButtonPart:
-      value_id_ = CSSValueMediaOverlayPlayButton;
-      break;
-    case kMediaMuteButtonPart:
-      value_id_ = CSSValueMediaMuteButton;
-      break;
-    case kMediaToggleClosedCaptionsButtonPart:
-      value_id_ = CSSValueMediaToggleClosedCaptionsButton;
       break;
     case kMediaSliderPart:
       value_id_ = CSSValueMediaSlider;
@@ -278,26 +254,11 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kMediaSliderThumbPart:
       value_id_ = CSSValueMediaSliderthumb;
       break;
-    case kMediaVolumeSliderContainerPart:
-      value_id_ = CSSValueMediaVolumeSliderContainer;
-      break;
     case kMediaVolumeSliderPart:
       value_id_ = CSSValueMediaVolumeSlider;
       break;
     case kMediaVolumeSliderThumbPart:
       value_id_ = CSSValueMediaVolumeSliderthumb;
-      break;
-    case kMediaControlsBackgroundPart:
-      value_id_ = CSSValueMediaControlsBackground;
-      break;
-    case kMediaControlsFullscreenBackgroundPart:
-      value_id_ = CSSValueMediaControlsFullscreenBackground;
-      break;
-    case kMediaCurrentTimePart:
-      value_id_ = CSSValueMediaCurrentTimeDisplay;
-      break;
-    case kMediaTimeRemainingPart:
-      value_id_ = CSSValueMediaTimeRemainingDisplay;
       break;
     case kMediaControlPart:
       value_id_ = CSSValueInternalMediaControl;
@@ -308,20 +269,11 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kMenulistButtonPart:
       value_id_ = CSSValueMenulistButton;
       break;
-    case kMenulistTextPart:
-      value_id_ = CSSValueMenulistText;
-      break;
-    case kMenulistTextFieldPart:
-      value_id_ = CSSValueMenulistTextfield;
-      break;
     case kMeterPart:
       value_id_ = CSSValueMeter;
       break;
     case kProgressBarPart:
       value_id_ = CSSValueProgressBar;
-      break;
-    case kProgressBarValuePart:
-      value_id_ = CSSValueProgressBarValue;
       break;
     case kSliderHorizontalPart:
       value_id_ = CSSValueSliderHorizontal;
@@ -334,9 +286,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
       break;
     case kSliderThumbVerticalPart:
       value_id_ = CSSValueSliderthumbVertical;
-      break;
-    case kCaretPart:
-      value_id_ = CSSValueCaret;
       break;
     case kSearchFieldPart:
       value_id_ = CSSValueSearchfield;

@@ -209,20 +209,10 @@ bool ThemePainter::Paint(const LayoutObject& o,
         COUNT_APPEARANCE(doc, SliderThumbVerticalForOthers);
       return PaintSliderThumb(node, style, paint_info, r);
     }
-    case kMediaEnterFullscreenButtonPart:
-    case kMediaExitFullscreenButtonPart:
-    case kMediaPlayButtonPart:
-    case kMediaOverlayPlayButtonPart:
-    case kMediaMuteButtonPart:
-    case kMediaToggleClosedCaptionsButtonPart:
     case kMediaSliderPart:
     case kMediaSliderThumbPart:
-    case kMediaVolumeSliderContainerPart:
     case kMediaVolumeSliderPart:
     case kMediaVolumeSliderThumbPart:
-    case kMediaTimeRemainingPart:
-    case kMediaCurrentTimePart:
-    case kMediaControlsBackgroundPart:
       return true;
     case kMenulistButtonPart:
     case kTextFieldPart:
