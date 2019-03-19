@@ -15,6 +15,7 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -53,6 +54,13 @@ MediaNotificationItem::MediaNotificationItem(
         kMediaSessionNotificationArtworkMinSize,
         kMediaSessionNotificationArtworkDesiredSize,
         std::move(artwork_observer));
+
+    media_session::mojom::MediaControllerImageObserverPtr icon_observer;
+    icon_observer_binding_.Bind(mojo::MakeRequest(&icon_observer));
+    media_controller_ptr_->ObserveImages(
+        media_session::mojom::MediaSessionImageType::kSourceIcon,
+        message_center::kSmallImageSizeMD, message_center::kSmallImageSizeMD,
+        std::move(icon_observer));
   }
 
   MaybeHideOrShowNotification();
@@ -92,12 +100,20 @@ void MediaNotificationItem::MediaSessionActionsChanged(
 void MediaNotificationItem::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
-  DCHECK_EQ(media_session::mojom::MediaSessionImageType::kArtwork, type);
+  switch (type) {
+    case media_session::mojom::MediaSessionImageType::kArtwork:
+      session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 
-  session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+      if (view_)
+        view_->UpdateWithMediaArtwork(session_artwork_);
+      break;
+    case media_session::mojom::MediaSessionImageType::kSourceIcon:
+      session_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 
-  if (view_)
-    view_->UpdateWithMediaArtwork(session_artwork_);
+      if (view_)
+        view_->UpdateWithMediaIcon(session_icon_);
+      break;
+  }
 }
 
 void MediaNotificationItem::SetView(MediaNotificationView* view) {

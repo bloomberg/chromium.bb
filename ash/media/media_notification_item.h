@@ -81,11 +81,16 @@ class ASH_EXPORT MediaNotificationItem
 
   gfx::ImageSkia session_artwork_;
 
+  gfx::ImageSkia session_icon_;
+
   mojo::Binding<media_session::mojom::MediaControllerObserver>
       observer_binding_{this};
 
   mojo::Binding<media_session::mojom::MediaControllerImageObserver>
       artwork_observer_binding_{this};
+
+  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
+      icon_observer_binding_{this};
 
   base::WeakPtrFactory<MediaNotificationItem> weak_ptr_factory_{this};
 
