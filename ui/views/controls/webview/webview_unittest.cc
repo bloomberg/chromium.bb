@@ -50,13 +50,13 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 
   ~WebViewTestWebContentsObserver() override {
     if (web_contents_)
-      content::WebContentsObserver::Observe(NULL);
+      content::WebContentsObserver::Observe(nullptr);
   }
 
   void WebContentsDestroyed() override {
     DCHECK(web_contents_);
-    content::WebContentsObserver::Observe(NULL);
-    web_contents_ = NULL;
+    content::WebContentsObserver::Observe(nullptr);
+    web_contents_ = nullptr;
   }
 
   void OnVisibilityChanged(content::Visibility visibility) override {
@@ -64,7 +64,7 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
       case content::Visibility::VISIBLE: {
 #if defined(USE_AURA)
         valid_root_while_shown_ =
-            web_contents()->GetNativeView()->GetRootWindow() != NULL;
+            web_contents()->GetNativeView()->GetRootWindow() != nullptr;
 #endif
         was_shown_ = true;
         ++shown_count_;
@@ -173,7 +173,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
     top_level_widget_->Close();  // Deletes all children and itself.
     RunPendingMessages();
 
-    browser_context_.reset(NULL);
+    browser_context_.reset(nullptr);
     // Flush the message loop to execute pending relase tasks as this would
     // upset ASAN and Valgrind.
     RunPendingMessages();
