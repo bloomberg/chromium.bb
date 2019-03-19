@@ -26,6 +26,7 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
 
   scoped_refptr<MainThreadTaskQueue> DefaultMainThreadTaskQueue();
   scoped_refptr<MainThreadTaskQueue> ControlMainThreadTaskQueue();
+  scoped_refptr<base::SingleThreadTaskRunner> DeprecatedDefaultTaskRunner();
 
  protected:
   scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue() override;

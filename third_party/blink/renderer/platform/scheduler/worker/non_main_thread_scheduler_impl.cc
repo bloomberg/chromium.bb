@@ -106,5 +106,10 @@ const base::TickClock* NonMainThreadSchedulerImpl::GetTickClock() {
   return helper_.GetClock();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+NonMainThreadSchedulerImpl::DeprecatedDefaultTaskRunner() {
+  return DefaultTaskRunner();
+}
+
 }  // namespace scheduler
 }  // namespace blink
