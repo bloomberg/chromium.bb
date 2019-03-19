@@ -6034,7 +6034,7 @@ crbug.com/934636 virtual/outofblink-cors/http/tests/security/cross-origin-indexe
 crbug.com/934768 [ Mac ] http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
 crbug.com/934768 [ Mac ] virtual/binary-for-devtools/http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
 crbug.com/934768 [ Mac ] virtual/threaded/http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
-crbug.com/934818 [ Mac Debug ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
+crbug.com/934818 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 crbug.com/935027 http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Crash Pass ]
 crbug.com/935027 virtual/binary-for-devtools/http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Crash Pass ]
 
@@ -6051,7 +6051,6 @@ crbug.com/935690 virtual/video-surface-layer/media/video-played-ranges-1.html [ 
 # Sheriff 2019-02-26
 crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [ Failure Pass ]
 crbug.com/936095 fast/css-intrinsic-dimensions/height-tables-collapsed.html [ Failure Pass ]
-crbug.com/934818 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936165 virtual/video-surface-layer/media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable-stream.html [ Failure Pass ]
@@ -6149,3 +6148,10 @@ crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversi
 
 crbug.com/943095 external/wpt/fetch/stale-while-revalidate/fetch.tentative.html [ Pass Timeout ]
 crbug.com/943095 virtual/outofblink-cors/external/wpt/fetch/stale-while-revalidate/fetch.tentative.html [ Pass Timeout ]
+
+# Trooper 2019-03-19
+crbug.com/941482 [ Win ] virtual/omt-worker-fetch/external/wpt/resource-timing/nested-context-navigations.html [ Pass Failure ]
+crbug.com/943390 [ Win ] http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
+crbug.com/943390 [ Win ] virtual/outofblink-cors/http/tests/security/mixedContent/empty-url-plugin-in-frame.html [ Pass Failure ]
+crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
+crbug.com/943388 [ Win ] virtual/binary-for-devtools/http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
