@@ -33,3 +33,21 @@ static_library("util") {
     "//components/version_info",
   ]
 }
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "cryptauth_v2_test_util.cc",
+    "cryptauth_v2_test_util.h",
+  ]
+
+  public_deps = [
+    ":proto",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos/services/device_sync/public/cpp:cpp",
+  ]
+}
