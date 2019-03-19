@@ -220,7 +220,7 @@ Database::Database(DatabaseContext* database_context,
                    const String& name,
                    const String& expected_version,
                    const String& display_name,
-                   unsigned estimated_size)
+                   uint32_t estimated_size)
     : database_context_(database_context),
       name_(name.IsolatedCopy()),
       expected_version_(expected_version.IsolatedCopy()),
@@ -617,7 +617,7 @@ String Database::DisplayName() const {
   return display_name_.IsolatedCopy();
 }
 
-unsigned Database::EstimatedSize() const {
+uint32_t Database::EstimatedSize() const {
   return estimated_size_;
 }
 
