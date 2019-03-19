@@ -969,7 +969,7 @@
   },
   {
     "name": "enable-content-suggestions-thumbnail-dominant-color",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
