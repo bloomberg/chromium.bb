@@ -60,13 +60,20 @@ static int mediatek_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			      uint64_t use_flags)
+static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					     uint32_t format, const uint64_t *modifiers,
+					     uint32_t count)
 {
 	int ret;
 	size_t plane;
 	uint32_t stride;
 	struct drm_mtk_gem_create gem_create;
+
+	if (!drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
+		errno = EINVAL;
+		drv_log("no usable modifier found\n");
+		return -EINVAL;
+	}
 
 	/*
 	 * Since the ARM L1 cache line size is 64 bytes, align to that as a
@@ -89,6 +96,14 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 		bo->handles[plane].u32 = gem_create.handle;
 
 	return 0;
+}
+
+static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			      uint64_t use_flags)
+{
+	uint64_t modifiers[] = { DRM_FORMAT_MOD_LINEAR };
+	return mediatek_bo_create_with_modifiers(bo, width, height, format, modifiers,
+						 ARRAY_SIZE(modifiers));
 }
 
 static void *mediatek_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
@@ -200,6 +215,7 @@ const struct backend backend_mediatek = {
 	.name = "mediatek",
 	.init = mediatek_init,
 	.bo_create = mediatek_bo_create,
+	.bo_create_with_modifiers = mediatek_bo_create_with_modifiers,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = drv_prime_bo_import,
 	.bo_map = mediatek_bo_map,

@@ -8,7 +8,6 @@
 
 #include <errno.h>
 #include <rockchip_drm.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -151,16 +150,6 @@ static int rockchip_init(struct driver *drv)
 	return 0;
 }
 
-static bool has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier)
-{
-	uint32_t i;
-	for (i = 0; i < count; i++)
-		if (list[i] == modifier)
-			return true;
-
-	return false;
-}
-
 static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
 					     uint32_t format, const uint64_t *modifiers,
 					     uint32_t count)
@@ -179,12 +168,12 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 		drv_bo_from_format(bo, aligned_width, height, format);
 		bo->total_size = bo->strides[0] * aligned_height + w_mbs * h_mbs * 128;
 	} else if (width <= 2560 &&
-		   has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
+		   drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
 		 * pick that */
 		afbc_bo_from_format(bo, width, height, format);
 	} else {
-		if (!has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
+		if (!drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
 			errno = EINVAL;
 			drv_log("no usable modifier found\n");
 			return -1;

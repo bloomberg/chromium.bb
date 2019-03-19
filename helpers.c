@@ -6,7 +6,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -669,4 +668,17 @@ uint64_t drv_pick_modifier(const uint64_t *modifiers, uint32_t count,
 	}
 
 	return DRM_FORMAT_MOD_LINEAR;
+}
+
+/*
+ * Search a list of modifiers to see if a given modifier is present
+ */
+bool drv_has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier)
+{
+	uint32_t i;
+	for (i = 0; i < count; i++)
+		if (list[i] == modifier)
+			return true;
+
+	return false;
 }
