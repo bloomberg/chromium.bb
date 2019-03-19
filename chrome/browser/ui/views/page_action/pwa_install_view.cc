@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
@@ -49,7 +50,9 @@ bool PwaInstallView::Update() {
   return visible() != was_visible;
 }
 
-void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {}
+void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
+  base::RecordAction(base::UserMetricsAction("PWAInstallIcon"));
+}
 
 views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {
   // TODO(https://907351): Implement.

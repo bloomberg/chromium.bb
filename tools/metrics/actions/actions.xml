@@ -16322,6 +16322,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PWAInstallIcon">
+  <owner>alancutter@chromium.org</owner>
+  <description>
+    The plus icon shown in the omnibox when a site has passed the browser's PWA
+    promotability checks.
+  </description>
+</action>
+
 <action name="Redo">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
