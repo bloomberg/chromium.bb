@@ -12,8 +12,7 @@ CaptureTrackingView::CaptureTrackingView()
       got_capture_lost_(false) {
 }
 
-CaptureTrackingView::~CaptureTrackingView() {
-}
+CaptureTrackingView::~CaptureTrackingView() = default;
 
 bool CaptureTrackingView::OnMousePressed(const ui::MouseEvent& event) {
   got_press_ = true;

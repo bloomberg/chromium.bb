@@ -115,7 +115,7 @@ class LayoutElement {
     DCHECK(resize_percent >= 0);
   }
 
-  virtual ~LayoutElement() {}
+  virtual ~LayoutElement() = default;
 
   void SetLocation(int location) {
     location_ = location;
@@ -188,7 +188,7 @@ class Column : public LayoutElement {
         is_padding_(is_padding),
         master_column_(nullptr) {}
 
-  ~Column() override {}
+  ~Column() override = default;
 
   GridLayout::Alignment h_align() { return h_align_; }
   GridLayout::Alignment v_align() { return v_align_; }
@@ -281,7 +281,7 @@ class Row : public LayoutElement {
       max_descent_(0) {
   }
 
-  ~Row() override {}
+  ~Row() override = default;
 
   void ResetSize() override {
     max_ascent_ = max_descent_ = 0;
@@ -401,8 +401,7 @@ static bool CompareByRowSpan(const std::unique_ptr<ViewState>& v1,
 
 ColumnSet::ColumnSet(int id) : id_(id), linked_column_size_limit_(INT_MAX) {}
 
-ColumnSet::~ColumnSet() {
-}
+ColumnSet::~ColumnSet() = default;
 
 void ColumnSet::AddPaddingColumn(float resize_percent, int width) {
   AddColumn(GridLayout::FILL, GridLayout::FILL, resize_percent,
@@ -779,7 +778,7 @@ GridLayout::GridLayout(View* host) : host_(host) {
   DCHECK(host);
 }
 
-GridLayout::~GridLayout() {}
+GridLayout::~GridLayout() = default;
 
 ColumnSet* GridLayout::AddColumnSet(int id) {
   DCHECK(GetColumnSet(id) == nullptr);

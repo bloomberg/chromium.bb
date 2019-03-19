@@ -43,7 +43,7 @@ BoxLayout::ViewWrapper::ViewWrapper(const BoxLayout* layout, View* view)
     margins_ = *margins;
 }
 
-BoxLayout::ViewWrapper::~ViewWrapper() {}
+BoxLayout::ViewWrapper::~ViewWrapper() = default;
 
 int BoxLayout::ViewWrapper::GetHeightForWidth(int width) const {
   // When collapse_margins_spacing_ is true, the BoxLayout handles the margin
@@ -103,8 +103,7 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
       collapse_margins_spacing_(collapse_margins_spacing),
       host_(nullptr) {}
 
-BoxLayout::~BoxLayout() {
-}
+BoxLayout::~BoxLayout() = default;
 
 void BoxLayout::SetFlexForView(const View* view,
                                int flex_weight,

@@ -23,7 +23,7 @@ class WidgetFocusChangeListener {
   virtual void OnNativeFocusChanged(gfx::NativeView focused_now) = 0;
 
  protected:
-  virtual ~WidgetFocusChangeListener() {}
+  virtual ~WidgetFocusChangeListener() = default;
 };
 
 class VIEWS_EXPORT WidgetFocusManager {

@@ -19,7 +19,6 @@ WebViewTestHelper::WebViewTestHelper() {
   test_content_client_initializer_->CreateTestRenderViewHosts();
 }
 
-WebViewTestHelper::~WebViewTestHelper() {
-}
+WebViewTestHelper::~WebViewTestHelper() = default;
 
 }  // namespace views

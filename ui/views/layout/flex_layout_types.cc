@@ -178,16 +178,10 @@ FlexSpecification::FlexSpecification(const FlexRule& rule,
                                      int weight)
     : rule_(rule), order_(order), weight_(weight) {}
 
-FlexSpecification::FlexSpecification(const FlexSpecification& other)
-    : rule_(other.rule_), order_(other.order_), weight_(other.weight_) {}
+FlexSpecification::FlexSpecification(const FlexSpecification& other) = default;
 
 FlexSpecification& FlexSpecification::operator=(
-    const FlexSpecification& other) {
-  rule_ = other.rule_;
-  order_ = other.order_;
-  weight_ = other.weight_;
-  return *this;
-}
+    const FlexSpecification& other) = default;
 
 FlexSpecification::~FlexSpecification() = default;
 

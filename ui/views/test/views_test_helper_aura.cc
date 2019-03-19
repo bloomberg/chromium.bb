@@ -28,8 +28,7 @@ ViewsTestHelperAura::ViewsTestHelperAura(
   aura_test_helper_.reset(new aura::test::AuraTestHelper());
 }
 
-ViewsTestHelperAura::~ViewsTestHelperAura() {
-}
+ViewsTestHelperAura::~ViewsTestHelperAura() = default;
 
 void ViewsTestHelperAura::EnableMusWithWindowTreeClient(
     aura::WindowTreeClient* window_tree_client) {

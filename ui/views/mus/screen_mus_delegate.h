@@ -25,7 +25,7 @@ class VIEWS_MUS_EXPORT ScreenMusDelegate {
   virtual aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) = 0;
 
  protected:
-  virtual ~ScreenMusDelegate() {}
+  virtual ~ScreenMusDelegate() = default;
 };
 
 }  // namespace views

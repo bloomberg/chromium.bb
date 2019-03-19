@@ -23,7 +23,7 @@ TestMenuDelegate::TestMenuDelegate()
       on_menu_closed_menu_(nullptr),
       on_perform_drop_called_(false) {}
 
-TestMenuDelegate::~TestMenuDelegate() {}
+TestMenuDelegate::~TestMenuDelegate() = default;
 
 bool TestMenuDelegate::ShowContextMenu(MenuItemView* source,
                                        int id,
@@ -67,7 +67,7 @@ void TestMenuDelegate::WillHideMenu(MenuItemView* menu) {
 MenuControllerTestApi::MenuControllerTestApi()
     : controller_(MenuController::GetActiveInstance()->AsWeakPtr()) {}
 
-MenuControllerTestApi::~MenuControllerTestApi() {}
+MenuControllerTestApi::~MenuControllerTestApi() = default;
 
 void MenuControllerTestApi::ClearState() {
   if (!controller_)

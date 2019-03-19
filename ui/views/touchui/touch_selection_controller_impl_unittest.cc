@@ -648,7 +648,7 @@ class TestTouchEditable : public ui::TouchEditable {
     cursor_bound_.set_type(gfx::SelectionBound::Type::CENTER);
   }
 
-  ~TestTouchEditable() override {}
+  ~TestTouchEditable() override = default;
 
  private:
   // Overridden from ui::TouchEditable.

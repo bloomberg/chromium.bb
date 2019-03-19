@@ -16,8 +16,7 @@ MenuRunnerTestAPI::MenuRunnerTestAPI(MenuRunner* menu_runner)
     : menu_runner_(menu_runner) {
 }
 
-MenuRunnerTestAPI::~MenuRunnerTestAPI() {
-}
+MenuRunnerTestAPI::~MenuRunnerTestAPI() = default;
 
 void MenuRunnerTestAPI::SetMenuRunnerHandler(
     std::unique_ptr<MenuRunnerHandler> menu_runner_handler) {

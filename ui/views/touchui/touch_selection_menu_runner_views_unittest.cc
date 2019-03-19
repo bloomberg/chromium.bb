@@ -27,7 +27,7 @@ class TouchSelectionMenuRunnerViewsTest : public ViewsTestBase,
  public:
   TouchSelectionMenuRunnerViewsTest()
       : no_command_available_(false), last_executed_command_id_(0) {}
-  ~TouchSelectionMenuRunnerViewsTest() override {}
+  ~TouchSelectionMenuRunnerViewsTest() override = default;
 
  protected:
   void SetUp() override {

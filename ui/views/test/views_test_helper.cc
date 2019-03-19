@@ -6,11 +6,9 @@
 
 namespace views {
 
-ViewsTestHelper::ViewsTestHelper() {
-}
+ViewsTestHelper::ViewsTestHelper() = default;
 
-ViewsTestHelper::~ViewsTestHelper() {
-}
+ViewsTestHelper::~ViewsTestHelper() = default;
 
 void ViewsTestHelper::SetUp() {
 }

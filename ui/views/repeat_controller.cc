@@ -19,8 +19,7 @@ const int kRepeatDelay = 50;
 RepeatController::RepeatController(const base::RepeatingClosure& callback)
     : callback_(callback) {}
 
-RepeatController::~RepeatController() {
-}
+RepeatController::~RepeatController() = default;
 
 void RepeatController::Start() {
   // The first timer is slightly longer than subsequent repeats.
