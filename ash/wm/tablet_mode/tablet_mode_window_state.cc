@@ -467,7 +467,7 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
     if (!window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
-      if (use_zero_animation_type_ || enter_animation_type() == STEP_END) {
+      if (enter_animation_type() == STEP_END) {
         window_state->SetBoundsDirectCrossFade(bounds_in_parent,
                                                gfx::Tween::ZERO);
         // Reset the |enter_animation_type_| to DEFAULT it if is STEP_END, which

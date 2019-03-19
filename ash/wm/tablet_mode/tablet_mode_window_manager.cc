@@ -129,32 +129,9 @@ void TabletModeWindowManager::OnOverviewModeStarting() {
   }
 }
 
-void TabletModeWindowManager::OnOverviewModeEnding(
-    OverviewSession* overview_session) {
-  exit_overview_by_window_drag_ =
-      overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kWindowDragged;
-}
-
 void TabletModeWindowManager::OnOverviewModeEnded() {
-  for (auto& pair : window_state_map_) {
-    // We don't want any animation if overview exits because of dragging a
-    // window from top, including the window update bounds animation. Set the
-    // animation tween type to ZERO for all the other windows except the dragged
-    // window(active window). Then the dragged window can still be animated to
-    // its target bounds but all the other windows' bounds will be updated at
-    // the end of the animation.
-    pair.second->set_use_zero_animation_type(
-        exit_overview_by_window_drag_ &&
-        !wm::GetWindowState(pair.first)->IsActive());
-
+  for (auto& pair : window_state_map_)
     SetDeferBoundsUpdates(pair.first, /*defer_bounds_updates=*/false);
-    // SetDeferBoundsUpdates is called with /*defer_bounds_updates=*/false
-    // hence the window bounds is updated with proper zero animation type
-    // flag. Reset the flag here so that it does not affect window bounds
-    // update later.
-    pair.second->set_use_zero_animation_type(false);
-  }
 }
 
 void TabletModeWindowManager::OnWindowDestroying(aura::Window* window) {
