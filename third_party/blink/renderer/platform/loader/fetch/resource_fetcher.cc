@@ -257,20 +257,20 @@ bool MatchesStaleWhileRevalidateAllowList(const String& host) {
 
 std::unique_ptr<TracedValue> BeginResourceLoadData(
     const blink::ResourceRequest& request) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetString("url", request.Url().GetString());
   return value;
 }
 
 std::unique_ptr<TracedValue> EndResourceLoadFailData() {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetString("outcome", "Fail");
   return value;
 }
 
 std::unique_ptr<TracedValue> ResourcePrioritySetData(
     blink::ResourceLoadPriority priority) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetInteger("priority", static_cast<int>(priority));
   return value;
 }

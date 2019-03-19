@@ -143,7 +143,7 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
   DCHECK(largest_image_record);
   DCHECK(!largest_image_record->first_paint_time_after_loaded.is_null());
   largest_image_paint_ = largest_image_record;
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, *largest_image_record,
                      ++largest_image_candidate_index_max_);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
@@ -157,7 +157,7 @@ void ImagePaintTimingDetector::OnLastImagePaintDetected(
   DCHECK(last_image_record);
   DCHECK(!last_image_record->first_paint_time_after_loaded.is_null());
   last_image_paint_ = last_image_record;
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, *last_image_record,
                      ++last_image_candidate_index_max_);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(

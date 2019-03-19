@@ -12,10 +12,6 @@
 
 namespace blink {
 
-std::unique_ptr<TracedValue> TracedValue::Create() {
-  return base::WrapUnique(new TracedValue());
-}
-
 TracedValue::TracedValue() = default;
 
 TracedValue::~TracedValue() = default;

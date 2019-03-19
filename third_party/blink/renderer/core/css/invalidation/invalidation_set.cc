@@ -367,7 +367,7 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
 
 #ifndef NDEBUG
 void InvalidationSet::Show() const {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->BeginArray("InvalidationSet");
   ToTracedValue(value.get());
   value->EndArray();

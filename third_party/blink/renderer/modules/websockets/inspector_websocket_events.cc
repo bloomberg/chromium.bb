@@ -21,7 +21,7 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
     const KURL& url,
     const String& protocol) {
   DCHECK(execution_context->IsContextThread());
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetInteger("identifier", static_cast<int>(identifier));
   value->SetString("url", url.GetString());
   if (auto* document = DynamicTo<Document>(execution_context)) {
@@ -45,7 +45,7 @@ std::unique_ptr<TracedValue> InspectorWebSocketEvent::Data(
     ExecutionContext* execution_context,
     unsigned long identifier) {
   DCHECK(execution_context->IsContextThread());
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetInteger("identifier", static_cast<int>(identifier));
   if (auto* document = DynamicTo<Document>(execution_context)) {
     value->SetString("frame",

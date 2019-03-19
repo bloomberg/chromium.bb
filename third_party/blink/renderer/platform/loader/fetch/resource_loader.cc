@@ -84,7 +84,7 @@ namespace {
 enum RequestOutcome { kSuccess, kFail };
 
 std::unique_ptr<TracedValue> EndResourceLoadData(RequestOutcome outcome) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   switch (outcome) {
     case RequestOutcome::kSuccess:
       value->SetString("outcome", "Success");

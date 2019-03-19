@@ -608,7 +608,7 @@ PaintTimingDetector* PerformanceTiming::GetPaintTimingDetector() const {
 }
 
 std::unique_ptr<TracedValue> PerformanceTiming::GetNavigationTracingData() {
-  std::unique_ptr<TracedValue> data = TracedValue::Create();
+  auto data = std::make_unique<TracedValue>();
   data->SetString("navigationId",
                   IdentifiersFactory::LoaderId(GetDocumentLoader()));
   return data;

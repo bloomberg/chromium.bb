@@ -57,7 +57,7 @@ void TextPaintTimingDetector::OnLargestTextDetected(
     const TextRecord& largest_text_record) {
   largest_text_paint_ = largest_text_record.first_paint_time;
   largest_text_paint_size_ = largest_text_record.first_size;
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   PopulateTraceValue(*value, largest_text_record,
                      largest_text_candidate_index_max_++);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
