@@ -101,13 +101,13 @@ void MediaControlPanelElement::MakeOpaque() {
     return;
 
   opaque_ = true;
+  removeAttribute("class");
 
   if (is_displayed_) {
     // Make sure we are listening for the 'transitionend' event.
     EnsureTransitionEventListener();
 
     SetIsWanted(true);
-    removeAttribute("class");
     DidBecomeVisible();
   }
 }
