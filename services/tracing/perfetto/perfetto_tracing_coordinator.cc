@@ -234,6 +234,8 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
         .Run(true, percent_full, 0 /*approx_event_count*/);
   }
 
+  void OnObservableEvents(const perfetto::ObservableEvents&) override {}
+
  private:
   mojo::ScopedDataPipeProducerHandle stream_;
   std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
