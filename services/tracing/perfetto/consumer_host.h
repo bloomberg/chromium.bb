@@ -62,6 +62,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   void OnDetach(bool success) override {}
   void OnAttach(bool success, const perfetto::TraceConfig&) override {}
   void OnTraceStats(bool success, const perfetto::TraceStats&) override {}
+  void OnObservableEvents(const perfetto::ObservableEvents&) override {}
 
  private:
   void WriteToStream(const void* start, size_t size);
