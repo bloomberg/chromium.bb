@@ -125,7 +125,7 @@ Polymer({
           // Simply display a generic error message as this error should only
           // occur when a call to Dbus fails which isn't meaningful to the user.
           this.addPrinterResultText_ =
-              loadTimeData.getString('printerAddedFailedmMessage');
+              loadTimeData.getString('printerAddedFailedMessage');
           break;
         case PrinterSetupResult.NATIVE_PRINTERS_NOT_ALLOWED:
           this.addPrinterResultText_ = loadTimeData.getString(
