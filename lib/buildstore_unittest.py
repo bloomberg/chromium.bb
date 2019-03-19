@@ -237,7 +237,7 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'GetSlaveStatuses',
                      return_value=fake_statuses)
-    result = bs.GetSlaveStatuses(1234)
+    result = bs.GetSlaveStatuses(buildstore.BuildIdentifier(cidb_id=1234))
     bs.cidb_conn.GetSlaveStatuses.assert_called_once_with(
         1234, None)
     self.assertEqual(result, fake_statuses)

@@ -37,7 +37,9 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
     self.buildstore = FakeBuildStore()
     self.fake_cidb = self.buildstore.GetCIDBHandle()
     self.master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname')
+        self._bot_id, '1', self._bot_id, 'bot_hostname', buildbucket_id=1234)
+    self.master_build_identifier = BuildIdentifier(cidb_id=self.master_build_id,
+                                                   buildbucket_id=1234)
     self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _InsertSlaveBuildAndCLActions(self, slave_config, changes=None,
@@ -80,7 +82,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     config_map, action_history = (
         relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions(
-            self.master_build_id, self.buildstore, self.build_config,
+            self.master_build_identifier, self.buildstore, self.build_config,
             changes, ['bb_id_1'], include_master=True))
     expected_config_map = {
         self.master_build_id: self._bot_id,
@@ -366,7 +368,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     mock_get_changes.assert_called_once_with(
         mock_stage_dict)
     mock_get_passed_slaves.assert_called_once_with(
-        self.master_build_id, self.buildstore, self.changes, mock.ANY)
+        self.master_build_identifier, self.buildstore, self.changes, mock.ANY)
 
   def _BuildDependMap(self):
     """Helper method to build dependency_map for GetDependChanges tests."""

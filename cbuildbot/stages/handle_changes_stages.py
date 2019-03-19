@@ -177,7 +177,6 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     # Figure out if that's correct, or if the test is bad, then change 'if db'
     # to 'if self.buildstore.AreClientsReady()'.
     if db:
-      build_id = build_identifier.cidb_id
       buildbucket_id = build_identifier.buildbucket_id
       builds_passed_sync_stage = self._GetBuildsPassedSyncStage(
           buildbucket_id, slave_buildbucket_ids)
@@ -185,7 +184,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
           no_stat).difference(builds_passed_sync_stage)
       changes_by_config = (
           relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
-              build_id,
+              build_identifier,
               self.buildstore,
               self._run.config,
               changes,
@@ -199,7 +198,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       slaves_by_change = cros_collections.InvertDictionary(changes_by_slaves)
       passed_in_history_slaves_by_change = (
           relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-              build_id, self.buildstore, changes, slaves_by_change))
+              build_identifier, self.buildstore, changes, slaves_by_change))
 
       # Even if some slaves didn't pass the critical stages, we can still submit
       # some changes based on CQ history.
@@ -228,7 +227,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
         slave_statuses = self.buildstore.GetBuildStatuses(
             buildbucket_ids=slave_buildbucket_ids)
       else:
-        slave_statuses = self.buildstore.GetSlaveStatuses(build_id)
+        slave_statuses = self.buildstore.GetSlaveStatuses(build_identifier)
       slave_build_ids = [x['id'] for x in slave_statuses]
       failed_hwtests = (
           hwtest_results.HWTestResultManager.GetFailedHWTestsFromCIDB(

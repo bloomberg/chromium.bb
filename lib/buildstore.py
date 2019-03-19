@@ -169,12 +169,12 @@ class BuildStore(object):
 
     return build_id
 
-  def GetSlaveStatuses(self, master_build_id):
+  def GetSlaveStatuses(self, master_build_identifier):
     """Gets the statuses of slave builders to given build.
 
     Args:
-      master_build_id: build id of the master build to fetch the slave
-                       statuses for.
+      master_build_identifier: BuildIdentifier of the master build to fetch the
+          slave statuses for.
 
     Returns:
       A list containing a dictionary with keys BUILD_STATUS_KEYS.
@@ -182,8 +182,9 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if not self._read_from_bb:
-      return self.cidb_conn.GetSlaveStatuses(master_build_id, None)
+    if not self._read_from_bb and master_build_identifier.cidb_id is not None:
+      return self.cidb_conn.GetSlaveStatuses(master_build_identifier.cidb_id,
+                                             None)
 
   def GetBuildMessages(
       self, build_identifier,
