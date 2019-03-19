@@ -508,8 +508,24 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
       profile = VP8PROFILE_ANY;
       break;
     case kCodecVP9:
+      switch (codec_context->profile) {
+        case FF_PROFILE_VP9_0:
+          profile = VP9PROFILE_PROFILE0;
+          break;
+        case FF_PROFILE_VP9_1:
+          profile = VP9PROFILE_PROFILE1;
+          break;
+        case FF_PROFILE_VP9_2:
+          profile = VP9PROFILE_PROFILE2;
+          break;
+        case FF_PROFILE_VP9_3:
+          profile = VP9PROFILE_PROFILE3;
+          break;
+        default:
+          profile = VP9PROFILE_MIN;
+          break;
+      }
       format = PIXEL_FORMAT_I420;
-      profile = VP9PROFILE_PROFILE0;
       break;
     case kCodecAV1:
       format = PIXEL_FORMAT_I420;
