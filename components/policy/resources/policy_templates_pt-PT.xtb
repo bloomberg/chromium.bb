@@ -297,12 +297,6 @@
       Consulte https://developers.google.com/safe-browsing para mais informações acerca da Navegação segura.</translation>
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
 <translation id="1599424828227887013">Ativar o isolamento de site para origens especificadas em dispositivos Android</translation>
-<translation id="1608259529294767544">Esta política autoriza o Assistente Google a ouvir a frase de ativação por voz.
-
-      Se a política estiver ativada, o Assistente Google vai ouvir a frase de ativação por voz.
-      Se a política estiver desativada, o Assistente Google não vai ouvir a frase de ativação por voz.
-      Se não estiver definida, os utilizadores podem decidir se pretendem permitir ao Assistente Google ouvir a frase de ativação por voz.
-      </translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
 <translation id="1615221548356595305">Permitir a união de ligações HTTP/2 para estes anfitriões, mesmo quando são utilizados certificados de cliente</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
@@ -492,6 +486,9 @@
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="203096360153626918">Esta política não tem qualquer efeito nas aplicações para Android. Estas podem ser colocadas no modo de ecrã inteiro mesmo que esta política esteja definida como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
+<translation id="2050629715135525072">Controla a capacidade de um utilizador ligado a um anfitrião de acesso remoto transferir ficheiros entre o cliente e o anfitrião. Isto não se aplica a ligações da assistência remota, uma vez que não suportam a transferência de ficheiros.
+
+          Se esta definição estiver desativada, a transferência de ficheiros não será permitida. Se esta definição estiver ativada ou não estiver definida, a transferência de ficheiros será permitida.</translation>
 <translation id="2057317273526988987">Permitir o acesso a uma lista de URLs</translation>
 <translation id="206623763829450685">Especifica quais os esquemas de autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta.
 
@@ -595,6 +592,7 @@
 <translation id="2231817271680715693">Importar histórico de navegação a partir do navegador predefinido na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que os sites definam dados de local</translation>
 <translation id="2240879329269430151">Permite definir se os Web sites estão autorizados a apresentar janelas de pop-up. A apresentação de janelas de pop-up pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "BlockPopups" e o utilizador poderá alterá-la.</translation>
+<translation id="2258126710006312594">Permitir que os utilizadores de acesso remoto transfiram ficheiros de/para o anfitrião</translation>
 <translation id="2265214338421787313">Esta política permite a um administrador especificar que uma página pode mostrar pop-ups durante o descarregamento.
 
       Quando a política está definida como ativada, as páginas podem apresentar pop-ups quando estiverem a ser descarregadas.
@@ -865,6 +863,13 @@
       Esta política não bloqueará quaisquer verificações automáticas de atualizações, contudo, estas podem ser bloqueadas por outras políticas. Esta funcionalidade só está disponível em dispositivos Chrome configurados como quiosques de início automático. Os outros dispositivos não são restringidos por esta política.</translation>
 <translation id="2823870601012066791">Localização da base de dados de registo do Windows para os clientes <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
+<translation id="2836621397261130126">Controla se a aprovação da política do KDC é respeitada para decidir se deve delegar permissões <ph name="KERBEROS" />.
+
+          Se esta política estiver definida como verdadeira, a autenticação HTTP respeita a aprovação da política do KDC. O Chrome apenas delega credenciais se o KDC definir <ph name="OK_AS_DELEGATE" /> numa permissão do serviço. Consulte https://tools.ietf.org/html/rfc5896.html para obter mais informações. O serviço também deve corresponder à política "AuthNegotiateDelegateWhitelist".
+
+          Se esta política não estiver definida ou estiver definida como falsa, a política do KDC é ignorada nas plataformas suportadas e apenas é respeitada a política "AuthNegotiateDelegateWhitelist".
+
+          No Windows, a política do KDC é sempre respeitada.</translation>
 <translation id="2838830882081735096">Não permitir a migração de dados nem ARC</translation>
 <translation id="2839294585867804686">Definições das Partilhas de ficheiros na rede</translation>
 <translation id="2840269525054388612">Especifica as impressoras disponíveis para um utilizador.
@@ -1464,7 +1469,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política é opcional. Se não for definida, será enviado um pedido de pesquisa de imagens através do método GET.
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="427706009709857238">"Permitir ao Assistente Google ouvir a frase de ativação por voz"</translation>
 <translation id="4285674129118156176">Permitir que os utilizadores não afiliados utilizem o ARC</translation>
 <translation id="4298509794364745131">Especifica a lista de aplicações que podem ser ativadas como aplicações para tirar notas no ecrã de bloqueio do <ph name="PRODUCT_OS_NAME" />.
 
@@ -2429,15 +2433,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Caso o início de sessão numa conta diferente não deva ser permitido através do modo de navegação anónima, considere bloquear esse modo através da política IncognitoModeAvailability.
 
       Tenha em atenção que os utilizadores podem aceder aos serviços Google com um estado não autenticado através do bloqueio dos respetivos cookies.</translation>
-<translation id="6738326937072482736">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      É possível especificar definições individuais nas propriedades de JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se estiver definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, os utilizadores podem acionar o fluxo de Powerwash para instalar uma atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se estiver definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, os utilizadores podem invocar o fluxo de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que preserva o estado em todo o dispositivo (incluindo inscrição empresarial), mas perde dados dos utilizadores. Este fluxo de atualização está disponível desde a versão 68.
-
-     Se a política não estiver definida, a funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> não estará disponível.</translation>
 <translation id="6757438632136860443">Permite-lhe definir uma lista de padrões de URL que especificam sites que estão autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida ou, caso contrário, a configuração pessoal do utilizador.</translation>

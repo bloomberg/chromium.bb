@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB en altres aplicacions</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fitxer}other{# fitxers}}</translation>
 <translation id="2017836877785168846">Esborra l'historial i les complecions automàtiques a la barra d'adreces.</translation>
+<translation id="2018707881002649255">Els contactes que seleccionis a continuació es compartiran amb el lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Controls de pantalla completa</translation>
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> també té dades a Chrome</translation>
@@ -546,6 +547,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
 <translation id="5063480226653192405">Ús</translation>
+<translation id="5073204694187207510">Amaga la quadrícula en pantalla completa</translation>
 <translation id="5082793167783849073">Crea un grup per comparar pàgines ràpidament. Per començar, mantén premut un enllaç.</translation>
 <translation id="5087580092889165836">Afegiu una targeta</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
@@ -741,11 +743,13 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6447842834002726250">Galetes</translation>
 <translation id="6448273550210938826">Suggeriments de cerca i d'URL</translation>
 <translation id="6461962085415701688">El fitxer no es pot obrir</translation>
+<translation id="6464977750820128603">Pots veure els llocs web que visites a Chrome i establir-hi temporitzadors.\n\nGoogle obté informació sobre els llocs web en què estableixes temporitzadors i sobre el temps que hi passes. Aquesta informació s'utilitza per millorar Benestar digital.</translation>
 <translation id="6475951671322991020">Baixa el vídeo</translation>
 <translation id="6482749332252372425">No s'ha pogut baixar <ph name="FILE_NAME" /> perquè falta espai d'emmagatzematge.</translation>
 <translation id="6496823230996795692">Per utilitzar <ph name="APP_NAME" /> per primera vegada, connecta't a Internet.</translation>
 <translation id="6508722015517270189">Reinicia Chrome</translation>
 <translation id="6527303717912515753">Comparteix</translation>
+<translation id="6532866250404780454">Els llocs web que visitis a Chrome no es mostraran. Se suprimiran tots els temporitzadors del lloc web.</translation>
 <translation id="6534565668554028783">Google ha tardat massa a respondre</translation>
 <translation id="6538442820324228105">S'han baixat <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Trieu una pestanya per compartir-la.</translation>
@@ -888,6 +892,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="751961395872307827">No es pot connectar amb el lloc web</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">No es poden obtenir suggeriments</translation>
+<translation id="7559245342362162951">Mostra les pestanyes del grup en una quadrícula en pantalla completa</translation>
 <translation id="7559975015014302720">El mode bàsic està desactivat</translation>
 <translation id="7562080006725997899">S'estan esborrant les dades de navegació</translation>
 <translation id="756809126120519699">S'han esborrat les dades de Chrome</translation>
@@ -970,6 +975,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Suggereix pàgines relacionades</translation>
 <translation id="8109613176066109935">Per accedir a les adreces d'interès des de tots els dispositius, activa la sincronització</translation>
+<translation id="8110087112193408731">Vols veure l'activitat de Chrome a Benestar digital?</translation>
 <translation id="8116925261070264013">Silenciats</translation>
 <translation id="813082847718468539">Mostra la informació del lloc</translation>
 <translation id="8131740175452115882">Confirma</translation>
@@ -1032,7 +1038,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
 <translation id="860043288473659153">Nom del titular de la targeta</translation>
 <translation id="8609465669617005112">Desplaça cap amunt</translation>
-<translation id="8611192991944347781">Gestiona les dades</translation>
 <translation id="8616006591992756292">A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google.</translation>
 <translation id="8617240290563765734">Voleu obrir l'URL suggerit que s'especifica al contingut que s'ha baixat?</translation>
 <translation id="8636825310635137004">Activeu la sincronització per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
@@ -1066,6 +1071,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="8920114477895755567">S'està esperant la informació parental.</translation>
 <translation id="8922289737868596582">Baixa pàgines amb el botó Més opcions per utilitzar-les sense connexió</translation>
+<translation id="8937772741022875483">Vols suprimir l'activitat de Chrome a Benestar digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Obre en una altra finestra</translation>
 <translation id="8951232171465285730">Chrome t'ha estalviat <ph name="MEGABYTES" /> MB</translation>
@@ -1097,12 +1103,15 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9139068048179869749">Pregunta abans de permetre que els llocs enviïn notificacions (opció recomanada)</translation>
 <translation id="9139318394846604261">Compres</translation>
+<translation id="9150694013019234766">Canvia de pestanya al grup de pestanyes de la part inferior de la pantalla</translation>
 <translation id="9155898266292537608">També pots fer un toc ràpid en una paraula per fer cerques</translation>
+<translation id="9169594135889675189">Afegeix una pestanya nova al grup</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
 <translation id="9204836675896933765">Queda 1 fitxer</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Utilitza fins a un 60 per cent menys de dades i navega més de pressa. Els servidors de Google optimitzaran les pàgines que visitis.</translation>
 <translation id="9219103736887031265">Imatges</translation>
+<translation id="926205370408745186">Suprimeix l'activitat de Chrome de l'aplicació Benestar digital</translation>
 <translation id="932327136139879170">Inici</translation>
 <translation id="932599481871055447">Estalvia dades i navega més de pressa</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Прийнятні дебетові та передплачені картки</translation>
 <translation id="2515629240566999685">перевірити сигнал у своїй місцевості</translation>
-<translation id="2516852381693169964">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2523886232349826891">Збережено лише на цьому пристрої</translation>
 <translation id="2524461107774643265">Додайте більше інформації</translation>
 <translation id="2536110899380797252">Додати адресу</translation>
@@ -487,6 +486,7 @@
 <translation id="3592413004129370115">Italian (конверт)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Розмір 2</translation>
+<translation id="361438452008624280">Пункт списку <ph name="LANGUAGE_ID" />: мова невідома або не підтримується.</translation>
 <translation id="3615877443314183785">Введіть дійсний термін дії</translation>
 <translation id="36224234498066874">Очистити дані веб-перегляду...</translation>
 <translation id="362276910939193118">Показати повну історію</translation>
@@ -1392,6 +1392,7 @@
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
 <translation id="8792621596287649091">Ви можете втратити доступ до облікового запису, який вам надає <ph name="ORG_NAME" />, або хтось може викрасти вашу особисту інформацію. Chromium радить змінити пароль.</translation>
 <translation id="8800988563907321413">Тут відображатимуться пропозиції</translation>
+<translation id="8805819170075074995">Елемент списку <ph name="LANGUAGE_ID" />: елемент ігнорується, оскільки його також включено в правило SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883848425547221593">Інші закладки</translation>
 <translation id="884264119367021077">Адреса доставки</translation>
@@ -1416,6 +1417,7 @@
 <translation id="8968766641738584599">Зберегти картку</translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
 <translation id="8975012916872825179">Номери телефонів, електронні адреси, адреси доставки тощо</translation>
+<translation id="8975263830901772334">Назви файлів, які ви друкуєте</translation>
 <translation id="8978053250194585037">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила фішинг<ph name="END_LINK" /> на сайті <ph name="SITE" />. Фішингові сайти видають себе за інші сайти, щоб ошукати вас.</translation>
 <translation id="8983003182662520383">Способи оплати й адреси, пов’язані з Google Pay</translation>
 <translation id="8987927404178983737">Місяць</translation>

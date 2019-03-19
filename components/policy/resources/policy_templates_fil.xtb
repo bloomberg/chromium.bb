@@ -298,12 +298,6 @@
       Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.</translation>
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
 <translation id="1599424828227887013">I-enable ang Pag-isolate ng Site para sa mga partikular na pinagmulan sa mga Android device</translation>
-<translation id="1608259529294767544">Ang patakarang ito ay nagbibigay ng pahintulot sa Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses.
-
-      Kung naka-enable ang patakaran, makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
-      Kung naka-disable ang patakaran, hindi makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
-      Kung hindi ito nakatakda, makakapagdesisyon ang mga user kung papayagan nila ang Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses.
-      </translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="1615221548356595305">Payagan ang pag-iisa ng mga HTTP/2 na koneksyon para sa mga host na ito kahit na gumamit ng mga client certificate</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
@@ -497,6 +491,9 @@
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="203096360153626918">Ang patakarang ito ay walang epekto sa mga Android app. Makakapunta ang mga ito sa fullscreen mode kahit na nakatakda ang patakaran sa <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Mga naka-disable na printer ng enterprise</translation>
+<translation id="2050629715135525072">Kinokontrol ang kakayahan ng isang user na nakakonekta sa isang host ng malayuang pag-access na maglipat ng mga file sa pagitan ng kliyente at host. Hindi ito nalalapat sa mga koneksyon sa malayuang tulong, na hindi sumusuporta sa paglipat ng file.
+
+          Kung naka-disable ang setting na ito, hindi papayagan ang paglipat ng file. Kung naka-enable ang setting na ito o hindi nakatakda, papayagan ang paglipat ng file.</translation>
 <translation id="2057317273526988987">Payagan ang pag-access sa isang listahan ng mga URL</translation>
 <translation id="206623763829450685">Tinutukoy kung aling mga scheme ng pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
 
@@ -595,6 +592,7 @@
 <translation id="2240879329269430151">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga pop-up. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'BlockPopups' at magagawa ng user na baguhin ito.</translation>
+<translation id="2258126710006312594">Payagan ang mga user ng malayuang pag-access na maglipat ng mga file papunta/mula sa host</translation>
 <translation id="2265214338421787313">Nagbibigay-daan ang patakarang ito sa isang admin na tukuyin na puwedeng magpakita ng mga popup ang isang page habang nag-a-unload ito.
 
       Kapag naka-enable ang patakarang ito, pinapayagan ang mga page na magpakita ng mga popup habang ina-unload ang mga ito.
@@ -879,6 +877,13 @@
       Walang awtomatikong pagtingin ng update ang iba-block ng patakarang ito, ngunit maaaring i-block ng iba pang patakaran ang mga iyon. Naka-enable lang ang feature na ito sa mga Chrome device na naka-configure bilang mga auto-launch kiosk. Hindi paghihigpitan ng patakarang ito ang iba pang device.</translation>
 <translation id="2823870601012066791">Lokasyon ng registry ng Windows para sa mga <ph name="PRODUCT_OS_NAME" /> client:</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
+<translation id="2836621397261130126">Nagkokontrol kung susundin ba ang pag-apruba ng patakaran ng KDC para magpasya kung maglalaan ba ng mga ticket ng <ph name="KERBEROS" />.
+
+          Kung true ang patakarang ito, susundin ng pag-authenticate ng HTTP ang pag-apruba ng patakaran ng KDC, ibig sabihin, maglalaan lang ang Chrome ng mga kredensyal kung itatakda ng KDC ang <ph name="OK_AS_DELEGATE" /> sa isang ticket ng serbisyo. Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon. Dapat ding tumugma ang serbisyo sa patakaran ng 'AuthNegotiateDelegateWhitelist.'
+
+          Kung hindi nakatakda o nakatakda sa false ang patakarang ito, babalewalain ang patakaran ng KDC sa mga sinusuportahang platform at ang patakaran ng 'AuthNegotiateDelegateWhitelist' lang ang susundin.
+
+          Sa Windows, palaging sinusunod ang patakaran ng KDC.</translation>
 <translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="2839294585867804686">Mga setting ng Mga File Share sa Network</translation>
 <translation id="2840269525054388612">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
@@ -1488,7 +1493,6 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang kahilingan sa paghahanap ng larawan gamit ang GET na paraan.
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
-<translation id="427706009709857238">"Payagan ang Google Access Assistant na makinig sa parirala para sa pag-activate gamit ang boses"</translation>
 <translation id="4285674129118156176">Nagpapahintulot sa mga hindi affiliate na user na gamitin ang ARC</translation>
 <translation id="4298509794364745131">Tumutukoy ng listahan ng mga app na maaaring i-enable bilang app sa paggawa ng tala sa lock screen ng <ph name="PRODUCT_OS_NAME" />.
 
@@ -2498,15 +2502,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung sakaling hindi dapat payagan ang pag-sign in sa ibang account sa pamamagitan ng Incognito mode, pag-isipang i-block ang mode na iyon gamit ang patakarang IncognitoModeAvailability.
 
       Tandaang maa-access ng mga user ang mga serbisyo ng Google sa hindi na-authenticate na status sa pamamagitan ng pag-block sa cookies ng mga ito.</translation>
-<translation id="6738326937072482736">Kino-configure ang availability at gawi ng functionality ng update ng <ph name="TPM_FIRMWARE_UPDATE_TPM" /> na firmware.
-
-      Matutukoy ang mga indibidwal na setting sa mga JSON property:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Kung nakatakda sa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, mati-trigger ng mga user ang daloy ng powerwash para mag-install ng update ng firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Kung nakatakda sa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, magagamit ng mga user ang daloy ng update ng firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" /> na magpapanatili sa kabuuang status ng device (kabilang ang pag-enroll ng enterprise), ngunit mawawala ang data ng user. Available ang daloy ng update na ito simula sa bersyon 68.
-
-      Kung hindi nakatakda ang patakaran, hindi magiging available ang functionality ng update ng firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.</translation>
 <translation id="6757438632136860443">Nagbibigay-daan sa iyo na magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na pinapahintulutang magpatakbo sa plugin na <ph name="FLASH_PLUGIN_NAME" />.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.</translation>

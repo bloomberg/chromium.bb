@@ -132,7 +132,7 @@
 <translation id="1905379170753160525">শিরোনাম তালিকা দেখান</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
-<translation id="1914424852593176649">সাইজ <ph name="FONT_SIZE" /></translation>
+<translation id="1914424852593176649">ফন্টের সাইজ <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> কিয়ের সেট</translation>
 <translation id="1923956950274750765">মাঝারি অর্কিড</translation>
 <translation id="1954623340234317532">বর্ষ নিয়ন্ত্রণের জন্য সপ্তাহ</translation>
@@ -1149,7 +1149,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8883850400338911892">urled ৮ডট</translation>
 <translation id="8896347895970027998">ChromeVox সক্রিয় অথবা নিষ্ক্রিয় করতে টগল করুন৷</translation>
 <translation id="8896479570570613387">মাঝারি বেগুনি</translation>
-<translation id="8897030325301866860">হরফ <ph name="FONT_FAMILY" /></translation>
+<translation id="8897030325301866860">ফন্ট <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">আবর্ত যতিচিহ্ন ইকো</translation>
 <translation id="8900148057318340779">উপসর্গ কী</translation>
 <translation id="8908714597367957477">colhdr</translation>

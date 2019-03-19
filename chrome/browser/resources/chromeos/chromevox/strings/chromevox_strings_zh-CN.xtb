@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">向上滑动两根手指</translation>
 <translation id="1124771028211010580">当前显示样式为并排。</translation>
+<translation id="1126928665165112660">非斜体</translation>
 <translation id="113582498867142724">包含<ph name="NUM" />个项的“<ph name="TAG" />”集</translation>
 <translation id="1155043339247954670">不存在下一个列表项。</translation>
 <translation id="1157782847298808853">键盘帮助</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">棕褐色</translation>
 <translation id="1331702245475014624">第<ph name="INDEX" />个，共<ph name="TOTAL" />个</translation>
 <translation id="1334095593597963605">字符和字词回显</translation>
+<translation id="1334570596456017464">下标</translation>
 <translation id="1339428534620983148">表格上一列</translation>
 <translation id="1342835525016946179">文章标记</translation>
 <translation id="1346059596910821859">提示</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">显示标题列表</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">大小：<ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> 并击</translation>
 <translation id="1923956950274750765">中兰紫色</translation>
 <translation id="1954623340234317532">年周数控件</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">行标题：</translation>
 <translation id="2002895034995108595">重置当前的按键映射</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{1个左方括号}other{#个左方括号}}</translation>
+<translation id="2009187674653301682">非上标</translation>
 <translation id="2010555995361223825">ChromeVox 菜单</translation>
 <translation id="2045490512405922022">未选中</translation>
 <translation id="20601713649439366">不存在上一个数学表达式。</translation>
@@ -167,6 +171,7 @@
 <translation id="2278490101488436824">向左滑动三根手指</translation>
 <translation id="2281234842553884450">上一个滑块</translation>
 <translation id="2311237334957139798">前移一个朗读单位</translation>
+<translation id="2314393392395134769">非下标</translation>
 <translation id="2318372665160196757">主体内容</translation>
 <translation id="2329324941084714723">标签面板</translation>
 <translation id="2344193891939537199">日期时间控件</translation>
@@ -298,10 +303,12 @@
 <translation id="3163593631834463955">列标题为空</translation>
 <translation id="316542773973815724">导航</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{1个空格}other{#个空格}}</translation>
+<translation id="3179119189286472195">非链接</translation>
 <translation id="320961988183078793">进入了<ph name="TYPE" /></translation>
 <translation id="321072937702597574">兰紫色</translation>
 <translation id="3218691001991391708">粘贴<ph name="TEXT" />。</translation>
 <translation id="3223701887221307104"><ph name="NAME" />，标签页</translation>
+<translation id="3223779237381380437">不带删除线</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">访问过的链接</translation>
 <translation id="3232388865800379423">弹出式按钮</translation>
@@ -515,6 +522,7 @@
 <translation id="4763296182459741068">转至底部</translation>
 <translation id="4763480195061959176">视频</translation>
 <translation id="4764692524839457597">默认</translation>
+<translation id="4772771694153161212">不带下划线</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="481165870889056555">读出当前页面的标题</translation>
@@ -530,6 +538,7 @@
 <translation id="4846428657345567687">欢迎使用 ChromeVox！</translation>
 <translation id="4848993367330139335">定时器</translation>
 <translation id="4850023505158945298">上一个类似元素。</translation>
+<translation id="4862744964787595316">非粗体</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">启用TTS日志记录</translation>
 <translation id="4877261390094455813">输入搜索查询内容。</translation>
@@ -842,6 +851,7 @@
 <translation id="712735679809149106">字词回显</translation>
 <translation id="7137397390322864165">橙红</translation>
 <translation id="713824876195128146">下一个块引用</translation>
+<translation id="7140168702531682811">上标</translation>
 <translation id="7143034430156387447">在 6 点式盲文和 8 点式盲文之间切换</translation>
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7153618581592392745">薰衣草色</translation>
@@ -1138,6 +1148,7 @@
 <translation id="8883850400338911892">网址编辑 8 点式盲文</translation>
 <translation id="8896347895970027998">在启用或停用ChromeVox之间切换。</translation>
 <translation id="8896479570570613387">中紫红色</translation>
+<translation id="8897030325301866860">字体：<ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">循环标点符号回显</translation>
 <translation id="8900148057318340779">前缀键</translation>
 <translation id="8908714597367957477">colhdr</translation>

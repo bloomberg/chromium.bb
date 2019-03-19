@@ -291,12 +291,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1599424828227887013">Website-Isolierung für angegebene Ursprünge auf Android-Geräten aktivieren</translation>
-<translation id="1608259529294767544">Mit dieser Richtlinie wird Google Assistant die Berechtigung erteilt, bei Gesprächen zuzuhören, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-
-      Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Wenn die Richtlinie deaktiviert ist, hört Google Assistant bei Gesprächen nicht zu, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Wenn die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob Google Assistant bei Gesprächen zuhört, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      </translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
 <translation id="1615221548356595305">Zusammenführen von HTTP/2-Verbindungen für diese Hosts zulassen, auch wenn Clientzertifikate verwendet werden</translation>
 <translation id="1617235075406854669">Löschen des Browserverlaufs und des Downloadverlaufs aktivieren</translation>
@@ -486,6 +480,9 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="203096360153626918">Diese Richtlinie hat keine Auswirkungen auf die Android-Apps. Der Vollbildmodus kann aktiviert werden, auch wenn diese Richtlinie auf <ph name="FALSE" /> gesetzt ist.</translation>
 <translation id="2043770014371753404">Deaktivierte Unternehmensdrucker</translation>
+<translation id="2050629715135525072">Damit wird gesteuert, ob ein Nutzer, der mit einem Host für den Remotezugriff verbunden ist, Dateien zwischen Client und Host übertragen kann. Verbindungen zur Remoteunterstützung sind hiervon ausgenommen, da sie keine Dateiübertragung unterstützen.
+
+          Wenn diese Einstellung deaktiviert ist, können keine Dateien übertragen werden. Ist die Einstellung aktiviert oder nicht konfiguriert, ist eine Dateiübertragung möglich.</translation>
 <translation id="2057317273526988987">Zugriff auf eine Liste mit URLs erlauben</translation>
 <translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
 
@@ -583,11 +580,12 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2231817271680715693">Browserverlauf bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="2236488539271255289">Speichern von lokalen Daten für keine Website zulassen</translation>
 <translation id="2240879329269430151">Ermöglicht Ihnen zu bestimmen, ob Websites Pop-ups anzeigen dürfen. Das Anzeigen von Pop-ups kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "BlockPopups" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
-<translation id="2265214338421787313">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite Pop-ups einblenden darf, während sie entladen wird.
+<translation id="2258126710006312594">Nutzern mit Remotezugriff die Übertragung von Dateien vom/zum Host gestatten</translation>
+<translation id="2265214338421787313">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite während des Unloads Pop-ups einblenden darf.
 
-      Wenn sie aktiviert ist, sind Seiten dazu in der Lage, Pop-ups einzublenden, während sie entladen werden.
+      Wenn sie aktiviert ist, sind Seiten dazu in der Lage, während des Unloads Pop-ups einzublenden.
 
-      Ist die Richtlinie nicht festgelegt oder deaktiviert, dürfen Seiten keine Pop-ups einblenden, während sie entladen werden. Dies entspricht den Spezifikationen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+      Ist die Richtlinie nicht festgelegt oder deaktiviert, dürfen Seiten während des Unloads keine Pop-ups einblenden. Dies entspricht den Spezifikationen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
       Diese Richtlinie wird in Chrome 82 entfernt.
 
@@ -854,6 +852,13 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Automatische Prüfungen auf Updates werden zwar nicht durch diese Richtlinie blockiert, können jedoch durch andere Richtlinien blockiert werden. Diese Funktion ist nur auf Chrome-Geräten aktiviert, die als automatisch startende Kioske konfiguriert wurden. Andere Geräte werden durch diese Richtlinie nicht eingeschränkt.</translation>
 <translation id="2823870601012066791">Windows-Registrierungspfad für <ph name="PRODUCT_OS_NAME" />-Clients:</translation>
 <translation id="2824715612115726353">Inkognitomodus aktivieren</translation>
+<translation id="2836621397261130126">Diese Richtlinie legt fest, ob bei der Entscheidung über die Delegation von <ph name="KERBEROS" />-Tickets die Genehmigung durch die KDC-Richtlinie berücksichtigt wird.
+
+          Wenn diese Richtlinie auf "true" gesetzt ist, wird bei der HTTP-Authentifizierung die Genehmigung durch die KDC-Richtlinie berücksichtigt. Chrome delegiert also nur dann Anmeldedaten, wenn KDC "<ph name="OK_AS_DELEGATE" />" für ein Dienstticket festlegt. Weitere Informationen finden Sie unter https://tools.ietf.org/html/rfc5896.html. Der Dienst sollte auch der Richtlinie "AuthNegotiateDelegateWhitelist" entsprechen.
+
+          Falls die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, wird die KDC-Richtlinie auf unterstützten Plattformen ignoriert und nur die Richtlinie "AuthNegotiateDelegateWhitelist" berücksichtigt.
+
+          Unter Windows wird die KDC-Richtlinie immer umgesetzt.</translation>
 <translation id="2838830882081735096">Datenmigration und ARC nicht zulassen</translation>
 <translation id="2839294585867804686">Einstellungen für Netzwerkfreigaben</translation>
 <translation id="2840269525054388612">Gibt die Drucker an, die ein Nutzer verwenden kann.
@@ -1445,7 +1450,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Diese Richtlinie ist optional. Wenn sie nicht festlegt ist, wird die Bildsuchanfrage mithilfe der GET-Methode gesendet.
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="427706009709857238">"Google Assistant erlauben, bei Gesprächen zuzuhören, ob die Wortgruppe für die Sprachaktivierung genannt wird"</translation>
 <translation id="4285674129118156176">Nicht verknüpften Nutzern die Verwendung von ARC gestatten</translation>
 <translation id="4298509794364745131">Gibt an, welche Apps auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm als Notizen-App aktiviert werden können.
 
@@ -2153,7 +2157,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
 <translation id="603410445099326293">Parameter für URL der Vorschlagsuche, die POST verwendet</translation>
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
-<translation id="6034603289689965535">Erlaubt einer Seite, Pop-ups einzublenden, während sie entladen wird</translation>
+<translation id="6034603289689965535">Erlaubt einer Seite, während des Unloads Pop-ups einzublenden</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
@@ -2400,15 +2404,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
       Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt ist, können Sie diesen Modus mithilfe der IncognitoModeAvailability-Richtlinie blockieren.
 
       Hinweis: Nutzer können durch Blockieren von Cookies auf Google-Dienste, die nicht authentifiziert sind, zugreifen.</translation>
-<translation id="6738326937072482736">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
-
-      Einzelne Einstellungen können in den JSON-Eigenschaften festgelegt werden:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> festgelegt ist, können Nutzer mithilfe von Powerwash ein Update der <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware installieren.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Wenn diese Richtlinie auf <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> festgelegt ist, können Nutzer den <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmwareupdatevorgang starten, bei dem der geräteübergreifende Status erhalten bleibt (einschließlich Unternehmensregistrierung), aber die Nutzerdaten verloren gehen. Dieser Updatevorgang ist ab Version 68 verfügbar.
-
-      Wenn diese Richtlinie nicht festgelegt ist, ist die Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware nicht verfügbar.</translation>
 <translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>

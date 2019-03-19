@@ -302,7 +302,6 @@
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2503184589641749290">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>
 <translation id="2515629240566999685">Patikrinti signalo stiprumą savo srityje</translation>
-<translation id="2516852381693169964">Ieškoti vaizdo sistemoje „<ph name="SEARCH_ENGINE" />“</translation>
 <translation id="2523886232349826891">Išsaugota tik šiame įrenginyje</translation>
 <translation id="2524461107774643265">Daugiau informacijos pridėjimas</translation>
 <translation id="2536110899380797252">Pridėti adresą</translation>
@@ -488,6 +487,7 @@
 <translation id="3592413004129370115">„Italian“ (vokas)</translation>
 <translation id="3600246354004376029">„<ph name="TITLE" />“, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Dydis: 2</translation>
+<translation id="361438452008624280">Sąrašo įrašas „<ph name="LANGUAGE_ID" />“: nežinoma arba nepalaikoma kalba.</translation>
 <translation id="3615877443314183785">Įveskite tinkamą galiojimo laiko pabaigos datą</translation>
 <translation id="36224234498066874">Išvalyti naršymo duomenis...</translation>
 <translation id="362276910939193118">Rodyti visą istoriją</translation>
@@ -1393,6 +1393,7 @@ Papildoma išsami informacija:
 <translation id="8790007591277257123">&amp;Ištrinti dar kartą</translation>
 <translation id="8792621596287649091">Galite prarasti galimybę pasiekti „<ph name="ORG_NAME" />“ paskyrą arba gali būti pavogta tapatybė. „Chromium“ rekomenduoja pakeisti slaptažodį dabar.</translation>
 <translation id="8800988563907321413">Netoliese esantys pasiūlymai jums rodomi čia</translation>
+<translation id="8805819170075074995">Sąrašo įrašas „<ph name="LANGUAGE_ID" />“: įrašo nepaisoma, nes jis taip pat įtrauktas į politiką „SpellcheckLanguage“.</translation>
 <translation id="8820817407110198400">Žymės</translation>
 <translation id="883848425547221593">Kitos žymės</translation>
 <translation id="884264119367021077">Siuntimo adresas</translation>
@@ -1417,6 +1418,7 @@ Papildoma išsami informacija:
 <translation id="8968766641738584599">Išsaugoti kortelę</translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
 <translation id="8975012916872825179">Įtraukiama tokia informacija kaip telefono numeriai, el. pašto adresai ir pristatymo adresai</translation>
+<translation id="8975263830901772334">Jūsų spausdinamų failų pavadinimai</translation>
 <translation id="8978053250194585037">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko, kad svetainėje <ph name="SITE" /> sukčiaujama<ph name="END_LINK" />. Sukčiavimo svetainės apsimeta kitomis svetainėmis, kad jus apgautų.</translation>
 <translation id="8983003182662520383">„Google Pay“ naudojami mokėjimo metodai ir adresai</translation>
 <translation id="8987927404178983737">Mėnuo</translation>

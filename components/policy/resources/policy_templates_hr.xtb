@@ -283,12 +283,6 @@
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1599424828227887013">Omogućivanje izolacije web-lokacije za određena polazišta na Android uređajima</translation>
-<translation id="1608259529294767544">To pravilo Google asistentu daje dopuštenje za osluškivanje izraza za glasovnu aktivaciju.
-
-      Ako se pravilo omogući, Google asistent osluškivat će izraz za glasovnu aktivaciju.
-      Ako se pravilo onemogući, Google asistent neće osluškivati izraz za glasovnu aktivaciju.
-      Ako se pravilo ne postavi, korisnici će moći odlučiti hoće li dopustiti Google asistentu osluškivanje izraza za glasovnu aktivaciju.
-      </translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1615221548356595305">Dopustite spajanje HTTP/2 veza za te hostove čak i kad se upotrebljavaju certifikati klijenta</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
@@ -478,6 +472,9 @@
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="203096360153626918">To pravilo nema utjecaja na Android aplikacije. Moći će pokrenuti način prikazivanja na cijelom zaslonu čak i ako je to pravilo postavljeno na <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Onemogućeni pisači tvrtke</translation>
+<translation id="2050629715135525072">Kontrolira može li korisnik povezan s hostom daljinskog pristupa prenositi datoteke između klijenta i hosta. To se ne primjenjuje na veze daljinske pomoći koje ne podržavaju prijenos datoteka.
+
+          Ako se ta postavka onemogući, prijenos datoteka neće biti dopušten. Ako se postavka omogući ili se ne postavi, prijenos datoteka bit će dopušten.</translation>
 <translation id="2057317273526988987">Dopusti pristup popisu URL-ova</translation>
 <translation id="206623763829450685">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava.
 
@@ -574,11 +571,12 @@
 <translation id="2231817271680715693">Uvoz povijesti pregledavanja iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="2236488539271255289">Ne dopusti nijednoj web-lokaciji postavljanje lokalnih podataka</translation>
 <translation id="2240879329269430151">Omogućuje da postavite smiju li web-lokacije prikazivati skočne prozore. Prikazivanje skočnih prozora može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo "BlockPopups", a korisnik će to moći promijeniti.</translation>
-<translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom unloadinga.
+<translation id="2258126710006312594">Dopusti korisnicima daljinskog pristupa prijenos datoteka na host/s hosta</translation>
+<translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom zatvaranja.
 
-      Kad se to pravilo postavi na Enabled, stranice mogu prikazivati skočne prozore tijekom unloadinga.
+      Kad je to pravilo omogućeno, stranice mogu prikazivati skočne prozore tijekom zatvaranja.
 
-      Kad se to pravilo postavi na Disabled ili se ne postavi, stranice ne mogu prikazivati skočne prozore tijekom unloadinga, u skladu sa specifikacijom (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+      Kad je to pravilo onemogućeno ili se ne postavi, stranice ne mogu prikazivati skočne prozore tijekom zatvaranja, u skladu sa specifikacijom (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
       To će se pravilo ukloniti u Chromeu 82.
 
@@ -846,6 +844,13 @@
       Pravilo neće blokirati automatske provjere ažuriranja, no možda će ih blokirati druga pravila. Ta je značajka omogućena samo na Chrome uređajima koji su konfigurirani kao kiosci s automatskim pokretanjem. Ostali uređaji neće biti ograničeni tim pravilom.</translation>
 <translation id="2823870601012066791">Lokacija Windows registra za <ph name="PRODUCT_OS_NAME" /> klijente:</translation>
 <translation id="2824715612115726353">Omogući anonimni način</translation>
+<translation id="2836621397261130126">Kontrolira poštuje li se odobrenje prema pravilima KDC-a kako bi se odlučilo hoće li se dodijeliti tiketi protokola <ph name="KERBEROS" />.
+
+          Ako se pravilo postavi na True, HTTP autentifikacija poštuje odobrenje prema pravilima KDC-a, odnosno Chrome dodjeljuje vjerodajnice samo ako KDC postavi <ph name="OK_AS_DELEGATE" /> na tiketu usluge. Više informacija potražite na https://tools.ietf.org/html/rfc5896.html. Usluga također treba biti usklađena s pravilom "AuthNegotiateDelegateWhitelist".
+
+          Ako se pravilo ne postavi ili se postavi na False, pravilo KDC-a zanemaruje se na podržanim platformama i poštuje se samo pravilo "AuthNegotiateDelegateWhitelist".
+
+          Pravilo KDC-a uvijek se poštuje na Windowsima.</translation>
 <translation id="2838830882081735096">Onemogući premještanje podataka i ARC</translation>
 <translation id="2839294585867804686">Postavke mrežnog dijeljenja datoteka</translation>
 <translation id="2840269525054388612">Određuje pisače koje korisnik može upotrebljavati.
@@ -1442,7 +1447,6 @@
           To je pravilo izborno. Ako nije postavljeno, zahtjev za pretraživanje slika poslat će se pomoću GET metode.
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
-<translation id="427706009709857238">"Dopusti Google asistentu da osluškuje izraz za glasovnu aktivaciju"</translation>
 <translation id="4285674129118156176">Omogućuje nepridruženim korisnicima da upotrebljavaju ARC</translation>
 <translation id="4298509794364745131">Navodi popis aplikacija koje se mogu omogućiti kao aplikacije za izradu bilježaka na zaključanom zaslonu uređaja sa sustavom <ph name="PRODUCT_OS_NAME" />.
 
@@ -2412,15 +2416,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       U slučaju da prijavljivanje na drugi račun ne treba biti dopušteno u anonimnom načinu, razmislite o blokiranju tog načina rada pomoću pravila IncognitoModeAvailability.
 
       Napominjemo da će korisnici moći pristupiti Googleovim uslugama bez autentifikacije ako blokiraju kolačiće.</translation>
-<translation id="6738326937072482736">Konfigurira dostupnost i ponašanje funkcije ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
-
-      Pojedinačne postavke mogu se navesti u JSON svojstvima:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: ako se postavi na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, korisnici će moći pokrenuti tijek powerwasha da bi instalirali ažuriranje <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: ako se postavi na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, korisnici će moći aktivirati tijek ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme koji zadržava stanje na razini uređaja (uključujući registraciju organizacije), no gubi podatke korisnika. Taj je tijek ažuriranja dostupan od verzije 68.
-
-      Ako se to pravilo ne postavi, funkcija ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme neće biti dostupna.</translation>
 <translation id="6757438632136860443">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima je dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>

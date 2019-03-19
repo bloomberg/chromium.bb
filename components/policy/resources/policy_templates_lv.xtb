@@ -286,12 +286,6 @@
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Vietnes izolācijas iespējošana norādītiem sākumpunktiem Android ierīcēs</translation>
-<translation id="1608259529294767544">Šī politika ļauj Google asistentam klausīties balss aktivizēšanas frāzi.
-
-      Ja politika ir iespējota, Google asistents klausīsies balss aktivizēšanas frāzi.
-      Ja politika ir atspējota, Google asistents neklausīsies balss aktivizēšanas frāzi.
-      Ja politika nav iestatīta, lietotāji var izlemt, vai atļaut Google asistentam klausīties balss aktivizēšanas frāzi.
-      </translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="1615221548356595305">Atļaut HTTP/2 savienojumu saaudzēšanu šiem saimniekdatoriem, pat ja tiek izmantoti klientu sertifikāti</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
@@ -486,6 +480,9 @@
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="203096360153626918">Šī politika neietekmē Android lietotnes. Lietotnes varēs atvērt pilnekrāna režīmā, pat ja šī politika ir iestatīta kā <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Atspējotie uzņēmuma printeri</translation>
+<translation id="2050629715135525072">Kontrolē iespēju pārsūtīt failus starp klientu un saimniekdatoru tam lietotājam, kurš ir izveidojis savienojumu ar attālās piekļuves saimniekdatoru. Tas neattiecas uz attālās palīdzības savienojumiem, kuros netiek atbalstīta failu pārsūtīšana.
+
+          Ja šis iestatījums ir atspējots, failu pārsūtīšana netiks atļauta. Ja šis iestatījums ir iespējots vai nav iestatīts, failu pārsūtīšana tiks atļauta.</translation>
 <translation id="2057317273526988987">Atļauja piekļūt vietrāžu URL sarakstam</translation>
 <translation id="206623763829450685">Norāda <ph name="PRODUCT_NAME" /> atbalstītās HTTP autentifikācijas shēmas.
 
@@ -586,6 +583,7 @@
 <translation id="2240879329269430151">Ļauj iestatīt, vai vietnēm ir atļauts rādīt uznirstošos logus. Uznirstošo logu rādīšana var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika BlockPopups un lietotājs to varēs mainīt.</translation>
+<translation id="2258126710006312594">Atļaut attālās piekļuves lietotājiem pārsūtīt failus saimniekdatoram/no tā</translation>
 <translation id="2265214338421787313">Šī politika atļauj administratoram noteikt, ka lapā aizvēršanas laikā drīkst rādīt uznirstošos elementus.
 
       Ja politika ir iestatīta kā iespējota, lapās ir atļauts rādīt uznirstošo elementus laikā, kad tās tiek aizvērtas.
@@ -872,6 +870,13 @@
       Šī politika nebloķēs automātisku atjauninājumu meklēšanu, taču citas politikas var meklēšanu bloķēt. Šī funkcija ir pieejama tikai tādās Chrome ierīcēs, kas ir konfigurētas kā automātiskas palaišanas kioski. Šī politika neierobežos citas ierīces.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> klientu Windows reģistra vieta:</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
+<translation id="2836621397261130126">Kontrolē, vai tiek ievērots KDC politikas apstiprinājums, lai nolemtu, vai deleģēt <ph name="KERBEROS" /> biļetes.
+
+          Ja šai politikai ir iestatīta vērtība “true”, HTTP autentifikācija ievēro KDC politikas apstiprinājumu. Pārlūks Chrome deleģē akreditācijas datus tikai tad, ja KDS iestata <ph name="OK_AS_DELEGATE" /> pakalpojuma biļeti. Plašāku informāciju skatiet vietnē https://tools.ietf.org/html/rfc5896.html. Pakalpojumam ir jāatbilst arī “AuthNegotiateDelegateWhitelist” politikai.
+
+          Ja šīs politikas vērtība nav iestatīta vai ir iestatīta vērtība “false”, KDC politika atbalstītajās platformās tiek ignorēta un tiek ievērota tikai 'AuthNegotiateDelegateWhitelist” politika.
+
+          Operētājsistēmā Windows vienmēr tiek ievērota KDC politika.</translation>
 <translation id="2838830882081735096">Aizliegt datu migrēšanu un ARC</translation>
 <translation id="2839294585867804686">Tīkla failu kopīgošanas ierīču iestatījumi</translation>
 <translation id="2840269525054388612">Norāda printerus, ko lietotājs var izmantot.
@@ -1474,7 +1479,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Šī politika nav obligāta. Ja tā nav iestatīta, attēla meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
-<translation id="427706009709857238">“Sniegt Google asistentam piekļuvi, lai klausītos balss aktivizēšanas frāzi”</translation>
 <translation id="4285674129118156176">Ļauj nesaistītiem lietotājiem izmantot ARC</translation>
 <translation id="4298509794364745131">Nosaka lietotņu sarakstu, kuras var iespējot kā piezīmju lietotnes <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā.
 
@@ -2472,14 +2476,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja vēlaties liegt pierakstīšanos citā kontā inkognito režīmā, ieteicams bloķēt režīma lietošanu, izmantojot politiku IncognitoModeAvailability.
 
       Ņemiet vērā, ka lietotāji var piekļūt Google pakalpojumiem neautentificētā statusā, bloķējot to sīkfailus.</translation>
-<translation id="6738326937072482736">Tiek konfigurēta <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitātes pieejamība un darbība.
-
-      Atsevišķus iestatījumus var norādīt JSON rekvizītos.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: ja politikai ir iestatīta vērtība <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, lietotāji varēs aktivizēt funkcijas Powerwash plūsmu, lai instalētu <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumu.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: ja politikai ir iestatīta vērtība <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, lietotāji varēs aktivizēt <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājumu plūsmu, kas saglabā ierīces statusu (tostarp uzņēmuma reģistrāciju), taču tādējādi tiek zaudēti lietotāja dati. Šī atjauninājumu plūsma ir pieejama versijā 68 un jaunākās versijās.
-      Ja politika nav iestatīta, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitāte nebūs pieejama.</translation>
 <translation id="6757438632136860443">Ļauj iestatīt to vietrāžu URL rakstu sarakstu, kas norāda vietnes, kurām atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>

@@ -293,12 +293,6 @@
       Ha további információhoz szeretne jutni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
 <translation id="1599424828227887013">Webhely-izoláció engedélyezése meghatározott forrásoknál androidos eszközökön</translation>
-<translation id="1608259529294767544">Ez a házirend engedélyezi a Google Segéd számára, hogy figyelje a hangalapú aktiválásra szolgáló kifejezést.
-
-      Ha a házirend engedélyezve van, a Google Segéd figyeli a hangalapú aktiválásra szolgáló kifejezést.
-      Ha a házirend le van tiltva, a Google Segéd nem figyeli a hangalapú aktiválásra szolgáló kifejezést.
-      Ha nincs beállítva, akkor a felhasználó döntheti el, hogy engedélyezi-e a Google Segéd számára a hangalapú aktiválás kifejezésének figyelését.
-      </translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="1615221548356595305">A HTTP/2-kapcsolatok egyesítésének engedélyezése ezeknél a gazdagépeknél még ügyféltanúsítványok használata esetén is</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
@@ -488,6 +482,9 @@
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
 <translation id="203096360153626918">A házirend nincs hatással az androidos alkalmazásokra. Az androidos alkalmazások akkor is teljes képernyős módra válthatnak, ha a házirend beállítása <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Letiltott vállalati nyomtatók</translation>
+<translation id="2050629715135525072">Azt szabályozza, hogy a távoli hozzáférésű gazdagéphez csatlakozott felhasználó tud-e fájlokat átvinni az ügyfél- és a gazdagép között. Ez nem érvényes a távoli segítség biztosítására szolgáló kapcsolatokra, mert nem támogatják a fájlok átvitelét.
+
+          Ha a beállítás ki van kapcsolva, a fájlátvitel nem engedélyezett. Ha a beállítás be van kapcsolva, vagy ha nincs beállítva, a fájlátvitel engedélyezett.</translation>
 <translation id="2057317273526988987">Hozzáférés engedélyezése az URL-ek listájához</translation>
 <translation id="206623763829450685">Meghatározza, hogy a <ph name="PRODUCT_NAME" /> milyen HTTP-hitelesítési sémákat támogat.
 
@@ -584,6 +581,7 @@
 <translation id="2231817271680715693">Böngészési előzmények importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="2236488539271255289">Egy webhely sem állíthat be helyi adatokat</translation>
 <translation id="2240879329269430151">Lehetővé teszi annak beállítását, hogy a weboldalak mutathatnak-e előugró ablakokat. Az előugró ablakok megjelenítését engedélyezheti vagy tilthatja minden webhely számára. Ha a házirend konfigurálatlanul marad, a rendszer a "BlockPopups" értéket használja, amelyet a felhasználó módosíthat.</translation>
+<translation id="2258126710006312594">A gazdagépről/gazdagépre való fájlátvitel engedélyezése a távoli hozzáférést használó felhasználók számára</translation>
 <translation id="2265214338421787313">A házirend segítségével a rendszergazda engedélyezheti, hogy az oldalak előugró ablakokat jelenítsenek meg az unload művelet végrehajtása során.
 
       Ha a házirend engedélyezett, az oldalak megjeleníthetnek előugró ablakokat az unload művelet végrehajtásakor.
@@ -856,6 +854,13 @@
       Ez a házirend nem tiltja az automatikus frissítéskereséseket, más házirendek azonban tilthatják őket. Ez a funkció csak az automatikusan induló kioszkként beállított Chrome-eszközökön használható. A többi eszközt nem korlátozza ez a házirend.</translation>
 <translation id="2823870601012066791">A Windows beállításjegyzékének helye <ph name="PRODUCT_OS_NAME" />-ügyfelek esetében:</translation>
 <translation id="2824715612115726353">Inkognitómód engedélyezése</translation>
+<translation id="2836621397261130126">Azt szabályozza, hogy a KDC-irányelv általi jóváhagyást figyelembe vegye-e a rendszer a <ph name="KERBEROS" />-jegyek felhatalmazásáról való döntéskor.
+
+          Ha a házirend beállítása igaz, a HTTP-hitelesítés tiszteletben tartja a KDC-házirend általi jóváhagyásokat, azaz a Chrome csak akkor ad felhatalmazást a hitelesítési adatok használatára, ha a KDC a szolgáltatásjegyen beállítja az <ph name="OK_AS_DELEGATE" /> attribútumot. További információ: https://tools.ietf.org/html/rfc5896.html. A szolgáltatásnak az „AuthNegotiateDelegateWhitelist” házirenddel is egyeznie kell.
+
+          Ha a házirend nincs beállítva, vagy értéke hamis, a rendszer figyelmen kívül hagyja a KDC-házirendet a támogatott platformokon, és csak az „AuthNegotiateDelegateWhitelist” házirendet veszi figyelembe.
+
+          A Windows rendszerek mindig figyelembe veszik a KDC-házirendet.</translation>
 <translation id="2838830882081735096">Adatmigráció és ARC letiltása</translation>
 <translation id="2839294585867804686">A Hálózati fájlmegosztásokhoz tartozó beállítások</translation>
 <translation id="2840269525054388612">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
@@ -1450,7 +1455,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ez egy opcionális házirend. Ha nincs beállítva, a képkeresési kérelmet a rendszer a GET metódus segítségével továbbítja.
 
           Ez a házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
-<translation id="427706009709857238">„A Google Segéd figyelheti a hangalapú aktiválásra szolgáló kifejezést”</translation>
 <translation id="4285674129118156176">Az ARC használatának engedélyezése nem társult felhasználók számára</translation>
 <translation id="4298509794364745131">Olyan alkalmazásokból álló listát ad meg, amelyek jegyzetkészítő alkalmazásként engedélyezhetők a(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén.
 
@@ -2420,15 +2424,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem szeretné engedélyezni a másik fiókba történő bejelentkezést inkognitómódban, fontolja meg a mód letiltását az IncognitoModeAvailability házirenddel.
 
       Megjegyzés: A felhasználók a cookie-k letiltásával hozzá tudnak férni a Google-szolgáltatásokhoz nem hitelesített állapotban.</translation>
-<translation id="6738326937072482736">A <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware frissítési funkciójának használhatóságát és viselkedését konfigurálja.
-
-      Az egyes beállításokat JSON-tulajdonságokban lehet megadni:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Ha a beállítás értéke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, akkor a felhasználók elindíthatják a powerwash folyamatot a <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware frissítésének telepítése céljából.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Ha a beállítás értéke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, akkor a felhasználók meghívhatják a <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware frissítési folyamatát úgy, hogy az megőrzi a teljes eszközállapotot (beleértve a vállalati regisztrációt), de törli a felhasználói adatokat. Ez a frissítési folyamat a 68-as verziótól kezdődően áll rendelkezésre.
-
-      Ha nincs beállítva a házirend, a <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware frissítése funkció nem lesz használható.</translation>
 <translation id="6757438632136860443">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>

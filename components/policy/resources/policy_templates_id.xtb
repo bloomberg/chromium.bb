@@ -281,12 +281,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> jika tidak diubah</translation>
 <translation id="1599424828227887013">Mengaktifkan Isolasi Situs untuk asal yang ditentukan di perangkat Android</translation>
-<translation id="1608259529294767544">Kebijakan ini memberikan izin kepada Asisten Google untuk mendengarkan frasa aktivasi suara.
-
-      Jika kebijakan ini diaktifkan, Asisten Google akan mendengarkan frasa aktivasi suara.
-      Jika kebijakan ini dinonaktifkan, Asisten Google tidak akan mendengarkan frasa aktivasi suara.
-      Jika tidak disetel, pengguna dapat menentukan apakah akan mengizinkan Asisten Google untuk mendengarkan frasa aktivasi suara.
-      </translation>
 <translation id="1608755754295374538">URL yang akan diberi akses ke perangkat perekam audio tanpa peringatan</translation>
 <translation id="1615221548356595305">Izinkan koneksi HTTP/2 bergabung untuk host ini bahkan saat sertifikat klien digunakan</translation>
 <translation id="1617235075406854669">Aktifkan penghapusan histori download atau browser</translation>
@@ -476,6 +470,9 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="203096360153626918">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi akan dapat memasuki mode layar penuh meski kebijakan ini disetel ke <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Menonaktifkan printer perusahaan</translation>
+<translation id="2050629715135525072">Mengontrol kemampuan pengguna yang terhubung ke host akses jarak jauh untuk mentransfer file antara klien dan host. Kebijakan ini tidak berlaku untuk sambungan bantuan jarak jauh, yang tidak mendukung transfer file.
+
+          Jika setelan ini dinonaktifkan, transfer file tidak akan diizinkan. Jika setelan ini diaktifkan atau tidak disetel, transfer file akan diizinkan.</translation>
 <translation id="2057317273526988987">Izinkan akses ke daftar URL</translation>
 <translation id="206623763829450685">Menentukan skema autentikasi HTTP yang didukung oleh <ph name="PRODUCT_NAME" />.
 
@@ -570,6 +567,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2231817271680715693">Impor histori browseran dari browser default saat pertama kali dijalankan</translation>
 <translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menentukan apakah situs diizinkan untuk menampilkan pop-up. Menampilkan pop-up dapat diizinkan atau diblokir untuk semua situs. Jika kebijakan ini tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="2258126710006312594">Izinkan pengguna dengan akses jarak jauh untuk mentransfer file ke/dari host</translation>
 <translation id="2265214338421787313">Kebijakan ini memungkinkan admin menentukan bahwa halaman dapat menampilkan pop-up saat kontennya dibuka.
 
       Jika kebijakan ini ditetapkan ke aktif, halaman diizinkan menampilkan pop-up saat kontennya dibuka.
@@ -844,6 +842,13 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Pemeriksaan update otomatis tidak akan diblokir oleh kebijakan ini, tetapi dapat diblokir oleh kebijakan lain. Fitur ini hanya diaktifkan di perangkat Chrome yang dikonfigurasi sebagai kios dengan peluncuran otomatis. Perangkat lain tidak akan dibatasi oleh kebijakan ini.</translation>
 <translation id="2823870601012066791">Lokasi registry Windows untuk klien <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
+<translation id="2836621397261130126">Mengontrol apakah persetujuan oleh kebijakan KDC dipatuhi untuk menentukan pendelegasian tiket <ph name="KERBEROS" />.
+
+          Jika kebijakan ini ditetapkan ke True, autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, artinya Chrome hanya akan mendelegasikan kredensial jika KDC menetapkan <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Lihat https://tools.ietf.org/html/rfc5896.html untuk mengetahui informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateWhitelist'.
+
+          Jika kebijakan ini tidak ditetapkan, atau ditetapkan ke False, kebijakan KDC akan diabaikan pada platform yang didukung dan hanya kebijakan 'AuthNegotiateDelegateWhitelist' yang dipatuhi.
+
+          Di Windows, kebijakan KDC selalu dipatuhi.</translation>
 <translation id="2838830882081735096">Jangan izinkan migrasi data dan ARC</translation>
 <translation id="2839294585867804686">Pengaturan Berbagi File Jaringan</translation>
 <translation id="2840269525054388612">Menentukan printer yang dapat digunakan pengguna.
@@ -1438,7 +1443,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Kebijakan ini bersifat opsional. Jika tidak disetel, permintaan penelusuran akan dikirim menggunakan metode GET.
 
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
-<translation id="427706009709857238">"Izinkan Asisten Google mendengarkan frasa aktivasi suara"</translation>
 <translation id="4285674129118156176">Mengizinkan pengguna yang tak terafiliasi menggunakan ARC</translation>
 <translation id="4298509794364745131">Menentukan daftar aplikasi yang dapat diaktifkan sebagai aplikasi pencatat di layar kunci <ph name="PRODUCT_OS_NAME" />.
 
@@ -2385,15 +2389,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika tidak diizinkan untuk login ke akun lain melalui Mode penyamaran, blokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.
 
       Perhatikan bahwa pengguna akan dapat mengakses layanan Google dalam kondisi tidak terautentikasi dengan memblokir cookienya.</translation>
-<translation id="6738326937072482736">Mengonfigurasi ketersediaan dan perilaku fungsi update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-Setiap setelan dapat ditentukan di properti JSON:
-
-<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jika disetel ke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, pengguna dapat memicu alur powerwash untuk menginstal update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Jika disetel ke <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, pengguna dapat menjalankan alur update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> yang mempertahankan status di seluruh perangkat (termasuk pendaftaran perusahaan), namun kehilangan data pengguna. Alur update ini tersedia mulai dari versi 68.
-
-Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> tidak akan tersedia.</translation>
 <translation id="6757438632136860443">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika kebijakan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>

@@ -14,7 +14,7 @@
 <translation id="1368832886055348810">Trái sang Phải</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1398853756734560583">Phóng to</translation>
-<translation id="1409544243779336081">Đề xuất ứng dụng</translation>
+<translation id="1409544243779336081">Ứng dụng đề xuất</translation>
 <translation id="1413622004203049571">Tắt thông báo từ <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 phút và }other{# phút và }}</translation>
 <translation id="1643823602425662293">Thông báo</translation>
@@ -145,7 +145,6 @@
 <translation id="6808150112686056157">Dừng trình phát phương tiện</translation>
 <translation id="6845383723252244143">Chọn Thư mục</translation>
 <translation id="6845533974506654842">nhấn</translation>
-<translation id="686304767576508198">Được chia sẻ từ</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Còn 1 giờ}other{Còn # giờ}}</translation>
 <translation id="688711909580084195">Trang web không có tiêu đề</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/giây</translation>

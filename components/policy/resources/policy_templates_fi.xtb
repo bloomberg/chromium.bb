@@ -295,12 +295,6 @@
       Saat lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
 <translation id="1599424828227887013">Ota sivuston eristäminen käyttöön tiettyjen alkuperien kohdalla Android-laitteilla</translation>
-<translation id="1608259529294767544">Tämä käytäntö antaa Google Assistantille luvan kuunnella puhekomennon.
-
-      Jos käytäntö on käytössä, Google Assistant kuuntelee puhekomennon.
-      Jos käytäntö ei ole käytössä, Google Assistant ei kuuntele puhekomentoa.
-      Jos käytäntöä ei ole määritetty, käyttäjä voi päättää, saako Google Assistant kuunnella puhekomennon.
-      </translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1615221548356595305">Salli HTTP/2-yhteyksien yhdistäminen näille isännille, vaikka käyttöoikeusvarmenteet olisivat käytössä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
@@ -490,6 +484,9 @@
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Käytöstä poistetut yritystulostimet</translation>
+<translation id="2050629715135525072">Määrittää, voivatko etäkäytön isäntään yhdistetyt käyttäjät siirtää tiedostoja asiakkaan ja isännän välillä. Tämä ei koske etätukiyhteyksiä, jotka eivät tue tiedostonsiirtoa.
+
+          Jos tämä asetus on poistettu käytöstä, tiedostonsiirtoa ei sallita. Jos tämä asetus on otettu käyttöön tai sitä ei ole asetettu, tiedostonsiirto sallitaan.</translation>
 <translation id="2057317273526988987">Salli tiettyjen URL-osoitteiden käyttö</translation>
 <translation id="206623763829450685">Määrittää, mitä HTTP-todennustapoja <ph name="PRODUCT_NAME" /> tukee.
  
@@ -586,6 +583,7 @@
 <translation id="2231817271680715693">Tuo selaushistoria oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="2236488539271255289">Älä salli sivustojen luoda tiedostoja tietokoneelle</translation>
 <translation id="2240879329269430151">Voit määrittää, saavatko sivustot näyttää ponnahdusikkunoita. Ponnahdusikkunoiden näyttäminen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole määritetty, käytetään BlockPopups-asetusta, ja käyttäjä voi muuttaa asetusta.</translation>
+<translation id="2258126710006312594">Anna etäkäyttäjien siirtää tiedostoja isännälle/isännältä</translation>
 <translation id="2265214338421787313">Tämä käytäntö antaa järjestelmänvalvojan määrittää, että sivu voi näyttää ponnahdusikkunoita tyhjentämisen aikana.
 
       Kun käytännön arvoksi on määritetty käytössä, sivut voivat näyttää ponnahdusikkunoita niiden tyhjentämisen aikana.
@@ -857,6 +855,13 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Tämä käytäntö ei estä automaattisia päivitysten tarkastuksia, mutta muut käytännöt voivat estää ne. Tämä ominaisuus on käytössä vain Chrome-laitteissa, jotka on määritetty automaattisesti käynnistyviksi kioskeiksi. Tämä käytäntö ei rajoita muita laitteita.</translation>
 <translation id="2823870601012066791">Käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivien asiakkaiden sijainti Windows-rekisterissä:</translation>
 <translation id="2824715612115726353">Ota incognito-tila käyttöön</translation>
+<translation id="2836621397261130126">Määrittää, noudatetaanko KDC-käytännön hyväksyntää päätettäessä <ph name="KERBEROS" />-tikettien delegoinnista.
+
+          Jos käytännön arvo on tosi, HTTP-todennus noudattaa KDC-käytännön hyväksyntää, eli Chrome delegoi kirjautumistietoja vain, jos KDC määrittää palvelutikettiin <ph name="OK_AS_DELEGATE" />. Lue lisää osoitteesta https://tools.ietf.org/html/rfc5896.html. Palvelun pitäisi myös vastata AuthNegotiateDelegateWhitelist-käytäntöä.
+
+          Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty epätosi, KDC-käytäntö ohitetaan tuetuilla alustoilla ja vain AuthNegotiateDelegateWhitelist-käytäntöä noudatetaan.
+
+          Windowsissa noudatetaan aina KDC-käytäntöä.</translation>
 <translation id="2838830882081735096">Estä tietojen siirtäminen ja ARC</translation>
 <translation id="2839294585867804686">Verkkotiedostojen jakamisen asetukset</translation>
 <translation id="2840269525054388612">Määritä tulostimet, joita käyttäjä voi käyttää.
@@ -1458,7 +1463,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, kuvahakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
-<translation id="427706009709857238">"Salli Google Assistantin kuunnella puhekomento"</translation>
 <translation id="4285674129118156176">Salli ulkopuolisten käyttäjien käyttää ARC:tä</translation>
 <translation id="4298509794364745131">Määrittää luettelon sovelluksia, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä muistiinpanosovelluksina.
 
@@ -2423,15 +2427,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos et halua, että toiselle tilille kirjautuminen incognito-tilan avulla on sallittua, voit estää tämän tilan IncognitoModeAvailability-käytännöllä.
 
       Huomaa, että käyttäjät pääsevät käyttämään Google-palveluja ilman todennusta estämällä evästeet.</translation>
-<translation id="6738326937072482736">Määrittää laiteohjelmiston päivitystoiminnon (<ph name="TPM_FIRMWARE_UPDATE_TPM" />) saatavuuden ja toiminnan.
-
-      Yksittäisiä asetuksia voi määrittää JSON-ominaisuuksissa:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jos asetus on <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, käyttäjät voivat käynnistää Powerwash-toiminnon asentaakseen laiteohjelmiston päivityksen (<ph name="TPM_FIRMWARE_UPDATE_TPM" />).
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Jos asetus on <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, käyttäjät voivat aloittaa laiteohjelmiston päivitystoiminnon (<ph name="TPM_FIRMWARE_UPDATE_TPM" />), jossa laitetason tila (mukaan luettuna yrityskäyttö) säilytetään mutta käyttäjän tiedot poistetaan. Tämä päivitystoiminto on käytettävissä versiosta 68 alkaen.
-
-      Jos käytäntöä ei aseteta, laiteohjelmiston päivitystoiminto (<ph name="TPM_FIRMWARE_UPDATE_TPM" />) ei ole käytettävissä.</translation>
 <translation id="6757438632136860443">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot saavat suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennuksen.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>

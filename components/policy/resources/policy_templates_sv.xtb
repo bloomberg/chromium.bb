@@ -298,12 +298,6 @@
       Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Aktivera webbplatsisolering för angivna ursprung på Android-enheter</translation>
-<translation id="1608259529294767544">Den här principen ger Google Assistent behörighet att lyssna efter röstaktiveringsfrasen.
-
-      Om den här principen är aktiverad lyssnar Google Assistent efter röstaktiveringsfrasen.
-      Om den här principen inte är aktiverad lyssnar inte Google Assistent efter röstaktiveringsfrasen.
-      Om principen saknar inställning kan användaren avgöra om Google Assistent ska lyssna efter röstaktiveringsfrasen.
-      </translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1615221548356595305">TIllåt att HTTP/2-anslutningar kombineras för dessa värdar även när klientcertifikat används</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
@@ -499,6 +493,9 @@
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="203096360153626918">Den här principen gäller inte Android-appar. De kan använda helskärmsläge även om den har principen har ställts in på <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Inaktiverade företagsskrivare</translation>
+<translation id="2050629715135525072">Styr om en användare som är ansluten till en fjärrvärd ska kunna överföra filer mellan klienten och värden. Detta gäller inte fjärrhjälpsanslutningar, som inte har stöd för filöverföring.
+
+          När inställningen är inaktiverad får användaren inte överföra filer. När inställningen är aktiverad eller inte har angetts får användaren överföra filer.</translation>
 <translation id="2057317273526988987">Tillåt åtkomst till en lista med webbadresser</translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
 
@@ -597,6 +594,7 @@
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
           Om du inte anger policyn används BlockPopups och inställningen kan ändras av användaren.</translation>
+<translation id="2258126710006312594">Tillåt fjärranvändare att överföra filer till/från värden</translation>
 <translation id="2265214338421787313">Med den här principen kan administratören ange att en sida får visa popupfönster när den tas bort.
 
       När principen är aktiverad får sidor visa popupfönster när de tas bort.
@@ -883,6 +881,13 @@
       Inga automatiska sökningar efter uppdateringar blockeras av principen, men de kan blockeras av andra principer. Den här funktionen är bara aktiverad på Chrome-enheter som har konfigurerats så att de automatiskt startas för offentlig miljö. Andra enheter begränsas inte av den här principen.</translation>
 <translation id="2823870601012066791">Windows-registerplats för <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="2836621397261130126">Avgör om godkännande enligt KDC-princip följs för att avgöra om <ph name="KERBEROS" />-ärenden ska delegeras.
+
+          Om den här principen är inställd på sant följer HTTP-autentiseringen godkännande av KDC-princip, d.v.s. Chrome delegerar bara uppgifter om KDC anger <ph name="OK_AS_DELEGATE" /> för ett serviceärende. Mer information finns på https://tools.ietf.org/html/rfc5896.html. Tjänsten ska också matcha principen AuthNegotiateDelegateWhitelist.
+
+          Om den här principen saknar inställning eller ställs in på falskt ignoreras KDC-policyn på plattformar som stöds och bara principen AuthNegotiateDelegateWhitelist följs.
+
+          KDC-principen följs alltid i Windows.</translation>
 <translation id="2838830882081735096">Tillåt inte datamigrering och ARC</translation>
 <translation id="2839294585867804686">Inställningar för Network File Share</translation>
 <translation id="2840269525054388612">Anger vilka skrivare som får användas.
@@ -1492,7 +1497,6 @@
           Den här policyn är valfri. Om den inte anges kommer begäran om bildsökning att skickas via GET-metoden.
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="427706009709857238">"Tillåt att Google Assistent lyssnar efter röstaktiveringsfrasen"</translation>
 <translation id="4285674129118156176">Tillåt oanknutna användare att använda ARC</translation>
 <translation id="4298509794364745131">Anger en lista med anteckningsappar som går att aktivera på låsskärmen i <ph name="PRODUCT_OS_NAME" />.
 
@@ -2506,15 +2510,6 @@
       Om det inte ska vara tillåtet att logga in på ett annat konto via inkognitoläget kan du blockera det läget med principen IncognitoModeAvailability.
 
       Observera att användarna kan nå Googles tjänster utan autentisering genom att blockera cookies.</translation>
-<translation id="6738326937072482736">Konfigurerar om det ska gå att uppdatera firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> och hur.
-
-      Enskilda inställningar kan anges som JSON-egenskaper:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Om värdet <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> anges för principen kan användarna aktivera Powerwash så att uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> kan installeras.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Om värdet <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> anges för principen kan användarna påbörja en uppdatering av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> som bevarar enhetens status (inklusive företagsregistrering) men tar bort användardata. Detta uppdateringsflöde är tillgängligt från och med version 68.
-
-      Om inget värde anges för principen är uppdateringar av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /> inte tillgängliga.</translation>
 <translation id="6757438632136860443">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
