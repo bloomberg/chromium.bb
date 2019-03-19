@@ -765,7 +765,7 @@ TEST_F(CrostiniSharePathTest, ShareOnMountSuccessParentMount) {
   SetUpVolume();
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       kCrostiniDefaultVmName);
-  crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
+  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
       base::BindRepeating(&CrostiniSharePathTest::MountEventSharePathCallback,
                           base::Unretained(this), "share-on-mount",
                           shared_path_, Persist::NO, SeneschalClientCalled::YES,
@@ -783,7 +783,7 @@ TEST_F(CrostiniSharePathTest, ShareOnMountSuccessSelfMount) {
       kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
-  crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
+  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
       base::BindRepeating(&CrostiniSharePathTest::MountEventSharePathCallback,
                           base::Unretained(this), "share-on-mount",
                           shared_path_, Persist::NO, SeneschalClientCalled::YES,
@@ -829,7 +829,7 @@ TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessParentMount) {
   SetUpVolume();
   CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       kCrostiniDefaultVmName);
-  crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
+  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
       base::BindRepeating(&CrostiniSharePathTest::MountEventUnsharePathCallback,
                           base::Unretained(this), "unshare-on-unmount",
                           shared_path_, Persist::YES,
@@ -847,7 +847,7 @@ TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessSelfMount) {
       kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
-  crostini_share_path_->SetMountEventSeneschalCallbackForTesting(
+  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
       base::BindRepeating(&CrostiniSharePathTest::MountEventUnsharePathCallback,
                           base::Unretained(this), "unshare-on-unmount",
                           shared_path_, Persist::YES,
