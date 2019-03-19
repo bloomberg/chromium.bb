@@ -51,6 +51,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/origin_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -591,8 +592,13 @@ String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
 }
 
 String securityState(const GURL& url, const net::CertStatus& cert_status) {
-  if (!url.SchemeIsCryptographic())
-    return Security::SecurityStateEnum::Neutral;
+  if (!url.SchemeIsCryptographic()) {
+    // Some origins are considered secure even though they're not cryptographic,
+    // so treat them as secure in the UI.
+    if (IsOriginSecure(url))
+      return Security::SecurityStateEnum::Secure;
+    return Security::SecurityStateEnum::Insecure;
+  }
   if (net::IsCertStatusError(cert_status) &&
       !net::IsCertStatusMinorError(cert_status)) {
     return Security::SecurityStateEnum::Insecure;

@@ -30,6 +30,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/fixed_received_data.h"
@@ -214,7 +215,12 @@ void SetSecurityStyleAndDetails(const GURL& url,
     return;
   }
   if (!url.SchemeIsCryptographic()) {
-    response->SetSecurityStyle(blink::kWebSecurityStyleNeutral);
+    // Some origins are considered secure even though they're not cryptographic,
+    // so treat them as secure in the UI.
+    if (IsOriginSecure(url))
+      response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+    else
+      response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
     return;
   }
 
