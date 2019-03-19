@@ -1062,16 +1062,16 @@ void AXPlatformNodeBase::AddAttributeToList(const char* name,
   AddAttributeToList(name, value.c_str(), attributes);
 }
 
-AXHypertext::AXHypertext() {}
+AXHypertext::AXHypertext() = default;
 AXHypertext::AXHypertext(const AXHypertext& other) = default;
-AXHypertext::~AXHypertext() {}
+AXHypertext::~AXHypertext() = default;
 
-AXHypertext AXPlatformNodeBase::ComputeHypertext() {
-  AXHypertext result;
+void AXPlatformNodeBase::UpdateComputedHypertext() {
+  hypertext_ = AXHypertext();
 
   if (IsPlainTextField()) {
-    result.hypertext = GetValue();
-    return result;
+    hypertext_.hypertext = GetValue();
+    return;
   }
 
   int child_count = delegate_->GetChildCount();
@@ -1079,10 +1079,11 @@ AXHypertext AXPlatformNodeBase::ComputeHypertext() {
   if (!child_count) {
     if (IsRichTextField()) {
       // We don't want to expose any associated label in IA2 Hypertext.
-      return result;
+      return;
     }
-    result.hypertext = GetString16Attribute(ax::mojom::StringAttribute::kName);
-    return result;
+    hypertext_.hypertext =
+        GetString16Attribute(ax::mojom::StringAttribute::kName);
+    return;
   }
 
   // Construct the hypertext for this node, which contains the concatenation
@@ -1097,19 +1098,17 @@ AXHypertext AXPlatformNodeBase::ComputeHypertext() {
     DCHECK(child);
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
     if (child->IsTextOnlyObject()) {
-      hypertext +=
+      hypertext_.hypertext +=
           child->GetString16Attribute(ax::mojom::StringAttribute::kName);
     } else {
-      int32_t char_offset = static_cast<int32_t>(hypertext.size());
+      int32_t char_offset = static_cast<int32_t>(hypertext_.hypertext.size());
       int32_t child_unique_id = child->GetUniqueId();
-      int32_t index = static_cast<int32_t>(result.hyperlinks.size());
-      result.hyperlink_offset_to_index[char_offset] = index;
-      result.hyperlinks.push_back(child_unique_id);
-      hypertext += kEmbeddedCharacter;
+      int32_t index = static_cast<int32_t>(hypertext_.hyperlinks.size());
+      hypertext_.hyperlink_offset_to_index[char_offset] = index;
+      hypertext_.hyperlinks.push_back(child_unique_id);
+      hypertext_.hypertext += kEmbeddedCharacter;
     }
   }
-  result.hypertext = hypertext;
-  return result;
 }
 
 void AXPlatformNodeBase::AddAttributeToList(const char* name,

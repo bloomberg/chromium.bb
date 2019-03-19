@@ -1708,7 +1708,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
-  hypertext_ = ComputeHypertext();
+  UpdateComputedHypertext();
 }
 
 void BrowserAccessibilityComWin::UpdateStep3FireEvents(
