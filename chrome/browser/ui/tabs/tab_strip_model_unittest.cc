@@ -2633,13 +2633,10 @@ TEST_F(TabStripModelTest, AddTabToNewGroup) {
 TEST_F(TabStripModelTest, AddTabToNewGroupMiddleOfExistingGroup) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  strip.AppendWebContents(CreateWebContents(), false);
-  strip.AppendWebContents(CreateWebContents(), false);
-  strip.AppendWebContents(CreateWebContents(), false);
-  strip.AppendWebContents(CreateWebContents(), false);
-  std::vector<WebContents*> orig{
-      strip.GetWebContentsAt(0), strip.GetWebContentsAt(1),
-      strip.GetWebContentsAt(2), strip.GetWebContentsAt(3)};
+  strip.AppendWebContents(CreateWebContentsWithID(0), false);
+  strip.AppendWebContents(CreateWebContentsWithID(1), false);
+  strip.AppendWebContents(CreateWebContentsWithID(2), false);
+  strip.AppendWebContents(CreateWebContentsWithID(3), false);
   strip.AddToNewGroup({0, 1, 2, 3});
   const TabGroupData* first_group = strip.GetTabGroupForTab(0);
 
@@ -2649,10 +2646,25 @@ TEST_F(TabStripModelTest, AddTabToNewGroupMiddleOfExistingGroup) {
   EXPECT_EQ(strip.GetTabGroupForTab(1), first_group);
   EXPECT_NE(strip.GetTabGroupForTab(2), first_group);
   EXPECT_EQ(strip.GetTabGroupForTab(2), strip.GetTabGroupForTab(3));
-  EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
-  EXPECT_EQ(strip.GetWebContentsAt(1), orig[3]);
-  EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
-  EXPECT_EQ(strip.GetWebContentsAt(3), orig[2]);
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, AddTabToNewGroupMiddleOfExistingGroupTwoGroups) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContentsWithID(0), false);
+  strip.AppendWebContents(CreateWebContentsWithID(1), false);
+  strip.AppendWebContents(CreateWebContentsWithID(2), false);
+  strip.AppendWebContents(CreateWebContentsWithID(3), false);
+  strip.AddToNewGroup({0, 1, 2});
+  strip.AddToNewGroup({3});
+
+  strip.AddToNewGroup({1});
+  EXPECT_NE(strip.GetTabGroupForTab(2), strip.GetTabGroupForTab(0));
+  EXPECT_EQ("0 2 1 3", GetTabStripStateString(strip));
 
   strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
@@ -2971,6 +2983,20 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupReorders) {
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[0]);
 
   strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, RemoveTabFromGroupDoesntReorderIfNoGroup) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContentsWithID(0), true);
+  strip.AppendWebContents(CreateWebContentsWithID(1), false);
+  strip.AppendWebContents(CreateWebContentsWithID(2), false);
+  strip.AddToNewGroup({0});
+
+  strip.RemoveFromGroup({0, 1});
+  EXPECT_EQ("0 1 2", GetTabStripStateString(strip));
+
   strip.CloseAllTabs();
 }
 

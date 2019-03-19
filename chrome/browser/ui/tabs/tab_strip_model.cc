@@ -958,14 +958,27 @@ void TabStripModel::MoveTabPrevious() {
 
 void TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
   group_data_.push_back(std::make_unique<TabGroupData>());
-  TabGroupData* group = group_data_.back().get();
+  TabGroupData* new_group = group_data_.back().get();
 
-  std::vector<int> new_indices = RemoveFromGroup(indices);
-  if (IsTabPinned(new_indices[0])) {
-    new_indices = SetTabsPinned(new_indices, true);
+  // Find a destination for the first tab that's not inside another group. We
+  // will stack the rest of the tabs up to its right.
+  int destination_index = -1;
+  for (int i = indices[0]; i < count(); i++) {
+    const int destination_candidate = i + 1;
+    const bool end_of_strip = !ContainsIndex(destination_candidate);
+    if (end_of_strip || GetTabGroupForTab(destination_candidate) == nullptr ||
+        GetTabGroupForTab(destination_candidate) !=
+            GetTabGroupForTab(indices[0])) {
+      destination_index = destination_candidate;
+      break;
+    }
   }
 
-  MoveTabsIntoGroup(new_indices, new_indices[0], group);
+  std::vector<int> new_indices = indices;
+  if (IsTabPinned(new_indices[0]))
+    new_indices = SetTabsPinned(new_indices, true);
+
+  MoveTabsIntoGroup(new_indices, destination_index, new_group);
 }
 
 void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
@@ -987,109 +1000,29 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
       new_indices.push_back(indices[i]);
     }
   }
-  new_indices = RemoveFromGroup(new_indices);
   new_indices = SetTabsPinned(new_indices, pin);
 
   MoveTabsIntoGroup(new_indices, destination_index, group);
 }
 
-void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
-                                      int destination_index,
-                                      const TabGroupData* group) {
-  // Some tabs will need to be moved to the right, some to the left. We need to
-  // handle those separately. First, move tabs to the right, starting with the
-  // rightmost tab so we don't cause other tabs we are about to move to shift.
-  int numTabsMovingRight = 0;
-  for (size_t i = 0; i < indices.size() && indices[i] < destination_index;
-       i++) {
-    numTabsMovingRight++;
-  }
-  for (int i = numTabsMovingRight - 1; i >= 0; i--) {
-    int insertion_index = destination_index - numTabsMovingRight + i;
-    MoveWebContentsAt(indices[i], insertion_index, false);
-    contents_data_[insertion_index]->set_group(group);
-  }
-
-  // Collect indices for tabs moving to the left.
-  std::vector<int> move_left_indices;
-  for (size_t i = numTabsMovingRight; i < indices.size(); i++) {
-    move_left_indices.push_back(indices[i]);
-  }
-  // Move tabs to the left, starting with the leftmost tab.
-  for (size_t i = 0; i < move_left_indices.size(); i++) {
-    MoveWebContentsAt(move_left_indices[i], destination_index + i, false);
-    contents_data_[destination_index + i]->set_group(group);
-  }
-}
-
-std::vector<int> TabStripModel::SetTabsPinned(const std::vector<int>& indices,
-                                              bool pinned) {
-  std::vector<int> new_indices;
-  if (pinned) {
-    for (size_t i = 0; i < indices.size(); i++) {
-      if (IsTabPinned(indices[i])) {
-        new_indices.push_back(indices[i]);
-      } else {
-        SetTabPinned(indices[i], true);
-        new_indices.push_back(IndexOfFirstNonPinnedTab() - 1);
-      }
-    }
-  } else {
-    for (size_t i = indices.size() - 1; i < indices.size(); i--) {
-      if (!IsTabPinned(indices[i])) {
-        new_indices.push_back(indices[i]);
-      } else {
-        SetTabPinned(indices[i], false);
-        new_indices.push_back(IndexOfFirstNonPinnedTab());
-      }
-    }
-    std::reverse(new_indices.begin(), new_indices.end());
-  }
-  return new_indices;
-}
-
-std::vector<int> TabStripModel::RemoveFromGroup(
-    const std::vector<int>& indices) {
+void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
   // Remove each tab from the group it's in, if any. Go from right to left
-  // since tabs may move to the right when ungrouped.
-  std::deque<int> new_indices;
+  // since tabs may move to the right.
   for (int i = indices.size() - 1; i >= 0; i--) {
-    new_indices.push_front(UngroupTab(indices[i]));
-  }
+    const int index = indices[i];
+    const TabGroupData* old_group = GetTabGroupForTab(index);
+    if (old_group == nullptr)
+      continue;
+    UngroupTab(index);
 
-  return std::vector<int>(new_indices.begin(), new_indices.end());
-}
-
-int TabStripModel::UngroupTab(int index) {
-  const TabGroupData* group = GetTabGroupForTab(index);
-  if (group == nullptr)
-    return index;
-
-  // Move the tab until it's the rightmost tab in its group
-  int new_index = index;
-  while (ContainsIndex(new_index + 1) &&
-         GetTabGroupForTab(new_index + 1) == group) {
-    new_index++;
-  }
-  MoveWebContentsAt(index, new_index, false);
-
-  contents_data_[new_index]->set_group(nullptr);
-
-  // Delete the group if we just ungrouped the last tab in that group.
-  if (GetTabGroupForTab(index) != group &&
-      (index == 0 || GetTabGroupForTab(index - 1) != group)) {
-    for (size_t i = 0; i < contents_data_.size(); i++) {
-      DCHECK_NE(GetTabGroupForTab(i), group);
+    // Move the tab until it's the rightmost tab in its group
+    int new_index = index;
+    while (ContainsIndex(new_index + 1) &&
+           GetTabGroupForTab(new_index + 1) == old_group) {
+      new_index++;
     }
-    for (auto it = group_data_.begin(); it != group_data_.end(); it++) {
-      if (it->get() == group) {
-        group_data_.erase(it);
-        break;
-      }
-    }
+    MoveWebContentsAt(index, new_index, false);
   }
-
-  return new_index;
 }
 
 // Context menu functions.
@@ -1707,6 +1640,82 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
     tab_index++;
     target_index++;
   }
+}
+
+void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
+                                      int destination_index,
+                                      const TabGroupData* group) {
+  auto move_tab = [&](int current_index, int insertion_index) {
+    UngroupTab(current_index);
+    MoveWebContentsAt(current_index, insertion_index, false);
+    contents_data_[insertion_index]->set_group(group);
+  };
+
+  // Some tabs will need to be moved to the right, some to the left. We need to
+  // handle those separately. First, move tabs to the right, starting with the
+  // rightmost tab so we don't cause other tabs we are about to move to shift.
+  int numTabsMovingRight = 0;
+  for (size_t i = 0; i < indices.size() && indices[i] < destination_index;
+       i++) {
+    numTabsMovingRight++;
+  }
+  for (int i = numTabsMovingRight - 1; i >= 0; i--)
+    move_tab(indices[i], destination_index - numTabsMovingRight + i);
+
+  // Collect indices for tabs moving to the left.
+  std::vector<int> move_left_indices;
+  for (size_t i = numTabsMovingRight; i < indices.size(); i++) {
+    move_left_indices.push_back(indices[i]);
+  }
+  // Move tabs to the left, starting with the leftmost tab.
+  for (size_t i = 0; i < move_left_indices.size(); i++)
+    move_tab(move_left_indices[i], destination_index + i);
+}
+
+void TabStripModel::UngroupTab(int index) {
+  const TabGroupData* group = GetTabGroupForTab(index);
+  if (group == nullptr)
+    return;
+
+  contents_data_[index]->set_group(nullptr);
+  // Delete the group if we just ungrouped the last tab in that group.
+  if ((!ContainsIndex(index + 1) || GetTabGroupForTab(index + 1) != group) &&
+      (!ContainsIndex(index - 1) || GetTabGroupForTab(index - 1) != group)) {
+    for (size_t i = 0; i < contents_data_.size(); i++)
+      DCHECK_NE(GetTabGroupForTab(i), group);
+    for (auto it = group_data_.begin(); it != group_data_.end(); it++) {
+      if (it->get() == group) {
+        group_data_.erase(it);
+        break;
+      }
+    }
+  }
+}
+
+std::vector<int> TabStripModel::SetTabsPinned(const std::vector<int>& indices,
+                                              bool pinned) {
+  std::vector<int> new_indices;
+  if (pinned) {
+    for (size_t i = 0; i < indices.size(); i++) {
+      if (IsTabPinned(indices[i])) {
+        new_indices.push_back(indices[i]);
+      } else {
+        SetTabPinned(indices[i], true);
+        new_indices.push_back(IndexOfFirstNonPinnedTab() - 1);
+      }
+    }
+  } else {
+    for (size_t i = indices.size() - 1; i < indices.size(); i--) {
+      if (!IsTabPinned(indices[i])) {
+        new_indices.push_back(indices[i]);
+      } else {
+        SetTabPinned(indices[i], false);
+        new_indices.push_back(IndexOfFirstNonPinnedTab());
+      }
+    }
+    std::reverse(new_indices.begin(), new_indices.end());
+  }
+  return new_indices;
 }
 
 // Sets the sound content setting for each site at the |indices|.
