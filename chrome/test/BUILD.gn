@@ -3442,6 +3442,7 @@ test("unit_tests") {
       "../browser/ui/tabs/test_tab_strip_model_delegate.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
       "../browser/ui/tabs/window_activity_watcher_unittest.cc",
+      "../browser/ui/thumbnails/thumbnail_image_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
       "../browser/ui/toolbar/location_bar_model_unittest.cc",

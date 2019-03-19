@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -201,6 +202,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     preview_image_ = new views::ImageView();
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
     preview_image_->SetHorizontalAlignment(views::ImageViewBase::LEADING);
+    preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
     AddChildView(preview_image_);
   }
 
@@ -310,28 +312,20 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   domain_label_->SetText(domain);
 
+  // If the preview image feature is not enabled, this will be null.
   if (preview_image_) {
-    // Get the largest version of the favicon available.
-    gfx::ImageSkia max_favicon = gfx::ImageSkia::CreateFrom1xBitmap(
-        data.favicon.GetRepresentation(data.favicon.GetMaxSupportedScale())
-            .GetBitmap());
-    preview_image_->SetImage(max_favicon);
-    const gfx::Size favicon_size = max_favicon.size();
-
-    const gfx::Size preferred_size = GetTabHoverCardPreviewImageSize();
-
-    // Scale the favicon to an appropriate size for the tab hover card.
-    //
-    // This is reasonably aesthetic for favicons, though it does not necessarily
-    // fill up the entire width of the hover card. When we move to using
-    // og:images or screenshots, we'll have to do something more sophisticated.
-    if (!favicon_size.IsEmpty()) {
-      float scale =
-          float{preferred_size.height()} / float{favicon_size.height()};
-      preview_image_->SetImageSize(gfx::Size(
-          std::roundf(scale * favicon_size.width()), preferred_size.height()));
+    // If there is no valid thumbnail data, blank out the preview, else wait for
+    // the image data to be decoded and update momentarily.
+    if (!data.thumbnail.AsImageSkiaAsync(
+            base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
+                           weak_factory_.GetWeakPtr()))) {
+      preview_image_->SetImage(gfx::ImageSkia());
     }
   }
+}
+
+void TabHoverCardBubbleView::UpdatePreviewImage(gfx::ImageSkia preview_image) {
+  preview_image_->SetImage(preview_image);
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {

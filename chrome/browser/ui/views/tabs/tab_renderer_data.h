@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -29,6 +30,7 @@ struct TabRendererData {
   bool IsCrashed() const;
 
   gfx::ImageSkia favicon;
+  ThumbnailImage thumbnail;
   TabNetworkState network_state = TabNetworkState::kNone;
   base::string16 title;
   GURL url;

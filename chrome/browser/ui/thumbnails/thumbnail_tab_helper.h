@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/browser/ui/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -26,6 +27,8 @@ class ThumbnailTabHelper
       public content::WebContentsUserData<ThumbnailTabHelper> {
  public:
   ~ThumbnailTabHelper() override;
+
+  ThumbnailImage thumbnail() const { return thumbnail_; }
 
  private:
   explicit ThumbnailTabHelper(content::WebContents* contents);
@@ -110,6 +113,8 @@ class ThumbnailTabHelper
   bool waiting_for_capture_;
 
   base::TimeTicks copy_from_surface_start_time_;
+
+  ThumbnailImage thumbnail_;
 
   base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_;
 

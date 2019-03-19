@@ -318,7 +318,8 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(TriggerReason trigger,
 void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& thumbnail) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Convert |thumbnail| to gfx::Image and store it.
+  thumbnail_ = ThumbnailImage::FromSkBitmap(thumbnail);
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
 
   CleanUpFromThumbnailGeneration();
 }
