@@ -2451,9 +2451,15 @@ void RenderFrameImpl::JavaScriptExecuteRequest(
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequest",
                        TRACE_EVENT_SCOPE_THREAD);
 
+  // Note that ExecuteScriptAndReturnValue may end up killing this object.
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result = frame_->ExecuteScriptAndReturnValue(
       WebScriptSource(WebString::FromUTF16(javascript)));
+
+  if (!weak_this)
+    return;
 
   std::move(callback).Run(GetJavaScriptExecutionResult(result));
 }
@@ -2465,6 +2471,9 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequestForTests",
                        TRACE_EVENT_SCOPE_THREAD);
 
+  // Note that ExecuteScriptAndReturnValue may end up killing this object.
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+
   // A bunch of tests expect to run code in the context of a user gesture, which
   // can grant additional privileges (e.g. the ability to create popups).
   base::Optional<blink::WebScopedUserGesture> gesture;
@@ -2474,6 +2483,9 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
   v8::HandleScope handle_scope(blink::MainThreadIsolate());
   v8::Local<v8::Value> result = frame_->ExecuteScriptAndReturnValue(
       WebScriptSource(WebString::FromUTF16(javascript)));
+
+  if (!weak_this)
+    return;
 
   std::move(callback).Run(GetJavaScriptExecutionResult(result));
 }
@@ -2514,8 +2526,14 @@ RenderFrameImpl::JavaScriptIsolatedWorldRequest::
 
 void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
     const blink::WebVector<v8::Local<v8::Value>>& result) {
+  if (!render_frame_impl_) {
+    // If the frame is gone, there's nothing that can be safely done; bail.
+    delete this;
+    return;
+  }
+
   base::Value value;
-  if (render_frame_impl_.get() && !result.empty()) {
+  if (!result.empty()) {
     // It's safe to always use the main world context when converting
     // here. V8ValueConverterImpl shouldn't actually care about the
     // context scope, and it switches to v8::Object's creation context
