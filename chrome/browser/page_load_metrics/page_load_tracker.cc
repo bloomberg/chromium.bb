@@ -702,10 +702,10 @@ void PageLoadTracker::UpdateFeaturesUsage(
 }
 
 void PageLoadTracker::UpdateResourceDataUse(
-    int frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
   for (const auto& observer : observers_) {
-    observer->OnResourceDataUseObserved(frame_tree_node_id, resources);
+    observer->OnResourceDataUseObserved(rfh, resources);
   }
 }
 

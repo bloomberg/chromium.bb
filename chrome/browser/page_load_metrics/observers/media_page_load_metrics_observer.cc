@@ -24,7 +24,7 @@ MediaPageLoadMetricsObserver::MediaPageLoadMetricsObserver()
 MediaPageLoadMetricsObserver::~MediaPageLoadMetricsObserver() = default;
 
 void MediaPageLoadMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {

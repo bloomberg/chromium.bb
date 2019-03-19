@@ -124,7 +124,7 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
 }
 
 void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
@@ -279,11 +279,11 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnLoadedResource(
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
     OnResourceDataUseObserved(
-        FrameTreeNodeId frame_tree_node_id,
+        content::RenderFrameHost* rfh,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) {
   if (waiter_)
-    waiter_->OnResourceDataUseObserved(frame_tree_node_id, resources);
+    waiter_->OnResourceDataUseObserved(rfh, resources);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(

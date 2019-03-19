@@ -17,6 +17,7 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -295,11 +296,11 @@ void AdsPageLoadMetricsObserver::OnComplete(
 }
 
 void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources)
-    UpdateResource(frame_tree_node_id, resource);
+    UpdateResource(rfh, resource);
 }
 
 void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
@@ -457,10 +458,12 @@ void AdsPageLoadMetricsObserver::AdjustAdBytesForFrame(
 }
 
 void AdsPageLoadMetricsObserver::UpdateResource(
-    FrameTreeNodeId frame_tree_node_id,
+    content::RenderFrameHost* rfh,
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  ProcessResourceForFrame(frame_tree_node_id, resource);
-  auto it = page_resources_.find(resource->request_id);
+  content::GlobalRequestID global_id(rfh->GetProcess()->GetID(),
+                                     resource->request_id);
+  ProcessResourceForFrame(rfh->GetFrameTreeNodeId(), resource);
+  auto it = page_resources_.find(global_id);
 
   if (resource->reported_as_ad_resource) {
     // If the resource had already started loading, and is now labeled as an ad,
@@ -471,7 +474,8 @@ void AdsPageLoadMetricsObserver::UpdateResource(
     int unaccounted_ad_bytes =
         is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
     if (unaccounted_ad_bytes)
-      AdjustAdBytesForFrame(frame_tree_node_id, resource, unaccounted_ad_bytes);
+      AdjustAdBytesForFrame(rfh->GetFrameTreeNodeId(), resource,
+                            unaccounted_ad_bytes);
   }
 
   // Update resource map.
@@ -486,7 +490,7 @@ void AdsPageLoadMetricsObserver::UpdateResource(
       it->second = resource->Clone();
     } else {
       page_resources_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(resource->request_id),
+                              std::forward_as_tuple(global_id),
                               std::forward_as_tuple(resource->Clone()));
     }
   }

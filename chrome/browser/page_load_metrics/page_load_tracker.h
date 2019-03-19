@@ -188,7 +188,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& new_features) override;
   void UpdateResourceDataUse(
-      int frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;

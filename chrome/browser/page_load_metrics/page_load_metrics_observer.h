@@ -483,7 +483,7 @@ class PageLoadMetricsObserver {
   // for a given render frame host. This only contains resources that have had
   // new data use since the last callback.
   virtual void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) {}
 
   // Invoked when a media element starts playing.
