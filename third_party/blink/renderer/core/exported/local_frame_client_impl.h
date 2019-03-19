@@ -225,6 +225,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   WebContentSettingsClient* GetContentSettingsClient() override;
 
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      DocumentLoader*,
       WebApplicationCacheHostClient*) override;
 
   void DispatchDidChangeManifest() override;

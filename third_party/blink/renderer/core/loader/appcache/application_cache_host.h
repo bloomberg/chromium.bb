@@ -113,7 +113,9 @@ class CORE_EXPORT ApplicationCacheHost final
   // willStartLoadingMainResource if it's for frame resource or
   // willStartLoadingResource for subresource requests.
   void WillStartLoading(ResourceRequest&);
-  void WillStartLoadingMainResource(const KURL&, const String&);
+  void WillStartLoadingMainResource(DocumentLoader*,
+                                    const KURL&,
+                                    const String& method);
 
   void DidReceiveResponseForMainResource(const ResourceResponse&);
   void MainResourceDataReceived(const char* data, size_t length);

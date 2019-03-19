@@ -207,6 +207,7 @@ EmptyLocalFrameClient::CreateServiceWorkerProvider() {
 
 std::unique_ptr<WebApplicationCacheHost>
 EmptyLocalFrameClient::CreateApplicationCacheHost(
+    DocumentLoader*,
     WebApplicationCacheHostClient*) {
   return nullptr;
 }

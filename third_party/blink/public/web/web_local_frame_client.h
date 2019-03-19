@@ -154,6 +154,7 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // May return null.
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
+      WebDocumentLoader*,
       WebApplicationCacheHostClient*) {
     return nullptr;
   }
