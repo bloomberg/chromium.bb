@@ -139,6 +139,9 @@ const char kSettingPageRangeTo[] = "to";
 const char kSettingPageWidth[] = "pageWidth";
 const char kSettingPageHeight[] = "pageHeight";
 
+// PIN code entered by the user.
+const char kSettingPinValue[] = "pinValue";
+
 // Policies affecting printing destination.
 const char kSettingPolicies[] = "policies";
 

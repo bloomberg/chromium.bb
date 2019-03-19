@@ -218,6 +218,10 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
     if (username)
       settings->set_username(*username);
   }
+
+  const std::string* pin_value = job_settings.FindStringKey(kSettingPinValue);
+  if (pin_value)
+    settings->set_pin_value(*pin_value);
 #endif
 
   return true;

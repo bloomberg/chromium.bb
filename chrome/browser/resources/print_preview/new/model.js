@@ -917,6 +917,12 @@ Polymer({
       ticket.OpenPDFInPreview = true;
     }
 
+    // <if expr="chromeos">
+    if (this.getSettingValue('pin')) {
+      ticket.pinValue = this.getSettingValue('pinValue');
+    }
+    // </if>
+
     return JSON.stringify(ticket);
   },
 
