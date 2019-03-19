@@ -87,8 +87,8 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
 
     while (deepest_last_child &&
            deepest_last_child->GetDelegate()->GetChildCount() > 0) {
-      deepest_last_child =
-          AXPlatformNode::FromNativeViewAccessible(owner()->ChildAtIndex(
+      deepest_last_child = AXPlatformNode::FromNativeViewAccessible(
+          deepest_last_child->GetDelegate()->ChildAtIndex(
               deepest_last_child->GetDelegate()->GetChildCount() - 1));
     }
     end = deepest_last_child->GetDelegate()
