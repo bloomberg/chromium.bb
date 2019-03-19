@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gl {
 namespace {
@@ -137,6 +138,14 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
                                         surface_damage_rect);
   }
 
+  // Surfaces which are present in the current frame but not in the next frame
+  // need to be explicitly updated in order to get a release fence for them in
+  // the next transaction.
+  for (size_t i = pending_surfaces_count_; i < surface_list_.size(); ++i) {
+    pending_transaction_->SetBuffer(*surface_list_[i].surface, nullptr,
+                                    base::ScopedFD());
+  }
+
   // Release resources for the current frame once the next frame is acked.
   ResourceRefs resources_to_release;
   resources_to_release.swap(current_frame_resources_);
@@ -152,6 +161,7 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
       std::move(present_callback), std::move(resources_to_release));
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
 
+  pending_transaction_acks_++;
   pending_transaction_->Apply();
   pending_transaction_.reset();
 
@@ -218,11 +228,12 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (surface_state.buffer_updated_in_pending_transaction) {
     surface_state.hardware_buffer = hardware_buffer;
 
-    if (!fence_fd.is_valid() && gpu_fence && surface_state.hardware_buffer) {
+    if (gpu_fence && surface_state.hardware_buffer) {
       auto fence_handle =
           gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
       DCHECK(!fence_handle.is_null());
-      fence_fd = base::ScopedFD(fence_handle.native_fd.fd);
+      fence_fd = MergeFDs(std::move(fence_fd),
+                          base::ScopedFD(fence_handle.native_fd.fd));
     }
 
     pending_transaction_->SetBuffer(*surface_state.surface,
@@ -300,7 +311,9 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     ResourceRefs released_resources,
     SurfaceControl::TransactionStats transaction_stats) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
-  context_->MakeCurrent(this);
+  DCHECK_GT(pending_transaction_acks_, 0u);
+
+  pending_transaction_acks_--;
 
   // The presentation feedback callback must run after swap completion.
   std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
@@ -314,10 +327,26 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
 
   for (auto& surface_stat : transaction_stats.surface_stats) {
     auto it = released_resources.find(surface_stat.surface);
-    DCHECK(it != released_resources.end());
+
+    // The transaction ack includes data for all surfaces updated in this
+    // transaction. So the following condition can occur if a new surface was
+    // added in this transaction with a buffer. It'll be included in the ack
+    // with no fence, since its not being released and so shouldn't be in
+    // |released_resources| either.
+    if (it == released_resources.end()) {
+      DCHECK(!surface_stat.fence.is_valid());
+      continue;
+    }
+
     if (surface_stat.fence.is_valid())
       it->second.scoped_buffer->SetReadFence(std::move(surface_stat.fence));
   }
+
+  // Note that we may not see |surface_stats| for every resource above. This is
+  // because we take a ref on every buffer used in a frame, even if it is not
+  // updated in that frame. Since the transaction ack only includes surfaces
+  // which were updated in that transaction, the surfaces with no buffer updates
+  // won't be present in the ack.
   released_resources.clear();
 }
 

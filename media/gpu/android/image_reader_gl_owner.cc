@@ -19,27 +19,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
-#include "third_party/libsync/src/include/sync/sync.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace media {
-namespace {
-
-base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b) {
-  if (!a.is_valid())
-    return b;
-  if (!b.is_valid())
-    return a;
-
-  base::ScopedFD merged(HANDLE_EINTR(sync_merge("", a.get(), b.get())));
-  if (!merged.is_valid())
-    LOG(ERROR) << "Failed to merge fences.";
-  return merged;
-}
-
-}  // namespace
 
 // FrameAvailableEvent_ImageReader is a RefCounted wrapper for a WaitableEvent
 // (it's not possible to put one in RefCountedData). This lets us safely signal
@@ -313,7 +298,7 @@ void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image,
   DCHECK_GT(image_ref.count, 0u);
   image_ref.count--;
   image_ref.release_fence_fd =
-      MergeFDs(std::move(image_ref.release_fence_fd), std::move(fence_fd));
+      gl::MergeFDs(std::move(image_ref.release_fence_fd), std::move(fence_fd));
 
   if (image_ref.count > 0)
     return;
