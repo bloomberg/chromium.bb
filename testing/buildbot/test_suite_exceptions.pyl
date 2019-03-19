@@ -1790,6 +1790,11 @@
         },
       },
     },
+    'remove_from': [
+      # Flakily fails on Win7. https://crbug.com/943372.
+      'Win7 Tests (1)',
+      'Win 7 Tests x64 (1)',
+    ],
   },
   'webui_polymer1_browser_tests': {
     'remove_from': [
