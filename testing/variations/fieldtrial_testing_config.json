@@ -4475,6 +4475,25 @@
             ]
         }
     ],
+    "ScheduledScriptStreaming": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "ScheduledScriptStreaming",
+                    "enable_features": [
+                        "ScheduledScriptStreaming"
+                    ]
+                }
+            ]
+        }
+    ],
     "SearchEnginePromo": [
         {
             "platforms": [
