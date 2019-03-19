@@ -764,10 +764,6 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   // URL should be showing again when we navigate to a normal URL
   NavigateToURLSync(browser(), GetURL("example.com"));
   EXPECT_TRUE(IsUrlShowing(browser()));
-
-  // URL should still get hidden when we navigate to a page with a hidden URL.
-  NavigateToURLSync(browser(), GURL("chrome://newtab"));
-  EXPECT_FALSE(IsUrlShowing(browser()));
 }
 
 // Verify that bypassing warnings in the main profile does not affect incognito.
