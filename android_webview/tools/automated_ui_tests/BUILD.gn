@@ -55,7 +55,6 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
   deps = [
     ":webview_ui_test_app_apk_resources",
     ":webview_ui_test_app_java",
-    "//android_webview:system_webview_apk",
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_deps:com_android_support_support_annotations_java",
