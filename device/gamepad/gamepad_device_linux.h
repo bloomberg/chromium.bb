@@ -13,7 +13,6 @@
 #include "device/gamepad/dualshock4_controller_linux.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/hid_haptic_gamepad_linux.h"
-#include "device/gamepad/switch_pro_controller_linux.h"
 #include "device/gamepad/udev_gamepad_linux.h"
 
 extern "C" {
@@ -159,9 +158,6 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
 
   // Dualshock4 functionality, if available.
   std::unique_ptr<Dualshock4ControllerLinux> dualshock4_;
-
-  // Nintendo Switch Pro controller functionality, if available.
-  std::unique_ptr<SwitchProControllerLinux> switch_pro_;
 
   // A controller that uses a HID output report for vibration effects.
   std::unique_ptr<HidHapticGamepadLinux> hid_haptics_;

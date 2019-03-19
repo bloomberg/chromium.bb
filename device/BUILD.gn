@@ -369,6 +369,18 @@ test("device_unittests") {
       "//ui/display:test_support",
     ]
   }
+
+  # Some gamepad tests require the HID service. Only build these tests on
+  # platforms where the HID service is enabled.
+  if (!is_android && !is_fuchsia) {
+    sources += [ "gamepad/nintendo_data_fetcher_unittest.cc" ]
+
+    deps += [
+      "//services/device:test_support",
+      "//services/device/hid",
+      "//services/device/hid:mocks",
+    ]
+  }
 }
 
 source_set("usb_test_gadget") {

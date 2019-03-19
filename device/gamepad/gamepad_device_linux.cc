@@ -197,23 +197,10 @@ bool GamepadDeviceLinux::SupportsVibration() const {
   if (dualshock4_ || hid_haptics_)
     return true;
 
-  // Vibration is only supported over USB.
-  // TODO(mattreynolds): add support for Switch Pro vibration over Bluetooth.
-  if (switch_pro_)
-    return bus_type_ == GAMEPAD_BUS_USB;
-
   return supports_force_feedback_ && evdev_fd_ >= 0;
 }
 
 void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
-  if (switch_pro_ && bus_type_ == GAMEPAD_BUS_USB) {
-    // When connected over USB, the Switch Pro controller does not correctly
-    // report its state over USB HID. Instead, fetch the state using the
-    // device's vendor-specific USB protocol.
-    switch_pro_->ReadUsbPadState(pad);
-    return;
-  }
-
   DCHECK_GE(joydev_fd_, 0);
 
   // Read button and axis events from the joydev device.
@@ -487,26 +474,16 @@ bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
   uint16_t vendor_id;
   uint16_t product_id;
   bool is_dualshock4 = false;
-  bool is_switch_pro = false;
   bool is_hid_haptic = false;
   if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
     is_dualshock4 =
         Dualshock4ControllerLinux::IsDualshock4(vendor_id, product_id);
-    is_switch_pro =
-        SwitchProControllerLinux::IsSwitchPro(vendor_id, product_id);
     is_hid_haptic = HidHapticGamepadLinux::IsHidHaptic(vendor_id, product_id);
-    DCHECK_LE(is_dualshock4 + is_switch_pro + is_hid_haptic, 1);
+    DCHECK_LE(is_dualshock4 + is_hid_haptic, 1);
   }
 
   if (is_dualshock4 && !dualshock4_)
     dualshock4_ = std::make_unique<Dualshock4ControllerLinux>(hidraw_fd_);
-
-  if (is_switch_pro && !switch_pro_) {
-    switch_pro_ = std::make_unique<SwitchProControllerLinux>(hidraw_fd_);
-
-    if (bus_type_ == GAMEPAD_BUS_USB)
-      switch_pro_->SendConnectionStatusQuery();
-  }
 
   if (is_hid_haptic && !hid_haptics_) {
     hid_haptics_ =
@@ -520,9 +497,6 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   if (dualshock4_)
     dualshock4_->Shutdown();
   dualshock4_.reset();
-  if (switch_pro_)
-    switch_pro_->Shutdown();
-  switch_pro_.reset();
   if (hid_haptics_)
     hid_haptics_->Shutdown();
   hid_haptics_.reset();
@@ -536,11 +510,6 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
   if (dualshock4_) {
     dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
-    return;
-  }
-
-  if (switch_pro_) {
-    switch_pro_->SetVibration(strong_magnitude, weak_magnitude);
     return;
   }
 
@@ -573,11 +542,6 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
 void GamepadDeviceLinux::SetZeroVibration() {
   if (dualshock4_) {
     dualshock4_->SetZeroVibration();
-    return;
-  }
-
-  if (switch_pro_) {
-    switch_pro_->SetZeroVibration();
     return;
   }
 

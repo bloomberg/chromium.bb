@@ -15,21 +15,6 @@
 namespace device {
 
 namespace {
-
-enum SwitchProButtons {
-  SWITCH_PRO_BUTTON_CAPTURE = BUTTON_INDEX_COUNT,
-  SWITCH_PRO_BUTTON_COUNT
-};
-
-// The Switch Pro controller reports a larger logical range than the analog
-// axes are capable of, and as a result the received axis values only use about
-// 70% of the total range. We renormalize the axis values to cover the full
-// range. The axis extents were determined experimentally.
-const float kSwitchProAxisXMin = -0.7f;
-const float kSwitchProAxisXMax = 0.7f;
-const float kSwitchProAxisYMin = -0.65f;
-const float kSwitchProAxisYMax = 0.75f;
-
 // The hid-sony driver in newer kernels uses an alternate mapping for Sony
 // Playstation 3 and Playstation 4 gamepads than in older kernels. To allow
 // applications to distinguish between the old mapping and the new mapping,
@@ -557,40 +542,34 @@ void MapperSteelSeriesStratusXLBt(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperSwitchProUsb(const Gamepad& input, Gamepad* mapped) {
+void MapperSwitchJoyCon(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
-  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[0], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[1], kSwitchProAxisYMin, kSwitchProAxisYMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[2], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[3], kSwitchProAxisYMin, kSwitchProAxisYMax);
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = 2;
+}
 
-  mapped->buttons_length = SWITCH_PRO_BUTTON_COUNT;
+void MapperSwitchPro(const Gamepad& input, Gamepad* mapped) {
+  // The Switch Pro controller has a Capture button that has no equivalent in
+  // the Standard Gamepad.
+  const size_t kSwitchProExtraButtonCount = 1;
+  *mapped = input;
+  mapped->buttons_length = BUTTON_INDEX_COUNT + kSwitchProExtraButtonCount;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperSwitchProBluetooth(const Gamepad& input, Gamepad* mapped) {
+void MapperSwitchComposite(const Gamepad& input, Gamepad* mapped) {
+  // In composite mode, the inputs from two Joy-Cons are combined to form one
+  // virtual gamepad. Some buttons do not have equivalents in the Standard
+  // Gamepad and are exposed as extra buttons:
+  // * Capture button (Joy-Con L):  BUTTON_INDEX_COUNT
+  // * SL (Joy-Con L):              BUTTON_INDEX_COUNT + 1
+  // * SR (Joy-Con L):              BUTTON_INDEX_COUNT + 2
+  // * SL (Joy-Con R):              BUTTON_INDEX_COUNT + 3
+  // * SR (Joy-Con R):              BUTTON_INDEX_COUNT + 4
+  const size_t kSwitchCompositeExtraButtonCount = 5;
   *mapped = input;
-  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
-  mapped->buttons[SWITCH_PRO_BUTTON_CAPTURE] = input.buttons[13];
-  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
-  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[5]);
-  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[4]);
-  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
-      AxisPositiveAsButton(input.axes[4]);
-  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[0], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[1], kSwitchProAxisYMin, kSwitchProAxisYMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = RenormalizeAndClampAxis(
-      input.axes[2], kSwitchProAxisXMin, kSwitchProAxisXMax);
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = RenormalizeAndClampAxis(
-      input.axes[3], kSwitchProAxisYMin, kSwitchProAxisYMax);
-
-  mapped->buttons_length = SWITCH_PRO_BUTTON_COUNT;
+  mapped->buttons_length =
+      BUTTON_INDEX_COUNT + kSwitchCompositeExtraButtonCount;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -748,8 +727,14 @@ constexpr struct MappingData {
     {GamepadId::kSonyProduct09cc, MapperDualshock4},
     // Dualshock 4 USB receiver
     {GamepadId::kSonyProduct0ba0, MapperDualshock4},
+    // Switch Joy-Con L
+    {GamepadId::kNintendoProduct2006, MapperSwitchJoyCon},
+    // Switch Joy-Con R
+    {GamepadId::kNintendoProduct2007, MapperSwitchJoyCon},
     // Switch Pro Controller
-    {GamepadId::kNintendoProduct2009, MapperSwitchProUsb},
+    {GamepadId::kNintendoProduct2009, MapperSwitchPro},
+    // Switch Charging Grip
+    {GamepadId::kNintendoProduct200e, MapperSwitchPro},
     // iBuffalo Classic
     {GamepadId::kPadixProduct2060, MapperIBuffalo},
     // SmartJoy PLUS Adapter
@@ -820,12 +805,22 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     mapper = MapperDualshock3SixAxisNew;
   }
 
-  // The Nintendo Switch Pro controller exposes the same product ID when
-  // connected over USB or Bluetooth but communicates using different protocols.
-  // In Bluetooth mode it uses standard HID, but in USB mode it uses a
-  // vendor-specific protocol. Select a mapper depending on the connection type.
-  if (mapper == MapperSwitchProUsb && bus_type == GAMEPAD_BUS_BLUETOOTH)
-    mapper = MapperSwitchProBluetooth;
+  // The Switch Joy-Con Charging Grip allows a pair of Joy-Cons to be docked
+  // with the grip and used over USB as a single composite gamepad. The Nintendo
+  // data fetcher also allows a pair of Bluetooth-connected Joy-Cons to be used
+  // as a composite device and sets the same product ID as the Charging Grip.
+  //
+  // In both configurations, we remap the Joy-Con buttons to align with the
+  // Standard Gamepad mapping. Docking a Joy-Con in the Charging Grip makes the
+  // SL and SR buttons inaccessible.
+  //
+  // If the Joy-Cons are not docked, the SL and SR buttons are still accessible.
+  // Inspect the |bus_type| of the composite device to detect this case and use
+  // an alternate mapping function that exposes the extra buttons.
+  if (gamepad_id == GamepadId::kNintendoProduct200e &&
+      mapper == MapperSwitchPro && bus_type != GAMEPAD_BUS_USB) {
+    mapper = MapperSwitchComposite;
+  }
 
   return mapper;
 }
