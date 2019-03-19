@@ -76,6 +76,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
  public:
   virtual ~InspectTool() = default;
   void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
+  virtual CString GetDataResourceName();
   virtual bool HandleMouseDown(const WebMouseEvent&,
                                bool* swallow_next_mouse_up);
   virtual bool HandleMouseUp(const WebMouseEvent&);
@@ -194,15 +195,11 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response CompositingEnabled();
 
   bool InSomeInspectMode();
-  void InnerHighlightNode(
-      Node*,
-      Node* event_target,
-      String selector,
-      std::unique_ptr<InspectorHighlightConfig> highlight_config);
 
   void SetNeedsUnbufferedInput(bool unbuffered);
   void PickTheRightTool();
   void SetInspectTool(InspectTool* inspect_tool);
+  void UpdateFrameForTool();
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
@@ -219,6 +216,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Page> overlay_page_;
+  CString frame_resource_name_;
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
   bool resize_timer_active_;

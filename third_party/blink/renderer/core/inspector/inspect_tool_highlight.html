@@ -30,10 +30,6 @@
 <head>
 <style>
 body {
-    margin: 0;
-    padding: 0;
-    font-size: 13px;
-    color: #222;
     --arrow-width: 15px;
     --arrow-height: 8px;
     --shadow-up: 5px;
@@ -42,98 +38,6 @@ body {
     --arrow-up: polygon(0 0, 100% 0, 50% 100%);
     --arrow-down: polygon(50% 0, 0 100%, 100% 100%);
     --arrow: var(--arrow-up);
-}
-
-body.platform-linux {
-    font-family: Roboto, Ubuntu, Arial, sans-serif;
-}
-
-body.platform-mac {
-    color: rgb(48, 57, 66);
-    font-family: '.SFNSDisplay-Regular', 'Helvetica Neue', 'Lucida Grande', sans-serif;
-}
-
-body.platform-windows {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-}
-
-.fill {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-}
-
-.dimmed {
-    background-color: rgba(0, 0, 0, 0.31);
-}
-
-#canvas {
-    pointer-events: none;
-}
-
-.controls-line {
-    display: flex;
-    justify-content: center;
-    margin: 10px 0;
-}
-
-.message-box {
-    padding: 2px 4px;
-    display: flex;
-    align-items: center;
-    cursor: default;
-    overflow: hidden;
-}
-
-#paused-in-debugger {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.controls-line > * {
-    background-color: rgb(255, 255, 194);
-    border: 1px solid rgb(202, 202, 202);
-    height: 22px;
-    box-sizing: border-box;
-}
-
-.controls-line .button {
-    width: 26px;
-    margin-left: -1px;
-    margin-right: 0;
-    padding: 0;
-    flex-shrink: 0;
-    flex-grow: 0;
-    cursor: pointer;
-}
-
-.controls-line .button .glyph {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.75);
-    opacity: 0.8;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    position: relative;
-}
-
-.controls-line .button:active .glyph {
-    top: 1px;
-    left: 1px;
-}
-
-#resume-button .glyph {
-    -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAAKCAYAAABv7tTEAAAAAXNSR0IArs4c6QAAAFJJREFUKM+10bEJgGAMBeEPbR3BLRzEVdzEVRzELRzBVohVwEJ+iODBlQfhBeJhsmHU4C0KnFjQV6J0x1SNAhdWDJUoPTB3PvLLeaUhypM3n3sD/qc7lDrdpIEAAAAASUVORK5CYII=);
-    -webkit-mask-size: 13px 10px;
-    background-color: rgb(66, 129, 235);
-}
-
-#step-over-button .glyph {
-    -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAKCAYAAAC5Sw6hAAAAAXNSR0IArs4c6QAAAOFJREFUKM+N0j8rhXEUB/DPcxW35CqhvIBrtqibkklhV8qkTHe4ZbdblcXgPVhuMdqUTUl5A2KRRCF5LGc4PT1P7qnfcr5/zu/8KdTHLFaxjHnc4RZXKI0QYxjgLQTVd42l/0wmg5iFX3iq5H6w22RS4DyRH7CB8cAXcBTGJT6xUmd0mEwuMdFQcA3fwXvGTAan8BrgPabTL9fRRyfx91PRMwyjGwcJ2EyCfsrfpPw2Pipz24NT/MZciiQYVshzOKnZ5Hturxt3k2MnCpS4SPkeHpPR8Sh3tYgttBoW9II2/AHiaEqvD2Fc0wAAAABJRU5ErkJggg==);
-    -webkit-mask-size: 18px 10px;
 }
 
 .px {
@@ -146,9 +50,6 @@ body.platform-windows {
 }
 
 /* Material */
-.hidden {
-    display: none !important;
-}
 
 .tooltip-content {
     position: absolute;
@@ -283,21 +184,15 @@ body.platform-windows {
 }
 
 </style>
+
+
 <script>
 const lightGridColor = "rgba(0,0,0,0.2)";
 const darkGridColor = "rgba(0,0,0,0.7)";
 const transparentColor = "rgba(0, 0, 0, 0)";
 const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
 
-function drawPausedInDebuggerMessage(message)
-{
-    window._controlsVisible = true;
-    document.querySelector(".controls-line").style.visibility = "visible";
-    document.getElementById("paused-in-debugger").textContent = message;
-    document.body.classList.add("dimmed");
-}
-
-function _drawGrid(context, rulerAtRight, rulerAtBottom)
+function _drawAxis(context, rulerAtRight, rulerAtBottom)
 {
     if (window._gridPainted)
         return;
@@ -433,59 +328,10 @@ function _drawGrid(context, rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function drawViewSize()
+function doReset()
 {
-    var text = viewportSize.width + "px \u00D7 " + viewportSize.height + "px";
-    context.save();
-    context.font = "20px ";
-    switch (platform) {
-    case "windows": context.font = "14px Consolas, Lucida Console"; break;
-    case "mac": context.font = "14px Menlo, Monaco"; break;
-    case "linux": context.font = "14px dejavu sans mono"; break;
-    }
-
-    var frameWidth = canvasWidth;
-    var textWidth = context.measureText(text).width;
-    context.fillStyle = gridBackgroundColor;
-    context.fillRect(frameWidth - textWidth - 12, 0, frameWidth, 25);
-    context.fillStyle = darkGridColor;
-    context.fillText(text, frameWidth - textWidth - 6, 18);
-    context.restore();
-}
-
-function resetCanvas(canvasElement)
-{
-    canvasElement.width = deviceScaleFactor * viewportSize.width;
-    canvasElement.height = deviceScaleFactor * viewportSize.height;
-    canvasElement.style.width = viewportSize.width + "px";
-    canvasElement.style.height = viewportSize.height + "px";
-    var context = canvasElement.getContext("2d");
-    context.scale(deviceScaleFactor, deviceScaleFactor);
-}
-
-function reset(resetData)
-{
-    window.viewportSize = resetData.viewportSize;
-    window.deviceScaleFactor = resetData.deviceScaleFactor;
-    window.pageScaleFactor = resetData.pageScaleFactor;
-    window.pageZoomFactor = resetData.pageZoomFactor;
-    window.scrollX = Math.round(resetData.scrollX);
-    window.scrollY = Math.round(resetData.scrollY);
-
-    window.canvas = document.getElementById("canvas");
-    window.context = canvas.getContext("2d");
-    resetCanvas(canvas);
-
-    window.canvasWidth = viewportSize.width;
-    window.canvasHeight = viewportSize.height;
-
-    window._controlsVisible = false;
-    document.querySelector(".controls-line").style.visibility = "hidden";
-    document.getElementById("tooltip-container").removeChildren();
-
-    document.body.classList.remove("dimmed");
-
-    window._gridPainted = false;
+  document.getElementById("tooltip-container").removeChildren();
+  window._gridPainted = false;
 }
 
 /**
@@ -902,7 +748,7 @@ function drawHighlight(highlight, context)
     var rulerAtBottom = highlight.paths.length && highlight.showRulers && bounds.minY < 20 && bounds.maxY + 20 < canvasHeight;
 
     if (highlight.showRulers)
-        _drawGrid(context, rulerAtRight, rulerAtBottom);
+        _drawAxis(context, rulerAtRight, rulerAtBottom);
 
     if (highlight.paths.length) {
         if (highlight.showExtensionLines)
@@ -920,117 +766,6 @@ function drawHighlight(highlight, context)
     return { bounds: bounds };
 }
 
-function drawScreenshotBorder(rect)
-{
-    var context = window.context;
-    context.save();
-    context.fillStyle = '#0003';
-    context.strokeStyle = '#fffd';
-    context.lineWidth = 1;
-    context.rect(rect.x1 - 0.5, rect.y1 - 0.5, rect.x2 - rect.x1 + 1, rect.y2 - rect.y1 + 1);
-    context.fill();
-    context.stroke();
-    context.restore();
-}
-
-function setPlatform(platform)
-{
-    window.platform = platform;
-    document.body.classList.add("platform-" + platform);
-}
-
-function dispatch(message)
-{
-    var functionName = message.shift();
-    window[functionName].apply(null, message);
-}
-
-function log(text)
-{
-    document.getElementById("log").createChild("div").textContent = text;
-}
-
-function onResumeClick()
-{
-    InspectorOverlayHost.resume();
-}
-
-function onStepOverClick()
-{
-    InspectorOverlayHost.stepOver();
-}
-
-function onLoaded()
-{
-    document.getElementById("resume-button").addEventListener("click", onResumeClick);
-    document.getElementById("step-over-button").addEventListener("click", onStepOverClick);
-}
-
-function eventHasCtrlOrMeta(event)
-{
-    return window.platform == "mac" ? (event.metaKey && !event.ctrlKey) : (event.ctrlKey && !event.metaKey);
-}
-
-function onDocumentKeyDown(event)
-{
-    if (!window._controlsVisible)
-        return;
-    if (event.key == "F8" || eventHasCtrlOrMeta(event) && event.keyCode == 220 /* backslash */)
-        InspectorOverlayHost.resume();
-    else if (event.key == "F10" || eventHasCtrlOrMeta(event) && event.keyCode == 222 /* single quote */)
-        InspectorOverlayHost.stepOver();
-}
-
-Element.prototype.createChild = function(tagName, className)
-{
-    var element = createElement(tagName, className);
-    element.addEventListener("click", function(e) { e.stopPropagation(); }, false);
-    this.appendChild(element);
-    return element;
-}
-
-Element.prototype.createTextChild = function(text)
-{
-    var element = document.createTextNode(text);
-    this.appendChild(element);
-    return element;
-}
-
-Element.prototype.removeChildren = function()
-{
-    if (this.firstChild)
-        this.textContent = "";
-}
-
-function createElement(tagName, className)
-{
-    var element = document.createElement(tagName);
-    if (className)
-        element.className = className;
-    return element;
-}
-
-String.prototype.trimEnd = function(maxLength)
-{
-    if (this.length <= maxLength)
-        return String(this);
-    return this.substr(0, maxLength - 1) + "\u2026";
-}
-
-/**
- * @param {number} num
- * @param {number} min
- * @param {number} max
- * @return {number}
- */
-Number.constrain = function(num, min, max) {
-    if (num < min)
-        num = min;
-    else if (num > max)
-        num = max;
-    return num;
-};
-
 function test() {
     document.body.classList.add("platform-mac");
     reset({
@@ -1044,21 +779,13 @@ function test() {
     drawHighlight(
         {"paths":[{"path":["M",122,133.796875,"L",822,133.796875,"L",822,208.796875,"L",122,208.796875,"Z"], "fillColor":"rgba(111, 168, 220, 0.658823529411765)","name":"content"},
         {"path":["M",122,113.796875,"L",822,113.796875,"L",822,228.796875,"L",122,228.796875,"Z"],"fillColor":"rgba(246, 178, 107, 0.66)","name":"margin"}],"showRulers":false,"showExtensionLines":false,
-        "elementInfo":{"tagName":"p","idValue":"","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"}}});
+        "elementInfo":{"tagName":"p","idValue":"","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"}}, showExtensionLines: true, showRulers: true});
 }
 
-window.addEventListener("DOMContentLoaded", onLoaded);
-document.addEventListener("keydown", onDocumentKeyDown);
 </script>
 </head>
 <body class="fill">
+  <canvas id="canvas" class="fill"></canvas>
+  <div id="tooltip-container"></div>
 </body>
-<canvas id="canvas" class="fill"></canvas>
-<div id="tooltip-container"></div>
-<div class="controls-line">
-    <div class="message-box"><div id="paused-in-debugger"></div></div>
-    <div class="button" id="resume-button" title="Resume script execution (F8)."><div class="glyph"></div></div>
-    <div class="button" id="step-over-button" title="Step over next function call (F10)."><div class="glyph"></div></div>
-</div>
-<div id="log"></div>
 </html>

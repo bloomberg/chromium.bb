@@ -88,6 +88,7 @@ class ShowViewSizeTool : public InspectTool {
 
  private:
   bool ForwardEventsToOverlay() override;
+  CString GetDataResourceName() override;
   void Draw(float scale) override;
   DISALLOW_COPY_AND_ASSIGN(ShowViewSizeTool);
 };
@@ -99,6 +100,7 @@ class ScreenshotTool : public InspectTool {
   ScreenshotTool() = default;
 
  private:
+  CString GetDataResourceName() override;
   bool HandleKeyboardEvent(const WebKeyboardEvent&,
                            bool* swallow_next_escape_up) override;
   bool HandleMouseDown(const WebMouseEvent& event,
@@ -120,6 +122,7 @@ class PausedInDebuggerTool : public InspectTool {
   explicit PausedInDebuggerTool(const String& message) : message_(message) {}
 
  private:
+  CString GetDataResourceName() override;
   void Draw(float scale) override;
   String message_;
   DISALLOW_COPY_AND_ASSIGN(PausedInDebuggerTool);
