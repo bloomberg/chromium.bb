@@ -34685,6 +34685,9 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MainFrameDownloadSandboxGesture">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <summary>
     For a download that occurs in top frame, record whether the frame is
     sandboxed and whether the download involves a transient user gesture. It is
@@ -51846,6 +51849,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SubframeDownloadSandboxOriginAdGesture">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <summary>
     For a download that occurs in subframe, record whether the frame is
     sandboxed, whether the origin is same to the top frame, whether it's an ad

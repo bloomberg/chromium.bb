@@ -20,7 +20,6 @@
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/public/common/download/download_stats.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -236,18 +235,6 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
                             kNavigationDownloadInSandboxWithoutUserGesture;
       RecordSingleFeatureUsage(ad_host, web_feature);
     }
-
-    blink::DownloadStats::SubframeDownloadFlags flags;
-    flags.has_sandbox = has_sandbox;
-    flags.is_cross_origin =
-        !IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false);
-    flags.is_ad_frame = is_adframe;
-    flags.has_gesture = has_gesture;
-    blink::DownloadStats::RecordSubframeDownloadFlags(
-        flags,
-        ukm::GetSourceIdForWebContentsDocument(
-            navigation_handle->GetWebContents()),
-        ukm::UkmRecorder::Get());
   }
 
   RecordAdFrameData(frame_tree_node_id, is_adframe, ad_host,
@@ -281,15 +268,6 @@ void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
                             kNavigationDownloadInSandboxWithoutUserGesture;
       RecordSingleFeatureUsage(rfh, web_feature);
     }
-
-    blink::DownloadStats::MainFrameDownloadFlags flags;
-    flags.has_sandbox = has_sandbox;
-    flags.has_gesture = has_gesture;
-    blink::DownloadStats::RecordMainFrameDownloadFlags(
-        flags,
-        ukm::GetSourceIdForWebContentsDocument(
-            navigation_handle->GetWebContents()),
-        ukm::UkmRecorder::Get());
   }
 }
 

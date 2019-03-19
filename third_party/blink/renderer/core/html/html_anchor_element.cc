@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "third_party/blink/public/common/download/download_stats.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -55,31 +54,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
-
-namespace {
-
-void RecordDownloadMetrics(LocalFrame* frame) {
-  if (frame->IsMainFrame()) {
-    DownloadStats::MainFrameDownloadFlags flags;
-    flags.has_sandbox = frame->GetDocument()->IsSandboxed(kSandboxDownloads);
-    flags.has_gesture = LocalFrame::HasTransientUserActivation(frame);
-    DownloadStats::RecordMainFrameDownloadFlags(
-        flags, frame->GetDocument()->UkmSourceID(),
-        frame->GetDocument()->UkmRecorder());
-    return;
-  }
-
-  DownloadStats::SubframeDownloadFlags flags;
-  flags.has_sandbox = frame->GetDocument()->IsSandboxed(kSandboxDownloads);
-  flags.is_cross_origin = frame->IsCrossOriginSubframe();
-  flags.is_ad_frame = frame->IsAdSubframe();
-  flags.has_gesture = LocalFrame::HasTransientUserActivation(frame);
-  DownloadStats::RecordSubframeDownloadFlags(
-      flags, frame->GetDocument()->UkmSourceID(),
-      frame->GetDocument()->UkmRecorder());
-}
-
-}  // namespace
 
 using namespace html_names;
 
@@ -431,7 +405,6 @@ void HTMLAnchorElement::HandleClick(Event& event) {
               : WebFeature::
                     kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
     }
-    RecordDownloadMetrics(frame);
     request.SetSuggestedFilename(
         static_cast<String>(FastGetAttribute(kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
