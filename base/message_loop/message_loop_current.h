@@ -187,17 +187,9 @@ class BASE_EXPORT MessageLoopCurrent {
   bool IsIdleForTesting();
 
  protected:
-  // Binds |current| to the current thread. It will from then on be the
-  // MessageLoop driven by MessageLoopCurrent on this thread. This is only meant
-  // to be invoked by the MessageLoop itself.
-  static void BindToCurrentThreadInternal(MessageLoopBase* current);
-
-  // Unbinds |current| from the current thread. Must be invoked on the same
-  // thread that invoked |BindToCurrentThreadInternal(current)|. This is only
-  // meant to be invoked by the MessageLoop itself.
-  static void UnbindFromCurrentThreadInternal(MessageLoopBase* current);
-
   explicit MessageLoopCurrent(MessageLoopBase* current) : current_(current) {}
+
+  static MessageLoopBase* GetCurrentMessageLoopBase();
 
   friend class MessageLoopImpl;
   friend class MessagePumpLibeventTest;
@@ -206,11 +198,6 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class sequence_manager::internal::SequenceManagerImpl;
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
-
-  // Return the pointer to MessageLoop for internal needs.
-  // All other callers should call MessageLoopCurrent::Get().
-  // TODO(altimin): Remove this.
-  MessageLoopBase* ToMessageLoopBaseDeprecated() const { return current_; }
 
   MessageLoopBase* current_;
 };
