@@ -115,6 +115,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 @property(nonatomic, strong) TableViewItem* syncErrorItem;
 // Sync your Chrome data switch item.
 @property(nonatomic, strong) SyncSwitchItem* syncChromeDataSwitchItem;
+// Items to open "Manage sync" settings.
+@property(nonatomic, strong) TableViewImageItem* manageSyncItem;
 // ** Non personalized section.
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
@@ -243,6 +245,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (void)loadSyncSection {
   self.syncErrorItem = nil;
   self.syncChromeDataSwitchItem = nil;
+  self.manageSyncItem = nil;
   TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:SyncSectionIdentifier];
   [self updateSyncSection:NO];
@@ -363,22 +366,33 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // reloaded.
 - (BOOL)updateManageSyncItem {
   TableViewModel* model = self.consumer.tableViewModel;
-  BOOL hasManageSyncItem = [model hasItemForItemType:ManageSyncItemType
-                                   sectionIdentifier:SyncSectionIdentifier];
   if (self.isSyncCanBeAvailable) {
-    if (hasManageSyncItem)
-      return NO;
-    SettingsMultilineDetailItem* item =
-        [[SettingsMultilineDetailItem alloc] initWithType:ManageSyncItemType];
-    item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    item.text = GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
-    [model addItem:item toSectionWithIdentifier:SyncSectionIdentifier];
-    return YES;
+    BOOL needsUpdate = NO;
+    if (!self.manageSyncItem) {
+      self.manageSyncItem =
+          [[TableViewImageItem alloc] initWithType:ManageSyncItemType];
+      self.manageSyncItem.accessoryType =
+          UITableViewCellAccessoryDisclosureIndicator;
+      self.manageSyncItem.title =
+          GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
+      [model addItem:self.manageSyncItem
+          toSectionWithIdentifier:SyncSectionIdentifier];
+      needsUpdate = YES;
+    }
+    needsUpdate =
+        needsUpdate || self.manageSyncItem.enabled != !self.isSyncDisabled;
+    self.manageSyncItem.enabled = !self.isSyncDisabled;
+    self.manageSyncItem.textColor =
+        self.manageSyncItem.enabled
+            ? nil
+            : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    return needsUpdate;
   }
-  if (!hasManageSyncItem)
+  if (!self.manageSyncItem)
     return NO;
   [model removeItemWithType:ManageSyncItemType
       fromSectionWithIdentifier:SyncSectionIdentifier];
+  self.manageSyncItem = nil;
   return YES;
 }
 
@@ -463,6 +477,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (BOOL)isSyncDisabledByAdministrator {
   return (self.syncService->GetDisableReasons() &
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) != 0;
+}
+
+- (BOOL)isSyncDisabled {
+  return self.syncService->GetDisableReasons() !=
+         syncer::SyncService::DISABLE_REASON_NONE;
 }
 
 - (BOOL)isSyncCanBeAvailable {
