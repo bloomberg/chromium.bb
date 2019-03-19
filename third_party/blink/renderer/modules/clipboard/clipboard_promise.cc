@@ -122,9 +122,9 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
 
 scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
-  // TODO(https://crbug.com/941835): Replace MiscPlatformAPI with TaskType
-  // specific to clipboard.
-  return GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  // Get the User Interaction task runner, as Async Clipboard API calls require
+  // user interaction, as specified in https://w3c.github.io/clipboard-apis/
+  return GetExecutionContext()->GetTaskRunner(TaskType::kUserInteraction);
 }
 
 PermissionService* ClipboardPromise::GetPermissionService() {
