@@ -22,6 +22,7 @@
 
 #include <blpwtk2_renderwebview.h>
 
+#include <blpwtk2_mainmessagepump.h>
 #include <blpwtk2_rendercompositor.h>
 #include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_statics.h>
@@ -30,6 +31,7 @@
 #include <base/message_loop/message_loop.h>
 #include <cc/trees/layer_tree_host.h>
 #include <content/browser/renderer_host/display_util.h>
+#include <content/common/drag_messages.h>
 #include <content/common/frame_messages.h>
 #include <content/common/widget_messages.h>
 #include <content/public/renderer/render_view_observer.h>
@@ -617,6 +619,8 @@ void RenderWebView::initialize()
     d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
 
     d_inputMethod = ui::CreateInputMethod(this, d_hwnd.get());
+
+    d_dragDrop = new DragDrop(d_hwnd.get(), this);
 }
 
 void RenderWebView::updateVisibility()
@@ -775,6 +779,25 @@ void RenderWebView::onQueueWheelEventWithPhaseEnded()
         content::MouseWheelEventWithLatencyInfo(
             d_lastMouseWheelEvent,
             ui::LatencyInfo()));
+}
+
+void RenderWebView::onStartDraggingImpl(
+    const content::DropData& drop_data,
+    blink::WebDragOperationsMask operations_allowed,
+    const SkBitmap& bitmap,
+    const gfx::Vector2d& bitmap_offset_in_dip,
+    const content::DragEventSourceInfo& event_info)
+{
+    MainMessagePump::ScopedModalLoopWorkAllower allow(
+            MainMessagePump::current());
+
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    run_loop.BeforeRun();
+
+    d_dragDrop->StartDragging(
+        drop_data, operations_allowed, bitmap, bitmap_offset_in_dip, event_info);
+
+    run_loop.AfterRun();
 }
 
 // blpwtk2::WebView overrides:
@@ -1335,6 +1358,11 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
         IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
             OnTextInputStateChanged)
         IPC_MESSAGE_UNHANDLED(handled = false)
+        // Drag and drop:
+        IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging,
+            OnStartDragging)
+        IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor,
+            OnUpdateDragCursor)
     IPC_END_MESSAGE_MAP()
 
     return handled;
@@ -1648,6 +1676,92 @@ bool RenderWebView::ShouldDoLearning()
     return false;
 }
 
+// DragDropDelegate overrides:
+void RenderWebView::DragTargetEnter(
+    const std::vector<content::DropData::Metadata>& drag_data_metadata,
+    const gfx::PointF& client_pt,
+    const gfx::PointF& screen_pt,
+    blink::WebDragOperationsMask ops_allowed,
+    int key_modifiers)
+{
+    dispatchToRenderWidget(
+        DragMsg_TargetDragEnter(d_renderWidgetRoutingId,
+            drag_data_metadata,
+            client_pt, screen_pt,
+            ops_allowed,
+            key_modifiers));
+}
+
+void RenderWebView::DragTargetOver(
+    const gfx::PointF& client_pt,
+    const gfx::PointF& screen_pt,
+    blink::WebDragOperationsMask ops_allowed,
+    int key_modifiers)
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    dispatchToRenderWidget(
+        DragMsg_TargetDragOver(d_renderWidgetRoutingId,
+            client_pt, screen_pt,
+            ops_allowed,
+            key_modifiers));
+}
+
+void RenderWebView::DragTargetLeave()
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    dispatchToRenderWidget(
+        DragMsg_TargetDragLeave(d_renderWidgetRoutingId,
+            gfx::PointF(), gfx::PointF()));
+}
+
+void RenderWebView::DragTargetDrop(
+    const content::DropData& drop_data,
+    const gfx::PointF& client_pt,
+    const gfx::PointF& screen_pt,
+    int key_modifiers)
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    dispatchToRenderWidget(
+        DragMsg_TargetDrop(d_renderWidgetRoutingId,
+            drop_data,
+            client_pt, screen_pt,
+            key_modifiers));
+}
+
+void RenderWebView::DragSourceEnded(
+    const gfx::PointF& client_pt,
+    const gfx::PointF& screen_pt,
+    blink::WebDragOperation drag_operation)
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    dispatchToRenderWidget(
+        DragMsg_SourceEnded(d_renderWidgetRoutingId,
+            client_pt, screen_pt,
+            drag_operation));
+}
+
+void RenderWebView::DragSourceSystemEnded()
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    dispatchToRenderWidget(
+        DragMsg_SourceSystemDragEnded(d_renderWidgetRoutingId));
+}
+
 // IPC message handlers:
 void RenderWebView::OnLockMouse(
     bool user_gesture,
@@ -1788,6 +1902,26 @@ void RenderWebView::OnTextInputStateChanged(
             RequestCompositionUpdates(
                 false, false);
     }
+}
+
+void RenderWebView::OnStartDragging(
+    const content::DropData& drop_data,
+    blink::WebDragOperationsMask operations_allowed,
+    const SkBitmap& bitmap,
+    const gfx::Vector2d& bitmap_offset_in_dip,
+    const content::DragEventSourceInfo& event_info)
+{
+    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&RenderWebView::onStartDraggingImpl,
+            base::Unretained(this),
+            drop_data, operations_allowed, bitmap, bitmap_offset_in_dip, event_info));
+}
+
+void RenderWebView::OnUpdateDragCursor(
+    blink::WebDragOperation drag_operation)
+{
+    d_dragDrop->UpdateDragCursor(drag_operation);
 }
 
 }  // close namespace blpwtk2
