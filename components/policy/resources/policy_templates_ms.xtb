@@ -515,6 +515,9 @@
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="203096360153626918">Dasar ini tidak berkesan terhadap apl Android. Apl ini dapat memasuki mod skrin penuh walaupun jika dasar ini ditetapkan kepada <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Pencetak perusahaan dilumpuhkan</translation>
+<translation id="2050629715135525072">Mengawal keupayaan pengguna yang dihubungkan ke hos akses jauh untuk memindahkan fail antara pelanggan dengan hos. Tetapan ini tidak digunakan pada sambungan bantuan jauh, yang tidak menyokong pemindahan fail.
+
+          Jika tetapan ini dilumpuhkan, pemindahan fail tidak akan dibenarkan. Jika tetapan ini didayakan atau tidak ditetapkan, pemindahan fail akan dibenarkan.</translation>
 <translation id="2057317273526988987">Benarkan akses kepada URL yang disenaraikan</translation>
 <translation id="206623763829450685">Menetapkan skim pengesahan HTTP yang disokong oleh <ph name="PRODUCT_NAME" />.
 
@@ -613,6 +616,7 @@
 <translation id="2240879329269430151">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk memaparkan pop timbul. Memaparkan pop  timbul boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockPopups' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
+<translation id="2258126710006312594">Benarkan pengguna akses jauh memindahkan fail kepada/daripada hos</translation>
 <translation id="2265214338421787313">Dasar ini membenarkan pentadbir menetapkan bahawa halaman boleh memaparkan tetingkap timbul semasa penyahmuatannya.
 
       Apabila dasar ditetapkan kepada didayakan, halaman dibenarkan untuk memaparkan tetingkap timbul semasa halaman itu dinyahmuat.
@@ -896,6 +900,13 @@
       Semakan kemas kini automatik tidak akan disekat oleh dasar ini, tetapi mungkin disekat oleh dasar lain. Ciri ini hanya didayakan pada peranti Chrome yang dikonfigurasikan sebagai kios autolancar. Peranti lain tidak akan disekat oleh dasar ini.</translation>
 <translation id="2823870601012066791">Lokasi pendaftaran Windows untuk pelanggan <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
+<translation id="2836621397261130126">Mengawal sama ada kelulusan oleh dasar KDC dipatuhi untuk memutuskan sama ada untuk menetapkan tiket <ph name="KERBEROS" />.
+
+          Jika dasar ini ditetapkan kepada benar, pengesahan HTTP mematuhi kelulusan oleh dasar KDC, iaitu Chrome hanya menetapkan bukti kelayakan jika KDC menetapkan <ph name="OK_AS_DELEGATE" /> pada tiket perkhidmatan. Sila lihat https://tools.ietf.org/html/rfc5896.html untuk mendapatkan maklumat lanjut. Perkhidmatan juga harus sepadan dengan dasar 'AuthNegotiateDelegateWhitelist'.
+
+          Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, dasar KDC diabaikan pada platform yang disokong dan hanya dasar 'AuthNegotiateDelegateWhitelist' dipatuhi.
+
+          Pada Windows, dasar KDC sentiasa dipatuhi.</translation>
 <translation id="2838830882081735096">Tidak membenarkan penghijrahan data dan ARC</translation>
 <translation id="2839294585867804686">Tetapan Perkongsian Fail Rangkaian</translation>
 <translation id="2840269525054388612">Menentukan pencetak yang boleh digunakan oleh pengguna.

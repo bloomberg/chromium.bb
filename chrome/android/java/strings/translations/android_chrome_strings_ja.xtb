@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB を他のアプリで使用中</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 件のファイル}other{# 件のファイル}}</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
+<translation id="2018707881002649255">以下で選択する連絡先がウェブサイト <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> と共有されます。</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="204321170514947529">Chrome にも <ph name="APP_NAME" /> のデータがあります</translation>
@@ -546,6 +547,7 @@
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5063480226653192405">使用状況</translation>
+<translation id="5073204694187207510">全画面グリッドを非表示</translation>
 <translation id="5082793167783849073">グループを作成して簡単にページを比較できます。グループを作成するには、リンクを長押しします。</translation>
 <translation id="5087580092889165836">カードを追加</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
@@ -741,11 +743,13 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">検索と URL 候補</translation>
 <translation id="6461962085415701688">ファイルを開けません</translation>
+<translation id="6464977750820128603">Chrome でアクセスしたサイトを表示し、タイマーを設定できます。\n\nタイマーを設定したサイトの情報と、サイトでの滞在時間に関する情報が Google に送信されます。送信した情報は Digital Wellbeing の改善に役立てられます。</translation>
 <translation id="6475951671322991020">動画をダウンロード</translation>
 <translation id="6482749332252372425">ストレージの空き容量が不足しているため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> を初めて使用する場合は、インターネットに接続してください。</translation>
 <translation id="6508722015517270189">Chrome を再起動する</translation>
 <translation id="6527303717912515753">共有</translation>
+<translation id="6532866250404780454">Chrome でアクセスしたサイトは表示されなくなり、サイトに設定したタイマーはすべて削除されます。</translation>
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB をダウンロード済み</translation>
 <translation id="654446541061731451">ビームするにはタブを選択してください</translation>
@@ -888,6 +892,7 @@
 <translation id="751961395872307827">サイトに接続できません</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7542481630195938534">おすすめの記事を取得できません</translation>
+<translation id="7559245342362162951">グループのタブを全画面グリッドで表示</translation>
 <translation id="7559975015014302720">ライトモードはオフです</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
@@ -970,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">関連ページを表示する</translation>
 <translation id="8109613176066109935">お使いのどの端末でも同じブックマークを使用するには、同期を有効にします</translation>
+<translation id="8110087112193408731">Chrome のアクティビティを Digital Wellbeing で表示しますか？</translation>
 <translation id="8116925261070264013">ミュート中</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -1066,6 +1072,7 @@
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>
 <translation id="8922289737868596582">[その他のオプション] からページをダウンロードするとオフラインで使用できるようになります</translation>
+<translation id="8937772741022875483">Chrome のアクティビティを Digital Wellbeing から削除しますか？</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8951232171465285730">Chrome で <ph name="MEGABYTES" /> MB の容量を節約しました</translation>
@@ -1097,12 +1104,15 @@
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
 <translation id="9139318394846604261">ショッピング</translation>
+<translation id="9150694013019234766">画面下部にあるタブグループのタブを切り替えます</translation>
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
+<translation id="9169594135889675189">グループに新しいタブを追加</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">データ使用量を最大 60 パーセント節約し、ブラウジングを高速化します。アクセスするページを Google のサーバーで最適化します。</translation>
 <translation id="9219103736887031265">画像</translation>
+<translation id="926205370408745186">Chrome のアクティビティを Digital Wellbeing から削除</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="932599481871055447">データ使用量を抑えてブラウジングを高速化</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>

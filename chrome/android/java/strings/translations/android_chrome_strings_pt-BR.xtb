@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB de outros apps</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# arquivo}one{# arquivo}other{# arquivos}}</translation>
 <translation id="2017836877785168846">Limpa o histórico e o preenchimento automático na barra de endereço.</translation>
+<translation id="2018707881002649255">Os contatos selecionados abaixo serão compartilhados com o site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Controles de site em tela cheia</translation>
 <translation id="2038563949887743358">Ativar "Ver versão para Web"</translation>
 <translation id="204321170514947529">O app <ph name="APP_NAME" /> também tem dados no Chrome</translation>
@@ -412,7 +413,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" />: <ph name="BEGIN_DEEMPHASIZED" />veiculado pelo Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB transferido(s) por download</translation>
 <translation id="4095146165863963773">Excluir dados de apps?</translation>
-<translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatório de falha ao Google.</translation>
+<translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatórios de falhas ao Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4116038641877404294">Faça o download de páginas para usá-las off-line</translation>
 <translation id="4149994727733219643">Visualização simplificada para páginas da Web</translation>
@@ -547,6 +548,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5063480226653192405">Uso</translation>
+<translation id="5073204694187207510">Ocultar grade de tela cheia</translation>
 <translation id="5082793167783849073">Compare as páginas rapidamente criando um grupo. Para começar, toque em um link e mantenha-o pressionado.</translation>
 <translation id="5087580092889165836">Adicionar cartão</translation>
 <translation id="5100237604440890931">Visualização recolhida. Clique para expandir</translation>
@@ -742,11 +744,13 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugestões de pesquisa e URL</translation>
 <translation id="6461962085415701688">Não é possível abrir o arquivo</translation>
+<translation id="6464977750820128603">Você pode ver os sites que visita no Chrome e definir timers para eles.\n\nO Google recebe informações sobre os sites para os quais você definiu timers e sobre o tempo que você passa neles. Essas informações são usadas para melhorar o Bem-estar digital.</translation>
 <translation id="6475951671322991020">Fazer o download do vídeo</translation>
 <translation id="6482749332252372425">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de espaço de armazenamento.</translation>
 <translation id="6496823230996795692">Para usar o app <ph name="APP_NAME" /> pela primeira vez, conecte-se à Internet</translation>
 <translation id="6508722015517270189">Reiniciar o Chrome</translation>
 <translation id="6527303717912515753">Compartilhar</translation>
+<translation id="6532866250404780454">Os sites que você visita no Chrome não serão exibidos. Todos os timers do site serão excluídos.</translation>
 <translation id="6534565668554028783">O Google demorou muito para responder</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB transferido(s) por download</translation>
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
@@ -883,12 +887,13 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostrar senhas</translation>
-<translation id="7494974237137038751">dados economizados</translation>
+<translation id="7494974237137038751">de dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="751961395872307827">Não foi possível se conectar ao site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Não é possível exibir as sugestões</translation>
+<translation id="7559245342362162951">Mostrar guias do grupo em grade de tela cheia</translation>
 <translation id="7559975015014302720">Modo Lite desativado</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
@@ -971,6 +976,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
 <translation id="8109613176066109935">Para ter seus favoritos em todos os seus dispositivos, ative a sincronização</translation>
+<translation id="8110087112193408731">Mostrar sua atividade do Chrome no Bem-estar digital?</translation>
 <translation id="8116925261070264013">Com som desativado</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -1067,6 +1073,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8912362522468806198">Conta do Google</translation>
 <translation id="8920114477895755567">Aguardando detalhes dos pais.</translation>
 <translation id="8922289737868596582">Use o botão Mais opções para fazer o download de páginas e usá-las off-line</translation>
+<translation id="8937772741022875483">Remover sua atividade do Chrome do Bem-estar digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir em outra janela</translation>
 <translation id="8951232171465285730">O Chrome economizou <ph name="MEGABYTES" /> MB</translation>
@@ -1098,12 +1105,15 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que sites enviem notificações (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
+<translation id="9150694013019234766">Alterne entre as guias do seu grupo de guias perto da parte inferior da tela</translation>
 <translation id="9155898266292537608">Você também pode pesquisar com um toque rápido em uma palavra</translation>
+<translation id="9169594135889675189">Adicionar nova guia ao grupo</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
 <translation id="9204836675896933765">1 arquivo restante</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Diminua o uso de dados em até 60 por cento e deixe a Web mais rápida. Os servidores do Google otimizarão as páginas que você visita.</translation>
 <translation id="9219103736887031265">Imagens</translation>
+<translation id="926205370408745186">Remover sua atividade do Chorme do Bem-estar digital</translation>
 <translation id="932327136139879170">Início</translation>
 <translation id="932599481871055447">Economize dados e navegue mais rapidamente</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>

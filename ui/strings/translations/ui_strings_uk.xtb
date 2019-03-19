@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Зліва направо</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1398853756734560583">Збільшити</translation>
+<translation id="1409544243779336081">Рекомендовані додатки</translation>
 <translation id="1413622004203049571">Вимкнути сповіщення від <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 хвилина та }one{# хвилина та }few{# хвилини та }many{# хвилин і }other{# хвилини та }}</translation>
 <translation id="1643823602425662293">Сповіщення</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="348799646910989694">Автоматичне ховання полиці</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Залишився 1 день}one{Залишився # день}few{Залишилося # дні}many{Залишилося # днів}other{Залишилося # дня}}</translation>
+<translation id="3600969208114796418">Файл <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Шукати "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Виберіть папку для завантаження</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Зупинити</translation>
 <translation id="6845383723252244143">Вибір папки</translation>
 <translation id="6845533974506654842">натиснути</translation>
+<translation id="686304767576508198">Хто поділився:</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Залишилась 1 година}one{Залишилася # година}few{Залишилося # години}many{Залишилося # годин}other{Залишилося # години}}</translation>
 <translation id="688711909580084195">Веб-сторінка без назви</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> Пб/сек.</translation>

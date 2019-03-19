@@ -501,6 +501,9 @@
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
 <translation id="203096360153626918">Esta política não tem nenhum efeito sobre os apps Android. Eles poderão entrar no modo de tela cheia mesmo se a política estiver definida como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
+<translation id="2050629715135525072">Controla a habilidade de um usuário conectado a um host de acesso remoto de transferir arquivos entre o cliente e o host. Isso não se aplica a conexões de assistência remota, que não são compatíveis com transferência de arquivos.
+
+          Se essa configuração for desativada, a transferência de arquivos não será permitida. Se essa configuração for ativada ou não for definida, a transferência de arquivos será permitida.</translation>
 <translation id="2057317273526988987">Permitir acesso a uma lista de URLs</translation>
 <translation id="206623763829450685">Especifica quais esquemas de autenticação HTTP são compatíveis com <ph name="PRODUCT_NAME" />.
 
@@ -597,6 +600,7 @@
 <translation id="2231817271680715693">Importar histórico de navegação do navegador padrão na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que nenhum site defina dados locais</translation>
 <translation id="2240879329269430151">Permite que você defina se websites estão autorizados a exibir pop-ups. A exibição de pop-ups pode ser permitida ou negada para todos os websites. Se esta política for deixada sem definição, a política "BlockPopups" será utilizada, mas pode ser modificada pelo usuário.</translation>
+<translation id="2258126710006312594">Permitir que usuários de acesso remoto transfiram arquivos para/do host</translation>
 <translation id="2265214338421787313">Esta política permite que um administrador especifique que uma página pode mostrar pop-ups ao fazer unload.
 
       Quando a política for definida como ativada, as páginas poderão mostrar pop-ups enquanto estiverem passando por unload.
@@ -867,6 +871,13 @@
       Nenhuma verificação automática de atualização será bloqueada por ela, mas as verificações poderão ser bloqueadas por outras políticas. Esse recurso só é ativado em dispositivos Chrome configurados como quiosques de início automático. Outros dispositivos não serão restringidos por essa política.</translation>
 <translation id="2823870601012066791">Local de registro do Windows para clientes do <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anônima</translation>
+<translation id="2836621397261130126">Controla se a aprovação pela política KDC foi respeitada para decidir se os tíquetes do <ph name="KERBEROS" /> devem ser delegados ou não.
+
+          Se a política for definida como verdadeira, a autenticação HTTP respeitará a aprovação pela política KDC, ou seja, o Chrome delegará credenciais apenas se a KDC definir <ph name="OK_AS_DELEGATE" /> em um tíquete de serviço. Consulte https://tools.ietf.org/html/rfc5896.html para ver mais informações. O serviço também precisa corresponder à política "AuthNegotiateDelegateWhitelist".
+
+          Se a política não for definida ou for definida como falsa, a política KDC será ignorada em plataformas compatíveis e a somente a política "AuthNegotiateDelegateWhitelist" será respeitada.
+
+          No Windows, a política KDC é sempre respeitada.</translation>
 <translation id="2838830882081735096">Bloquear migração de dados e ARC</translation>
 <translation id="2839294585867804686">Configurações do Compartilhamento de arquivos de rede</translation>
 <translation id="2840269525054388612">Especifica as impressoras que um usuário pode usar.

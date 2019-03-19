@@ -144,11 +144,13 @@
 <translation id="200815880754187296">其他應用程式佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
 <translation id="2017836877785168846">將歷史記錄和自動即時查詢從網址列中清除。</translation>
+<translation id="2018707881002649255">系統會將你在下方選取的聯絡人提供給 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 這個網站。</translation>
 <translation id="2021896219286479412">全螢幕網站控制</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="204321170514947529">「<ph name="APP_NAME" />」在 Chrome 中也有資料</translation>
 <translation id="2045104531052923016">其他應用程式佔 <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">網站已暫停</translation>
 <translation id="2063713494490388661">輕觸搜尋</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
@@ -545,6 +547,7 @@
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5063480226653192405">用量</translation>
+<translation id="5073204694187207510">隱藏全螢幕格狀檢視</translation>
 <translation id="5082793167783849073">建立群組以快速比較多個頁面。如要開始建立，請輕觸並按住連結。</translation>
 <translation id="5087580092889165836">新增信用卡</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
@@ -740,11 +743,13 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜尋與網址建議</translation>
 <translation id="6461962085415701688">無法開啟檔案</translation>
+<translation id="6464977750820128603">你可以查看自己透過 Chrome 造訪的網站，並對這些網站設定計時器。\n\nGoogle 會收到這些設有計時器的網站相關資訊以及你的造訪時間長度。這些資訊可協助我們改善數位健康。</translation>
 <translation id="6475951671322991020">下載影片</translation>
 <translation id="6482749332252372425">儲存空間不足，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="6496823230996795692">初次使用「<ph name="APP_NAME" />」時請連線至網際網路。</translation>
 <translation id="6508722015517270189">重新啟動 Chrome</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6532866250404780454">系統不會顯示你透過 Chrome 造訪的網站。所有網站計時器也將遭到刪除。</translation>
 <translation id="6534565668554028783">Google 的回應時間過長</translation>
 <translation id="6538442820324228105">已下載 <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
@@ -777,6 +782,7 @@
 <translation id="6709133671862442373">新聞內容</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="6712388303105732168">你可以使用「更多類似內容」按鈕查看更多來自 Google 的類似內容</translation>
+<translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑動即可關閉。</translation>
@@ -886,6 +892,7 @@
 <translation id="751961395872307827">無法連線至網站</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">無法取得建議</translation>
+<translation id="7559245342362162951">以全螢幕格狀檢視顯示群組的分頁</translation>
 <translation id="7559975015014302720">精簡模式已關閉</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
@@ -968,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">建議相關的網頁</translation>
 <translation id="8109613176066109935">如要將書籤同步到所有裝置，請開啟同步處理功能</translation>
+<translation id="8110087112193408731">要在數位健康中顯示你的 Chrome 活動記錄嗎？</translation>
 <translation id="8116925261070264013">已設為靜音</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -1064,6 +1072,7 @@
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8920114477895755567">尚未取得家長詳細資料。</translation>
 <translation id="8922289737868596582">透過「更多選項」按鈕下載網頁，以便離線存取</translation>
+<translation id="8937772741022875483">要將你的 Chrome 活動記錄從數位健康中移除嗎？</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他視窗中開啟</translation>
 <translation id="8951232171465285730">Chrome 為你節省了 <ph name="MEGABYTES" /> MB</translation>
@@ -1095,12 +1104,15 @@
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9139068048179869749">允許網站傳送通知前，必須先詢問您 (建議)</translation>
 <translation id="9139318394846604261">購物</translation>
+<translation id="9150694013019234766">在靠近畫面底部的分頁群組中切換分頁</translation>
 <translation id="9155898266292537608">快速輕觸字詞也可以展開搜尋</translation>
+<translation id="9169594135889675189">在群組中新增分頁</translation>
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9204836675896933765">還剩 1 個檔案</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">最多可節省百分之 60 的數據用量，並加快網頁載入速度。Google 伺服器會針對你造訪的網頁進行最佳化處理。</translation>
 <translation id="9219103736887031265">圖片</translation>
+<translation id="926205370408745186">將你的 Chrome 活動記錄從數位健康中移除</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="932599481871055447">節省數據用量，加快瀏覽速度</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>

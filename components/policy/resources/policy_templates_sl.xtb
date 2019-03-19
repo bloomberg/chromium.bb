@@ -516,6 +516,9 @@
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="203096360153626918">Ta pravilnika ne vpliva na aplikacije za Android. Tudi če je ta pravilnik nastavljen na <ph name="FALSE" />, bodo aplikacije lahko preklopile v celozaslonski način.</translation>
 <translation id="2043770014371753404">Onemogočeni tiskalniki v podjetjih</translation>
+<translation id="2050629715135525072">Nadzira možnost uporabnika, povezanega z gostiteljem za oddaljeni dostop, da prenaša datoteke med odjemalcem in gostiteljem. To ne velja za povezave za oddaljeno pomoč, ki ne podpirajo prenosa podatkov.
+
+          Če je ta nastavitev onemogočena, prenos datotek ne bo dovoljen. Če je ta nastavitev omogočena ali ni nastavljena, prenos podatkov ne bo dovoljen.</translation>
 <translation id="2057317273526988987">Dovoli dostop do seznama URL-jev</translation>
 <translation id="206623763829450685">Določa, katere načine preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME" />.
 
@@ -614,7 +617,8 @@
 <translation id="2240879329269430151">Omogoča nastavitev, ali je spletnim mestom dovoljeno prikazovati pojavna okna. Prikazovanje pojavnih oken je mogoče dovoliti ali zavrniti za vsa spletna mesta.
 
          Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »BlockPopups« in uporabnik ga bo lahko spremenil.</translation>
-<translation id="2265214338421787313">Skrbnik lahko s tem pravilnikom določi, da lahko stran med razkladanjem prikazuje pojavna okna
+<translation id="2258126710006312594">Uporabnikom oddaljenega dostopa dovoli prenos datotek iz gostitelju in v njega</translation>
+<translation id="2265214338421787313">Skrbnik lahko s tem pravilnikom določi, da lahko stran med razkladanjem prikazuje pojavna okna.
 
       Če je ta pravilnik omogočen, je stranem med razkladanjem dovoljeno prikazovanje pojavnih oken.
 
@@ -900,6 +904,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Ta pravilnik ne bo blokiral samodejnih preverjanj, ali so na voljo posodobitve, vendar jih bodo morda blokirali drugi pravilniki. Ta funkcija je omogočena samo v napravah Chrome, ki so konfigurirane kot kioski s samodejnim zagonom. Drugih naprav ta pravilnik ne bo omejeval.</translation>
 <translation id="2823870601012066791">Lokacija registra sistema Windows za odjemalce s sistemom <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
+<translation id="2836621397261130126">Določa, ali se upošteva odobritev pravilnika KDC za odločanje, ali naj se delegirajo vstopnice za <ph name="KERBEROS" />.
+
+          Če je ta pravilnik omogočen, preverjanje pristnosti HTTP upošteva nastavitve odobritev s pravilnikom KDC, torej Chrome poverilnice delegira samo, če KDC na vstopnici storitve nastavi <ph name="OK_AS_DELEGATE" />. Več informacij je na voljo na https://tools.ietf.org/html/rfc5896.html. Storitev se mora ujemati tudi s pravilnikom »AuthNegotiateDelegateWhitelist«.
+
+          Če ta pravilnik ni nastavljen ali je onemogočen, se pravilnik KDC v podprtih okoljih prezre in se upošteva samo pravilnik »AuthNegotiateDelegateWhitelist«.
+
+          V sistemu Windows se vedno upošteva pravilnik KDC.</translation>
 <translation id="2838830882081735096">Prepoved selitve podatkov in ARC-ja</translation>
 <translation id="2839294585867804686">Nastavitve omrežnih naprav za skupno rabo datotek</translation>
 <translation id="2840269525054388612">Določa tiskalnike, ki jih uporabnik lahko uporablja.

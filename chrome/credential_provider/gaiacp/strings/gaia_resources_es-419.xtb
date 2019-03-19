@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
-<translation id="1296843352074373664">Usuario de Google</translation>
 <translation id="1383286653814676580">Se usa para ejecutar la página de acceso del proveedor de credenciales de Google.</translation>
-<translation id="1644179990571656190">No se pudo crear un nuevo usuario registrado de Google. Este sistema solo permite crear un usuario registrado de Google.</translation>
-<translation id="1813213595719100133">No puedes acceder a este dominio con una Cuenta de Google. Prueba con una cuenta diferente.</translation>
-<translation id="195232392645680541">Accede con tu Cuenta de Google.</translation>
 <translation id="2595469428674600431">No es posible verificar tu contraseña de Windows. Vuelve a intentarlo.</translation>
-<translation id="2620296592151848576">Se cambió tu contraseña en Google. Ingresa tu contraseña de Windows actual para sincronizar tu cuenta de Windows con tu Cuenta de Google.</translation>
-<translation id="3697479376287066058">Ya se registró esta Cuenta de Google en esta computadora. Accede con una cuenta diferente.</translation>
 <translation id="4057329986137569701">Ocurrió un error interno.</translation>
-<translation id="4128734677223009352">No pudiste acceder a tu Cuenta de Google. Asegúrate de que la computadora tenga una conexión a Internet y vuelve a intentarlo.</translation>
-<translation id="4175879131870609567">Solo el usuario que bloqueó esta estación de trabajo puede acceder al sistema.</translation>
-<translation id="6613125771987245372">No se permite acceder con esta Cuenta de Google. Intenta usar una cuenta diferente.</translation>
 <translation id="7357241217513796177">Asegúrate de tener una conexión de red y vuelve a intentarlo.</translation>
-<translation id="7447167742844823007">Acceder con tu Cuenta de Google</translation>
 <translation id="7463006580194749499">Agregar a una persona</translation>
-<translation id="782439148700312319">No se pudo inscribir esta computadora para la administración empresarial.  Accede con una cuenta diferente.</translation>
 <translation id="8440458902131551808">Se bloqueó tu cuenta. Comunícate con el administrador del sistema.</translation>
 <translation id="8474372283141585908">Proveedor de credenciales de Google</translation>
 <translation id="866458870819756755">No se pudo crear el usuario.</translation>

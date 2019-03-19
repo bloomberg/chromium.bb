@@ -1374,6 +1374,7 @@
 <translation id="3016780570757425217">Determinar tu ubicación</translation>
 <translation id="3020183492814296499">Combinación de teclas</translation>
 <translation id="3020990233660977256">Número de serie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Mariposa</translation>
 <translation id="3021678814754966447">&amp;Ver fuente del marco</translation>
 <translation id="3022978424994383087">No entendí.</translation>
 <translation id="3023464535986383522">Seleccionar para pronunciar</translation>
@@ -1763,7 +1764,7 @@
 <translation id="3627588569887975815">Abrir el enlace en una ventana de navegación de incó&amp;gnito</translation>
 <translation id="3627671146180677314">Tiempo de renovación del certificado Netscape</translation>
 <translation id="3627879631695760395">Instalar <ph name="APP" />…</translation>
-<translation id="3629631988386925734">Ingresa tu contraseña para habilitar Smart Lock. La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />Puedes desactivar Smart Lock en la configuración.</translation>
+<translation id="3629631988386925734">Ingresa tu contraseña para habilitar Smart Lock. La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="3630132874740063857">Tu teléfono</translation>
 <translation id="3630995161997703415">Agrega el sitio a tu biblioteca para usarlo en cualquier momento</translation>
 <translation id="3636096452488277381">Hola, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2109,7 +2110,7 @@
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Se completó la descarga: <ph name="FILE_NAME" />. Presiona mayúscula + F6 para ir al área de la barra de descargas.</translation>
 <translation id="4110895898888439383">Navegar en la Web en el modo de contraste alto</translation>
-<translation id="4112221174576828331">Si una imagen no tiene una descripción útil, Chrome le proporcionará una. Google escanea las imágenes.</translation>
+<translation id="4112221174576828331">Si una imagen no tiene una descripción útil, Chrome te proporcionará una. Google escanea las imágenes.</translation>
 <translation id="4115002065223188701">La red está fuera de alcance</translation>
 <translation id="4115080753528843955">Algunos servicios de contenido usan identificadores únicos para autorizar el acceso a contenido protegido</translation>
 <translation id="4118579674665737931">Reinicia el dispositivo y vuelve a intentarlo.</translation>
@@ -2428,6 +2429,7 @@
 <translation id="4663373278480897665">Cámara permitida</translation>
 <translation id="4664482161435122549">Error en la exportación de PKCS #12</translation>
 <translation id="4665014895760275686">Fabricante</translation>
+<translation id="4665446389743427678">Se borrarán todos los datos que almacene <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Hacer clic para habilitar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Los miembros de "<ph name="SOURCE_NAME" />" ya no tendrán acceso a estos elementos, a menos que se los comparta con ellos.</translation>
 <translation id="4672657274720418656">Filtrar página</translation>
@@ -2603,6 +2605,7 @@
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> quiere comunicarse con la extensión "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="4918086044614829423">Aceptar</translation>
+<translation id="4918221908152712722">Instala <ph name="APP_NAME" /> (no es necesario que descargues la app)</translation>
 <translation id="4920887663447894854">Se bloquearon los siguientes sitios para que no puedan rastrear tu ubicación en esta página:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> solicitó permisos adicionales.</translation>
 <translation id="492299503953721473">Quitar las apps de Android</translation>
@@ -4298,7 +4301,7 @@
 <translation id="7456142309650173560">para programadores</translation>
 <translation id="7456847797759667638">Abrir ubicación...</translation>
 <translation id="7461924472993315131">Fijar</translation>
-<translation id="746216226901520237">La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />Puedes desactivar Smart Lock en la configuración.</translation>
+<translation id="746216226901520237">La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="7463006580194749499">Agregar a una persona</translation>
 <translation id="7465778193084373987">URL de revocación del certificado de Netscape</translation>
 <translation id="7469894403370665791">Conectarse automáticamente a esta red</translation>
@@ -5224,6 +5227,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8803953437405899238">Abre una pestaña nueva con un solo clic</translation>
 <translation id="8804398419035066391">Comunicarse con sitios web cooperativos</translation>
 <translation id="8805140816472474147">Confirma la configuración para comenzar la sincronización.</translation>
+<translation id="8806680466228877631">Con <ph name="SHORTCUT" />, puedes volver a abrir las pestañas que se cerraron por accidente</translation>
 <translation id="8807632654848257479">Estable</translation>
 <translation id="8808478386290700967">Tienda virtual</translation>
 <translation id="8808686172382650546">Gato</translation>

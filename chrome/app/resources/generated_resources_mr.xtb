@@ -1376,6 +1376,7 @@
 <translation id="3016780570757425217">तुमचे स्थान जाणून घ्या</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
 <translation id="3020990233660977256">सिरिअल नंबर: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">फुलपाखरू</translation>
 <translation id="3021678814754966447">फ्रेम स्त्रोत &amp;पहा</translation>
 <translation id="3022978424994383087">ते समजू शकले नाही.</translation>
 <translation id="3023464535986383522">बोलण्यासाठी निवडा</translation>
@@ -2430,6 +2431,7 @@
 <translation id="4663373278480897665">कॅमेऱ्याला अनुमती आहे</translation>
 <translation id="4664482161435122549">PKCS #12 एक्सपोर्ट एरर</translation>
 <translation id="4665014895760275686">निर्माता</translation>
+<translation id="4665446389743427678"><ph name="SITE" /> द्वारे स्टोअर केलेला डेटा हटवला जाईल.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> सक्षम करण्यासाठी क्लिक करा</translation>
 <translation id="4669606053856530811">जोपर्यंत '<ph name="SOURCE_NAME" />' च्या सदस्यांशी हे आयटम शेअर केले जाणार नाहीत, ते अॅक्सेस गमावतील.</translation>
 <translation id="4672657274720418656">Distill पृष्ठ</translation>
@@ -2605,6 +2607,7 @@
 <translation id="4917385247580444890">मजबूत</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" विस्ताराशी संवाद प्रस्थापित करू इच्छित आहे</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
+<translation id="4918221908152712722"><ph name="APP_NAME" /> इंस्टॉल करा (डाउनलोड करण्याची आवश्यकता नाही)</translation>
 <translation id="4920887663447894854">या पेजवर तुमचे स्थान ट्रॅक करण्यापासून खालील साइट अवरोधित केल्या गेल्या आहेत:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> नी अतिरिक्त परवानग्यांची विनंती केली आहे.</translation>
 <translation id="492299503953721473">Android अॅप्स काढून टाका</translation>
@@ -3794,6 +3797,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Google ने हे पृष्ठ <ph name="SOURCE_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये भाषांतरित करावे असे तुम्ही इच्छिता?</translation>
 <translation id="6675665718701918026">निर्देशित करणारे डिव्हाइस कनेक्‍ट केले</translation>
+<translation id="6676212663108450937">तुमच्या व्हॉइसला प्रशिक्षित करत असताना कृपया हेडफोन वापरणे विचारात घ्या</translation>
 <translation id="6678717876183468697">क्वेरी URL</translation>
 <translation id="6680442031740878064">उपलब्ध: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">रेट करा</translation>
@@ -4518,6 +4522,7 @@
 <translation id="7788383851298063850">काय होत आहे ते आम्हाला सांगा</translation>
 <translation id="7788444488075094252">भाषा आणि इनपुट</translation>
 <translation id="7788668840732459509">स्थान:</translation>
+<translation id="7789963078219276159">पेज बॅकग्राउंड सुरू करा <ph name="CATEGORY" /> असे बदलले गेले आहे.</translation>
 <translation id="7791543448312431591">जोडा</translation>
 <translation id="7792012425874949788">साइन इन करताना काहीतरी चूक झाली</translation>
 <translation id="7792388396321542707">शेअरिंग थांबवा</translation>
@@ -5200,6 +5205,7 @@
 <translation id="8767621466733104912">सर्व वापरकर्त्यांसाठी Chrome आपोआप अपडेट करा</translation>
 <translation id="8770406935328356739">विस्तार मूळ निर्देशिका</translation>
 <translation id="8770507190024617908">लोकांना व्यवस्थापित करा</translation>
+<translation id="8771300903067484968">पेज बॅकग्राउंड सुरू करा डीफॉल्ट बॅकग्राउंडवर रीसेट केले गेले आहे.</translation>
 <translation id="8774934320277480003">शीर्ष समास</translation>
 <translation id="8775144690796719618">चुकीची URL</translation>
 <translation id="8775404590947523323">तुमची संपादने आपोआप सेव्ह केली जातात. <ph name="BREAKS" /> मूळ इमेजची प्रत ठेवण्यासाठी मूळ ओव्हरराइट करा अनचेक करा</translation>
@@ -5224,6 +5230,7 @@
 <translation id="8803953437405899238">एका क्लिकने एक नवीन टॅब उघडा</translation>
 <translation id="8804398419035066391">वेबसाइटला सहकार्य करून संवाद प्रस्थापित करा</translation>
 <translation id="8805140816472474147">सिंक करणे सुरू करण्यासाठी सिंक सेटिंग्जची पुष्टी करा.</translation>
+<translation id="8806680466228877631">चुकीने बंद झालेले टॅब <ph name="SHORTCUT" /> पुन्हा उघडू शकतो</translation>
 <translation id="8807632654848257479">स्थिर</translation>
 <translation id="8808478386290700967">वेब स्टोअर</translation>
 <translation id="8808686172382650546">मांजर</translation>

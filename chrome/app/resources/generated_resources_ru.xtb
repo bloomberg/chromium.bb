@@ -547,7 +547,7 @@
 <translation id="1802687198411089702">Страница не отвечает. Вы можете закрыть ее или дождаться ответа сервера.</translation>
 <translation id="1802931390041703523">Flash-контент на этой странице заблокирован</translation>
 <translation id="1803545009660609783">Перезаписать образец голоса</translation>
-<translation id="1805472176602625930">Нажмите кнопку на электронном ключе.</translation>
+<translation id="1805472176602625930">Нажмите кнопку на электронном ключе</translation>
 <translation id="1805738995123446102">На фоновой вкладке используется микрофон.</translation>
 <translation id="1805822111539868586">Отладка страниц</translation>
 <translation id="1805967612549112634">Введите PIN-код ещё раз</translation>
@@ -1377,6 +1377,7 @@
 <translation id="3016780570757425217">доступ к данным о вашем местоположении</translation>
 <translation id="3020183492814296499">Ярлыки</translation>
 <translation id="3020990233660977256">Серийный номер: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Бабочка</translation>
 <translation id="3021678814754966447">Просмотр кода фрейма</translation>
 <translation id="3022978424994383087">Повторите ещё раз.</translation>
 <translation id="3023464535986383522">Озвучивание при нажатии</translation>
@@ -2158,7 +2159,7 @@
 <translation id="4198146608511578238">Чтобы поговорить с Google Ассистентом, просто удерживайте значок панели запуска.</translation>
 <translation id="4200689466366162458">Специальные слова</translation>
 <translation id="4200983522494130825">Новая &amp;вкладка</translation>
-<translation id="4201546031411513170">Вы всегда можете изменить данные для синхронизации в настройках.</translation>
+<translation id="4201546031411513170">Вы всегда можете выбрать, что синхронизировать, в настройках.</translation>
 <translation id="4206144641569145248">Инопланетянин</translation>
 <translation id="4206323443866416204">Отправка отзыва</translation>
 <translation id="4206944295053515692">Проверка правописания Google</translation>
@@ -2431,6 +2432,7 @@
 <translation id="4663373278480897665">Доступ к камере разрешен</translation>
 <translation id="4664482161435122549">Ошибка экспорта PKCS #12</translation>
 <translation id="4665014895760275686">Производитель</translation>
+<translation id="4665446389743427678">Все данные, хранящиеся на сайте <ph name="SITE" />, будут удалены.</translation>
 <translation id="4668721319092543482">Нажмите, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4669606053856530811">Пользователи общего диска "<ph name="SOURCE_NAME" />" больше не смогут использовать эти объекты, если к ним не будет включен общий доступ.</translation>
 <translation id="4672657274720418656">Сжать страницу</translation>
@@ -2606,6 +2608,7 @@
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> запрашивает доступ к расширению "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Принять</translation>
+<translation id="4918221908152712722">Установить приложение "<ph name="APP_NAME" />" (скачивание не требуется)</translation>
 <translation id="4920887663447894854">Вы запретили передачу ваших геоданных следующим сайтам:</translation>
 <translation id="4922897038695506037">Страница <ph name="URL_HOST" /> запрашивает дополнительные разрешения.</translation>
 <translation id="492299503953721473">Удалить приложения для Android</translation>
@@ -4165,7 +4168,7 @@
 <translation id="7240120331469437312">Альтернативное имя субъекта сертификата</translation>
 <translation id="7240339475467890413">Подключиться к новой точке доступа?</translation>
 <translation id="7241389281993241388">Войдите в <ph name="TOKEN_NAME" />, чтобы импортировать сертификат клиента.</translation>
-<translation id="7241443820034350811">Если электронного ключа нет в списке, нажмите и удерживайте кнопку на ключе в течение пяти секунд.</translation>
+<translation id="7241443820034350811">Если электронного ключа нет в списке, нажмите и удерживайте его кнопку в течение пяти секунд.</translation>
 <translation id="7243632151880336635">Стереть данные и выйти</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (оптимальное)</translation>
 <translation id="7246947237293279874">FTP-прокси</translation>
@@ -4456,7 +4459,7 @@
 <translation id="7704305437604973648">Задача</translation>
 <translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
 <translation id="7704521324619958564">Открыть Play Маркет</translation>
-<translation id="7704628569466676326">Подключите электронный ключ к этому устройству, чтобы использовать его для входа в аккаунт.</translation>
+<translation id="7704628569466676326">Подключите физический ключ безопасности к этому устройству, чтобы использовать его для входа в аккаунт.</translation>
 <translation id="7705276765467986571">Не удалось загрузить модель закладок.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7707922173985738739">Использовать мобильный Интернет</translation>
@@ -4916,7 +4919,7 @@
 <translation id="8329978297633540474">Обычный текст</translation>
 <translation id="8335587457941836791">Открепить от панели запуска</translation>
 <translation id="8336153091935557858">Вчера, <ph name="YESTERDAY_DAYTIME" /></translation>
-<translation id="8337047789441383384">Вы уже зарегистрировали этот ключ ранее.</translation>
+<translation id="8337047789441383384">Вы уже зарегистрировали этот электронный ключ ранее.</translation>
 <translation id="8338952601723052325">Сайт разработчика</translation>
 <translation id="8339059274628563283">Локальные данные сайта <ph name="SITE" /></translation>
 <translation id="833986336429795709">Чтобы открыть ссылку, выберите приложение</translation>
@@ -5226,6 +5229,7 @@
 <translation id="8803953437405899238">Открывайте новые вкладки одним нажатием</translation>
 <translation id="8804398419035066391">Обмен данными с определенными сайтами</translation>
 <translation id="8805140816472474147">Чтобы начать синхронизацию, подтвердите настройки.</translation>
+<translation id="8806680466228877631">Нажмите <ph name="SHORTCUT" />, чтобы снова открыть случайно закрытую вкладку</translation>
 <translation id="8807632654848257479">Стабильная</translation>
 <translation id="8808478386290700967">Интернет-магазин Chrome</translation>
 <translation id="8808686172382650546">Кот</translation>

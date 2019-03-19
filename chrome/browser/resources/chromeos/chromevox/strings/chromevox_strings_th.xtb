@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "อัลฟ่า", "b": "บราโว่", "c": "ชาร์ลี", "d": "เดลต้า", "e": "เอคโค่", "f": "ฟอกซ์ทรอต", "g": "กอล์ฟ", "h": "โฮเท็ล", "i": "อินเดีย", "j": "จูเลียต","k": "กิโล", "l": "ลิมา", "m": "ไมค์", "n": "โนเวมเบอร์", "o": "ออสการ์","p": "ปาป้า", "q": "ควิเบค", "r": "โรมิโอ", "s": "เซียร์ร่า", "t": "แทงโก้", "u": "ยูนิฟอร์ม", "v": "วิคเตอร์", "w": "วิสกี้","x": "เอ็กซเรย์", "y": "แยงกี้", "z": "ซูลู"}</translation>
 <translation id="1120938014254001895">เลื่อน 2 นิ้วขึ้น</translation>
 <translation id="1124771028211010580">รูปแบบการแสดงผลปัจจุบันคือการแสดงคู่กัน</translation>
+<translation id="1126928665165112660">ไม่เป็นตัวเอียง</translation>
 <translation id="113582498867142724">คอลเล็กชัน <ph name="TAG" /> ที่มี <ph name="NUM" /> รายการ</translation>
 <translation id="1155043339247954670">ไม่มีรายการถัดไป</translation>
 <translation id="1157782847298808853">ความช่วยเหลือเกี่ยวกับแป้นพิมพ์</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">สีแทน</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> จาก <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">พูดอักขระและคำ</translation>
+<translation id="1334570596456017464">ตัวห้อย</translation>
 <translation id="1339428534620983148">คอลัมน์ตารางก่อนหน้า</translation>
 <translation id="1342835525016946179">บทความ</translation>
 <translation id="1346059596910821859">เคล็ดลับ</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">แสดงรายการส่วนหัว</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">ขนาด <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> คอร์ด</translation>
 <translation id="1923956950274750765">สีม่วงกล้วยไม้ปานกลาง</translation>
 <translation id="1954623340234317532">การควบคุมสัปดาห์ของปี</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">ส่วนหัวของแถว:</translation>
 <translation id="2002895034995108595">รีเซ็ตรูปแบบแป้นปัจจุบัน</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{วงเล็บซ้าย}other{# วงเล็บซ้าย}}</translation>
+<translation id="2009187674653301682">ไม่เป็นตัวยก</translation>
 <translation id="2010555995361223825">เมนู ChromeVox</translation>
 <translation id="2045490512405922022">ไม่ได้เลือก</translation>
 <translation id="20601713649439366">ไม่มีสูตรคณิตศาสตร์ก่อนหน้า</translation>
@@ -167,6 +171,7 @@
 <translation id="2278490101488436824">เลื่อน 3 นิ้วไปทางซ้าย</translation>
 <translation id="2281234842553884450">แถบเลื่อนก่อนหน้า</translation>
 <translation id="2311237334957139798">เลื่อนไปที่ระดับก่อนหน้า</translation>
+<translation id="2314393392395134769">ไม่เป็นตัวห้อย</translation>
 <translation id="2318372665160196757">หลัก</translation>
 <translation id="2329324941084714723">แผงแท็บ</translation>
 <translation id="2344193891939537199">การควบคุมวันที่และเวลา</translation>
@@ -298,10 +303,12 @@
 <translation id="3163593631834463955">ส่วนหัวของคอลัมน์ว่างเปล่า</translation>
 <translation id="316542773973815724">การนำทาง</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ช่องว่าง}other{# ช่องว่าง}}</translation>
+<translation id="3179119189286472195">ไม่ใช่ลิงก์</translation>
 <translation id="320961988183078793">ป้อน <ph name="TYPE" /> แล้ว</translation>
 <translation id="321072937702597574">สีม่วงกล้วยไม้</translation>
 <translation id="3218691001991391708">วาง <ph name="TEXT" /></translation>
 <translation id="3223701887221307104">แท็บ <ph name="NAME" /></translation>
+<translation id="3223779237381380437">ไม่ได้ขีดฆ่า</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">ลิงก์ที่เคยเข้าชม</translation>
 <translation id="3232388865800379423">ปุ่มป๊อปอัป</translation>
@@ -515,6 +522,7 @@
 <translation id="4763296182459741068">ข้ามไปด้านล่าง</translation>
 <translation id="4763480195061959176">วิดีโอ</translation>
 <translation id="4764692524839457597">ค่าเริ่มต้น</translation>
+<translation id="4772771694153161212">ไม่ขีดเส้นใต้</translation>
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="481165870889056555">แจ้งชื่อของหน้าเว็บปัจจุบัน</translation>
@@ -530,6 +538,7 @@
 <translation id="4846428657345567687">ยินดีต้อนรับสู่ ChromeVox</translation>
 <translation id="4848993367330139335">เครื่องตั้งเวลา</translation>
 <translation id="4850023505158945298">เอลิเมนต์ที่คล้ายกันก่อนหน้า</translation>
+<translation id="4862744964787595316">ไม่เป็นตัวหนา</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">เปิดใช้การสลับ TTS</translation>
 <translation id="4877261390094455813">ป้อนคำค้นหา</translation>
@@ -842,6 +851,7 @@
 <translation id="712735679809149106">พูดคำ</translation>
 <translation id="7137397390322864165">สีส้มแซลมอน</translation>
 <translation id="713824876195128146">ข้อความอ้างอิงถัดไป</translation>
+<translation id="7140168702531682811">ตัวยก</translation>
 <translation id="7143034430156387447">สลับไปมาระหว่างอักษรเบรลล์ 6 และ 8 จุด</translation>
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7153618581592392745">ลาเวนเดอร์</translation>
@@ -1138,6 +1148,7 @@
 <translation id="8883850400338911892">urlแก้ไขช่อง 8 จุด</translation>
 <translation id="8896347895970027998">สลับระหว่างการเปิด/ปิดใช้งาน ChromeVox</translation>
 <translation id="8896479570570613387">สีม่วงปานกลาง</translation>
+<translation id="8897030325301866860">แบบอักษร <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">พูดรอบเครื่องหมายวรรคตอน</translation>
 <translation id="8900148057318340779">คีย์ส่วนหน้า</translation>
 <translation id="8908714597367957477">colhdr</translation>

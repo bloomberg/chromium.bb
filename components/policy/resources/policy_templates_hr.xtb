@@ -495,6 +495,9 @@
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="203096360153626918">To pravilo nema utjecaja na Android aplikacije. Moći će pokrenuti način prikazivanja na cijelom zaslonu čak i ako je to pravilo postavljeno na <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Onemogućeni pisači tvrtke</translation>
+<translation id="2050629715135525072">Kontrolira može li korisnik povezan s hostom daljinskog pristupa prenositi datoteke između klijenta i hosta. To se ne primjenjuje na veze daljinske pomoći koje ne podržavaju prijenos datoteka.
+
+          Ako se ta postavka onemogući, prijenos datoteka neće biti dopušten. Ako se postavka omogući ili se ne postavi, prijenos datoteka bit će dopušten.</translation>
 <translation id="2057317273526988987">Dopusti pristup popisu URL-ova</translation>
 <translation id="206623763829450685">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava.
 
@@ -591,11 +594,12 @@
 <translation id="2231817271680715693">Uvoz povijesti pregledavanja iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="2236488539271255289">Ne dopusti nijednoj web-lokaciji postavljanje lokalnih podataka</translation>
 <translation id="2240879329269430151">Omogućuje da postavite smiju li web-lokacije prikazivati skočne prozore. Prikazivanje skočnih prozora može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo "BlockPopups", a korisnik će to moći promijeniti.</translation>
-<translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom unloadinga.
+<translation id="2258126710006312594">Dopusti korisnicima daljinskog pristupa prijenos datoteka na host/s hosta</translation>
+<translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom zatvaranja.
 
-      Kad se to pravilo postavi na Enabled, stranice mogu prikazivati skočne prozore tijekom unloadinga.
+      Kad je to pravilo omogućeno, stranice mogu prikazivati skočne prozore tijekom zatvaranja.
 
-      Kad se to pravilo postavi na Disabled ili se ne postavi, stranice ne mogu prikazivati skočne prozore tijekom unloadinga, u skladu sa specifikacijom (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+      Kad je to pravilo onemogućeno ili se ne postavi, stranice ne mogu prikazivati skočne prozore tijekom zatvaranja, u skladu sa specifikacijom (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
       To će se pravilo ukloniti u Chromeu 82.
 
@@ -863,6 +867,13 @@
       Pravilo neće blokirati automatske provjere ažuriranja, no možda će ih blokirati druga pravila. Ta je značajka omogućena samo na Chrome uređajima koji su konfigurirani kao kiosci s automatskim pokretanjem. Ostali uređaji neće biti ograničeni tim pravilom.</translation>
 <translation id="2823870601012066791">Lokacija Windows registra za <ph name="PRODUCT_OS_NAME" /> klijente:</translation>
 <translation id="2824715612115726353">Omogući anonimni način</translation>
+<translation id="2836621397261130126">Kontrolira poštuje li se odobrenje prema pravilima KDC-a kako bi se odlučilo hoće li se dodijeliti tiketi protokola <ph name="KERBEROS" />.
+
+          Ako se pravilo postavi na True, HTTP autentifikacija poštuje odobrenje prema pravilima KDC-a, odnosno Chrome dodjeljuje vjerodajnice samo ako KDC postavi <ph name="OK_AS_DELEGATE" /> na tiketu usluge. Više informacija potražite na https://tools.ietf.org/html/rfc5896.html. Usluga također treba biti usklađena s pravilom "AuthNegotiateDelegateWhitelist".
+
+          Ako se pravilo ne postavi ili se postavi na False, pravilo KDC-a zanemaruje se na podržanim platformama i poštuje se samo pravilo "AuthNegotiateDelegateWhitelist".
+
+          Pravilo KDC-a uvijek se poštuje na Windowsima.</translation>
 <translation id="2838830882081735096">Onemogući premještanje podataka i ARC</translation>
 <translation id="2839294585867804686">Postavke mrežnog dijeljenja datoteka</translation>
 <translation id="2840269525054388612">Određuje pisače koje korisnik može upotrebljavati.

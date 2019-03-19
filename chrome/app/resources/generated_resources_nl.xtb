@@ -1377,6 +1377,7 @@
 <translation id="3016780570757425217">Je locatie weten</translation>
 <translation id="3020183492814296499">Snelkoppelingen</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Vlinder</translation>
 <translation id="3021678814754966447">&amp;Framebron weergeven</translation>
 <translation id="3022978424994383087">Dat heb ik niet verstaan.</translation>
 <translation id="3023464535986383522">Selecteer om uitgesproken te worden</translation>
@@ -2431,6 +2432,7 @@
 <translation id="4663373278480897665">Camera toegestaan</translation>
 <translation id="4664482161435122549">Fout bij exporteren van PKCS #12</translation>
 <translation id="4665014895760275686">Fabrikant</translation>
+<translation id="4665446389743427678">Alle gegevens die zijn opgeslagen door <ph name="SITE" />, worden verwijderd.</translation>
 <translation id="4668721319092543482">Klik om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
 <translation id="4669606053856530811">Leden van '<ph name="SOURCE_NAME" />' hebben geen toegang meer, tenzij deze items met ze zijn gedeeld.</translation>
 <translation id="4672657274720418656">Pagina omzetten</translation>
@@ -2606,6 +2608,7 @@
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wil communiceren met de extensie '<ph name="EXTENSION_NAME" />'</translation>
 <translation id="4918086044614829423">Accepteren</translation>
+<translation id="4918221908152712722"><ph name="APP_NAME" /> installeren (geen download vereist)</translation>
 <translation id="4920887663447894854">De volgende sites kunnen je locatie op deze pagina niet bijhouden:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> heeft gevraagd om extra machtigingen.</translation>
 <translation id="492299503953721473">Android-apps verwijderen</translation>
@@ -5205,7 +5208,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8770507190024617908">Mensen beheren</translation>
 <translation id="8774934320277480003">Marge bovenkant</translation>
 <translation id="8775144690796719618">Ongeldige URL</translation>
-<translation id="8775404590947523323">Je bewerkingen worden automatisch opgeslagen.<ph name="BREAKS" />Als je een kopie van de oorspronkelijke afbeelding wilt behouden, verwijder je het vinkje uit het selectievakje 'Oorspronkelijk bestand overschrijven'.</translation>
+<translation id="8775404590947523323">Je bewerkingen worden automatisch opgeslagen.<ph name="BREAKS" />Als je een kopie van de oorspronkelijke afbeelding wilt behouden, vink je het selectievakje 'Oorspronkelijk bestand overschrijven' uit.</translation>
 <translation id="8777628254805677039">root-wachtwoord</translation>
 <translation id="8780123805589053431">Afbeeldingsbeschrijvingen ophalen van Google</translation>
 <translation id="8780443667474968681">Gesproken zoekopdracht is uitgeschakeld.</translation>
@@ -5227,6 +5230,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8803953437405899238">Je kunt met één klik een nieuw tabblad openen</translation>
 <translation id="8804398419035066391">Communiceren met samenwerkende websites</translation>
 <translation id="8805140816472474147">Bevestig de synchronisatie-instellingen om de synchronisatie te starten.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> kan per ongeluk gesloten tabbladen opnieuw openen</translation>
 <translation id="8807632654848257479">Stabiel</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Kat</translation>

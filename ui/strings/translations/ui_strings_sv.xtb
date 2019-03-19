@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Vänster till höger</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1398853756734560583">Maximera</translation>
+<translation id="1409544243779336081">Apprekommendation</translation>
 <translation id="1413622004203049571">Inaktivera aviseringar från <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
 <translation id="1643823602425662293">Avisering</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag kvar}other{# dagar kvar}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-fil</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Sök efter ”<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Välj en mapp för uppladdning</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Stoppa</translation>
 <translation id="6845383723252244143">Välj mapp</translation>
 <translation id="6845533974506654842">tryck</translation>
+<translation id="686304767576508198">Har delats från</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 timme kvar}other{# timmar kvar}}</translation>
 <translation id="688711909580084195">Namnlös webbsida</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/sek</translation>

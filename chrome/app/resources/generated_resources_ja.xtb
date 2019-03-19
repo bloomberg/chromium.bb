@@ -1377,6 +1377,7 @@
 <translation id="3016780570757425217">ユーザーの現在地の認識</translation>
 <translation id="3020183492814296499">ショートカット</translation>
 <translation id="3020990233660977256">シリアル番号: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">蝶</translation>
 <translation id="3021678814754966447">フレームのソースを表示(&amp;V)</translation>
 <translation id="3022978424994383087">聞き取れませんでした。</translation>
 <translation id="3023464535986383522">選択して読み上げ</translation>
@@ -2431,6 +2432,7 @@
 <translation id="4663373278480897665">カメラを使用できます</translation>
 <translation id="4664482161435122549">PKCS #12 エクスポート エラー</translation>
 <translation id="4665014895760275686">メーカー</translation>
+<translation id="4665446389743427678"><ph name="SITE" /> で保存されたすべてのデータが削除されます。</translation>
 <translation id="4668721319092543482">クリックして <ph name="PLUGIN_NAME" /> を有効にします</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」のメンバーはこれらのアイテムにアクセスできなくなります（ただし個別に共有されている場合はアクセス可能です）。</translation>
 <translation id="4672657274720418656">ページを抽出</translation>
@@ -2606,6 +2608,7 @@
 <translation id="4917385247580444890">強い</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> が拡張機能「<ph name="EXTENSION_NAME" />」との通信をリクエストしています</translation>
 <translation id="4918086044614829423">承諾</translation>
+<translation id="4918221908152712722"><ph name="APP_NAME" /> をインストール（ダウンロードは不要です）</translation>
 <translation id="4920887663447894854">以下のサイトは、このページ内であなたの現在地を追跡できないようブロックされています:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> が追加の許可をリクエストしています。</translation>
 <translation id="492299503953721473">Android アプリを削除</translation>
@@ -5227,6 +5230,7 @@
 <translation id="8803953437405899238">新しいタブをワンクリックで開くことができます</translation>
 <translation id="8804398419035066391">連携するウェブサイトとの通信</translation>
 <translation id="8805140816472474147">同期を開始するには同期設定を確認してください。</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> で、誤って閉じたタブを再度開くことができます</translation>
 <translation id="8807632654848257479">Stable</translation>
 <translation id="8808478386290700967">ウェブストア</translation>
 <translation id="8808686172382650546">ネコ</translation>

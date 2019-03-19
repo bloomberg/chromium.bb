@@ -99,9 +99,11 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="3398288718845740432">Skjul i Chrome-menyen</translation>
 <translation id="3451115285585441894">Legger til i Chrome …</translation>
 <translation id="345171907106878721">Legg til deg selv i Chrome</translation>
+<translation id="3457651673823986489">Hvis et bilde ikke har noen nyttig beskrivelse, prøver Chrome å finne en til deg. Bildene skannes av Google. Du kan slå av dette i innstillingene når som helst.</translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="34857402635545079">Slett dataene fra Chrome også (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet</translation>
+<translation id="3576528680708590453">Systemadministratoren din har konfigurert at Google Chrome skal åpne <ph name="TARGET_URL_HOSTNAME" /> i en annen nettleser.</translation>
 <translation id="3582972582564653026">Synkroniser og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="3622797965165704966">Nå er det enklere å bruke Chrome med Google-kontoen din og på datamaskiner du deler med andre.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Vilkår for bruk<ph name="END_TERMS_OF_SERVICE_LINK" /> av Google Chrome OS</translation>
@@ -248,6 +250,7 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på telefonen din. Vi sender deg en SMS.</translation>
 <translation id="8183957050892517584">Chrome lagrer personopplysningene dine sikkert, slik at du slipper å skrive dem inn på nytt.</translation>
+<translation id="8224281044825492187">Hvis et bilde ikke har noen nyttig beskrivelse, prøver Chrome å finne en til deg. Bildene skannes av Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS starter på nytt nå}=1{Chrome OS starter på nytt om 1 sekund}other{Chrome OS starter på nytt om # sekunder}}</translation>
 <translation id="825412236959742607">Denne siden bruker for mye minne, så Chrome har fjernet noe av innholdet.</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>

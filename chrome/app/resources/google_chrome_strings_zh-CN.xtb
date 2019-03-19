@@ -99,9 +99,11 @@
 <translation id="3398288718845740432">在 Chrome 菜单中隐藏</translation>
 <translation id="3451115285585441894">正在添加到 Chrome 浏览器...</translation>
 <translation id="345171907106878721">将您自己添加到Chrome</translation>
+<translation id="3457651673823986489">如果图片缺少有用的说明，则 Chrome 会尝试为您提供一条说明。Google 会对图片进行扫描。您可以随时在“设置”中关闭此功能。</translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="34857402635545079">一并清除 Chrome (<ph name="URL" />) 中的数据</translation>
 <translation id="3503306920980160878">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
+<translation id="3576528680708590453">您的系统管理员已将 Google Chrome 配置为使用备用浏览器访问 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="3582972582564653026">在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
 <translation id="3637702109597584617">Google Chrome 操作系统<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -249,6 +251,7 @@
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 <translation id="8179874765710681175">请在您的手机上安装 Chrome。我们会向您的手机发送一条短信。</translation>
 <translation id="8183957050892517584">Chrome 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
+<translation id="8224281044825492187">如果图片缺少有用的说明，则 Chrome 会尝试为您提供一条说明。Google 会对图片进行扫描。</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome 操作系统将会立即重启}=1{Chrome 操作系统将会在 1 秒后重启}other{Chrome 操作系统将会在 # 秒后重启}}</translation>
 <translation id="825412236959742607">此网页占用的内存过多，因此 Chrome 移除了部分内容。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>

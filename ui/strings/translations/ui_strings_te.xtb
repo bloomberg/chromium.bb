@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
 <translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
+<translation id="1409544243779336081">యాప్ సిఫార్సు</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> నుండి వచ్చే నోటిఫికేషన్‌లను నిలిపివేయి</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
 <translation id="1643823602425662293">నోటిఫికేషన్</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="348799646910989694">అర ఆటోమేటిక్‌గా దాచి పెట్టబడుతుంది</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 రోజు మిగిలి ఉంది}other{# రోజులు మిగిలి ఉన్నాయి}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ఫైల్</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />”ని వెతకండి</translation>
 <translation id="364720409959344976">అప్‌లోడ్ చేయడానికి ఫోల్డర్‌ని ఎంచుకోండి</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>
 <translation id="6845383723252244143">ఫోల్డర్‌ను ఎంచుకో</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>
+<translation id="686304767576508198">షేర్ చేసినది</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 గంట మిగిలి ఉంది}other{# గంటలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="688711909580084195">శీర్షికలేని వెబ్‌పేజీ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>

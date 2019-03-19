@@ -1377,6 +1377,7 @@
 <translation id="3016780570757425217">Teada teie asukohta</translation>
 <translation id="3020183492814296499">Otseteed</translation>
 <translation id="3020990233660977256">Seerianumber: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Liblikas</translation>
 <translation id="3021678814754966447">&amp;Vaata raami allikat</translation>
 <translation id="3022978424994383087">Ei saanud aru.</translation>
 <translation id="3023464535986383522">Vali ja kuula</translation>
@@ -2431,6 +2432,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4663373278480897665">Kaamera on lubatud</translation>
 <translation id="4664482161435122549">PKCS #12 ekspordi viga</translation>
 <translation id="4665014895760275686">Tootja</translation>
+<translation id="4665446389743427678">Kõik saidi <ph name="SITE" /> salvestatud andmed kustutatakse.</translation>
 <translation id="4668721319092543482">Pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks klõpsake</translation>
 <translation id="4669606053856530811">Üksuse „<ph name="SOURCE_NAME" />” liikmed kaotavad juurdepääsu, kui neid üksusi nendega ei jagata.</translation>
 <translation id="4672657274720418656">Lehe teisendamine</translation>
@@ -2606,6 +2608,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4917385247580444890">Tugev</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> tahab suhelda laiendusega „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4918086044614829423">Nõustu</translation>
+<translation id="4918221908152712722">Installige rakendus <ph name="APP_NAME" /> (allalaadimine pole vajalik)</translation>
 <translation id="4920887663447894854">Sellel lehel on järgmiseid saite blokeeritud nii, et need ei saa teie asukohta jälgida:</translation>
 <translation id="4922897038695506037">Veebileht <ph name="URL_HOST" /> taotles lisalube.</translation>
 <translation id="492299503953721473">Eemalda Androidi rakendused</translation>
@@ -3794,6 +3797,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Kas soovite lasta Google'il selle lehe tõlkida <ph name="SOURCE_LANGUAGE" /> keelest <ph name="TARGET_LANGUAGE" /> keelde?</translation>
 <translation id="6675665718701918026">Ühendati kursoriseade</translation>
+<translation id="6676212663108450937">Hääle õpetamisel on soovitatav kasutada kõrvaklappe</translation>
 <translation id="6678717876183468697">Päringu URL</translation>
 <translation id="6680442031740878064">Saadaval: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Kiirus</translation>
@@ -4520,6 +4524,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7788383851298063850">Andke meile teada, mis toimub</translation>
 <translation id="7788444488075094252">Keeled ja sisestamine</translation>
 <translation id="7788668840732459509">Positsioon:</translation>
+<translation id="7789963078219276159">Avalehe taustaks määrati <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Lisa</translation>
 <translation id="7792012425874949788">Sisselogimisel läks midagi valesti</translation>
 <translation id="7792388396321542707">Lõpeta jagamine</translation>
@@ -5203,6 +5208,7 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8767621466733104912">Värskenda Chrome'i automaatselt kõikide kasutajate jaoks</translation>
 <translation id="8770406935328356739">Laienduse juurkataloog</translation>
 <translation id="8770507190024617908">Halda inimesi</translation>
+<translation id="8771300903067484968">Avalehe taust lähtestati vaiketaustale.</translation>
 <translation id="8774934320277480003">Ülemine veeris</translation>
 <translation id="8775144690796719618">Sobimatu URL</translation>
 <translation id="8775404590947523323">Teie muudatused salvestatakse automaatselt.<ph name="BREAKS" />Algse kujutise koopia säilitamiseks tühjendage märkeruut „Kirjuta algne fail üle”</translation>
@@ -5227,6 +5233,7 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8803953437405899238">Avage uus vaheleht vaid ühe klikiga</translation>
 <translation id="8804398419035066391">Side koostööd tegevate veebisaitidega</translation>
 <translation id="8805140816472474147">Sünkroonimise alustamiseks kinnitage sünkroonimisseaded.</translation>
+<translation id="8806680466228877631">Otseteega <ph name="SHORTCUT" /> saab uuesti avada kogemata suletud vahelehed</translation>
 <translation id="8807632654848257479">Stabiilne</translation>
 <translation id="8808478386290700967">Veebipood</translation>
 <translation id="8808686172382650546">Kass</translation>

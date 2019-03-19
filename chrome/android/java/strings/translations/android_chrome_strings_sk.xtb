@@ -144,6 +144,7 @@
 <translation id="200815880754187296">Ďalšie aplikácie: <ph name="KILOBYTES" /> KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# súbor}few{# súbory}many{# Files}other{# súborov}}</translation>
 <translation id="2017836877785168846">Vymaže históriu a automaticky doplňované výrazy v paneli s adresou.</translation>
+<translation id="2018707881002649255">Kontakty, ktoré vyberiete nižšie, sa budú zdieľať s webom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Ovládanie webu na celú obrazovku</translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
 <translation id="204321170514947529">V Chrome má údaje aj aplikácia <ph name="APP_NAME" />.</translation>
@@ -546,6 +547,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
 <translation id="5063480226653192405">Použitie</translation>
+<translation id="5073204694187207510">Skryť mriežku na celú obrazovku</translation>
 <translation id="5082793167783849073">Ak chcete rýchlo porovnať stránky, vytvorte skupinu. Začnite pridržaním ľubovoľného odkazu.</translation>
 <translation id="5087580092889165836">Pridať kartu</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
@@ -741,11 +743,13 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6447842834002726250">Súbory cookie</translation>
 <translation id="6448273550210938826">Návrhy pre vyhľadávanie a webové adresy</translation>
 <translation id="6461962085415701688">Súbor sa nedá otvoriť</translation>
+<translation id="6464977750820128603">Môžete si zobraziť weby, ktoré navštevujete v Chrome, a nastaviť pre ne časovače.\n\nGoogle získa informácie o weboch, pre ktoré nastavíte časovače, a údaje o tom, koľko času na nich strávite. Tieto informácie sa použijú na zlepšenie digitálnej rovnováhy.</translation>
 <translation id="6475951671322991020">Stiahnuť video</translation>
 <translation id="6482749332252372425">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu nedostatku voľného miesta v úložisku.</translation>
 <translation id="6496823230996795692">Prvé spustenie aplikácie <ph name="APP_NAME" /> vyžaduje pripojenie k internetu.</translation>
 <translation id="6508722015517270189">Reštartujte Chrome</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
+<translation id="6532866250404780454">Weby, ktoré navštívite v Chrome, sa nezobrazia. Odstránia sa všetky časovače webov.</translation>
 <translation id="6534565668554028783">Odpoveď Googlu trvala príliš dlho</translation>
 <translation id="6538442820324228105">Stiahnuté: <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Vyberte kartu, ktorú chcete preniesť</translation>
@@ -888,6 +892,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="751961395872307827">Nedá sa pripojiť k webu</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Návrhy sa nedajú získať</translation>
+<translation id="7559245342362162951">Zobraziť karty skupiny v mriežke na celú obrazovku</translation>
 <translation id="7559975015014302720">Zjednodušený režim je vypnutý</translation>
 <translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="756809126120519699">Údaje Chromu boli vymazané</translation>
@@ -970,6 +975,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Navrhovať súvisiace stránky</translation>
 <translation id="8109613176066109935">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu</translation>
+<translation id="8110087112193408731">Chcete v digitálnej rovnováhe zobrazovať svoju aktivitu z Chromu?</translation>
 <translation id="8116925261070264013">Zvuk bol vypnutý</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
@@ -1066,6 +1072,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8912362522468806198">účtu Google</translation>
 <translation id="8920114477895755567">Čaká sa na podrobnosti o rodičoch.</translation>
 <translation id="8922289737868596582">Stiahnite si stránky pomocou tlačidla Ďalšie možnosti, aby ste ich mohli použiť offline</translation>
+<translation id="8937772741022875483">Chcete z digitálnej rovnováhy odstrániť svoju aktivitu z Chromu?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otvoriť v ďalšom okne</translation>
 <translation id="8951232171465285730">Chrome ušetril <ph name="MEGABYTES" /> MB</translation>
@@ -1097,12 +1104,15 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9139068048179869749">Opýtať sa pred povolením webu odosielať upozornenia (odporúčané)</translation>
 <translation id="9139318394846604261">Nákupy</translation>
+<translation id="9150694013019234766">Prepínajte karty v skupine kariet v dolnej časti obrazovky</translation>
 <translation id="9155898266292537608">Vyhľadávať môžete aj rýchlym klepnutím na slovo</translation>
+<translation id="9169594135889675189">Pridať novú kartu do skupiny</translation>
 <translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>
 <translation id="9204836675896933765">Zostáva 1 súbor</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Ušetrite až 60 percent dát a načítavajte weby rýchlejšie. Servery Google budú optimalizovať stránky, ktoré navštívite.</translation>
 <translation id="9219103736887031265">Obrázky</translation>
+<translation id="926205370408745186">Odstránenie aktivity z Chromu z digitálnej rovnováhy</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="932599481871055447">Šetrite dáta a prehliadajte rýchlejšie</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>

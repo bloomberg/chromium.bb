@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">Để xóa dữ liệu duyệt web khỏi tất cả các thiết bị đã đồng bộ hóa và Tài khoản Google của bạn, hãy <ph name="BEGIN_LINK" />nhập cụm mật khẩu<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2487067538648443797">Thêm dấu trang mới</translation>
+<translation id="2489829450872380594">Vào lần tới, một điện thoại mới sẽ mở khóa <ph name="DEVICE_TYPE" /> này. Bạn có thể tắt tính năng Smart Lock trong phần Cài đặt.</translation>
 <translation id="2489918096470125693">Thêm &amp;thư mục...</translation>
 <translation id="249113932447298600">Rất tiếc, thiết bị <ph name="DEVICE_LABEL" /> không được hỗ trợ vào thời điểm này.</translation>
 <translation id="249303669840926644">Không thể hoàn tất đăng ký</translation>
@@ -1376,6 +1377,7 @@
 <translation id="3016780570757425217">Biết vị trí của bạn</translation>
 <translation id="3020183492814296499">Phím tắt</translation>
 <translation id="3020990233660977256">Số Sê-ri: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Bướm</translation>
 <translation id="3021678814754966447">&amp;Xem Nguồn Khung</translation>
 <translation id="3022978424994383087">Không hiểu được.</translation>
 <translation id="3023464535986383522">Chọn để nói</translation>
@@ -1765,6 +1767,7 @@
 <translation id="3627588569887975815">Mở liên kết bằn&amp;g cửa số ẩn danh</translation>
 <translation id="3627671146180677314">Thời gian Gia hạn Chứng chỉ Netscape</translation>
 <translation id="3627879631695760395">Cài đặt <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Nhập mật khẩu để bật tính năng Smart Lock. Vào lần tới, điện thoại của bạn sẽ mở khóa <ph name="DEVICE_TYPE" />. Bạn có thể tắt tính năng Smart Lock trong phần Cài đặt.</translation>
 <translation id="3630132874740063857">Điện thoại</translation>
 <translation id="3630995161997703415">Thêm trang web này vào giá của bạn để sử dụng bất cứ lúc nào</translation>
 <translation id="3636096452488277381">Xin chào <ph name="USER_GIVEN_NAME" />!</translation>
@@ -2110,6 +2113,7 @@
 <translation id="4109135793348361820">Di chuyển cửa sổ đến <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Đã tải xuống xong: <ph name="FILE_NAME" />. Nhấn tổ hợp phím Shift + F6 để chuyển tới khu vực thanh Tài nguyên đã tải xuống.</translation>
 <translation id="4110895898888439383">Duyệt web trong chế độ tương phản cao</translation>
+<translation id="4112221174576828331">Chrome sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Các hình ảnh đều do Google quét.</translation>
 <translation id="4115002065223188701">Mạng nằm ngoài phạm vi</translation>
 <translation id="4115080753528843955">Một số dịch vụ nội dung sử dụng số nhận dạng duy nhất nhằm mục đích cho phép truy cập vào nội dung được bảo vệ</translation>
 <translation id="4118579674665737931">Vui lòng khởi động lại thiết bị và thử lại.</translation>
@@ -2428,6 +2432,7 @@
 <translation id="4663373278480897665">Cho phép máy ảnh</translation>
 <translation id="4664482161435122549">Lỗi xuất PKCS #12</translation>
 <translation id="4665014895760275686">Nhà sản xuất</translation>
+<translation id="4665446389743427678">Tất cả dữ liệu do <ph name="SITE" /> lưu trữ sẽ bị xóa.</translation>
 <translation id="4668721319092543482">Nhấp để bật <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Thành viên của '<ph name="SOURCE_NAME" />' sẽ mất quyền truy cập trừ khi bạn chia sẻ các mục này với họ.</translation>
 <translation id="4672657274720418656">Lọc trang</translation>
@@ -2603,6 +2608,7 @@
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> muốn giao tiếp với tiện ích "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
+<translation id="4918221908152712722">Cài đặt <ph name="APP_NAME" /> (không cần tải xuống)</translation>
 <translation id="4920887663447894854">Các trang web sau đã bị chặn theo dõi vị trí của bạn trên trang này:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> đã yêu cầu các quyền bổ sung.</translation>
 <translation id="492299503953721473">Xóa ứng dụng Android</translation>
@@ -2662,6 +2668,7 @@
 <translation id="4998873842614926205">Xác nhận thay đổi</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> ảnh mới</translation>
+<translation id="5008936837313706385">Tên hoạt động</translation>
 <translation id="5010043101506446253">Tổ chức cấp chứng chỉ</translation>
 <translation id="5010406651457630570">Máy tính</translation>
 <translation id="5015344424288992913">Đang phân giải proxy…</translation>
@@ -2993,6 +3000,7 @@
 <translation id="5507756662695126555">Không tuân thủ</translation>
 <translation id="5509693895992845810">Lưu &amp;Dưới dạng...</translation>
 <translation id="5509914365760201064">Nhà cung cấp: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Nhận nội dung mô tả hình ảnh của Google</translation>
 <translation id="5511379779384092781">Quá nhỏ</translation>
 <translation id="5511823366942919280">Bạn có chắc chắn muốn thiết lập thiết bị này là "Shark" không?</translation>
 <translation id="5512653252560939721">Chứng chỉ người dùng phải được phần cứng hỗ trợ.</translation>
@@ -3575,6 +3583,7 @@
 <translation id="6341850831632289108">Phát hiện vị trí thực của bạn</translation>
 <translation id="6344170822609224263">Truy cập danh sách kết nối mạng</translation>
 <translation id="6346310558342052870">Truy cập bị hạn chế</translation>
+<translation id="6349101878882523185">Cài đặt <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Đồng bộ hóa không hoạt động. Thử đăng xuất và đăng nhập lại.</translation>
 <translation id="6351063337294363751">Bạn có thể xóa dữ liệu duyệt web khỏi menu này</translation>
 <translation id="6352773953037195952">Cao nhất</translation>
@@ -3992,6 +4001,7 @@
 <translation id="6990081529015358884">Bạn đã hết dung lượng lưu trữ</translation>
 <translation id="6990778048354947307">Chủ đề tối</translation>
 <translation id="6991665348624301627">Chọn máy in đích</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - Nhật ký hoạt động</translation>
 <translation id="6997707937646349884">Trên các thiết bị của bạn:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> thư mục đã được chọn</translation>
 <translation id="6998793565256476099">Đăng ký thiết bị tham gia hội nghị truyền hình</translation>
@@ -4294,6 +4304,7 @@
 <translation id="7456142309650173560">nhà phát triển</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7461924472993315131">Ghim</translation>
+<translation id="746216226901520237">Vào lần tới, điện thoại của bạn sẽ mở khóa <ph name="DEVICE_TYPE" />. Bạn có thể tắt tính năng Smart Lock trong phần Cài đặt.</translation>
 <translation id="7463006580194749499">Thêm người</translation>
 <translation id="7465778193084373987">ULR Thu hồi của Tổ chức Cấp Chứng chỉ Netscape</translation>
 <translation id="7469894403370665791">Tự động kết nối vào mạng này</translation>
@@ -4372,6 +4383,7 @@
 <translation id="7580671184200851182">Phát cùng một âm thanh qua tất cả các loa (đơn âm)</translation>
 <translation id="7581462281756524039">Công cụ làm sạch</translation>
 <translation id="7582582252461552277">Thích mạng này</translation>
+<translation id="7583948862126372804">Số lượng</translation>
 <translation id="7586498138629385861">Chrome sẽ tiếp tục chạy khi ứng dụng Chrome đang mở.</translation>
 <translation id="7589461650300748890">Oa. Hãy cẩn thận.</translation>
 <translation id="7589661784326793847">Xin đợi một chút</translation>
@@ -5217,6 +5229,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8803953437405899238">Mở tab mới bằng một cú nhấp</translation>
 <translation id="8804398419035066391">Kết nối với các trang web hợp tác</translation>
 <translation id="8805140816472474147">Hãy xác nhận cài đặt đồng bộ hóa để bắt đầu đồng bộ hóa.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> có thể mở lại các tab bạn đã vô tình đóng.</translation>
 <translation id="8807632654848257479">Ổn định</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Mèo</translation>
@@ -5484,6 +5497,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="93393615658292258">Chỉ mật khẩu</translation>
 <translation id="934503638756687833">Các mục không liệt kê ở đây cũng có thể bị xóa, nếu cần. Hãy tìm hiểu thêm về cách &lt;a href="<ph name="URL" />"&gt;bảo vệ khỏi phần mềm không mong muốn&lt;/a&gt; trong sách trắng về bảo mật của Chrome.</translation>
 <translation id="935490618240037774">Dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn sẽ được đồng bộ hóa với Tài khoản Google để bạn có thể sử dụng chúng trên tất cả thiết bị của mình.</translation>
+<translation id="935854577147268200">Đã thay đổi điện thoại Smart Lock. Hãy nhập mật khẩu để cập nhật Smart Lock. Vào lần tới, điện thoại của bạn sẽ mở khóa <ph name="DEVICE_TYPE" />. Bạn có thể tắt tính năng Smart Lock trong phần Cài đặt.</translation>
 <translation id="936801553271523408">Dữ liệu chẩn đoán hệ thống</translation>
 <translation id="93766956588638423">Sửa tiện ích</translation>
 <translation id="938339467127511841">Bộ nhớ Linux (Beta)</translation>

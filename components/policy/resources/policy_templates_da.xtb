@@ -495,6 +495,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="203096360153626918">Denne politik påvirker ikke Android-apps. De kan åbnes i fuldskærmstilstand, selv hvis denne politik angives som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverede virksomhedsprintere</translation>
+<translation id="2050629715135525072">Styrer en brugers mulighed for at overføre filer mellem klienten og hosten, når vedkommende har forbindelse til en host til fjernadgang. Dette gælder ikke for forbindelser til fjernsupport, som ikke understøtter filoverførsel.
+
+          Hvis denne indstilling er deaktiveret, er filoverførsel ikke tilladt. Hvis indstillingen er aktiveret eller ikke er angivet, er filoverførsel tilladt.</translation>
 <translation id="2057317273526988987">Giv adgang til en liste over webadresser</translation>
 <translation id="206623763829450685">Angiver, hvilke skemaer for HTTP-godkendelse der understøttes af <ph name="PRODUCT_NAME" />.
 
@@ -591,6 +594,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2231817271680715693">Import af browseroversigt fra standardbrowser ved første visning</translation>
 <translation id="2236488539271255289">Tillad ikke, at websites angiver lokale data</translation>
 <translation id="2240879329269430151">Giver dig mulighed for at bestemme, om websites må vise pop op-vinduer. Visning af pop op-vinduer kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "BlockPopups", og brugeren vil kunne ændre den.</translation>
+<translation id="2258126710006312594">Tillad, at brugere med fjernadgang overfører filer til/fra hosten</translation>
 <translation id="2265214338421787313">Denne politik tillader, at en administrator kan angive en side til at vise pop op-vinduer, når den unloades.
 
       Når politikken er angivet som aktiveret, har sider tilladelse til at vise pop op-vinduer, når de unloades.
@@ -863,6 +867,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Automatiske søgninger efter opdateringer blokeres ikke af denne politik, men blokeres muligvis af andre politikker. Denne funktion er kun aktiveret på Chrome-enheder, der er konfigureret som terminaler med automatisk opstart. Andre enheder begrænses ikke af denne politik.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />-klienters placering i Windows-registreringsdatabasen:</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
+<translation id="2836621397261130126">Denne politik styrer, om godkendelse af KDC-politikken overholdes for at beslutte, om <ph name="KERBEROS" />-billetter skal overdrages.
+
+          Hvis politikken er angivet som sand, respekteres godkendelse af KDC-politikken af HTTP-godkendelsen, dvs. Chrome overdrager kun loginoplysninger, hvis KDC angiver <ph name="OK_AS_DELEGATE" /> på en tjenestebillet. Få flere oplysninger på https://tools.ietf.org/html/rfc5896.html. Tjenesten skal også matche politikken "AuthNegotiateDelegateWhitelist".
+
+          Hvis denne politik ikke er angivet eller er angivet som falsk, ignoreres KDC-politikken på understøttede platforme, og kun politikken "AuthNegotiateDelegateWhitelist" overholdes.
+
+          KDC-politikken overholdes altid i Windows.</translation>
 <translation id="2838830882081735096">Tillad ikke datamigrering og ARC</translation>
 <translation id="2839294585867804686">Indstillinger for fildeling via netværk</translation>
 <translation id="2840269525054388612">Angiver, hvilke printere en bruger kan anvende.

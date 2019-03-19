@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
-<translation id="1296843352074373664">Google user</translation>
 <translation id="1383286653814676580">Ginagamit para paganahin ang page sa pag-sign in ng Google Credential Provider.</translation>
-<translation id="1813213595719100133">Hindi pinapayagan ang pag-sign in gamit ang Mga Google Account sa domain na ito. Sumubok ng ibang account.</translation>
-<translation id="195232392645680541">Mag-sign in gamit ang iyong Google Account.</translation>
 <translation id="2595469428674600431">Paumanhin, hindi na-verify ang iyong password sa Winows. Pakisubukang muli.</translation>
-<translation id="2620296592151848576">Binago ang iyong password sa Google. Pakilagay ang iyong kasalukuyang password sa Windows para ma-sync ang Windows Account mo sa iyong Google Account.</translation>
-<translation id="3697479376287066058">May account sa computer na ito na nakarehistro na gamit ang Google Account na ito. Mag-sign in gamit ang ibang Google Account.</translation>
 <translation id="4057329986137569701">Nagkaroon ng internal na error.</translation>
-<translation id="4128734677223009352">Hindi naging matagumpay ang pag-sign in sa iyong Google Account. Tiyaking may koneksyon sa internet ang computer, pagkatapos ay subukan ulit.</translation>
-<translation id="4175879131870609567">Ang user lang na nag-lock ng workstation na ito ang kasalukuyang pinapayagang mag-sign in sa system.</translation>
-<translation id="6613125771987245372">Hindi pinapahintulutan ang pag-sign in gamit ang Google Account na ito. Sumubok ng ibang account.</translation>
 <translation id="7357241217513796177">Tiyaking mayroon kang koneksyon sa network at subukang muli.</translation>
-<translation id="7447167742844823007">Mag-sign in gamit ang iyong Google Account</translation>
 <translation id="7463006580194749499">Magdagdag ng tao</translation>
-<translation id="782439148700312319">Hindi ma-enroll ang computer na ito para sa pamamahala ng enterprise.  Mag-sign in gamit ang ibang Google Account.</translation>
 <translation id="8440458902131551808">Na-lock ang iyong account. Makipag-ugnayan sa isang administrator ng system.</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">Hindi makagawa ng user.</translation>

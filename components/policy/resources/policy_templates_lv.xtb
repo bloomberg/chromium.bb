@@ -503,6 +503,9 @@
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="203096360153626918">Šī politika neietekmē Android lietotnes. Lietotnes varēs atvērt pilnekrāna režīmā, pat ja šī politika ir iestatīta kā <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Atspējotie uzņēmuma printeri</translation>
+<translation id="2050629715135525072">Kontrolē iespēju pārsūtīt failus starp klientu un saimniekdatoru tam lietotājam, kurš ir izveidojis savienojumu ar attālās piekļuves saimniekdatoru. Tas neattiecas uz attālās palīdzības savienojumiem, kuros netiek atbalstīta failu pārsūtīšana.
+
+          Ja šis iestatījums ir atspējots, failu pārsūtīšana netiks atļauta. Ja šis iestatījums ir iespējots vai nav iestatīts, failu pārsūtīšana tiks atļauta.</translation>
 <translation id="2057317273526988987">Atļauja piekļūt vietrāžu URL sarakstam</translation>
 <translation id="206623763829450685">Norāda <ph name="PRODUCT_NAME" /> atbalstītās HTTP autentifikācijas shēmas.
 
@@ -603,6 +606,7 @@
 <translation id="2240879329269430151">Ļauj iestatīt, vai vietnēm ir atļauts rādīt uznirstošos logus. Uznirstošo logu rādīšana var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika BlockPopups un lietotājs to varēs mainīt.</translation>
+<translation id="2258126710006312594">Atļaut attālās piekļuves lietotājiem pārsūtīt failus saimniekdatoram/no tā</translation>
 <translation id="2265214338421787313">Šī politika atļauj administratoram noteikt, ka lapā aizvēršanas laikā drīkst rādīt uznirstošos elementus.
 
       Ja politika ir iestatīta kā iespējota, lapās ir atļauts rādīt uznirstošo elementus laikā, kad tās tiek aizvērtas.
@@ -889,6 +893,13 @@
       Šī politika nebloķēs automātisku atjauninājumu meklēšanu, taču citas politikas var meklēšanu bloķēt. Šī funkcija ir pieejama tikai tādās Chrome ierīcēs, kas ir konfigurētas kā automātiskas palaišanas kioski. Šī politika neierobežos citas ierīces.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> klientu Windows reģistra vieta:</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
+<translation id="2836621397261130126">Kontrolē, vai tiek ievērots KDC politikas apstiprinājums, lai nolemtu, vai deleģēt <ph name="KERBEROS" /> biļetes.
+
+          Ja šai politikai ir iestatīta vērtība “true”, HTTP autentifikācija ievēro KDC politikas apstiprinājumu. Pārlūks Chrome deleģē akreditācijas datus tikai tad, ja KDS iestata <ph name="OK_AS_DELEGATE" /> pakalpojuma biļeti. Plašāku informāciju skatiet vietnē https://tools.ietf.org/html/rfc5896.html. Pakalpojumam ir jāatbilst arī “AuthNegotiateDelegateWhitelist” politikai.
+
+          Ja šīs politikas vērtība nav iestatīta vai ir iestatīta vērtība “false”, KDC politika atbalstītajās platformās tiek ignorēta un tiek ievērota tikai 'AuthNegotiateDelegateWhitelist” politika.
+
+          Operētājsistēmā Windows vienmēr tiek ievērota KDC politika.</translation>
 <translation id="2838830882081735096">Aizliegt datu migrēšanu un ARC</translation>
 <translation id="2839294585867804686">Tīkla failu kopīgošanas ierīču iestatījumi</translation>
 <translation id="2840269525054388612">Norāda printerus, ko lietotājs var izmantot.

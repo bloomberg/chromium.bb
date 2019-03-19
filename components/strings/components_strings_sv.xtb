@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Det finns farliga appar på webbplatsen du är på väg till</translation>
 <translation id="1348779747280417563">Bekräfta namn</translation>
 <translation id="1357195169723583938">Vem har använt enheten nyligen och när</translation>
+<translation id="1364822246244961190">Den här principen är blockerad. Dess värde ignoreras.</translation>
 <translation id="1374468813861204354">förslag</translation>
 <translation id="1374692235857187091">Index-4x6 (vykort)</translation>
 <translation id="1375198122581997741">Om version</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Visa fler</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Välj leveransadress</translation>
+<translation id="1492194039220927094">Skicka principer:</translation>
 <translation id="1501859676467574491">Visa kort från ditt Google-konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Felmeddelandet visas om du använder en Wi-Fi-portal där du måste logga in innan du kommer ut på internet.&lt;/p&gt;
     &lt;p&gt;Åtgärda problemet genom att klicka på &lt;strong&gt;Anslut&lt;/strong&gt; på sidan du försöker öppna.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom enhetens datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.&lt;/p&gt;
 
       &lt;p&gt;Ändra datumet och tiden under &lt;strong&gt;Allmänt&lt;/strong&gt; i appen &lt;strong&gt;Inställningar&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Ange sista giltighetsdatum</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Ett fel uppstod när webbsidan skulle visas.</translation>
 <translation id="1592005682883173041">Lokal dataåtkomst</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Version</translation>
 <translation id="366077651725703012">Uppdatera kreditkortet</translation>
 <translation id="3676592649209844519">Enhets-id:</translation>
+<translation id="3677008721441257057">Menade du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Begäran kunde inte signeras</translation>
 <translation id="3678529606614285348">Öppna sidan i ett nytt inkognitofönster (Ctrl-Skift-N)</translation>
 <translation id="3679803492151881375">Kraschrapporten skapades den <ph name="CRASH_TIME" /> och laddades upp den <ph name="UPLOAD_TIME" /></translation>
@@ -1104,6 +1108,7 @@
 <translation id="7220786058474068424">Bearbetning pågår</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Det förekommer skadlig programvara på följande sida</translation>
+<translation id="724766306220616965">Varningar, konflikt</translation>
 <translation id="724975217298816891">Ange utgångsdatum och CVC-kod för <ph name="CREDIT_CARD" /> om du vill uppdatera kortinformationen. När du bekräftar delas kortinformationen med den här webbplatsen.</translation>
 <translation id="7251437084390964440">Nätverkskonfigurationen uppfyller inte ONC-standarden. Det kan hända att delar av konfigurationen inte kan importeras.
 Mer information.
@@ -1116,6 +1121,7 @@ Mer information.
 <translation id="7300012071106347854">Koboltblå</translation>
 <translation id="7302712225291570345"><ph name="TEXT" /></translation>
 <translation id="7309308571273880165">Felrapport som skapades <ph name="CRASH_TIME" /> (uppladdning begärdes av användaren, har ännu inte laddats upp)</translation>
+<translation id="7313965965371928911">Varningar från <ph name="BEGIN_LINK" />Säker webbsökning<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Anslutningshjälp</translation>
 <translation id="7334320624316649418">&amp;Gör om Ändra ordning</translation>

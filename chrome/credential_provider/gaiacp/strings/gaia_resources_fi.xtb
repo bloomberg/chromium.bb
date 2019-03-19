@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
-<translation id="1296843352074373664">Google-käyttäjä</translation>
 <translation id="1383286653814676580">Käytetään Googlen tunnistuspalvelun kirjautumissivun käynnistämiseen.</translation>
-<translation id="1813213595719100133">Tämän verkkotunnuksen Google-tileillä kirjautumista ei sallita. Käytä toista tiliä.</translation>
-<translation id="195232392645680541">Kirjaudu sisään Google-tililläsi.</translation>
 <translation id="2595469428674600431">Windows-salasanasi vahvistaminen epäonnistui. Yritä uudelleen.</translation>
-<translation id="2620296592151848576">Salasanasi on vaihdettu Googlessa. Synkronoi Windows- ja Google-tilisi syöttämällä nykyinen Windows-salasanasi.</translation>
-<translation id="3697479376287066058">Toinen tällä tietokoneella oleva tili on jo rekisteröitynyt tällä Google-tilillä. Kirjaudu sisään toisella Google-tilillä.</translation>
 <translation id="4057329986137569701">Tapahtui sisäinen virhe.</translation>
-<translation id="4128734677223009352">Google-tilillesi kirjautuminen epäonnistui. Varmista, että tietokoneen internetyhteys toimii, ja yritä uudelleen.</translation>
-<translation id="4175879131870609567">Vain työaseman lukinnut käyttäjä voi tällä hetkellä kirjautua sisään järjestelmään.</translation>
-<translation id="6613125771987245372">Tällä Google-tilillä ei voi kirjautua sisään. Kokeile toista tiliä.</translation>
 <translation id="7357241217513796177">Varmista, että käytössäsi on verkkoyhteys, ja yritä uudelleen.</translation>
-<translation id="7447167742844823007">Kirjaudu sisään Google-tililläsi</translation>
 <translation id="7463006580194749499">Lisää käyttäjä</translation>
-<translation id="782439148700312319">Tätä tietokonetta ei voi rekisteröidä yrityshallintaan.  Kirjaudu sisään toisella Google-tilillä.</translation>
 <translation id="8440458902131551808">Tilisi on lukittu. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="8474372283141585908">Googlen tunnistuspalvelu</translation>
 <translation id="866458870819756755">Käyttäjän luominen epäonnistui.</translation>

@@ -103,9 +103,11 @@
 <translation id="3398288718845740432">Chrome 메뉴에서 숨기기</translation>
 <translation id="3451115285585441894">Chrome에 추가하는 중...</translation>
 <translation id="345171907106878721">Chrome에 본인 추가</translation>
+<translation id="3457651673823986489">이미지에 유용한 설명이 없으면 Chrome이 자동으로 설명 제공을 시도합니다. Google에서 이미지를 스캔합니다. 이 기능은 언제든지 설정에서 사용 중지할 수 있습니다.</translation>
 <translation id="3479552764303398839">나중에</translation>
 <translation id="34857402635545079">Chrome(<ph name="URL" />)에서도 데이터 삭제</translation>
 <translation id="3503306920980160878">이 사이트와 위치를 공유하려면 Chrome에 내 위치 액세스 권한이 있어야 합니다</translation>
+<translation id="3576528680708590453">시스템 관리자가 <ph name="TARGET_URL_HOSTNAME" /> 액세스를 위해 다른 브라우저를 실행하도록 Chrome을 구성했습니다.</translation>
 <translation id="3582972582564653026">모든 기기에서 Chrome을 동기화하고 맞춤설정하세요.</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="3637702109597584617">Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -256,6 +258,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>
 <translation id="8179874765710681175">휴대전화에 Chrome을 설치하세요. 휴대전화로 SMS를 보내 드리겠습니다.</translation>
 <translation id="8183957050892517584">Chrome은 개인정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없습니다.</translation>
+<translation id="8224281044825492187">이미지에 유용한 설명이 없으면 Chrome이 자동으로 설명 제공을 시도합니다. Google에서 이미지를 스캔합니다.</translation>
 <translation id="8226081633851087288">{0,plural, =0{곧 Chrome OS 다시 시작}=1{1초 후에 Chrome OS 다시 시작}other{#초 후에 Chrome OS 다시 시작}}</translation>
 <translation id="825412236959742607">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 일부 콘텐츠를 삭제했습니다.</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>

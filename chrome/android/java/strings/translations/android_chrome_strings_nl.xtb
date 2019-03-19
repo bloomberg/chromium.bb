@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB voor andere apps</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# bestand}other{# bestanden}}</translation>
 <translation id="2017836877785168846">Wist de geschiedenis en automatische aanvullingen in de adresbalk.</translation>
+<translation id="2018707881002649255">De contacten die je hieronder selecteert, worden gedeeld met de website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Siteopties op volledig scherm</translation>
 <translation id="2038563949887743358">'Desktopsite aanvragen' inschakelen</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> heeft ook gegevens in Chrome</translation>
@@ -546,6 +547,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Gebruik</translation>
+<translation id="5073204694187207510">Raster op volledig scherm verbergen</translation>
 <translation id="5082793167783849073">Vergelijk pagina's snel door een groep te maken. Tik op een link en houd deze vast om te beginnen.</translation>
 <translation id="5087580092889165836">Kaart toevoegen</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
@@ -741,11 +743,13 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Zoek- en URL-suggesties</translation>
 <translation id="6461962085415701688">Kan bestand niet openen</translation>
+<translation id="6464977750820128603">Je kunt sites bekijken die je in Chrome bezoekt en timers hiervoor instellen.\n\nGoogle ontvangt informatie over de sites waarvoor je timers instelt en hoelang je ze bezoekt. Deze informatie wordt gebruikt om Digitaal welzijn te verbeteren.</translation>
 <translation id="6475951671322991020">Video downloaden</translation>
 <translation id="6482749332252372425">Downloaden van <ph name="FILE_NAME" /> is mislukt door te weinig opslagruimte.</translation>
 <translation id="6496823230996795692">Maak verbinding met internet als je <ph name="APP_NAME" /> voor het eerst wilt gebruiken.</translation>
 <translation id="6508722015517270189">Chrome opnieuw starten</translation>
 <translation id="6527303717912515753">Delen</translation>
+<translation id="6532866250404780454">Sites die je in Chrome bezoekt, worden niet weergegeven. Alle sitetimers worden verwijderd.</translation>
 <translation id="6534565668554028783">Het duurt te lang voordat Google reageert</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB gedownload</translation>
 <translation id="654446541061731451">Selecteer een tabblad om te beamen</translation>
@@ -888,6 +892,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="751961395872307827">Kan geen verbinding maken met de site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Kan suggesties niet ophalen</translation>
+<translation id="7559245342362162951">Tabbladen van groep weergeven in raster op volledig scherm</translation>
 <translation id="7559975015014302720">Lite-versie is uitgeschakeld</translation>
 <translation id="7562080006725997899">Browsegegevens wissen</translation>
 <translation id="756809126120519699">Chrome-gegevens gewist</translation>
@@ -970,6 +975,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Gerelateerde pagina's voorstellen</translation>
 <translation id="8109613176066109935">Schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
+<translation id="8110087112193408731">Je Chrome-activiteit weergeven in Digitaal welzijn?</translation>
 <translation id="8116925261070264013">Gedempt</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
@@ -1066,6 +1072,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>
 <translation id="8922289737868596582">Download pagina's via de knop 'Meer opties' om ze offline te gebruiken</translation>
+<translation id="8937772741022875483">Je Chrome-activiteit verwijderen uit Digitaal welzijn?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Openen in een ander venster</translation>
 <translation id="8951232171465285730">Chrome bespaart je <ph name="MEGABYTES" /> MB</translation>
@@ -1097,12 +1104,15 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>
 <translation id="9139318394846604261">Winkelen</translation>
+<translation id="9150694013019234766">Je kunt onderaan het scherm schakelen tussen tabbladen in je tabbladgroep</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>
+<translation id="9169594135889675189">Nieuw tabblad aan groep toevoegen</translation>
 <translation id="9188680907066685419">Uitloggen van beheerd account</translation>
 <translation id="9204836675896933765">1 bestand over</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Gebruik tot 60 procent minder data en maak internet sneller. De Google-servers optimaliseren de pagina's die je bezoekt.</translation>
 <translation id="9219103736887031265">Afbeeldingen</translation>
+<translation id="926205370408745186">Je Chrome-activiteit verwijderen uit Digitaal welzijn</translation>
 <translation id="932327136139879170">Homepage</translation>
 <translation id="932599481871055447">Data besparen en sneller browsen</translation>
 <translation id="938850635132480979">Fout: <ph name="ERROR_CODE" /></translation>

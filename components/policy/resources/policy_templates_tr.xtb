@@ -435,6 +435,7 @@
       Bu ayar etkinleştirilirse şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin dijital parmak izlerini yakalar.
       Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin dijital parmak izlerini yakalar.
       Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
+<translation id="1919802376548418720">Kimlik bilgilerine yetki vermek için KDC politikasını kullan.</translation>
 <translation id="1920046221095339924">Cihazda yönetilen oturuma izin ver</translation>
 <translation id="1929709556673267855">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
 
@@ -504,6 +505,9 @@
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
 <translation id="203096360153626918">Bu politikanın Android uygulamaları üzerinde hiçbir etkisi yoktur. Bu politika <ph name="FALSE" /> seçeneğine ayarlansa bile uygulamalar tam ekran moduna girebilir.</translation>
 <translation id="2043770014371753404">Devre dışı bırakılmış kurumsal yazıcılar</translation>
+<translation id="2050629715135525072">Uzaktan erişim ana makinesine bağlı bir kullanıcının istemci ile ana makine arasında dosya aktarımı yapma imkanını kontrol eder. Bu politika, dosya aktarımını desteklemeyen uzaktan yardım bağlantıları için geçerli değildir.
+
+          Bu ayar devre dışı bırakılırsa dosya aktarımına izin verilmez. Bu ayar etkinleştirilirse veya ayarlanmazsa dosya aktarımına izin verilir.</translation>
 <translation id="2057317273526988987">URL listesine erişimi engelle</translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" /> tarafından desteklenen HTTP kimlik doğrulaması şemalarını belirtir.
 
@@ -602,6 +606,16 @@
 <translation id="2240879329269430151">Web sitelerinin pop-up göstermesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Tüm web siteleri için pop-up'ların gösterilmesine izin verilebilir veya tüm web sitelerinin pop-up göstermesi reddedilebilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'BlockPopups' kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
+<translation id="2258126710006312594">Uzaktan erişim kullanıcılarının ana makineye/ana makineden dosya aktarımı yapmalarına izin ver</translation>
+<translation id="2265214338421787313">Bu politika, bir yöneticinin, bir sayfanın yüklemesi kaldırılırken pop-up gösterebileceğini belirtmesini sağlar.
+
+      Bu politika etkin olarak ayarlanırsa, sayfaların yüklemeleri kaldırılırken pop-up göstermelerine izin verilir.
+
+      Bu politika devre dışı olarak ayarlanırsa veya ayarlanmazsa, spesifikasyon (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name) gereği, sayfaların yüklemeleri kaldırılırken pop-up göstermelerine izin verilmez.
+
+      Bu politika, Chrome 82 sürümünde kaldırılacaktır.
+
+      https://www.chromestatus.com/feature/5989473649164288 adresine bakın.</translation>
 <translation id="2269319728625047531">Oturum açma sırasında Senkronizasyon İzni'nin görüntülenmesini etkinleştir</translation>
 <translation id="2274864612594831715">Bu politika, ChromeOS'de sanal klavyenin bir giriş cihazı olarak etkinleştirilmesini yapılandırır. Kullanıcılar bu politikayı geçersiz kılamaz.
 
@@ -876,6 +890,13 @@
       Hiçbir otomatik güncelleme kontrolü bu politika tarafından engellenmez, ancak kontroller diğer politikalar tarafından engellenebilir. Bu özellik yalnızca otomatik başlatma kioskları olarak yapılandırılan Chrome cihazlarda etkindir. Bu politika diğer cihazları kısıtlamak için kullanılamaz.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> istemcileri için Windows kayıt defteri konumu:</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
+<translation id="2836621397261130126"><ph name="KERBEROS" /> biletlerine yetki verilip verilmeyeceğine karar verilirken KDC politikasının onayının dikkate alınıp alınmayacağını kontrol eder.
+
+          Bu politika true (doğru) değerine ayarlanırsa, HTTP kimlik doğrulama, KDC politikasının onayını dikkate alır. Yani, Chrome yalnızca KDC bir hizmet biletini <ph name="OK_AS_DELEGATE" /> olarak ayarlarsa kimlik bilgilerine yetki verir. Daha fazla bilgi için lütfen https://tools.ietf.org/html/rfc5896.html adresine bakın. Hizmetin de "AuthNegotiateDelegateWhitelist" politikasına uyması gerekir.
+
+          Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa, KDC politikası, desteklenen platformlarda yoksayılır ve yalnızca "AuthNegotiateDelegateWhitelist" politikası dikkate alınır.
+
+          Windows'da KDC politikası her zaman dikkate alınır.</translation>
 <translation id="2838830882081735096">Veri taşıma ve ARC'ye izin verme</translation>
 <translation id="2839294585867804686">Ağ Üzerinde Dosya Paylaşımı ayarları</translation>
 <translation id="2840269525054388612">Bir kullanıcının kullanabileceği yazıcıları belirtir.
@@ -2261,6 +2282,7 @@ politikayı geçersiz kılamaz.
 <translation id="602728333950205286">Varsayılan arama sağlayıcı anında arama URL'si</translation>
 <translation id="603410445099326293">POST kullanan öneri URL'si parametreleri</translation>
 <translation id="6034341625190551415">Herkese açık oturum ve kiosk hesap türlerini kontrol eder.</translation>
+<translation id="6034603289689965535">Sayfanın yüklemesi kaldırılırken pop-up göstermesine olanak tanır</translation>
 <translation id="6036523166753287175">Uzaktan erişim ana makinesinden güvenlik duvarı geçişini etkinleştir</translation>
 <translation id="6070667616071269965">Cihaz oturum açma ekranı klavye düzenleri</translation>
 <translation id="6074963268421707432">Hiçbir sitenin masaüstü bildirimi göstermesine izin verme</translation>

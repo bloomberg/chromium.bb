@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB aplikasi lain</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}other{# File}}</translation>
 <translation id="2017836877785168846">Hapus histori dan pelengkapan otomatis di kolom URL.</translation>
+<translation id="2018707881002649255">Kontak yang Anda pilih di bawah akan dibagikan dengan situs <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kontrol situs layar penuh</translation>
 <translation id="2038563949887743358">Aktifkan Ubah situs desktop</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga memiliki data di Chrome</translation>
@@ -546,6 +547,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
+<translation id="5073204694187207510">Sembunyikan petak layar penuh</translation>
 <translation id="5082793167783849073">Bandingkan halaman secara cepat dengan membuat grup. Untuk memulai, tap lama link.</translation>
 <translation id="5087580092889165836">Tambahkan kartu</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
@@ -741,11 +743,13 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Saran URL dan penelusuran</translation>
 <translation id="6461962085415701688">Tidak dapat membuka file</translation>
+<translation id="6464977750820128603">Anda dapat melihat situs yang Anda kunjungi di Chrome dan menetapkan time untuk situs tersebut.\n\nGoogle mendapatkan info tentang situs yang Anda tetapkan timer-nya dan durasi Anda mengunjunginya. Info ini digunakan untuk membuka Kesehatan Digital jadi lebih baik.</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425">Download <ph name="FILE_NAME" /> gagal karena ruang penyimpanan tidak cukup.</translation>
 <translation id="6496823230996795692">Untuk menggunakan <ph name="APP_NAME" /> pertama kali, harap hubungkan ke internet.</translation>
 <translation id="6508722015517270189">Buka Ulang Chrome</translation>
 <translation id="6527303717912515753">Bagikan</translation>
+<translation id="6532866250404780454">Situs yang Anda kunjungi di Chrome tidak akan ditampilkan. Semua timer situs akan dihapus.</translation>
 <translation id="6534565668554028783">Google membutuhkan waktu terlalu lama untuk merespons</translation>
 <translation id="6538442820324228105">Terdownload <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
@@ -888,6 +892,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="751961395872307827">Tidak dapat terhubung ke situs</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7542481630195938534">Tidak bisa mendapatkan saran</translation>
+<translation id="7559245342362162951">Tampilkan tab grup dalam petak layar penuh</translation>
 <translation id="7559975015014302720">Mode Ringan nonaktif</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
@@ -970,6 +975,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Sarankan halaman terkait</translation>
 <translation id="8109613176066109935">Untuk mendapatkan bookmark di semua perangkat Anda, aktifkan sinkronisasi</translation>
+<translation id="8110087112193408731">Tampilkan aktivitas Chrome Anda di Kesehatan Digital?</translation>
 <translation id="8116925261070264013">Dinonaktifkan</translation>
 <translation id="813082847718468539">Lihat informasi situs</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
@@ -1066,6 +1072,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8920114477895755567">Menunggu detail orang tua.</translation>
 <translation id="8922289737868596582">Download halaman dari tombol opsi Lainnya untuk menggunakannya secara offline</translation>
+<translation id="8937772741022875483">Hapus aktivitas Chrome Anda dari Kesehatan Digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Buka di jendela lain</translation>
 <translation id="8951232171465285730">Chrome telah menghemat <ph name="MEGABYTES" /> MB</translation>
@@ -1097,12 +1104,15 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>
 <translation id="9139068048179869749">Tanya terlebih dahulu sebelum mengizinkan situs mengirimkan notifikasi (disarankan)</translation>
 <translation id="9139318394846604261">Belanja</translation>
+<translation id="9150694013019234766">Beralih ke tab lain pada grup tab Anda di dekat bagian bawah layar</translation>
 <translation id="9155898266292537608">Anda juga dapat menelusuri dengan menge-tap kata secara cepat</translation>
+<translation id="9169594135889675189">Tambahkan tab baru ke grup</translation>
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9204836675896933765">1 file tersisa</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Hemat data hingga 60 persen dan muat web lebih cepat. Server Google akan mengoptimalkan halaman yang Anda buka.</translation>
 <translation id="9219103736887031265">Gambar</translation>
+<translation id="926205370408745186">Hapus aktivitas Chrome Anda dari Kesehatan Digital</translation>
 <translation id="932327136139879170">Beranda</translation>
 <translation id="932599481871055447">Hemat data dan akses lebih cepat</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>

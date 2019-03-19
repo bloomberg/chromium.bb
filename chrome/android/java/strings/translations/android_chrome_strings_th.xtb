@@ -144,11 +144,13 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB จากแอปอื่นๆ</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ไฟล์}other{# ไฟล์}}</translation>
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
+<translation id="2018707881002649255">ระบบจะแชร์รายชื่อติดต่อที่คุณเลือกไว้ด้านล่างกับเว็บไซต์ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /></translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> มีข้อมูลอยู่ใน Chrome ด้วย</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">เว็บไซต์หยุดชั่วคราว</translation>
 <translation id="2063713494490388661">แตะเพื่อค้นหา</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
@@ -545,6 +547,7 @@
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5040262127954254034">ความเป็นส่วนตัว</translation>
 <translation id="5063480226653192405">การใช้</translation>
+<translation id="5073204694187207510">ซ่อนตารางกริดแบบเต็มหน้าจอ</translation>
 <translation id="5082793167783849073">เปรียบเทียบหน้าต่างๆ อย่างรวดเร็วด้วยการสร้างกลุ่ม แตะลิงก์ค้างไว้เพื่อเริ่มต้น</translation>
 <translation id="5087580092889165836">เพิ่มบัตร</translation>
 <translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
@@ -740,11 +743,13 @@
 <translation id="6447842834002726250">คุกกี้</translation>
 <translation id="6448273550210938826">การค้นหาและคำแนะนำ URL</translation>
 <translation id="6461962085415701688">เปิดไฟล์ไม่ได้</translation>
+<translation id="6464977750820128603">คุณดูเว็บไซต์ที่เข้าชมใน Chrome และตั้งตัวจับเวลาการใช้เว็บไซต์เหล่านั้นได้\n\nGoogle จะได้รับข้อมูลเกี่ยวกับเว็บไซต์ที่คุณตั้งตัวจับเวลาไว้และระยะเวลาที่คุณเข้าชมเว็บไซต์เหล่านั้น เราจะใช้ข้อมูลนี้เพื่อปรับปรุงไลฟ์สไตล์ดิจิทัลให้ดียิ่งขึ้น</translation>
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
 <translation id="6496823230996795692">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /> เป็นครั้งแรก</translation>
 <translation id="6508722015517270189">รีสตาร์ท Chrome</translation>
 <translation id="6527303717912515753">แชร์</translation>
+<translation id="6532866250404780454">ระบบจะไม่แสดงเว็บไซต์ที่คุณเข้าชมใน Chrome และจะลบตัวจับเวลาการใช้เว็บไซต์ทั้งหมด</translation>
 <translation id="6534565668554028783">Google ใช้เวลาตอบกลับนานเกินไป</translation>
 <translation id="6538442820324228105">ดาวน์โหลดแล้ว <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
@@ -777,6 +782,7 @@
 <translation id="6709133671862442373">ข่าวสาร</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6712388303105732168">ดูคำแนะนำแบบนี้จาก Google อีกโดยใช้ปุ่ม "ดูคำแนะนำแบบนี้อีก"</translation>
+<translation id="671481426037969117">ตัวจับเวลา <ph name="FQDN" /> หมดเวลาแล้ว และจะเริ่มอีกครั้งพรุ่งนี้</translation>
 <translation id="6738867403308150051">กำลังดาวน์โหลด…</translation>
 <translation id="6746124502594467657">เลื่อนลง</translation>
 <translation id="6766622839693428701">เลื่อนลงเพื่อปิด</translation>
@@ -886,6 +892,7 @@
 <translation id="751961395872307827">เชื่อมต่อเว็บไซต์ไม่ได้</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">รับคำแนะนำไม่ได้</translation>
+<translation id="7559245342362162951">แสดงแท็บของกลุ่มในตารางกริดแบบเต็มหน้าจอ</translation>
 <translation id="7559975015014302720">โหมด Lite ปิดอยู่</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
@@ -968,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">แนะนำหน้าเว็บที่เกี่ยวข้อง</translation>
 <translation id="8109613176066109935">เปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
+<translation id="8110087112193408731">ต้องการแสดงกิจกรรม Chrome ในไลฟ์สไตล์ดิจิทัลไหม</translation>
 <translation id="8116925261070264013">ปิดเสียง</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
@@ -1064,6 +1072,7 @@
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="8920114477895755567">กำลังรอรายละเอียดของผู้ปกครอง</translation>
 <translation id="8922289737868596582">ดาวน์โหลดหน้าจากปุ่มตัวเลือกเพิ่มเติมเพื่อใช้งานแบบออฟไลน์</translation>
+<translation id="8937772741022875483">ต้องการนำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัลไหม</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">เปิดในหน้าต่างอื่น</translation>
 <translation id="8951232171465285730">Chrome ได้ประหยัดพื้นที่ให้คุณไป <ph name="MEGABYTES" /> MB</translation>
@@ -1095,12 +1104,15 @@
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9139068048179869749">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>
 <translation id="9139318394846604261">ช็อปปิ้ง</translation>
+<translation id="9150694013019234766">สลับไปมาระหว่างแท็บในกลุ่มแท็บบริเวณด้านล่างของหน้าจอ</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
+<translation id="9169594135889675189">เพิ่มแท็บลงในกลุ่ม</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">ใช้เน็ตมือถือน้อยลงสูงสุดถึง 60 เปอร์เซ็นต์และท่องเว็บได้เร็วขึ้น เซิร์ฟเวอร์ของ Google จะเพิ่มประสิทธิภาพหน้าเว็บที่คุณเข้าชม</translation>
 <translation id="9219103736887031265">ภาพ</translation>
+<translation id="926205370408745186">นำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัล</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="932599481871055447">ประหยัดเน็ตมือถือและท่องเว็บได้เร็วขึ้น</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>

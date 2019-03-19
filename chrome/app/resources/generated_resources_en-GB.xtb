@@ -1376,6 +1376,7 @@
 <translation id="3016780570757425217">Know your location</translation>
 <translation id="3020183492814296499">Shortcuts</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Butterfly</translation>
 <translation id="3021678814754966447">&amp;View Frame Source</translation>
 <translation id="3022978424994383087">Didn't get that.</translation>
 <translation id="3023464535986383522">Select to speak</translation>
@@ -2430,6 +2431,7 @@
 <translation id="4663373278480897665">Camera allowed</translation>
 <translation id="4664482161435122549">PKCS No.12 Export Error</translation>
 <translation id="4665014895760275686">Manufacturer</translation>
+<translation id="4665446389743427678">All data stored by <ph name="SITE" /> will be deleted.</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Members of '<ph name="SOURCE_NAME" />' will lose access unless these items are shared with them.</translation>
 <translation id="4672657274720418656">Distill Page</translation>
@@ -2605,6 +2607,7 @@
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wants to communicate with the extension "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accept</translation>
+<translation id="4918221908152712722">Install <ph name="APP_NAME" /> (no download required)</translation>
 <translation id="4920887663447894854">The following sites have been blocked from tracking your location on this page:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> has requested additional permissions.</translation>
 <translation id="492299503953721473">Remove Android apps</translation>
@@ -3793,6 +3796,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Do you want Google to translate this page from <ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Pointing device connected</translation>
+<translation id="6676212663108450937">Please consider using headphones while training your voice</translation>
 <translation id="6678717876183468697">Query URL</translation>
 <translation id="6680442031740878064">Available: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Rate</translation>
@@ -4519,6 +4523,7 @@
 <translation id="7788383851298063850">Tell us what's happening</translation>
 <translation id="7788444488075094252">Languages and input</translation>
 <translation id="7788668840732459509">Position:</translation>
+<translation id="7789963078219276159">Start page background has been changed to <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Add</translation>
 <translation id="7792012425874949788">Something went wrong with signing in</translation>
 <translation id="7792388396321542707">Stop sharing</translation>
@@ -5201,6 +5206,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8767621466733104912">Automatically update Chrome for all users</translation>
 <translation id="8770406935328356739">Extension root directory</translation>
 <translation id="8770507190024617908">Manage People</translation>
+<translation id="8771300903067484968">Start page background has been reset to the default background.</translation>
 <translation id="8774934320277480003">Top margin</translation>
 <translation id="8775144690796719618">Invalid URL</translation>
 <translation id="8775404590947523323">Your edits are saved automatically.<ph name="BREAKS" />To keep a copy of the original image, untick "Overwrite original"</translation>
@@ -5225,6 +5231,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8803953437405899238">Open a new tab with one click</translation>
 <translation id="8804398419035066391">Communicate with cooperating websites</translation>
 <translation id="8805140816472474147">Confirm sync settings to start sync.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> can reopen accidentally closed tabs</translation>
 <translation id="8807632654848257479">Stable</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Cat</translation>

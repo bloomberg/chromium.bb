@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">משמאל לימין</translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1398853756734560583">הגדל</translation>
+<translation id="1409544243779336081">המלצה על אפליקציה</translation>
 <translation id="1413622004203049571">השבת הודעות מאת <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
 <translation id="1643823602425662293">הודעה</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="348799646910989694">המדף יוסתר באופן אוטומטי</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{נותר יום אחד}two{נותרו יומיים}many{נותרו # ימים}other{נותרו # ימים}}</translation>
+<translation id="3600969208114796418">קובץ <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">חפש “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">בחירת תיקיה להעלאה</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">עצור מדיה</translation>
 <translation id="6845383723252244143">בחר תיקייה</translation>
 <translation id="6845533974506654842">לחץ</translation>
+<translation id="686304767576508198">שותף מ-</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{נותרה שעה אחת}two{נותרו שעתיים}many{נותרו # שעות}other{נותרו # שעות}}</translation>
 <translation id="688711909580084195">דף אינטרנט ללא כותרת</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>

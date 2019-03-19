@@ -426,6 +426,7 @@
       如果啟用這項設定，密碼保護服務會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
       如果停用這項設定或不予設定，密碼保護服務就只會針對 https://accounts.google.com 擷取密碼指紋。
       這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
+<translation id="1919802376548418720">使用 KDC 政策來委派憑證。</translation>
 <translation id="1920046221095339924">允許在裝置上進入受管理的工作階段</translation>
 <translation id="1929709556673267855">為繫結至裝置的企業印表機進行設定。
 
@@ -495,6 +496,9 @@
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
 <translation id="2043770014371753404">停用的企業印表機</translation>
+<translation id="2050629715135525072">控管使用者在連線到遠端存取主機後，是否能在用戶端和主機之間傳輸檔案。這項政策不適用於遠端協助連線，這類連線並不支援檔案傳輸。
+
+          如果停用這項政策，使用者將無法傳輸檔案。如果啟用或不設定這項政策，使用者將可以傳輸檔案。</translation>
 <translation id="2057317273526988987">允許存取網址清單</translation>
 <translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支援的 HTTP 驗證機制。
 
@@ -591,6 +595,16 @@
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
 <translation id="2236488539271255289">不允許任何網站設定本機資料</translation>
 <translation id="2240879329269430151">允許你設定是否要讓網站顯示彈出式視窗。你可以允許或禁止所有網站顯示彈出式視窗。如果未設定這項政策，系統會使用「BlockPopups」，不過使用者可以變更設定。</translation>
+<translation id="2258126710006312594">允許遠端存取使用者向主機傳輸檔案，或從主機接收檔案</translation>
+<translation id="2265214338421787313">這項政策可讓管理員指定頁面是否要在卸載時顯示彈出式視窗。
+
+      如果將這項政策設為啟用，系統會允許頁面在卸載時顯示彈出式視窗。
+
+      如果將這項政策設為停用或不設定，系統會根據規格 (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name) 中的規定，禁止頁面在卸載時顯示彈出式視窗。
+
+      這項政策將在 Chrome 第 82 版中遭到移除。
+
+      請參閱 https://www.chromestatus.com/feature/5989473649164288。</translation>
 <translation id="2269319728625047531">在登入期間允許顯示同步處理同意聲明</translation>
 <translation id="2274864612594831715">這項政策可設定在 Chrome 作業系統中啟用虛擬鍵盤做為輸入裝置。使用者無法覆寫這項政策。
 
@@ -851,6 +865,13 @@
 <translation id="2813281962735757923">這項政策可控管針對 <ph name="PRODUCT_OS_NAME" /> 裝置封鎖自動檢查更新的時間範圍。將這項政策設為非空白的時間間隔清單時：在指定的時間間隔內，裝置將無法自動檢查更新。如果裝置需要復原至先前的版本，或是目前的 <ph name="PRODUCT_OS_NAME" /> 版本低於最低需求，則不受這項政策影響，以免發生潛在的安全性問題。此外，這項政策不會封鎖由使用者或系統管理員要求的更新檢查。若不設定這項政策，或政策中不包含時間間隔時：這項政策將不會封鎖任何自動更新檢查，但自動更新檢查仍可能遭到其他政策封鎖。只有在設為自動啟動資訊站的 Chrome 裝置上，這項功能才會啟用。其他裝置將不會受到這項政策限制。</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />用戶端的 Windows 登錄檔位置：</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
+<translation id="2836621397261130126">控管是否要按照 KDC 政策的核准結果來決定 <ph name="KERBEROS" /> 票證的委派設定。
+
+          如果這項政策的設定為 True，HTTP 驗證會遵循 KDC 政策的核准結果。只有在 KDC 為服務票證設定 <ph name="OK_AS_DELEGATE" /> 時，Chrome 才會委派憑證。詳情請見 https://tools.ietf.org/html/rfc5896.html。服務也必須符合「AuthNegotiateDelegateWhitelist」政策。
+
+          如果不設定這項政策或設為 False，支援平台會忽略 KDC 政策，只遵循「AuthNegotiateDelegateWhitelist」政策。
+
+          在 Windows 上，系統一律會遵循 KDC 政策。</translation>
 <translation id="2838830882081735096">不允許資料遷移和 ARC</translation>
 <translation id="2839294585867804686">網路檔案共用功能設定</translation>
 <translation id="2840269525054388612">指定哪些印表機是可以使用的。
@@ -2178,6 +2199,7 @@
 <translation id="602728333950205286">預設搜尋引擎互動智慧搜尋網址</translation>
 <translation id="603410445099326293">使用 POST 的建議網址參數</translation>
 <translation id="6034341625190551415">控管公開工作階段和資訊站帳戶類型。</translation>
+<translation id="6034603289689965535">允許網頁在卸載時顯示彈出式視窗。</translation>
 <translation id="6036523166753287175">允許遠端存取主機穿越防火牆</translation>
 <translation id="6070667616071269965">裝置登入畫面鍵盤配置</translation>
 <translation id="6074963268421707432">不允許任何網站顯示桌面通知</translation>

@@ -103,9 +103,11 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="3398288718845740432">Dölj i Chrome-menyn</translation>
 <translation id="3451115285585441894">Lägger till i Chrome ...</translation>
 <translation id="345171907106878721">Lägg till dig själv i Chrome</translation>
+<translation id="3457651673823986489">Om en bild inte har någon användbar beskrivning försöker Chrome ange en åt dig. Bilden skannas av Google. Du kan när som helst inaktivera den här inställningen.</translation>
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="34857402635545079">Rensa även data från Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Du behöver ge Chrome åtkomst till din plats om den ska kunna delas med webbplatsen</translation>
+<translation id="3576528680708590453">Systemadministratören har konfigurerat Google Chrome så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i en annan webbläsare.</translation>
 <translation id="3582972582564653026">Synkronisera och anpassa Chrome på alla enheter du använder</translation>
 <translation id="3622797965165704966">Nu är det enklare att använda Chrome med ditt Google-konto och på delade datorer.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK" /> för Google Chrome OS</translation>
@@ -256,6 +258,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installera Chrome på mobilen. Vi skickar ett sms till mobilen.</translation>
 <translation id="8183957050892517584">Chrome sparar dina personliga uppgifter på ett säkert sätt så att du inte behöver ange dem på nytt.</translation>
+<translation id="8224281044825492187">Om en bild inte har någon användbar beskrivning försöker Chrome ange en åt dig. Bilden skannas av Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS startas om nu}=1{Om en sekund startas Chrome OS om}other{Om # sekunder startas Chrome OS om}}</translation>
 <translation id="825412236959742607">Den här sidan använder för mycket minne, så en del innehåll har tagits bort.</translation>
 <translation id="8255190535488645436">Google Chrome använder din kamera och mikrofon.</translation>

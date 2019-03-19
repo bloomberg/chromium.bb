@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">Щоб очистити дані веб-перегляду на всіх синхронізованих пристроях і в обліковому записі Google, <ph name="BEGIN_LINK" />введіть парольну фразу<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2487067538648443797">Додати нову закладку</translation>
+<translation id="2489829450872380594">Наступного разу цей пристрій <ph name="DEVICE_TYPE" /> можна буде розблокувати за допомогою нового телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="2489918096470125693">Додати &amp;папку...</translation>
 <translation id="249113932447298600">На жаль, зараз пристрій <ph name="DEVICE_LABEL" /> не підтримується.</translation>
 <translation id="249303669840926644">Не вдалося закінчити реєстрацію</translation>
@@ -1376,6 +1377,7 @@
 <translation id="3016780570757425217">Бачити ваше місцезнаходження</translation>
 <translation id="3020183492814296499">Ярлики</translation>
 <translation id="3020990233660977256">Серійний номер: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Метелик</translation>
 <translation id="3021678814754966447">&amp;Переглянути джерело фрейму</translation>
 <translation id="3022978424994383087">Незрозуміло.</translation>
 <translation id="3023464535986383522">Читання з екрана</translation>
@@ -1765,6 +1767,7 @@
 <translation id="3627588569887975815">Відкрити посилання в аноні&amp;мному вікні</translation>
 <translation id="3627671146180677314">Час відновлення сертифіката Netscape</translation>
 <translation id="3627879631695760395">Установити додаток <ph name="APP" />…</translation>
+<translation id="3629631988386925734">Щоб увімкнути Smart Lock, введіть пароль. Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="3630132874740063857">Ваш номер телефону</translation>
 <translation id="3630995161997703415">Додайте цей сайт на полицю, щоб завжди мати його під рукою</translation>
 <translation id="3636096452488277381">Вітаємо, <ph name="USER_GIVEN_NAME" />!</translation>
@@ -2110,6 +2113,7 @@
 <translation id="4109135793348361820">Перемістити вікно на робочий стіл користувача <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Завантажено: <ph name="FILE_NAME" />. Натисніть Shift+F6, щоб перейти на панель завантажень.</translation>
 <translation id="4110895898888439383">Переглядати сторінки в режимі високого контрасту</translation>
+<translation id="4112221174576828331">Якщо зображення не має опису, Chrome додасть його. Google сканує зображення.</translation>
 <translation id="4115002065223188701">Мережа недосяжна</translation>
 <translation id="4115080753528843955">Деякі служби вмісту використовують унікальні ідентифікатори, щоб надавати доступ до захищеного вмісту</translation>
 <translation id="4118579674665737931">Перезапустіть пристрій і повторіть спробу.</translation>
@@ -2428,6 +2432,7 @@
 <translation id="4663373278480897665">Дозволено використовувати камеру</translation>
 <translation id="4664482161435122549">Помилка експортування PKCS #12</translation>
 <translation id="4665014895760275686">Виробник</translation>
+<translation id="4665446389743427678">Усі дані, збережені сайтом <ph name="SITE" /> буде видалено.</translation>
 <translation id="4668721319092543482">Натисніть, щоб увімкнути плагін <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Учасники, які мають доступ до розташування "<ph name="SOURCE_NAME" />", втратять доступ до елементів, якими з ними не поділилися.</translation>
 <translation id="4672657274720418656">Сторінка перетворення</translation>
@@ -2603,6 +2608,7 @@
 <translation id="4917385247580444890">Потужний</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> хоче обмінюватися даними з розширенням <ph name="EXTENSION_NAME" /></translation>
 <translation id="4918086044614829423">Прийняти</translation>
+<translation id="4918221908152712722">Установіть додаток <ph name="APP_NAME" /> (його не потрібно завантажувати)</translation>
 <translation id="4920887663447894854">На цій сторінці заборонено відстежувати ваше місцезнаходження таким сайтам:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> запитує додаткові дозволи.</translation>
 <translation id="492299503953721473">Видалити додатки Android</translation>
@@ -2662,6 +2668,7 @@
 <translation id="4998873842614926205">Підтвердьте зміни</translation>
 <translation id="5000922062037820727">Заблоковано (рекомендується)</translation>
 <translation id="5004584466530475658">Нових фотографій: <ph name="FILE_COUNT" /></translation>
+<translation id="5008936837313706385">Назва дії</translation>
 <translation id="5010043101506446253">Центр сертифікації</translation>
 <translation id="5010406651457630570">Комп’ютери</translation>
 <translation id="5015344424288992913">-...</translation>
@@ -2993,6 +3000,7 @@
 <translation id="5507756662695126555">Неспростовність</translation>
 <translation id="5509693895992845810">Зберегти &amp;як...</translation>
 <translation id="5509914365760201064">Видавець: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Отримувати описи зображень від Google</translation>
 <translation id="5511379779384092781">Дуже мало</translation>
 <translation id="5511823366942919280">Налаштувати цей пристрій як "Shark"?</translation>
 <translation id="5512653252560939721">Сертифікату користувача потрібна апаратна підтримка.</translation>
@@ -3575,6 +3583,7 @@
 <translation id="6341850831632289108">Визначати ваше фізичне місцезнаходження</translation>
 <translation id="6344170822609224263">Отримувати доступ до списку мережевих з’єднань</translation>
 <translation id="6346310558342052870">Доступ обмежено</translation>
+<translation id="6349101878882523185">Установіть додаток <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронізація не працює. Вийдіть з облікового запису та ввійдіть у нього знову.</translation>
 <translation id="6351063337294363751">Ви можете очистити дані веб-перегляду з цього меню</translation>
 <translation id="6352773953037195952">Найвищий</translation>
@@ -3788,6 +3797,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Перекласти цю сторінку (<ph name="SOURCE_LANGUAGE" />) такою мовою: <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Маніпулятор підключено</translation>
+<translation id="6676212663108450937">Скористайтеся навушниками, коли тренуєте голос</translation>
 <translation id="6678717876183468697">URL-адреса пошукового запиту</translation>
 <translation id="6680442031740878064">Доступно: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Оцінити</translation>
@@ -3992,6 +4002,7 @@
 <translation id="6990081529015358884">У вас недостатньо місця</translation>
 <translation id="6990778048354947307">Темна тема</translation>
 <translation id="6991665348624301627">Вибрати місце призначення</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – журнал активності</translation>
 <translation id="6997707937646349884">На ваших пристроях:</translation>
 <translation id="6998711733709403587">Вибрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Зареєструвати пристрій для відеоконференцій</translation>
@@ -4294,6 +4305,7 @@
 <translation id="7456142309650173560">версія для розробників</translation>
 <translation id="7456847797759667638">Відкрити розташування...</translation>
 <translation id="7461924472993315131">Закріпити</translation>
+<translation id="746216226901520237">Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="7463006580194749499">Додати користувача</translation>
 <translation id="7465778193084373987">URL-адреса відкликання сертифіката Netscape</translation>
 <translation id="7469894403370665791">Автоматично з'єднувати з цією мережею</translation>
@@ -4372,6 +4384,7 @@
 <translation id="7580671184200851182">Відтворювати один аудіозапис на всіх динаміках (монофонічне аудіо)</translation>
 <translation id="7581462281756524039">Інструмент очищення</translation>
 <translation id="7582582252461552277">Віддавати перевагу цій мережі</translation>
+<translation id="7583948862126372804">Кількість</translation>
 <translation id="7586498138629385861">Chrome працюватиме, доки будуть відкриті додатки Chrome.</translation>
 <translation id="7589461650300748890">Обережно!</translation>
 <translation id="7589661784326793847">Зачекайте</translation>
@@ -4511,6 +4524,7 @@
 <translation id="7788383851298063850">Розкажіть нам, що відбувається</translation>
 <translation id="7788444488075094252">Мови та введення тексту</translation>
 <translation id="7788668840732459509">Розташування:</translation>
+<translation id="7789963078219276159">Фон початкової сторінки було змінено. Тепер це <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="7792012425874949788">Сталася помилка під час входу</translation>
 <translation id="7792388396321542707">Більше не ділитися</translation>
@@ -5193,6 +5207,7 @@
 <translation id="8767621466733104912">Автоматично оновлювати Chrome для всіх користувачів</translation>
 <translation id="8770406935328356739">Кореневий каталог розширення</translation>
 <translation id="8770507190024617908">Керувати користувачами</translation>
+<translation id="8771300903067484968">Фон початкової сторінки було скинуто. Тепер це фон за умовчанням.</translation>
 <translation id="8774934320277480003">Верхнє поле</translation>
 <translation id="8775144690796719618">Недійсна URL-адреса</translation>
 <translation id="8775404590947523323">Ваші зміни зберігаються автоматично.<ph name="BREAKS" />Щоб зберегти копію оригінального зображення, зніміть прапорець поруч з опцією "Замінити оригінал"</translation>
@@ -5217,6 +5232,7 @@
 <translation id="8803953437405899238">Відкривайте нову вкладку одним кліком</translation>
 <translation id="8804398419035066391">Обмінюватися даними з певними веб-сайтами</translation>
 <translation id="8805140816472474147">Щоб почати синхронізацію, підтвердьте її налаштування.</translation>
+<translation id="8806680466228877631">За допомогою комбінації клавіш <ph name="SHORTCUT" /> можна знову відкрити випадково закриті вкладки</translation>
 <translation id="8807632654848257479">Стабільний</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Кіт</translation>
@@ -5484,6 +5500,7 @@
 <translation id="93393615658292258">Лише пароль</translation>
 <translation id="934503638756687833">Якщо потрібно, можна також видалити елементи, не перелічені тут. Докладніше про &lt;a href="<ph name="URL" />"&gt;захист від небажаних програм&lt;/a&gt; читайте в інформаційному документі про конфіденційність Chrome.</translation>
 <translation id="935490618240037774">Ваші закладки, історія, паролі й інші налаштування синхронізуватимуться з обліковим записом Google, щоб ви могли користуватися ними на всіх своїх пристроях.</translation>
+<translation id="935854577147268200">Телефон для Smart Lock змінено. Щоб оновити Smart Lock, введіть пароль. Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях</translation>
 <translation id="936801553271523408">Дані діагностики системи</translation>
 <translation id="93766956588638423">Полагодити розширення</translation>
 <translation id="938339467127511841">Обсяг пам’яті Linux (бета-версія)</translation>

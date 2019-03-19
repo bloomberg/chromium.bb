@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB മറ്റ് ആപ്പുകൾ</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ഫയല്‍}other{# ഫയലുകൾ}}</translation>
 <translation id="2017836877785168846">വിലാസ ബാറിലെ ചരിത്രവും സ്വയം പൂർത്തീകരണങ്ങളും മായ്ക്കുന്നു.</translation>
+<translation id="2018707881002649255">നിങ്ങൾ ചുവടെ തിരഞ്ഞെടുക്കുന്ന കോൺടാക്‌റ്റുകൾ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്ന സൈറ്റുമായി പങ്കിടും</translation>
 <translation id="2021896219286479412">പൂർണ്ണ സ്ക്രീൻ സൈറ്റ് നിയന്ത്രണങ്ങൾ</translation>
 <translation id="2038563949887743358">'ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക' ഓണാക്കുക</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> എന്നതിനും Chrome-ൽ ഡാറ്റയുണ്ടായിരുന്നു</translation>
@@ -546,6 +547,7 @@
 <translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5040262127954254034">സ്വകാര്യത</translation>
 <translation id="5063480226653192405">ഉപയോഗം</translation>
+<translation id="5073204694187207510">പൂർണ്ണസ്ക്രീൻ ഗ്രിഡ് മറയ്ക്കുക</translation>
 <translation id="5082793167783849073">ഒരു ഗ്രൂപ്പ് സൃഷ്‌ടിച്ചുകൊണ്ട്, വേഗത്തിൽ പേജുകൾ താരതമ്യം ചെയ്യൂ. ആരംഭിക്കാൻ ഒരു ലിങ്ക് സ്‌പർശിച്ച് പിടിക്കുക.</translation>
 <translation id="5087580092889165836">കാർഡ് ചേർക്കുക</translation>
 <translation id="5100237604440890931">ചുരുക്കിയത് - വിപുലീകരിക്കാൻ ക്ലിക്കുചെയ്യുക</translation>
@@ -741,11 +743,13 @@
 <translation id="6447842834002726250">കുക്കികള്‍</translation>
 <translation id="6448273550210938826">തിരയലും URL നിർദ്ദേശങ്ങളും</translation>
 <translation id="6461962085415701688">ഫയൽ തുറക്കാൻ കഴിയില്ല</translation>
+<translation id="6464977750820128603">നിങ്ങൾ Chrome- ൽ സന്ദർശിക്കുന്ന സൈറ്റുകൾ കാണാനും അവയ്ക്ക് ടൈമറുകൾ സജ്ജീകരിക്കാനുമാവും.\n\nനിങ്ങൾ ടൈമറുകൾ സജ്ജീകരിക്കുന്ന സൈറ്റുകളെക്കുറിച്ചും നിങ്ങൾ എത്ര സമയം അവ സന്ദർശിക്കുന്നു എന്നതിനെക്കുറിച്ചും Google ന് വിവരങ്ങൾ ലഭിക്കുന്നു. ഡിജിറ്റൽ ആരോഗ്യം മെച്ചപ്പെടുത്താൻ ഈ വിവരം ഉപയോഗിക്കുന്നു.</translation>
 <translation id="6475951671322991020">വീഡിയോ ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="6482749332252372425">സ്‌റ്റോറേജ് ഇടമില്ലാത്തതിനാൽ <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> ആദ്യമായി ഉപയോഗിക്കാൻ, ഇന്‍റര്‍നെറ്റിലേക്ക് കണക്റ്റുചെയ്യുക.</translation>
 <translation id="6508722015517270189">Chrome റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
 <translation id="6527303717912515753">പങ്കിടുക</translation>
+<translation id="6532866250404780454">നിങ്ങൾ Chrome-ൽ സന്ദർശിക്കുന്ന സൈറ്റുകൾ കാണിക്കില്ല. എല്ലാ സൈറ്റ് ടൈമറുകളും ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="6534565668554028783">Google പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുത്തു</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ഡൗൺലോഡുചെയ്‌തു</translation>
 <translation id="654446541061731451">ബീം ചെയ്യാൻ ഒരു ടാബ് തിരഞ്ഞെടുക്കുക</translation>
@@ -888,6 +892,7 @@
 <translation id="751961395872307827">സൈറ്റിലേക്ക് കണ‌ക്‌റ്റ് ചെയ്യാനാവുന്നില്ല</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">നിർദ്ദേശങ്ങൾ സ്വീകരിക്കാനാവില്ല</translation>
+<translation id="7559245342362162951">ഗ്രൂപ്പിന്റെ ടാബുകൾ പൂർണ്ണസ്ക്രീൻ ഗ്രിഡിൽ കാണിക്കുക</translation>
 <translation id="7559975015014302720">ലൈറ്റ് മോഡ് ഓഫാണ്</translation>
 <translation id="7562080006725997899">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കൽ</translation>
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>
@@ -970,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">ബന്ധപ്പെട്ട പേജുകൾ നിർദ്ദേശിക്കുക</translation>
 <translation id="8109613176066109935">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
+<translation id="8110087112193408731">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി കാണിക്കണോ?</translation>
 <translation id="8116925261070264013">മ്യൂട്ടുചെയ്‌തു</translation>
 <translation id="813082847718468539">സൈറ്റ് വിവരങ്ങള്‍ കാണുക</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
@@ -1066,6 +1072,7 @@
 <translation id="8912362522468806198">Google അക്കൗണ്ട്</translation>
 <translation id="8920114477895755567">രക്ഷകർത്താക്കളുടെ വിശദാംശങ്ങൾക്കായി കാത്തിരിക്കുന്നു.</translation>
 <translation id="8922289737868596582">ഓഫ്‌ലൈനായി ഉപയോഗിക്കാൻ 'കൂടുതൽ ഓപ്ഷനുകൾ' ബട്ടണിൽ നിന്ന് പേജുകൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
+<translation id="8937772741022875483">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി നീക്കം ചെയ്യണോ?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">മറ്റൊരു വിൻഡോയിൽ തുറക്കുക</translation>
 <translation id="8951232171465285730">Chrome നിങ്ങളുടെ <ph name="MEGABYTES" /> MB ലാഭിച്ചു</translation>
@@ -1097,12 +1104,15 @@
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
 <translation id="9139068048179869749">അറിയിപ്പുകൾ അയയ്‌ക്കാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="9139318394846604261">ഷോപ്പിംഗ്</translation>
+<translation id="9150694013019234766">സ്ക്രീനിന്റെ ചുവടെയുള്ള നിങ്ങളുടെ ടാബ് ഗ്രൂപ്പിലെ, ടാബുകൾക്കിടയിൽ മാറുക</translation>
 <translation id="9155898266292537608">ഒരു വാക്കിൽ പെട്ടെന്ന് ടാപ്പ് ചെയ്‌തും നിങ്ങൾക്ക് തിരയാൻ കഴിയും</translation>
+<translation id="9169594135889675189">ഗ്രൂപ്പിലേക്ക് പുതിയ ടാബ് ചേർക്കുക</translation>
 <translation id="9188680907066685419">മാനേജുചെയ്‌ത അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="9204836675896933765">ഒരു ഫയൽ ശേഷിക്കുന്നു</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">60 ശതമാനം വരെ കുറഞ്ഞതോതിൽ ഡാറ്റ ഉപയോഗിച്ച് വെബ് വേഗത കൂട്ടുക. നിങ്ങള്‍ സന്ദര്‍ശിക്കുന്ന പേജുകള്‍ Google സെര്‍‌വറുകള്‍ ഒപ്‌റ്റിമൈസ് ചെയ്യും.</translation>
 <translation id="9219103736887031265">ചിത്രങ്ങൾ‌</translation>
+<translation id="926205370408745186">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി നീക്കം ചെയ്യുക</translation>
 <translation id="932327136139879170">ഹോം</translation>
 <translation id="932599481871055447">ഡാറ്റ ലാഭിച്ച് വേഗത്തിൽ ബ്രൗസുചെയ്യൂ</translation>
 <translation id="938850635132480979">പിശക്: <ph name="ERROR_CODE" /></translation>

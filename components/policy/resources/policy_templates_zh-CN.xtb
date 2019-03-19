@@ -405,6 +405,7 @@
       如果启用了此设置，密码保护服务就会在这些网址上捕获密码指纹，以用于密码重用检测。
       如果停用了或未设定此设置，则密码保护服务会仅在 https://accounts.google.com 上捕获密码指纹。
       此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
+<translation id="1919802376548418720">使用 KDC 政策委派凭据。</translation>
 <translation id="1920046221095339924">允许在设备上使用受管理自助服务终端</translation>
 <translation id="1929709556673267855">为绑定到设备的企业打印机提供配置。
 
@@ -474,6 +475,9 @@
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
 <translation id="203096360153626918">此政策对 Android 应用没有任何影响。即使此政策设为 <ph name="FALSE" />，这些应用也将能够进入全屏模式。</translation>
 <translation id="2043770014371753404">已停用企业打印机</translation>
+<translation id="2050629715135525072">控制用户能否连接到远程访问主机以在客户端和主机之间传输文件。此设置不适用于远程协助连接，因为远程协助连接不支持文件传输。
+
+          如果停用了此设置，系统将禁止进行文件传输。如果启用了或未设定此设置，系统将允许进行文件传输。</translation>
 <translation id="2057317273526988987">允许访问指定的一系列网址</translation>
 <translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支持哪些 HTTP 身份验证方案。
 
@@ -564,6 +568,16 @@
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
 <translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
+<translation id="2258126710006312594">允许远程访问用户将文件传到主机或接收从主机传出的文件</translation>
+<translation id="2265214338421787313">借助此政策，管理员可以指定页面能否在取消加载的过程中显示弹出式窗口。
+
+      如果已启用此政策，页面便能够在取消加载的过程中显示弹出式窗口。
+
+      如果已停用或未设置此政策，根据规范 (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name)，页面将无法在取消加载的过程中显示弹出式窗口。
+
+      在 Chrome 82 中，此政策将被移除。
+
+      请参阅 https://www.chromestatus.com/feature/5989473649164288。</translation>
 <translation id="2269319728625047531">在登录期间允许显示同步同意声明</translation>
 <translation id="2274864612594831715">通过此政策，您可以启用虚拟键盘作为Chrome操作系统上的输入设备。用户无法覆盖此政策。
 
@@ -825,6 +839,13 @@
       此政策不会阻止任何自动进行的更新检查，但其他政策可能会阻止这类检查。只有那些已配置为自动启动型自助服务终端的 Chrome 设备才能启用此功能。其他设备均不受此政策的限制。</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />客户端的 Windows 注册表位置：</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
+<translation id="2836621397261130126">控制是否遵循 KDC 政策的审批结果来决定是否委派 <ph name="KERBEROS" /> 凭单。
+
+          如果此政策设为 true，HTTP 身份验证机制会遵循 KDC 政策的审批结果，即 仅当 KDC 政策在服务凭单上设置 <ph name="OK_AS_DELEGATE" /> 后，Chrome 才会委派凭据。如需了解详情，请参阅 https://tools.ietf.org/html/rfc5896.html。服务还应遵循“AuthNegotiateDelegateWhitelist”政策。
+
+          如果此政策设为 false 或未设置，系统将在受支持的平台上忽略 KDC 政策，并仅遵循“AuthNegotiateDelegateWhitelist”政策。
+
+          在 Windows 上，始终会遵循 KDC 政策。</translation>
 <translation id="2838830882081735096">禁止数据迁移和 ARC</translation>
 <translation id="2839294585867804686">网络文件共享功能设置</translation>
 <translation id="2840269525054388612">指定用户可以使用的打印机。
@@ -2152,6 +2173,7 @@
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
 <translation id="603410445099326293">在使用 POST 的建议网址中所需的参数</translation>
 <translation id="6034341625190551415">控制公用自助终端和自助服务终端帐号类型。</translation>
+<translation id="6034603289689965535">允许页面在取消加载的过程中显示弹出式窗口</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>

@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">왼쪽에서 오른쪽으로</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1398853756734560583">최대화</translation>
+<translation id="1409544243779336081">앱 추천</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" />의 알림 사용 중지</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
 <translation id="1643823602425662293">알림</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">나중에</translation>
 <translation id="348799646910989694">실행기 자동 숨김</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1일 남음}other{#일 남음}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> 파일</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> 이상</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' 찾기</translation>
 <translation id="364720409959344976">업로드할 폴더 선택</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">미디어 중지</translation>
 <translation id="6845383723252244143">폴더 선택</translation>
 <translation id="6845533974506654842">누르기</translation>
+<translation id="686304767576508198">공유한 사용자</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1시간 남음}other{#시간 남음}}</translation>
 <translation id="688711909580084195">제목 없는 웹페이지</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" />PB/s</translation>

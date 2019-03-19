@@ -99,9 +99,11 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3398288718845740432">Amaga al menú de Chrome</translation>
 <translation id="3451115285585441894">S'està afegint a Chrome...</translation>
 <translation id="345171907106878721">Afegeix-me a Chrome</translation>
+<translation id="3457651673823986489">Si una imatge no té una descripció útil, Chrome provarà d'oferir-te'n una. Google escaneja les imatges. Pots desactivar aquesta funció en qualsevol moment a la configuració.</translation>
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="34857402635545079">Esborra també les dades de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
+<translation id="3576528680708590453">L'administrador del sistema ha configurat Google Chrome perquè obri un navegador alternatiu per accedir a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sincronitza i personalitza Chrome en tots els teus dispositius</translation>
 <translation id="3622797965165704966">Ara resulta més fàcil utilitzar Chrome amb el vostre compte de Google i en ordinadors compartits.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condicions del servei<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
@@ -248,6 +250,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8129812357326543296">Quant a &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon.</translation>
 <translation id="8183957050892517584">Chrome emmagatzemarà de manera segura les vostres dades personals perquè no les hàgiu de tornar a escriure</translation>
+<translation id="8224281044825492187">Si una imatge no té una descripció útil, Chrome provarà d'oferir-te'n una. Google escaneja les imatges.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS es reiniciarà ara}=1{Chrome OS es reiniciarà d'aquí a 1 segon}other{Chrome OS es reiniciarà d'aquí a # segons}}</translation>
 <translation id="825412236959742607">Com que aquesta pàgina fa servir massa memòria, Chrome n'ha suprimit contingut.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>

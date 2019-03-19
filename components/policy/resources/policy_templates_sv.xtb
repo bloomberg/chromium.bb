@@ -447,6 +447,7 @@
       Om den här inställningen är aktiverad registrerar tjänsten för lösenordsskydd fingeravtryck för lösenord på dessa webbadresser för att identifiera återanvändning av lösenord.
       Om inställningen är inaktiverad eller inte inställd registrerar tjänsten för lösenordsskydd bara fingeravtryck för lösenord på https://accounts.google.com.
       Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
+<translation id="1919802376548418720">Använd KDC-princip för att delegera uppgifter.</translation>
 <translation id="1920046221095339924">Tillåt hanterad session på enheten</translation>
 <translation id="1929709556673267855">Tillhandahåller skrivarkonfigurationer för företagsskrivare som kopplats till enheter.
 
@@ -516,6 +517,9 @@
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="203096360153626918">Den här principen gäller inte Android-appar. De kan använda helskärmsläge även om den har principen har ställts in på <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Inaktiverade företagsskrivare</translation>
+<translation id="2050629715135525072">Styr om en användare som är ansluten till en fjärrvärd ska kunna överföra filer mellan klienten och värden. Detta gäller inte fjärrhjälpsanslutningar, som inte har stöd för filöverföring.
+
+          När inställningen är inaktiverad får användaren inte överföra filer. När inställningen är aktiverad eller inte har angetts får användaren överföra filer.</translation>
 <translation id="2057317273526988987">Tillåt åtkomst till en lista med webbadresser</translation>
 <translation id="206623763829450685">Anger vilka scheman för HTTP-autentisering som stöds av <ph name="PRODUCT_NAME" />.
 
@@ -614,6 +618,16 @@
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
           Om du inte anger policyn används BlockPopups och inställningen kan ändras av användaren.</translation>
+<translation id="2258126710006312594">Tillåt fjärranvändare att överföra filer till/från värden</translation>
+<translation id="2265214338421787313">Med den här principen kan administratören ange att en sida får visa popupfönster när den tas bort.
+
+      När principen är aktiverad får sidor visa popupfönster när de tas bort.
+
+      När principen är inaktiverad eller inte har angetts får sidor inte visa popupfönster när de tas bort, enligt specifikationen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Den här principen tas bort i Chrome 82.
+
+      Se https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktivera visning av samtycke till synkronisering vid inloggning</translation>
 <translation id="2274864612594831715">Denna policy konfigurerar aktiveringen av det virtuella tangentbordet som en inmatningsenhet i Chrome OS. Användare kan inte åsidosätta denna policy.
 
@@ -891,6 +905,13 @@
       Inga automatiska sökningar efter uppdateringar blockeras av principen, men de kan blockeras av andra principer. Den här funktionen är bara aktiverad på Chrome-enheter som har konfigurerats så att de automatiskt startas för offentlig miljö. Andra enheter begränsas inte av den här principen.</translation>
 <translation id="2823870601012066791">Windows-registerplats för <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="2836621397261130126">Avgör om godkännande enligt KDC-princip följs för att avgöra om <ph name="KERBEROS" />-ärenden ska delegeras.
+
+          Om den här principen är inställd på sant följer HTTP-autentiseringen godkännande av KDC-princip, d.v.s. Chrome delegerar bara uppgifter om KDC anger <ph name="OK_AS_DELEGATE" /> för ett serviceärende. Mer information finns på https://tools.ietf.org/html/rfc5896.html. Tjänsten ska också matcha principen AuthNegotiateDelegateWhitelist.
+
+          Om den här principen saknar inställning eller ställs in på falskt ignoreras KDC-policyn på plattformar som stöds och bara principen AuthNegotiateDelegateWhitelist följs.
+
+          KDC-principen följs alltid i Windows.</translation>
 <translation id="2838830882081735096">Tillåt inte datamigrering och ARC</translation>
 <translation id="2839294585867804686">Inställningar för Network File Share</translation>
 <translation id="2840269525054388612">Anger vilka skrivare som får användas.
@@ -2287,6 +2308,7 @@
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="6034341625190551415">Styr offentliga sessioner och konton för offentlig miljö.</translation>
+<translation id="6034603289689965535">Tillåter att en sida visar popup-fönster när den tas bort</translation>
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
 <translation id="6070667616071269965">Tangentbordslayouter för enhetens inloggningsskärm</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>

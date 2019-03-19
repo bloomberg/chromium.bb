@@ -20,7 +20,9 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1585657529869845941">Pokud je zobrazeno tlačítko <ph name="BEGIN_BOLD" />Přesto přepnout<ph name="END_BOLD" />, klikněte na něj</translation>
 <translation id="1668054258064581266">Odebrání účtu z aplikace Chromium se může projevit až po opětovném načtení otevřených karet.</translation>
 <translation id="1688750314291223739">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Chromium v libovolném prohlížeči, nastavte synchronizaci.</translation>
+<translation id="1701453112166152218">Pokud obrázek nemá užitečný popis, Chromium se vám jej pokusí poskytnout. Google obrázky skenuje. Tuto funkci můžete kdykoliv vypnout v nastavení.</translation>
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
+<translation id="1736416771649788185">Pokud obrázek nemá užitečný popis, Chromium se vám jej pokusí poskytnout. Google obrázky skenuje.</translation>
 <translation id="1766096484055239003">Váš administrátor vyžaduje, abyste kvůli použití této aktualizace Chromium restartovali</translation>
 <translation id="1774152462503052664">Nechat prohlížeč Chromium spuštěný na pozadí</translation>
 <translation id="1779356040007214683">Aby bylo Chromium bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohla být přidána bez vašeho vědomí.</translation>
@@ -270,6 +272,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chromium (například z
 <translation id="9089354809943900324">Prohlížeč Chromium je zastaralý</translation>
 <translation id="91086099826398415">Otevřít odkaz na nové kar&amp;tě prohlížeče Chromium</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
+<translation id="9158494823179993217">Administrátor systému nakonfiguroval prohlížeč Chromium tak, aby pro přístup k adrese <ph name="TARGET_URL_HOSTNAME" /> otevřel alternativní prohlížeč.</translation>
 <translation id="918373042641772655">Odpojení uživatele <ph name="USERNAME" /> smaže také historii, záložky, nastavení a další data prohlížeče Chromium uložená v tomto zařízení. Data uložená ve vašem účtu Google nebudou vymazána a lze je spravovat na <ph name="GOOGLE_DASHBOARD_LINK" />Hlavním panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Nyní jste do prohlížeče Chromium přihlášeni</translation>

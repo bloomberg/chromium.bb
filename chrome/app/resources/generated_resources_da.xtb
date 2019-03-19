@@ -1375,6 +1375,7 @@
 <translation id="3016780570757425217">Kende din placering</translation>
 <translation id="3020183492814296499">Genveje</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Sommerfugl</translation>
 <translation id="3021678814754966447">&amp;Vis rammens kilde</translation>
 <translation id="3022978424994383087">Det er ikke forstået.</translation>
 <translation id="3023464535986383522">Tekstoplæsning</translation>
@@ -2429,6 +2430,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4663373278480897665">Der er givet adgang til kameraet</translation>
 <translation id="4664482161435122549">PKCS #12-eksportfejl</translation>
 <translation id="4665014895760275686">Producent</translation>
+<translation id="4665446389743427678">Alle data, der gemmes af <ph name="SITE" />, slettes.</translation>
 <translation id="4668721319092543482">Klik for at aktivere <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Medlemmer af "<ph name="SOURCE_NAME" />" mister adgang, medmindre disse elementer deles med dem.</translation>
 <translation id="4672657274720418656">Destiller side</translation>
@@ -2604,6 +2606,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ønsker at kommunikere med udvidelsen "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">Accepter</translation>
+<translation id="4918221908152712722">Installer <ph name="APP_NAME" /> (kræver ikke download)</translation>
 <translation id="4920887663447894854">Følgende websites kan ikke spore din placering på denne side:</translation>
 <translation id="4922897038695506037">"<ph name="URL_HOST" />" har anmodet om yderligere tilladelser.</translation>
 <translation id="492299503953721473">Fjern Android-apps</translation>
@@ -5225,6 +5228,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8803953437405899238">Åbn en ny fane med et enkelt klik</translation>
 <translation id="8804398419035066391">Kommunikere med andre websites</translation>
 <translation id="8805140816472474147">Bekræft synkroniseringsindstillingerne for at starte synkronisering.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> kan åbne faner igen, der blev lukket ved et uheld</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Webshop</translation>
 <translation id="8808686172382650546">Kat</translation>

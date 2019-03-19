@@ -1374,6 +1374,7 @@
 <translation id="3016780570757425217">നിങ്ങളുടെ ലൊക്കേഷൻ അറിയുക</translation>
 <translation id="3020183492814296499">കുറുക്കുവഴികൾ</translation>
 <translation id="3020990233660977256">സീരിയല്‍‌ നമ്പര്‍‌: ‍‌<ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">ചിത്രശലഭം</translation>
 <translation id="3021678814754966447">&amp;ഫ്രെയിം ഉറവിടം കാണുക</translation>
 <translation id="3022978424994383087">അത് മനസ്സിലായില്ല.</translation>
 <translation id="3023464535986383522">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക</translation>
@@ -2427,6 +2428,7 @@
 <translation id="4663373278480897665">ക്യാമറ അനുവദനീയം</translation>
 <translation id="4664482161435122549">PKCS #12 കയറ്റുമതി പിശക്</translation>
 <translation id="4665014895760275686">നിര്‍മ്മാതാവ്</translation>
+<translation id="4665446389743427678"><ph name="SITE" /> സംഭരിച്ച മുഴുവൻ ഡാറ്റയും ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> പ്രവർത്തനക്ഷമമാക്കാൻ ക്ലിക്കുചെയ്യുക</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' എന്നതിലെ അംഗങ്ങളുമായി ഈ ഇനങ്ങൾ പങ്കിട്ടില്ലെങ്കിൽ അവർക്ക് അവയിലേക്കുള്ള ആക്‌സസ് ‌നഷ്‌ടമാകും.</translation>
 <translation id="4672657274720418656">പേജ് ഡിസ്റ്റിൽ ചെയ്യുക</translation>
@@ -2602,6 +2604,7 @@
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> എന്നതിന് വിപുലീകരണ "<ph name="EXTENSION_NAME" />" ഉപയോഗിച്ച് ആശയവിനിമയം നടത്തേണ്ടതുണ്ട്</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
+<translation id="4918221908152712722"><ph name="APP_NAME" /> ഇൻസ്റ്റാൾ ചെയ്യുക (ഡൗൺലോഡ് ചെയ്യേണ്ടതില്ല)</translation>
 <translation id="4920887663447894854">ഈ പേജിലെ നിങ്ങളുടെ സ്ഥാനം ട്രാക്കുചെയ്യുന്നതില്‍‌ നിന്നും ഇനിപ്പറയുന്ന സൈറ്റുകളെ തടഞ്ഞു:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> കൂടുതൽ അനുമതികൾ അഭ്യർത്ഥിച്ചു.</translation>
 <translation id="492299503953721473">Android ആപ്‌സ് നീക്കംചെയ്യുക</translation>
@@ -5224,6 +5227,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8803953437405899238">ഒറ്റ ക്ലിക്കിലൂടെ ഒരു പുതിയ ടാബ് തുറക്കുക</translation>
 <translation id="8804398419035066391">സഹകരിക്കുന്ന വെബ്‌സൈറ്റുകളുമായി ആശയവിനിമയം നടത്തുക</translation>
 <translation id="8805140816472474147">സമന്വയിപ്പിക്കൽ ആരംഭിക്കുന്നതിന് സമന്വയിപ്പിക്കൽ ക്രമീകരണം സ്ഥിരീകരിക്കുക.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" />-ന് അബദ്ധത്തിൽ അടച്ച ടാബുകൾ വീണ്ടും തുറക്കാനാവും</translation>
 <translation id="8807632654848257479">സുസ്ഥിരമായ</translation>
 <translation id="8808478386290700967">വെബ് സ്റ്റോര്‍</translation>
 <translation id="8808686172382650546">പൂച്ച</translation>

@@ -512,6 +512,9 @@
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="203096360153626918">Dit beleid is niet van invloed op de Android-apps. Deze hebben toegang tot de modus voor volledig scherm, zelfs als dit beleid is ingesteld op <ph name="FALSE" /> (Onwaar).</translation>
 <translation id="2043770014371753404">Bedrijfsprinters uitgeschakeld</translation>
+<translation id="2050629715135525072">Regelt de mogelijkheid van een gebruiker die is verbonden met een host voor externe toegang om bestanden over te zetten tussen de client en de host. Dit is niet van toepassing op verbindingen voor hulp op afstand, die geen bestandsoverdracht ondersteunen.
+
+          Als deze instelling is uitgeschakeld, is bestandsoverdracht niet toegestaan. Als deze instelling is ingeschakeld of niet is ingesteld, is bestandsoverdracht toegestaan.</translation>
 <translation id="2057317273526988987">Toegang verlenen aan een lijst met URL's</translation>
 <translation id="206623763829450685">Hiermee wordt gespecificeerd welke HTTP-verificatieschema's door <ph name="PRODUCT_NAME" /> worden ondersteund.
 
@@ -612,6 +615,7 @@
 <translation id="2240879329269430151">Hiermee kun je instellen of websites pop-ups mogen weergeven. Het weergeven van pop-ups kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
           Als dit beleid niet is ingesteld, wordt 'BlockPopups' gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="2258126710006312594">Toestaan dat gebruikers met externe toegang bestanden overzetten van/naar de host</translation>
 <translation id="2265214338421787313">Via dit beleid kan een beheerder opgeven dat een pagina pop-upvensters mag weergegeven tijdens het unloaden.
 
       Wanneer het beleid is ingesteld op ingeschakeld, kunnen pagina's pop-upvensters weergeven terwijl ze worden geünload.
@@ -896,6 +900,13 @@
       Er worden geen automatische updatecontroles geblokkeerd door dit beleid, maar deze kunnen wel worden geblokkeerd door andere beleidsregels. Deze functie is alleen ingeschakeld op Chrome-apparaten die zijn geconfigureerd als kiosken die automatisch worden gestart. Andere apparaten worden niet beperkt door dit beleid.</translation>
 <translation id="2823870601012066791">Locatie van Windows-register voor <ph name="PRODUCT_OS_NAME" />-clients:</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
+<translation id="2836621397261130126">Regelt of goedkeuring op basis van KDC-beleid wordt gerespecteerd om te bepalen of <ph name="KERBEROS" />-tickets worden gedelegeerd.
+
+          Als dit beleid is ingesteld op True, respecteert de HTTP-verificatie de goedkeuring op basis van KDC-beleid. Chrome delegeert gegevens alleen als het KDC-beleid <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket. Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie. De service moet ook overeenkomen met het beleid 'AuthNegotiateDelegateWhitelist'.
+
+          Als dit beleid niet is ingesteld of is ingesteld op False, wordt het KDC-beleid genegeerd op ondersteunde platforms en wordt alleen het beleid 'AuthNegotiateDelegateWhitelist' gerespecteerd.
+
+          Op Windows wordt het KDC-beleid altijd gerespecteerd.</translation>
 <translation id="2838830882081735096">Gegevensmigratie en ARC niet toestaan</translation>
 <translation id="2839294585867804686">Instellingen voor Network File Shares</translation>
 <translation id="2840269525054388612">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.

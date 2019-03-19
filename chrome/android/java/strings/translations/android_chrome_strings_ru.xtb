@@ -144,6 +144,7 @@
 <translation id="200815880754187296">Другие приложения: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файла}many{# файлов}other{# файла}}</translation>
 <translation id="2017836877785168846">Удаление истории и вариантов автозаполнения в адресной строке</translation>
+<translation id="2018707881002649255">Выберите контакты ниже, чтобы предоставить к ним доступ сайту <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Настройки полноэкранного режима</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
 <translation id="204321170514947529">Приложение "<ph name="APP_NAME" />" также хранит свои данные в Chrome</translation>
@@ -546,6 +547,7 @@
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
 <translation id="5063480226653192405">Использование</translation>
+<translation id="5073204694187207510">Скрыть полноэкранную сетку с вкладками</translation>
 <translation id="5082793167783849073">Сравнивайте страницы быстрее, объединяя их в группы. Чтобы начать, нажмите на ссылку и удерживайте ее.</translation>
 <translation id="5087580092889165836">Добавить карту</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
@@ -617,7 +619,7 @@
 <translation id="557283862590186398">Для этого сайта Chrome запрашивает разрешение на доступ к микрофону.</translation>
 <translation id="55737423895878184">Может определять местоположение и отправлять уведомления</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5581519193887989363">Вы всегда можете изменить данные для синхронизации в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" />.</translation>
+<translation id="5581519193887989363">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
 <translation id="5620299005957670886">Разрешить сайтам использовать датчики (рекомендуется)</translation>
@@ -741,11 +743,13 @@
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
 <translation id="6461962085415701688">Не удалось открыть файл</translation>
+<translation id="6464977750820128603">Вы сможете просматривать список сайтов, посещенных в Chrome, и устанавливать для них таймеры.\n\nВ Google будут отправляться сведения о сайтах, для которых настроены таймеры, и времени их посещения. Мы собираем эти данные, чтобы улучшать сервис "Цифровое благополучие".</translation>
 <translation id="6475951671322991020">Скачать видео</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
 <translation id="6496823230996795692">При первом запуске приложения "<ph name="APP_NAME" />" требуется подключение к Интернету.</translation>
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6527303717912515753">Поделиться</translation>
+<translation id="6532866250404780454">В сервисе больше не будут отображаться данные о сайтах, которые вы посещаете в Chrome. Кроме того, будут удалены все таймеры сайтов.</translation>
 <translation id="6534565668554028783">Превышено время ожидания ответа от Google</translation>
 <translation id="6538442820324228105">Скачано <ph name="GBS" /> ГБ</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
@@ -888,6 +892,7 @@
 <translation id="751961395872307827">Не удалось подключиться к сайту</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Не удалось загрузить рекомендации</translation>
+<translation id="7559245342362162951">Показать сетку с вкладками группы на весь экран</translation>
 <translation id="7559975015014302720">Упрощенный режим отключен</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
@@ -970,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Предлагать похожие страницы</translation>
 <translation id="8109613176066109935">Чтобы получить доступ к закладкам на всех устройствах, включите синхронизацию.</translation>
+<translation id="8110087112193408731">Показать данные о ваших действиях в Chrome в сервисе "Цифровое благополучие"?</translation>
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
@@ -1066,6 +1072,7 @@
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
 <translation id="8922289737868596582">Скачивайте страницы через меню кнопки "Ещё" и открывайте их без подключения к Интернету</translation>
+<translation id="8937772741022875483">Удалить данные о ваших действиях в Chrome из сервиса "Цифровое благополучие"?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Открыть в новом окне</translation>
 <translation id="8951232171465285730">Благодаря Chrome вы сэкономили <ph name="MEGABYTES" /> МБ свободного места</translation>
@@ -1097,12 +1104,15 @@
 <translation id="9137013805542155359">Показать оригинал</translation>
 <translation id="9139068048179869749">Запрашивать разрешение на отправку уведомлений (рекомендуется)</translation>
 <translation id="9139318394846604261">Покупки</translation>
+<translation id="9150694013019234766">В нижней части экрана можно переключаться между вкладками, объединенными в группы</translation>
 <translation id="9155898266292537608">Также можно выполнить поиск, нажав на слово.</translation>
+<translation id="9169594135889675189">Добавить новую вкладку в группу</translation>
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9204836675896933765">Остался 1 файл</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="9215534869786664672">Сэкономьте до 60 процентов трафика и увеличьте скорость работы в Интернете. Серверы Google будут оптимизировать страницы, которые вы посещаете.</translation>
 <translation id="9219103736887031265">Картинки</translation>
+<translation id="926205370408745186">Удалить данные о действиях в Chrome из сервиса "Цифровое благополучие"</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="932599481871055447">Просматривайте веб-страницы быстрее и экономьте трафик</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>

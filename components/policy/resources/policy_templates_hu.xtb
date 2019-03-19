@@ -504,6 +504,9 @@
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
 <translation id="203096360153626918">A házirend nincs hatással az androidos alkalmazásokra. Az androidos alkalmazások akkor is teljes képernyős módra válthatnak, ha a házirend beállítása <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Letiltott vállalati nyomtatók</translation>
+<translation id="2050629715135525072">Azt szabályozza, hogy a távoli hozzáférésű gazdagéphez csatlakozott felhasználó tud-e fájlokat átvinni az ügyfél- és a gazdagép között. Ez nem érvényes a távoli segítség biztosítására szolgáló kapcsolatokra, mert nem támogatják a fájlok átvitelét.
+
+          Ha a beállítás ki van kapcsolva, a fájlátvitel nem engedélyezett. Ha a beállítás be van kapcsolva, vagy ha nincs beállítva, a fájlátvitel engedélyezett.</translation>
 <translation id="2057317273526988987">Hozzáférés engedélyezése az URL-ek listájához</translation>
 <translation id="206623763829450685">Meghatározza, hogy a <ph name="PRODUCT_NAME" /> milyen HTTP-hitelesítési sémákat támogat.
 
@@ -600,6 +603,7 @@
 <translation id="2231817271680715693">Böngészési előzmények importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="2236488539271255289">Egy webhely sem állíthat be helyi adatokat</translation>
 <translation id="2240879329269430151">Lehetővé teszi annak beállítását, hogy a weboldalak mutathatnak-e előugró ablakokat. Az előugró ablakok megjelenítését engedélyezheti vagy tilthatja minden webhely számára. Ha a házirend konfigurálatlanul marad, a rendszer a "BlockPopups" értéket használja, amelyet a felhasználó módosíthat.</translation>
+<translation id="2258126710006312594">A gazdagépről/gazdagépre való fájlátvitel engedélyezése a távoli hozzáférést használó felhasználók számára</translation>
 <translation id="2265214338421787313">A házirend segítségével a rendszergazda engedélyezheti, hogy az oldalak előugró ablakokat jelenítsenek meg az unload művelet végrehajtása során.
 
       Ha a házirend engedélyezett, az oldalak megjeleníthetnek előugró ablakokat az unload művelet végrehajtásakor.
@@ -872,6 +876,13 @@
       Ez a házirend nem tiltja az automatikus frissítéskereséseket, más házirendek azonban tilthatják őket. Ez a funkció csak az automatikusan induló kioszkként beállított Chrome-eszközökön használható. A többi eszközt nem korlátozza ez a házirend.</translation>
 <translation id="2823870601012066791">A Windows beállításjegyzékének helye <ph name="PRODUCT_OS_NAME" />-ügyfelek esetében:</translation>
 <translation id="2824715612115726353">Inkognitómód engedélyezése</translation>
+<translation id="2836621397261130126">Azt szabályozza, hogy a KDC-irányelv általi jóváhagyást figyelembe vegye-e a rendszer a <ph name="KERBEROS" />-jegyek felhatalmazásáról való döntéskor.
+
+          Ha a házirend beállítása igaz, a HTTP-hitelesítés tiszteletben tartja a KDC-házirend általi jóváhagyásokat, azaz a Chrome csak akkor ad felhatalmazást a hitelesítési adatok használatára, ha a KDC a szolgáltatásjegyen beállítja az <ph name="OK_AS_DELEGATE" /> attribútumot. További információ: https://tools.ietf.org/html/rfc5896.html. A szolgáltatásnak az „AuthNegotiateDelegateWhitelist” házirenddel is egyeznie kell.
+
+          Ha a házirend nincs beállítva, vagy értéke hamis, a rendszer figyelmen kívül hagyja a KDC-házirendet a támogatott platformokon, és csak az „AuthNegotiateDelegateWhitelist” házirendet veszi figyelembe.
+
+          A Windows rendszerek mindig figyelembe veszik a KDC-házirendet.</translation>
 <translation id="2838830882081735096">Adatmigráció és ARC letiltása</translation>
 <translation id="2839294585867804686">A Hálózati fájlmegosztásokhoz tartozó beállítások</translation>
 <translation id="2840269525054388612">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.

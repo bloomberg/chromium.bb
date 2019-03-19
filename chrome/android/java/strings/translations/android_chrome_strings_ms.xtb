@@ -144,6 +144,7 @@
 <translation id="200815880754187296">Apl lain <ph name="KILOBYTES" /> KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Fail}other{# Fail}}</translation>
 <translation id="2017836877785168846">Kosongkan sejarah dan pelengkapan automatik dalam bar alamat.</translation>
+<translation id="2018707881002649255">Butiran kenalan yang anda pilih di bawah akan dikongsi dengan tapak web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Kawalan tapak skrin penuh</translation>
 <translation id="2038563949887743358">Hidupkan Minta tapak desktop</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga mempunyai data dalam Chrome</translation>
@@ -546,6 +547,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
+<translation id="5073204694187207510">Sembunyikan grid skrin penuh</translation>
 <translation id="5082793167783849073">Bandingkan halaman dengan pantas dengan membuat kumpulan. Untuk bermula, sentuh &amp; tahan pautan.</translation>
 <translation id="5087580092889165836">Tambah kad</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
@@ -741,11 +743,13 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6447842834002726250">Kuki</translation>
 <translation id="6448273550210938826">Cadangan carian dan URL</translation>
 <translation id="6461962085415701688">Tidak dapat membuka fail</translation>
+<translation id="6464977750820128603">Anda dapat melihat tapak yang anda lawati dalam Chrome dan menetapkan pemasa untuk tapak tersebut.\n\nGoogle menerima maklumat tentang tapak yang pemasanya telah anda tetapkan dan tempoh anda berada di tapak itu. Maklumat ini digunakan untuk menambah baik Kesejahteraan Digital.</translation>
 <translation id="6475951671322991020">Muat turun video</translation>
 <translation id="6482749332252372425">Muat turun <ph name="FILE_NAME" /> gagal kerana ruang storan tidak mencukupi.</translation>
 <translation id="6496823230996795692">Untuk menggunakan <ph name="APP_NAME" /> buat kali pertama, sila bersambung ke Internet.</translation>
 <translation id="6508722015517270189">Mulakan semula Chrome</translation>
 <translation id="6527303717912515753">Kongsi</translation>
+<translation id="6532866250404780454">Tapak yang anda lawati dalam Chrome tidak akan dipaparkan. Semua pemasa tapak akan dipadamkan.</translation>
 <translation id="6534565668554028783">Google mengambil masa terlalu lama untuk bertindak balas</translation>
 <translation id="6538442820324228105">Dimuat turun <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Pilih tab untuk dipancarkan</translation>
@@ -888,6 +892,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="751961395872307827">Tidak dapat menyambung ke tapak</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Tidak boleh mendapatkan cadangan</translation>
+<translation id="7559245342362162951">Tunjukkan tab kumpulan dalam grid skrin penuh</translation>
 <translation id="7559975015014302720">Mod Ringkas dimatikan</translation>
 <translation id="7562080006725997899">Mengosongkan data penyemakan imbas</translation>
 <translation id="756809126120519699">Data Chrome dikosongkan</translation>
@@ -970,6 +975,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Cadangkan halaman yang berkaitan</translation>
 <translation id="8109613176066109935">Hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda</translation>
+<translation id="8110087112193408731">Tunjukkan aktiviti Chrome anda dalam Kesejahteraan Digital?</translation>
 <translation id="8116925261070264013">Diredam</translation>
 <translation id="813082847718468539">Lihat maklumat tapak</translation>
 <translation id="8131740175452115882">Sahkan</translation>
@@ -1066,6 +1072,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8912362522468806198">Akaun Google</translation>
 <translation id="8920114477895755567">Menunggu butiran ibu bapa.</translation>
 <translation id="8922289737868596582">Muat turun halaman daripada butang Lagi pilihan untuk digunakan di luar talian</translation>
+<translation id="8937772741022875483">Alih keluar aktiviti Chrome anda daripada Kesejahteraan Digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Buka dalam tetingkap lain</translation>
 <translation id="8951232171465285730">Chrome telah menjimatkan data anda sebanyak <ph name="MEGABYTES" /> MB</translation>
@@ -1097,12 +1104,15 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9139068048179869749">Tanya sebelum membenarkan tapak menghantar pemberitahuan (disyorkan)</translation>
 <translation id="9139318394846604261">Beli-belah</translation>
+<translation id="9150694013019234766">Beralih antara tab dalam kumpulan tab anda berhampiran bahagian bawah skrin</translation>
 <translation id="9155898266292537608">Anda juga boleh mencari dengan mengetik pantas pada perkataan</translation>
+<translation id="9169594135889675189">Tambahkan tab baharu pada kumpulan</translation>
 <translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>
 <translation id="9204836675896933765">1 fail lagi</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Menggunakan sehingga 60 peratus lebih sedikit data dan mempercepat web. Pelayan Google akan mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="9219103736887031265">Imej</translation>
+<translation id="926205370408745186">Alih keluar aktiviti Chrome anda daripada Kesejahteraan Digital</translation>
 <translation id="932327136139879170">Laman Utama</translation>
 <translation id="932599481871055447">Jimatkan data dan semak imbas dengan lebih pantas</translation>
 <translation id="938850635132480979">Ralat: <ph name="ERROR_CODE" /></translation>

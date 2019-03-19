@@ -509,6 +509,9 @@
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="203096360153626918">Esta política não tem qualquer efeito nas aplicações para Android. Estas podem ser colocadas no modo de ecrã inteiro mesmo que esta política esteja definida como <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
+<translation id="2050629715135525072">Controla a capacidade de um utilizador ligado a um anfitrião de acesso remoto transferir ficheiros entre o cliente e o anfitrião. Isto não se aplica a ligações da assistência remota, uma vez que não suportam a transferência de ficheiros.
+
+          Se esta definição estiver desativada, a transferência de ficheiros não será permitida. Se esta definição estiver ativada ou não estiver definida, a transferência de ficheiros será permitida.</translation>
 <translation id="2057317273526988987">Permitir o acesso a uma lista de URLs</translation>
 <translation id="206623763829450685">Especifica quais os esquemas de autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta.
 
@@ -612,6 +615,7 @@
 <translation id="2231817271680715693">Importar histórico de navegação a partir do navegador predefinido na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que os sites definam dados de local</translation>
 <translation id="2240879329269430151">Permite definir se os Web sites estão autorizados a apresentar janelas de pop-up. A apresentação de janelas de pop-up pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "BlockPopups" e o utilizador poderá alterá-la.</translation>
+<translation id="2258126710006312594">Permitir que os utilizadores de acesso remoto transfiram ficheiros de/para o anfitrião</translation>
 <translation id="2265214338421787313">Esta política permite a um administrador especificar que uma página pode mostrar pop-ups durante o descarregamento.
 
       Quando a política está definida como ativada, as páginas podem apresentar pop-ups quando estiverem a ser descarregadas.
@@ -882,6 +886,13 @@
       Esta política não bloqueará quaisquer verificações automáticas de atualizações, contudo, estas podem ser bloqueadas por outras políticas. Esta funcionalidade só está disponível em dispositivos Chrome configurados como quiosques de início automático. Os outros dispositivos não são restringidos por esta política.</translation>
 <translation id="2823870601012066791">Localização da base de dados de registo do Windows para os clientes <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
+<translation id="2836621397261130126">Controla se a aprovação da política do KDC é respeitada para decidir se deve delegar permissões <ph name="KERBEROS" />.
+
+          Se esta política estiver definida como verdadeira, a autenticação HTTP respeita a aprovação da política do KDC. O Chrome apenas delega credenciais se o KDC definir <ph name="OK_AS_DELEGATE" /> numa permissão do serviço. Consulte https://tools.ietf.org/html/rfc5896.html para obter mais informações. O serviço também deve corresponder à política "AuthNegotiateDelegateWhitelist".
+
+          Se esta política não estiver definida ou estiver definida como falsa, a política do KDC é ignorada nas plataformas suportadas e apenas é respeitada a política "AuthNegotiateDelegateWhitelist".
+
+          No Windows, a política do KDC é sempre respeitada.</translation>
 <translation id="2838830882081735096">Não permitir a migração de dados nem ARC</translation>
 <translation id="2839294585867804686">Definições das Partilhas de ficheiros na rede</translation>
 <translation id="2840269525054388612">Especifica as impressoras disponíveis para um utilizador.

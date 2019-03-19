@@ -447,6 +447,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si cette règle est activée, le service de protection par mot de passe enregistre l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
       Si cette règle est désactivée ou n'est pas configurée, le service de protection par mot de passe n'enregistre l'empreinte numérique du mot de passe que sur https://accounts.google.com.
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
+<translation id="1919802376548418720">Utiliser la règle KDC pour déléguer les identifiants.</translation>
 <translation id="1920046221095339924">Autoriser une session gérée sur l'appareil</translation>
 <translation id="1929709556673267855">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
 
@@ -516,6 +517,9 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="203096360153626918">Cette règle n'a aucun effet sur les applications Android. L'utilisation du mode plein écran est possible même si cette règle est définie sur "<ph name="FALSE" />".</translation>
 <translation id="2043770014371753404">Imprimantes d'entreprise désactivées</translation>
+<translation id="2050629715135525072">Vérifie la possibilité pour un utilisateur connecté à un hôte distant de transférer des fichiers entre le client et l'hôte. Cette règle ne s'applique pas aux connexions d'assistance à distance, qui ne sont pas compatibles avec le transfert de fichiers.
+
+          Si ce paramètre est désactivé, il sera interdit de transférer des fichiers. S'il est activé ou s'il n'est pas configuré, le transfert de fichiers sera autorisé.</translation>
 <translation id="2057317273526988987">Autoriser l'accès à une liste d'URL</translation>
 <translation id="206623763829450685">Indique les modèles d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME" />.
 
@@ -620,6 +624,16 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2240879329269430151">Permet de définir si les sites Web sont autorisés à afficher les pop-ups. L'affichage des pop-ups peut être soit autorisé pour tous les sites, soit refusé pour tous les sites. 
 
 Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
+<translation id="2258126710006312594">Autoriser le transfert de fichiers vers et depuis l'hôte pour les utilisateurs connectés à distance</translation>
+<translation id="2265214338421787313">Cette règle autorise un administrateur à indiquer qu'une page peut afficher des fenêtres contextuelles pendant son déchargement.
+
+      Lorsque cette règle est activée, les pages sont autorisées à afficher des fenêtres contextuelles lors de leur déchargement.
+
+      Si la règle est désactivée ou n'est pas définie, les pages ne peuvent pas afficher de fenêtres contextuelles pendant leur déchargement, conformément aux spécifications (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Cette règle sera supprimée dans Chrome 82.
+
+      Pour en savoir plus, consultez l'article https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Activer l'affichage de l'autorisation de synchronisation lors de la connexion</translation>
 <translation id="2274864612594831715">Cette règle configure l'activation du clavier virtuel en tant que périphérique d'entrée sur Chrome OS. Les utilisateurs ne peuvent pas la modifier.
 
@@ -897,6 +911,13 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
       La recherche automatique de mises à jour n'est pas bloquée par cette règle, mais peut l'être par d'autres. Cette fonctionnalité n'est activée que sur les appareils Chrome configurés pour se lancer automatiquement en mode Kiosque. Cette règle ne limitera pas les autres appareils.</translation>
 <translation id="2823870601012066791">Emplacement du registre Windows pour les clients <ph name="PRODUCT_OS_NAME" /> :</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
+<translation id="2836621397261130126">Vérifie si l'approbation par la règle KDC est respectée pour décider si les tickets <ph name="KERBEROS" /> doivent être délégués.
+
+          Si cette règle est définie sur "True", l'authentification HTTP respecte l'approbation par la règle KDC. Autrement dit, Chrome ne doit déléguer les identifiants que si la règle KDC définit <ph name="OK_AS_DELEGATE" /> sur un ticket de service. Pour en savoir plus, veuillez consulter la page https://tools.ietf.org/html/rfc5896.html. Le service et la règle "AuthNegotiateDelegateWhitelist" doivent également correspondre.
+
+          Si cette règle n'est pas configurée ou si elle est définie sur "False", la règle KDC est ignorée sur les plates-formes compatibles, et seule la règle "AuthNegotiateDelegateWhitelist" est respectée.
+
+          Sous Windows, la règle KDC est toujours respectée.</translation>
 <translation id="2838830882081735096">Interdire la migration de données et ARC</translation>
 <translation id="2839294585867804686">Paramètres de la fonctionnalité Partages de fichiers en réseau</translation>
 <translation id="2840269525054388612">Indique les imprimantes auxquelles un utilisateur a accès.
@@ -2295,6 +2316,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
 <translation id="603410445099326293">Paramètres pour l'URL de suggestion utilisant POST</translation>
 <translation id="6034341625190551415">Contrôle les types de comptes kiosque et les sessions publiques.</translation>
+<translation id="6034603289689965535">Autorise une page à afficher des fenêtres contextuelles pendant son déchargement</translation>
 <translation id="6036523166753287175">Activer la traversée de pare-feu depuis l'hôte d'accès à distance</translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
 <translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>

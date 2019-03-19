@@ -415,7 +415,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
       Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo all'indirizzo https://accounts.google.com.
       Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
-<translation id="1919802376548418720">Utilizza la norma KDC policy per delegare credenziali.</translation>
+<translation id="1919802376548418720">Utilizza la norma KDC per delegare credenziali.</translation>
 <translation id="1920046221095339924">Consenti la sessione gestita sul dispositivo</translation>
 <translation id="1929709556673267855">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
 
@@ -485,6 +485,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
+<translation id="2050629715135525072">Controlla la capacità di un utente connesso a un host di accesso remoto di trasferire file dal client all'host. Questa norma non si applica alle connessioni di assistenza remota, le quali non supportano il trasferimento di file.
+
+          Se questa impostazione è disattivata, il trasferimento di file non sarà concesso. Se questa impostazione è attivata o non configurata, il trasferimento di file sarà concesso.</translation>
 <translation id="2057317273526988987">Consenti l'accesso a un elenco di URL</translation>
 <translation id="206623763829450685">Consente di specificare gli schemi di autenticazione HTTP supportati da <ph name="PRODUCT_NAME" />.
 
@@ -575,11 +578,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2231817271680715693">Importa cronologia di navigazione dal browser predefinito alla prima esecuzione</translation>
 <translation id="2236488539271255289">Non consentire ai siti di impostare i dati locali</translation>
 <translation id="2240879329269430151">Permette di stabilire se consentire o meno la visualizzazione dei popup nei siti web. La visualizzazione dei popup può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "BlockPopups", che potrà essere modificato dagli utenti.</translation>
-<translation id="2265214338421787313">Questa norma consente all'amministratore di specificare che una pagina può mostrare i popup durante il download.
+<translation id="2258126710006312594">Consenti l'accesso remoto agli utenti per trasferire file da/verso l'host</translation>
+<translation id="2265214338421787313">Questa norma consente all'amministratore di specificare che una pagina può mostrare i popup durante l'unload.
 
-      Quando la norma è impostata su attivata, le pagine possono mostrare i popup mentre vengono scaricati.
+      Quando la norma è impostata su attivata, le pagine possono mostrare i popup mentre viene eseguito l'unload.
 
-      Quando la norma è impostata su disattivata o non impostata, le pagine non possono mostrare i popup mentre vengono scaricati, come da specifiche (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+      Quando la norma è impostata su disattivata o non impostata, le pagine non possono mostrare i popup mentre viene eseguito l'unload, come da specifiche (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
 
       Nella versione 82 di Chrome, questa norma verrà rimossa.
 
@@ -847,6 +851,13 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme. Questa funzionalità è attiva solo sui dispositivi Chrome configurati come kiosk ad avvio automatico. Gli altri dispositivi non risulteranno limitati da questa norma.</translation>
 <translation id="2823870601012066791">Posizione del Registro di sistema di Windows per client <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
+<translation id="2836621397261130126">Controlla se l'approvazione della norma KDC viene rispettata per decidere se delegare i ticket <ph name="KERBEROS" />.
+
+          Se questa norma viene impostata su true, l'autenticazione HTTP rispetta l'approvazione da parte della norma KDC, ad esempio Chrome delega solo le credenziali se il KDC imposta <ph name="OK_AS_DELEGATE" /> su un ticket di servizio. Per ulteriori informazioni, visita la pagina https://tools.ietf.org/html/rfc5896.html. Il servizio deve corrispondere anche alla norma "AuthNegotiateDelegateWhitelist".
+
+          Se questa norma non viene impostata o viene impostata su false, la norma KDC viene ignorata sulle piattaforme supportate e solo la norma "AuthNegotiateDelegateWhitelist" viene rispettata.
+
+          Su Windows la norma KDC viene sempre rispettata.</translation>
 <translation id="2838830882081735096">Non consentire migrazione dei dati e ARC</translation>
 <translation id="2839294585867804686">Impostazioni di Condivisioni file di rete</translation>
 <translation id="2840269525054388612">Consente di specificare le stampanti utilizzabili dagli utenti.
@@ -2172,7 +2183,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="602728333950205286">URL di ricerca istantanea del provider di ricerca predefinito</translation>
 <translation id="603410445099326293">Parametri per l'URL del suggerimento che utilizza POST</translation>
 <translation id="6034341625190551415">Consente di controllare tipi di account kiosk e sessioni pubbliche.</translation>
-<translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante il download.</translation>
+<translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante l'unload.</translation>
 <translation id="6036523166753287175">Abilita attraversamento firewall da host di accesso remoto</translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>

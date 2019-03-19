@@ -440,6 +440,7 @@
       Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên trang web https://accounts.google.com.
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
+<translation id="1919802376548418720">Sử dụng chính sách KDC để ủy quyền thông tin xác thực.</translation>
 <translation id="1920046221095339924">Cho phép phiên được quản lý trên thiết bị</translation>
 <translation id="1929709556673267855">Cung cấp cấu hình máy in dành cho doanh nghiệp được kết nối với các thiết bị.
 
@@ -509,6 +510,9 @@
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="203096360153626918">Chính sách này không ảnh hưởng đến các ứng dụng Android. Các ứng dụng đó sẽ có thể vào chế độ toàn màn hình ngay cả khi chính sách này được đặt thành <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Đã tắt máy in dành cho doanh nghiệp</translation>
+<translation id="2050629715135525072">Kiểm soát khả năng người dùng kết nối với máy chủ truy cập từ xa để chuyển các tệp giữa máy khách và máy chủ. Chính sách này không áp dụng cho các đường kết nối trợ giúp từ xa không hỗ trợ tính năng chuyển tệp.
+
+          Nếu bạn tắt tùy chọn cài đặt này, thì tính năng chuyển tệp sẽ không hoạt động. Nếu bạn bật hoặc không đặt tùy chọn cài đặt này, thì tính năng chuyển tệp sẽ hoạt động.</translation>
 <translation id="2057317273526988987">Cho phép truy cập vào một danh sách các URL</translation>
 <translation id="206623763829450685">Chỉ định các cơ chế xác thực HTTP mà <ph name="PRODUCT_NAME" /> hỗ trợ.
 
@@ -614,6 +618,16 @@
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockPopups' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="2258126710006312594">Cho phép người dùng truy cập từ xa chuyển tệp từ/đến máy chủ</translation>
+<translation id="2265214338421787313">Chính sách này cho phép quản trị viên chỉ định một trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
+
+      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép hiển thị cửa sổ bật lên khi đang hủy tải trang.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép hiển thị cửa sổ bật lên khi đang hủy tải trang, như theo thông số kỹ thuật (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Chính sách này sẽ bị xóa trong Chrome 82.
+
+      Xem tại https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Cho phép hiển thị màn hình Đồng ý đồng bộ hóa trong khi đăng nhập</translation>
 <translation id="2274864612594831715">Chính sách này định cấu hình bật bàn phím ảo làm thiết bị nhập liệu trên ChromeOS. Người dùng không thể ghi đè chính sách này.
 
@@ -889,6 +903,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chính sách này sẽ không chặn hoạt động kiểm tra bản cập nhật tự động, nhưng các chính sách khác vẫn có thể chặn hoạt động này. Tính năng này chỉ được hỗ trợ trên thiết bị Chrome đã định cấu hình thành kiosk tự động chạy. Chính sách này sẽ không hạn chế các thiết bị khác.</translation>
 <translation id="2823870601012066791">Vị trí sổ đăng ký Windows cho các ứng dụng <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
+<translation id="2836621397261130126">Kiểm soát xem có áp dụng phê duyệt theo chính sách KDC để quyết định việc ủy quyền vé <ph name="KERBEROS" /> hay không.
+
+          Nếu bạn đặt chính sách này thành true, thì quá trình xác thực HTTP sẽ áp dụng phê duyệt theo chính sách KDC, tức là Chrome chỉ ủy quyền thông tin đăng nhập nếu KDC đặt <ph name="OK_AS_DELEGATE" /> trên một vé dịch vụ. Vui lòng truy cập vào https://tools.ietf.org/html/rfc5896.html để biết thêm thông tin. Dịch vụ cũng phải khớp với chính sách 'AuthNegotiateDelegateWhitelist'.
+
+          Nếu bạn không đặt hoặc đặt chính sách này thành false, thì các nền tảng được hỗ trợ sẽ bỏ qua chính sách KDC và chỉ áp dụng chính sách 'AuthNegotiateDelegateWhitelist'.
+
+          Chính sách KDC luôn áp dụng trên Windows.</translation>
 <translation id="2838830882081735096">Không cho phép di chuyển dữ liệu và ARC</translation>
 <translation id="2839294585867804686">Tùy chọn cài đặt tính năng Chia sẻ tệp trong mạng</translation>
 <translation id="2840269525054388612">Chỉ định các máy in mà người dùng có thể sử dụng.
@@ -2281,6 +2302,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 <translation id="602728333950205286">URL instant của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="603410445099326293">Tham số cho URL đề xuất sử dụng POST</translation>
 <translation id="6034341625190551415">Kiểm soát phiên công khai và loại tài khoản kiosk.</translation>
+<translation id="6034603289689965535">Cho phép trang hiển thị cửa sổ bật lên khi đang hủy tải trang</translation>
 <translation id="6036523166753287175">Bật tính năng chặn tường lửa từ máy chủ truy cập từ xa</translation>
 <translation id="6070667616071269965">Bố cục bàn phím màn hình đăng nhập thiết bị</translation>
 <translation id="6074963268421707432">Không cho phép bất kỳ trang web nào hiển thị thông báo trên màn hình</translation>

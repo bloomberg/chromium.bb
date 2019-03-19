@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1296843352074373664">Użytkownik Google</translation>
 <translation id="1383286653814676580">Używane do uruchamiania strony logowania dostawcy danych uwierzytelniających Google.</translation>
-<translation id="1644179990571656190">Nie udało się utworzyć nowego zarejestrowanego użytkownika Google. Ten system pozwala na utworzenie tylko jednego zarejestrowanego użytkownika Google.</translation>
-<translation id="1813213595719100133">Logowanie się przy użyciu kont Google jest niedozwolone w tej domenie. Użyj innego konta.</translation>
-<translation id="195232392645680541">Zaloguj się, używając swojego konta Google.</translation>
 <translation id="2595469428674600431">Nie udało się zweryfikować Twojego hasła do systemu Windows. Spróbuj ponownie.</translation>
-<translation id="2620296592151848576">Twoje hasło zostało zmienione w Google. Wpisz swoje aktualne hasło do systemu Windows, by zsynchronizować konto Windows z kontem Google.</translation>
-<translation id="3697479376287066058">Inne konto na tym komputerze zostało już zarejestrowane przy użyciu tego konta Google. Zaloguj się, używając innego konta Google.</translation>
 <translation id="4057329986137569701">Wystąpił błąd wewnętrzny.</translation>
-<translation id="4128734677223009352">Nie udało się zalogować na to konto Google. Sprawdź, czy komputer jest połączony z internetem, i spróbuj jeszcze raz.</translation>
-<translation id="4175879131870609567">Tylko użytkownik, który zablokował tę stację roboczą, może teraz zalogować się w systemie.</translation>
-<translation id="6613125771987245372">Logowanie na to konto Google jest niedozwolone. Użyj innego konta.</translation>
 <translation id="7357241217513796177">Upewnij się, że masz połączenie sieciowe, i spróbuj ponownie.</translation>
-<translation id="7447167742844823007">Zaloguj się, używając swojego konta Google</translation>
 <translation id="7463006580194749499">Dodaj osobę</translation>
-<translation id="782439148700312319">Nie można zarejestrować tego komputera na potrzeby zarządzania w firmie.  Zaloguj się, używając innego konta Google.</translation>
 <translation id="8440458902131551808">Twoje konto zostało zablokowane. Skontaktuj się z administratorem systemu.</translation>
 <translation id="8474372283141585908">Dostawca danych uwierzytelniających Google</translation>
 <translation id="866458870819756755">Nie udało się utworzyć użytkownika.</translation>

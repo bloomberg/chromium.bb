@@ -423,7 +423,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Si no se establece esta opción, los usuarios podrán abrir cuadros de diálogo de selección de archivos de la forma habitual.</translation>
 <translation id="1885782360784839335">Permitir que se muestre contenido promocional que ocupe toda la pestaña</translation>
-<translation id="1888871729456797026">El token de registro de la política de la nube en ordenadores</translation>
+<translation id="1888871729456797026">El token de registro de la política relativa a la nube en ordenadores</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
 <translation id="1906888171268104594">Permite  controlar el envío a Google de datos de diagnóstico y métricas de uso, como los informes sobre fallos.
 
@@ -438,6 +438,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si se habilita esta opción, el servicio de protección de contraseñas capturará la huella digital de la contraseña en estas URL para detectar si la contraseña se reutiliza.
       Si se inhabilita esta opción o no se configura, el servicio de protección de contraseñas solo capturará la huella digital en la página https://accounts.google.com.
       Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
+<translation id="1919802376548418720">Usa la política del centro de distribución de llaves (KDC) para delegar credenciales.</translation>
 <translation id="1920046221095339924">Permitir sesión gestionada en el dispositivo</translation>
 <translation id="1929709556673267855">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
 
@@ -507,6 +508,9 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="203096360153626918">Esta política no influye en las aplicaciones para Android. Aunque se le asigne el valor <ph name="FALSE" />, las aplicaciones podrán acceder al modo de pantalla completa.</translation>
 <translation id="2043770014371753404">Impresoras de empresa inhabilitadas</translation>
+<translation id="2050629715135525072">Controla la capacidad de los usuarios conectados a un host de acceso remoto de transferir archivos entre el cliente y el host. No se aplica a las conexiones de asistencia remota, ya que no admiten la transferencia de archivos.
+
+          Si se inhabilita esta opción, no se permitirá la transferencia de archivos. Si se habilita esta opción o no se configura, se permitirá la transferencia de archivos.</translation>
 <translation id="2057317273526988987">Permitir el acceso a una lista de URL</translation>
 <translation id="206623763829450685">Especifica los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME" />.
 
@@ -605,6 +609,16 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2240879329269430151">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.
 
           Si no se establece esta política, se usará la política BlockPopups y el usuario podrá modificarla.</translation>
+<translation id="2258126710006312594">Permite que los usuarios con acceso remoto transfieran archivos al host y desde el host</translation>
+<translation id="2265214338421787313">Esta política permite que un administrador especifique si las páginas pueden mostrar ventanas emergentes mientras se descargan.
+
+      Si la política está habilitada, las páginas pueden mostrar ventanas emergentes mientras se descargan.
+
+      Si la política está inhabilitada o no está definida, las páginas no pueden mostrar ventanas emergentes mientras se descargan (según la especificación https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Esta política se eliminará en la versión 82 de Chrome.
+
+      Consulta https://www.chromestatus.com/feature/5989473649164288</translation>
 <translation id="2269319728625047531">Habilitar Sync Consent durante el inicio de sesión</translation>
 <translation id="2274864612594831715">Esta política configura la habilitación del teclado virtual como un dispositivo de entrada en Chrome OS. Los usuarios no pueden anular esta política.
 
@@ -885,6 +899,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       La política no bloqueará ninguna comprobación de actualizaciones automática, pero otras políticas podrían hacerlo. Esta función solo está habilitada en los dispositivos Chrome configurados como kioscos de inicio automático. Esta política no afectará a otros dispositivos.</translation>
 <translation id="2823870601012066791">Ubicación del registro de Windows para clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
+<translation id="2836621397261130126">Controla si se debe respetar la aprobación por parte de la política del centro de distribución de llaves (KDC) para decidir si se delegan los tickets de <ph name="KERBEROS" />.
+
+          Si se le asigna el valor "True" a esta política, la autenticación de HTTP respetará la aprobación por parte de la política del KDC; es decir, Chrome solo delegará las credenciales si el KDC define el valor <ph name="OK_AS_DELEGATE" /> en un ticket del servicio. Consulta la página https://tools.ietf.org/html/rfc5896.html para obtener más información. El servicio debería coincidir con la política "AuthNegotiateDelegateWhitelist".
+
+          Si se le asigna el valor "False" a esta política o no se le asigna ninguno, se ignorará la política del KDC en las plataformas admitidas, y solo se respetará la política "AuthNegotiateDelegateWhitelist".
+
+          En Windows, la política del KDC se respeta siempre.</translation>
 <translation id="2838830882081735096">No permitir la migración de datos ni ARC</translation>
 <translation id="2839294585867804686">Configuración de uso compartido de archivos del sistema</translation>
 <translation id="2840269525054388612">Especifica las impresoras que puede utilizar un usuario.
@@ -1174,8 +1195,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si esta política se establece en false o no se establece, los retrasos de administración de energía y el límite de duración de sesión se ejecutarán inmediatamente al iniciar la sesión.</translation>
 <translation id="3478024346823118645">Borrar los datos del usuario al cerrar sesión</translation>
 <translation id="348495353354674884">Habilitar teclado virtual</translation>
-<translation id="3487623755010328395">
-        Si se habilita la política, <ph name="PRODUCT_NAME" /> intentará registrarse y aplicar la política de la nube asociada a todos los perfiles.
+<translation id="3487623755010328395">Si se habilita la política, <ph name="PRODUCT_NAME" /> intentará registrarse y aplicar la política relativa a la nube asociada a todos los perfiles.
 
         El valor de esta política es un token de registro que se puede obtener de la consola de administración de Google.</translation>
 <translation id="3496296378755072552">Administrador de contraseñas</translation>
@@ -1782,7 +1802,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5056708224511062314">Lupa inhabilitada</translation>
 <translation id="5058573563327660283">Seleccionar la estrategia utilizada para liberar espacio en disco durante la limpieza automática (obsoleta)</translation>
 <translation id="5067143124345820993">Lista de admisión de usuarios con permiso para iniciar sesión</translation>
-<translation id="5068140065960598044">La política de la nube de <ph name="PRODUCT_NAME" /> anula la política del equipo.</translation>
+<translation id="5068140065960598044">La política relativa a la nube de <ph name="PRODUCT_NAME" /> anula la política del equipo.</translation>
 <translation id="5076274878326940940">Habilita el uso de un proveedor de búsqueda predeterminado.
 
           Si habilitas esta opción, se realiza una búsqueda predeterminada cuando el usuario introduce en el omnibox un texto que no es una URL.
@@ -2279,6 +2299,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
 <translation id="603410445099326293">Parámetros para URL sugerida que utiliza POST</translation>
 <translation id="6034341625190551415">Controla los tipos de cuenta de sesión pública y de kiosko.</translation>
+<translation id="6034603289689965535">Permite que una página muestre ventanas emergentes mientras se descarga</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="6070667616071269965">Diseños de teclado para la pantalla de inicio de sesión del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
@@ -3346,9 +3367,8 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
       Si se asigna el valor "False" a esta política, las estadísticas no se enviarán.
       Si se le asigna el valor "True" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
-<translation id="8377433219608936819">
-      Si se le asigna el valor "True" a esta política, la política de la nube prevalecerá si entra en conflicto con la política del equipo.
-      Si se le asigna el valor "False" o no se le asigna ninguno, la política del equipo prevalecerá si entra en conflicto con la política de la nube.
+<translation id="8377433219608936819">Si se le asigna el valor "True" a esta política, la política relativa a la nube prevalecerá si entra en conflicto con la política del equipo.
+      Si se le asigna el valor "False" o no se le asigna ninguno, la política del equipo prevalecerá si entra en conflicto con la política relativa a la nube.
       Para obtener más información sobre la prioridad de las políticas, consulta https://support.google.com/chrome?p=set_chrome_policies_for_devices
 
       Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>

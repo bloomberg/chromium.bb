@@ -422,6 +422,7 @@
       Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes capturarà l'empremta digital de la contrasenya en aquests URL per detectar la reutilització de contrasenyes.
       Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes només capturarà l'empremta digital de la contrasenya a https://accounts.google.com.
       Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
+<translation id="1919802376548418720">Utilitza la política del KDC per delegar les credencials.</translation>
 <translation id="1920046221095339924">Permet sessions gestionades al dispositiu</translation>
 <translation id="1929709556673267855">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
 
@@ -491,6 +492,9 @@
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="203096360153626918">Aquesta política no té cap efecte a les aplicacions per a Android. Podran activar el mode de pantalla completa encara que aquesta política s'estableixi en "<ph name="FALSE" />".</translation>
 <translation id="2043770014371753404">Impressores d'empresa desactivades</translation>
+<translation id="2050629715135525072">Controla la capacitat d'un usuari connectat a un amfitrió d'accés remot per transferir fitxers entre el client i l'amfitrió. Això no s'aplica a les connexions d'assistència remota, que no admeten la transferència de fitxers.
+
+          Si aquesta opció de configuració es desactiva, no es permetrà la transferència de fitxers. Si aquesta opció de configuració s'activa o no s'estableix, es permetrà la transferència de fitxers.</translation>
 <translation id="2057317273526988987">Permet l'accés a una llista d'URL</translation>
 <translation id="206623763829450685">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME" />.
 
@@ -588,6 +592,16 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2231817271680715693">Importació de l'historial de navegació des del navegador predeterminat en la primera execució</translation>
 <translation id="2236488539271255289">No permetis que cap lloc estableixi dades locals</translation>
 <translation id="2240879329269430151">Us permet definir si els llocs web poden mostrar finestres emergents. L'aparició de finestres emergents es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "BlockPopups" i l'usuari podrà canviar-lo.</translation>
+<translation id="2258126710006312594">Permet que els usuaris d'accés remot transfereixin fitxers a l'amfitrió i des de l'amfitrió</translation>
+<translation id="2265214338421787313">Aquesta política permet que un administrador especifiqui que és possible que una pàgina mostri finestres emergents mentre es desactiva.
+
+      Si s'activa la política, es permet que les pàgines mostrin finestres emergents mentre es desactiven.
+
+      Si es desactiva la política o no s'estableix, no es permet que les pàgines mostrin finestres emergents mentre es desactiven, tal com s'indica a l'especificació (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Aquesta política se suprimirà a Chrome 82.
+
+      Consulta https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Permet mostrar el consentiment de sincronització durant l'inici de sessió</translation>
 <translation id="2274864612594831715">Amb aquesta política es configura el teclat virtual per activar-lo com a dispositiu d'introducció de text a Chrome OS. Els usuaris no poden substituir aquesta política.
 
@@ -849,6 +863,13 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       La política no bloquejarà les cerques automàtiques d'actualitzacions, però pot ser que hi hagi altres polítiques que sí que les bloquegin. Aquesta funció només s'activa en dispositius Chrome configurats com a quioscos d'inici automàtic. Aquesta política no restringirà altres dispositius.</translation>
 <translation id="2823870601012066791">Ubicació del registre de Windows per a clients amb <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
+<translation id="2836621397261130126">Controla si es respecta l'aprovació de la política del KDC per decidir si es poden delegar els tiquets de <ph name="KERBEROS" />.
+
+          Si aquesta política s'estableix en "true", l'autenticació HTTP respecta l'aprovació per part de la política del KDC. És a dir, Chrome només delega les credencials si el KDC estableix <ph name="OK_AS_DELEGATE" /> en un tiquet de servei. Per obtenir més informació, consulta https://tools.ietf.org/html/rfc5896.html.  El servei també ha de coincidir amb la política AuthNegotiateDelegateWhitelist.
+
+          Si aquesta política no s'estableix o s'estableix en "false", s'ignora la política del KDC a les plataformes admeses i només es respecta la política AuthNegotiateDelegateWhitelist.
+
+          A Windows, la política del KDC es respecta sempre.</translation>
 <translation id="2838830882081735096">No permetis la migració de dades i ARC</translation>
 <translation id="2839294585867804686">Configuració de la funció Fitxers compartits de la xarxa</translation>
 <translation id="2840269525054388612">Especifica les impressores que un usuari pot fer servir.
@@ -2185,6 +2206,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
 <translation id="603410445099326293">Paràmetres per a l'URL suggerit que utilitza POST</translation>
 <translation id="6034341625190551415">Controla els tipus de compte de sessió pública i de quiosc.</translation>
+<translation id="6034603289689965535">Permet que una pàgina mostri finestres emergents mentre es desactiva</translation>
 <translation id="6036523166753287175">Activa que es pugui travessar el tallafoc des d'un amfitrió d'accés remot</translation>
 <translation id="6070667616071269965">Dissenys de teclat de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="6074963268421707432">No permetis que cap lloc mostri notificacions d'escriptori</translation>

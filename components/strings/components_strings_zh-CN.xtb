@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">您要访问的网站包含危险应用</translation>
 <translation id="1348779747280417563">确认姓名</translation>
 <translation id="1357195169723583938">最近使用过这部设备的用户和使用时间</translation>
+<translation id="1364822246244961190">此政策已被禁用，其值也会被忽略。</translation>
 <translation id="1374468813861204354">建议</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">关于版本</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">显示更多</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">选择送货地址</translation>
+<translation id="1492194039220927094">政策推送：</translation>
 <translation id="1501859676467574491">显示您的 Google 帐号中保存的支付卡</translation>
 <translation id="1507202001669085618">&lt;p&gt;如果您使用的 Wi-Fi 门户网站必须登录才能连接网络，您就会看到这条错误消息。&lt;/p&gt;
     &lt;p&gt;要修正该错误，请在您尝试打开的网页上点击&lt;strong&gt;连接&lt;/strong&gt;。&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。&lt;/p&gt;
 
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
+<translation id="1569487616857761740">输入失效日期</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
@@ -483,6 +486,7 @@
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="366077651725703012">更新信用卡</translation>
 <translation id="3676592649209844519">设备 ID：</translation>
+<translation id="3677008721441257057">您是想访问 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; 吧？</translation>
 <translation id="3678029195006412963">无法签署该请求</translation>
 <translation id="3678529606614285348">在新的无痕式窗口中打开网页 (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">崩溃报告的获取时间：<ph name="CRASH_TIME" />；上传时间：<ph name="UPLOAD_TIME" /></translation>
@@ -1088,6 +1092,7 @@
 <translation id="7220786058474068424">正在处理</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />；<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">您要访问的网站包含恶意软件</translation>
+<translation id="724766306220616965">警告、冲突</translation>
 <translation id="724975217298816891">输入“<ph name="CREDIT_CARD" />”的过期日期和银行卡验证码 (CVC) 以更新您的信用卡详情。在您确认后，您的信用卡详情将与此网站共享。</translation>
 <translation id="7251437084390964440">网络配置不符合 ONC 标准，因此它的某些部分可能会无法导入。
 更多详情：
@@ -1100,6 +1105,7 @@
 <translation id="7300012071106347854">钴蓝色</translation>
 <translation id="7302712225291570345">“<ph name="TEXT" />”</translation>
 <translation id="7309308571273880165">崩溃报告获取时间：<ph name="CRASH_TIME" />（用户已请求上传，但尚未上传）</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />安全浏览<ph name="END_LINK" />警告</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">与连接相关的帮助</translation>
 <translation id="7334320624316649418">恢复顺序调整(&amp;R)</translation>

@@ -1376,6 +1376,7 @@
 <translation id="3016780570757425217">معرفة موقعك</translation>
 <translation id="3020183492814296499">الاختصارات</translation>
 <translation id="3020990233660977256">الرقم التسلسلي: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">فراشة</translation>
 <translation id="3021678814754966447">عرض م&amp;صدر الإطار</translation>
 <translation id="3022978424994383087">لم يتم استيعاب هذا.</translation>
 <translation id="3023464535986383522">الاستماع والاختيار</translation>
@@ -2426,6 +2427,7 @@
 <translation id="4663373278480897665">تم السماح باستخدام الكاميرا</translation>
 <translation id="4664482161435122549">‏خطأ في تصدير PKCS #12</translation>
 <translation id="4665014895760275686">جهة التصنيع</translation>
+<translation id="4665446389743427678">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">انقر لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">سيفقد أعضاء '<ph name="SOURCE_NAME" />' إمكانية الوصول ما لم تتم مشاركة هذه العناصر معهم.</translation>
 <translation id="4672657274720418656">صفحة التنقية</translation>
@@ -2601,6 +2603,7 @@
 <translation id="4917385247580444890">قوية</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> يريد الاتصال مع الإضافة "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4918086044614829423">قبول</translation>
+<translation id="4918221908152712722">تثبيت <ph name="APP_NAME" /> (لا يتطلَّب تنزيلاً)</translation>
 <translation id="4920887663447894854">تم حظر تتبع المواقع التالية لموقعك في هذه الصفحة:</translation>
 <translation id="4922897038695506037">تطلب صفحة <ph name="URL_HOST" /> أذونات إضافية.</translation>
 <translation id="492299503953721473">‏إزالة تطبيقات Android</translation>
@@ -5222,6 +5225,7 @@
 <translation id="8803953437405899238">يمكنك فتح علامة تبويب جديدة بنقرة واحدة</translation>
 <translation id="8804398419035066391">السماح بالاتصال بالمواقع المتعاونة</translation>
 <translation id="8805140816472474147">يُرجى تأكيد إعدادات المزامنة لبدء المزامنة.</translation>
+<translation id="8806680466228877631">يتمكَّن <ph name="SHORTCUT" /> من إعادة فتح علامات التبويب المغلقة عن طريق الخطأ</translation>
 <translation id="8807632654848257479">ثابت</translation>
 <translation id="8808478386290700967">السوق الإلكتروني</translation>
 <translation id="8808686172382650546">قط</translation>
@@ -5489,7 +5493,7 @@
 <translation id="93393615658292258">كلمة المرور فقط</translation>
 <translation id="934503638756687833">‏ستتم أيضًا إزالة العناصر غير المدرجة هنا إذا لزم الأمر. يمكنك الاطلاع على مزيد من المعلومات عن &lt;a href="<ph name="URL" />"&gt;الحماية من البرامج غير المرغوب فيها&lt;/a&gt; في المستند التقني لخصوصية Chrome.</translation>
 <translation id="935490618240037774">‏ستتم مزامنة الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى مع حسابك في Google لكي يتسنّى لك استخدامها على جميع أجهزتك.</translation>
-<translation id="935854577147268200">‏تم تغيير هاتف Smart Lock. يمكنك إدخال كلمة مرورك لتحديث Smart Lock. وفي المرة القادمة، سيفتح هاتفك قفل جهاز <ph name="DEVICE_TYPE" />. ويمكنك إيقاف تشغيل Smart Lock في "الإعدادات".</translation>
+<translation id="935854577147268200">‏تم تعديل إعدادات Smart Lock على هاتفك. يمكنك إدخال كلمة مرورك لتحديث هذه الإعدادات. وفي المرة القادمة، سيفتح هاتفك قفل جهاز <ph name="DEVICE_TYPE" />. ويمكنك إيقاف تشغيل Smart Lock في "الإعدادات".</translation>
 <translation id="936801553271523408">بيانات تشخيص النظام</translation>
 <translation id="93766956588638423">إصلاح الإضافة</translation>
 <translation id="938339467127511841">‏مساحة تخزين نظام التشغيل Linux (نسخة تجريبية)</translation>

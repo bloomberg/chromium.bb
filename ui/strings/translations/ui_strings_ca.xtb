@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">D'esquerra a dreta</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Maximitza</translation>
+<translation id="1409544243779336081">Recomanació d'aplicació</translation>
 <translation id="1413622004203049571">Desactiva les notificacions de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
 <translation id="1643823602425662293">Notificació</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Ara no</translation>
 <translation id="348799646910989694">El prestatge s'amaga automàticament</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dia restant}other{# dies restants}}</translation>
+<translation id="3600969208114796418">Fitxer <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668">Més de <ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Selecció d'una carpeta per penjar</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Fitxer multimèdia: atura</translation>
 <translation id="6845383723252244143">Selecció d'una carpeta</translation>
 <translation id="6845533974506654842">prem</translation>
+<translation id="686304767576508198">Compartit des de</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 hora restant}other{# hores restants}}</translation>
 <translation id="688711909580084195">Pàgina web sense títol</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>

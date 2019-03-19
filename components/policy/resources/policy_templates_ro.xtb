@@ -495,6 +495,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="203096360153626918">Această politică nu afectează aplicațiile Android. Acestea vor putea fi deschise în modul ecran complet, chiar dacă politica este setată la <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Imprimantele dezactivate ale companiei</translation>
+<translation id="2050629715135525072">Controlează capacitatea unui utilizator conectat la o gazdă de acces la distanță de a transfera fișiere între client și gazdă. Aceasta nu se aplică la conexiunile de asistență la distanță, care nu acceptă transferul de fișiere.
+
+          Dacă setarea este dezactivată, transferul de fișiere nu va fi permis. Dacă setarea este activată sau nu este configurată, transferul de fișiere va fi permis.</translation>
 <translation id="2057317273526988987">Permite accesul la o listă de adrese URL</translation>
 <translation id="206623763829450685">Specifică schemele de autentificare HTTP acceptate de <ph name="PRODUCT_NAME" />.
 
@@ -591,6 +594,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2231817271680715693">Importați istoricul de navigare din browserul prestabilit, la prima rulare</translation>
 <translation id="2236488539271255289">Nu permite niciunui site să seteze date locale</translation>
 <translation id="2240879329269430151">Vă permite să setați dacă site-urile web au permisiunea să afișeze ferestre de tip pop-up. Afișarea ferestrelor de tip pop-up poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „BlockPopups”, dar utilizatorul va putea să o schimbe.</translation>
+<translation id="2258126710006312594">Permite utilizatorilor cu acces la distanță să transfere fișiere către/de la gazdă</translation>
 <translation id="2265214338421787313">Cu ajutorul acestei politici, un administrator poate specifica dacă o pagină poate afișa pop-upuri în timpul unloadingului.
 
       Când politica este activată, paginile pot afișa pop-upuri în timpul unloadingului.
@@ -865,6 +869,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Căutările automate de actualizări nu vor fi blocate de această politică, dar pot fi blocate de alte politici. Această funcție este activată doar pe dispozitivele Chrome configurate drept chioșcuri cu lansare automată. Alte dispozitive nu vor fi limitate de această politică.</translation>
 <translation id="2823870601012066791">Locația din registry-ul Windows pentru clienții <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
+<translation id="2836621397261130126">Controlează dacă este respectată aprobarea de la politica KDC pentru a decide dacă să delege tichetele <ph name="KERBEROS" />.
+
+          Dacă politica este activată, autentificarea HTTP respectă aprobarea de la politica KDC, de exemplu: Chrome deleagă datele de conectare numai în cazul în care KDC setează <ph name="OK_AS_DELEGATE" /> pe un tichet de serviciu. Consultă https://tools.ietf.org/html/rfc5896.html pentru mai multe informații. Serviciul trebuie să corespundă și cu politica „AuthNegotiateDelegateWhitelist”.
+
+          Dacă politica nu este setată sau este dezactivată, politica KDC este ignorată pe platformele acceptate și este respectată numai politica „AuthNegotiateDelegateWhitelist”.
+
+          În Windows, politica KDC este respectată întotdeauna.</translation>
 <translation id="2838830882081735096">Nu permite migrarea datelor și ARC</translation>
 <translation id="2839294585867804686">Setări pentru Dispozitive de stocare în rețea</translation>
 <translation id="2840269525054388612">Specifică imprimantele pe care le poate folosi un utilizator.

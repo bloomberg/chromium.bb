@@ -504,6 +504,9 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Wyłączone drukarki firmowe</translation>
+<translation id="2050629715135525072">Kontroluje możliwość przenoszenia plików między klientem a hostem przez użytkownika połączonego z hostem dostępu zdalnego. Nie dotyczy to połączeń z pomocą zdalną, które nie obsługują przenoszenia plików.
+
+          Wyłączenie tego ustawienia uniemożliwia przenoszenie plików. Gdy to ustawienie jest włączone lub nieskonfigurowane, przenoszenie plików jest możliwe.</translation>
 <translation id="2057317273526988987">Zezwalaj na dostęp do listy adresów URL</translation>
 <translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
 
@@ -601,6 +604,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2231817271680715693">Importuj historię przeglądania z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="2236488539271255289">Nie zezwalaj żadnej witrynie na tworzenie danych lokalnych</translation>
 <translation id="2240879329269430151">Umożliwia określenie, czy w witrynach mogą być pokazywane wyskakujące okienka. Pokazywanie wyskakujących okienek może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „BlockPopups”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="2258126710006312594">Umożliwia użytkownikom korzystającym z dostępu zdalnego przenoszenie plików do/z hosta</translation>
 <translation id="2265214338421787313">Ta zasada umożliwia administratorowi zezwolenie na wyświetlanie wyskakujących okienek przez stronę podczas jej zamykania.
 
       Gdy zasada jest włączona, strony mogą wyświetlać wyskakujące okienka podczas ich zamykania.
@@ -873,6 +877,13 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Zasada nie będzie blokować automatycznego sprawdzania dostępności aktualizacji, ale mogą to powodować inne zasady. Ta funkcja jest dostępna tylko na urządzeniach z Chrome skonfigurowanych jako uruchamiane automatycznie kioski. Ta zasada nie dotyczy innych urządzeń.</translation>
 <translation id="2823870601012066791">Lokalizacja w rejestrze systemu Windows dla klientów <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
+<translation id="2836621397261130126">Określa, czy akceptacja przez zasadę KDC jest uwzględniana podczas podejmowania decyzji o przekazywaniu biletów <ph name="KERBEROS" />.
+
+          Jeśli zasada ma wartość Prawda, podczas uwierzytelniania HTTP respektowana jest akceptacja przez zasadę KDC, tzn. Chrome przekazuje dane logowania tylko wtedy, gdy KDC ustawi <ph name="OK_AS_DELEGATE" /> w bilecie usługi. Więcej informacji znajdziesz na stronie https://tools.ietf.org/html/rfc5896.html Usługa musi również znajdować się na liście zasady „AuthNegotiateDelegateWhitelist”.
+
+          Jeśli ta zasada jest nieskonfigurowana lub ma wartość Fałsz, zasada KDC jest ignorowana na obsługiwanych platformach i respektowana jest tylko zasada „AuthNegotiateDelegateWhitelist”.
+
+          W systemie Windows zasada KDC jest zawsze respektowana.</translation>
 <translation id="2838830882081735096">Nie zezwalaj na migrację danych ani na działanie ARC</translation>
 <translation id="2839294585867804686">Ustawienia sieciowych udziałów plików</translation>
 <translation id="2840269525054388612">Określa drukarki, z których może korzystać użytkownik.

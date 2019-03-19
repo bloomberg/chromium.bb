@@ -144,6 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> کیلوبایت توسط سایر برنامه‌ها</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# فایل}one{# فایل}other{# فایل}}</translation>
 <translation id="2017836877785168846">سابقه و تکمیل خودکار را در نوار نشانی پاک می‌کند.</translation>
+<translation id="2018707881002649255">مخاطبینی که در زیر انتخاب می‌کنید، با وب‌سایت<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> هم‌رسانی خواهد شد.</translation>
 <translation id="2021896219286479412">کنترل‌های سایت تمام‌صفحه</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> داده‌هایی در Chrome نیز دارد</translation>
@@ -546,6 +547,7 @@
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5063480226653192405">کاربر </translation>
+<translation id="5073204694187207510">پنهان کردن شبکه تمام‌صفحه</translation>
 <translation id="5082793167783849073">با ایجاد گروه، صفحه‌ها را سریع مقایسه کنید. برای شروع، پیوندی را لمس کنید و نگه دارید.</translation>
 <translation id="5087580092889165836">افزودن کارت</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
@@ -741,11 +743,13 @@
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6448273550210938826">پیشنهادات جستجو و نشانی وب</translation>
 <translation id="6461962085415701688">فایل باز نمی‌شود</translation>
+<translation id="6464977750820128603">‏می‌توانید سایت‌هایی را که در Chrome بازدید می‌کنید مشاهده کنید و تایمرهایی را برای آن‌ها تنظیم کنید.\n\n‏Google اطلاعاتی درباره سایت‌هایی که برای آن‌ها تایمر تنظیم می‌کنید و مدت زمانی که از آن‌ها بازدید می‌کنید، دریافت می‌کند. از این اطلاعات برای بهبود «آسایش دیجیتالی» استفاده می‌شود.</translation>
 <translation id="6475951671322991020">بارگیری ویدیو</translation>
 <translation id="6482749332252372425">به‌دلیل نبودن فضای ذخیره‌سازی، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="6496823230996795692">برای استفاده از <ph name="APP_NAME" /> برای اولین‌ بار، لطفاً به اینترنت وصل شوید.</translation>
 <translation id="6508722015517270189">‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
+<translation id="6532866250404780454">‏سایت‌هایی که در Chrome بازدید می‌کنید، نشان داده نخواهد شد. همه تایمرهای سایت حذف خواهد شد.</translation>
 <translation id="6534565668554028783">‏پاسخ Google بیش از حد طول کشیده است</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> گیگابایت بارگیری شد</translation>
 <translation id="654446541061731451">برگه‌ای برای انتقال با پرتو انتخاب کنید</translation>
@@ -888,6 +892,7 @@
 <translation id="751961395872307827">نمی‌توان به این سایت متصل شد</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7542481630195938534">دریافت پیشنهادها امکان‌پذیر نیست</translation>
+<translation id="7559245342362162951">نمایش برگه‌های گروه در شبکه تمام‌صفحه</translation>
 <translation id="7559975015014302720">«حالت ساده» خاموش است</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
@@ -970,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">پیشنهاد صفحه‌های مرتبط</translation>
 <translation id="8109613176066109935">برای اینکه به نشانک‌ها در همه دستگاه‌هایتان دسترسی داشته باشید، همگام‌سازی را روشن کنید</translation>
+<translation id="8110087112193408731">‏فعالیت Chrome شما در «آسایش دیجیتالی» نشان داده شود؟</translation>
 <translation id="8116925261070264013">صامت‌شده</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8131740175452115882">تأیید</translation>
@@ -1066,6 +1072,7 @@
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>
 <translation id="8922289737868596582">برای استفاده از صفحه‌ها در حالت آفلاین، آن‌ها را با دکمه «گزینه‌های بیشتر» بارگیری کنید</translation>
+<translation id="8937772741022875483">‏فعالیت Chrome شما در «آسایش دیجیتالی» برداشته شود؟</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">باز کردن در پنجره دیگر</translation>
 <translation id="8951232171465285730">‏Chrome ‏<ph name="MEGABYTES" /> مگابایت از داده‌های شما را ذخیره کرده است</translation>
@@ -1097,12 +1104,15 @@
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9139068048179869749">قبل از اجازه به سایت‌ها برای ارسال اعلان ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="9139318394846604261">خرید</translation>
+<translation id="9150694013019234766">جابه‌جایی بین برگه‌ها در گروه برگه شما واقع در نزدیک پایین صفحه‌نمایش</translation>
 <translation id="9155898266292537608">می‌توانید با ضربه‌ای سریع روی کلمه نیز جستجو کنید</translation>
+<translation id="9169594135889675189">افزودن برگه جدید به گروه</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9204836675896933765">۱ فایل باقی مانده است</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">‏تا ۶۰ درصد داده کمتری مصرف کنید و سرعت وب را افزایش دهید. سرورهای Google صفحه‌هایی را که بازدید می‌کنید بهینه می‌کنند.</translation>
 <translation id="9219103736887031265">تصاویر</translation>
+<translation id="926205370408745186">‏فعالیت Chrome شما از «آسایش دیجیتالی» برداشته شود</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="932599481871055447">ذخیره داده و مرور سریع‌تر</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>

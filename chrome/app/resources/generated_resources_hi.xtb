@@ -1376,6 +1376,7 @@
 <translation id="3016780570757425217">आपका स्‍थान पता करना</translation>
 <translation id="3020183492814296499">शॉर्टकट</translation>
 <translation id="3020990233660977256">क्रम संख्या: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">तितली</translation>
 <translation id="3021678814754966447">फ़्रेम का स्रोत &amp;देखें</translation>
 <translation id="3022978424994383087">समझ नहीं आया.</translation>
 <translation id="3023464535986383522">चुनें और सुनें</translation>
@@ -2427,6 +2428,7 @@
 <translation id="4663373278480897665">कैमरे की अनुमति है</translation>
 <translation id="4664482161435122549">PKCS #12 निर्यात गड़बड़ी</translation>
 <translation id="4665014895760275686">निर्माता</translation>
+<translation id="4665446389743427678"><ph name="SITE" /> ने जो भी डेटा सेव किया है उसे मिटा दिया जाएगा.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> को सक्षम करने के लिए क्लिक करें</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक एक्सेस नहीं मिलेगा जब तक कि ये आइटम उनसे शेयर नहीं किए जाते.</translation>
 <translation id="4672657274720418656">शुद्ध पेज</translation>
@@ -2602,6 +2604,7 @@
 <translation id="4917385247580444890">सशक्त</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" एक्‍सटेंशन से संचार करना चाहता है</translation>
 <translation id="4918086044614829423">स्वीकार करें</translation>
+<translation id="4918221908152712722"><ph name="APP_NAME" /> इंस्टॉल करें (डाउनलोड करने की ज़रूरत नहीं है)</translation>
 <translation id="4920887663447894854">निम्न साइटों को इस पेज पर आपकी स्थिति ट्रैक करने से अवरोधित कर दिया गया है:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> ने ज़्यादा अनुमतियों का अनुरोध किया है.</translation>
 <translation id="492299503953721473">Android ऐप्लिकेशन निकालें</translation>
@@ -5216,6 +5219,7 @@
 <translation id="8803953437405899238">एक क्लिक में नया टैब खोलें</translation>
 <translation id="8804398419035066391">सहयोगी वेबसाइटों से डॉयलॉग करें</translation>
 <translation id="8805140816472474147">सिंक शुरू करने के लिए सिंक सेटिंग की पुष्टि करें.</translation>
+<translation id="8806680466228877631">गलती से बंद हुए टैब <ph name="SHORTCUT" /> की मदद से खोले जा सकते हैं</translation>
 <translation id="8807632654848257479">स्‍थिर</translation>
 <translation id="8808478386290700967">वेब स्टोर</translation>
 <translation id="8808686172382650546">बिल्ली</translation>

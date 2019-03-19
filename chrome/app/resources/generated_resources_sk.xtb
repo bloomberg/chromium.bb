@@ -1375,6 +1375,7 @@
 <translation id="3016780570757425217">Zistiť vašu polohu</translation>
 <translation id="3020183492814296499">Skratky</translation>
 <translation id="3020990233660977256">Sériové číslo: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Motýľ</translation>
 <translation id="3021678814754966447">&amp;Zobraziť zdrojový kód rámca</translation>
 <translation id="3022978424994383087">Nebolo rozumieť.</translation>
 <translation id="3023464535986383522">Počúvanie vybraného textu</translation>
@@ -2429,6 +2430,7 @@
 <translation id="4663373278480897665">Kamera je povolená</translation>
 <translation id="4664482161435122549">Chyba exportovania súborov PKCS #12</translation>
 <translation id="4665014895760275686">Výrobca</translation>
+<translation id="4665446389743427678">Odstránia sa všetky údaje, ktoré uložil web <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Kliknutím povoľte doplnok <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Členovia zdroja <ph name="SOURCE_NAME" /> stratia prístup, pokiaľ s nimi tieto položky nezačnete zdieľať.</translation>
 <translation id="4672657274720418656">Destilovať stránku</translation>
@@ -2604,6 +2606,7 @@
 <translation id="4917385247580444890">Silné</translation>
 <translation id="4918021164741308375">Web <ph name="ORIGIN" /> chce komunikovať s rozšírením <ph name="EXTENSION_NAME" /></translation>
 <translation id="4918086044614829423">Prijať</translation>
+<translation id="4918221908152712722">Nainštalujte si <ph name="APP_NAME" /> (bez nutnosti stiahnutia)</translation>
 <translation id="4920887663447894854">Tieto webové stránky majú zablokované sledovanie vašej polohy na tejto stránke:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> vyžaduje ďalšie povolenia.</translation>
 <translation id="492299503953721473">Odstrániť aplikácie pre Android</translation>
@@ -5223,6 +5226,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8803953437405899238">Otvorte novú kartu jedným kliknutím</translation>
 <translation id="8804398419035066391">Komunikovať so spolupracujúcimi webmi</translation>
 <translation id="8805140816472474147">Spustite synchronizáciu potvrdením jej nastavení.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> dokáže znova otvoriť omylom zatvorené karty</translation>
 <translation id="8807632654848257479">Stabilné</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Mačka</translation>

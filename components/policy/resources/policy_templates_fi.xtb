@@ -437,6 +437,7 @@
       Jos tämä asetus on käytössä, salasanojen suojauspalvelu tallentaa näissä URL-osoitteissa salasanojen tunnisteita, joiden avulla tarkistetaan, onko salasanoja käytetty aiemmin.
       Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, salasanojen suojauspalvelu tallentaa salasanojen tunnisteita vain osoitteessa https://accounts.google.com.
       Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
+<translation id="1919802376548418720">Käytä KDC-käytäntöä kirjautumistietojen valtuuttamiseen.</translation>
 <translation id="1920046221095339924">Salli hallinnoidut käyttökerrat laitteella</translation>
 <translation id="1929709556673267855">Määritä laitteisiin yhdistettyjen yritystulostimien asetuksia.
 
@@ -506,6 +507,9 @@
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Käytöstä poistetut yritystulostimet</translation>
+<translation id="2050629715135525072">Määrittää, voivatko etäkäytön isäntään yhdistetyt käyttäjät siirtää tiedostoja asiakkaan ja isännän välillä. Tämä ei koske etätukiyhteyksiä, jotka eivät tue tiedostonsiirtoa.
+
+          Jos tämä asetus on poistettu käytöstä, tiedostonsiirtoa ei sallita. Jos tämä asetus on otettu käyttöön tai sitä ei ole asetettu, tiedostonsiirto sallitaan.</translation>
 <translation id="2057317273526988987">Salli tiettyjen URL-osoitteiden käyttö</translation>
 <translation id="206623763829450685">Määrittää, mitä HTTP-todennustapoja <ph name="PRODUCT_NAME" /> tukee.
  
@@ -602,6 +606,16 @@
 <translation id="2231817271680715693">Tuo selaushistoria oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="2236488539271255289">Älä salli sivustojen luoda tiedostoja tietokoneelle</translation>
 <translation id="2240879329269430151">Voit määrittää, saavatko sivustot näyttää ponnahdusikkunoita. Ponnahdusikkunoiden näyttäminen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole määritetty, käytetään BlockPopups-asetusta, ja käyttäjä voi muuttaa asetusta.</translation>
+<translation id="2258126710006312594">Anna etäkäyttäjien siirtää tiedostoja isännälle/isännältä</translation>
+<translation id="2265214338421787313">Tämä käytäntö antaa järjestelmänvalvojan määrittää, että sivu voi näyttää ponnahdusikkunoita tyhjentämisen aikana.
+
+      Kun käytännön arvoksi on määritetty käytössä, sivut voivat näyttää ponnahdusikkunoita niiden tyhjentämisen aikana.
+
+      Kun käytännön arvoksi on määritetty ei käytössä tai arvoa ei ole määritetty, sivut eivät saa näyttää ponnahdusikkunoita tyhjentämisen aikana teknisten tietojen mukaisesti (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Tämä käytäntö poistetaan Chrome 82:ssa.
+
+      Katso https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Ota käyttöön synkronointisuostumuksen näyttäminen kirjautumisen aikana</translation>
 <translation id="2274864612594831715">Tämän käytännön avulla virtuaalinen näppäimistö voidaan ottaa käyttöön syöttölaitteena Chrome-käyttöjärjestelmässä. Käyttäjät eivät voi ohittaa tätä käytäntöä.
 
@@ -864,6 +878,13 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Tämä käytäntö ei estä automaattisia päivitysten tarkastuksia, mutta muut käytännöt voivat estää ne. Tämä ominaisuus on käytössä vain Chrome-laitteissa, jotka on määritetty automaattisesti käynnistyviksi kioskeiksi. Tämä käytäntö ei rajoita muita laitteita.</translation>
 <translation id="2823870601012066791">Käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivien asiakkaiden sijainti Windows-rekisterissä:</translation>
 <translation id="2824715612115726353">Ota incognito-tila käyttöön</translation>
+<translation id="2836621397261130126">Määrittää, noudatetaanko KDC-käytännön hyväksyntää päätettäessä <ph name="KERBEROS" />-tikettien delegoinnista.
+
+          Jos käytännön arvo on tosi, HTTP-todennus noudattaa KDC-käytännön hyväksyntää, eli Chrome delegoi kirjautumistietoja vain, jos KDC määrittää palvelutikettiin <ph name="OK_AS_DELEGATE" />. Lue lisää osoitteesta https://tools.ietf.org/html/rfc5896.html. Palvelun pitäisi myös vastata AuthNegotiateDelegateWhitelist-käytäntöä.
+
+          Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty epätosi, KDC-käytäntö ohitetaan tuetuilla alustoilla ja vain AuthNegotiateDelegateWhitelist-käytäntöä noudatetaan.
+
+          Windowsissa noudatetaan aina KDC-käytäntöä.</translation>
 <translation id="2838830882081735096">Estä tietojen siirtäminen ja ARC</translation>
 <translation id="2839294585867804686">Verkkotiedostojen jakamisen asetukset</translation>
 <translation id="2840269525054388612">Määritä tulostimet, joita käyttäjä voi käyttää.
@@ -2210,6 +2231,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="602728333950205286">Oletushakupalvelun Instant-URL-osoite</translation>
 <translation id="603410445099326293">POST-metodia käyttävän ehdotushaun URL-osoitteen parametrit</translation>
 <translation id="6034341625190551415">Määrittää julkisten istuntojen ja kioskien tilityypit</translation>
+<translation id="6034603289689965535">Sallii sivun näyttää ponnahdusikkunoita sen tyhjentämisen aikana</translation>
 <translation id="6036523166753287175">Ota käyttöön palomuurin siirto etäisännästä</translation>
 <translation id="6070667616071269965">Laitteen kirjautumisnäytön näppäimistöasettelut</translation>
 <translation id="6074963268421707432">Älä anna sivustojen näyttää työpöytäilmoituksia</translation>

@@ -429,6 +429,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne innstillingen er slått på, registrerer tjenesten for passordbeskyttelse fingeravtrykkene til passord på disse nettadressene. Dette gjøres for å oppdage om de samme passordene også blir brukt andre steder.
       Hvis denne innstillingen er slått av eller ikke er angitt, registrerer tjenesten for passordbeskyttelse bare fingeravtrykkene til passord på https://accounts.google.com.
       Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
+<translation id="1919802376548418720">Bruk KDC-regel til å delegere legitimasjon.</translation>
 <translation id="1920046221095339924">Tillat administrerte økter på enheten</translation>
 <translation id="1929709556673267855">Gir konfigurasjoner for bedriftsskrivere som er bundet til enheter.
 
@@ -498,6 +499,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverte bedriftsskrivere</translation>
+<translation id="2050629715135525072">Bestemmer muligheten en bruker som er koblet til en ekstern tilgangsvert har til å overføre filer mellom klienten og verten. Dette er ikke relevant for eksterne assistansetilkoblinger, som ikke støtter filoverføring.
+
+          Hvis denne innstillingen er deaktivert, er ikke filoverføring tillatt. Hvis denne innstillingen er aktivert, er filoverføring tillatt.</translation>
 <translation id="2057317273526988987">Gi tilgang til en liste med nettadresser</translation>
 <translation id="206623763829450685">Spesifiserer hvilke HTTP-autentiseringsskjemaer som støttes av <ph name="PRODUCT_NAME" />.
 
@@ -594,6 +598,16 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="2236488539271255289">Ikke la noen nettsteder angi lokale data</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
+<translation id="2258126710006312594">Tillatt at brukere med ekstern tilgang kan overføre filer til/fra verten</translation>
+<translation id="2265214338421787313">Denne regelen lar administratorer angi at sider kan vise forgrunnsvinduer mens de lastes ut.
+
+      Når regelen er satt til «enabled» (aktivert), kan sider vise forgrunnsvinduer mens de lastes ut.
+
+      Når regelen er satt til «disabled» (deaktivert) eller ikke er angitt, kan sider ikke vise forgrunnsvinduer mens de lastes ut, i tråd med spesifikasjonen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Denne regelen fjernes i Chrome 82.
+
+      Se https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktiver visning av samtykke for synkronisering under påloggingen</translation>
 <translation id="2274864612594831715">Denne innstillingen konfigurerer aktiveringen av det virtuelle tastaturet som en inndataenhet på Chrome OS. Brukerne kan ikke overstyre denne innstillingen.
 
@@ -865,6 +879,13 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Regelen blokkerer ikke enheter fra å se etter oppdateringer automatisk, men andre regler kan blokkere dette. Denne funksjonen er bare aktivert på Chrome-enheter som er konfigurert til å starte kioskapper automatisk. Andre enheter begrenses ikke av denne regelen.</translation>
 <translation id="2823870601012066791">Plasseringen av Windows-registeret for <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
+<translation id="2836621397261130126">Bestemmer om regelen for godkjenning fra KDC overholdes når det avgjøres om <ph name="KERBEROS" />-saker skal delegeres eller ikke.
+
+          Hvis denne regelen er satt til «true» (sann), overholder HTTP-autentiseringen regelen for godkjenning fra KDC, dvs. Chrome delegerer kun legitimasjon hvis KDC angir <ph name="OK_AS_DELEGATE" /> på en servicesak. Se https://tools.ietf.org/html/rfc5896.html for mer informasjon. Tjenesten må også samsvare med «AuthNegotiateDelegateWhitelist»-regelen.
+
+          Hvis denne regelen er satt til «false» (usann) eller ikke er angitt, ignoreres KDC-regelen på støttede plattformer, og kun «AuthNegotiateDelegateWhitelist»-regelen overholdes.
+
+          På Windows overholdes alltid KDC-regelen.</translation>
 <translation id="2838830882081735096">Ikke tillat dataoverføring og ARC</translation>
 <translation id="2839294585867804686">Innstillinger for delte nettverksressurser</translation>
 <translation id="2840269525054388612">Angir skriverne som en bruker kan bruke.
@@ -2244,6 +2265,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="603410445099326293">Parametere for forslagsnettadressser som bruker POST</translation>
 <translation id="6034341625190551415">Kontrollerer typer kioskkontoer og offentlige økter.</translation>
+<translation id="6034603289689965535">Tillater sider å vise forgrunnsvinduer mens de lastes ut</translation>
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
 <translation id="6070667616071269965">Tastaturoppsett for påloggingsskjermen på enheten</translation>
 <translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarsler</translation>

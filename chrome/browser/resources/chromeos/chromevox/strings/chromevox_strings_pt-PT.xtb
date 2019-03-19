@@ -142,7 +142,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1990932729021763163">Cabeçalho da linha:</translation>
 <translation id="2002895034995108595">Repor mapa de teclas atual</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{parêntese reto esquerdo}other{# parênteses retos esquerdos}}</translation>
-<translation id="2009187674653301682">Sem superior à linha</translation>
+<translation id="2009187674653301682">Sem ser superior à linha</translation>
 <translation id="2010555995361223825">Menus do ChromeVox</translation>
 <translation id="2045490512405922022">desmarcada</translation>
 <translation id="20601713649439366">Não existe nenhuma expressão matemática anterior.</translation>
@@ -172,7 +172,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2278490101488436824">Deslizar rapidamente com três dedos para a esquerda</translation>
 <translation id="2281234842553884450">Controlo de deslize anterior</translation>
 <translation id="2311237334957139798">Mover para anterior por nível de detalhe</translation>
-<translation id="2314393392395134769">Sem inferior à linha</translation>
+<translation id="2314393392395134769">Sem ser inferior à linha</translation>
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Painel de separadores</translation>
 <translation id="2344193891939537199">Controlo de hora e data</translation>

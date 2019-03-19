@@ -144,11 +144,13 @@
 <translation id="200815880754187296">기타 앱 <ph name="KILOBYTES" />KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{파일 #개}other{파일 #개}}</translation>
 <translation id="2017836877785168846">검색주소창의 검색 기록 및 자동 완성 항목을 삭제합니다.</translation>
+<translation id="2018707881002649255">아래에서 선택한 연락처가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 웹사이트와 공유됩니다.</translation>
 <translation id="2021896219286479412">전체화면 사이트 컨트롤</translation>
 <translation id="2038563949887743358">데스크톱 버전으로 보기 사용 설정</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />도 Chrome에서 데이터를 보유하고 있습니다</translation>
 <translation id="2045104531052923016">기타 앱 <ph name="GIGABYTES" />GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">사이트 일시중지됨</translation>
 <translation id="2063713494490388661">탭하여 검색</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
@@ -545,6 +547,7 @@
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
 <translation id="5063480226653192405">사용</translation>
+<translation id="5073204694187207510">전체화면 그리드 숨기기</translation>
 <translation id="5082793167783849073">그룹을 만들어서 페이지를 빠르게 비교하세요. 시작하려면 링크를 길게 터치합니다.</translation>
 <translation id="5087580092889165836">카드 추가</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
@@ -740,11 +743,13 @@
 <translation id="6447842834002726250">쿠키</translation>
 <translation id="6448273550210938826">추천 검색어 및 추천 URL</translation>
 <translation id="6461962085415701688">파일을 열 수 없습니다</translation>
+<translation id="6464977750820128603">Chrome에서 내가 방문한 사이트를 보고 사이트에 타이머를 설정할 수 있습니다.\n\nGoogle에서는 타이머가 설정된 사이트와 사이트 방문 시간 정보를 수집합니다. 이 정보는 디지털 웰빙을 개선하는 데 사용됩니다.</translation>
 <translation id="6475951671322991020">동영상 다운로드</translation>
 <translation id="6482749332252372425">저장공간이 부족하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="6496823230996795692">처음으로 <ph name="APP_NAME" />을(를) 사용하는 경우 인터넷에 연결하세요.</translation>
 <translation id="6508722015517270189">Chrome 다시 시작하기</translation>
 <translation id="6527303717912515753">공유</translation>
+<translation id="6532866250404780454">Chrome에서 방문한 사이트가 표시되지 않습니다. 모든 사이트 항목이 삭제됩니다.</translation>
 <translation id="6534565668554028783">Google에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
 <translation id="6538442820324228105"><ph name="GBS" />GB 다운로드됨</translation>
 <translation id="654446541061731451">공유할 탭을 선택하세요.</translation>
@@ -777,6 +782,7 @@
 <translation id="6709133671862442373">뉴스</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6712388303105732168">'비슷한 항목 더보기' 버튼을 사용하여 Google에서 비슷한 항목을 더 확인하세요.</translation>
+<translation id="671481426037969117"><ph name="FQDN" /> 타이머가 종료되었습니다. 타이머는 내일 다시 시작됩니다.</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
 <translation id="6746124502594467657">아래로 이동</translation>
 <translation id="6766622839693428701">닫으려면 아래로 스와이프하세요.</translation>
@@ -886,6 +892,7 @@
 <translation id="751961395872307827">사이트에 연결할 수 없습니다</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7542481630195938534">추천을 받을 수 없음</translation>
+<translation id="7559245342362162951">그룹 탭을 전체화면 그리드로 표시</translation>
 <translation id="7559975015014302720">라이트 모드 사용 중지됨</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
 <translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
@@ -968,6 +975,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">관련 페이지 추천</translation>
 <translation id="8109613176066109935">어느 기기에서나 내 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
+<translation id="8110087112193408731">디지털 웰빙에서 Chrome 활동을 표시할까요?</translation>
 <translation id="8116925261070264013">음소거됨</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8131740175452115882">확인</translation>
@@ -1064,6 +1072,7 @@
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8920114477895755567">부모님의 세부정보를 기다리는 중</translation>
 <translation id="8922289737868596582">옵션 더보기 버튼을 눌러 페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
+<translation id="8937772741022875483">디지털 웰빙에서 Chrome 활동을 삭제할까요?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">다른 창에서 열기</translation>
 <translation id="8951232171465285730">Chrome을 통해 <ph name="MEGABYTES" />MB를 절약했습니다.</translation>
@@ -1095,12 +1104,15 @@
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9139068048179869749">사이트에서 알림을 보내도록 허용하기 전에 확인(권장)</translation>
 <translation id="9139318394846604261">쇼핑</translation>
+<translation id="9150694013019234766">화면 하단의 탭 그룹에서 탭 간 전환</translation>
 <translation id="9155898266292537608">단어를 살짝 탭하여 검색할 수도 있습니다</translation>
+<translation id="9169594135889675189">그룹에 새 탭 추가</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9204836675896933765">파일 1개가 남았습니다.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">데이터 사용량을 최대 60퍼센트까지 절약하고 웹 속도를 높이세요. Google 서버에서 내가 방문하는 페이지를 최적화합니다.</translation>
 <translation id="9219103736887031265">이미지</translation>
+<translation id="926205370408745186">디지털 웰빙에서 Chrome 활동 삭제</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="932599481871055447">데이터 절약 모드</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>

@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1296843352074373664">Người dùng Google</translation>
 <translation id="1383286653814676580">Dùng để chạy trang đăng nhập vào Nhà cung cấp chứng chỉ Google.</translation>
-<translation id="1813213595719100133">Bạn không được phép đăng nhập bằng Tài khoản Google trên miền này. Hãy thử một tài khoản khác.</translation>
-<translation id="195232392645680541">Đăng nhập bằng Tài khoản Google của bạn.</translation>
 <translation id="2595469428674600431">Rất tiếc, chúng tôi không thể xác minh được mật khẩu Windows của bạn. Vui lòng thử lại.</translation>
-<translation id="2620296592151848576">Mật khẩu của bạn đã thay đổi trên Google. Vui lòng nhập mật khẩu Windows hiện tại của bạn để đồng bộ hóa Tài khoản Windows với Tài khoản Google của bạn.</translation>
-<translation id="3697479376287066058">Bạn đã sử dụng Tài khoản Google này để đăng ký một tài khoản khác trên máy tính này. Vui lòng đăng nhập bằng một Tài khoản Google khác.</translation>
 <translation id="4057329986137569701">Đã xảy ra lỗi nội bộ.</translation>
-<translation id="4128734677223009352">Không đăng nhập được vào Tài khoản Google của bạn. Hãy đảm bảo rằng máy tính này đã kết nối Internet rồi thử lại.</translation>
-<translation id="4175879131870609567">Hiện tại, chỉ người dùng đã khóa máy trạm này mới được phép đăng nhập vào hệ thống.</translation>
-<translation id="6613125771987245372">Bạn không được phép đăng nhập bằng Tài khoản Google này. Hãy thử tài khoản khác.</translation>
 <translation id="7357241217513796177">Hãy đảm bảo bạn có kết nối mạng rồi thử lại.</translation>
-<translation id="7447167742844823007">Đăng nhập bằng Tài khoản Google của bạn</translation>
 <translation id="7463006580194749499">Thêm người</translation>
-<translation id="782439148700312319">Không thể đăng ký dịch vụ quản lý doanh nghiệp cho máy tính này.  Vui lòng đăng nhập bằng một Tài khoản Google khác.</translation>
 <translation id="8440458902131551808">Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với quản trị viên hệ thống.</translation>
 <translation id="8474372283141585908">Nhà cung cấp chứng chỉ Google</translation>
 <translation id="866458870819756755">Không thể tạo người dùng.</translation>

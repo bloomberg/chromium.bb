@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Натисніть кнопку <ph name="BEGIN_BOLD" />Усе одно змінити<ph name="END_BOLD" />, якщо вона з’явиться</translation>
 <translation id="1668054258064581266">Якщо видалити обліковий запис із Chromium, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
 <translation id="1688750314291223739">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Chromium на будь-якому комп’ютері.</translation>
+<translation id="1701453112166152218">Якщо зображення не має корисного опису, Chromium спробує додати його. Google сканує зображення. Ви можете будь-коли вимкнути це в налаштуваннях.</translation>
 <translation id="1708666629004767631">Доступна нова, надійніша версія Chromium.</translation>
+<translation id="1736416771649788185">Якщо зображення не має корисного опису, Chromium спробує додати його. Google сканує зображення.</translation>
 <translation id="1766096484055239003">Адміністратор вимагає перезапустити Chromium, щоб застосувати оновлення</translation>
 <translation id="1774152462503052664">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="1779356040007214683">Щоб зробити Chromium безпечнішим, ми вимкнути деякі розширення, джерелом яких не є <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, і які, можливо, було додано без вашого відома.</translation>
@@ -268,6 +270,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="9089354809943900324">Версія Chromium застаріла</translation>
 <translation id="91086099826398415">Відкрити посилання в новій &amp;вкладці Chromium</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
+<translation id="9158494823179993217">Ваш системний адміністратор налаштував Chromium відкривати сторінку <ph name="TARGET_URL_HOSTNAME" /> в альтернативному веб-переглядачі.</translation>
 <translation id="918373042641772655">Якщо від’єднати користувача <ph name="USERNAME" />, вашу історію, закладки, налаштування й інші дані Chromium, збережені на цьому пристрої, буде видалено. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="GOOGLE_DASHBOARD_LINK" />Інформаційній панелі Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Ви ввійшли в Chromium</translation>

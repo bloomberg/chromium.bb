@@ -266,7 +266,7 @@
 <translation id="9089354809943900324">Версия Chromium устарела</translation>
 <translation id="91086099826398415">Открыть ссылку в новой вкладке браузера Chromium</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
-<translation id="9158494823179993217">Ваш системный администратор задал настройки, согласно которым Chromium должен запускать альтернативный браузер для доступа к сайту<ph name="TARGET_URL_HOSTNAME" />.</translation>
+<translation id="9158494823179993217">Ваш системный администратор задал настройки, согласно которым Chromium должен запускать альтернативный браузер для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Если вы отключите аккаунт <ph name="USERNAME" />, все сохраненные на этом устройстве закладки, настройки, история и другие данные Chromium будут удалены. Данные в вашем аккаунте Google сохранятся, и вы сможете управлять ими в <ph name="GOOGLE_DASHBOARD_LINK" />Личном кабинете Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Вы вошли в Chromium</translation>

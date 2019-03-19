@@ -417,6 +417,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude předvídání akcí sítě akt
       Pokud je toto nastavení zapnuté, bude služba pro ochranu hesel na těchto adresách URL pořizovat otisk hesla pro účely detekce jeho opětovného použití.
       Pokud je toto nastavení vypnuté nebo není zadané, bude služba pro ochranu hesel pořizovat otisk hesla pouze na adrese https://accounts.google.com.
       Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
+<translation id="1919802376548418720">K delegování Identifikačních údajů používat zásadu KDC.</translation>
 <translation id="1920046221095339924">Povolit v zařízení spravovanou relaci</translation>
 <translation id="1929709556673267855">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
 
@@ -486,6 +487,9 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 <translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
 <translation id="203096360153626918">Tato zásada nemá vliv na aplikace pro Android. Budou moci přejít do režimu celé obrazovky i v případě, že je tato zásada nastavena na hodnotu <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Zakázané podnikové tiskárny</translation>
+<translation id="2050629715135525072">Určuje, zda uživatel připojený k hostiteli vzdáleného přístupu může přenášet soubory mezi klientem a hostitelem. Nevztahuje se na připojení pro vzdálenou pomoc, u nichž přenos souborů není podporován.
+
+          Pokud je toto nastavení vypnuté, přenos souborů nebude povolen. Pokud je toto nastavení zapnuté nebo není nastavené, přenos souborů bude povolen.</translation>
 <translation id="2057317273526988987">Povolit přístup k seznamu adres URL</translation>
 <translation id="206623763829450685">Určuje, která schémata ověření v protokolu HTTP bude prohlížeč <ph name="PRODUCT_NAME" /> podporovat.
 
@@ -578,6 +582,16 @@ Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout 
 <translation id="2240879329269430151">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
 
           Není-li zásada nastavena, bude použita zásada BlockPopups a uživatelé ji budou moci změnit.</translation>
+<translation id="2258126710006312594">Povolit uživatelům vzdáleného přístupu přenos souborů do/z hostitele</translation>
+<translation id="2265214338421787313">Pomocí této zásady může správce zadat, že stránka při odstraňování z paměti může zobrazovat vyskakovací okna.
+
+      Když je tato zásada nastavená na Zapnuto, stránky při odstraňování z paměti mohou zobrazovat vyskakovací okna.
+
+      Když je tato zásada nastavená na Vypnuto nebo není nastavená, stránky nemají povoleno zobrazovat při odstraňování z paměti vyskakovací okna podle specifikace (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      V Chromu 82 tato zásada bude odstraněna.
+
+      Viz https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Zapnout zobrazení souhlasu se synchronizací při přihlašování</translation>
 <translation id="2274864612594831715">Tato zásada konfiguruje aktivaci virtuální klávesnice jako vstupního zařízení v systému Chrome OS. Tuto zásadu nemohou uživatelé přepsat.
 
@@ -853,6 +867,13 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Tato zásada nebude blokovat automatické kontroly dostupnosti aktualizací, mohou je však blokovat jiné zásady. Tato funkce je aktivovaná jen na zařízeních Chrome, která jsou nakonfigurována jako automaticky spouštěné terminály. Ostatní zařízení touto zásadou omezena nebudou.</translation>
 <translation id="2823870601012066791">Umístění v registru systému Windows pro klienty <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
+<translation id="2836621397261130126">Určuje, zda se při rozhodování o delegování lístků <ph name="KERBEROS" /> respektuje schválení pomocí zásady KDC.
+
+          Pokud je tato zásada nastavená na hodnotu true, ověření přes HTTP respektuje schválení pomocí zásady KDC, tj. Chrome deleguje identifikační údaje jen v případě, že KDC u lístku služby nastaví <ph name="OK_AS_DELEGATE" />. Další informace najdete na stránce https://tools.ietf.org/html/rfc5896.html. Služba by také měla odpovídat zásadě AuthNegotiateDelegateWhitelist.
+
+          Pokud tato zásada není nastavená nebo je nastavená na hodnotu false, zásada KDC se na podporovaných platformách ignoruje a respektuje se jen zásada AuthNegotiateDelegateWhitelist.
+
+          V systémech Windows se zásada KDC vždy respektuje.</translation>
 <translation id="2838830882081735096">Zakázat migraci dat a rozšíření ARC</translation>
 <translation id="2839294585867804686">Nastavení sdílených síťových složek</translation>
 <translation id="2840269525054388612">Určuje, které tiskárny uživatel může používat.
@@ -2230,6 +2251,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="603410445099326293">Parametry pro adresu URL návrhu, která používá metodu POST</translation>
 <translation id="6034341625190551415">Ovládá typy účtů veřejných relací a veřejných terminálů</translation>
+<translation id="6034603289689965535">Povoluje stránce zobrazovat při odstraňování z paměti vyskakovací okna</translation>
 <translation id="6036523166753287175">Povolení přechodu přes bránu firewall z hostitele vzdáleného připojení</translation>
 <translation id="6070667616071269965">Rozložení klávesnice na přihlašovací obrazovce zařízení</translation>
 <translation id="6074963268421707432">Nepovolovat žádnému webu zobrazovat oznámení na ploše</translation>

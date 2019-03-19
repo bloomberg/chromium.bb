@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Aquest lloc web conté aplicacions perilloses</translation>
 <translation id="1348779747280417563">Confirma el nom</translation>
 <translation id="1357195169723583938">Qui ha utilitzat el dispositiu recentment i quan</translation>
+<translation id="1364822246244961190">Aquesta política està bloquejada i, per tant, se n'ignorarà el valor.</translation>
 <translation id="1374468813861204354">suggeriments</translation>
 <translation id="1374692235857187091">Index-4x6 (postal)</translation>
 <translation id="1375198122581997741">Quan a la versió</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">Mostra'n més</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Tria l'adreça d'enviament</translation>
+<translation id="1492194039220927094">Tramesa automàtica de les polítiques:</translation>
 <translation id="1501859676467574491">Mostra les targetes del Compte de Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Aquest error es mostra si utilitzeu un portal Wi-Fi en què cal que inicieu la sessió per connectar-vos a Internet.&lt;/p&gt;
     &lt;p&gt;Per solucionar l'error, feu clic a &lt;strong&gt;Connecta&lt;/strong&gt; a la pàgina que proveu d'obrir.</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;No es pot establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) del vostre dispositiu no són correctes.&lt;/p&gt;
 
       &lt;p&gt;Canvieu la data i l'hora a la secció &lt;strong&gt;General&lt;/strong&gt; de l'aplicació &lt;strong&gt;Configuració&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Introdueix la data de caducitat</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">S'ha produït un error en mostrar aquesta pàgina web.</translation>
 <translation id="1592005682883173041">Accés a les dades locals</translation>
@@ -487,6 +490,7 @@
 <translation id="3658742229777143148">Revisió</translation>
 <translation id="366077651725703012">Actualitza la targeta de crèdit</translation>
 <translation id="3676592649209844519">Identificador del dispositiu:</translation>
+<translation id="3677008721441257057">Volies dir &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">La sol·licitud no s'ha pogut signar</translation>
 <translation id="3678529606614285348">Obre la pàgina en una finestra d'incògnit nova (Ctrl+Maj+N)</translation>
 <translation id="3679803492151881375">Informe d'error generat el <ph name="CRASH_TIME" /> i enviat el <ph name="UPLOAD_TIME" /></translation>
@@ -1093,6 +1097,7 @@
 <translation id="7220786058474068424">S'està processant</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Aquest lloc web conté programari maliciós</translation>
+<translation id="724766306220616965">Advertiments i conflictes</translation>
 <translation id="724975217298816891">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /> per actualitzar-ne els detalls. Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc.</translation>
 <translation id="7251437084390964440">La configuració de la xarxa no compleix l'estàndard ONC. Pot ser que algunes opcions de configuració no s'hagin importat.
 Detalls addicionals:
@@ -1105,6 +1110,7 @@ Detalls addicionals:
 <translation id="7300012071106347854">Blau elèctric</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">S'ha capturat un informe d'error (<ph name="CRASH_TIME" />) (pujada sol·licitada per l'usuari, encara no s'ha dut a terme)</translation>
+<translation id="7313965965371928911">Advertiments de <ph name="BEGIN_LINK" />Navegació segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ajuda amb la connexió</translation>
 <translation id="7334320624316649418">&amp;Refés el canvi d'ordre</translation>

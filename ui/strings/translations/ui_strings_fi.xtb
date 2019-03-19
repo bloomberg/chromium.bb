@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Vasemmalta oikealle</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1398853756734560583">Suurenna</translation>
+<translation id="1409544243779336081">Sovellussuositus</translation>
 <translation id="1413622004203049571">Poista ilmoitukset käytöstä sovellukselta <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuutti ja }other{# minuuttia ja }}</translation>
 <translation id="1643823602425662293">Ilmoitus</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Ei nyt</translation>
 <translation id="348799646910989694">Hylly piilotettu automaattisesti</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 päivä jäljellä}other{# päivää jäljellä}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-tiedosto</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Hae ”<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Valitse lähetettävä kansio</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Media: pysäytä</translation>
 <translation id="6845383723252244143">Valitse kansio</translation>
 <translation id="6845533974506654842">paina</translation>
+<translation id="686304767576508198">Jaettu kohteesta</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 tunti jäljellä}other{# tuntia jäljellä}}</translation>
 <translation id="688711909580084195">Nimetön verkkosivu</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> Pt/s</translation>

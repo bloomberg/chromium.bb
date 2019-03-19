@@ -1004,6 +1004,7 @@
 <translation id="2484959914739448251">要想清除您的所有已同步设备中的浏览数据以及您的 Google 帐号中的浏览数据，请<ph name="BEGIN_LINK" />输入您的密码<ph name="END_LINK" />。</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2487067538648443797">添加新书签</translation>
+<translation id="2489829450872380594">下次，您只需使用新手机就能解锁 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="2489918096470125693">添加文件夹(&amp;F)...</translation>
 <translation id="249113932447298600">抱歉，系统目前不支持设备“<ph name="DEVICE_LABEL" />”。</translation>
 <translation id="249303669840926644">无法完成注册</translation>
@@ -1371,6 +1372,7 @@
 <translation id="3016780570757425217">获取您的位置</translation>
 <translation id="3020183492814296499">快捷键</translation>
 <translation id="3020990233660977256">序列号：<ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">蝴蝶</translation>
 <translation id="3021678814754966447">查看框架的源代码(&amp;V)</translation>
 <translation id="3022978424994383087">无法解析您所说的内容。</translation>
 <translation id="3023464535986383522">随选朗读</translation>
@@ -1758,6 +1760,7 @@
 <translation id="3627588569887975815">在隐身窗口中打开链接(&amp;G)</translation>
 <translation id="3627671146180677314">Netscape 证书续订时间</translation>
 <translation id="3627879631695760395">安装“<ph name="APP" />”…</translation>
+<translation id="3629631988386925734">请输入您的密码，以启用 Smart Lock。下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="3630132874740063857">您的手机</translation>
 <translation id="3630995161997703415">请将此网站添加到您的任务栏中，以便随时使用</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，您好！</translation>
@@ -2076,7 +2079,7 @@
 <translation id="4075639477629295004">无法投射“<ph name="FILE_NAME" />”。</translation>
 <translation id="4077917118009885966">已拦截此网站上的广告</translation>
 <translation id="4081242589061676262">无法投射文件。</translation>
-<translation id="4084682180776658562">已保存的书签</translation>
+<translation id="4084682180776658562">添加书签</translation>
 <translation id="4084835346725913160">关闭 <ph name="TAB_NAME" /></translation>
 <translation id="4085298594534903246">已拦截此网页上的 JavaScript。</translation>
 <translation id="4087089424473531098">已创建扩展程序：
@@ -2102,6 +2105,7 @@
 <translation id="4109135793348361820">将窗口移至<ph name="USER_NAME" />(<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">下载完成：<ph name="FILE_NAME" />。按 Shift+F6 可切换到下载内容栏区域。</translation>
 <translation id="4110895898888439383">以高反差模式浏览网页</translation>
+<translation id="4112221174576828331">如果图片缺少有用的说明，则 Chrome 会为您提供一条说明。Google 会对图片进行扫描。</translation>
 <translation id="4115002065223188701">检测不到网络</translation>
 <translation id="4115080753528843955">有些内容服务会使用独一无二的标识符来授予对受保护内容的访问权限</translation>
 <translation id="4118579674665737931">请重新启动此设备，然后重试。</translation>
@@ -2420,6 +2424,7 @@
 <translation id="4663373278480897665">已允许使用摄像头</translation>
 <translation id="4664482161435122549">PKCS #12 导出错误</translation>
 <translation id="4665014895760275686">制造商</translation>
+<translation id="4665446389743427678">即将删除 <ph name="SITE" /> 存储的所有数据。</translation>
 <translation id="4668721319092543482">点击即可启用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">“<ph name="SOURCE_NAME" />”的成员将不再能够访问这些内容（除非与他们共享了这些内容）。</translation>
 <translation id="4672657274720418656">提取页面</translation>
@@ -2595,6 +2600,7 @@
 <translation id="4917385247580444890">强</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> 希望与“<ph name="EXTENSION_NAME" />”扩展程序通信</translation>
 <translation id="4918086044614829423">接受</translation>
+<translation id="4918221908152712722">安装<ph name="APP_NAME" />（不需要下载）</translation>
 <translation id="4920887663447894854">系统已阻止以下网站跟踪您在此网页上的位置：</translation>
 <translation id="4922897038695506037">“<ph name="URL_HOST" />”请求获得更多权限。</translation>
 <translation id="492299503953721473">移除 Android 应用</translation>
@@ -2654,6 +2660,7 @@
 <translation id="4998873842614926205">确认更改</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> 张新照片</translation>
+<translation id="5008936837313706385">活动名称</translation>
 <translation id="5010043101506446253">证书授权中心</translation>
 <translation id="5010406651457630570">计算机</translation>
 <translation id="5015344424288992913">正在解析代理...</translation>
@@ -2980,6 +2987,7 @@
 <translation id="5507756662695126555">不可否认</translation>
 <translation id="5509693895992845810">存储为(&amp;A)...</translation>
 <translation id="5509914365760201064">颁发者：<ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">从 Google 获取图片说明</translation>
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">确定要将此设备设为“Shark”吗？</translation>
 <translation id="5512653252560939721">用户证书必须受硬件支持。</translation>
@@ -3562,6 +3570,7 @@
 <translation id="6341850831632289108">检测您所在的地理位置</translation>
 <translation id="6344170822609224263">网络连接的访问权限列表</translation>
 <translation id="6346310558342052870">访问权限受限</translation>
+<translation id="6349101878882523185">安装“<ph name="APP_NAME" />”</translation>
 <translation id="6349170655202535379">无法同步。请尝试退出并重新登录。</translation>
 <translation id="6351063337294363751">您可以使用此菜单清除浏览数据</translation>
 <translation id="6352773953037195952">最高</translation>
@@ -3979,6 +3988,7 @@
 <translation id="6990081529015358884">空间不足</translation>
 <translation id="6990778048354947307">黑暗主题</translation>
 <translation id="6991665348624301627">选择目标打印机</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - 活动日志</translation>
 <translation id="6997707937646349884">在您的设备上：</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
 <translation id="6998793565256476099">注册设备以进行视频会议</translation>
@@ -4281,6 +4291,7 @@
 <translation id="7456142309650173560">开发者版本</translation>
 <translation id="7456847797759667638">打开位置...</translation>
 <translation id="7461924472993315131">固定</translation>
+<translation id="746216226901520237">下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="7463006580194749499">添加用户</translation>
 <translation id="7465778193084373987">Netscape 证书吊销网址</translation>
 <translation id="7469894403370665791">自动连接到该网络</translation>
@@ -4357,6 +4368,7 @@
 <translation id="7580671184200851182">在所有音响设备上播放相同的音频（单声道音频）</translation>
 <translation id="7581462281756524039">清理工具</translation>
 <translation id="7582582252461552277">首选此网络</translation>
+<translation id="7583948862126372804">计数</translation>
 <translation id="7586498138629385861">Chrome应用处于打开状态时，Chrome将持续运行。</translation>
 <translation id="7589461650300748890">注意！</translation>
 <translation id="7589661784326793847">请稍候</translation>
@@ -5201,6 +5213,7 @@
 <translation id="8803953437405899238">只需点击一下，即可打开一个新标签页</translation>
 <translation id="8804398419035066391">与合作网站通信</translation>
 <translation id="8805140816472474147">请确认同步设置以开始同步。</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> 可以重新打开意外关闭的标签页</translation>
 <translation id="8807632654848257479">稳定</translation>
 <translation id="8808478386290700967">Chrome 网上应用店</translation>
 <translation id="8808686172382650546">猫</translation>
@@ -5468,6 +5481,7 @@
 <translation id="93393615658292258">仅限密码</translation>
 <translation id="934503638756687833">如有必要，此处未列出的内容也会被移除。请参阅 Chrome 隐私权政策白皮书，详细了解&lt;a href="<ph name="URL" />"&gt;垃圾软件防护&lt;/a&gt;。</translation>
 <translation id="935490618240037774">您的书签、历史记录、密码及其他设置均将同步到您的 Google 帐号，以便您在自己所有的设备上使用。</translation>
+<translation id="935854577147268200">Smart Lock 所用的配对手机已更改。请输入您的密码以更新 Smart Lock。下次，您就能使用新的配对手机解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="936801553271523408">系统诊断数据</translation>
 <translation id="93766956588638423">修复扩展程序</translation>
 <translation id="938339467127511841">Linux（测试版）存储空间</translation>

@@ -1377,6 +1377,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3016780570757425217">Afle locația</translation>
 <translation id="3020183492814296499">Comenzi rapide</translation>
 <translation id="3020990233660977256">Numărul de serie: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Fluture</translation>
 <translation id="3021678814754966447">&amp;Afișează sursa cadrului</translation>
 <translation id="3022978424994383087">Nu am înțeles.</translation>
 <translation id="3023464535986383522">Selectează și ascultă</translation>
@@ -2431,6 +2432,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4663373278480897665">Camera foto este permisă</translation>
 <translation id="4664482161435122549">PKCS # 12 Eroare de export</translation>
 <translation id="4665014895760275686">Producător</translation>
+<translation id="4665446389743427678">Toate datele stocate de <ph name="SITE" /> vor fi șterse.</translation>
 <translation id="4668721319092543482">Dă clic pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Membrii „<ph name="SOURCE_NAME" />” vor pierde accesul, exceptând cazul în care li se permite accesul la aceste articole.</translation>
 <translation id="4672657274720418656">Faceți conversia paginii</translation>
@@ -2606,6 +2608,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4917385247580444890">Puternic</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> dorește să comunice cu extensia „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4918086044614829423">Accept</translation>
+<translation id="4918221908152712722">Instalează <ph name="APP_NAME" /> (nu necesită descărcare)</translation>
 <translation id="4920887663447894854">Urmărirea locației pe această pagină a fost blocată pentru următoarele site-uri:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> a solicitat permisiuni suplimentare.</translation>
 <translation id="492299503953721473">Elimină aplicațiile Android</translation>
@@ -5226,6 +5229,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8803953437405899238">Deschide o filă nouă cu un singur clic</translation>
 <translation id="8804398419035066391">Comunicarea cu site-urile web cooperante</translation>
 <translation id="8805140816472474147">Pentru a începe sincronizarea, confirmă setările de sincronizare.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> poate să redeschidă accidental filele închise</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Magazin web</translation>
 <translation id="8808686172382650546">Pisică</translation>

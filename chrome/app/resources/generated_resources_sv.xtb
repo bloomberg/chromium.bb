@@ -1007,6 +1007,7 @@
 <translation id="2484959914739448251"><ph name="BEGIN_LINK" />Ange din lösenfras<ph name="END_LINK" /> om du vill rensa webbinformation från alla synkroniserade enheter och ditt Google-konto.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2487067538648443797">Lägg till ett nytt bokmärke</translation>
+<translation id="2489829450872380594">Nästa gång låser en ny mobil upp denna <ph name="DEVICE_TYPE" />. Du kan stänga av Smart Lock i inställningarna.</translation>
 <translation id="2489918096470125693">Lägg till &amp;mapp ...</translation>
 <translation id="249113932447298600">Enheten <ph name="DEVICE_LABEL" /> stöds inte just nu.</translation>
 <translation id="249303669840926644">Det gick inte att slutföra registreringen</translation>
@@ -1375,6 +1376,7 @@
 <translation id="3016780570757425217">Veta din plats</translation>
 <translation id="3020183492814296499">Genvägar</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Fjäril</translation>
 <translation id="3021678814754966447">&amp;Visa ramkälla</translation>
 <translation id="3022978424994383087">Jag hörde inte.</translation>
 <translation id="3023464535986383522">Textuppläsning</translation>
@@ -1764,6 +1766,7 @@
 <translation id="3627588569887975815">Öppna länk i inko&amp;gnitofönster</translation>
 <translation id="3627671146180677314">Förnyelsetid för Netscape-certifikat</translation>
 <translation id="3627879631695760395">Installera <ph name="APP" /> …</translation>
+<translation id="3629631988386925734">Aktivera Smart Lock genom att ange lösenordet. Nästa gång låser din mobil upp <ph name="DEVICE_TYPE" />. Du kan inaktivera Smart Lock i inställningarna.</translation>
 <translation id="3630132874740063857">Din mobil</translation>
 <translation id="3630995161997703415">Lägg till den här webbplatsen på hyllan och använd den när som helst</translation>
 <translation id="3636096452488277381">Hejsan <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2109,6 +2112,7 @@
 <translation id="4109135793348361820">Flytta fönster till <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Nedladdningen är klar: <ph name="FILE_NAME" />. Stega till nedladdningsfältet med Skift+F6.</translation>
 <translation id="4110895898888439383">Surfa på webben i högkontrastläge</translation>
+<translation id="4112221174576828331">Om en bild inte har någon användbar beskrivning skapar Chrome en åt dig. Bilden skannas av Google.</translation>
 <translation id="4115002065223188701">Nätverket är utanför räckvidden</translation>
 <translation id="4115080753528843955">I vissa innehållstjänster används unika identifierare i syfte att ge åtkomst till skyddat innehåll</translation>
 <translation id="4118579674665737931">Starta om enheten och försök igen.</translation>
@@ -2427,6 +2431,7 @@
 <translation id="4663373278480897665">Kamera är tillåten</translation>
 <translation id="4664482161435122549">Fel vid export av PKCS #12</translation>
 <translation id="4665014895760275686">Tillverkare</translation>
+<translation id="4665446389743427678">All data som lagrats av <ph name="SITE" /> raderas.</translation>
 <translation id="4668721319092543482">Klicka för att aktivera <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">De som använder <ph name="SOURCE_NAME" /> förlorar åtkomsten till objekten såvida de inte delas med dem.</translation>
 <translation id="4672657274720418656">Skapa Distiller-sida</translation>
@@ -2602,6 +2607,7 @@
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> vill kommunicera med tillägget <ph name="EXTENSION_NAME" /></translation>
 <translation id="4918086044614829423">Acceptera</translation>
+<translation id="4918221908152712722">Installera <ph name="APP_NAME" /> (ingen nedladdning krävs)</translation>
 <translation id="4920887663447894854">Följande webbplatser har förhindrats att spåra din plats på sidan:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> har begärt ytterligare behörigheter.</translation>
 <translation id="492299503953721473">Ta bort Android-appar</translation>
@@ -2661,6 +2667,7 @@
 <translation id="4998873842614926205">Bekräfta ändringar</translation>
 <translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nya foton</translation>
+<translation id="5008936837313706385">Aktivitetsnamn</translation>
 <translation id="5010043101506446253">Certifikatutfärdare</translation>
 <translation id="5010406651457630570">Datorer</translation>
 <translation id="5015344424288992913">Tolkar proxy...</translation>
@@ -2992,6 +2999,7 @@
 <translation id="5507756662695126555">Ej avvisande</translation>
 <translation id="5509693895992845810">Spara so&amp;m...</translation>
 <translation id="5509914365760201064">Utfärdare: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Hämta bildbeskrivningar från Google</translation>
 <translation id="5511379779384092781">Extra liten</translation>
 <translation id="5511823366942919280">Vill du ställa in enheten som en Shark?</translation>
 <translation id="5512653252560939721">Användarcertifikat måste vara maskinvarustödda.</translation>
@@ -3574,6 +3582,7 @@
 <translation id="6341850831632289108">Identifiera din fysiska plats</translation>
 <translation id="6344170822609224263">Få åtkomst till en lista med nätverksanslutningar</translation>
 <translation id="6346310558342052870">Begränsad åtkomst</translation>
+<translation id="6349101878882523185">Installera <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Det går inte att synkronisera. Testa att logga ut och logga in igen.</translation>
 <translation id="6351063337294363751">Du kan rensa webbinformation från den här menyn</translation>
 <translation id="6352773953037195952">Högsta</translation>
@@ -3991,6 +4000,7 @@
 <translation id="6990081529015358884">Du har slut på utrymme</translation>
 <translation id="6990778048354947307">Mörkt tema</translation>
 <translation id="6991665348624301627">Välj en plats</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – aktivitetslogg</translation>
 <translation id="6997707937646349884">Gör så här på dina enheter:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappar har valts</translation>
 <translation id="6998793565256476099">Registrera enheten för videokonferenser</translation>
@@ -4293,6 +4303,7 @@
 <translation id="7456142309650173560">utvecklare</translation>
 <translation id="7456847797759667638">Öppna plats...</translation>
 <translation id="7461924472993315131">Fäst</translation>
+<translation id="746216226901520237">Nästa gång låser mobilen upp din <ph name="DEVICE_TYPE" />. Du kan inaktivera Smart Lock i inställningarna.</translation>
 <translation id="7463006580194749499">Lägg till person</translation>
 <translation id="7465778193084373987">Återkallandeadress för Netscape-certifikat</translation>
 <translation id="7469894403370665791">Anslut automatiskt till det här nätverket.</translation>
@@ -4371,6 +4382,7 @@
 <translation id="7580671184200851182">Spela samma ljud i alla högtalare (monoljud)</translation>
 <translation id="7581462281756524039">Ett rensningsverktyg</translation>
 <translation id="7582582252461552277">Föredra det här nätverket</translation>
+<translation id="7583948862126372804">Antal</translation>
 <translation id="7586498138629385861">Chrome fortsätter köras när Chrome-appar är öppna.</translation>
 <translation id="7589461650300748890">Ta det försiktigt.</translation>
 <translation id="7589661784326793847">Ett ögonblick</translation>
@@ -5216,6 +5228,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8803953437405899238">Öppna en ny flik med ett klick</translation>
 <translation id="8804398419035066391">Kommunicera med samarbetande webbplatser</translation>
 <translation id="8805140816472474147">Bekräfta synkroniseringsinställningarna för att börja synkronisera.</translation>
+<translation id="8806680466228877631">Flikar som stängts av misstag kan öppnas på nytt med <ph name="SHORTCUT" /></translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="8808686172382650546">Katt</translation>
@@ -5483,6 +5496,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="93393615658292258">Endast lösenord</translation>
 <translation id="934503638756687833">Även objekt som inte står med här tas bort om det behövs. Läs mer om &lt;a href="<ph name="URL" />"&gt;skydd mot oönskad programvara&lt;/a&gt; i vitboken om sekretess och Chrome.</translation>
 <translation id="935490618240037774">Bokmärken, historik, lösenord och andra inställningar synkroniseras med ditt Google-konto så att du kan använda dem på alla enheter.</translation>
+<translation id="935854577147268200">Smart Lock används med en annan mobil än tidigare. Ange lösenordet och uppdatera Smart Lock. Nästa gång låser mobilen upp denna <ph name="DEVICE_TYPE" />. Du kan inaktivera Smart Lock i inställningarna</translation>
 <translation id="936801553271523408">Systemets diagnostikresultat</translation>
 <translation id="93766956588638423">Reparera tillägg</translation>
 <translation id="938339467127511841">Lagringsutrymme för Linux (beta)</translation>

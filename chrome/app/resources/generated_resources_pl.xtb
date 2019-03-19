@@ -1377,6 +1377,7 @@
 <translation id="3016780570757425217">Sprawdzanie Twojej lokalizacji</translation>
 <translation id="3020183492814296499">Skróty</translation>
 <translation id="3020990233660977256">Numer seryjny: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Motyl</translation>
 <translation id="3021678814754966447">&amp;Wyświetl źródło ramki</translation>
 <translation id="3022978424994383087">Nie rozumiem.</translation>
 <translation id="3023464535986383522">Przeczytaj na głos</translation>
@@ -2431,6 +2432,7 @@
 <translation id="4663373278480897665">Zezwolono na dostęp do kamery</translation>
 <translation id="4664482161435122549">Błąd eksportowania PKCS #12</translation>
 <translation id="4665014895760275686">Producent</translation>
+<translation id="4665446389743427678">Wszystkie dane przechowywane przez stronę <ph name="SITE" /> zostaną usunięte.</translation>
 <translation id="4668721319092543482">Kliknij, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Osoby z uprawnieniami do: „<ph name="SOURCE_NAME" />” utracą dostęp do tych elementów, chyba że zostaną one im udostępnione.</translation>
 <translation id="4672657274720418656">Zbadaj stronę</translation>
@@ -2606,6 +2608,7 @@
 <translation id="4917385247580444890">Silny</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> chce nawiązać połączenie z rozszerzeniem „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
+<translation id="4918221908152712722">Zainstaluj aplikację <ph name="APP_NAME" /> (nie wymaga pobrania)</translation>
 <translation id="4920887663447894854">Następującym witrynom zablokowano możliwość śledzenia Twojej lokalizacji na tej stronie:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> prosi o dodatkowe uprawnienia.</translation>
 <translation id="492299503953721473">Usuń aplikacje na Androida</translation>
@@ -5227,6 +5230,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8803953437405899238">Otwórz nową kartę jednym kliknięciem</translation>
 <translation id="8804398419035066391">Komunikowanie się ze współpracującymi stronami</translation>
 <translation id="8805140816472474147">Potwierdź ustawienia synchronizacji, by ją rozpocząć.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> może otworzyć przypadkowo zamknięte karty</translation>
 <translation id="8807632654848257479">Stabilny</translation>
 <translation id="8808478386290700967">Chrome Web Store</translation>
 <translation id="8808686172382650546">Kot</translation>

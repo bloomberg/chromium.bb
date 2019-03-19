@@ -20,7 +20,9 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1585657529869845941">Klicka på <ph name="BEGIN_BOLD" />Byt ändå<ph name="END_BOLD" /> om det visas</translation>
 <translation id="1668054258064581266">När du har tagit bort kontot från Chromium kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
+<translation id="1701453112166152218">Om en bild inte har någon användbar beskrivning försöker Chromium ange en åt dig. Bilden skannas av Google. Du kan när som helst inaktivera den här inställningen.</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
+<translation id="1736416771649788185">Om en bild inte har någon användbar beskrivning försöker Chromium ange en åt dig. Bilden skannas av Google.</translation>
 <translation id="1766096484055239003">Administratören meddelar att du måste starta om Chromium så att en uppdatering tillämpas</translation>
 <translation id="1774152462503052664">Låt Chromium köras i bakgrunden</translation>
 <translation id="1779356040007214683">Vi har gjort Chromium säkrare genom att inaktivera vissa tillägg som inte finns i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
@@ -270,6 +272,7 @@ Om du loggar in ändå kommer information som bokmärken, historik och andra ins
 <translation id="9089354809943900324">Den här versionen av Chromium är inaktuell</translation>
 <translation id="91086099826398415">Öppna länken i en ny &amp;flik i Chromium</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
+<translation id="9158494823179993217">Systemadministratören har konfigurerat Chromium så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i en annan webbläsare.</translation>
 <translation id="918373042641772655">Om du kopplar från <ph name="USERNAME" /> rensas din historik, dina bokmärken, dina inställningar och annan Chromium-data som du har lagrat på enheten. Data som lagras i Google-kontot rensas inte utan kan hanteras via <ph name="GOOGLE_DASHBOARD_LINK" />Google Översikt<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Du är nu inloggad i Chromium</translation>

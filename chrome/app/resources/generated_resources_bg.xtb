@@ -1374,6 +1374,7 @@
 <translation id="3016780570757425217">Достъп до местоположението ви.</translation>
 <translation id="3020183492814296499">Клавишни комбинации</translation>
 <translation id="3020990233660977256">Сериен номер: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">Пеперуда</translation>
 <translation id="3021678814754966447">&amp;Преглед на изходния код на рамката</translation>
 <translation id="3022978424994383087">Не разбрахме това.</translation>
 <translation id="3023464535986383522">Прочитане на глас</translation>
@@ -2430,6 +2431,7 @@
 <translation id="4663373278480897665">Достъпът до камерата е разрешен</translation>
 <translation id="4664482161435122549">Грешка при експортиране на PKCS #12</translation>
 <translation id="4665014895760275686">Производител</translation>
+<translation id="4665446389743427678">Всички данни, съхранявани от <ph name="SITE" />, ще бъдат изтрити.</translation>
 <translation id="4668721319092543482">Кликнете, за да активирате <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Членовете на „<ph name="SOURCE_NAME" />“ ще загубят достъп, ако тези елементи не са споделени с тях.</translation>
 <translation id="4672657274720418656">Създаване на сбит вариант на страницата</translation>
@@ -2605,6 +2607,7 @@
 <translation id="4917385247580444890">Силен</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> иска да комуникира с разширението „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4918086044614829423">Приемам</translation>
+<translation id="4918221908152712722">Инсталирайте <ph name="APP_NAME" /> (не се изисква изтегляне)</translation>
 <translation id="4920887663447894854">Следните сайтове бяха блокирани от проследяване на местоположението ви на тази страница:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> поиска допълнителни разрешения.</translation>
 <translation id="492299503953721473">Премахване на приложенията за Android</translation>
@@ -5226,6 +5229,7 @@
 <translation id="8803953437405899238">Отворете нов раздел с едно кликване</translation>
 <translation id="8804398419035066391">Комуникация със съдействащи уебсайтове</translation>
 <translation id="8805140816472474147">За да стартирате синхронизирането, потвърдете съответните настройки.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> служи за повторно отваряне на случайно затворени раздели</translation>
 <translation id="8807632654848257479">Стабилно</translation>
 <translation id="8808478386290700967">Уеб магазин</translation>
 <translation id="8808686172382650546">Котка</translation>

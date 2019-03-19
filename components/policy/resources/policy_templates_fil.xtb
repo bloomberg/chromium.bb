@@ -444,6 +444,7 @@
       Kung naka-enable ang setting na ito, kukuha ng fingerprint ng password ang serbisyo ng proteksyon sa password sa mga URL na ito para sa pagtukoy ng umulit na paggamit ng password.
       Kung naka-disable o hindi nakatakda ang setting na ito, sa https://accounts.google.com lang kukuha ng fingerprint ng password ang serbisyo ng proteksyon sa password.
       Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
+<translation id="1919802376548418720">Gamitin ang patakaran ng KDC para maglaan ng mga kredensyal.</translation>
 <translation id="1920046221095339924">Payagan ang pinapamahalaang session sa device</translation>
 <translation id="1929709556673267855">Nagbibigay ng mga configuration para sa mga printer ng enterprise na naka-bind sa mga device.
 
@@ -513,6 +514,9 @@
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="203096360153626918">Ang patakarang ito ay walang epekto sa mga Android app. Makakapunta ang mga ito sa fullscreen mode kahit na nakatakda ang patakaran sa <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Mga naka-disable na printer ng enterprise</translation>
+<translation id="2050629715135525072">Kinokontrol ang kakayahan ng isang user na nakakonekta sa isang host ng malayuang pag-access na maglipat ng mga file sa pagitan ng kliyente at host. Hindi ito nalalapat sa mga koneksyon sa malayuang tulong, na hindi sumusuporta sa paglipat ng file.
+
+          Kung naka-disable ang setting na ito, hindi papayagan ang paglipat ng file. Kung naka-enable ang setting na ito o hindi nakatakda, papayagan ang paglipat ng file.</translation>
 <translation id="2057317273526988987">Payagan ang pag-access sa isang listahan ng mga URL</translation>
 <translation id="206623763829450685">Tinutukoy kung aling mga scheme ng pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
 
@@ -611,6 +615,16 @@
 <translation id="2240879329269430151">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga pop-up. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'BlockPopups' at magagawa ng user na baguhin ito.</translation>
+<translation id="2258126710006312594">Payagan ang mga user ng malayuang pag-access na maglipat ng mga file papunta/mula sa host</translation>
+<translation id="2265214338421787313">Nagbibigay-daan ang patakarang ito sa isang admin na tukuyin na puwedeng magpakita ng mga popup ang isang page habang nag-a-unload ito.
+
+      Kapag naka-enable ang patakarang ito, pinapayagan ang mga page na magpakita ng mga popup habang ina-unload ang mga ito.
+
+      Kapag naka-disable o hindi nakatakda ang patakaran, hindi pinapayagang magpakita ng mga popup ang mga page habang ina-unload ang mga ito, ayon sa mga detalye (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Aalisin ang patakarang ito sa Chrome 82.
+
+      Tingnan ang https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">I-enable ang pagpapakita ng Pahintulot sa Pag-sync habang nagsa-sign in</translation>
 <translation id="2274864612594831715">Kino-configure ng patakarang ito ang pag-e-enable ng virtual na keyboard bilang isang input device sa ChromeOS. Hindi maaaring i-override ng mga user ang patakarang ito.
 
@@ -886,6 +900,13 @@
       Walang awtomatikong pagtingin ng update ang iba-block ng patakarang ito, ngunit maaaring i-block ng iba pang patakaran ang mga iyon. Naka-enable lang ang feature na ito sa mga Chrome device na naka-configure bilang mga auto-launch kiosk. Hindi paghihigpitan ng patakarang ito ang iba pang device.</translation>
 <translation id="2823870601012066791">Lokasyon ng registry ng Windows para sa mga <ph name="PRODUCT_OS_NAME" /> client:</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
+<translation id="2836621397261130126">Nagkokontrol kung susundin ba ang pag-apruba ng patakaran ng KDC para magpasya kung maglalaan ba ng mga ticket ng <ph name="KERBEROS" />.
+
+          Kung true ang patakarang ito, susundin ng pag-authenticate ng HTTP ang pag-apruba ng patakaran ng KDC, ibig sabihin, maglalaan lang ang Chrome ng mga kredensyal kung itatakda ng KDC ang <ph name="OK_AS_DELEGATE" /> sa isang ticket ng serbisyo. Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon. Dapat ding tumugma ang serbisyo sa patakaran ng 'AuthNegotiateDelegateWhitelist.'
+
+          Kung hindi nakatakda o nakatakda sa false ang patakarang ito, babalewalain ang patakaran ng KDC sa mga sinusuportahang platform at ang patakaran ng 'AuthNegotiateDelegateWhitelist' lang ang susundin.
+
+          Sa Windows, palaging sinusunod ang patakaran ng KDC.</translation>
 <translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="2839294585867804686">Mga setting ng Mga File Share sa Network</translation>
 <translation id="2840269525054388612">Tinutukoy ang mga printer na maaaring gamitin ng isang user.
@@ -2277,6 +2298,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="6034341625190551415">Nagkokontrol sa pampublikong session at mga uri ng account ng kiosk.</translation>
+<translation id="6034603289689965535">Nagbibigay-daan sa isang page na magpakita ng mga popup habang nag-a-unload ito</translation>
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
 <translation id="6070667616071269965">Mga layout ng keyboard sa screen ng pag-sign in ng device</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>

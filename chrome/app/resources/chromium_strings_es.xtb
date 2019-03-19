@@ -20,7 +20,9 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1585657529869845941">Haz clic en <ph name="BEGIN_BOLD" />Cambiar de todos modos<ph name="END_BOLD" /> (si aparece)</translation>
 <translation id="1668054258064581266">Después de eliminar tu cuenta de Chromium, es posible que tengas que volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Chromium en cualquier ordenador.</translation>
+<translation id="1701453112166152218">Si una imagen no tiene una descripción útil, Chromium intentará proporcionarte una. Google se encarga de analizar las imágenes. Puedes desactivar esta opción cuando quieras desde la configuración.</translation>
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
+<translation id="1736416771649788185">Si una imagen no tiene una descripción útil, Chromium intentará proporcionarte una. Google se encarga de analizar las imágenes.</translation>
 <translation id="1766096484055239003">Tu administrador pide que reinicies Chromium para aplicar una actualización</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
 <translation id="1779356040007214683">Para aumentar la seguridad de Chromium, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que se podrían haber añadido sin tu conocimiento.</translation>
@@ -270,6 +272,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="9089354809943900324">Chromium no está actualizado</translation>
 <translation id="91086099826398415">Abrir enlace en una pes&amp;taña nueva de Chromium</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
+<translation id="9158494823179993217">El administrador del sistema ha configurado Chromium para que abra otro navegador al acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Si desvinculas a <ph name="USERNAME" />, se borrarán tu historial, tus marcadores, tu configuración y otros datos de Chromium almacenados en este dispositivo. No obstante, no se borrarán los datos almacenados en tu cuenta de Google y se podrán administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (tráfico mDNS entrante)</translation>
 <translation id="9197815481970649201">Has iniciado sesión en Chromium</translation>

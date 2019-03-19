@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">El sitio web al que vas a acceder contiene aplicaciones peligrosas</translation>
 <translation id="1348779747280417563">Confirmar nombre</translation>
 <translation id="1357195169723583938">Quién ha utilizado este dispositivo recientemente y cuándo</translation>
+<translation id="1364822246244961190">Esta política está bloqueada, su valor será ignorado.</translation>
 <translation id="1374468813861204354">sugerencias</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">Información de la versión</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Seleccionar dirección de envío</translation>
+<translation id="1492194039220927094">Envío de políticas:</translation>
 <translation id="1501859676467574491">Mostrar las tarjetas de tu cuenta de Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Este error se muestra si utilizas un portal Wi‑Fi en el que debes iniciar sesión antes de conectarte a Internet.&lt;/p&gt;
     &lt;p&gt;Para solucionar el problema, haz clic en &lt;strong&gt;Conectar&lt;/strong&gt; en la página que intentas abrir.&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME" />) no son correctas.&lt;/p&gt;
 
       &lt;p&gt;Ajusta la fecha y la hora en la sección &lt;strong&gt;General&lt;/strong&gt; de la aplicación &lt;strong&gt;Configuración&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Introducir fecha de vencimiento</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Se ha producido un error al mostrar esta página web.</translation>
 <translation id="1592005682883173041">Acceso a datos locales</translation>
@@ -487,6 +490,7 @@
 <translation id="3658742229777143148">Revisión</translation>
 <translation id="366077651725703012">Actualizar tarjeta de crédito</translation>
 <translation id="3676592649209844519">ID del dispositivo:</translation>
+<translation id="3677008721441257057">Quizás quisiste decir: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;</translation>
 <translation id="3678029195006412963">No se ha podido firmar la solicitud</translation>
 <translation id="3678529606614285348">Abre una página en una nueva ventana de incógnito (Ctrl + Mayús + N).</translation>
 <translation id="3679803492151881375">Informe sobre fallos registrado el <ph name="CRASH_TIME" /> y subido el <ph name="UPLOAD_TIME" /></translation>
@@ -1093,6 +1097,7 @@
 <translation id="7220786058474068424">Procesando pago</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">El sitio web al que vas a acceder contiene software malicioso</translation>
+<translation id="724766306220616965">Advertencias, conflicto</translation>
 <translation id="724975217298816891">Introduce la fecha de caducidad y el código CVC de la tarjeta <ph name="CREDIT_CARD" /> para actualizar sus detalles. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="7251437084390964440">La configuración de red no cumple el estándar ONC. Es posible que no se importen algunas partes de la configuración.
 Más información:
@@ -1105,6 +1110,7 @@ Más información:
 <translation id="7300012071106347854">Azul cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Informe sobre fallos registrado el <ph name="CRASH_TIME" /> (el usuario ha solicitado que se suba, pero aún no se ha hecho)</translation>
+<translation id="7313965965371928911">Advertencias de <ph name="BEGIN_LINK" />Navegación Segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ayuda de conexión</translation>
 <translation id="7334320624316649418">&amp;Rehacer reorganización</translation>

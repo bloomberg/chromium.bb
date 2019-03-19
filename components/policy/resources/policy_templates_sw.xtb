@@ -493,6 +493,9 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2030905906517501646">Nenomsingi la mtoa huduma chaguomsingi wa utafutaji</translation>
 <translation id="203096360153626918">Sera hii haiathiri programu za Android kwa njia yoyote. Zitaweza kuwekwa katika hali ya skrini nzima hata kama sera hii imewekwa kuwa <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Printa za biashara zisizotumia sera</translation>
+<translation id="2050629715135525072">Hudhibiti uwezo wa mtumiaji aliyeunganishwa kwenye seva pangishi inayoweza kufikiwa kwa mbali kuhamisha faili kati ya kiteja na seva pangishi. Hali hii haitumiki kwenye miunganisho ya usaidizi wa mbali, ambayo haitumii kipengele cha uhamishaji wa faili.
+
+          Mipangilio hii ikizimwa, hutaruhusiwa kuhamisha faili. Mipangilio hii ikiwashwa au isipowekwa, utaruhusiwa kuhamisha faili.</translation>
 <translation id="2057317273526988987">Ruhusu ufikiaji kwenye orodha ya URL</translation>
 <translation id="206623763829450685">Hubainisha mipango ya uthibitishaji wa HTTP inayotumia na <ph name="PRODUCT_NAME" />.
 
@@ -591,6 +594,7 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2240879329269430151">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kuonyesha ibukizi. Kuonyesha ibukizi kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
 
           Ikiwa sera hii itaachwa bila kuwekwa, 'BlockPopups' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
+<translation id="2258126710006312594">Ruhusu watumiaji walio na idhini ya kufikia kwa mbali kuhamisha au kuhamishia faili kwenye seva pangishi</translation>
 <translation id="2265214338421787313">Sera hii huruhusu msimamizi kubainisha kuwa ukurasa unaweza kuonyesha madirisha ibukizi wakati wa kuondoa.
 
       Sera hii ikiwashwa, kurasa zinaruhusiwa kuonyesha madirisha ibukizi wakati zinaondolewa.
@@ -871,6 +875,13 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
       Hamna ukaguzi wa masasisho ya kiotomatiki utakaozuiliwa na sera hii, lakini unaweza kuzuiliwa na sera zingine. Kipengele hiki kimewashwa tu kwenye vifaa vya Chrome ambavyo vimewekewa mipangilio ya skrini nzima kufunguka kiotomatiki. Vifaa vingine havitazuiwa na sera hii.</translation>
 <translation id="2823870601012066791">Eneo la sajili ya Windows la viteja vya <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
+<translation id="2836621397261130126">Hudhibiti ikiwa uidhinishaji wa sera ya KDC unazingatiwa katika uamuzi wa kutoa tiketi za <ph name="KERBEROS" />.
+
+          Ikiwa sera hii imewekwa kuwa ndivyo, uthibitishaji wa HTTP utazingatia uidhinishaji wa sera ya KDC, kwa mfano, Chrome hutoa tu kitambulisho ikiwa KDC imeweka <ph name="OK_AS_DELEGATE" /> kwenye tiketi ya huduma. Tafadhali angalia https://tools.ietf.org/html/rfc5896.html ili upate maelezo zaidi. Ni sharti huduma ilingane na sera ya 'AuthNegotiateDelegateWhitelist'.
+
+          Ikiwa sera hii haijawekwa au imewekwa kuwa sivyo, sera ya KDC haitazingatiwa kwenye mifumo inayotumika na itazingatia sera ya 'AuthNegotiateDelegateWhitelist' pekee.
+
+          Kwenye Windows, sera KDC huzingatiwa kila wakati.</translation>
 <translation id="2838830882081735096">Usiruhusu uhamishaji data na ARC</translation>
 <translation id="2839294585867804686">Mipangilio ya Faili za Kushiriki katika Mtandao</translation>
 <translation id="2840269525054388612">Hubainisha printa ambazo mtumiaji anaweza kutumia.

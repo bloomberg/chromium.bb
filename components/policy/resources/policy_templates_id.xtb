@@ -493,6 +493,9 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="203096360153626918">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi akan dapat memasuki mode layar penuh meski kebijakan ini disetel ke <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Menonaktifkan printer perusahaan</translation>
+<translation id="2050629715135525072">Mengontrol kemampuan pengguna yang terhubung ke host akses jarak jauh untuk mentransfer file antara klien dan host. Kebijakan ini tidak berlaku untuk sambungan bantuan jarak jauh, yang tidak mendukung transfer file.
+
+          Jika setelan ini dinonaktifkan, transfer file tidak akan diizinkan. Jika setelan ini diaktifkan atau tidak disetel, transfer file akan diizinkan.</translation>
 <translation id="2057317273526988987">Izinkan akses ke daftar URL</translation>
 <translation id="206623763829450685">Menentukan skema autentikasi HTTP yang didukung oleh <ph name="PRODUCT_NAME" />.
 
@@ -587,6 +590,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2231817271680715693">Impor histori browseran dari browser default saat pertama kali dijalankan</translation>
 <translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menentukan apakah situs diizinkan untuk menampilkan pop-up. Menampilkan pop-up dapat diizinkan atau diblokir untuk semua situs. Jika kebijakan ini tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="2258126710006312594">Izinkan pengguna dengan akses jarak jauh untuk mentransfer file ke/dari host</translation>
 <translation id="2265214338421787313">Kebijakan ini memungkinkan admin menentukan bahwa halaman dapat menampilkan pop-up saat kontennya dibuka.
 
       Jika kebijakan ini ditetapkan ke aktif, halaman diizinkan menampilkan pop-up saat kontennya dibuka.
@@ -861,6 +865,13 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Pemeriksaan update otomatis tidak akan diblokir oleh kebijakan ini, tetapi dapat diblokir oleh kebijakan lain. Fitur ini hanya diaktifkan di perangkat Chrome yang dikonfigurasi sebagai kios dengan peluncuran otomatis. Perangkat lain tidak akan dibatasi oleh kebijakan ini.</translation>
 <translation id="2823870601012066791">Lokasi registry Windows untuk klien <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
+<translation id="2836621397261130126">Mengontrol apakah persetujuan oleh kebijakan KDC dipatuhi untuk menentukan pendelegasian tiket <ph name="KERBEROS" />.
+
+          Jika kebijakan ini ditetapkan ke True, autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, artinya Chrome hanya akan mendelegasikan kredensial jika KDC menetapkan <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Lihat https://tools.ietf.org/html/rfc5896.html untuk mengetahui informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateWhitelist'.
+
+          Jika kebijakan ini tidak ditetapkan, atau ditetapkan ke False, kebijakan KDC akan diabaikan pada platform yang didukung dan hanya kebijakan 'AuthNegotiateDelegateWhitelist' yang dipatuhi.
+
+          Di Windows, kebijakan KDC selalu dipatuhi.</translation>
 <translation id="2838830882081735096">Jangan izinkan migrasi data dan ARC</translation>
 <translation id="2839294585867804686">Pengaturan Berbagi File Jaringan</translation>
 <translation id="2840269525054388612">Menentukan printer yang dapat digunakan pengguna.
