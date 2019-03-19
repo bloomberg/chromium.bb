@@ -5,6 +5,7 @@
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 
 #include <fuchsia/ui/policy/cpp/fidl.h>
+#include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/zx/eventpair.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
@@ -19,17 +20,17 @@ void InitializeViewTokenAndPresentView(
 
   // Generate and set the view tokens for the |window_properties_out| and the
   // Presenter API.
-  zx::eventpair view_holder_token;
+  ::fuchsia::ui::views::ViewHolderToken view_holder_token;
   zx_status_t status = zx::eventpair::create(
       /* options = */ 0, &window_properties_out->view_token.value,
-      &view_holder_token);
+      &view_holder_token.value);
   ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create";
 
   // Request Presenter to show the view full-screen.
   auto presenter = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
                        ->ConnectToService<::fuchsia::ui::policy::Presenter>();
 
-  presenter->Present2(std::move(view_holder_token), nullptr);
+  presenter->PresentView(std::move(view_holder_token), nullptr);
 }
 
 }  // namespace fuchsia
