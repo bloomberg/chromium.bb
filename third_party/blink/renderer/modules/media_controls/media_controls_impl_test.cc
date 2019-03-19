@@ -281,6 +281,9 @@ class MediaControlsImplTest : public PageTestBase,
   void MouseMoveTo(WebFloatPoint pos);
   void MouseUpAt(WebFloatPoint pos);
 
+  void GestureTapAt(WebFloatPoint pos);
+  void GestureDoubleTapAt(WebFloatPoint pos);
+
   bool HasAvailabilityCallbacks(RemotePlayback& remote_playback) {
     return !remote_playback.availability_callbacks_.IsEmpty();
   }
@@ -330,6 +333,28 @@ void MediaControlsImplTest::MouseUpAt(WebFloatPoint pos) {
   mouse_up_event.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
       mouse_up_event);
+}
+
+void MediaControlsImplTest::GestureTapAt(WebFloatPoint pos) {
+  WebGestureEvent gesture_tap_event(
+      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+
+  // Adjust |pos| by current frame scale.
+  float frame_scale = GetDocument().GetFrame()->PageZoomFactor();
+  gesture_tap_event.SetFrameScale(frame_scale);
+  pos.x = pos.x * frame_scale;
+  pos.y = pos.y * frame_scale;
+  gesture_tap_event.SetPositionInWidget(pos);
+
+  // Fire the event.
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
+      gesture_tap_event);
+}
+
+void MediaControlsImplTest::GestureDoubleTapAt(WebFloatPoint pos) {
+  GestureTapAt(pos);
+  GestureTapAt(pos);
 }
 
 TEST_F(MediaControlsImplTest, HideAndShow) {
@@ -1344,6 +1369,69 @@ TEST_F(ModernMediaControlsImplTest, MediaControlsDisabledWithNoSource) {
   EXPECT_FALSE(
       OverflowMenuButtonElement()->hasAttribute(html_names::kDisabledAttr));
   EXPECT_FALSE(TimelineElement()->hasAttribute(html_names::kDisabledAttr));
+}
+
+TEST_F(ModernMediaControlsImplTest, DoubleTouchChangesTime) {
+  double duration = 60;  // 1 minute.
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  MediaControls().MediaElement().setCurrentTime(30);
+  test::RunPendingTasks();
+
+  // We've set the video to the halfway mark.
+  EXPECT_EQ(30, MediaControls().MediaElement().currentTime());
+
+  DOMRect* videoRect = MediaControls().MediaElement().getBoundingClientRect();
+  ASSERT_LT(0, videoRect->width());
+  WebFloatPoint leftOfCenter(videoRect->left() + (videoRect->width() / 2) - 5,
+                             videoRect->top() + 5);
+  WebFloatPoint rightOfCenter(videoRect->left() + (videoRect->width() / 2) + 5,
+                              videoRect->top() + 5);
+
+  // Double-tapping left of center should shift the time backwards by 10
+  // seconds.
+  GestureDoubleTapAt(leftOfCenter);
+  test::RunPendingTasks();
+  EXPECT_EQ(20, MediaControls().MediaElement().currentTime());
+
+  // Double-tapping right of center should shift the time forwards by 10
+  // seconds.
+  GestureDoubleTapAt(rightOfCenter);
+  test::RunPendingTasks();
+  EXPECT_EQ(30, MediaControls().MediaElement().currentTime());
+}
+
+TEST_F(ModernMediaControlsImplTest, DoubleTouchChangesTimeWhenZoomed) {
+  double duration = 60;  // 1 minute.
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  MediaControls().MediaElement().setCurrentTime(30);
+  test::RunPendingTasks();
+
+  // We've set the video to the halfway mark.
+  EXPECT_EQ(30, MediaControls().MediaElement().currentTime());
+
+  DOMRect* videoRect = MediaControls().MediaElement().getBoundingClientRect();
+  ASSERT_LT(0, videoRect->width());
+  WebFloatPoint leftOfCenter(videoRect->left() + (videoRect->width() / 2) - 5,
+                             videoRect->top() + 10);
+  WebFloatPoint rightOfCenter(videoRect->left() + (videoRect->width() / 2) + 5,
+                              videoRect->top() + 10);
+
+  // Add a zoom factor and ensure that it's properly handled.
+  MediaControls().GetDocument().GetFrame()->SetPageZoomFactor(2);
+
+  // Double-tapping left of center should shift the time backwards by 10
+  // seconds.
+  GestureDoubleTapAt(leftOfCenter);
+  test::RunPendingTasks();
+  EXPECT_EQ(20, MediaControls().MediaElement().currentTime());
+
+  // Double-tapping right of center should shift the time forwards by 10
+  // seconds.
+  GestureDoubleTapAt(rightOfCenter);
+  test::RunPendingTasks();
+  EXPECT_EQ(30, MediaControls().MediaElement().currentTime());
 }
 
 }  // namespace blink
