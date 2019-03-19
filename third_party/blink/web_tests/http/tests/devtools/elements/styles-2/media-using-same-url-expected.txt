@@ -5,11 +5,11 @@ Main style:
 element.style { ()
 
 [expanded] 
-#main { (<style>)
+#main { (<style>…</style>)
     color: white;
 
 [expanded] 
-#main { (<style>)
+#main { (<style>…</style>)
     background: blue;
 
 [expanded] 
