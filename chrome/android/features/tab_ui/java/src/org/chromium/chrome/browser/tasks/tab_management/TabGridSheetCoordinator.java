@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -37,7 +38,7 @@ public class TabGridSheetCoordinator implements Destroyable {
 
     TabGridSheetCoordinator(Context context, BottomSheetController bottomSheetController,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            TabCreatorManager tabCreatorManager) {
+            TabCreatorManager tabCreatorManager, ThemeColorProvider themeColorProvider) {
         mContext = context;
 
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
@@ -46,9 +47,9 @@ public class TabGridSheetCoordinator implements Destroyable {
                 tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false,
                 COMPONENT_NAME);
 
-        mMediator =
-                new TabGridSheetMediator(mContext, bottomSheetController, this::resetWithListOfTabs,
-                        mToolbarPropertyModel, tabModelSelector, tabCreatorManager);
+        mMediator = new TabGridSheetMediator(mContext, bottomSheetController,
+                this::resetWithListOfTabs, mToolbarPropertyModel, tabModelSelector,
+                tabCreatorManager, themeColorProvider);
         startObservingForCreationIPH();
     }
 

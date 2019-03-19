@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -28,6 +29,7 @@ public class TabGroupUiCoordinator
     public final static String COMPONENT_NAME = "TabStrip";
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
+    private final ThemeColorProvider mThemeColorProvider;
     private TabGridSheetCoordinator mTabGridSheetCoordinator;
     private TabListCoordinator mTabStripCoordinator;
     private TabGroupUiMediator mMediator;
@@ -36,8 +38,9 @@ public class TabGroupUiCoordinator
     /**
      * Creates a new {@link TabGroupUiCoordinator}
      */
-    public TabGroupUiCoordinator(ViewGroup parentView) {
+    public TabGroupUiCoordinator(ViewGroup parentView, ThemeColorProvider themeColorProvider) {
         mContext = parentView.getContext();
+        mThemeColorProvider = themeColorProvider;
         mTabStripToolbarModel = new PropertyModel(TabStripToolbarViewProperties.ALL_KEYS);
 
         mTabStripToolbarCoordinator =
@@ -54,16 +57,18 @@ public class TabGroupUiCoordinator
 
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TabContentManager tabContentManager = activity.getTabContentManager();
+
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                 mContext, tabModelSelector, tabContentManager,
                 mTabStripToolbarCoordinator.getTabListContainerView(), true, COMPONENT_NAME);
 
-        mTabGridSheetCoordinator = new TabGridSheetCoordinator(mContext,
-                activity.getBottomSheetController(), tabModelSelector, tabContentManager, activity);
+        mTabGridSheetCoordinator =
+                new TabGridSheetCoordinator(mContext, activity.getBottomSheetController(),
+                        tabModelSelector, tabContentManager, activity, mThemeColorProvider);
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mTabStripToolbarModel,
                 tabModelSelector, activity,
-                ((ChromeTabbedActivity) activity).getOverviewModeBehavior());
+                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider);
     }
 
     /**

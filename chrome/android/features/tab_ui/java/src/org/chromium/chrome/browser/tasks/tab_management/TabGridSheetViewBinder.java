@@ -8,6 +8,8 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.COLLAPSE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.CONTENT_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.HEADER_TITLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.PRIMARY_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridSheetProperties.TINT;
 
 import android.view.View;
 import android.widget.FrameLayout;
@@ -49,6 +51,11 @@ class TabGridSheetViewBinder {
             ((FrameLayout.LayoutParams) viewHolder.contentView.getLayoutParams()).topMargin =
                     model.get(CONTENT_TOP_MARGIN);
             viewHolder.contentView.requestLayout();
+        } else if (PRIMARY_COLOR == propertyKey) {
+            viewHolder.toolbarView.setPrimaryColor(model.get(PRIMARY_COLOR));
+            viewHolder.contentView.setBackgroundColor(model.get(PRIMARY_COLOR));
+        } else if (TINT == propertyKey) {
+            viewHolder.toolbarView.setTint(model.get(TINT));
         }
     }
 }

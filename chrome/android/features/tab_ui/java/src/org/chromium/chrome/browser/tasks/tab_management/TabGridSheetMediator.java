@@ -10,6 +10,7 @@ import android.view.View.OnClickListener;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -54,15 +55,19 @@ class TabGridSheetMediator implements Destroyable {
     private final TabModelSelector mTabModelSelector;
     private final TabModelObserver mTabModelObserver;
     private final TabCreatorManager mTabCreatorManager;
+    private final ThemeColorProvider mThemeColorProvider;
+    private final ThemeColorProvider.ThemeColorObserver mThemeColorObserver;
+    private final ThemeColorProvider.TintObserver mTintObserver;
 
     TabGridSheetMediator(Context context, BottomSheetController bottomSheetController,
             ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
-            TabCreatorManager tabCreatorManager) {
+            TabCreatorManager tabCreatorManager, ThemeColorProvider themeColorProvider) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
+        mThemeColorProvider = themeColorProvider;
 
         // TODO (ayman): Add instrumentation to observer calls.
         mSheetObserver = new EmptyBottomSheetObserver() {
@@ -92,7 +97,13 @@ class TabGridSheetMediator implements Destroyable {
                 if (type == TabSelectionType.FROM_USER) resetHandler.resetWithListOfTabs(null);
             }
         };
+        mThemeColorObserver =
+                (color, shouldAnimate) -> mModel.set(TabGridSheetProperties.PRIMARY_COLOR, color);
+        mTintObserver = (tint, useLight) -> mModel.set(TabGridSheetProperties.TINT, tint);
+
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
+        mThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
+        mThemeColorProvider.addTintObserver(mTintObserver);
 
         // setup toolbar property model
         setupToolbarClickHandlers();
@@ -122,6 +133,8 @@ class TabGridSheetMediator implements Destroyable {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
         }
+        mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
+        mThemeColorProvider.removeTintObserver(mTintObserver);
     }
 
     private void showTabGridSheet(TabGridSheetContent sheetContent) {
