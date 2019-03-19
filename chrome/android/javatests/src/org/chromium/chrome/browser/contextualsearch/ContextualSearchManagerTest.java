@@ -456,56 +456,15 @@ public class ContextualSearchManagerTest {
      * Posts a fake response on the Main thread.
      */
     private final class FakeResponseOnMainThread implements Runnable {
+        private final ResolvedSearchTerm mResolvedSearchTerm;
 
-        private final boolean mIsNetworkUnavailable;
-        private final int mResponseCode;
-        private final String mSearchTerm;
-        private final String mDisplayText;
-        private final String mAlternateTerm;
-        private final String mMid;
-        private final boolean mDoPreventPreload;
-        private final int mStartAdjust;
-        private final int mEndAdjust;
-        private final String mContextLanguage;
-        private final String mThumbnailUrl;
-        private final String mCaption;
-        private final String mQuickActionUri;
-        private final int mQuickActionCategory;
-        private final long mLoggedEventId;
-        private final String mSearchUrlFull;
-        private final String mSearchUrlPreload;
-
-        public FakeResponseOnMainThread(boolean isNetworkUnavailable, int responseCode,
-                String searchTerm, String displayText, String alternateTerm, String mid,
-                boolean doPreventPreload, int startAdjust, int endAdjudst, String contextLanguage,
-                String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
-                long loggedEventId, String searchUrlFull, String searchUrlPreload) {
-            mIsNetworkUnavailable = isNetworkUnavailable;
-            mResponseCode = responseCode;
-            mSearchTerm = searchTerm;
-            mDisplayText = displayText;
-            mAlternateTerm = alternateTerm;
-            mMid = mid;
-            mDoPreventPreload = doPreventPreload;
-            mStartAdjust = startAdjust;
-            mEndAdjust = endAdjudst;
-            mContextLanguage = contextLanguage;
-            mThumbnailUrl = thumbnailUrl;
-            mCaption = caption;
-            mQuickActionUri = quickActionUri;
-            mQuickActionCategory = quickActionCategory;
-            mLoggedEventId = loggedEventId;
-            mSearchUrlFull = searchUrlFull;
-            mSearchUrlPreload = searchUrlPreload;
+        public FakeResponseOnMainThread(ResolvedSearchTerm resolvedSearchTerm) {
+            mResolvedSearchTerm = resolvedSearchTerm;
         }
 
         @Override
         public void run() {
-            mFakeServer.handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
-                    mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
-                    mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
-                    mQuickActionUri, mQuickActionCategory, mLoggedEventId, mSearchUrlFull,
-                    mSearchUrlPreload);
+            mFakeServer.handleSearchTermResolutionResponse(mResolvedSearchTerm);
         }
     }
 
@@ -515,25 +474,18 @@ public class ContextualSearchManagerTest {
      */
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
-        fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
-                null, doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0, "", "");
+        fakeResponse(new ResolvedSearchTerm(isNetworkUnavailable, responseCode, searchTerm,
+                displayText, alternateTerm, doPreventPreload));
     }
 
     /**
      * Fakes a server response with the parameters given.
      * {@See ContextualSearchManager#handleSearchTermResolutionResponse}.
      */
-    private void fakeResponse(boolean isNetworkUnavailable, int responseCode, String searchTerm,
-            String displayText, String alternateTerm, String mid, boolean doPreventPreload,
-            int startAdjust, int endAdjust, String contextLanguage, String thumbnailUrl,
-            String caption, String quickActionUri, int quickActionCategory, long loggedEventId,
-            String searchUrlFull, String searchUrlPreload) {
+    private void fakeResponse(ResolvedSearchTerm resolvedSearchTerm) {
         if (mFakeServer.getSearchTermRequested() != null) {
             InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    new FakeResponseOnMainThread(isNetworkUnavailable, responseCode, searchTerm,
-                            displayText, alternateTerm, mid, doPreventPreload, startAdjust,
-                            endAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                            quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload));
+                    new FakeResponseOnMainThread(resolvedSearchTerm));
         }
     }
 
@@ -2395,8 +2347,9 @@ public class ContextualSearchManagerTest {
         clickWordNode("intelligence");
         waitForPanelToPeek();
 
-        fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                null, false, -14, 0, "", "", "", "", QuickActionCategory.NONE, 0, "", "");
+        fakeResponse(new ResolvedSearchTerm(false, 200, "Intelligence",
+                "United States Intelligence", "alternate-term", null, false, -14, 0, "", "", "", "",
+                QuickActionCategory.NONE, 0, "", ""));
         waitForSelectionToBe("United States Intelligence");
     }
 
