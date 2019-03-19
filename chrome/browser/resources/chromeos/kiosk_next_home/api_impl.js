@@ -6,6 +6,23 @@
  * @fileoverview Kiosk Next Home API implementation.
  */
 
+/**
+ * Builds fake App from package name.
+ * TODO(brunoad): Remove when this info is available for real.
+ * @return {!kioskNextHome.App} that can be used to launch apps via
+ *     arcAppsPrivate.
+ */
+function buildApp(packageName) {
+  return {
+    appId: packageName,
+    type: kioskNextHome.AppType.ARC,
+    displayName: packageName,
+    packageName: packageName,
+    suspended: false,
+    thumbnailImage: '',
+  };
+}
+
 /** @implements {kioskNextHome.Bridge} */
 class KioskNextHomeBridge {
   constructor() {
@@ -23,16 +40,8 @@ class KioskNextHomeBridge {
         this.identityAccessorProxy_.$.createRequest());
 
     chrome.arcAppsPrivate.onInstalled.addListener(installedApp => {
-      const app = {
-        appType: kioskNextHome.AppType.ARC,
-        appId: installedApp.packageName,
-        displayName: installedApp.packageName,
-        suspended: false,
-        thumbnailImage: '',
-      };
       for (const listener of this.listeners_) {
-        listener.onInstalledAppChanged(
-            app, kioskNextHome.AppEventType.INSTALLED);
+        listener.onAppChanged(buildApp(installedApp.packageName));
       }
     });
   }
@@ -44,7 +53,7 @@ class KioskNextHomeBridge {
 
   /** @override */
   getAccessToken(scopes) {
-    return this.identityAccessorProxy_.getPrimaryAccountInfo()
+    return this.identityAccessorProxy_.getPrimaryAccountWhenAvailable()
         .then(account => {
           return this.identityAccessorProxy_.getAccessToken(
               account.accountInfo.accountId, {'scopes': scopes},
@@ -59,18 +68,19 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
-  getInstalledApps() {
+  getAndroidId() {
+    // TODO(brunoad): Implement this method.
+    return Promise.reject('Not implemented.');
+  }
+
+  /** @override */
+  getApps() {
+    // TODO(ltenorio): Use app controller call.
     return new Promise((resolve, reject) => {
       chrome.arcAppsPrivate.getLaunchableApps(launchableApps => {
         const installedApps = [];
         for (const launchableApp of launchableApps) {
-          installedApps.push({
-            appType: kioskNextHome.AppType.ARC,
-            appId: launchableApp.packageName,
-            displayName: launchableApp.packageName,
-            suspended: false,
-            thumbnailImage: '',
-          });
+          installedApps.push(buildApp(launchableApp.packageName));
         }
         resolve(installedApps);
       });
@@ -78,19 +88,29 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
-  launchContent(contentSource, contentId, opt_params) {
-    if (contentSource === kioskNextHome.ContentSource.ARC_INTENT) {
-      // TODO(brunoad): create and migrate to a more generic API.
-      chrome.arcAppsPrivate.launchApp(contentId);
-    }
-    return Promise.resolve(true);
+  launchApp(appId) {
+    // TODO(brunoad): Use app service call.
+    chrome.arcAppsPrivate.launchApp(appId);
+    return Promise.resolve();
+  }
+
+  /** @override */
+  launchIntent(intent) {
+    // TODO(brunoad): Implement this method.
+    return Promise.reject('Not implemented.');
+  }
+
+  /** @override */
+  uninstallApp(appId) {
+    // TODO(brunoad): Implement this method.
+    return Promise.reject('Not implemented.');
   }
 }
 
 /**
  * Provides bridge implementation.
  * @return {!kioskNextHome.Bridge} Bridge instance that can be used to interact
- *     with ChromeOS.
+ *     with Chrome OS.
  */
 kioskNextHome.getChromeOsBridge = function() {
   return new KioskNextHomeBridge();

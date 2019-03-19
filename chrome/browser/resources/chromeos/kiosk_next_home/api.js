@@ -33,72 +33,75 @@ kioskNextHome.Bridge = class {
   getAccessToken(scopes) {}
 
   /**
-   * Returns a list of apps installed in the user session.
-   * @return {!Promise<!Array<!kioskNextHome.InstalledApp>>} Promise for the
-   *     list of apps.
+   * Returns the Android ID for the ARC++ container.
+   * @return {!Promise<string>} Promise for the Android ID.
    */
-  getInstalledApps() {}
+  getAndroidId() {}
 
   /**
-   * Launches a content (app, video, etc).
-   * @param {!kioskNextHome.ContentSource} contentSource
-   * @param {string} contentId
-   * @param {?Object=} opt_params Optional params to locate the content.
-   * @return {!Promise<boolean>} Promise that is resolved after the content is
-   *     launched.
+   * Returns a list of apps installed in the user session.
+   * @return {!Promise<!Array<!kioskNextHome.App>>} Promise for the list of
+   *     apps.
    */
-  launchContent(contentSource, contentId, opt_params) {}
+  getApps() {}
+
+  /**
+   * Launches an app.
+   * @param {string} appId Chrome OS identifier for the app.
+   * @return {!Promise} Resolves when app is launched, or rejects in case of
+   *     failures.
+   */
+  launchApp(appId) {}
+
+  /**
+   * Launches an ARC++ intent.
+   * @param {string} intent The URI of an ARC++ intent.
+   * @return {!Promise} Resolves when intent is launched, or rejects in case of
+   *     failures.
+   */
+  launchIntent(intent) {}
+
+  /**
+   * Uninstalls an app.
+   * @param {string} appId App to uninstall.
+   * @return {!Promise} Resolves when app is uninstalled, or rejects in case of
+   *     failures.
+   */
+  uninstallApp(appId) {}
 };
 
 /**
- * Set of known / handled content sources.
- *
- * A "Content Source" describes how to launch/view the content.
- * @enum {string}
- */
-kioskNextHome.ContentSource = {
-  /** The content is, or is hosted inside, an ARC++ app. */
-  ARC_INTENT: 'arc_intent',
-};
-
-/**
- * Types of installed apps on ChromeOS.
+ * Types of installed apps on Chrome OS.
  * @enum {string}
  */
 kioskNextHome.AppType = {
   /** The app is an ARC++ app (Android app). */
   ARC: 'arc',
+  /** The content is a Chrome app. */
+  CHROME: 'chrome',
 };
 
 /**
  * A record representing an installed app on the system.
  * @record
  */
-kioskNextHome.InstalledApp = class {
+kioskNextHome.App = class {
   constructor() {
-    /** @type {!kioskNextHome.AppType} The type of app. */
-    this.appType;
-    /**
-     * @type {string} Stable, unique identifier for the app. For ARC++ apps,
-     *     this is the package name.
-     */
+    /** @type {string} Unique Chrome OS identifier for the app. */
     this.appId;
+    /** @type {kioskNextHome.AppType} */
+    this.type;
+    /**
+     * @type {string | undefined} Android package name, if it's an ARC++ app.
+     */
+    this.packageName;
     /** @type {string} Readable name to display. */
     this.displayName;
     /** @type {string | undefined} Base64-encoded thumbnail image, fallback. */
     this.thumbnailImage;
-    /** @type {boolean | undefined} Whether the app is suspended. */
+    /** @type {boolean} Whether the app is suspended by policy. */
     this.suspended;
   }
-};
-
-/**
- * Different ways an installed app can change.
- * @enum {string}
- */
-kioskNextHome.AppEventType = {
-  INSTALLED: 'installed',
-  UNINSTALLED: 'uninstalled',
 };
 
 /**
@@ -109,17 +112,22 @@ kioskNextHome.AppEventType = {
  */
 kioskNextHome.Listener = class {
   /**
-   * Called when an app state change.
-   * @param {!kioskNextHome.InstalledApp} app The app whose state changed.
-   * @param {!kioskNextHome.AppEventType} appEventType Type of the event
-   *     indicating what changed for the app.
+   * Called when an app state changes.
+   * TODO(brunoad): Adapt for AppService calls.
+   * @param {!kioskNextHome.App} app The app whose state changed.
    */
-  onInstalledAppChanged(app, appEventType) {}
+  onAppChanged(app) {}
+
+  /**
+   * Called when the network state changes between online and offline.
+   * @param {boolean} isOnline Whether device has Internet access.
+   */
+  onOnlineStateChanged(isOnline) {}
 };
 
 /**
  * Provides bridge implementation.
  * @return {!kioskNextHome.Bridge} Bridge instance that can be used to interact
- *     with ChromeOS.
+ *     with Chrome OS.
  */
 kioskNextHome.getChromeOsBridge = function() {};
