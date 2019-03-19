@@ -50,14 +50,12 @@ var outputFile = arguments[4];
 
 /**
  * Type of this test.
- * @type {string} ('extension' | 'unit' | 'webui' | 'mojo_webui' |
- *                 'mojo_lite_webui')
+ * @type {string} ('extension' | 'unit' | 'webui' | 'mojo_lite_webui')
  */
 var testType = arguments[5];
 if (testType != 'extension' &&
     testType != 'unit' &&
     testType != 'webui' &&
-    testType != 'mojo_webui' &&
     testType != 'mojo_lite_webui') {
   print('Invalid test type: ' + testType);
   quit(-1);
@@ -85,8 +83,8 @@ var genIncludes = [];
 
 /**
  * When true, add calls to set_preload_test_(fixture|name). This is needed when
- * |testType| === 'webui' || 'mojo_webui' to send an injection message before
- * the page loads, but is not required or supported by any other test type.
+ * |testType| === 'webui' to send an injection message before the page loads,
+ * but is not required or supported by any other test type.
  * @type {boolean}
  */
 var addSetPreloadInfo;
@@ -149,8 +147,6 @@ ${argHint}
   // 'extension' - browser_tests harness, js2extension rule,
   //               ExtensionJSBrowserTest superclass.
   // 'unit' - unit_tests harness, js2unit rule, V8UnitTest superclass.
-  // 'mojo_webui' - browser_tests harness, js2webui rule, MojoWebUIBrowserTest
-  //                with mojo bindings.
   // 'mojo_lite_webui' - browser_tests harness, js2webui rule,
   //                     MojoWebUIBrowserTest with mojo_lite bindings.
   // superclass. Uses Mojo to communicate test results.
@@ -166,7 +162,7 @@ ${argHint}
     testing.Test.prototype.typedefCppFixture = 'V8UnitTest';
     testF = 'TEST_F';
     addSetPreloadInfo = false;
-  } else if (testType === 'mojo_webui' || testType === 'mojo_lite_webui') {
+  } else if (testType === 'mojo_lite_webui') {
     output('#include "chrome/test/base/mojo_web_ui_browser_test.h"');
     testing.Test.prototype.typedefCppFixture = 'MojoWebUIBrowserTest';
     testF = 'IN_PROC_BROWSER_TEST_F';
