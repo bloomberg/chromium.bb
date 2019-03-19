@@ -40,6 +40,7 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/vr/cardboard/DisplayUtils.class",
     "*google/vr/cardboard/FrameMonitor.class",
     "*google/vr/cardboard/IsEmulator.class",
+    "*google/vr/cardboard/LegacyVrParamsProvider.class",
     "*google/vr/cardboard/PackageUtils.class",
     "*google/vr/cardboard/StoragePermissionUtils.class",
     "*google/vr/cardboard/UiUtils.class",
@@ -83,8 +84,8 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/vr/vrcore/common/api/IDaydream*",
     "*google/vr/vrcore/common/api/ITransition*",
     "*google/vr/vrcore/common/api/IVrCore*",
-    "*google/vr/vrcore/controller/api/IController*",
     "*google/vr/vrcore/controller/api/Controller*",
+    "*google/vr/vrcore/controller/api/IController*",
     "*google/vr/vrcore/library/api/*",
   ]
 
