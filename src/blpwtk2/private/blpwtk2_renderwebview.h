@@ -92,6 +92,15 @@ class RenderWebView final : public WebView
     std::unique_ptr<content::InputRouterImpl> d_inputRouterImpl;
     content::mojom::WidgetInputHandlerPtr d_widgetInputHandler;
 
+    // State related to mouse events and cursor management:
+    gfx::Point d_mouseScreenPosition;
+    gfx::Point d_unlockedMouseScreenPosition, d_unlockedMouseWebViewPosition;
+
+    bool d_ncHitTestEnabled = false;
+    int d_ncHitTestResult = 0;
+    bool d_mousePressed = false;
+    bool d_mouseEntered = false, d_mouseLocked = false;
+
     // blpwtk2::WebView overrides
     void destroy() override;
     WebFrame *mainFrame() override;
@@ -239,6 +248,14 @@ class RenderWebView final : public WebView
         base::WeakPtr<content::FlingController> fling_controller) override {};
     bool NeedsBeginFrameForFlingProgress() override;
 
+    // IPC message handlers:
+    //
+    // Mouse locking:
+    void OnLockMouse(
+        bool user_gesture,
+        bool privileged);
+    void OnUnlockMouse();
+
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
     static LRESULT CALLBACK WindowProcedure(HWND   hWnd,
@@ -255,6 +272,10 @@ class RenderWebView final : public WebView
     void detachFromRoutingId();
     bool dispatchToRenderWidget(const IPC::Message& message);
     void sendScreenRects();
+    void onMouseEventAck(
+        const content::MouseEventWithLatencyInfo& event,
+        content::InputEventAckSource ack_source,
+        content::InputEventAckState ack_result) {};
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 

@@ -39,6 +39,9 @@
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/display/display.h>
 #include <ui/display/screen.h>
+#include <ui/events/blink/web_input_event.h>
+
+#include <windowsx.h>
 
 namespace {
 
@@ -233,6 +236,133 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     } return 0;
     case WM_ERASEBKGND:
         return 1;
+    case WM_NCHITTEST: {
+        if (d_ncHitTestEnabled && d_delegate) {
+            d_ncHitTestResult = HTCLIENT;
+            d_delegate->requestNCHitTest(this);
+            return d_ncHitTestResult;
+        }
+    } break;
+    case WM_MOUSEMOVE:
+    case WM_MOUSELEAVE:
+    case WM_LBUTTONDBLCLK:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_MBUTTONDBLCLK:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_RBUTTONDBLCLK:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP: {
+        MSG msg;
+        msg.hwnd    = d_hwnd.get();
+        msg.message = uMsg;
+        msg.wParam  = wParam;
+        msg.lParam  = lParam;
+        msg.time    = GetMessageTime();
+
+        auto pt     = GetMessagePos();
+        msg.pt.x    = GET_X_LPARAM(pt);
+        msg.pt.y    = GET_Y_LPARAM(pt);
+
+        switch (uMsg) {
+        // Mouse events:
+        case WM_MOUSEMOVE:
+        case WM_MOUSELEAVE:
+        case WM_LBUTTONDBLCLK:
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_MBUTTONDBLCLK:
+        case WM_MBUTTONDOWN:
+        case WM_MBUTTONUP:
+        case WM_RBUTTONDBLCLK:
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP: {
+            auto event =
+                ui::MakeWebMouseEvent(
+                    ui::MouseEvent(msg));
+
+            // Mouse enter/leave:
+            switch (uMsg) {
+            case WM_MOUSEMOVE: {
+                if (!d_mouseEntered) {
+                    TRACKMOUSEEVENT track_mouse_event = {
+                        sizeof(TRACKMOUSEEVENT),
+                        TME_LEAVE,
+                        d_hwnd.get(),
+                        0
+                    };
+
+                    if (TrackMouseEvent(&track_mouse_event)) {
+                        d_mouseEntered = true;
+
+                        d_mouseScreenPosition.SetPoint(
+                            event.PositionInScreen().x,
+                            event.PositionInScreen().y);
+                    }
+                }
+            } break;
+            case WM_MOUSELEAVE: {
+                d_mouseEntered = false;
+
+                d_mouseScreenPosition.SetPoint(
+                    event.PositionInScreen().x,
+                    event.PositionInScreen().y);
+            } break;
+            case WM_LBUTTONDOWN:
+            case WM_MBUTTONDOWN:
+            case WM_RBUTTONDOWN: {
+                d_mousePressed = true;
+
+                // Capture on mouse button down:
+                SetCapture(d_hwnd.get());
+            } break;
+            // Capture on mouse button up:
+            case WM_LBUTTONUP:
+            case WM_MBUTTONUP:
+            case WM_RBUTTONUP: {
+                d_mousePressed = false;
+
+                ReleaseCapture();
+            } break;
+            }
+
+            event.movement_x = event.PositionInScreen().x - d_mouseScreenPosition.x();
+            event.movement_y = event.PositionInScreen().y - d_mouseScreenPosition.y();
+
+            d_mouseScreenPosition.SetPoint(
+                event.PositionInScreen().x,
+                event.PositionInScreen().y);
+
+            if (d_mouseLocked) {
+                event.SetPositionInWidget(
+                    d_unlockedMouseWebViewPosition.x(),
+                    d_unlockedMouseWebViewPosition.y());
+                event.SetPositionInScreen(
+                    d_unlockedMouseScreenPosition.x(),
+                    d_unlockedMouseScreenPosition.y());
+            }
+            else {
+                d_unlockedMouseWebViewPosition.SetPoint(
+                    event.PositionInWidget().x, event.PositionInWidget().y);
+                d_unlockedMouseScreenPosition.SetPoint(
+                    event.PositionInScreen().x, event.PositionInScreen().y);
+            }
+
+            if (d_inputRouterImpl) {
+                d_inputRouterImpl->SendMouseEvent(
+                    content::MouseEventWithLatencyInfo(
+                        event,
+                        ui::LatencyInfo()),
+                    base::BindOnce(
+                        &RenderWebView::onMouseEventAck,
+                        base::Unretained(this)));
+            }
+
+            return 0;
+        } break;
+        }
+    } break;
     default:
         break;
     }
@@ -598,11 +728,13 @@ void RenderWebView::deleteSelection()
 void RenderWebView::enableNCHitTest(bool enabled)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    d_ncHitTestEnabled = enabled;
 }
 
 void RenderWebView::onNCHitTestResult(int x, int y, int result)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    d_ncHitTestResult = result;
 }
 
 void RenderWebView::performCustomContextMenuAction(int actionId)
@@ -908,6 +1040,11 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(RenderWebView, message)
+        // Mouse locking:
+        IPC_MESSAGE_HANDLER(WidgetHostMsg_LockMouse,
+            OnLockMouse)
+        IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse,
+            OnUnlockMouse)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
@@ -947,6 +1084,29 @@ content::mojom::WidgetInputHandler* RenderWebView::GetWidgetInputHandler()
 bool RenderWebView::NeedsBeginFrameForFlingProgress()
 {
     return false;
+}
+
+// IPC message handlers:
+void RenderWebView::OnLockMouse(
+    bool user_gesture,
+    bool privileged)
+{
+    if (GetCapture() != d_hwnd.get()) {
+        SetCapture(d_hwnd.get());
+        d_mouseLocked = true;
+    }
+
+    dispatchToRenderWidget(
+        WidgetMsg_LockMouse_ACK(d_renderViewRoutingId,
+            GetCapture() == d_hwnd.get()));
+}
+
+void RenderWebView::OnUnlockMouse()
+{
+    if (GetCapture() != d_hwnd.get()) {
+        ReleaseCapture();
+        d_mouseLocked = false;
+    }
 }
 
 }  // close namespace blpwtk2
