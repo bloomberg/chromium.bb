@@ -44,6 +44,8 @@ class MockWebRTCPeerConnectionHandlerClient
       std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
     DidRemoveReceiverPlanBForMock(&web_rtp_receiver);
   }
+  MOCK_METHOD1(DidModifySctpTransport,
+               void(blink::WebRTCSctpTransportSnapshot snapshot));
   void DidModifyTransceivers(
       std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
           web_transceivers,

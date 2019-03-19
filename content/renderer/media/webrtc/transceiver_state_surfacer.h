@@ -7,7 +7,9 @@
 
 #include "content/renderer/media/webrtc/rtc_rtp_transceiver.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
+#include "third_party/webrtc/api/sctp_transport_interface.h"
 #include "third_party/webrtc/rtc_base/ref_count.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -39,11 +41,13 @@ class CONTENT_EXPORT TransceiverStateSurfacer {
 
   // Must be invoked on the signaling thread.
   void Initialize(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
       std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
           transceivers);
 
   // Must be invoked on the main thread.
+  blink::WebRTCSctpTransportSnapshot SctpTransportSnapshot();
   std::vector<RtpTransceiverState> ObtainStates();
 
  protected:
@@ -51,6 +55,7 @@ class CONTENT_EXPORT TransceiverStateSurfacer {
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   bool is_initialized_;
   bool states_obtained_;
+  blink::WebRTCSctpTransportSnapshot sctp_transport_snapshot_;
   std::vector<RtpTransceiverState> transceiver_states_;
 };
 

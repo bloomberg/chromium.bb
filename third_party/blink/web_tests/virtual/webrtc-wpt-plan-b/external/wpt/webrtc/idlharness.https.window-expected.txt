@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-Found 494 tests; 341 PASS, 153 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 494 tests; 354 PASS, 140 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
-FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: ReferenceError: RTCSctpTransport is not defined Reached unreachable code
+FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
 PASS Test driver for asyncInitMediaStreamTrack
 PASS Partial interface RTCPeerConnection: original interface defined
 PASS Partial dictionary RTCOfferOptions: original dictionary defined
@@ -57,7 +57,7 @@ PASS RTCPeerConnection interface: operation addTrack(MediaStreamTrack, MediaStre
 PASS RTCPeerConnection interface: operation removeTrack(RTCRtpSender)
 PASS RTCPeerConnection interface: operation addTransceiver([object Object],[object Object], RTCRtpTransceiverInit)
 PASS RTCPeerConnection interface: attribute ontrack
-FAIL RTCPeerConnection interface: attribute sctp assert_true: The prototype object must have a property "sctp" expected true got false
+PASS RTCPeerConnection interface: attribute sctp
 PASS RTCPeerConnection interface: operation createDataChannel(USVString, RTCDataChannelInit)
 PASS RTCPeerConnection interface: attribute ondatachannel
 PASS RTCPeerConnection interface: operation getStats(MediaStreamTrack)
@@ -119,7 +119,7 @@ PASS RTCPeerConnection interface: calling removeTrack(RTCRtpSender) on new RTCPe
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "addTransceiver([object Object],[object Object], RTCRtpTransceiverInit)" with the proper type
 PASS RTCPeerConnection interface: calling addTransceiver([object Object],[object Object], RTCRtpTransceiverInit) on new RTCPeerConnection() with too few arguments must throw TypeError
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ontrack" with the proper type Unrecognized type EventHandler
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "sctp" with the proper type assert_inherits: property "sctp" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "sctp" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "createDataChannel(USVString, RTCDataChannelInit)" with the proper type
 PASS RTCPeerConnection interface: calling createDataChannel(USVString, RTCDataChannelInit) on new RTCPeerConnection() with too few arguments must throw TypeError
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "ondatachannel" with the proper type Unrecognized type EventHandler
@@ -372,17 +372,17 @@ FAIL RTCTrackEvent interface: initTrackEvent() must inherit property "receiver" 
 FAIL RTCTrackEvent interface: initTrackEvent() must inherit property "track" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 FAIL RTCTrackEvent interface: initTrackEvent() must inherit property "streams" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
 FAIL RTCTrackEvent interface: initTrackEvent() must inherit property "transceiver" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'. 'unified-plan' will become the default behavior in the future, but it is currently experimental. To try it out, construct the RTCPeerConnection with sdpSemantics:'unified-plan' present in the RTCConfiguration argument."
-FAIL RTCSctpTransport interface: existence and properties of interface object assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface object length assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface object name assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: existence and properties of interface prototype object assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: attribute transport assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: attribute state assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: attribute maxMessageSize assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: attribute maxChannels assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
-FAIL RTCSctpTransport interface: attribute onstatechange assert_own_property: self does not have own property "RTCSctpTransport" expected property "RTCSctpTransport" missing
+PASS RTCSctpTransport interface: existence and properties of interface object
+PASS RTCSctpTransport interface object length
+PASS RTCSctpTransport interface object name
+PASS RTCSctpTransport interface: existence and properties of interface prototype object
+PASS RTCSctpTransport interface: existence and properties of interface prototype object's "constructor" property
+PASS RTCSctpTransport interface: existence and properties of interface prototype object's @@unscopables property
+PASS RTCSctpTransport interface: attribute transport
+PASS RTCSctpTransport interface: attribute state
+PASS RTCSctpTransport interface: attribute maxMessageSize
+PASS RTCSctpTransport interface: attribute maxChannels
+PASS RTCSctpTransport interface: attribute onstatechange
 FAIL RTCSctpTransport must be primary interface of idlTestObjects.sctpTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL Stringification of idlTestObjects.sctpTransport assert_equals: wrong typeof object expected "object" but got "undefined"
 FAIL RTCSctpTransport interface: idlTestObjects.sctpTransport must inherit property "transport" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"

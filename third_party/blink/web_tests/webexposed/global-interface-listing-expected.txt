@@ -5733,6 +5733,7 @@ interface RTCPeerConnection : EventTarget
     getter pendingLocalDescription
     getter pendingRemoteDescription
     getter remoteDescription
+    getter sctp
     getter signalingState
     method addIceCandidate
     method addStream
@@ -5840,6 +5841,15 @@ interface RTCRtpTransceiver
     getter stopped
     method constructor
     setter direction
+interface RTCSctpTransport
+    attribute @@toStringTag
+    getter maxChannels
+    getter maxMessageSize
+    getter onstatechange
+    getter state
+    getter transport
+    method constructor
+    setter onstatechange
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp
@@ -10649,6 +10659,7 @@ interface webkitRTCPeerConnection : EventTarget
     getter pendingLocalDescription
     getter pendingRemoteDescription
     getter remoteDescription
+    getter sctp
     getter signalingState
     method addIceCandidate
     method addStream

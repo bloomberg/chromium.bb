@@ -11,23 +11,11 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/dtls_transport_proxy.h"
-#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
-#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
-#include "third_party/webrtc/api/jsep_ice_candidate.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
-#include "third_party/webrtc/p2p/base/port_allocator.h"
-#include "third_party/webrtc/p2p/base/transport_description.h"
-#include "third_party/webrtc/pc/ice_server_parsing.h"
-#include "third_party/webrtc/pc/webrtc_sdp.h"
 
 namespace blink {
 
