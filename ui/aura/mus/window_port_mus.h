@@ -253,7 +253,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetBoundsFromServer(const gfx::Rect& bounds) override;
   void SetTransformFromServer(const gfx::Transform& transform) override;
   void SetVisibleFromServer(bool visible) override;
-  void SetOpacityFromServer(float opacity) override;
   void SetCursorFromServer(const ui::Cursor& cursor) override;
   void SetPropertyFromServer(
       const std::string& property_name,

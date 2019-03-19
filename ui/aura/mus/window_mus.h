@@ -84,7 +84,6 @@ class AURA_EXPORT WindowMus {
   virtual void SetBoundsFromServer(const gfx::Rect& bounds) = 0;
   virtual void SetTransformFromServer(const gfx::Transform& transform) = 0;
   virtual void SetVisibleFromServer(bool visible) = 0;
-  virtual void SetOpacityFromServer(float opacity) = 0;
   virtual void SetCursorFromServer(const ui::Cursor& cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;

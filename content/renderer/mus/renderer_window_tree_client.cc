@@ -298,9 +298,6 @@ void RendererWindowTreeClient::OnWindowDeleted(ws::Id window_id) {
 void RendererWindowTreeClient::OnWindowVisibilityChanged(ws::Id window_id,
                                                          bool visible) {}
 
-void RendererWindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
-                                                      float new_opacity) {}
-
 void RendererWindowTreeClient::OnWindowDisplayChanged(ws::Id window_id,
                                                       int64_t display_id) {}
 

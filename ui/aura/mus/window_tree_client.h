@@ -433,8 +433,6 @@ class AURA_EXPORT WindowTreeClient
                          ws::mojom::OrderDirection direction) override;
   void OnWindowDeleted(ws::Id window_id) override;
   void OnWindowVisibilityChanged(ws::Id window_id, bool visible) override;
-  void OnWindowOpacityChanged(ws::Id window_id,
-                              float new_opacity) override;
   void OnWindowDisplayChanged(ws::Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(ws::Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(

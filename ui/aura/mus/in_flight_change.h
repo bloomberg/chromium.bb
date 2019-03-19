@@ -338,21 +338,6 @@ class InFlightVisibleChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(InFlightVisibleChange);
 };
 
-class InFlightOpacityChange : public InFlightChange {
- public:
-  InFlightOpacityChange(WindowMus* window, float revert_value);
-  ~InFlightOpacityChange() override;
-
-  // InFlightChange:
-  void SetRevertValueFrom(const InFlightChange& change) override;
-  void Revert() override;
-
- private:
-  float revert_opacity_;
-
-  DISALLOW_COPY_AND_ASSIGN(InFlightOpacityChange);
-};
-
 class InFlightSetModalTypeChange : public InFlightChange {
  public:
   InFlightSetModalTypeChange(WindowMus* window, ui::ModalType revert_value);
