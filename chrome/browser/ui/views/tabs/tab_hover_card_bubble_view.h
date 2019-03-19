@@ -7,9 +7,14 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 class ImageView;
@@ -47,6 +52,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Updates and formats title and domain with given data.
   void UpdateCardContent(TabRendererData data);
 
+  void UpdatePreviewImage(gfx::ImageSkia preview_image);
+
   gfx::Size CalculatePreferredSize() const override;
 
   base::OneShotTimer delayed_show_timer_;
@@ -59,6 +66,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   views::Label* title_label_ = nullptr;
   views::Label* domain_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
+
+  base::WeakPtrFactory<TabHoverCardBubbleView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleView);
 };
