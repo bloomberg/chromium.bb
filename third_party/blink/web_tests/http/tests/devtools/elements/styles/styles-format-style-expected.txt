@@ -1,0 +1,41 @@
+Tests that css properties are correctly formatted by the styles sidebar.
+
+Raw CSS: color: red;
+New CSS: 
+ color: red;
+
+
+Raw CSS: color: red;;;
+New CSS: 
+ color: red;
+
+
+Raw CSS: color: red;;;color: blue
+New CSS: 
+ color: red;
+ color: blue;
+
+
+Raw CSS: color: var(-);margin: 0;padding:0
+New CSS: 
+ color: var(-);margin: 0;padding:0
+
+
+Raw CSS: color: red;/* a comment */;color: blue
+New CSS: 
+ color: red;/* a comment */
+ color: blue;
+
+
+Raw CSS: :; color: red; color: blue
+New CSS: :;
+ color: red;
+ color: blue;
+
+
+Raw CSS: color: red;/* a comment;;; */ :; color: blue;
+New CSS: 
+ color: red;/* a comment;;; */ :;
+ color: blue;
+
+
