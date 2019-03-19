@@ -1931,16 +1931,21 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
     blink::WebLocalFrame* frame,
     const blink::WebNode& node,
     const base::DictionaryValue& passed_job_settings) {
-  const base::DictionaryValue* job_settings = &passed_job_settings;
-  base::DictionaryValue modified_job_settings;
-  if (job_settings->empty()) {
+  if (passed_job_settings.empty()) {
+    // TODO(thestig): Remove this block in the future, when we are certain this
+    // is not reachable.
+    NOTREACHED();
     print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
     return false;
   }
 
+  base::DictionaryValue modified_job_settings;
+  const base::DictionaryValue* job_settings;
   bool source_is_html = !IsPrintingNodeOrPdfFrame(frame, node);
-  if (!source_is_html) {
-    modified_job_settings.MergeDictionary(job_settings);
+  if (source_is_html) {
+    job_settings = &passed_job_settings;
+  } else {
+    modified_job_settings.MergeDictionary(&passed_job_settings);
     modified_job_settings.SetBoolean(kSettingHeaderFooterEnabled, false);
     modified_job_settings.SetInteger(kSettingMarginsType, NO_MARGINS);
     job_settings = &modified_job_settings;
