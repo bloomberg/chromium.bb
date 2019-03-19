@@ -231,9 +231,6 @@ class NET_EXPORT HttpNetworkSession {
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_whitelist;
 
-    // Enable Channel ID. Channel ID is being deprecated.
-    bool enable_channel_id;
-
     // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
     // each protocol.
     bool http_09_on_non_default_ports_enabled;

@@ -1357,51 +1357,6 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
 
 namespace {
 
-TEST_F(HttpStreamFactoryTest, PrivacyModeDisablesChannelId) {
-  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
-
-  StaticSocketDataProvider socket_data;
-  socket_data.set_connect_data(MockConnect(ASYNC, OK));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
-
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  std::unique_ptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSession(&session_deps));
-
-  // Set an existing SpdySession in the pool.
-  HostPortPair host_port_pair("www.google.com", 443);
-  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_ENABLED,
-                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
-
-  HttpRequestInfo request_info;
-  request_info.method = "GET";
-  request_info.url = GURL("https://www.google.com");
-  request_info.load_flags = 0;
-  request_info.privacy_mode = PRIVACY_MODE_DISABLED;
-  request_info.traffic_annotation =
-      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  SSLConfig ssl_config;
-  StreamRequestWaiter waiter;
-  std::unique_ptr<HttpStreamRequest> request(
-      session->http_stream_factory()->RequestStream(
-          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          /* enable_ip_based_pooling = */ true,
-          /* enable_alternative_services = */ true, NetLogWithSource()));
-  waiter.WaitForStream();
-
-  // The stream shouldn't come from spdy as we are using different privacy mode
-  EXPECT_FALSE(request->using_spdy());
-
-  SSLConfig used_ssl_config = waiter.used_ssl_config();
-  EXPECT_EQ(used_ssl_config.channel_id_enabled, ssl_config.channel_id_enabled);
-}
-
-namespace {
-
 // Return count of distinct groups in given socket pool.
 int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   int count = 0;
@@ -1445,8 +1400,6 @@ int GetQuicSessionCount(HttpNetworkSession* session) {
   return session_list->GetSize();
 }
 #endif
-
-}  // namespace
 
 TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
   SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());

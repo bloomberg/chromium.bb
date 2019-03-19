@@ -146,7 +146,6 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
-      enable_channel_id(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
   quic_supported_versions.push_back(quic::QUIC_VERSION_43);
@@ -453,12 +452,6 @@ void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
   GetAlpnProtos(&server_config->alpn_protos);
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;
   *proxy_config = *server_config;
-  if (request.privacy_mode == PRIVACY_MODE_ENABLED) {
-    server_config->channel_id_enabled = false;
-  } else {
-    server_config->channel_id_enabled = params_.enable_channel_id;
-    proxy_config->channel_id_enabled = params_.enable_channel_id;
-  }
 }
 
 void HttpNetworkSession::DumpMemoryStats(

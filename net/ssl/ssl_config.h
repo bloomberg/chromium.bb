@@ -89,8 +89,6 @@ struct NET_EXPORT SSLConfig {
   // ERR_SSL_VERSION_INTERFERENCE.
   bool version_interference_probe;
 
-  bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
-
   bool false_start_enabled;  // True if we'll use TLS False Start.
 
   // If true, causes only ECDHE cipher suites to be enabled.
