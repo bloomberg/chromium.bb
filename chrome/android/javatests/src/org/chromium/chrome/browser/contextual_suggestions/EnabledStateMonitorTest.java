@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -41,21 +41,9 @@ public class EnabledStateMonitorTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    private ProfileSyncServiceStub mProfileSyncServiceStub;
     private EnabledStateMonitor mEnabledStateMonitor;
 
     private String mOriginalSignedInAccountName;
-
-    private static class ProfileSyncServiceStub extends ProfileSyncService {
-        public ProfileSyncServiceStub() {
-            super();
-        }
-
-        @Override
-        public boolean isUrlKeyedDataCollectionEnabled(boolean personalized) {
-            return true;
-        }
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -70,8 +58,7 @@ public class EnabledStateMonitorTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mOriginalSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
             ChromeSigninController.get().setSignedInAccountName("test@gmail.com");
-            mProfileSyncServiceStub = new ProfileSyncServiceStub();
-            ProfileSyncService.overrideForTests(mProfileSyncServiceStub);
+            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
             mEnabledStateMonitor = new EnabledStateMonitorImpl();
         });
     }
@@ -80,8 +67,6 @@ public class EnabledStateMonitorTest {
     public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
-            // Clear ProfileSyncService in case it was mocked.
-            ProfileSyncService.resetForTests();
         });
     }
 
