@@ -80,6 +80,7 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -110,6 +111,7 @@
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/arc/arc_util.h"
@@ -157,6 +159,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif
 
   Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
+
   AddSettingsPageUIHandler(std::make_unique<AppearanceHandler>(web_ui));
 
 #if defined(USE_NSS_CERTS)
@@ -199,7 +204,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
 
-  if (!profile->IsGuestSession()) {
+  if (chromeos::IsAccountManagerAvailable(profile)) {
     chromeos::AccountManagerFactory* factory =
         g_browser_process->platform_part()->GetAccountManagerFactory();
     chromeos::AccountManager* account_manager =
@@ -210,6 +215,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
             account_manager,
             IdentityManagerFactory::GetForProfile(profile)));
+    html_source->AddBoolean(
+        "secondaryGoogleAccountSigninAllowed",
+        profile->GetPrefs()->GetBoolean(
+            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
@@ -248,9 +257,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(std::make_unique<PrintingHandler>());
 #endif
-
-  content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
 
 #if defined(OS_WIN)
   AddSettingsPageUIHandler(std::make_unique<ChromeCleanupHandler>(profile));

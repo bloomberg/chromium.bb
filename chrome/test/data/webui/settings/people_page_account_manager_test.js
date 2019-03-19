@@ -106,6 +106,8 @@ cr.define('settings_people_page_account_manager', function() {
     });
 
     test('AddAccount', function() {
+      assertFalse(accountManager.$$('#add-account-button').disabled);
+      assertTrue(accountManager.$$('cr-policy-indicator').hidden);
       accountManager.$$('#add-account-button').click();
       assertEquals(1, browserProxy.getCallCount('addAccount'));
     });
@@ -148,6 +150,38 @@ cr.define('settings_people_page_account_manager', function() {
       // We have navigated to |settings.routes.ACCOUNT_MANAGER| in |setup|. A
       // welcome screen should be shown if required.
       assertGT(browserProxy.getCallCount('showWelcomeDialogIfRequired'), 0);
+    });
+  });
+
+  suite('AccountManagerAccountAdditionDisabledTests', function() {
+    let browserProxy = null;
+    let accountManager = null;
+    let accountList = null;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({secondaryGoogleAccountSigninAllowed: false});
+    });
+
+    setup(function() {
+      browserProxy = new TestAccountManagerBrowserProxy();
+      settings.AccountManagerBrowserProxyImpl.instance_ = browserProxy;
+      PolymerTest.clearBody();
+
+      accountManager = document.createElement('settings-account-manager');
+      document.body.appendChild(accountManager);
+      accountList = accountManager.$$('#account-list');
+      assertTrue(!!accountList);
+
+      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+    });
+
+    teardown(function() {
+      accountManager.remove();
+    });
+
+    test('AddAccountCanBeDisabledByPolicy', function() {
+      assertTrue(accountManager.$$('#add-account-button').disabled);
+      assertFalse(accountManager.$$('cr-policy-indicator').hidden);
     });
   });
 });
