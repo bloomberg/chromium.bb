@@ -39,8 +39,6 @@ GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
     return GAIA_SERVICE_TYPE_INCOGNITO;
   else if (header_value == "ADDSESSION")
     return GAIA_SERVICE_TYPE_ADDSESSION;
-  else if (header_value == "REAUTH")
-    return GAIA_SERVICE_TYPE_REAUTH;
   else if (header_value == "SIGNUP")
     return GAIA_SERVICE_TYPE_SIGNUP;
   else if (header_value == "DEFAULT")
