@@ -61,12 +61,18 @@ struct TestCase {
   }
 
   TestCase& EnableDocumentsProvider() {
+    enable_arc = true;
     enable_documents_provider.emplace(true);
     return *this;
   }
 
   TestCase& DisableDocumentsProvider() {
     enable_documents_provider.emplace(false);
+    return *this;
+  }
+
+  TestCase& EnableArc() {
+    enable_arc = true;
     return *this;
   }
 
@@ -130,6 +136,7 @@ struct TestCase {
   base::Optional<bool> enable_drivefs;
   base::Optional<bool> enable_myfiles_volume;
   base::Optional<bool> enable_documents_provider;
+  bool enable_arc = false;
   bool with_browser = false;
   bool needs_zip = false;
   bool offline = false;
@@ -189,6 +196,8 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     return GetParam().enable_documents_provider.value_or(
         FileManagerBrowserTestBase::GetEnableDocumentsProvider());
   }
+
+  bool GetEnableArc() const override { return GetParam().enable_arc; }
 
   bool GetRequiresStartupBrowser() const override {
     return GetParam().with_browser;
@@ -587,6 +596,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuDocumentsProvider").EnableDocumentsProvider(),
         TestCase("dirContextMenuUsbDcim"),
         TestCase("dirContextMenuMtp"),
+        TestCase("dirContextMenuMediaView").EnableArc(),
         TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

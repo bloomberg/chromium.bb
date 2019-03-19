@@ -106,6 +106,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
                                               bool read_only);
   static std::unique_ptr<Volume> CreateForMediaView(
       const std::string& root_document_id);
+  static std::unique_ptr<Volume> CreateMediaViewForTesting(
+      base::FilePath mount_path,
+      const std::string& root_document_id);
   static std::unique_ptr<Volume> CreateForSshfsCrostini(
       const base::FilePath& crostini_path);
   static std::unique_ptr<Volume> CreateForAndroidFiles(
@@ -317,23 +320,27 @@ class VolumeManager : public KeyedService,
   // Removes Downloads volume used for testing.
   void RemoveDownloadsDirectoryForTesting();
 
-  // For testing purpose, registers a native local file system pointing to
+  // For testing purposes, registers a native local file system pointing to
   // |path| with DOWNLOADS type, and adds its volume info.
   bool RegisterDownloadsDirectoryForTesting(const base::FilePath& path);
 
-  // For testing purpose, registers a native local file system pointing to
+  // For testing purposes, registers a native local file system pointing to
   // |path| with CROSTINI type, and adds its volume info.
   bool RegisterCrostiniDirectoryForTesting(const base::FilePath& path);
 
-  // For testing purpose, registers a native local file system pointing to
+  // For testing purposes, registers a native local file system pointing to
   // |path| with ANDROID_FILES type, and adds its volume info.
   bool RegisterAndroidFilesDirectoryForTesting(const base::FilePath& path);
 
-  // For testing purpose, removes a registered native local file system
+  // For testing purposes, register a DocumentsProvider root with
+  // VOLUME_TYPE_MEDIA_VIEW, and adds its volume info
+  bool RegisterMediaViewForTesting(const std::string& root_document_id);
+
+  // For testing purposes, removes a registered native local file system
   // pointing to |path| with ANDROID_FILES type, and removes its volume info.
   bool RemoveAndroidFilesDirectoryForTesting(const base::FilePath& path);
 
-  // For testing purpose, adds a volume info pointing to |path|, with TESTING
+  // For testing purposes, adds a volume info pointing to |path|, with TESTING
   // type. Assumes that the mount point is already registered.
   void AddVolumeForTesting(const base::FilePath& path,
                            VolumeType volume_type,
@@ -342,7 +349,7 @@ class VolumeManager : public KeyedService,
                            const base::FilePath& device_path = base::FilePath(),
                            const std::string& drive_label = "");
 
-  // For testing purpose, adds the volume info to the volume manager.
+  // For testing purposes, adds the volume info to the volume manager.
   void AddVolumeForTesting(std::unique_ptr<Volume> volume);
 
   void RemoveVolumeForTesting(

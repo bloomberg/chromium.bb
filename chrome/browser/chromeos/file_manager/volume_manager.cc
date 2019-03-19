@@ -678,6 +678,14 @@ bool VolumeManager::RegisterAndroidFilesDirectoryForTesting(
   return true;
 }
 
+bool VolumeManager::RegisterMediaViewForTesting(
+    const std::string& root_document_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForMediaView(root_document_id));
+  return true;
+}
+
 bool VolumeManager::RemoveAndroidFilesDirectoryForTesting(
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
