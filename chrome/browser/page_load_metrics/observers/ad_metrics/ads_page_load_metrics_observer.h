@@ -18,6 +18,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "content/public/browser/global_request_id.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
@@ -68,7 +69,7 @@ class AdsPageLoadMetricsObserver
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   void OnPageInteractive(
@@ -115,7 +116,7 @@ class AdsPageLoadMetricsObserver
   // update. Updates |page_resources_| to reflect the new state of the resource.
   // Called once per ResourceDataUpdate.
   void UpdateResource(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
   // Records size of resources by mime type.
@@ -156,9 +157,13 @@ class AdsPageLoadMetricsObserver
   std::map<FrameTreeNodeId, page_load_metrics::mojom::ResourceDataUpdatePtr>
       ongoing_navigation_resources_;
 
-  // Maps a request_id for a blink resource to the metadata for the resource
-  // load. Only contains resources that have not completed loading.
-  std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
+  // Maps a GlobalRequestId consisting of (request_id, process_id) for a blink
+  // resource to the metadata for the resource load. GlobalRequestIds are used
+  // because this map aggregates across renderers and blink request ids are
+  // unique per-renderer. Only contains resources that have not completed
+  // loading.
+  std::map<content::GlobalRequestID,
+           page_load_metrics::mojom::ResourceDataUpdatePtr>
       page_resources_;
 
   // Tracks byte counts only for resources loaded in the main frame.

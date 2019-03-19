@@ -115,7 +115,7 @@ class PageLoadMetricsUpdateDispatcher {
         content::RenderFrameHost* rfh,
         const mojom::PageLoadFeatures& new_features) = 0;
     virtual void UpdateResourceDataUse(
-        int frame_tree_node_id,
+        content::RenderFrameHost* rfh,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
     virtual void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                                       const mojom::CpuTiming& timing) = 0;

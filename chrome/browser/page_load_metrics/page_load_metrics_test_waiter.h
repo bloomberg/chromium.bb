@@ -102,7 +102,7 @@ class PageLoadMetricsTestWaiter
                               extra_request_complete_info) override;
 
     void OnResourceDataUseObserved(
-        FrameTreeNodeId frame_tree_node_id,
+        content::RenderFrameHost* rfh,
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) override;
 
@@ -172,7 +172,7 @@ class PageLoadMetricsTestWaiter
   // Updates counters as updates are received from a resource load. Stops
   // waiting if expectations are satisfied after update.
   void OnResourceDataUseObserved(
-      FrameTreeNodeId frame_tree_node_id,
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources);
 
