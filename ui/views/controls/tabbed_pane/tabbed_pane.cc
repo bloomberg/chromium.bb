@@ -671,7 +671,7 @@ void MdTabStrip::AnimationEnded(const gfx::Animation* animation) {
 
 TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
                        TabbedPane::TabStripStyle style)
-    : listener_(NULL), contents_(new View()) {
+    : listener_(nullptr), contents_(new View()) {
   DCHECK(orientation != TabbedPane::Orientation::kHorizontal ||
          style != TabbedPane::TabStripStyle::kHighlight);
   tab_strip_ = new MdTabStrip(orientation, style);
