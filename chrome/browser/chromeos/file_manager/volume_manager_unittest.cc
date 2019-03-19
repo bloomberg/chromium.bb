@@ -726,7 +726,8 @@ TEST_F(VolumeManagerTest, OnFormatEvent_Completed) {
   volume_manager()->RemoveObserver(&observer);
 }
 
-TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
+// TODO(crbug.com/943570): test is flaky, disabled.
+TEST_F(VolumeManagerTest, DISABLED_OnFormatEvent_CompletedFailed) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
