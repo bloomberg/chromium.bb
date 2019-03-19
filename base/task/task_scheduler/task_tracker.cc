@@ -577,6 +577,8 @@ void TaskTracker::RunOrSkipTask(Task task,
   RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, traits,
                          task.queue_time);
 
+  const auto environment = sequence->GetExecutionEnvironment();
+
   const bool previous_singleton_allowed =
       ThreadRestrictions::SetSingletonAllowed(
           traits.shutdown_behavior() !=
@@ -587,15 +589,22 @@ void TaskTracker::RunOrSkipTask(Task task,
       ThreadRestrictions::SetWaitAllowed(traits.with_base_sync_primitives());
 
   {
-    const SequenceToken& sequence_token = sequence->token();
-    DCHECK(sequence_token.IsValid());
+    DCHECK(environment.token.IsValid());
     ScopedSetSequenceTokenForCurrentThread
-        scoped_set_sequence_token_for_current_thread(sequence_token);
+        scoped_set_sequence_token_for_current_thread(environment.token);
     ScopedSetTaskPriorityForCurrentThread
         scoped_set_task_priority_for_current_thread(traits.priority());
+
+    // Local storage map used if none is provided by |environment|.
+    Optional<SequenceLocalStorageMap> local_storage_map;
+    if (!environment.sequence_local_storage)
+      local_storage_map.emplace();
+
     ScopedSetSequenceLocalStorageMapForCurrentThread
         scoped_set_sequence_local_storage_map_for_current_thread(
-            sequence->sequence_local_storage());
+            environment.sequence_local_storage
+                ? environment.sequence_local_storage
+                : &local_storage_map.value());
 
     // Set up TaskRunnerHandle as expected for the scope of the task.
     Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
@@ -622,7 +631,7 @@ void TaskTracker::RunOrSkipTask(Task task,
       // http://crbug.com/652692 is resolved.
       TRACE_EVENT1("task_scheduler", "TaskScheduler_TaskInfo", "task_info",
                    std::make_unique<TaskTracingInfo>(traits, execution_mode,
-                                                     sequence_token));
+                                                     environment.token));
 
       RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);
     }

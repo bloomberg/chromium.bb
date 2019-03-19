@@ -76,6 +76,8 @@ class BASE_EXPORT Sequence : public TaskSource {
   // active Sequence::Transaction.
   Transaction BeginTransaction();
 
+  ExecutionEnvironment GetExecutionEnvironment() override;
+
   // Returns a token that uniquely identifies this Sequence.
   const SequenceToken& token() const { return token_; }
 
