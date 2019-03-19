@@ -381,6 +381,30 @@ TEST_F('CrElementsToastTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsToastManagerTest() {}
+
+CrElementsToastManagerTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_toast/cr_toast_manager.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_toast_manager_test.js',
+  ]),
+};
+
+TEST_F('CrElementsToastManagerTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsRadioButtonTest() {}
 
 CrElementsRadioButtonTest.prototype = {
