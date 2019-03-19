@@ -219,6 +219,10 @@
                  file="shared\module_metrics_proxy.js"
                  compress="gzip"
                  type="chrome_html" />
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_NAVI_COLORS_CSS"
+                 file="shared\navi_colors_css.html"
+                 compress="gzip"
+                 type="chrome_html" />
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_HTML"
                  file="shared\onboarding_background.html"
                  compress="gzip"
