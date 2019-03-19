@@ -683,17 +683,13 @@ class SafeBrowsingBlockingPageBrowserTest
       }(document.getElementById(')" + node_id + R"(')));)";
     // clang-format on
 
-    std::unique_ptr<base::Value> value =
+    base::Value value =
         content::ExecuteScriptAndGetValue(rfh, jsFindVisibility);
 
-    if (!value.get())
+    if (!value.is_bool())
       return VISIBILITY_ERROR;
 
-    bool result = false;
-    if (!value->GetAsBoolean(&result))
-      return VISIBILITY_ERROR;
-
-    return result ? VISIBLE : HIDDEN;
+    return value.GetBool() ? VISIBLE : HIDDEN;
   }
 
   bool Click(const std::string& node_id) {
