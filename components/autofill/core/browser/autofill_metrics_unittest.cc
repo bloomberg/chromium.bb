@@ -84,8 +84,8 @@ using UkmFieldTypeValidationType = ukm::builders::Autofill_FieldTypeValidation;
 using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
 using UkmFormEventType = ukm::builders::Autofill_FormEvent;
 
-using ExpectedUkmMetrics =
-    std::vector<std::vector<std::pair<const char*, int64_t>>>;
+using ExpectedUkmMetricsRecord = std::vector<std::pair<const char*, int64_t>>;
+using ExpectedUkmMetrics = std::vector<ExpectedUkmMetricsRecord>;
 
 const char* kTestGuid = "00000000-0000-0000-0000-000000000001";
 
@@ -3095,6 +3095,48 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
               user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
   }
 
+  // Simulate showing a credit card suggestion polled from "Credit card number"
+  // field along with a "Clear form" footer suggestion.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[1]);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_ShowedCreditCardSuggestions"));
+  }
+
+  // Simulate selecting a "Clear form" suggestion.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
+    external_delegate_->DidAcceptSuggestion(base::string16(),
+                                            POPUP_ITEM_ID_CLEAR_FORM, 0);
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Autofill_ClearedForm"));
+  }
+
+  // Simulate showing a credit card suggestion polled from "Credit card number"
+  // field, this time to submit the form.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
+                                          form.fields[1]);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_ShowedCreditCardSuggestions"));
+  }
+
+  // Simulate selecting a credit card suggestions.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
+    external_delegate_->DidAcceptSuggestion(
+        ASCIIToUTF16("Test"),
+        autofill_manager_->MakeFrontendID(guid, std::string()), 0);
+    EXPECT_EQ(1,
+              user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
+  }
+
   // Simulate filling a credit card suggestion.
   {
     base::UserActionTester user_action_tester;
@@ -3119,43 +3161,53 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
                      "Autofill_FormSubmitted_NonFillable"));
   }
 
-  VerifyUkm(
-      test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
-      {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
-        {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NAME_FULL},
-        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NAME_FULL},
-        {UkmSuggestionsShownType::kFieldSignatureName,
-         Collapse(CalculateFieldSignatureForField(form.fields[0]))},
-        {UkmSuggestionsShownType::kFormSignatureName,
-         Collapse(CalculateFormSignature(form))}},
-       {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
-        {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
-        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
-        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER},
-        {UkmSuggestionsShownType::kFieldSignatureName,
-         Collapse(CalculateFieldSignatureForField(form.fields[1]))},
-        {UkmSuggestionsShownType::kFormSignatureName,
-         Collapse(CalculateFormSignature(form))}}});
-  // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
-  // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
-  // |autofill_manager_->FillOrPreviewForm|.
-  VerifyUkm(
-      test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
-      {{{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
-        {UkmSuggestionFilledType::kIsForCreditCardName, true},
-        {UkmSuggestionFilledType::kFieldSignatureName,
-         Collapse(CalculateFieldSignatureForField(form.fields.front()))},
-        {UkmSuggestionFilledType::kFormSignatureName,
-         Collapse(CalculateFormSignature(form))}},
-       {{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
-        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
-        {UkmSuggestionFilledType::kIsForCreditCardName, true},
-        {UkmSuggestionFilledType::kFieldSignatureName,
-         Collapse(CalculateFieldSignatureForField(form.fields.front()))},
-        {UkmSuggestionFilledType::kFormSignatureName,
-         Collapse(CalculateFormSignature(form))}}});
+  // Expect one record for a click on the cardholder name field and one record
+  // for each of the 3 clicks on the card number field.
+  ExpectedUkmMetricsRecord name_field_record{
+      {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+      {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NAME_FULL},
+      {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+      {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NAME_FULL},
+      {UkmSuggestionsShownType::kFieldSignatureName,
+       Collapse(CalculateFieldSignatureForField(form.fields[0]))},
+      {UkmSuggestionsShownType::kFormSignatureName,
+       Collapse(CalculateFormSignature(form))}};
+  ExpectedUkmMetricsRecord number_field_record{
+      {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+      {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
+      {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+      {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER},
+      {UkmSuggestionsShownType::kFieldSignatureName,
+       Collapse(CalculateFieldSignatureForField(form.fields[1]))},
+      {UkmSuggestionsShownType::kFormSignatureName,
+       Collapse(CalculateFormSignature(form))}};
+  VerifyUkm(test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+            {name_field_record, number_field_record, number_field_record,
+             number_field_record});
+
+  // Expect 3 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
+  // call to |external_delegate_->DidAcceptSuggestion|. Second and third, from
+  // ExpectedUkmMetrics |autofill_manager_->FillOrPreviewForm|.
+  ExpectedUkmMetricsRecord from_did_accept_suggestion{
+      {UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
+      {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+      {UkmSuggestionFilledType::kIsForCreditCardName, true},
+      {UkmSuggestionFilledType::kFieldSignatureName,
+       Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+      {UkmSuggestionFilledType::kFormSignatureName,
+       Collapse(CalculateFormSignature(form))}};
+  ExpectedUkmMetricsRecord from_fill_or_preview_form{
+      {UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
+      {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+      {UkmSuggestionFilledType::kIsForCreditCardName, true},
+      {UkmSuggestionFilledType::kFieldSignatureName,
+       Collapse(CalculateFieldSignatureForField(form.fields.front()))},
+      {UkmSuggestionFilledType::kFormSignatureName,
+       Collapse(CalculateFormSignature(form))}};
+  VerifyUkm(test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+            {from_did_accept_suggestion, from_fill_or_preview_form,
+             from_fill_or_preview_form});
+
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(test_ukm_recorder_, form,

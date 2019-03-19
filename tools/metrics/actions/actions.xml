@@ -2246,6 +2246,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Autofill_ClearedForm">
+  <owner>ftirelo@chromium.org</owner>
+  <description>
+    This user action is logged when a user has cleared the form after having
+    accepted an Autofill suggestion.
+  </description>
+</action>
+
 <action name="Autofill_FilledCreditCardSuggestion">
   <owner>sebsg@chromium.org</owner>
   <description>
