@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/sequence_checker_impl.h"
+#include "build/build_config.h"
 
 // SequenceChecker is a helper class used to help verify that some methods of a
 // class are called sequentially (for thread-safety).
@@ -54,9 +55,8 @@
   DCHECK((name).CalledOnValidSequence())
 #define DETACH_FROM_SEQUENCE(name) (name).DetachFromSequence()
 #else  // DCHECK_IS_ON()
-#if __OBJC__ && defined(OS_IOS)
-// TODO(https://crbug.com/936856): clang currently doesn't support static_assert
-// in Objective-C classes.
+#if __OBJC__ && defined(OS_IOS) && !__has_feature(objc_cxx_static_assert)
+// TODO(thakis): Remove this branch once Xcode's clang has clang r356148.
 #define SEQUENCE_CHECKER(name)
 #else
 #define SEQUENCE_CHECKER(name) static_assert(true, "")
