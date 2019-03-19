@@ -131,9 +131,9 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
     waiter.reset(new AccessibilityNotificationWaiter(
         shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kNone));
 
-    std::unique_ptr<base::Value> go_results =
-        content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "go()");
-    run_go_again = go_results->is_bool() && go_results->GetBool();
+    base::Value go_results =
+        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "go()");
+    run_go_again = go_results.is_bool() && go_results.GetBool();
 
     for (;;) {
       waiter->WaitForNotification();  // Run at least once.

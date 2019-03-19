@@ -101,10 +101,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     EXPECT_FALSE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
-    int index = -1;
-    std::unique_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-    ASSERT_TRUE(value->GetAsInteger(&index));
+    base::Value value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+    int index = value.GetInt();
     EXPECT_EQ(0, index);
 
     if (touch_handler)
@@ -113,7 +111,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
     content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
     value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-    ASSERT_TRUE(value->GetAsInteger(&index));
+    index = value.GetInt();
     EXPECT_EQ(2, index);
     EXPECT_TRUE(controller.CanGoBack());
     EXPECT_FALSE(controller.CanGoForward());
@@ -135,8 +133,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
           kScrollSteps);
       base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
-      value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-      ASSERT_TRUE(value->GetAsInteger(&index));
+      value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+      index = value.GetInt();
       EXPECT_EQ(1, index);
       EXPECT_TRUE(controller.CanGoBack());
       EXPECT_TRUE(controller.CanGoForward());
@@ -153,8 +151,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
           kScrollSteps);
       base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
-      value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-      ASSERT_TRUE(value->GetAsInteger(&index));
+      value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+      index = value.GetInt();
       EXPECT_EQ(0, index);
       EXPECT_FALSE(controller.CanGoBack());
       EXPECT_TRUE(controller.CanGoForward());
@@ -171,8 +169,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
           kScrollSteps);
       base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
-      value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-      ASSERT_TRUE(value->GetAsInteger(&index));
+      value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+      index = value.GetInt();
       EXPECT_EQ(1, index);
       EXPECT_TRUE(controller.CanGoBack());
       EXPECT_TRUE(controller.CanGoForward());
@@ -183,12 +181,10 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
     RenderFrameHost* main_frame = web_contents->GetMainFrame();
-    int index = -1;
-    std::unique_ptr<base::Value> value;
-    value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-    if (!value->GetAsInteger(&index))
-      index = -1;
-    return index;
+    base::Value value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+    if (!value.is_int())
+      return -1;
+    return value.GetInt();
   }
 
   int ExecuteScriptAndExtractInt(const std::string& script) {
@@ -310,15 +306,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
-  int index = -1;
-  std::unique_ptr<base::Value> value =
-      content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-  ASSERT_TRUE(value->GetAsInteger(&index));
+  base::Value value = ExecuteScriptAndGetValue(main_frame, "get_current()");
+  int index = value.GetInt();
   EXPECT_EQ(0, index);
 
   content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
-  ASSERT_TRUE(value->GetAsInteger(&index));
+  index = value.GetInt();
   EXPECT_EQ(1, index);
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());

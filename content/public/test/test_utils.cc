@@ -68,26 +68,6 @@ void DeferredQuitRunLoop(const base::Closure& quit_task,
   }
 }
 
-// Class used to handle result callbacks for ExecuteScriptAndGetValue.
-class ScriptCallback {
- public:
-  ScriptCallback() { }
-  virtual ~ScriptCallback() { }
-  void ResultCallback(base::Value result);
-
-  std::unique_ptr<base::Value> result() { return std::move(result_); }
-
- private:
-  std::unique_ptr<base::Value> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptCallback);
-};
-
-void ScriptCallback::ResultCallback(base::Value result) {
-  result_.reset(result.DeepCopy());
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
-}
-
 // Monitors if any task is processed by the message loop.
 class TaskObserver : public base::MessageLoop::TaskObserver {
  public:
@@ -200,16 +180,23 @@ base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop) {
                     kNumQuitDeferrals);
 }
 
-std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
-    RenderFrameHost* render_frame_host,
-    const std::string& script) {
-  ScriptCallback observer;
+base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
+                                     const std::string& script) {
+  base::RunLoop run_loop;
+  base::Value result;
 
   render_frame_host->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script), base::BindOnce(&ScriptCallback::ResultCallback,
-                                                base::Unretained(&observer)));
-  base::RunLoop().Run();
-  return observer.result();
+      base::UTF8ToUTF16(script),
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, base::Value* out_result,
+             base::Value value) {
+            *out_result = std::move(value);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitWhenIdleClosure(), &result));
+  run_loop.Run();
+
+  return result;
 }
 
 bool AreAllSitesIsolatedForTesting() {

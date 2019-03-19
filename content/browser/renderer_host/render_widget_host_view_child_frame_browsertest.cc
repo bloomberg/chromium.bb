@@ -44,9 +44,9 @@ class RenderWidgetHostViewChildFrameTest : public ContentBrowserTest {
   }
 
   void CheckScreenWidth(RenderFrameHost* render_frame_host) {
-    int width;
-    ExecuteScriptAndGetValue(render_frame_host, "window.screen.width")
-        ->GetAsInteger(&width);
+    int width =
+        ExecuteScriptAndGetValue(render_frame_host, "window.screen.width")
+            .GetInt();
     EXPECT_EQ(expected_screen_width_, width);
   }
 
@@ -111,10 +111,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
       embedded_test_server()->GetURL("foo.com", "/title2.html"));
   NavigateFrameToURL(root->child_at(0), cross_site_url);
 
-  int main_frame_screen_width = 0;
-  ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                           "window.screen.width")
-      ->GetAsInteger(&main_frame_screen_width);
+  int main_frame_screen_width =
+      ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                               "window.screen.width")
+          .GetInt();
   set_expected_screen_width(main_frame_screen_width);
   EXPECT_NE(main_frame_screen_width, 0);
 
