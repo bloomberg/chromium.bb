@@ -128,11 +128,11 @@ net::Error CacheCreator::Run() {
 #if defined(OS_ANDROID)
   return net::ERR_FAILED;
 #else
-  disk_cache::BackendImpl* new_cache = new disk_cache::BackendImpl(
-      path_, cleanup_tracker_.get(), /*cache_thread = */ nullptr, net_log_);
+  disk_cache::BackendImpl* new_cache =
+      new disk_cache::BackendImpl(path_, cleanup_tracker_.get(),
+                                  /*cache_thread = */ nullptr, type_, net_log_);
   created_cache_.reset(new_cache);
   new_cache->SetMaxSize(max_bytes_);
-  new_cache->SetType(type_);
   net::Error rv = new_cache->Init(
       base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);

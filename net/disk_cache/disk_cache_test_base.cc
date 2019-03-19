@@ -372,19 +372,18 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
   }
 
   if (mask_)
-    cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, runner,
+    cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, runner, type_,
                                               /* net_log = */ nullptr);
   else
-    cache_impl_ = new disk_cache::BackendImpl(cache_path_,
-                                              /* cleanup_tracker = */ nullptr,
-                                              runner, /* net_log = */ nullptr);
+    cache_impl_ = new disk_cache::BackendImpl(
+        cache_path_, /* cleanup_tracker = */ nullptr, runner, type_,
+        /* net_log = */ nullptr);
   cache_.reset(cache_impl_);
   ASSERT_TRUE(cache_);
   if (size_)
     EXPECT_TRUE(cache_impl_->SetMaxSize(size_));
   if (new_eviction_)
     cache_impl_->SetNewEviction();
-  cache_impl_->SetType(type_);
   cache_impl_->SetFlags(flags);
   net::TestCompletionCallback cb;
   int rv = cache_impl_->Init(cb.callback());

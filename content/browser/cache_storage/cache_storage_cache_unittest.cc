@@ -98,12 +98,11 @@ void SizeCallback(base::RunLoop* run_loop,
 class DelayableBackend : public disk_cache::Backend {
  public:
   explicit DelayableBackend(std::unique_ptr<disk_cache::Backend> backend)
-      : backend_(std::move(backend)), delay_open_entry_(false) {}
+      : Backend(backend->GetCacheType()),
+        backend_(std::move(backend)),
+        delay_open_entry_(false) {}
 
   // disk_cache::Backend overrides
-  net::CacheType GetCacheType() const override {
-    return backend_->GetCacheType();
-  }
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
   net::Error OpenEntry(const std::string& key,
                        net::RequestPriority request_priority,

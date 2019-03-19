@@ -150,15 +150,16 @@ BackendImpl::BackendImpl(
     const base::FilePath& path,
     scoped_refptr<BackendCleanupTracker> cleanup_tracker,
     const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    net::CacheType cache_type,
     net::NetLog* net_log)
-    : cleanup_tracker_(std::move(cleanup_tracker)),
+    : Backend(cache_type),
+      cleanup_tracker_(std::move(cleanup_tracker)),
       background_queue_(this, FallbackToInternalIfNull(cache_thread)),
       path_(path),
       block_files_(path),
       mask_(0),
       max_size_(0),
       up_ticks_(0),
-      cache_type_(net::DISK_CACHE),
       uma_report_(0),
       user_flags_(0),
       init_(false),
@@ -179,14 +180,15 @@ BackendImpl::BackendImpl(
     const base::FilePath& path,
     uint32_t mask,
     const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    net::CacheType cache_type,
     net::NetLog* net_log)
-    : background_queue_(this, FallbackToInternalIfNull(cache_thread)),
+    : Backend(cache_type),
+      background_queue_(this, FallbackToInternalIfNull(cache_thread)),
       path_(path),
       block_files_(path),
       mask_(mask),
       max_size_(0),
       up_ticks_(0),
-      cache_type_(net::DISK_CACHE),
       uma_report_(0),
       user_flags_(kMask),
       init_(false),
@@ -261,14 +263,14 @@ int BackendImpl::SyncInit() {
   Trace("Init");
 
   if (data_->header.experiment != NO_EXPERIMENT &&
-      cache_type_ != net::DISK_CACHE) {
+      GetCacheType() != net::DISK_CACHE) {
     // No experiment for other caches.
     return net::ERR_FAILED;
   }
 
   if (!(user_flags_ & kNoRandom)) {
     // The unit test controls directly what to test.
-    new_eviction_ = (cache_type_ == net::DISK_CACHE);
+    new_eviction_ = (GetCacheType() == net::DISK_CACHE);
   }
 
   if (!CheckIndex()) {
@@ -279,7 +281,7 @@ int BackendImpl::SyncInit() {
   if (!restarted_ && (create_files || !data_->header.num_entries))
     ReportError(ERR_CACHE_CREATED);
 
-  if (!(user_flags_ & kNoRandom) && cache_type_ == net::DISK_CACHE &&
+  if (!(user_flags_ & kNoRandom) && GetCacheType() == net::DISK_CACHE &&
       !InitExperiment(&data_->header, create_files)) {
     return net::ERR_FAILED;
   }
@@ -299,10 +301,10 @@ int BackendImpl::SyncInit() {
     return net::ERR_FAILED;
 
   // We want to minimize the changes to cache for an AppCache.
-  if (cache_type() == net::APP_CACHE) {
+  if (GetCacheType() == net::APP_CACHE) {
     DCHECK(!new_eviction_);
     read_only_ = true;
-  } else if (cache_type() == net::SHADER_CACHE) {
+  } else if (GetCacheType() == net::SHADER_CACHE) {
     DCHECK(!new_eviction_);
   }
 
@@ -418,7 +420,7 @@ int BackendImpl::SyncDoomAllEntries() {
 
 int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
                                         const base::Time end_time) {
-  DCHECK_NE(net::APP_CACHE, cache_type_);
+  DCHECK_NE(net::APP_CACHE, GetCacheType());
   if (end_time.is_null())
     return SyncDoomEntriesSince(initial_time);
 
@@ -450,7 +452,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
 }
 
 int BackendImpl::SyncCalculateSizeOfAllEntries() {
-  DCHECK_NE(net::APP_CACHE, cache_type_);
+  DCHECK_NE(net::APP_CACHE, GetCacheType());
   if (disabled_)
     return net::ERR_FAILED;
 
@@ -460,7 +462,7 @@ int BackendImpl::SyncCalculateSizeOfAllEntries() {
 // We use OpenNextEntryImpl to retrieve elements from the cache, until we get
 // entries that are too old.
 int BackendImpl::SyncDoomEntriesSince(const base::Time initial_time) {
-  DCHECK_NE(net::APP_CACHE, cache_type_);
+  DCHECK_NE(net::APP_CACHE, GetCacheType());
   if (disabled_)
     return net::ERR_FAILED;
 
@@ -504,7 +506,7 @@ void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
   scoped_refptr<EntryImpl> cache_entry =
       MatchEntry(key, hash, false, Addr(), &error);
   if (cache_entry && ENTRY_NORMAL == cache_entry->entry()->Data()->state)
-    UpdateRank(cache_entry.get(), cache_type() == net::SHADER_CACHE);
+    UpdateRank(cache_entry.get(), GetCacheType() == net::SHADER_CACHE);
 }
 
 scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
@@ -730,11 +732,6 @@ bool BackendImpl::SetMaxSize(int64_t max_bytes) {
   return true;
 }
 
-void BackendImpl::SetType(net::CacheType type) {
-  DCHECK_NE(net::MEMORY_CACHE, type);
-  cache_type_ = type;
-}
-
 base::FilePath BackendImpl::GetFileName(Addr address) const {
   if (!address.is_separate_file() || !address.is_initialized()) {
     NOTREACHED();
@@ -804,7 +801,7 @@ LruData* BackendImpl::GetLruData() {
 }
 
 void BackendImpl::UpdateRank(EntryImpl* entry, bool modified) {
-  if (read_only_ || (!modified && cache_type() == net::SHADER_CACHE))
+  if (read_only_ || (!modified && GetCacheType() == net::SHADER_CACHE))
     return;
   eviction_.UpdateRank(entry, modified);
 }
@@ -943,7 +940,7 @@ int32_t BackendImpl::GetCurrentEntryId() const {
 }
 
 int64_t BackendImpl::MaxFileSize() const {
-  return cache_type() == net::PNACL_CACHE ? max_size_ : max_size_ / 8;
+  return GetCacheType() == net::PNACL_CACHE ? max_size_ : max_size_ / 8;
 }
 
 void BackendImpl::ModifyStorageSize(int32_t old_size, int32_t new_size) {
@@ -993,9 +990,9 @@ bool BackendImpl::IsLoaded() const {
 
 std::string BackendImpl::HistogramName(const char* name, int experiment) const {
   if (!experiment)
-    return base::StringPrintf("DiskCache.%d.%s", cache_type_, name);
-  return base::StringPrintf("DiskCache.%d.%s_%d", cache_type_,
-                            name, experiment);
+    return base::StringPrintf("DiskCache.%d.%s", GetCacheType(), name);
+  return base::StringPrintf("DiskCache.%d.%s_%d", GetCacheType(), name,
+                            experiment);
 }
 
 base::WeakPtr<BackendImpl> BackendImpl::GetWeakPtr() {
@@ -1233,10 +1230,6 @@ void BackendImpl::FlushIndex() {
 }
 
 // ------------------------------------------------------------------------
-
-net::CacheType BackendImpl::GetCacheType() const {
-  return cache_type_;
-}
 
 int32_t BackendImpl::GetEntryCount() const {
   if (!index_.get() || disabled_)
@@ -1518,7 +1511,7 @@ bool BackendImpl::InitStats() {
 
   if (!stats_.Init(data.get(), size, address))
     return false;
-  if (cache_type_ == net::DISK_CACHE && ShouldReportAgain())
+  if (GetCacheType() == net::DISK_CACHE && ShouldReportAgain())
     stats_.InitSizeHistogram();
   return true;
 }
@@ -2017,7 +2010,7 @@ void BackendImpl::ReportStats() {
   stats_.ResetRatios();
   stats_.SetCounter(Stats::TRIM_ENTRY, 0);
 
-  if (cache_type_ == net::DISK_CACHE)
+  if (GetCacheType() == net::DISK_CACHE)
     block_files_.ReportStats();
 }
 

@@ -404,7 +404,8 @@ bool MockDiskEntry::ignore_callbacks_ = false;
 //-----------------------------------------------------------------------------
 
 MockDiskCache::MockDiskCache()
-    : open_count_(0),
+    : Backend(DISK_CACHE),
+      open_count_(0),
       create_count_(0),
       doomed_count_(0),
       max_file_size_(std::numeric_limits<int>::max()),
@@ -420,10 +421,6 @@ MockDiskCache::MockDiskCache()
 
 MockDiskCache::~MockDiskCache() {
   ReleaseAll();
-}
-
-CacheType MockDiskCache::GetCacheType() const {
-  return DISK_CACHE;
 }
 
 int32_t MockDiskCache::GetEntryCount() const {

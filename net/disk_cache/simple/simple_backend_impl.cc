@@ -237,11 +237,11 @@ SimpleBackendImpl::SimpleBackendImpl(
     int64_t max_bytes,
     net::CacheType cache_type,
     net::NetLog* net_log)
-    : cleanup_tracker_(std::move(cleanup_tracker)),
+    : Backend(cache_type),
+      cleanup_tracker_(std::move(cleanup_tracker)),
       file_tracker_(file_tracker ? file_tracker
                                  : g_simple_file_tracker.Pointer()),
       path_(path),
-      cache_type_(cache_type),
       cache_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
@@ -282,16 +282,16 @@ net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
 
   index_ = std::make_unique<SimpleIndex>(
       base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
-      cache_type_,
+      GetCacheType(),
       std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool.get(),
-                                        cache_type_, path_));
+                                        GetCacheType(), path_));
   index_->ExecuteWhenReady(
-      base::BindOnce(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
+      base::BindOnce(&RecordIndexLoad, GetCacheType(), base::TimeTicks::Now()));
 
   PostTaskAndReplyWithResult(
       cache_runner_.get(), FROM_HERE,
       base::BindOnce(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
-                     orig_max_size_, cache_type_),
+                     orig_max_size_, GetCacheType()),
       base::BindOnce(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
                      std::move(completion_callback)));
   return net::ERR_IO_PENDING;
@@ -324,11 +324,11 @@ void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
   to_handle_waiters.swap(it->second);
   entries_pending_doom_.erase(it);
 
-  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", cache_type_,
+  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", GetCacheType(),
                    to_handle_waiters.size());
 
   for (PostDoomWaiter& post_doom : to_handle_waiters) {
-    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", cache_type_,
+    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", GetCacheType(),
                      (base::TimeTicks::Now() - post_doom.time_queued));
     std::move(post_doom.run_post_doom).Run();
   }
@@ -392,10 +392,6 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
                      mass_doom_entry_hashes_ptr, path_),
       base::BindOnce(&SimpleBackendImpl::DoomEntriesComplete, AsWeakPtr(),
                      base::Passed(&mass_doom_entry_hashes), barrier_callback));
-}
-
-net::CacheType SimpleBackendImpl::GetCacheType() const {
-  return net::DISK_CACHE;
 }
 
 int32_t SimpleBackendImpl::GetEntryCount() const {
@@ -516,7 +512,7 @@ SimpleBackendImpl::MaybeOptimisticCreateForPostDoom(
   if (post_doom->empty() &&
       entry_operations_mode_ == SimpleEntryImpl::OPTIMISTIC_OPERATIONS) {
     simple_entry = new SimpleEntryImpl(
-        cache_type_, path_, cleanup_tracker_.get(), entry_hash,
+        GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
         entry_operations_mode_, this, file_tracker_, net_log_,
         GetNewEntryPriority(request_priority));
     simple_entry->SetKey(key);
@@ -844,7 +840,7 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
   const bool did_insert = insert_result.second;
   if (did_insert) {
     SimpleEntryImpl* entry = it->second = new SimpleEntryImpl(
-        cache_type_, path_, cleanup_tracker_.get(), entry_hash,
+        GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
         entry_operations_mode_, this, file_tracker_, net_log_,
         GetNewEntryPriority(request_priority));
     entry->SetKey(key);
@@ -887,7 +883,7 @@ net::Error SimpleBackendImpl::OpenEntryFromHash(
   }
 
   scoped_refptr<SimpleEntryImpl> simple_entry = new SimpleEntryImpl(
-      cache_type_, path_, cleanup_tracker_.get(), entry_hash,
+      GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
       entry_operations_mode_, this, file_tracker_, net_log_,
       GetNewEntryPriority(net::HIGHEST));
   CompletionOnceCallback backend_callback =
