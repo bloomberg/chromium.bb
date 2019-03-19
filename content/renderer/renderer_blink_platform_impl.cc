@@ -930,8 +930,10 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.enable_raster_interface = web_attributes.enable_raster_interface;
-  // Prefer discrete GPU for WebGL.
-  attributes.gpu_preference = gl::PreferDiscreteGpu;
+
+  attributes.gpu_preference = web_attributes.prefer_integrated_gpu
+                                  ? gl::PreferIntegratedGpu
+                                  : gl::PreferDiscreteGpu;
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.fail_if_major_performance_caveat;

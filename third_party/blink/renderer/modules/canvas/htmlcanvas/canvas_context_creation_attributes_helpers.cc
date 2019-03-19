@@ -27,6 +27,7 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.pixel_format = attrs->pixelFormat();
   result.premultiplied_alpha = attrs->premultipliedAlpha();
   result.preserve_drawing_buffer = attrs->preserveDrawingBuffer();
+  result.power_preference = attrs->powerPreference();
   result.stencil = attrs->stencil();
   result.xr_compatible = attrs->xrCompatible();
   return result;
