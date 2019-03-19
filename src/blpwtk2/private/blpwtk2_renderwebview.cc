@@ -887,6 +887,20 @@ void RenderWebView::notifyRoutingId(int id)
 
     updateVisibility();
     updateGeometry();
+
+    // Set input event routing:
+    d_inputRouterImpl.reset(
+        new content::InputRouterImpl(
+            this, this, this, content::InputRouter::Config()));
+
+    content::mojom::WidgetInputHandlerHostPtr input_handler_host_ptr;
+    auto widgetInputHandlerHostRequest = mojo::MakeRequest(&input_handler_host_ptr);
+
+    rv->GetWidget()->SetupWidgetInputHandler(
+        mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host_ptr));
+
+    d_inputRouterImpl->BindHost(
+        std::move(widgetInputHandlerHostRequest), true);
 }
 
 // IPC::Listener overrideds:
@@ -898,6 +912,41 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
     IPC_END_MESSAGE_MAP()
 
     return handled;
+}
+
+// content::InputRouterClient overrides:
+content::InputEventAckState RenderWebView::FilterInputEvent(
+    const blink::WebInputEvent& input_event,
+    const ui::LatencyInfo& latency_info)
+{
+    return content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
+void RenderWebView::ForwardGestureEventWithLatencyInfo(
+    const blink::WebGestureEvent& gesture_event,
+    const ui::LatencyInfo& latency_info)
+{
+    d_inputRouterImpl->SendGestureEvent(
+        content::GestureEventWithLatencyInfo(
+            gesture_event,
+            latency_info));
+}
+
+bool RenderWebView::IsWheelScrollInProgress()
+{
+    return false;
+}
+
+// content::InputRouterImplClient overrides:
+content::mojom::WidgetInputHandler* RenderWebView::GetWidgetInputHandler()
+{
+    return d_widgetInputHandler.get();
+}
+
+// content::FlingControllerSchedulerClient overrides:
+bool RenderWebView::NeedsBeginFrameForFlingProgress()
+{
+    return false;
 }
 
 }  // close namespace blpwtk2

@@ -32,8 +32,16 @@
 #include <blpwtk2_webviewproperties.h>
 #include <blpwtk2_webviewproxydelegate.h>
 
+#include <content/browser/renderer_host/input/fling_controller.h>
+#include <content/browser/renderer_host/input/input_disposition_handler.h>
+#include <content/browser/renderer_host/input/input_router_impl.h>
+#include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
 #include <ui/gfx/geometry/rect.h>
+
+namespace content {
+class InputRouterImpl;
+}  // close namespace content
 
 namespace blpwtk2 {
 
@@ -48,6 +56,9 @@ class RenderWebView final : public WebView
                           , public WebViewDelegate
                           , private WebViewProxyDelegate
                           , private IPC::Listener
+                          , private content::InputRouterImplClient
+                          , private content::InputDispositionHandler
+                          , private content::FlingControllerSchedulerClient
 {
     class RenderViewObserver;
 
@@ -74,6 +85,12 @@ class RenderWebView final : public WebView
 
     // The compositor:
     std::unique_ptr<RenderCompositor> d_compositor;
+
+    // State related to processing user input:
+    //
+    // The input event router:
+    std::unique_ptr<content::InputRouterImpl> d_inputRouterImpl;
+    content::mojom::WidgetInputHandlerPtr d_widgetInputHandler;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -174,6 +191,53 @@ class RenderWebView final : public WebView
 
     // IPC::Listener overrides
     bool OnMessageReceived(const IPC::Message& message) override;
+
+    // content::InputRouterClient overrides:
+    content::InputEventAckState FilterInputEvent(
+        const blink::WebInputEvent& input_event,
+        const ui::LatencyInfo& latency_info) override;
+    void IncrementInFlightEventCount() override {};
+    void DecrementInFlightEventCount(content::InputEventAckSource ack_source) override {};
+    void DidOverscroll(const ui::DidOverscrollParams& params) override {};
+    void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {};
+    void DidStartScrollingViewport() override {};
+    void ForwardGestureEventWithLatencyInfo(
+        const blink::WebGestureEvent& gesture_event,
+        const ui::LatencyInfo& latency_info) override;
+    void ForwardWheelEventWithLatencyInfo(
+        const blink::WebMouseWheelEvent& wheel_event,
+        const ui::LatencyInfo& latency_info) override {};
+    bool IsWheelScrollInProgress() override;
+    void SetMouseCapture(bool capture) override {};
+
+    // content::InputRouterImplClient overrides:
+    content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+    void OnImeCancelComposition() override {};
+    void OnImeCompositionRangeChanged(
+        const gfx::Range& range,
+        const std::vector<gfx::Rect>& bounds) override {};
+
+    // content::InputDispositionHandler overrides:
+    void OnWheelEventAck(
+        const content::MouseWheelEventWithLatencyInfo& event,
+        content::InputEventAckSource ack_source,
+        content::InputEventAckState ack_result) override {};
+    void OnTouchEventAck(
+        const content::TouchEventWithLatencyInfo& event,
+        content::InputEventAckSource ack_source,
+        content::InputEventAckState ack_result) override {};
+    void OnGestureEventAck(
+        const content::GestureEventWithLatencyInfo& event,
+        content::InputEventAckSource ack_source,
+        content::InputEventAckState ack_result) override {};
+    void OnUnexpectedEventAck(UnexpectedEventAckType type) override {};
+
+    // content::FlingControllerSchedulerClient overrides:
+    void ScheduleFlingProgress(
+        base::WeakPtr<content::FlingController> fling_controller) override {};
+    void DidStopFlingingOnBrowser(
+        base::WeakPtr<content::FlingController> fling_controller) override {};
+    bool NeedsBeginFrameForFlingProgress() override;
 
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
