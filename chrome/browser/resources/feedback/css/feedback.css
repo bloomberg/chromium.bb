@@ -103,6 +103,14 @@ body {
   height: 29px;
 }
 
+#assistant-checkbox-container {
+  align-items: flex-start;
+  line-height: 20px;
+  margin-bottom: 20px;
+  margin-top: 7px;
+  vertical-align: text-top;
+}
+
 #screenshot-container {
   margin-top: 10px;
 }

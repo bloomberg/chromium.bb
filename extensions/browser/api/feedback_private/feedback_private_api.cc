@@ -125,7 +125,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     const std::string& extra_diagnostics,
     const GURL& page_url,
     api::feedback_private::FeedbackFlow flow,
-    bool from_assistant) {
+    bool from_assistant,
+    bool include_bluetooth_logs) {
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
@@ -136,6 +137,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     info.system_information = std::make_unique<SystemInformationList>();
 #if defined(OS_CHROMEOS)
     info.from_assistant = std::make_unique<bool>(from_assistant);
+    info.include_bluetooth_logs =
+        std::make_unique<bool>(include_bluetooth_logs);
 #endif  // defined(OS_CHROMEOS)
 
     // Any extra diagnostics information should be added to the sys info.

@@ -85,19 +85,22 @@ void ShowFeedbackPage(Browser* browser,
           ? feedback_private::FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
           : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR;
 
+  bool include_bluetooth_logs = false;
 #if defined(OS_CHROMEOS)
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (identity_manager &&
       base::EndsWith(identity_manager->GetPrimaryAccountInfo().email,
-                     kGoogleDotCom, base::CompareCase::INSENSITIVE_ASCII) &&
-      IsFromUserInteraction(source) && IsBluetoothLoggingAllowedByBoard()) {
+                     kGoogleDotCom, base::CompareCase::INSENSITIVE_ASCII)) {
     flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
+    include_bluetooth_logs =
+        IsFromUserInteraction(source) && IsBluetoothLoggingAllowedByBoard();
   }
 #endif
 
   api->RequestFeedbackForFlow(
       description_template, description_placeholder_text, category_tag,
-      extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant);
+      extra_diagnostics, page_url, flow, source == kFeedbackSourceAssistant,
+      include_bluetooth_logs);
 }
 
 }  // namespace chrome

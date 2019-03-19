@@ -54,10 +54,11 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 
   void StartFeedbackUI(FeedbackFlow flow,
-                       const std::string& extra_diagnostics) {
+                       const std::string& extra_diagnostics,
+                       bool from_assistant = false) {
     base::Closure callback = base::Bind(&StopMessageLoopCallback);
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(&callback);
-    InvokeFeedbackUI(flow, extra_diagnostics);
+    InvokeFeedbackUI(flow, extra_diagnostics, from_assistant);
     content::RunMessageLoop();
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(NULL);
   }
@@ -74,13 +75,14 @@ class FeedbackTest : public ExtensionBrowserTest {
 
  private:
   void InvokeFeedbackUI(FeedbackFlow flow,
-                        const std::string& extra_diagnostics) {
+                        const std::string& extra_diagnostics,
+                        bool from_assistant) {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
-    api->RequestFeedbackForFlow("Test description", "Test placeholder",
-                                "Test tag", extra_diagnostics,
-                                GURL("http://www.test.com"), flow);
+    api->RequestFeedbackForFlow(
+        "Test description", "Test placeholder", "Test tag", extra_diagnostics,
+        GURL("http://www.test.com"), flow, from_assistant);
   }
 };
 
@@ -206,4 +208,40 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
   EXPECT_TRUE(bool_result);
 }
 
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ShowFeedbackFromAssistant DISABLED_ShowFeedbackFromAssistant
+#else
+#define MAYBE_ShowFeedbackFromAssistant ShowFeedbackFromAssistant
+#endif
+// Ensures that when triggered from Assistant with Google account, Assistant
+// checkbox are not hidden.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedbackFromAssistant) {
+  WaitForExtensionViewsToLoad();
+
+  ASSERT_TRUE(IsFeedbackAppAvailable());
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL, std::string(),
+                  /*from_assistant*/ true);
+  VerifyFeedbackAppLaunch();
+
+  AppWindow* const window =
+      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
+  ASSERT_TRUE(window);
+  content::WebContents* const content = window->web_contents();
+
+  bool bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+      "  ((function() {"
+      "      if ($('assistant-checkbox-container') != null &&"
+      "          $('assistant-checkbox-container').hidden == true) {"
+      "        return false;"
+      "      }"
+      "      return true;"
+      "    })()));",
+      &bool_result));
+  EXPECT_TRUE(bool_result);
+}
 }  // namespace extensions
