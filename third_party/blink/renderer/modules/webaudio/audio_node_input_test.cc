@@ -24,8 +24,8 @@ TEST(AudioNodeInputTest, InputDestroyedBeforeOutput) {
   DelayNode* node2 = context->createDelay(ASSERT_NO_EXCEPTION);
   auto& handler2 = node2->Handler();
 
-  auto input = AudioNodeInput::Create(handler1);
-  auto output = AudioNodeOutput::Create(&handler2, 0);
+  auto input = std::make_unique<AudioNodeInput>(handler1);
+  auto output = std::make_unique<AudioNodeOutput>(&handler2, 0);
 
   {
     BaseAudioContext::GraphAutoLocker graph_lock(context);
@@ -48,8 +48,8 @@ TEST(AudioNodeInputTest, OutputDestroyedBeforeInput) {
   DelayNode* node2 = context->createDelay(ASSERT_NO_EXCEPTION);
   auto& handler2 = node2->Handler();
 
-  auto input = AudioNodeInput::Create(handler1);
-  auto output = AudioNodeOutput::Create(&handler2, 0);
+  auto input = std::make_unique<AudioNodeInput>(handler1);
+  auto output = std::make_unique<AudioNodeOutput>(&handler2, 0);
 
   {
     BaseAudioContext::GraphAutoLocker graph_lock(context);
