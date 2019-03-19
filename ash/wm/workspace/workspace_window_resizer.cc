@@ -65,13 +65,7 @@ class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
   void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
                         const gfx::Point& location_in_screen) override {}
   void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
-  void StartFling(const ui::GestureEvent* event) override {
-    if (ShouldFlingIntoOverview(event)) {
-      DCHECK(Shell::Get()->overview_controller()->IsSelecting());
-      Shell::Get()->overview_controller()->overview_session()->AddItem(
-          dragged_window_, /*reposition=*/true, /*animate=*/false);
-    }
-  }
+  void StartFling(const ui::GestureEvent* event) override {}
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragDelegate);
 };

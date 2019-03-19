@@ -137,25 +137,6 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   return widget;
 }
 
-// Gets the expected grid bounds according the current |indicator_state| during
-// window dragging.
-gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
-                                              IndicatorState indicator_state) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  switch (indicator_state) {
-    case IndicatorState::kPreviewAreaLeft:
-      return split_view_controller->GetSnappedWindowBoundsInScreen(
-          dragged_window, SplitViewController::RIGHT);
-    case IndicatorState::kPreviewAreaRight:
-      return split_view_controller->GetSnappedWindowBoundsInScreen(
-          dragged_window, SplitViewController::LEFT);
-    default:
-      return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
-          dragged_window);
-  }
-}
-
 // Gets the expected grid bounds according to current splitview state.
 gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
   SplitViewController* split_view_controller =
@@ -165,6 +146,31 @@ gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::RIGHT);
     case SplitViewController::RIGHT_SNAPPED:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          dragged_window, SplitViewController::LEFT);
+    default:
+      return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          dragged_window);
+  }
+}
+
+// When split view mode is not active, the grid bounds are updated according to
+// |indicator_state|, to achieve the effect that the overview windows get out of
+// the way of a split view drag indicator when it expands into a preview area.
+// When split view mode is active, instead of keeping the overview windows away
+// from the preview area, they are kept away from the already snapped window (by
+// just forwarding |dragged_window| to GetGridBoundsInScreenAfterDragging()).
+gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
+                                              IndicatorState indicator_state) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (split_view_controller->IsSplitViewModeActive())
+    return GetGridBoundsInScreenAfterDragging(dragged_window);
+  switch (indicator_state) {
+    case IndicatorState::kPreviewAreaLeft:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          dragged_window, SplitViewController::RIGHT);
+    case IndicatorState::kPreviewAreaRight:
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::LEFT);
     default:
@@ -679,30 +685,31 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
                                          IndicatorState indicator_state) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
-  // Adjust the window grid's bounds and the drop target's visibility
-  // according to |indicator_state| if split view is not active at the moment.
-  if (!Shell::Get()->split_view_controller()->IsSplitViewModeActive()) {
-    OverviewItem* drop_target = GetDropTarget();
-    const bool should_visible =
-        (indicator_state != IndicatorState::kPreviewAreaLeft &&
-         indicator_state != IndicatorState::kPreviewAreaRight);
-    if (drop_target) {
-      const bool visible = drop_target_widget_->IsVisible();
-      if (should_visible != visible) {
-        drop_target_widget_->GetLayer()->SetVisible(should_visible);
-        drop_target->SetOpacity(should_visible ? 1.f : 0.f);
-      }
-    }
+  OverviewItem* drop_target = GetDropTarget();
 
-    // Update the grid's bounds.
-    const gfx::Rect expected_bounds =
-        GetGridBoundsInScreenDuringDragging(dragged_window, indicator_state);
-    if (bounds_ != expected_bounds) {
-      SetBoundsAndUpdatePositionsIgnoringWindow(
-          expected_bounds, should_visible ? nullptr : drop_target);
-    }
+  // Update the drop target visibility according to |indicator_state|.
+  const bool wanted_drop_target_visibility =
+      indicator_state != IndicatorState::kPreviewAreaLeft &&
+      indicator_state != IndicatorState::kPreviewAreaRight;
+  const bool update_drop_target_visibility =
+      drop_target &&
+      (drop_target_widget_->IsVisible() != wanted_drop_target_visibility);
+  if (update_drop_target_visibility) {
+    drop_target_widget_->GetLayer()->SetVisible(wanted_drop_target_visibility);
+    drop_target->SetOpacity(wanted_drop_target_visibility ? 1.f : 0.f);
   }
 
+  // Update the grid's bounds.
+  const gfx::Rect wanted_bounds =
+      GetGridBoundsInScreenDuringDragging(dragged_window, indicator_state);
+  const bool update_bounds =
+      update_drop_target_visibility || bounds_ != wanted_bounds;
+  if (update_bounds) {
+    SetBoundsAndUpdatePositionsIgnoringWindow(
+        wanted_bounds, wanted_drop_target_visibility ? nullptr : drop_target);
+  }
+
+  // Visually indicate when |dragged_window| is dragged over the drop target.
   aura::Window* target_window = GetTargetWindowOnLocation(location_in_screen);
   DropTargetView* drop_target_view =
       static_cast<DropTargetView*>(drop_target_widget_->GetContentsView());
