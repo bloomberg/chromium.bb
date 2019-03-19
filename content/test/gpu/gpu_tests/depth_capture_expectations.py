@@ -19,5 +19,3 @@ class DepthCaptureExpectations(GpuTestExpectations):
                ['linux', ('nvidia', 0x104a)], bug=737410)
     self.Fail('DepthCapture_depthStreamToR32FloatTexture',
               ['android', ('qualcomm', 'Adreno (TM) 330')], bug=765913)
-    self.Flaky('DepthCapture_depthStreamToR32FloatTexture',
-              ['win7'], bug=937134)
