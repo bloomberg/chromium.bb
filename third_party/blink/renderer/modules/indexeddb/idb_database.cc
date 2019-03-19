@@ -197,7 +197,6 @@ void IDBDatabase::OnChanges(
     if (observer_lookup_result != observers_.end()) {
       IDBObserver* observer = observer_lookup_result->value;
 
-      IDBTransaction* transaction = nullptr;
       auto transactions_lookup_result = transactions.find(map_entry.first);
       if (transactions_lookup_result != transactions.end()) {
         const std::pair<int64_t, Vector<int64_t>>& obs_txn =
@@ -206,16 +205,11 @@ void IDBDatabase::OnChanges(
         for (int64_t store_id : obs_txn.second) {
           stores.insert(metadata_.object_stores.at(store_id)->name);
         }
-
-        transaction = IDBTransaction::CreateObserver(
-            GetExecutionContext(), obs_txn.first, stores, this);
       }
 
       observer->Callback()->InvokeAndReportException(
-          observer, IDBObserverChanges::Create(this, transaction, observations,
+          observer, IDBObserverChanges::Create(this, nullptr, observations,
                                                map_entry.second));
-      if (transaction)
-        transaction->SetActive(false);
     }
   }
 }
