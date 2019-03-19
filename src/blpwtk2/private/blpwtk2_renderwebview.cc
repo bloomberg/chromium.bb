@@ -363,6 +363,44 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
         } break;
         }
     } break;
+    case WM_SETCURSOR: {
+        wchar_t *cursor = IDC_ARROW;
+
+        switch (LOWORD(lParam)) {
+        case HTSIZE:
+            cursor = IDC_SIZENWSE;
+            break;
+        case HTLEFT:
+        case HTRIGHT:
+            cursor = IDC_SIZEWE;
+            break;
+        case HTTOP:
+        case HTBOTTOM:
+            cursor = IDC_SIZENS;
+            break;
+        case HTTOPLEFT:
+        case HTBOTTOMRIGHT:
+        case HTOBJECT:
+            cursor = IDC_SIZENWSE;
+            break;
+        case HTTOPRIGHT:
+        case HTBOTTOMLEFT:
+            cursor = IDC_SIZENESW;
+            break;
+        case HTCLIENT:
+            d_isCursorOverridden = false;
+            setPlatformCursor(d_currentPlatformCursor);
+            return 1;
+        case LOWORD(HTERROR):
+            return 0;
+        default:
+            break;
+        }
+
+        d_isCursorOverridden = true;
+        SetCursor(
+            LoadCursor(NULL, cursor));
+    } return 1;
     default:
         break;
     }
@@ -402,6 +440,9 @@ void RenderWebView::initialize()
     RECT rect;
     GetWindowRect(d_hwnd.get(), &rect);
     d_geometry = gfx::Rect(rect);
+
+    d_cursorLoader.reset(ui::CursorLoader::Create());
+    d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
 }
 
 void RenderWebView::updateVisibility()
@@ -505,6 +546,23 @@ void RenderWebView::sendScreenRects()
         WidgetMsg_UpdateScreenRects(d_renderWidgetRoutingId,
             gfx::Rect(view_screen_rect),
             gfx::Rect(view_screen_rect)));
+}
+
+void RenderWebView::setPlatformCursor(HCURSOR cursor)
+{
+    if (d_isCursorOverridden) {
+        d_currentPlatformCursor = cursor;
+        return;
+    }
+
+    if (cursor) {
+        d_previousPlatformCursor = SetCursor(cursor);
+        d_currentPlatformCursor = cursor;
+    }
+    else if (d_previousPlatformCursor) {
+        SetCursor(d_previousPlatformCursor);
+        d_previousPlatformCursor = NULL;
+    }
 }
 
 // blpwtk2::WebView overrides:
@@ -1045,6 +1103,9 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
             OnLockMouse)
         IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse,
             OnUnlockMouse)
+        // Cursor setting:
+        IPC_MESSAGE_HANDLER(WidgetHostMsg_SetCursor,
+            OnSetCursor)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
@@ -1106,6 +1167,37 @@ void RenderWebView::OnUnlockMouse()
     if (GetCapture() != d_hwnd.get()) {
         ReleaseCapture();
         d_mouseLocked = false;
+    }
+}
+
+void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
+{
+    if (!d_currentCursor.IsEqual(cursor)) {
+        d_currentCursor = cursor;
+
+        HCURSOR platformCursor = NULL;
+
+        if (!d_currentCursor.IsCustom()) {
+            auto native_cursor = d_currentCursor.GetNativeCursor();
+            d_cursorLoader->SetPlatformCursor(&native_cursor);
+
+            platformCursor = native_cursor.platform();
+        }
+        else {
+            ui::Cursor uiCursor(ui::CursorType::kCustom);
+            SkBitmap bitmap;
+            gfx::Point hotspot;
+            float scale_factor;
+            d_currentCursor.CreateScaledBitmapAndHotspotFromCustomData(
+                &bitmap, &hotspot, &scale_factor);
+            uiCursor.set_custom_bitmap(bitmap);
+            uiCursor.set_custom_hotspot(hotspot);
+            uiCursor.set_device_scale_factor(scale_factor);
+
+            platformCursor = d_currentCursor.GetPlatformCursor(uiCursor);
+        }
+
+        setPlatformCursor(platformCursor);
     }
 }
 
