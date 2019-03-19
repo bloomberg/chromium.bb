@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
-#include <vector>
+#include <map>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -39,19 +39,21 @@
 #endif
 
 namespace {
+
 const bool kIsBranded =
 #if defined(GOOGLE_CHROME_BUILD)
     true;
 #else
     false;
 #endif
-}  // namespace
+
+const char kPreviewBackgroundPath[] = "preview-background.jpg";
 
 bool HandleRequestCallback(
     base::WeakPtr<WelcomeUI> weak_ptr,
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
-  if (!base::StartsWith(path, "preview-background.jpg",
+  if (!base::StartsWith(path, kPreviewBackgroundPath,
                         base::CompareCase::SENSITIVE)) {
     return false;
   }
@@ -125,6 +127,21 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
+const std::map<std::string, bool>& GetGzipMap() {
+  static std::map<std::string, bool>* gzip_map = nullptr;
+  if (!gzip_map) {
+    gzip_map = new std::map<std::string, bool>();
+    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
+      (*gzip_map)[kOnboardingWelcomeResources[i].name] =
+          kOnboardingWelcomeResources[i].gzipped;
+    }
+    (*gzip_map)[kPreviewBackgroundPath] = false;
+  }
+  return *gzip_map;
+}
+
+}  // namespace
+
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui), weak_ptr_factory_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -145,31 +162,12 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   DarkModeHandler::Initialize(web_ui, html_source);
 
-  const bool is_nux_onboarding_enabled = nux::IsNuxOnboardingEnabled(profile);
-
-  if (is_nux_onboarding_enabled) {
-    std::vector<std::string> gzipped_paths{""};
-    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-      if (kOnboardingWelcomeResources[i].gzipped)
-        gzipped_paths.emplace_back(kOnboardingWelcomeResources[i].name);
-    }
-    html_source->UseGzip(base::BindRepeating(
-        [](const std::vector<std::string>& gzipped_paths,
-           const std::string& path) {
-          return base::ContainsValue(gzipped_paths, path);
-        },
-        std::move(gzipped_paths)));
-  }
-
-  bool is_dice =
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
-
   // There are multiple possible configurations that affects the layout, but
   // first add resources that are shared across all layouts.
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
 
-  if (is_nux_onboarding_enabled) {
+  if (nux::IsNuxOnboardingEnabled(profile)) {
     // Add Onboarding welcome strings.
     AddOnboardingStrings(html_source);
 
@@ -214,7 +212,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                                ->GetString());
     html_source->SetRequestFilter(base::BindRepeating(
         &HandleRequestCallback, weak_ptr_factory_.GetWeakPtr()));
-  } else if (kIsBranded && is_dice) {
+    html_source->UseGzip(base::BindRepeating(&WelcomeUI::IsGzipped));
+  } else if (kIsBranded &&
+             AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
     // Use special layout if the application is branded and DICE is enabled.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
     html_source->AddLocalizedString("acceptText",
@@ -274,4 +274,10 @@ void WelcomeUI::CreateBackgroundFetcher(
 void WelcomeUI::StorePageSeen(Profile* profile) {
   // Store that this profile has been shown the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+}
+
+bool WelcomeUI::IsGzipped(const std::string& path) {
+  const std::map<std::string, bool>& gzip_map = GetGzipMap();
+  const auto it = gzip_map.find(path);
+  return it == gzip_map.end() || it->second;
 }
