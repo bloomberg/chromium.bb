@@ -182,20 +182,6 @@ TEST_F('BookmarksFolderNodeTest', 'All', function() {
   mocha.run();
 });
 
-function BookmarksToastManagerTest() {}
-
-BookmarksToastManagerTest.prototype = {
-  __proto__: BookmarksBrowserTest.prototype,
-
-  extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
-    'toast_manager_test.js',
-  ]),
-};
-
-TEST_F('BookmarksToastManagerTest', 'All', function() {
-  mocha.run();
-});
-
 function BookmarksPolicyTest() {}
 
 BookmarksPolicyTest.prototype = {

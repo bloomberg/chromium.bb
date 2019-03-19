@@ -197,9 +197,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("store_client.html", IDR_BOOKMARKS_STORE_CLIENT_HTML);
   source->AddResourcePath("store_client.js", IDR_BOOKMARKS_STORE_CLIENT_JS);
   source->AddResourcePath("strings.html", IDR_BOOKMARKS_STRINGS_HTML);
-  source->AddResourcePath("toast_manager.html",
-                          IDR_BOOKMARKS_TOAST_MANAGER_HTML);
-  source->AddResourcePath("toast_manager.js", IDR_BOOKMARKS_TOAST_MANAGER_JS);
   source->AddResourcePath("toolbar.html", IDR_BOOKMARKS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_BOOKMARKS_TOOLBAR_JS);
   source->AddResourcePath("util.html", IDR_BOOKMARKS_UTIL_HTML);

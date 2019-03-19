@@ -74,8 +74,7 @@ suite('<bookmarks-command-manager>', function() {
 
     commandManager = new TestCommandManager();
     replaceBody(commandManager);
-    document.body.appendChild(
-        document.createElement('bookmarks-toast-manager'));
+    document.body.appendChild(document.createElement('cr-toast-manager'));
     bookmarks.DialogFocusManager.instance_ = null;
   });
 
