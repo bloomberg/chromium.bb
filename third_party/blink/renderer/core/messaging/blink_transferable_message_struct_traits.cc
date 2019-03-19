@@ -84,6 +84,7 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
       std::make_move_iterator(stream_channels.begin()),
       std::make_move_iterator(stream_channels.end()));
   out->has_user_gesture = data.has_user_gesture();
+  out->transfer_user_activation = data.transfer_user_activation();
 
   out->message->SetArrayBufferContentsArray(
       std::move(array_buffer_contents_array));

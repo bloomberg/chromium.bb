@@ -426,6 +426,16 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
       // to the target page.
       target_rfh->delegate()->EnsureOpenerProxiesExist(source_rfh);
 
+      // Transfer user activation state in the frame tree in browser when
+      // |transfer_user_activation| is true.
+      if (base::FeatureList::IsEnabled(
+              features::kUserActivationPostMessageTransfer) &&
+          message.transfer_user_activation &&
+          source_rfh->frame_tree_node()->HasTransientUserActivation()) {
+        target_rfh->frame_tree_node()->TransferActivationFrom(
+            source_rfh->frame_tree_node());
+      }
+
       // If the message source is a cross-process subframe, its proxy will only
       // be created in --site-per-process mode.  If the proxy wasn't created,
       // set the source routing ID to MSG_ROUTING_NONE (see

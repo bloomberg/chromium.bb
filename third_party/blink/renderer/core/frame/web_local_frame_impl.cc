@@ -2273,6 +2273,17 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
     UserGestureIndicator::SetWasForwardedCrossProcess();
   }
 
+  // Transfer user activation state in the target's renderer when
+  // |transferUserActivation| is true.
+  MessageEvent* msg_event = static_cast<MessageEvent*>((Event*)event);
+  Frame* source_frame = nullptr;
+  if (msg_event->source() && msg_event->source()->ToDOMWindow())
+    source_frame = msg_event->source()->ToDOMWindow()->GetFrame();
+  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+      msg_event->transferUserActivation()) {
+    GetFrame()->TransferActivationFrom(source_frame);
+  }
+
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
       intended_target_origin.Get(), event,
       std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
