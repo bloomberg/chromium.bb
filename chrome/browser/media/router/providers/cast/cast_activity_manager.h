@@ -100,6 +100,9 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   void HandleParsedClientMessage(std::unique_ptr<base::Value> message);
   void HandleV2ProtocolMessage(const CastInternalMessage& cast_message);
 
+  // Resets the PresentationConnection Mojo message pipes.
+  void TearDownPresentationConnection();
+
   // Sends a response to the client indicating that a particular request
   // succeeded or failed.
   void SendResultResponse(int sequence_number, cast_channel::Result result);
@@ -197,6 +200,7 @@ class CastActivityRecord {
       const url::Origin& origin,
       int tab_id,
       AutoJoinPolicy auto_join_policy);
+  void RemoveClient(const std::string& client_id);
 
   // On the first call, saves the ID of |session|.  On subsequent calls,
   // notifies all connected clients that the session has been updated.  In both

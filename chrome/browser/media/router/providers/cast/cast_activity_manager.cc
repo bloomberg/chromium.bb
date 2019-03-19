@@ -12,6 +12,11 @@
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 
+using blink::mojom::PresentationConnectionCloseReason;
+using blink::mojom::PresentationConnectionMessagePtr;
+using blink::mojom::PresentationConnectionPtrInfo;
+using blink::mojom::PresentationConnectionState;
+
 namespace media_router {
 
 namespace {
@@ -43,17 +48,16 @@ CastSessionClient::CastSessionClient(const std::string& client_id,
 CastSessionClient::~CastSessionClient() = default;
 
 mojom::RoutePresentationConnectionPtr CastSessionClient::Init() {
-  blink::mojom::PresentationConnectionPtrInfo renderer_connection;
+  PresentationConnectionPtrInfo renderer_connection;
   connection_binding_.Bind(mojo::MakeRequest(&renderer_connection));
   auto connection_request = mojo::MakeRequest(&connection_);
-  connection_->DidChangeState(
-      blink::mojom::PresentationConnectionState::CONNECTED);
+  connection_->DidChangeState(PresentationConnectionState::CONNECTED);
   return mojom::RoutePresentationConnection::New(std::move(renderer_connection),
                                                  std::move(connection_request));
 }
 
 void CastSessionClient::SendMessageToClient(
-    blink::mojom::PresentationConnectionMessagePtr message) {
+    PresentationConnectionMessagePtr message) {
   connection_->OnMessage(std::move(message));
 }
 
@@ -78,8 +82,7 @@ void CastSessionClient::SendMediaStatusToClient(
       CreateV2Message(client_id_, media_status, sequence_number));
 }
 
-void CastSessionClient::OnMessage(
-    blink::mojom::PresentationConnectionMessagePtr message) {
+void CastSessionClient::OnMessage(PresentationConnectionMessagePtr message) {
   if (!message->is_message())
     return;
 
@@ -91,8 +94,7 @@ void CastSessionClient::OnMessage(
                           activity_->route().media_route_id()));
 }
 
-void CastSessionClient::DidClose(
-    blink::mojom::PresentationConnectionCloseReason reason) {
+void CastSessionClient::DidClose(PresentationConnectionCloseReason reason) {
   // TODO(https://crbug.com/809249): Implement close connection with this
   // method once we make sure Blink calls this on navigation and on
   // PresentationConnection::close().
@@ -210,19 +212,23 @@ void CastSessionClient::SendResultResponse(int sequence_number,
 }
 
 void CastSessionClient::CloseConnection() {
-  if (connection_)
-    connection_->DidChangeState(
-        blink::mojom::PresentationConnectionState::CLOSED);
+  if (connection_) {
+    // TODO(jrw): Pass in PresentationConnectionCloseReason.
+    connection_->DidClose(PresentationConnectionCloseReason::CLOSED);
+  }
 
-  connection_.reset();
-  connection_binding_.Close();
+  TearDownPresentationConnection();
 }
 
 void CastSessionClient::TerminateConnection() {
-  if (connection_)
-    connection_->DidChangeState(
-        blink::mojom::PresentationConnectionState::TERMINATED);
+  if (connection_) {
+    connection_->DidChangeState(PresentationConnectionState::TERMINATED);
+  }
 
+  TearDownPresentationConnection();
+}
+
+void CastSessionClient::TearDownPresentationConnection() {
   connection_.reset();
   connection_binding_.Close();
 }
@@ -240,6 +246,14 @@ mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
   return presentation_connection;
+}
+
+void CastActivityRecord::RemoveClient(const std::string& client_id) {
+  // Don't erase by key here as the |client_id| may be referring to the client
+  // being deleted.
+  auto it = connected_clients_.find(client_id);
+  if (it != connected_clients_.end())
+    connected_clients_.erase(it);
 }
 
 void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
@@ -331,7 +345,7 @@ void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
 
 void CastActivityRecord::SendMessageToClient(
     const std::string& client_id,
-    blink::mojom::PresentationConnectionMessagePtr message) {
+    PresentationConnectionMessagePtr message) {
   auto it = connected_clients_.find(client_id);
   if (it == connected_clients_.end()) {
     DLOG(ERROR) << "Attempting to send message to nonexistent client: "
@@ -537,13 +551,12 @@ void CastActivityManager::LaunchSessionAfterTerminatingExisting(
   DoLaunchSession(std::move(params));
 }
 
-void CastActivityManager::RemoveActivity(
-    ActivityMap::iterator activity_it,
-    blink::mojom::PresentationConnectionState state,
-    bool notify) {
-  DCHECK(state == blink::mojom::PresentationConnectionState::CLOSED ||
-         state == blink::mojom::PresentationConnectionState::TERMINATED);
-  if (state == blink::mojom::PresentationConnectionState::CLOSED)
+void CastActivityManager::RemoveActivity(ActivityMap::iterator activity_it,
+                                         PresentationConnectionState state,
+                                         bool notify) {
+  DCHECK(state == PresentationConnectionState::CLOSED ||
+         state == PresentationConnectionState::TERMINATED);
+  if (state == PresentationConnectionState::CLOSED)
     activity_it->second->ClosePresentationConnections();
   else
     activity_it->second->TerminatePresentationConnections();
@@ -680,8 +693,7 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
     // whether it even happens in practice; I haven't been able to trigger it.
     //
     // TODO(jrw): Try to come up with a test to exercise this code.
-    RemoveActivity(activity_it,
-                   blink::mojom::PresentationConnectionState::TERMINATED,
+    RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
                    /* notify */ false);
     AddNonLocalActivityRecord(sink, session);
   }
