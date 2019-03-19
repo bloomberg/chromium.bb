@@ -1873,7 +1873,12 @@ void IndexedDBDatabase::AppendRequest(
 
 void IndexedDBDatabase::RequestComplete(ConnectionRequest* request) {
   DCHECK_EQ(request, active_request_.get());
+  scoped_refptr<IndexedDBDatabase> protect(this);
   active_request_.reset();
+
+  // Exit early if |active_request_| held the last reference to |this|.
+  if (protect->HasOneRef())
+    return;
 
   if (!pending_requests_.empty())
     ProcessRequestQueue();
