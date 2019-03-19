@@ -270,7 +270,7 @@ const gfx::FontList& Textfield::GetDefaultFontList() {
 
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
-      controller_(NULL),
+      controller_(nullptr),
       scheduled_text_edit_command_(ui::TextEditCommand::INVALID_COMMAND),
       read_only_(false),
       default_width_in_chars_(0),
@@ -829,7 +829,8 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      touch_handles_hidden_due_to_scroll_ = touch_selection_controller_ != NULL;
+      touch_handles_hidden_due_to_scroll_ =
+          touch_selection_controller_ != nullptr;
       DestroyTouchSelection();
       drag_start_location_ = event->location();
       drag_start_display_offset_ =
@@ -1193,7 +1194,7 @@ void Textfield::ShowContextMenuForViewImpl(View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {
   UpdateContextMenu();
-  context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
                                   MENU_ANCHOR_TOPLEFT, source_type);
 }
