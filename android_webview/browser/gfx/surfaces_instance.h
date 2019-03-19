@@ -15,6 +15,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/color_space.h"
 
@@ -22,10 +23,6 @@ namespace gfx {
 class Rect;
 class Size;
 class Transform;
-}
-
-namespace gpu {
-class SharedContextState;
 }
 
 namespace viz {
@@ -56,6 +53,10 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   void AddChildId(const viz::SurfaceId& child_id);
   void RemoveChildId(const viz::SurfaceId& child_id);
+  bool is_using_vulkan() const {
+    return shared_context_state_ &&
+           shared_context_state_->use_vulkan_gr_context();
+  }
 
  private:
   friend class base::RefCounted<SurfacesInstance>;

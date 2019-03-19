@@ -66,6 +66,7 @@ bool InitVulkanForWebView(VkInstance instance, VkDevice device) {
 // static
 scoped_refptr<AwVulkanContextProvider>
 AwVulkanContextProvider::GetOrCreateInstance(AwDrawFn_InitVkParams* params) {
+  DCHECK(g_vulkan_context_provider || params);
   if (g_vulkan_context_provider) {
     DCHECK_EQ(params->device, g_vulkan_context_provider->device());
     DCHECK_EQ(params->queue, g_vulkan_context_provider->queue());

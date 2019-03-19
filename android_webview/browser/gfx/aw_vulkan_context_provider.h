@@ -41,7 +41,7 @@ class AwVulkanContextProvider final : public viz::VulkanContextProvider {
   };
 
   static scoped_refptr<AwVulkanContextProvider> GetOrCreateInstance(
-      AwDrawFn_InitVkParams* params);
+      AwDrawFn_InitVkParams* params = nullptr);
 
   // viz::VulkanContextProvider implementation:
   gpu::VulkanImplementation* GetVulkanImplementation() override;
