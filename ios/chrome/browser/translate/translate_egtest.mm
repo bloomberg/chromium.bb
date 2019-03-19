@@ -5,6 +5,7 @@
 #import <XCTest/XCTest.h>
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,11 +13,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -25,6 +28,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/ui/translate/language_selection_view_controller.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
+#import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -33,18 +39,33 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::kWaitForUIElementTimeout;
+using chrome_test_util::ButtonWithAccessibilityLabel;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::CloseButton;
+using chrome_test_util::TapWebViewElementWithId;
+
 namespace {
+
+// Paragraph height height for test pages. This must be large enough to trigger
+// the fullscreen mode.
+const int kParagraphHeightEM = 200;
 
 // Some text in English language.
 const char kEnglishText[] =
@@ -108,7 +129,68 @@ const char kLanguagePathText[] = "Some text here.";
 // tags.
 std::string GetFrenchPageHtml(const std::string& html_tag,
                               const std::string& meta_tags) {
-  return html_tag + meta_tags + "<body>" + kFrenchText + "</body></html>";
+  return html_tag + meta_tags + "<body>" +
+         base::StringPrintf("<p style='height:%dem'>%s</p>", kParagraphHeightEM,
+                            kFrenchText) +
+         "</body></html>";
+}
+
+// Returns a matcher for the translate infobar view.
+id<GREYMatcher> TranslateInfobar() {
+  return grey_accessibilityID(kTranslateInfobarViewId);
+}
+
+// Returns a matcher for the translate infobar's options button.
+id<GREYMatcher> OptionsButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_IOS_TRANSLATE_INFOBAR_OPTIONS_ACCESSIBILITY_LABEL);
+}
+
+// Returns a matcher for the translate options menu.
+id<GREYMatcher> OptionsMenu() {
+  return grey_accessibilityID(kTranslateOptionsPopupMenuId);
+}
+
+// Returns a matcher for the language selection menu.
+id<GREYMatcher> LanguagesMenu() {
+  return grey_accessibilityID(kLanguageSelectorPopupMenuId);
+}
+
+// Returns a matcher for the "More Languages" entry in translate options menu.
+id<GREYMatcher> MoreLanguages() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_TRANSLATE_INFOBAR_OPTIONS_MORE_LANGUAGE);
+}
+
+// Returns a matcher for the "Always translate ..." entry in translate options
+// menu.
+id<GREYMatcher> AlwaysTranslate(NSString* language) {
+  return ButtonWithAccessibilityLabel(
+      l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
+                              base::SysNSStringToUTF16(language)));
+}
+
+// Returns a matcher for the "Page not in ..." entry in translate options menu.
+id<GREYMatcher> PageNotIn(NSString* language) {
+  return ButtonWithAccessibilityLabel(
+      l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_OPTIONS_NOT_SOURCE_LANGUAGE,
+                              base::SysNSStringToUTF16(language)));
+}
+
+// Returns a matcher for the notification snackbar's "UNDO" button.
+id<GREYMatcher> UndoButton() {
+  return ButtonWithAccessibilityLabelId(IDS_TRANSLATE_NOTIFICATION_UNDO);
+}
+
+// Returns a matcher for an element with or without the
+// UIAccessibilityTraitSelected accessibility trait depending on |selected|.
+id<GREYMatcher> ElementIsSelected(BOOL selected) {
+  return grey_allOf(
+      grey_sufficientlyVisible(),
+      selected
+          ? grey_accessibilityTrait(UIAccessibilityTraitSelected)
+          : grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)),
+      nil);
 }
 
 // Assigns the testing callback for the current WebState's language detection
@@ -177,14 +259,13 @@ void TestResponseProvider::GetResponseHeadersAndBody(
         url.spec().c_str());
     return;
   } else if (url.path() == kFrenchPagePath) {
-    *response_body =
-        base::StringPrintf("<html><body>%s</body></html>", kFrenchText);
+    *response_body = GetFrenchPageHtml(kHtmlAttribute, "");
     return;
   } else if (url.path() == kFrenchPageWithLinkPath) {
     GURL page_path_url = web::test::HttpServer::MakeUrl(
         base::StringPrintf("http://%s", kFrenchPagePath));
     *response_body = base::StringPrintf(
-        "<html><body>%s<br /><a href='%s' id='link'>link</a></body></html>",
+        "<html><body>%s<br/><a href='%s' id='link'>link</a></body></html>",
         kFrenchText, page_path_url.spec().c_str());
     return;
   } else if (url.path() == kTranslateScriptPath) {
@@ -244,9 +325,6 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 }  // namespace
 
-using chrome_test_util::TapWebViewElementWithId;
-using translate::LanguageDetectionController;
-
 #pragma mark - MockTranslateScriptManager
 
 // Mock javascript translate manager that does not use the translate servers.
@@ -278,8 +356,16 @@ using translate::LanguageDetectionController;
   // The test can check it to determine if this method has been called.
   _webState->ExecuteJavaScript(base::UTF8ToUTF16(
       "myButton = document.createElement('button');"
+      "myButton.setAttribute('id', 'translated-button');"
       "myButton.appendChild(document.createTextNode('Translated'));"
-      "document.body.appendChild(myButton);"));
+      "document.body.prepend(myButton);"));
+}
+
+- (void)revertTranslation {
+  // Removes the button with 'translated-button' id from the web page, if any.
+  _webState->ExecuteJavaScript(base::UTF8ToUTF16(
+      "myButton = document.getElementById('translated-button');"
+      "myButton.remove();"));
 }
 
 - (void)inject {
@@ -310,13 +396,29 @@ using translate::LanguageDetectionController;
   std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
       network_change_notifier_disabler_;
   std::unique_ptr<FakeNetworkChangeNotifier> network_change_notifier_;
+  base::test::ScopedFeatureList feature_list_;
 }
 @end
 
 @implementation TranslateTestCase
 
++ (void)setUp {
+  [super setUp];
+
+  if (!base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
+    // translate::kCompactTranslateInfobarIOS feature is not enabled. You need
+    // to pass --enable-features=CompactTranslateInfobarIOS command line
+    // argument in order to run this test.
+    DCHECK(false);
+  }
+}
+
 - (void)setUp {
   [super setUp];
+
+  // Allow offering translate in builds without an API key.
+  translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
+
   language::IOSLanguageDetectionTabHelper::Callback copyDetailsCallback =
       base::BindRepeating(^(
           const translate::LanguageDetectionDetails& details) {
@@ -324,6 +426,14 @@ using translate::LanguageDetectionController;
             std::make_unique<translate::LanguageDetectionDetails>(details);
       });
   SetTestingLanguageDetectionCallback(copyDetailsCallback);
+
+  // Reset translate prefs to default.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  translatePrefs->ResetToDefaults();
+
+  [self setUpMockScriptManager];
 
   // Disable the net::NetworkChangeNotifier singleton and replace it with a
   // FakeNetworkChangeNotifier to simulate a WIFI network connection.
@@ -337,18 +447,38 @@ using translate::LanguageDetectionController;
   SetTestingLanguageDetectionCallback(
       language::IOSLanguageDetectionTabHelper::Callback());
   _language_detection_details.reset();
-  // TODO(crbug.com/642892): Investigate moving into test-specific teardown.
-  // Re-enable translate.
-  chrome_test_util::SetBooleanUserPref(
-      chrome_test_util::GetOriginalBrowserState(),
-      prefs::kOfferTranslateEnabled, YES);
+
   // Reset translate prefs to default.
   std::unique_ptr<translate::TranslatePrefs> translatePrefs(
       ChromeIOSTranslateClient::CreateTranslatePrefs(
           chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
   translatePrefs->ResetToDefaults();
+
+  // Do not allow offering translate in builds without an API key.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(false);
+
   [super tearDown];
+}
+
+// Sets up MockTranslateScriptManager that does not use the translate script.
+- (void)setUpMockScriptManager {
+  // Set up the mock translate script manager.
+  ChromeIOSTranslateClient* client = ChromeIOSTranslateClient::FromWebState(
+      chrome_test_util::GetCurrentWebState());
+  translate::IOSTranslateDriver* driver =
+      static_cast<translate::IOSTranslateDriver*>(client->GetTranslateDriver());
+  MockTranslateScriptManager* jsTranslateManager =
+      [[MockTranslateScriptManager alloc]
+          initWithWebState:chrome_test_util::GetCurrentWebState()];
+  driver->translate_controller()->SetJsTranslateManagerForTesting(
+      jsTranslateManager);
+
+  // Set up a fake URL for the translate script to hit the mock HTTP server.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  GURL translateScriptURL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kTranslateScriptPath));
+  command_line->AppendSwitchASCII(translate::switches::kTranslateScriptURL,
+                                  translateScriptURL.spec().c_str());
 }
 
 #pragma mark - Test Cases
@@ -486,12 +616,12 @@ using translate::LanguageDetectionController;
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
-  translate::LanguageDetectionDetails expectedLanguageDetails;
 
   // The HTTP header is detected.
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") +
                                             kLanguagePath + "?http=fr");
   [ChromeEarlGrey loadURL:URL];
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.content_language = "fr";
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -526,7 +656,6 @@ using translate::LanguageDetectionController;
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
-  translate::LanguageDetectionDetails expectedLanguageDetails;
 
   // Detection works when clicking on a link.
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLinkPath);
@@ -537,6 +666,7 @@ using translate::LanguageDetectionController;
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           someLanguageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.content_language = "es";
   expectedLanguageDetails.adopted_language = "es";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -562,14 +692,13 @@ using translate::LanguageDetectionController;
 
   if (@available(iOS 12, *)) {
     // TODO(crbug.com/874452) iOS12 has a bug where long pages take forever to
-    // load.  Add a 20 seconds timeout here.
+    // load. Use a 20 second timeout here.
     chrome_test_util::LoadUrl(URL);
     web::WebState* webState = chrome_test_util::GetCurrentWebState();
-    GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                   20,
-                   ^{
-                     return !webState->IsLoading();
-                   }),
+    GREYAssert(WaitUntilConditionOrTimeout(20,
+                                           ^{
+                                             return !webState->IsLoading();
+                                           }),
                @"Failed to load large page on iOS 12.");
     if (webState->ContentIsHTML())
       web::WaitUntilWindowIdInjected(webState);
@@ -603,15 +732,432 @@ using translate::LanguageDetectionController;
   // Check that no language has been detected.
   GREYAssert(_language_detection_details.get() == nullptr,
              @"A language has been detected");
+
+  // Enable translate.
+  chrome_test_util::SetBooleanUserPref(
+      chrome_test_util::GetOriginalBrowserState(),
+      prefs::kOfferTranslateEnabled, YES);
+}
+
+// Tests that the infobar hides/shows as the browser enters/exits the fullscreen
+// mode as well as it can be dimissed.
+- (void)testInfobarShowHideDismiss {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Scroll down to enter the fullscreen mode.
+  [[EarlGrey
+      selectElementWithMatcher:web::WebViewScrollView(
+                                   chrome_test_util::GetCurrentWebState())]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+
+  // Expect the translate infobar to be hidden.
+  [[EarlGrey selectElementWithMatcher:TranslateInfobar()]
+      assertWithMatcher:grey_notVisible()];
+
+  // Scroll up to exit the fullscreen mode.
+  [[EarlGrey
+      selectElementWithMatcher:web::WebViewScrollView(
+                                   chrome_test_util::GetCurrentWebState())]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Dismiss the translate infobar.
+  [[EarlGrey selectElementWithMatcher:CloseButton()] performAction:grey_tap()];
+
+  // Wait until the translate infobar disappears.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:TranslateInfobar()]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+             @"Translate infobar failed to disappear.");
+}
+
+// Tests that the infobar's popup menu can be dimissed.
+- (void)testInfobarDismissPopupMenu {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have appeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // When the popup menu is visible, a scrim covers the whole window and tapping
+  // it dismisses the popup menu. The options button is outside of the bounds of
+  // the popup menu and is a convenient place to tap to activate the scrim.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_nil()];
+}
+
+// Tests that the page can be translated and that translation can be reverted
+// using the source and the target language tabs.
+- (void)testInfobarTranslateRevert {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self translateThenRevert];
+}
+
+// Tests that the page can be translated and that translation can be reverted
+// using the source and the target language tabs in incognito mode.
+- (void)testInfobarTranslateRevertIncognito {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text in an incognito tab.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:URL];
+
+  // Needed for the incognito WebState.
+  [self setUpMockScriptManager];
+
+  [self translateThenRevert];
+}
+
+// Translates the page and reverts the translation using the language tabs.
+- (void)translateThenRevert {
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure the page is not translated.
+  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+
+  // The source language tab must be selected and the target language tab must
+  // not. Translate the page by tapping the target language tab.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(YES)];
+  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+
+  // Make sure the page is translated.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+
+  // The target language tab must be selected and the source language tab must
+  // not. Revert the translation by tapping the source language tab.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(YES)];
+  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+
+  // Make sure the translation is reverted.
+  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+
+  // The source language tab must be selected and the target language tab must
+  // not.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(YES)];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(NO)];
+}
+
+// Tests that translation occurs automatically on second navigation to an
+// already translated page.
+- (void)testInfobarAutoTranslate {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text and a link.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPageWithLinkPath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure the page is not translated.
+  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+
+  // The target language tab must not be selected. Translate the page by
+  // tapping the target language tab.
+  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+
+  // Make sure the page is translated.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+
+  // Click on the link.
+  [ChromeEarlGrey tapWebViewElementWithID:@"link"];
+
+  // Make sure the navigation is completed.
+  GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          frenchPagePathURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Make sure the page is automatically translated.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+}
+
+// Tests that the source and the target languages can be changed.
+- (void)testInfobarChangeLanguages {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // The source language tab must be selected and the target language tab must
+  // not.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(YES)];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(NO)];
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have appeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select the "More Languages" entry in the options popup menu.
+  [[EarlGrey selectElementWithMatcher:MoreLanguages()]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_nil()];
+
+  // Expect the language selection menu to have appeared.
+  [[EarlGrey selectElementWithMatcher:LanguagesMenu()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select "Dutch" from the the popup menu.
+  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Dutch")]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:LanguagesMenu()] performAction:grey_tap()];
+
+  // Expect the language selection menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:LanguagesMenu()]
+      assertWithMatcher:grey_nil()];
+
+  // Make sure the page is translated.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+
+  // Make sure the target language changes to "Dutch". The target language
+  // tab must be selected and the source language tab must not. Revert the
+  // translation by tapping the source language tab.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Dutch")]
+      assertWithMatcher:ElementIsSelected(YES)];
+  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+
+  // Make sure the translation is reverted.
+  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Select the "Page not in French" entry in the options popup menu.
+  [[EarlGrey selectElementWithMatcher:PageNotIn(@"French")]
+      performAction:grey_tap()];
+
+  // Expect the translate options menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_nil()];
+
+  // Expect the language selection menu to have appeared.
+  [[EarlGrey selectElementWithMatcher:LanguagesMenu()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select "English" from the the popup menu.
+  [[[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:LanguagesMenu()] performAction:grey_tap()];
+
+  // Make sure the page is translated.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+
+  // Make sure the source language changes to "English". The target language
+  // tab must be selected and the source language tab must not.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(NO)];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Dutch")]
+      assertWithMatcher:ElementIsSelected(YES)];
+}
+
+// Tests that the "Always Translate" options can be toggled and the prefs are
+// updated accordingly.
+- (void)testInfobarAlwaysTranslate {
+  // Start the HTTP server.
+  std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load a page with French text.
+  GURL URL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPagePath));
+  [ChromeEarlGrey loadURL:URL];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure that French to English translation is not whitelisted.
+  std::unique_ptr<translate::TranslatePrefs> translatePrefs(
+      ChromeIOSTranslateClient::CreateTranslatePrefs(
+          chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Make sure the "Always Translate French" entry is not selected and tap it.
+  [[[EarlGrey selectElementWithMatcher:AlwaysTranslate(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+
+  // Expect the translate options menu to have disappeared.
+  [[EarlGrey selectElementWithMatcher:OptionsMenu()]
+      assertWithMatcher:grey_nil()];
+
+  // Make sure the page is not translated yet.
+  [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"];
+
+  // Make sure that French to English translation is not whitelisted yet.
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
+
+  // Tap the notification snackbar to dismiss it.
+  NSString* snackbarTitle =
+      l10n_util::GetNSStringF(IDS_TRANSLATE_NOTIFICATION_ALWAYS_TRANSLATE,
+                              base::SysNSStringToUTF16(@"French"),
+                              base::SysNSStringToUTF16(@"English"));
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarTitle)]
+      performAction:grey_tap()];
+
+  // Make sure the page is translated after the snackbar is dismissed.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+
+  // Make sure that French to English translation is whitelisted after the
+  // snackbar is dismissed.
+  GREYAssert(translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is not whitelisted");
+
+  // Reload the page.
+  [ChromeEarlGrey reload];
+
+  [self assertTranslateInfobarIsVisible];
+
+  // Make sure the page is translated.
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
+
+  // The target language tab must be selected and the source language tab must
+  // not.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:ElementIsSelected(YES)];
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Make sure the "Always Translate French" entry is now selected and tap it.
+  [[[EarlGrey selectElementWithMatcher:AlwaysTranslate(@"French")]
+      assertWithMatcher:ElementIsSelected(YES)] performAction:grey_tap()];
+
+  // Make sure that French to English translation is no longer whitelisted.
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Make sure the "Always Translate French" entry is not selected and tap it.
+  [[[EarlGrey selectElementWithMatcher:AlwaysTranslate(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)] performAction:grey_tap()];
+
+  // Tap the notification snackbar's "UNDO" button.
+  [[EarlGrey selectElementWithMatcher:UndoButton()] performAction:grey_tap()];
+
+  // Open the translate options menu.
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      performAction:grey_tap()];
+
+  // Make sure the "Always Translate French" entry is still not selected.
+  [[EarlGrey selectElementWithMatcher:AlwaysTranslate(@"French")]
+      assertWithMatcher:ElementIsSelected(NO)];
+
+  // Make sure that French to English translation is not whitelisted.
+  GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
+             @"French to English translation is whitelisted");
 }
 
 #pragma mark - Utility methods
 
+- (void)assertTranslateInfobarIsVisible {
+  // Wait until the translate infobar becomes visible.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:TranslateInfobar()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
+             @"Translate infobar failed to show.");
+
+  // Check that the translate infobar is fully visible.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"French")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"English")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:OptionsButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:CloseButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Waits until a language has been detected and checks the language details.
 - (void)assertLanguageDetails:
     (const translate::LanguageDetectionDetails&)expectedDetails {
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 2.0,
+  GREYAssert(WaitUntilConditionOrTimeout(
+                 kWaitForJSCompletionTimeout,
                  ^{
                    return _language_detection_details.get() != nullptr;
                  }),
