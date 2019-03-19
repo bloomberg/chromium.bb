@@ -23,7 +23,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -1721,7 +1721,8 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
     int rv = disk_cache_->InitWithMemBackend(
-        kMaxServiceWorkerStorageMemDiskCacheSize, net::CompletionCallback());
+        kMaxServiceWorkerStorageMemDiskCacheSize,
+        net::CompletionOnceCallback());
     DCHECK_EQ(net::OK, rv);
     return disk_cache_.get();
   }
