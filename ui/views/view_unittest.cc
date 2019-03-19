@@ -3838,6 +3838,68 @@ class ViewLayerTest : public ViewsTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+TEST_F(ViewLayerTest, LayerCreationAndDestruction) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  view.SetPaintToLayer();
+  EXPECT_NE(nullptr, view.layer());
+
+  view.DestroyLayer();
+  EXPECT_EQ(nullptr, view.layer());
+}
+
+TEST_F(ViewLayerTest, SetTransformCreatesAndDestroysLayer) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  // Set an arbitrary non-identity transform, which should cause a layer to be
+  // created.
+  gfx::Transform transform;
+  transform.Translate(1.0, 1.0);
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+
+  // Set the identity transform, which should destroy the layer.
+  view.SetTransform(gfx::Transform());
+  EXPECT_EQ(nullptr, view.layer());
+}
+
+// Verify that setting an identity transform after SetPaintToLayer() has been
+// called doesn't destroy the layer.
+TEST_F(ViewLayerTest, IdentityTransformDoesntOverrideSetPaintToLayer) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  view.SetPaintToLayer();
+  EXPECT_NE(nullptr, view.layer());
+
+  gfx::Transform transform;
+  transform.Translate(1.0, 1.0);
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+}
+
+// Verify that calling DestroyLayer() while a non-identity transform is present
+// doesn't destroy the layer.
+TEST_F(ViewLayerTest, DestroyLayerDoesntOverrideTransform) {
+  View view;
+  EXPECT_EQ(nullptr, view.layer());
+
+  view.SetPaintToLayer();
+  EXPECT_NE(nullptr, view.layer());
+
+  gfx::Transform transform;
+  transform.Translate(1.0, 1.0);
+  view.SetTransform(transform);
+  EXPECT_NE(nullptr, view.layer());
+
+  view.DestroyLayer();
+  EXPECT_NE(nullptr, view.layer());
+}
 
 TEST_F(ViewLayerTest, LayerToggling) {
   // Because we lazily create textures the calls to DrawTree are necessary to

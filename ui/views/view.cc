@@ -441,35 +441,41 @@ gfx::Transform View::GetTransform() const {
 
 void View::SetTransform(const gfx::Transform& transform) {
   if (transform.IsIdentity()) {
-    if (layer()) {
+    if (layer())
       layer()->SetTransform(transform);
-      if (!paint_to_layer_)
-        DestroyLayer();
-    } else {
-      // Nothing.
-    }
+    paint_to_layer_for_transform_ = false;
+    CreateOrDestroyLayer();
   } else {
-    if (!layer())
-      CreateLayer(ui::LAYER_TEXTURED);
+    paint_to_layer_for_transform_ = true;
+    CreateOrDestroyLayer();
+    DCHECK_NE(layer(), nullptr);
     layer()->SetTransform(transform);
     layer()->ScheduleDraw();
   }
 }
 
 void View::SetPaintToLayer(ui::LayerType layer_type) {
-  if (paint_to_layer_ && (layer()->type() == layer_type))
-    return;
+  // Avoid re-creating the layer if unnecessary.
+  if (paint_to_layer_explicitly_set_) {
+    DCHECK_NE(layer(), nullptr);
+    if (layer()->type() == layer_type)
+      return;
+  }
 
   DestroyLayerImpl(LayerChangeNotifyBehavior::DONT_NOTIFY);
+  paint_to_layer_explicitly_set_ = true;
+
+  // We directly call |CreateLayer()| here to pass |layer_type|. A call to
+  // |CreateOrDestroyLayer()| is therefore not necessary.
   CreateLayer(layer_type);
-  paint_to_layer_ = true;
 
   // Notify the parent chain about the layer change.
   NotifyParentsOfLayerChange();
 }
 
 void View::DestroyLayer() {
-  DestroyLayerImpl(LayerChangeNotifyBehavior::NOTIFY);
+  paint_to_layer_explicitly_set_ = false;
+  CreateOrDestroyLayer();
 }
 
 std::unique_ptr<ui::Layer> View::RecreateLayer() {
@@ -1567,10 +1573,6 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
 }
 
 void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
-  if (!paint_to_layer_)
-    return;
-
-  paint_to_layer_ = false;
   if (!layer())
     return;
 
@@ -1645,6 +1647,17 @@ void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
     SnapLayerToPixelBoundary(offset_data);
   } else {
     SnapLayerToPixelBoundary(LayerOffsetData());
+  }
+}
+
+void View::CreateOrDestroyLayer() {
+  if (paint_to_layer_explicitly_set_ || paint_to_layer_for_transform_) {
+    // If we need to paint to a layer, make sure we have one.
+    if (!layer())
+      CreateLayer(ui::LAYER_TEXTURED);
+  } else if (layer()) {
+    // If we don't, make sure we delete our layer.
+    DestroyLayerImpl(LayerChangeNotifyBehavior::NOTIFY);
   }
 }
 

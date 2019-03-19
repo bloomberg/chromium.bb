@@ -487,8 +487,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // regardless of the ordering returned by GetChildrenInZOrder().
   void SetPaintToLayer(ui::LayerType layer_type = ui::LAYER_TEXTURED);
 
-  // Please refer to the comments above the DestroyLayerImpl() function for
-  // details.
+  // Cancels layer painting triggered by a call to |SetPaintToLayer()|. Note
+  // that this will not actually destroy the layer if the view paints to a layer
+  // for another reason.
   void DestroyLayer();
 
   // Overridden from ui::LayerOwner:
@@ -1630,10 +1631,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // change is sent to the parents.
   void DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents);
 
+  // Determines whether we need to be painting to a layer, checks whether we
+  // currently have a layer, and creates or destroys the layer if necessary.
+  void CreateOrDestroyLayer();
+
   // Notifies parents about layering changes in the view. This includes layer
   // creation and destruction.
   void NotifyParentsOfLayerChange();
-
 
   // Orphans the layers in this subtree that are parented to layers outside of
   // this subtree.
@@ -1819,7 +1823,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Accelerated painting ------------------------------------------------------
 
-  bool paint_to_layer_ = false;
+  // Whether layer painting was explicitly set by a call to |SetPaintToLayer()|.
+  bool paint_to_layer_explicitly_set_ = false;
+
+  // Whether we are painting to a layer because of a non-identity transform.
+  bool paint_to_layer_for_transform_ = false;
 
   // Accelerators --------------------------------------------------------------
 
