@@ -761,7 +761,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
   // Force the connection close packet to use long headers with connection ID.
-  server_maker_.SetEncryptionLevel(quic::ENCRYPTION_NONE);
+  server_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
 
   MockQuicData quic_data;
   quic_data.AddRead(ASYNC, ERR_IO_PENDING);

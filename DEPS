@@ -268,7 +268,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'f08778a58e717a38fcf59eb1a2ca01b8bf836ad2',
+  'quiche_revision': 'd5d13c2a81b5b504c1bf3308b12c5479a1eb8d58',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1207,7 +1207,7 @@ deps = {
     Var('chromium_git') + '/external/pyftpdlib.git' + '@' + '2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
 
   'src/third_party/quic_trace/src':
-    Var('chromium_git') + '/external/github.com/google/quic-trace.git' + '@' + 'fe1b2587410c47adac3b26a224bc9c979024c191',
+    Var('chromium_git') + '/external/github.com/google/quic-trace.git' + '@' + '9aaca5b4862aaf871e677cbd188fee34f588360d',
 
   'src/third_party/pywebsocket/src':
     Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
