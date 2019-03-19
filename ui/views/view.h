@@ -295,8 +295,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for new code.
   template <typename T>
   T* AddChildView(T* view) {
-    if (static_cast<View*>(view)->parent_ != this)
-      AddChildViewAtImpl(view, child_count());
+    AddChildViewAtImpl(view, child_count());
     return view;
   }
   template <typename T>
