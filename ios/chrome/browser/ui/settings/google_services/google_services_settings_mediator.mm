@@ -461,8 +461,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 }
 
 - (BOOL)isSyncDisabledByAdministrator {
-  return self.syncService->GetDisableReasons() ==
-         syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY;
+  return (self.syncService->GetDisableReasons() &
+          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) != 0;
 }
 
 - (BOOL)isSyncCanBeAvailable {
