@@ -127,33 +127,37 @@ void ResetInternalsObject(v8::Local<v8::Context> context) {
 }
 
 void InstallPendingOriginTrialFeatureForTesting(
-    const String& feature,
+    OriginTrialFeature feature,
     const ScriptState* script_state) {
   (*s_original_install_pending_origin_trial_feature_function)(feature,
                                                               script_state);
   v8::Local<v8::Object> prototype_object;
   v8::Local<v8::Function> interface_object;
-  if (feature == origin_trials::kOriginTrialsSampleAPITrialName) {
-    if (script_state->PerContextData()
-            ->GetExistingConstructorAndPrototypeForType(
-                V8OriginTrialsTest::GetWrapperTypeInfo(), &prototype_object,
-                &interface_object)) {
-      V8OriginTrialsTest::InstallOriginTrialsSampleAPI(
-          script_state->GetIsolate(), script_state->World(),
-          v8::Local<v8::Object>(), prototype_object, interface_object);
+  switch (feature) {
+    case OriginTrialFeature::kOriginTrialsSampleAPI: {
+      if (script_state->PerContextData()
+              ->GetExistingConstructorAndPrototypeForType(
+                  V8OriginTrialsTest::GetWrapperTypeInfo(), &prototype_object,
+                  &interface_object)) {
+        V8OriginTrialsTest::InstallOriginTrialsSampleAPI(
+            script_state->GetIsolate(), script_state->World(),
+            v8::Local<v8::Object>(), prototype_object, interface_object);
+      }
+      break;
     }
-    return;
-  }
-  if (feature == origin_trials::kOriginTrialsSampleAPIImpliedTrialName) {
-    if (script_state->PerContextData()
-            ->GetExistingConstructorAndPrototypeForType(
-                V8OriginTrialsTest::GetWrapperTypeInfo(), &prototype_object,
-                &interface_object)) {
-      V8OriginTrialsTest::InstallOriginTrialsSampleAPIImplied(
-          script_state->GetIsolate(), script_state->World(),
-          v8::Local<v8::Object>(), prototype_object, interface_object);
+    case OriginTrialFeature::kOriginTrialsSampleAPIImplied: {
+      if (script_state->PerContextData()
+              ->GetExistingConstructorAndPrototypeForType(
+                  V8OriginTrialsTest::GetWrapperTypeInfo(), &prototype_object,
+                  &interface_object)) {
+        V8OriginTrialsTest::InstallOriginTrialsSampleAPIImplied(
+            script_state->GetIsolate(), script_state->World(),
+            v8::Local<v8::Object>(), prototype_object, interface_object);
+      }
+      break;
     }
-    return;
+    default:
+      break;
   }
 }
 

@@ -13,6 +13,17 @@
 
 namespace blink {
 
+enum class OriginTrialFeature : int32_t {
+  // For testing
+  kNonExisting = 0,
+
+  {% for feature in features %}
+  {% if feature.origin_trial_feature_name %}
+  k{{feature.name}},
+  {% endif %}
+  {% endfor %}
+};
+
 // A class that stores static enablers for all experimental features.
 
 class PLATFORM_EXPORT RuntimeEnabledFeatures {

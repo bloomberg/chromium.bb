@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -72,7 +73,7 @@ void InstallOriginTrialFeaturesForCore(
   }
 }
 
-void InstallPendingOriginTrialFeatureForCore(const String& feature,
+void InstallPendingOriginTrialFeatureForCore(OriginTrialFeature feature,
                                              const ScriptState* script_state) {
   (*g_old_install_pending_origin_trial_feature_function)(feature, script_state);
 
@@ -83,19 +84,25 @@ void InstallPendingOriginTrialFeatureForCore(const String& feature,
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
-  if (feature == origin_trials::kFeatureNameTrialName) {
-    if (context_data->GetExistingConstructorAndPrototypeForType(
-            V8TestObject::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
-      V8TestObject::InstallFeatureName(
-          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+  switch (feature) {
+    case OriginTrialFeature::kFeatureName: {
+      if (context_data->GetExistingConstructorAndPrototypeForType(
+              V8TestObject::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
+        V8TestObject::InstallFeatureName(
+            isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+      }
+      break;
     }
-  }
-  if (feature == origin_trials::kTestFeatureTrialName) {
-    if (context_data->GetExistingConstructorAndPrototypeForType(
-            V8TestInterface::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
-      V8TestInterface::InstallTestFeature(
-          isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+    case OriginTrialFeature::kTestFeature: {
+      if (context_data->GetExistingConstructorAndPrototypeForType(
+              V8TestInterface::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {
+        V8TestInterface::InstallTestFeature(
+            isolate, world, v8::Local<v8::Object>(), prototype_object, interface_object);
+      }
+      break;
     }
+    default:
+      break;
   }
 }
 
