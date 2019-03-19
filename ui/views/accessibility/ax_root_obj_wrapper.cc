@@ -39,7 +39,7 @@ bool AXRootObjWrapper::IsIgnored() {
 }
 
 views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
-  return NULL;
+  return nullptr;
 }
 
 void AXRootObjWrapper::GetChildren(

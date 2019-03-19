@@ -111,7 +111,7 @@ class WinAccessibilityCaretEventMonitor {
 
 // static
 WinAccessibilityCaretEventMonitor*
-    WinAccessibilityCaretEventMonitor::instance_ = NULL;
+    WinAccessibilityCaretEventMonitor::instance_ = nullptr;
 
 WinAccessibilityCaretEventMonitor::WinAccessibilityCaretEventMonitor(
     UINT event_min,
@@ -120,7 +120,7 @@ WinAccessibilityCaretEventMonitor::WinAccessibilityCaretEventMonitor(
                     << " WinAccessibilityCaretEventMonitor at a time.";
   instance_ = this;
   win_event_hook_handle_ =
-      SetWinEventHook(event_min, event_max, NULL,
+      SetWinEventHook(event_min, event_max, nullptr,
                       &WinAccessibilityCaretEventMonitor::WinEventHookThunk,
                       GetCurrentProcessId(),
                       0,  // Hook all threads
@@ -129,7 +129,7 @@ WinAccessibilityCaretEventMonitor::WinAccessibilityCaretEventMonitor(
 
 WinAccessibilityCaretEventMonitor::~WinAccessibilityCaretEventMonitor() {
   UnhookWinEvent(win_event_hook_handle_);
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 void WinAccessibilityCaretEventMonitor::WaitForNextEvent(DWORD* out_event,
