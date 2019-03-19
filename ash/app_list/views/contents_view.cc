@@ -510,6 +510,8 @@ bool ContentsView::Back() {
     case ash::AppListState::kStateSearchResults:
       GetSearchBoxView()->ClearSearchAndDeactivateSearchBox();
       ShowSearchResults(false);
+      for (auto& observer : search_box_observers_)
+        observer.OnSearchBoxClearAndDeactivated();
       break;
     case ash::AppListState::kStateEmbeddedAssistant:
       ShowEmbeddedAssistantUI(false);
