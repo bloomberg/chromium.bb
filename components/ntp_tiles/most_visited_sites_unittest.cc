@@ -1137,8 +1137,13 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
 
   // Uninitialize custom links and rebuild tiles. Tiles should be Top Sites.
   EXPECT_CALL(*mock_custom_links_, Uninitialize());
-  ExpectBuildWithTopSites(
-      MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}, &sections);
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_))
+      .WillRepeatedly(InvokeCallbackArgument<0>(
+          MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
+      .WillOnce(SaveArg<0>(&sections));
   most_visited_sites_->UninitializeCustomLinks();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
@@ -1450,8 +1455,13 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   // Undo the action. This should uninitialize custom links.
   EXPECT_CALL(*mock_custom_links_, UndoAction()).Times(0);
   EXPECT_CALL(*mock_custom_links_, Uninitialize());
-  ExpectBuildWithTopSites(
-      MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}, &sections);
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_))
+      .WillRepeatedly(InvokeCallbackArgument<0>(
+          MostVisitedURLList{MakeMostVisitedURL(kTestTitle, kTestUrl)}));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
+      .WillOnce(SaveArg<0>(&sections));
   most_visited_sites_->UndoCustomLinkAction();
   base::RunLoop().RunUntilIdle();
   ASSERT_THAT(
@@ -1513,6 +1523,64 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
       .WillOnce(ReturnRef(expected_links));
   most_visited_sites_->UndoCustomLinkAction();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(MostVisitedSitesWithCustomLinksTest, RebuildTilesOnCustomLinksChanged) {
+  const char kTestUrl1[] = "http://site1/";
+  const char kTestUrl2[] = "http://site2/";
+  const char kTestTitle1[] = "Site 1";
+  const char kTestTitle2[] = "Site 2";
+  std::vector<CustomLinksManager::Link> expected_links(
+      {CustomLinksManager::Link{GURL(kTestUrl2),
+                                base::UTF8ToUTF16(kTestTitle2)}});
+  std::map<SectionType, NTPTilesVector> sections;
+  DisableRemoteSuggestions();
+
+  // Build initial tiles with Top Sites.
+  base::RepeatingClosure custom_links_callback;
+  EXPECT_CALL(*mock_custom_links_, RegisterCallbackForOnChanged(_))
+      .WillOnce(
+          DoAll(SaveArg<0>(&custom_links_callback), Return(ByMove(nullptr))));
+  ExpectBuildWithTopSites(
+      MostVisitedURLList{MakeMostVisitedURL(kTestTitle1, kTestUrl1)},
+      &sections);
+  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
+                                                  /*num_sites=*/1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(
+      sections.at(SectionType::PERSONALIZED),
+      ElementsAre(MatchesTile(kTestTitle1, kTestUrl1, TileSource::TOP_SITES)));
+
+  // Notify that there is a new set of custom links. This should replace the
+  // current tiles with custom links.
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_custom_links_, GetLinks())
+      .WillRepeatedly(ReturnRef(expected_links));
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
+      .WillOnce(SaveArg<0>(&sections));
+  custom_links_callback.Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(sections.at(SectionType::PERSONALIZED),
+              ElementsAre(MatchesTile(kTestTitle2, kTestUrl2,
+                                      TileSource::CUSTOM_LINKS)));
+
+  // Notify that custom links have been uninitialized. This should rebuild the
+  // tiles with Top Sites.
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_))
+      .WillRepeatedly(InvokeCallbackArgument<0>(
+          MostVisitedURLList{MakeMostVisitedURL(kTestTitle1, kTestUrl1)}));
+  EXPECT_CALL(*mock_custom_links_, IsInitialized())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
+      .WillOnce(SaveArg<0>(&sections));
+  custom_links_callback.Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(
+      sections.at(SectionType::PERSONALIZED),
+      ElementsAre(MatchesTile(kTestTitle1, kTestUrl1, TileSource::TOP_SITES)));
 }
 
 INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithCustomLinksTest,
