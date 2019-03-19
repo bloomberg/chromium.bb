@@ -671,9 +671,11 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     // |native_resident_kb| is only calculated for android devices that support
     // code ordering. Otherwise it is equal to zero and should not be reported.
     if (native_resident_kb != 0) {
-      MEMORY_METRICS_HISTOGRAM_KB(
-          "Memory.NativeLibrary.MappedAndResidentMemoryFootprint",
-          native_resident_kb);
+      // Size of the native library on android is ~40MB.
+      // More precision is needed in the middle buckets, hence the range.
+      base::UmaHistogramCustomCounts(
+          "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2",
+          native_resident_kb, 1000, 100000, 100);
     }
 
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
