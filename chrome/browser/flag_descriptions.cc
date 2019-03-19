@@ -114,6 +114,12 @@ const char kAutofillEnableCompanyNameName[] =
 const char kAutofillEnableCompanyNameDescription[] =
     "When enabled, Company Name fields will be auto filled";
 
+const char kAutofillEnableLocalCardMigrationForNonSyncUserName[] =
+    "Enable local card migration flow for non-syncing users";
+const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[] =
+    "When enabled, the local card migration flow will be enabled for users who "
+    "have signed in but not enabled Chrome Sync.";
+
 const char kAutofillEnableToolbarStatusChipName[] =
     "Move Autofill omnibox icons next to the profile avatar icon";
 const char kAutofillEnableToolbarStatusChipDescription[] =
