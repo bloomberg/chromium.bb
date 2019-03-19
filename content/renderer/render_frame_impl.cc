@@ -6163,8 +6163,12 @@ bool RenderFrameImpl::SwapIn() {
 
   // Note: Calling swap() will detach and delete |proxy|, so do not reference it
   // after this.
-  if (!proxy->web_frame()->Swap(frame_))
+  if (!proxy->web_frame()->Swap(frame_)) {
+    // TODO(crbug.com/939262): Looking for ways a main frame could be left in a
+    // provisional state and not deleted by the browser.
+    CHECK(!is_main_frame_);
     return false;
+  }
 
   previous_routing_id_ = MSG_ROUTING_NONE;
   in_frame_tree_ = true;
