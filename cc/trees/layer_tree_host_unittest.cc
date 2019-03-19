@@ -1174,6 +1174,9 @@ class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
     child_c_->SetForceRenderSurfaceForTesting(true);
     child_c_->SetIsDrawable(true);
 
+    // TODO(pdr): Do not use the property tree builder for testing in layer list
+    // mode. This will require rewriting this test to manually build property
+    // trees.
     layer_tree_host()->BuildPropertyTreesForTesting();
 
     LayerTreeHostTest::SetupTree();
@@ -8401,6 +8404,9 @@ class LayerTreeHostTestHudLayerWithLayerLists : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     // Build the property trees for the root layer.
+    // TODO(pdr): Do not use the property tree builder for testing in layer list
+    // mode. This will require rewriting this test to manually build property
+    // trees.
     layer_tree_host()->BuildPropertyTreesForTesting();
 
     // The HUD layer should not have been setup by the property tree building.

@@ -245,86 +245,91 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
 
-  Document* document = GetFrame()->GetDocument();
-  {
-    Element* element = document->getElementById("div-tl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                !constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("div-tr");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                !constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("div-bl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("div-br");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("span-tl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                !constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("span-tr");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                !constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("span-bl");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                constraint.is_fixed_to_bottom_edge());
-  }
-  {
-    Element* element = document->getElementById("span-br");
-    ASSERT_TRUE(element);
-    cc::Layer* layer = CcLayerFromElement(element);
-    ASSERT_TRUE(layer);
-    cc::LayerPositionConstraint constraint = layer->position_constraint();
-    ASSERT_TRUE(constraint.is_fixed_position());
-    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                constraint.is_fixed_to_bottom_edge());
+  // Layer position constraints are only used by the cc property tree builder
+  // and are not set when blink generates property trees.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    Document* document = GetFrame()->GetDocument();
+    {
+      Element* element = document->getElementById("div-tl");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                  !constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("div-tr");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                  !constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("div-bl");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                  constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("div-br");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                  constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("span-tl");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                  !constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("span-tr");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                  !constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("span-bl");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                  constraint.is_fixed_to_bottom_edge());
+    }
+    {
+      Element* element = document->getElementById("span-br");
+      ASSERT_TRUE(element);
+      cc::Layer* layer = CcLayerFromElement(element);
+      ASSERT_TRUE(layer);
+      cc::LayerPositionConstraint constraint = layer->position_constraint();
+      ASSERT_TRUE(constraint.is_fixed_position());
+      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                  constraint.is_fixed_to_bottom_edge());
+    }
   }
 }
 

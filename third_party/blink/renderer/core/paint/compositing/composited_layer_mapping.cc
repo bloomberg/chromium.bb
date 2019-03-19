@@ -2585,15 +2585,26 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
   if (!scrolling_coordinator)
     return;
 
-  scrolling_coordinator->UpdateLayerPositionConstraint(&owning_layer_);
+  // When blink generates property trees, the layer position constraints are
+  // not set on cc::Layer because they are only used by the cc property tree
+  // builder.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    scrolling_coordinator->UpdateLayerPositionConstraint(&owning_layer_);
+  }
 
   bool is_fixed_container =
       owning_layer_.GetLayoutObject().CanContainFixedPositionObjects();
   bool resized_by_url_bar =
       owning_layer_.GetLayoutObject().IsLayoutView() &&
       owning_layer_.Compositor()->IsRootScrollerAncestor();
-  graphics_layer_->SetIsContainerForFixedPositionLayers(is_fixed_container);
-  graphics_layer_->SetIsResizedByBrowserControls(resized_by_url_bar);
+  // These values are only used by the cc property tree builder and are not
+  // needed when blink generates property trees.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    graphics_layer_->SetIsContainerForFixedPositionLayers(is_fixed_container);
+    graphics_layer_->SetIsResizedByBrowserControls(resized_by_url_bar);
+  }
   // Fixed-pos descendants inherits the space that has all CSS property applied,
   // including perspective, overflow scroll/clip. Thus we also mark every layers
   // below the main graphics layer so transforms implemented by them don't get
@@ -2601,8 +2612,13 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
   ApplyToGraphicsLayers(
       this,
       [is_fixed_container, resized_by_url_bar](GraphicsLayer* layer) {
-        layer->SetIsContainerForFixedPositionLayers(is_fixed_container);
-        layer->SetIsResizedByBrowserControls(resized_by_url_bar);
+        // These values are only used by the cc property tree builder and are
+        // not needed when blink generates property trees.
+        if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+            !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+          layer->SetIsContainerForFixedPositionLayers(is_fixed_container);
+          layer->SetIsResizedByBrowserControls(resized_by_url_bar);
+        }
         // TODO(pdr): This prevents clipping and should not be needed, but
         // CaptureScreenshotTest.CaptureScreenshotArea depends on this.
         if (resized_by_url_bar)
