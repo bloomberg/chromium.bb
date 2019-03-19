@@ -10544,6 +10544,7 @@ interface XRSession : EventTarget
     getter onfocus
     getter onresetpose
     getter renderState
+    getter viewerSpace
     method cancelAnimationFrame
     method constructor
     method end

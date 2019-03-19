@@ -11,13 +11,15 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
 class TransformationMatrix;
-class XRSession;
 class XRInputSource;
+class XRPose;
+class XRSession;
 
 class XRSpace : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -37,6 +39,12 @@ class XRSpace : public EventTargetWithInlineData {
       const TransformationMatrix& base_input_pose,
       const TransformationMatrix& base_pose);
 
+  virtual XRPose* getPose(
+      XRSpace* other_space,
+      std::unique_ptr<TransformationMatrix> base_pose_matrix);
+  std::unique_ptr<TransformationMatrix> GetViewerPoseMatrix(
+      std::unique_ptr<TransformationMatrix> base_pose_matrix);
+
   XRSession* session() const { return session_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
@@ -45,17 +53,12 @@ class XRSpace : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  void SetInputSource(XRInputSource*, bool);
-  XRInputSource* GetInputSource() const { return input_source_; }
-  bool ReturnTargetRay() const { return return_target_ray_; }
   virtual TransformationMatrix OriginOffsetMatrix();
 
   void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;
-  Member<XRInputSource> input_source_;
-  bool return_target_ray_;
 };
 
 }  // namespace blink

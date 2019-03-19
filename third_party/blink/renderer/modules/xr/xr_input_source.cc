@@ -3,20 +3,21 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+
+#include "third_party/blink/renderer/modules/xr/xr_grip_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_target_ray_space.h"
 
 namespace blink {
 
 XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
     : session_(session),
       source_id_(source_id),
-      target_ray_space_(MakeGarbageCollected<XRSpace>(session)),
-      grip_space_(MakeGarbageCollected<XRSpace>(session)) {
+      target_ray_space_(MakeGarbageCollected<XRTargetRaySpace>(session, this)),
+      grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)) {
   SetTargetRayMode(kGaze);
   SetHandedness(kHandNone);
-  target_ray_space_->SetInputSource(this, true);
-  grip_space_->SetInputSource(this, false);
 }
 
 XRSpace* XRInputSource::gripSpace() const {
@@ -25,6 +26,10 @@ XRSpace* XRInputSource::gripSpace() const {
   }
 
   return nullptr;
+}
+
+XRSpace* XRInputSource::targetRaySpace() const {
+  return target_ray_space_;
 }
 
 void XRInputSource::SetTargetRayMode(TargetRayMode target_ray_mode) {

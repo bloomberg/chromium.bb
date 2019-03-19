@@ -6,20 +6,15 @@
 
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 
-XRSpace::XRSpace(XRSession* session)
-    : session_(session), input_source_(nullptr), return_target_ray_(false) {}
+XRSpace::XRSpace(XRSession* session) : session_(session) {}
 
 XRSpace::~XRSpace() = default;
-
-void XRSpace::SetInputSource(XRInputSource* source, bool return_target_ray) {
-  input_source_ = source;
-  return_target_ray_ = return_target_ray;
-}
 
 std::unique_ptr<TransformationMatrix> XRSpace::GetTransformToMojoSpace() {
   // The base XRSpace does not have any relevant information, so can't determine
@@ -47,6 +42,57 @@ TransformationMatrix XRSpace::OriginOffsetMatrix() {
   return identity;
 }
 
+XRPose* XRSpace::getPose(
+    XRSpace* other_space,
+    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+  std::unique_ptr<TransformationMatrix> mojo_from_this =
+      GetTransformToMojoSpace();
+  if (!mojo_from_this) {
+    return nullptr;
+  }
+
+  // Rigid transforms should always be invertible.
+  DCHECK(mojo_from_this->IsInvertible());
+  TransformationMatrix this_from_mojo = mojo_from_this->Inverse();
+
+  std::unique_ptr<TransformationMatrix> mojo_from_other =
+      other_space->GetTransformToMojoSpace();
+  if (!mojo_from_other) {
+    return nullptr;
+  }
+
+  // TODO(jacde): Update how EmulatedPosition is determined here once spec issue
+  // https://github.com/immersive-web/webxr/issues/534 has been resolved.
+  TransformationMatrix this_from_other =
+      this_from_mojo.Multiply(*mojo_from_other);
+  return MakeGarbageCollected<XRPose>(
+      std::make_unique<TransformationMatrix>(this_from_other),
+      session()->EmulatedPosition());
+}
+
+std::unique_ptr<TransformationMatrix> XRSpace::GetViewerPoseMatrix(
+    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+  std::unique_ptr<TransformationMatrix> pose;
+
+  // If we don't have a valid base pose, request the reference space's default
+  // pose. Most common when tracking is lost.
+  if (base_pose_matrix) {
+    pose = TransformBasePose(*base_pose_matrix);
+  } else {
+    pose = DefaultPose();
+  }
+
+  // Can only update an XRViewerPose's views with an invertible matrix.
+  if (!pose || !pose->IsInvertible()) {
+    return nullptr;
+  }
+
+  // Account for any changes made to the reference space's origin offset so that
+  // things like teleportation works.
+  return std::make_unique<TransformationMatrix>(
+      OriginOffsetMatrix().Inverse().Multiply(*pose));
+}
+
 ExecutionContext* XRSpace::GetExecutionContext() const {
   return session()->GetExecutionContext();
 }
@@ -56,7 +102,6 @@ const AtomicString& XRSpace::InterfaceName() const {
 }
 
 void XRSpace::Trace(blink::Visitor* visitor) {
-  visitor->Trace(input_source_);
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);

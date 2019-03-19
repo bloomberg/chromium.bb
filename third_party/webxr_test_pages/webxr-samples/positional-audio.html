@@ -405,14 +405,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 draggingInput = inputSource;
                 mat4.invert(draggingTransform, targetRay.matrix);
                 mat4.multiply(draggingTransform, draggingTransform, source.node.matrix);
-
-                // teleport to audio speaker
-                refSpace.originOffset = new XRRigidTransform({
-                  x : draggingSource.position[0],
-                  y : draggingSource.position[1],
-                  z : draggingSource.position[2]
-                },
-                refSpace.originOffset.orientation);
                 return true;
               }
             }

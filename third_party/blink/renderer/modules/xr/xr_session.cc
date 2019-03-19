@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_stationary_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_unbounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_viewer_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -156,6 +157,7 @@ XRSession::XRSession(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())) {
   render_state_ = MakeGarbageCollected<XRRenderState>();
+  viewer_space_ = MakeGarbageCollected<XRViewerSpace>(this);
   blurred_ = !HasAppropriateFocus();
 
   switch (environment_blend_mode) {
@@ -172,6 +174,10 @@ XRSession::XRSession(
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
   }
+}
+
+XRSpace* XRSession::viewerSpace() const {
+  return viewer_space_;
 }
 
 bool XRSession::immersive() const {
@@ -667,6 +673,7 @@ void XRSession::OnFrame(
       return;
 
     XRFrame* presentation_frame = CreatePresentationFrame();
+    presentation_frame->SetAnimationFrame(true);
 
     // Make sure that any frame-bounded changed to the views array take effect.
     if (update_views_next_frame_) {
@@ -1014,6 +1021,7 @@ bool XRSession::HasPendingActivity() const {
 void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(render_state_);
+  visitor->Trace(viewer_space_);
   visitor->Trace(pending_render_state_);
   visitor->Trace(views_);
   visitor->Trace(input_sources_);

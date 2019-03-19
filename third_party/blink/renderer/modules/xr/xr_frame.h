@@ -36,12 +36,18 @@ class XRFrame final : public ScriptWrappable {
   XRPose* getPose(XRSpace*, XRSpace*, ExceptionState&);
 
   void SetBasePoseMatrix(const TransformationMatrix&);
+  std::unique_ptr<TransformationMatrix> CloneBasePoseMatrix() const;
 
   void Trace(blink::Visitor*) override;
 
   void Deactivate();
 
+  void SetAnimationFrame(bool is_animation_frame) {
+    is_animation_frame_ = is_animation_frame;
+  }
+
  private:
+  std::unique_ptr<TransformationMatrix> GetAdjustedPoseMatrix(XRSpace*) const;
   XRPose* GetTargetRayPose(XRInputSource*, XRSpace*) const;
   XRPose* GetGripPose(XRInputSource*, XRSpace*) const;
 
@@ -50,7 +56,14 @@ class XRFrame final : public ScriptWrappable {
   // Maps from mojo space to headset space.
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 
-  bool active_ = true;
+  // Frames are only active during callbacks. getPose and getViewerPose should
+  // only be called from JS on active frames.
+  bool is_active_ = true;
+
+  // Only frames created by XRSession.requestAnimationFrame callbacks are
+  // animation frames. getViewerPose should only be called from JS on active
+  // animation frames.
+  bool is_animation_frame_ = false;
 };
 
 }  // namespace blink
