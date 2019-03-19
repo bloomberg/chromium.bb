@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
@@ -65,6 +66,16 @@ void AnalyzeZipFile(base::File zip_file,
   zip::ZipReader reader;
   if (!reader.OpenFromPlatformFile(zip_file.GetPlatformFile())) {
     DVLOG(1) << "Failed to open zip file";
+    return;
+  }
+
+  bool too_big_to_unpack =
+      base::checked_cast<uint64_t>(zip_file.GetLength()) >
+      FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("zip");
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipTooBigToUnpack",
+                        too_big_to_unpack);
+  if (too_big_to_unpack) {
+    results->success = true;
     return;
   }
 
