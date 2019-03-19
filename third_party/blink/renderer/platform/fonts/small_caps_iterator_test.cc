@@ -40,7 +40,7 @@ class SmallCapsIteratorTest : public testing::Test {
                   const Vector<SmallCapsExpectedRun>& expect) {
     unsigned limit;
     SmallCapsIterator::SmallCapsBehavior small_caps_behavior;
-    unsigned long run_count = 0;
+    size_t run_count = 0;
     while (small_caps_iterator->Consume(&limit, &small_caps_behavior)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);

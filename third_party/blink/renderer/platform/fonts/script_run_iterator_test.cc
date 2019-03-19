@@ -315,7 +315,7 @@ class ScriptRunIteratorTest : public testing::Test {
                   const Vector<ScriptExpectedRun>& expect) {
     unsigned limit;
     UScriptCode code;
-    unsigned long run_count = 0;
+    size_t run_count = 0;
     while (script_run_iterator->Consume(&limit, &code)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);
