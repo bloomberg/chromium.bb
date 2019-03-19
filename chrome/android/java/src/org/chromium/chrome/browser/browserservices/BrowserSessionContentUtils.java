@@ -42,15 +42,8 @@ public class BrowserSessionContentUtils {
     @Nullable
     private static BrowserSessionContentHandler sActiveContentHandler;
 
-
     @Nullable
     private static Callback<CustomTabsSessionToken> sSessionDisconnectCallback;
-
-    /** Extra that is passed to intent to trigger a certain action within a running activity. */
-    private static final String EXTRA_INTERNAL_ACTION =
-            "org.chromium.chrome.extra.EXTRA_INTERNAL_ACTION";
-    private static final String INTERNAL_ACTION_SHARE =
-            "org.chromium.chrome.action.INTERNAL_ACTION_SHARE";
 
     /**
      * Sets the currently active {@link BrowserSessionContentHandler} in focus.
@@ -105,21 +98,7 @@ public class BrowserSessionContentUtils {
         if (TextUtils.isEmpty(url)) return false;
 
         CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
-        return handleInternalIntent(intent, session) || handleExternalIntent(intent, url, session);
-
-    }
-
-    private static boolean handleInternalIntent(Intent intent,
-            @Nullable CustomTabsSessionToken session) {
-        if (!IntentHandler.wasIntentSenderChrome(intent)) return false;
-        if (!sessionMatchesActiveContent(session)) return false;
-
-        String internalAction = intent.getStringExtra(EXTRA_INTERNAL_ACTION);
-        if (INTERNAL_ACTION_SHARE.equals(internalAction)) {
-            sActiveContentHandler.triggerSharingFlow();
-            return true;
-        }
-        return false;
+        return handleExternalIntent(intent, url, session);
     }
 
     private static boolean handleExternalIntent(Intent intent, String url,
@@ -224,17 +203,6 @@ public class BrowserSessionContentUtils {
             return false;
         }
         return sActiveContentHandler.updateRemoteViews(remoteViews, clickableIDs, pendingIntent);
-    }
-
-    /**
-     * Creates a share intent to be triggered in currently running activity.
-     * @param originalIntent - intent with which the activity was launched.
-     */
-    public static Intent createShareIntent(Context context, Intent originalIntent) {
-        Intent intent = new Intent(originalIntent)
-                .putExtra(EXTRA_INTERNAL_ACTION, INTERNAL_ACTION_SHARE);
-        IntentHandler.addTrustedIntentExtras(intent);
-        return intent;
     }
 
     private static void ensureSessionCleanUpOnDisconnects() {

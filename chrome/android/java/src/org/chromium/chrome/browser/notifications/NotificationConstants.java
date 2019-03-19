@@ -70,8 +70,9 @@ public class NotificationConstants {
 
     /**
      * Unique identifier for the persistent notification displayed while a Trusted Web Activity is
-     * in foreground.
+     * in foreground. No longer used.
      */
+    @SuppressWarnings("unused")
     public static final int NOTIFICATION_ID_TWA_PERSISTENT = 6;
 
     /**
