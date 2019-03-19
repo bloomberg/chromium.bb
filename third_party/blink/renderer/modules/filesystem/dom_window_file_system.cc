@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/choose_file_system_entries_options.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
@@ -176,19 +177,21 @@ ScriptPromise CreateFileHandle(ScriptState* script_state,
   ScriptPromise result = new_resolver->Promise();
   auto* fs = DOMFileSystem::CreateIsolatedFileSystem(
       ExecutionContext::From(script_state), entry->file_system_id);
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessPromise<Entry>(new_resolver);
+  auto error_callback_wrapper = AsyncCallbackHelper::ErrorPromise(new_resolver);
+
   // TODO(mek): Try to create handle directly rather than having to do more
   // IPCs to get the actual entries.
   if (is_directory) {
-    fs->GetDirectory(
-        fs->root(), entry->base_name, FileSystemFlags::Create(),
-        MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
-            new_resolver),
-        MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
+    fs->GetDirectory(fs->root(), entry->base_name, FileSystemFlags::Create(),
+                     std::move(success_callback_wrapper),
+                     std::move(error_callback_wrapper));
   } else {
     fs->GetFile(fs->root(), entry->base_name, FileSystemFlags::Create(),
-                MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
-                    new_resolver),
-                MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
+                std::move(success_callback_wrapper),
+                std::move(error_callback_wrapper));
   }
   return result;
 }

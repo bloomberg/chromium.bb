@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_reader.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_flags.h"
@@ -49,20 +50,28 @@ void DirectoryEntry::getFile(const String& path,
                              const FileSystemFlags* options,
                              V8EntryCallback* success_callback,
                              V8ErrorCallback* error_callback) {
-  file_system_->GetFile(
-      this, path, options,
-      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->GetFile(this, path, options,
+                        std::move(success_callback_wrapper),
+                        std::move(error_callback_wrapper));
 }
 
 void DirectoryEntry::getDirectory(const String& path,
                                   const FileSystemFlags* options,
                                   V8EntryCallback* success_callback,
                                   V8ErrorCallback* error_callback) {
-  file_system_->GetDirectory(
-      this, path, options,
-      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->GetDirectory(this, path, options,
+                             std::move(success_callback_wrapper),
+                             std::move(error_callback_wrapper));
 }
 
 void DirectoryEntry::removeRecursively(V8VoidCallback* success_callback,

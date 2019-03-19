@@ -258,23 +258,23 @@ static bool VerifyAndGetDestinationPathForCopyOrMove(const EntryBase* source,
   return true;
 }
 
-void DOMFileSystemBase::Move(
-    const EntryBase* source,
-    EntryBase* parent,
-    const String& new_name,
-    EntryCallbacks::OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    SynchronousType synchronous_type) {
+void DOMFileSystemBase::Move(const EntryBase* source,
+                             EntryBase* parent,
+                             const String& new_name,
+                             EntryCallbacks::SuccessCallback success_callback,
+                             EntryCallbacks::ErrorCallback error_callback,
+                             SynchronousType synchronous_type) {
   String destination_path;
   if (!VerifyAndGetDestinationPathForCopyOrMove(source, parent, new_name,
                                                 destination_path)) {
-    ReportError(error_callback, base::File::FILE_ERROR_INVALID_OPERATION);
+    ReportError(std::move(error_callback),
+                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto callbacks = std::make_unique<EntryCallbacks>(
-      success_callback, error_callback, context_, parent->filesystem(),
-      destination_path, source->isDirectory());
+      std::move(success_callback), std::move(error_callback), context_,
+      parent->filesystem(), destination_path, source->isDirectory());
 
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   const KURL& src = CreateFileSystemURL(source);
@@ -286,23 +286,23 @@ void DOMFileSystemBase::Move(
     dispatcher.Move(src, dest, std::move(callbacks));
 }
 
-void DOMFileSystemBase::Copy(
-    const EntryBase* source,
-    EntryBase* parent,
-    const String& new_name,
-    EntryCallbacks::OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    SynchronousType synchronous_type) {
+void DOMFileSystemBase::Copy(const EntryBase* source,
+                             EntryBase* parent,
+                             const String& new_name,
+                             EntryCallbacks::SuccessCallback success_callback,
+                             EntryCallbacks::ErrorCallback error_callback,
+                             SynchronousType synchronous_type) {
   String destination_path;
   if (!VerifyAndGetDestinationPathForCopyOrMove(source, parent, new_name,
                                                 destination_path)) {
-    ReportError(error_callback, base::File::FILE_ERROR_INVALID_OPERATION);
+    ReportError(std::move(error_callback),
+                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto callbacks = std::make_unique<EntryCallbacks>(
-      success_callback, error_callback, context_, parent->filesystem(),
-      destination_path, source->isDirectory());
+      std::move(success_callback), std::move(error_callback), context_,
+      parent->filesystem(), destination_path, source->isDirectory());
 
   const KURL& src = CreateFileSystemURL(source);
   const KURL& dest =
@@ -361,32 +361,35 @@ void DOMFileSystemBase::RemoveRecursively(
 
 void DOMFileSystemBase::GetParent(
     const EntryBase* entry,
-    EntryCallbacks::OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback) {
+    EntryCallbacks::SuccessCallback success_callback,
+    EntryCallbacks::ErrorCallback error_callback) {
   DCHECK(entry);
   String path = DOMFilePath::GetDirectory(entry->fullPath());
 
   FileSystemDispatcher::From(context_).Exists(
       CreateFileSystemURL(path), /*is_directory=*/true,
-      std::make_unique<EntryCallbacks>(success_callback, error_callback,
-                                       context_, this, path, true));
+      std::make_unique<EntryCallbacks>(std::move(success_callback),
+                                       std::move(error_callback), context_,
+                                       this, path, true));
 }
 
 void DOMFileSystemBase::GetFile(
     const EntryBase* entry,
     const String& path,
     const FileSystemFlags* flags,
-    EntryCallbacks::OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
+    EntryCallbacks::SuccessCallback success_callback,
+    EntryCallbacks::ErrorCallback error_callback,
     SynchronousType synchronous_type) {
   String absolute_path;
   if (!PathToAbsolutePath(type_, entry, path, absolute_path)) {
-    ReportError(error_callback, base::File::FILE_ERROR_INVALID_OPERATION);
+    ReportError(std::move(error_callback),
+                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto callbacks = std::make_unique<EntryCallbacks>(
-      success_callback, error_callback, context_, this, absolute_path, false);
+      std::move(success_callback), std::move(error_callback), context_, this,
+      absolute_path, false);
   const KURL& url = CreateFileSystemURL(absolute_path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
@@ -408,17 +411,19 @@ void DOMFileSystemBase::GetDirectory(
     const EntryBase* entry,
     const String& path,
     const FileSystemFlags* flags,
-    EntryCallbacks::OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
+    EntryCallbacks::SuccessCallback success_callback,
+    EntryCallbacks::ErrorCallback error_callback,
     SynchronousType synchronous_type) {
   String absolute_path;
   if (!PathToAbsolutePath(type_, entry, path, absolute_path)) {
-    ReportError(error_callback, base::File::FILE_ERROR_INVALID_OPERATION);
+    ReportError(std::move(error_callback),
+                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto callbacks = std::make_unique<EntryCallbacks>(
-      success_callback, error_callback, context_, this, absolute_path, true);
+      std::move(success_callback), std::move(error_callback), context_, this,
+      absolute_path, true);
   const KURL& url = CreateFileSystemURL(absolute_path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 

@@ -73,9 +73,13 @@ class MODULES_EXPORT DOMFileSystem final
   void AddPendingCallbacks() override;
   void RemovePendingCallbacks() override;
   void ReportError(ErrorCallbackBase*, base::File::Error error) override;
+  void ReportError(ErrorCallback, base::File::Error error) override;
 
   static void ReportError(ExecutionContext*,
                           ErrorCallbackBase*,
+                          base::File::Error error);
+  static void ReportError(ExecutionContext*,
+                          ErrorCallback,
                           base::File::Error error);
 
   // ScriptWrappable overrides.

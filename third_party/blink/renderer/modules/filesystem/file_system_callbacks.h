@@ -130,6 +130,11 @@ class PromiseErrorCallback final : public ErrorCallbackBase {
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
  public:
+  // TODO(tonikitoo,mek): This class is not being effectively by EntryCallbacks
+  // anymore. However, it still being referenced by ResolveURICallbacks and
+  // sync_callback_helper.h. Remove it when all classes have switched to simple
+  // success/error callbacks implementation, and there is no reference to it in
+  // sync_callback_helper.h and in ResolveURICallbacks anymore.
   class OnDidGetEntryCallback
       : public GarbageCollectedFinalized<OnDidGetEntryCallback> {
    public:
@@ -158,18 +163,11 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8EntryCallback>> callback_;
   };
 
-  class OnDidGetEntryPromiseImpl : public OnDidGetEntryCallback {
-   public:
-    explicit OnDidGetEntryPromiseImpl(ScriptPromiseResolver*);
-    void Trace(Visitor*) override;
-    void OnSuccess(Entry*) override;
+  using SuccessCallback = base::OnceCallback<void(Entry*)>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
 
-   private:
-    Member<ScriptPromiseResolver> resolver_;
-  };
-
-  EntryCallbacks(OnDidGetEntryCallback*,
-                 ErrorCallbackBase*,
+  EntryCallbacks(SuccessCallback,
+                 ErrorCallback,
                  ExecutionContext*,
                  DOMFileSystemBase*,
                  const String& expected_path,
@@ -182,7 +180,8 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  Persistent<OnDidGetEntryCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
   String expected_path_;
   bool is_directory_;
 };

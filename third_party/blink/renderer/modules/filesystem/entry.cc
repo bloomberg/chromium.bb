@@ -80,10 +80,14 @@ void Entry::moveTo(ScriptState* script_state,
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_MoveTo_Method_IsolatedFileSystem);
   }
-  file_system_->Move(
-      this, parent, name,
-      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->Move(this, parent, name, std::move(success_callback_wrapper),
+                     std::move(error_callback_wrapper));
 }
 
 void Entry::copyTo(ScriptState* script_state,
@@ -95,10 +99,14 @@ void Entry::copyTo(ScriptState* script_state,
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_CopyTo_Method_IsolatedFileSystem);
   }
-  file_system_->Copy(
-      this, parent, name,
-      EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->Copy(this, parent, name, std::move(success_callback_wrapper),
+                     std::move(error_callback_wrapper));
 }
 
 void Entry::remove(ScriptState* script_state,
@@ -120,9 +128,13 @@ void Entry::getParent(ScriptState* script_state,
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_GetParent_Method_IsolatedFileSystem);
   }
-  file_system_->GetParent(
-      this, EntryCallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->GetParent(this, std::move(success_callback_wrapper),
+                          std::move(error_callback_wrapper));
 }
 
 String Entry::toURL(ScriptState* script_state) const {
