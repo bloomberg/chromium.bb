@@ -18,11 +18,6 @@ namespace content {
 
 namespace {
 
-std::string BstrToUTF8(BSTR bstr) {
-  base::string16 str16(bstr, SysStringLen(bstr));
-  return base::UTF16ToUTF8(str16);
-}
-
 }  // namespace
 
 // static
