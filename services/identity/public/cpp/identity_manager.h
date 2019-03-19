@@ -197,7 +197,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   };
 
   IdentityManager(
-      SigninManagerBase* signin_manager,
+      std::unique_ptr<SigninManagerBase> signin_manager,
       ProfileOAuth2TokenService* token_service,
       AccountFetcherService* account_fetcher_service,
       AccountTrackerService* account_tracker_service,
@@ -520,6 +520,21 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/889902): Delete this when conversion is done.
   friend SigninManagerAndroid;
 
+  // IdentityManagerTest reaches into IdentityManager internals in
+  // order to drive its behavior.
+  // TODO(https://crbug.com/943135): Find a better way to accomplish this.
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CreateAccessTokenFetcherWithCustomURLLoaderFactory);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, ObserveAccessTokenFetch);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           ObserveAccessTokenRequestCompletionWithRefreshToken);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           BatchChangeObserversAreNotifiedOnCredentialsUpdate);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, RemoveAccessTokenFromCache);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
+                           CreateAccessTokenFetcherWithCustomURLLoaderFactory);
+
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   SigninManagerBase* GetSigninManager();
   ProfileOAuth2TokenService* GetTokenService();
@@ -577,7 +592,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is
   // backed by the Identity Service.
-  SigninManagerBase* signin_manager_;
+  std::unique_ptr<SigninManagerBase> signin_manager_;
   ProfileOAuth2TokenService* token_service_;
   AccountFetcherService* account_fetcher_service_;
   AccountTrackerService* account_tracker_service_;

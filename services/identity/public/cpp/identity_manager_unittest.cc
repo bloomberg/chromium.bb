@@ -277,9 +277,8 @@ class IdentityManagerTest : public testing::Test {
         &signin_client_, &token_service_, &account_tracker_,
         std::make_unique<image_fetcher::FakeImageDecoder>());
 
-    RecreateSigninAndIdentityManager(
-        signin::AccountConsistencyMethod::kDisabled,
-        SigninManagerSetup::kWithAuthenticatedAccout);
+    RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
+                            SigninManagerSetup::kWithAuthenticatedAccout);
   }
 
   ~IdentityManagerTest() override {
@@ -305,7 +304,6 @@ class IdentityManagerTest : public testing::Test {
   }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   AccountFetcherService* account_fetcher() { return &account_fetcher_; }
-  SigninManagerBase* signin_manager() { return signin_manager_.get(); }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
   }
@@ -313,39 +311,40 @@ class IdentityManagerTest : public testing::Test {
     return &gaia_cookie_manager_service_;
   }
 
-  // See RecreateSigninAndIdentityManager.
+  // See RecreateIdentityManager.
   enum class SigninManagerSetup {
     kWithAuthenticatedAccout,
     kNoAuthenticatedAccount
   };
 
-  // Recreates SigninManager and IdentityManager with given
-  // |account_consistency| and optionally seeds with an authenticated account
-  // depending on |singin_manager_setup|. This process destroys any existing
-  // IdentityManager and its dependencies, then remakes them. Dependencies that
-  // outlive SigninManager (e.g. SigninClient) will be reused.
-  void RecreateSigninAndIdentityManager(
+  // Used by some tests that need to re-instantiate IdentityManager after
+  // performing some other setup.
+  void RecreateIdentityManager() {
+    RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
+                            SigninManagerSetup::kNoAuthenticatedAccount);
+  }
+
+  // Recreates IdentityManager with given |account_consistency| and optionally
+  // seeds with an authenticated account depending on |singin_manager_setup|.
+  // This process destroys any existing IdentityManager and its dependencies,
+  // then remakes them. Dependencies that outlive SigninManager (e.g.
+  // SigninClient) will be reused.
+  void RecreateIdentityManager(
       signin::AccountConsistencyMethod account_consistency,
       SigninManagerSetup signin_manager_setup) {
-    // Reset dependents to null first to ensure that they're destroyed, as
-    // otherwise destructors of SigninManager and dependents will DCHECK because
-    // they still having living observers.
+    // Remove observers first, otherwise IdentityManager destruction might
+    // trigger a DCHECK because there are still living observers.
     identity_manager_observer_.reset();
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
 
-    if (signin_manager_) {
-      signin_manager_->Shutdown();
-      signin_manager_.reset();
-    }
-
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by SigninManagerBase";
-    signin_manager_ = std::make_unique<SigninManagerBase>(
+    auto signin_manager = std::make_unique<SigninManagerBase>(
         &signin_client_, &token_service_, &account_tracker_);
 #else
-    signin_manager_ = std::make_unique<SigninManager>(
+    auto signin_manager = std::make_unique<SigninManager>(
         &signin_client_, &token_service_, &account_tracker_,
         &gaia_cookie_manager_service_, account_consistency);
 #endif
@@ -356,29 +355,14 @@ class IdentityManagerTest : public testing::Test {
     base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
     cmd_line->AppendSwitch(switches::kClearTokenService);
 
-    signin_manager_->Initialize(&pref_service_);
+    signin_manager->Initialize(&pref_service_);
 
     if (signin_manager_setup == SigninManagerSetup::kWithAuthenticatedAccout) {
-      signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+      signin_manager->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
     }
 
-    RecreateIdentityManager();
-  }
-
-  // Used by some tests that need to re-instantiate IdentityManager after
-  // performing some other setup.
-  void RecreateIdentityManager() {
-    DCHECK(signin_manager_) << "Create signin_manager_ first";
-
-    // Reset them all to null first to ensure that they're destroyed, as
-    // otherwise SigninManager ends up getting a new DiagnosticsObserver added
-    // before the old one is removed.
-    identity_manager_observer_.reset();
-    identity_manager_diagnostics_observer_.reset();
-    identity_manager_.reset();
-
     identity_manager_.reset(new IdentityManager(
-        signin_manager_.get(), &token_service_, &account_fetcher_,
+        std::move(signin_manager), &token_service_, &account_fetcher_,
         &account_tracker_, &gaia_cookie_manager_service_, nullptr, nullptr,
         std::make_unique<AccountsCookieMutatorImpl>(
             &gaia_cookie_manager_service_),
@@ -430,7 +414,6 @@ class IdentityManagerTest : public testing::Test {
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   GaiaCookieManagerService gaia_cookie_manager_service_;
-  std::unique_ptr<SigninManagerBase> signin_manager_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
@@ -652,7 +635,8 @@ TEST_F(IdentityManagerTest,
 
   // Recreate the IdentityManager and check that the newly-created instance
   // reflects the current state.
-  RecreateIdentityManager();
+  RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
+                          SigninManagerSetup::kWithAuthenticatedAccout);
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
@@ -1085,7 +1069,8 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   std::set<std::string> scopes{"scope"};
   std::string access_token = "access_token";
 
-  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+      kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   base::RunLoop run_loop;
@@ -1123,7 +1108,8 @@ TEST_F(IdentityManagerTest,
   identity_manager_diagnostics_observer()
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
-  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+      kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   std::set<std::string> scopes{"scope"};
@@ -1209,7 +1195,8 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   identity_manager_diagnostics_observer()
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
-  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+      kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   std::set<std::string> scopes{"scope"};
@@ -1261,7 +1248,8 @@ TEST_F(IdentityManagerTest,
   identity_manager_diagnostics_observer()
       ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
 
-  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+      kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
 
@@ -1564,7 +1552,8 @@ TEST_F(
   // interacting with. Otherwise, even an implementation where they're
   // both TokenService::Observers would work as IdentityManager would
   // get notified first during the observer callbacks.
-  RecreateIdentityManager();
+  RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
+                          SigninManagerSetup::kWithAuthenticatedAccout);
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
   token_service_observer.set_identity_manager(identity_manager());
 
@@ -1589,7 +1578,8 @@ TEST_F(
   // interacting with. Otherwise, even an implementation where they're
   // both TokenService::Observers would work as IdentityManager would
   // get notified first during the observer callbacks.
-  RecreateIdentityManager();
+  RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
+                          SigninManagerSetup::kWithAuthenticatedAccout);
   token_service_observer.set_identity_manager(identity_manager());
 
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
@@ -2124,7 +2114,8 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
 
 TEST_F(IdentityManagerTest,
        BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
-  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  identity_manager()->GetSigninManager()->SetAuthenticatedAccountInfo(
+      kTestGaiaId, kTestEmail);
   token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   EXPECT_EQ(1ul, identity_manager_observer()->BatchChangeRecords().size());

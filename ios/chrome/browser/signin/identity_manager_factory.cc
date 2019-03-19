@@ -5,22 +5,43 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
+
+namespace {
+std::unique_ptr<SigninManager> BuildSigninManager(
+    ios::ChromeBrowserState* chrome_browser_state) {
+  std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
+      SigninClientFactory::GetForBrowserState(chrome_browser_state),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          chrome_browser_state),
+      ios::AccountTrackerServiceFactory::GetForBrowserState(
+          chrome_browser_state),
+      ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
+          chrome_browser_state),
+      signin::AccountConsistencyMethod::kMirror);
+  service->Initialize(GetApplicationContext()->GetLocalState());
+  return service;
+}
+}  // namespace
 
 // Subclass that wraps IdentityManager in a KeyedService (as IdentityManager is
 // a client-side library intended for use by any process, it would be a layering
@@ -32,9 +53,12 @@
 class IdentityManagerWrapper : public KeyedService,
                                public identity::IdentityManager {
  public:
-  explicit IdentityManagerWrapper(ios::ChromeBrowserState* browser_state)
+  IdentityManagerWrapper(
+      std::unique_ptr<SigninManagerBase> signin_manager,
+      std::unique_ptr<identity::PrimaryAccountMutator> primary_account_mutator,
+      ios::ChromeBrowserState* browser_state)
       : identity::IdentityManager(
-            ios::SigninManagerFactory::GetForBrowserState(browser_state),
+            std::move(signin_manager),
             ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
             ios::AccountFetcherServiceFactory::GetForBrowserState(
                 browser_state),
@@ -42,11 +66,8 @@ class IdentityManagerWrapper : public KeyedService,
                 browser_state),
             ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
                 browser_state),
-            std::make_unique<identity::PrimaryAccountMutatorImpl>(
-                ios::AccountTrackerServiceFactory::GetForBrowserState(
-                    browser_state),
-                ios::SigninManagerFactory::GetForBrowserState(browser_state)),
-            nullptr,
+            std::move(primary_account_mutator),
+            /*accounts_mutator=*/nullptr,
             std::make_unique<identity::AccountsCookieMutatorImpl>(
                 ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
                     browser_state)),
@@ -57,6 +78,11 @@ class IdentityManagerWrapper : public KeyedService,
                     browser_state))) {}
 };
 
+void IdentityManagerFactory::RegisterBrowserStatePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  SigninManagerBase::RegisterProfilePrefs(registry);
+}
+
 IdentityManagerFactory::IdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
@@ -65,7 +91,7 @@ IdentityManagerFactory::IdentityManagerFactory()
   DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(ios::GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(SigninClientFactory::GetInstance());
 }
 
 IdentityManagerFactory::~IdentityManagerFactory() {}
@@ -96,7 +122,7 @@ void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   ios::AccountTrackerServiceFactory::GetInstance();
   ios::GaiaCookieManagerServiceFactory::GetInstance();
   ProfileOAuth2TokenServiceFactory::GetInstance();
-  ios::SigninManagerFactory::GetInstance();
+  SigninClientFactory::GetInstance();
 }
 
 void IdentityManagerFactory::AddObserver(
@@ -111,8 +137,20 @@ void IdentityManagerFactory::RemoveObserver(
 
 std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
+  ios::ChromeBrowserState* chrome_browser_state =
+      ios::ChromeBrowserState::FromBrowserState(browser_state);
+
+  // Construct the dependencies that IdentityManager will own.
+  std::unique_ptr<SigninManager> signin_manager =
+      BuildSigninManager(chrome_browser_state);
+  auto primary_account_mutator =
+      std::make_unique<identity::PrimaryAccountMutatorImpl>(
+          ios::AccountTrackerServiceFactory::GetForBrowserState(
+              chrome_browser_state),
+          signin_manager.get());
   auto identity_manager = std::make_unique<IdentityManagerWrapper>(
-      ios::ChromeBrowserState::FromBrowserState(browser_state));
+      std::move(signin_manager), std::move(primary_account_mutator),
+      chrome_browser_state);
 
   for (auto& observer : observer_list_)
     observer.IdentityManagerCreated(identity_manager.get());
