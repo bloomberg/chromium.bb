@@ -796,6 +796,12 @@ const char kEnableOutOfProcessHeapProfilingModeRendererSampling[] =
     "Profile a random sampling of renderer processes, ensuring only one is "
     "ever profiled at a time.";
 
+const char kCompositorThreadedScrollbarScrollingName[] =
+    "Enable compositor threaded scrollbar scrolling";
+const char kCompositorThreadedScrollbarScrollingDescription[] =
+    "Enables pointer-based scrollbar scrolling on the compositor thread "
+    "instead of the main thread";
+
 const char kOutOfProcessHeapProfilingInProcess[] =
     "Run the heap profiling service in the browser process.";
 const char kOutOfProcessHeapProfilingInProcessDescription[] =

@@ -1217,6 +1217,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-compositor-threaded-scrollbar-scrolling",
+    "owners": [ "arakeri@microsoft.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 75

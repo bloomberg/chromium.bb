@@ -706,6 +706,9 @@ extern const char kIgnoreGpuBlacklistDescription[];
 extern const char kIgnorePreviewsBlacklistName[];
 extern const char kIgnorePreviewsBlacklistDescription[];
 
+extern const char kCompositorThreadedScrollbarScrollingName[];
+extern const char kCompositorThreadedScrollbarScrollingDescription[];
+
 extern const char kImprovedGeoLanguageDataName[];
 extern const char kImprovedGeoLanguageDataDescription[];
 

@@ -6,6 +6,9 @@
 
 namespace features {
 
+const base::Feature kCompositorThreadedScrollbarScrolling{
+    "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
