@@ -234,6 +234,7 @@ crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.htm
 crbug.com/372424 http/tests/serviceworker/registration-stress.html [ Slow ]
 crbug.com/448670 http/tests/serviceworker/register-different-script-many-times.html [ Slow ]
 crbug.com/516319 [ Win ] http/tests/fetch/ [ Slow ]
+crbug.com/516319 [ Win ] virtual/outofblink-cors/http/tests/fetch/ [ Slow ]
 crbug.com/516319 [ Win ] virtual/streaming-preload/http/tests/fetch/ [ Slow ]
 
 # Most crypto/subtle tests are slow some or most of the time.
