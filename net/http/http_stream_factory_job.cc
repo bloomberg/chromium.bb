@@ -1272,10 +1272,6 @@ void HttpStreamFactory::Job::InitSSLConfig(SSLConfig* ssl_config,
     // handshake; renegotiation on the proxy connection is unsupported.
     ssl_config->false_start_enabled = false;
   }
-
-  // Disable Channel ID if privacy mode is enabled.
-  if (request_info_.privacy_mode == PRIVACY_MODE_ENABLED)
-    ssl_config->channel_id_enabled = false;
 }
 
 int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {
