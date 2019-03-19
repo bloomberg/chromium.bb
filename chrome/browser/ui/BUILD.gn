@@ -2113,8 +2113,6 @@ jumbo_split_static_library("ui") {
       "cocoa/touchbar/credit_card_autofill_touch_bar_controller.mm",
       "cocoa/touchbar/web_textfield_touch_bar_controller.h",
       "cocoa/touchbar/web_textfield_touch_bar_controller.mm",
-      "cocoa/ui_localizer.h",
-      "cocoa/ui_localizer.mm",
       "cocoa/window_size_autosaver.h",
       "cocoa/window_size_autosaver.mm",
       "views/apps/chrome_app_window_client_views_mac.mm",
@@ -2139,7 +2137,6 @@ jumbo_split_static_library("ui") {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
 
     deps += [
-      "//chrome/app/nibs:localizer_table",
       "//chrome/browser/apps/app_shim",
       "//extensions/components/native_app_window",
       "//third_party/google_toolbox_for_mac",
