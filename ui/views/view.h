@@ -1658,9 +1658,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Focus ---------------------------------------------------------------------
 
-  // Initialize the previous/next focusable views of the specified view relative
-  // to the view at the specified index.
-  void InitFocusSiblings(View* view, int index);
+  // Sets previous/next focusable views for both |view| and other children
+  // assuming we've just inserted |view| at |pos|.
+  void SetFocusSiblings(View* view, Views::const_iterator pos);
 
   // Helper function to advance focus, in case the currently focused view has
   // become unfocusable.
