@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
@@ -72,7 +73,7 @@ class LocalCardMigrationManagerTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
-        autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
+        autofill_driver_->GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
@@ -189,10 +190,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -223,10 +225,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card (but it will not match what we will enter below).
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "1", "guid1");
@@ -254,10 +257,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -301,10 +305,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -335,10 +340,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
   // we will enter below.
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
@@ -385,10 +391,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
@@ -428,10 +435,11 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_FeatureNotEnabled) {
   scoped_feature_list_.InitAndDisableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -461,10 +469,10 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_SignInOnlyWhenExpOff) {
       // Disabled
       {features::kAutofillEnableLocalCardMigrationForNonSyncUser});
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Mock Chrome Sync is disabled.
   local_card_migration_manager_->ResetSyncState(
@@ -500,10 +508,10 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_SignInOnlyWhenExpOn) {
       // Disabled
       {});
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Mock Chrome Sync is disabled.
   local_card_migration_manager_->ResetSyncState(
@@ -562,10 +570,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a masked server card whose |TypeAndLastFourDigits| matches a local
   // card.
   CreditCard server_card(CreditCard::MASKED_SERVER_CARD, "a123");
@@ -600,10 +609,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a full server card whose number matches a local card.
   CreditCard server_card(CreditCard::FULL_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&server_card, "Flo Master", "4111111111111111", "11",
@@ -633,10 +643,11 @@ TEST_F(LocalCardMigrationManagerTest, GetDetectedValues_AllWithCardHolderName) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -666,10 +677,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -698,10 +710,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -730,10 +743,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -764,10 +778,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -798,10 +813,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -828,10 +844,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -868,10 +885,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -900,10 +918,10 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Set that previously user rejected this prompt.
   prefs::SetLocalCardMigrationPromptPreviouslyCancelled(
@@ -938,10 +956,11 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_MigrationSuccess) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card for migration.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "1", "guid1");
@@ -980,10 +999,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -1024,10 +1044,11 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardLocalCardMigration);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -1069,8 +1090,11 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_ToggleIsChosen) {
                      test::NextYear().c_str(), "1", "guid1");
   AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
                      test::NextYear().c_str(), "1", "guid2");
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   local_card_migration_manager_->GetMigratableCreditCards();
 
   autofill_client_.set_migration_card_selections(
@@ -1118,10 +1142,11 @@ TEST_F(LocalCardMigrationManagerTest,
 
   EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 7);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
   AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
@@ -1167,10 +1192,10 @@ TEST_F(LocalCardMigrationManagerTest,
 
   EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 7);
 
-  // Set the billing_customer_number Priority Preference to designate
-  // existence of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
   // we will enter below.
@@ -1223,8 +1248,10 @@ TEST_F(LocalCardMigrationManagerTest,
                      test::NextYear().c_str(), "1", "guid1");
   AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
                      test::NextYear().c_str(), "1", "guid2");
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
   local_card_migration_manager_->GetMigratableCreditCards();
 
   // Only select one of the two cards.
@@ -1249,8 +1276,10 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_StrikeCountUMALogged) {
                      test::NextYear().c_str(), "1", "guid1");
   AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
                      test::NextYear().c_str(), "1", "guid2");
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
   local_card_migration_manager_->GetMigratableCreditCards();
 
   // Add 4 LocalCardMigration strikes.

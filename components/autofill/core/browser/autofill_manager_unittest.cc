@@ -315,8 +315,7 @@ class AutofillManagerTest : public testing::Test {
     payments::TestPaymentsClient* payments_client =
         new payments::TestPaymentsClient(
             autofill_driver_->GetURLLoaderFactory(),
-            autofill_client_.GetPrefs(), autofill_client_.GetIdentityManager(),
-            &personal_data_);
+            autofill_client_.GetIdentityManager(), &personal_data_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client));
     TestCreditCardSaveManager* credit_card_save_manager =

@@ -1583,8 +1583,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       autofill::PersonalDataManagerFactory::GetForProfile(profile);
   html_source->AddBoolean(
       "hasGooglePaymentsAccount",
-      autofill::payments::GetBillingCustomerId(personal_data_manager_,
-                                               profile->GetPrefs()) != 0);
+      autofill::payments::GetBillingCustomerId(personal_data_manager_) != 0);
 
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
