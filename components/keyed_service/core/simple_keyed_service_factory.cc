@@ -49,14 +49,13 @@ SimpleKeyedServiceFactory::~SimpleKeyedServiceFactory() {}
 KeyedService* SimpleKeyedServiceFactory::GetServiceForKey(SimpleFactoryKey* key,
                                                           PrefService* prefs,
                                                           bool create) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return KeyedServiceFactory::GetServiceForContext(key, prefs, create);
 }
 
 SimpleFactoryKey* SimpleKeyedServiceFactory::GetKeyToUse(
     SimpleFactoryKey* key) const {
-  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // Safe default for Incognito mode: no service.
   if (key->is_off_the_record())
     return nullptr;
@@ -65,10 +64,14 @@ SimpleFactoryKey* SimpleKeyedServiceFactory::GetKeyToUse(
 }
 
 void SimpleKeyedServiceFactory::SimpleContextShutdown(SimpleFactoryKey* key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   KeyedServiceFactory::ContextShutdown(key);
 }
 
 void SimpleKeyedServiceFactory::SimpleContextDestroyed(SimpleFactoryKey* key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   KeyedServiceFactory::ContextDestroyed(key);
 }
 
