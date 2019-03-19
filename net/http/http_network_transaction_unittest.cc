@@ -641,20 +641,20 @@ std::string MockGetHostName() {
 }
 #endif  // defined(NTLM_PORTABLE)
 
-template<typename ParentPool>
-class CaptureGroupNameSocketPool : public ParentPool {
+template <typename ParentPool>
+class CaptureGroupIdSocketPool : public ParentPool {
  public:
-  CaptureGroupNameSocketPool(HostResolver* host_resolver,
-                             CertVerifier* cert_verifier);
+  CaptureGroupIdSocketPool(HostResolver* host_resolver,
+                           CertVerifier* cert_verifier);
 
-  const std::string last_group_name_received() const {
-    return last_group_name_;
+  const ClientSocketPool::GroupId& last_group_id_received() const {
+    return last_group_id_;
   }
 
   bool socket_requested() const { return socket_requested_; }
 
   int RequestSocket(
-      const std::string& group_name,
+      const ClientSocketPool::GroupId& group_id,
       const void* socket_params,
       RequestPriority priority,
       const SocketTag& socket_tag,
@@ -663,36 +663,38 @@ class CaptureGroupNameSocketPool : public ParentPool {
       CompletionOnceCallback callback,
       const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
       const NetLogWithSource& net_log) override {
-    last_group_name_ = group_name;
+    last_group_id_ = group_id;
     socket_requested_ = true;
     return ERR_IO_PENDING;
   }
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const ClientSocketPool::GroupId& group_id,
                      ClientSocketHandle* handle) override {}
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) override {}
   void CloseIdleSockets() override {}
-  void CloseIdleSocketsInGroup(const std::string& group_name) override {}
+  void CloseIdleSocketsInGroup(
+      const ClientSocketPool::GroupId& group_id) override {}
   int IdleSocketCount() const override { return 0; }
-  size_t IdleSocketCountInGroup(const std::string& group_name) const override {
+  size_t IdleSocketCountInGroup(
+      const ClientSocketPool::GroupId& group_id) const override {
     return 0;
   }
-  LoadState GetLoadState(const std::string& group_name,
+  LoadState GetLoadState(const ClientSocketPool::GroupId& group_id,
                          const ClientSocketHandle* handle) const override {
     return LOAD_STATE_IDLE;
   }
 
  private:
-  std::string last_group_name_;
+  ClientSocketPool::GroupId last_group_id_;
   bool socket_requested_ = false;
 };
 
-typedef CaptureGroupNameSocketPool<TransportClientSocketPool>
-CaptureGroupNameTransportSocketPool;
+typedef CaptureGroupIdSocketPool<TransportClientSocketPool>
+    CaptureGroupIdTransportSocketPool;
 
 template <typename ParentPool>
-CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
+CaptureGroupIdSocketPool<ParentPool>::CaptureGroupIdSocketPool(
     HostResolver* host_resolver,
     CertVerifier* /* cert_verifier */)
     : ParentPool(0,
@@ -11204,16 +11206,16 @@ TEST_F(HttpNetworkTransactionTest, SOCKS5_SSL_GET) {
 
 namespace {
 
-// Tests that for connection endpoints the group names are correctly set.
+// Tests that for connection endpoints the group ids are correctly set.
 
-struct GroupNameTest {
+struct GroupIdTest {
   std::string proxy_server;
   std::string url;
-  std::string expected_group_name;
+  ClientSocketPool::GroupId expected_group_id;
   bool ssl;
 };
 
-std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
+std::unique_ptr<HttpNetworkSession> SetupSessionForGroupIdTests(
     SpdySessionDependencies* session_deps_) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(session_deps_));
 
@@ -11228,8 +11230,8 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
   return session;
 }
 
-int GroupNameTransactionHelper(const std::string& url,
-                               HttpNetworkSession* session) {
+int GroupIdTransactionHelper(const std::string& url,
+                             HttpNetworkSession* session) {
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL(url);
@@ -11246,39 +11248,49 @@ int GroupNameTransactionHelper(const std::string& url,
 
 }  // namespace
 
-TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
-  const GroupNameTest tests[] = {
+TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
+  const GroupIdTest tests[] = {
       {
-       "",  // unused
-       "http://www.example.org/direct",
-       "www.example.org:80",
-       false,
+          "",  // unused
+          "http://www.example.org/direct",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          false,
       },
       {
-       "",  // unused
-       "http://[2001:1418:13:1::25]/direct",
-       "[2001:1418:13:1::25]:80",
-       false,
+          "",  // unused
+          "http://[2001:1418:13:1::25]/direct",
+          ClientSocketPool::GroupId(HostPortPair("2001:1418:13:1::25", 80),
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          false,
       },
 
       // SSL Tests
       {
-       "",  // unused
-       "https://www.example.org/direct_ssl",
-       "ssl/www.example.org:443",
-       true,
+          "",  // unused
+          "https://www.example.org/direct_ssl",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
+          true,
       },
       {
-       "",  // unused
-       "https://[2001:1418:13:1::25]/direct",
-       "ssl/[2001:1418:13:1::25]:443",
-       true,
+          "",  // unused
+          "https://[2001:1418:13:1::25]/direct",
+          ClientSocketPool::GroupId(HostPortPair("2001:1418:13:1::25", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
+          true,
       },
       {
-       "",  // unused
-       "https://host.with.alternate/direct",
-       "ssl/host.with.alternate:443",
-       true,
+          "",  // unused
+          "https://host.with.alternate/direct",
+          ClientSocketPool::GroupId(HostPortPair("host.with.alternate", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
+          true,
       },
   };
 
@@ -11287,30 +11299,32 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
         ProxyResolutionService::CreateFixed(tests[i].proxy_server,
                                             TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpNetworkSession> session(
-        SetupSessionForGroupNameTests(&session_deps_));
+        SetupSessionForGroupIdTests(&session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
-    CaptureGroupNameTransportSocketPool* transport_conn_pool =
-        new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
+    CaptureGroupIdTransportSocketPool* transport_conn_pool =
+        new CaptureGroupIdTransportSocketPool(nullptr, nullptr);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                      base::WrapUnique(transport_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
-              GroupNameTransactionHelper(tests[i].url, session.get()));
-    EXPECT_EQ(tests[i].expected_group_name,
-              transport_conn_pool->last_group_name_received());
+              GroupIdTransactionHelper(tests[i].url, session.get()));
+    EXPECT_EQ(tests[i].expected_group_id,
+              transport_conn_pool->last_group_id_received());
     EXPECT_TRUE(transport_conn_pool->socket_requested());
   }
 }
 
-TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
-  const GroupNameTest tests[] = {
+TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
+  const GroupIdTest tests[] = {
       {
           "http_proxy",
           "http://www.example.org/http_proxy_normal",
-          "www.example.org:80",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
           false,
       },
 
@@ -11318,21 +11332,27 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
       {
           "http_proxy",
           "https://www.example.org/http_connect_ssl",
-          "ssl/www.example.org:443",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
           true,
       },
 
       {
           "http_proxy",
           "https://host.with.alternate/direct",
-          "ssl/host.with.alternate:443",
+          ClientSocketPool::GroupId(HostPortPair("host.with.alternate", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
           true,
       },
 
       {
           "http_proxy",
           "ftp://ftp.google.com/http_proxy_normal",
-          "ftp/ftp.google.com:21",
+          ClientSocketPool::GroupId(HostPortPair("ftp.google.com", 21),
+                                    ClientSocketPool::SocketType::kFtp,
+                                    false /* privacy_mode */),
           false,
       },
   };
@@ -11342,38 +11362,42 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
         ProxyResolutionService::CreateFixed(tests[i].proxy_server,
                                             TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpNetworkSession> session(
-        SetupSessionForGroupNameTests(&session_deps_));
+        SetupSessionForGroupIdTests(&session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
 
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
-    CaptureGroupNameTransportSocketPool* http_proxy_pool =
-        new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
+    CaptureGroupIdTransportSocketPool* http_proxy_pool =
+        new CaptureGroupIdTransportSocketPool(nullptr, nullptr);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
-              GroupNameTransactionHelper(tests[i].url, session.get()));
-    EXPECT_EQ(tests[i].expected_group_name,
-              http_proxy_pool->last_group_name_received());
+              GroupIdTransactionHelper(tests[i].url, session.get()));
+    EXPECT_EQ(tests[i].expected_group_id,
+              http_proxy_pool->last_group_id_received());
   }
 }
 
-TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
-  const GroupNameTest tests[] = {
+TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
+  const GroupIdTest tests[] = {
       {
           "socks4://socks_proxy:1080",
           "http://www.example.org/socks4_direct",
-          "www.example.org:80",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
           false,
       },
       {
           "socks5://socks_proxy:1080",
           "http://www.example.org/socks5_direct",
-          "www.example.org:80",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 80),
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
           false,
       },
 
@@ -11381,20 +11405,26 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
       {
           "socks4://socks_proxy:1080",
           "https://www.example.org/socks4_ssl",
-          "ssl/www.example.org:443",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
           true,
       },
       {
           "socks5://socks_proxy:1080",
           "https://www.example.org/socks5_ssl",
-          "ssl/www.example.org:443",
+          ClientSocketPool::GroupId(HostPortPair("www.example.org", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
           true,
       },
 
       {
           "socks4://socks_proxy:1080",
           "https://host.with.alternate/direct",
-          "ssl/host.with.alternate:443",
+          ClientSocketPool::GroupId(HostPortPair("host.with.alternate", 443),
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
           true,
       },
   };
@@ -11404,15 +11434,15 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
         ProxyResolutionService::CreateFixed(tests[i].proxy_server,
                                             TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpNetworkSession> session(
-        SetupSessionForGroupNameTests(&session_deps_));
+        SetupSessionForGroupIdTests(&session_deps_));
 
     HttpNetworkSessionPeer peer(session.get());
 
     ProxyServer proxy_server(
         ProxyServer::FromURI(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
     ASSERT_TRUE(proxy_server.is_valid());
-    CaptureGroupNameTransportSocketPool* socks_conn_pool =
-        new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
+    CaptureGroupIdTransportSocketPool* socks_conn_pool =
+        new CaptureGroupIdTransportSocketPool(nullptr, nullptr);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(socks_conn_pool));
@@ -11421,9 +11451,9 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
     EXPECT_EQ(ERR_IO_PENDING,
-              GroupNameTransactionHelper(tests[i].url, session.get()));
-    EXPECT_EQ(tests[i].expected_group_name,
-              socks_conn_pool->last_group_name_received());
+              GroupIdTransactionHelper(tests[i].url, session.get()));
+    EXPECT_EQ(tests[i].expected_group_id,
+              socks_conn_pool->last_group_id_received());
   }
 }
 
@@ -14503,7 +14533,9 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   StaticSocketDataProvider data_provider(reads, writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data_provider);
 
-  const char kSocketGroup[] = "www.example.com:80";
+  const ClientSocketPool::GroupId kSocketGroup(
+      HostPortPair("www.example.com", 80), ClientSocketPool::SocketType::kHttp,
+      false /* privacy_mode */);
 
   // First round of authentication.
   auth_handler->SetGenerateExpectation(false, OK);

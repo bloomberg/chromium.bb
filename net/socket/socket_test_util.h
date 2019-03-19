@@ -1121,27 +1121,6 @@ class ClientSocketPoolTest {
     return rv;
   }
 
-  // TODO(mmenke): Remove this once no longer needed.
-  template <typename PoolType>
-  int StartRequestUsingPool(
-      PoolType* socket_pool,
-      const std::string& group_name,
-      RequestPriority priority,
-      ClientSocketPool::RespectLimits respect_limits,
-      const scoped_refptr<typename PoolType::SocketParams>& socket_params) {
-    DCHECK(socket_pool);
-    TestSocketRequest* request(
-        new TestSocketRequest(&request_order_, &completion_count_));
-    requests_.push_back(base::WrapUnique(request));
-    int rv = request->handle()->Init(
-        group_name, socket_params, priority, SocketTag(), respect_limits,
-        request->callback(), ClientSocketPool::ProxyAuthCallback(), socket_pool,
-        NetLogWithSource());
-    if (rv != ERR_IO_PENDING)
-      request_order_.push_back(request);
-    return rv;
-  }
-
   // Provided there were n requests started, takes |index| in range 1..n
   // and returns order in which that request completed, in range 1..n,
   // or kIndexOutOfBounds if |index| is out of bounds, or kRequestNotFound
@@ -1233,7 +1212,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   int cancel_count() const { return cancel_count_; }
 
   // TransportClientSocketPool implementation.
-  int RequestSocket(const std::string& group_name,
+  int RequestSocket(const GroupId& group_id,
                     const void* socket_params,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
@@ -1242,12 +1221,12 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
                     CompletionOnceCallback callback,
                     const ProxyAuthCallback& on_auth_callback,
                     const NetLogWithSource& net_log) override;
-  void SetPriority(const std::string& group_name,
+  void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const GroupId& group_id,
                      ClientSocketHandle* handle) override;
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) override;
 

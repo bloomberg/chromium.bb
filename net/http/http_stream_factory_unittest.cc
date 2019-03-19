@@ -385,10 +385,15 @@ void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
   PreconnectHelperForURL(test.num_streams, url, session);
 }
 
-std::string GetGroupName(const TestCase& test) {
-  if (test.ssl)
-    return "ssl/www.google.com:443";
-  return "www.google.com:80";
+ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
+  if (test.ssl) {
+    return ClientSocketPool::GroupId(HostPortPair("www.google.com", 443),
+                                     ClientSocketPool::SocketType::kSsl,
+                                     false /* privacy_mode */);
+  }
+  return ClientSocketPool::GroupId(HostPortPair("www.google.com", 80),
+                                   ClientSocketPool::SocketType::kHttp,
+                                   false /* privacy_mode */);
 }
 
 template <typename ParentPool>
@@ -401,16 +406,22 @@ class CapturePreconnectsSocketPool : public ParentPool {
                                CTPolicyEnforcer* ct_policy_enforcer);
 
   int last_num_streams() const { return last_num_streams_; }
-  const std::string& last_group_name() const { return last_group_name_; }
+  const ClientSocketPool::GroupId& last_group_id() const {
+    return last_group_id_;
+  }
 
-  // Resets |last_num_streams_| and |last_group_name_| default values.
+  // Resets |last_num_streams_| and |last_group_id_| default values.
   void reset() {
     last_num_streams_ = -1;
-    last_group_name_.clear();
+    // Group ID that shouldn't match much.
+    last_group_id_ = ClientSocketPool::GroupId(
+        HostPortPair(),
+        ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
+        true /* privacy_mode */);
   }
 
   int RequestSocket(
-      const std::string& group_name,
+      const ClientSocketPool::GroupId& group_id,
       const void* socket_params,
       RequestPriority priority,
       const SocketTag& socket_tag,
@@ -423,19 +434,19 @@ class CapturePreconnectsSocketPool : public ParentPool {
     return ERR_UNEXPECTED;
   }
 
-  void RequestSockets(const std::string& group_name,
+  void RequestSockets(const ClientSocketPool::GroupId& group_id,
                       const void* socket_params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
-    last_group_name_ = group_name;
+    last_group_id_ = group_id;
   }
 
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const ClientSocketPool::GroupId& group_id,
                      ClientSocketHandle* handle) override {
     ADD_FAILURE();
   }
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) override {
     ADD_FAILURE();
@@ -445,11 +456,12 @@ class CapturePreconnectsSocketPool : public ParentPool {
     ADD_FAILURE();
     return 0;
   }
-  size_t IdleSocketCountInGroup(const std::string& group_name) const override {
+  size_t IdleSocketCountInGroup(
+      const ClientSocketPool::GroupId& group_id) const override {
     ADD_FAILURE();
     return 0;
   }
-  LoadState GetLoadState(const std::string& group_name,
+  LoadState GetLoadState(const ClientSocketPool::GroupId& group_id,
                          const ClientSocketHandle* handle) const override {
     ADD_FAILURE();
     return LOAD_STATE_IDLE;
@@ -457,7 +469,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
 
  private:
   int last_num_streams_;
-  std::string last_group_name_;
+  ClientSocketPool::GroupId last_group_id_;
 };
 
 typedef CapturePreconnectsSocketPool<TransportClientSocketPool>
@@ -515,7 +527,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     EXPECT_EQ(kTests[i].num_streams, transport_conn_pool->last_num_streams());
-    EXPECT_EQ(GetGroupName(kTests[i]), transport_conn_pool->last_group_name());
+    EXPECT_EQ(GetGroupId(kTests[i]), transport_conn_pool->last_group_id());
   }
 }
 
@@ -540,7 +552,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     EXPECT_EQ(kTests[i].num_streams, http_proxy_pool->last_num_streams());
-    EXPECT_EQ(GetGroupName(kTests[i]), http_proxy_pool->last_group_name());
+    EXPECT_EQ(GetGroupId(kTests[i]), http_proxy_pool->last_group_id());
   }
 }
 
@@ -565,7 +577,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     EXPECT_EQ(kTests[i].num_streams, socks_proxy_pool->last_num_streams());
-    EXPECT_EQ(GetGroupName(kTests[i]), socks_proxy_pool->last_group_name());
+    EXPECT_EQ(GetGroupId(kTests[i]), socks_proxy_pool->last_group_id());
   }
 }
 
@@ -2037,9 +2049,11 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
     scoped_refptr<SSLSocketParams> ssl_params(
         new SSLSocketParams(transport_params, nullptr, nullptr, host_port_pair,
                             ssl_config, PRIVACY_MODE_DISABLED));
-    std::string group_name = "ssl/" + host_port_pair.ToString();
+    ClientSocketPool::GroupId group_id(host_port_pair,
+                                       ClientSocketPool::SocketType::kSsl,
+                                       false /* privacy_mode */);
     int rv = connection->Init(
-        group_name,
+        group_id,
         TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
             ssl_params),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,

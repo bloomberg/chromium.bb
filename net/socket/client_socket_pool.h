@@ -133,12 +133,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                       other.privacy_mode_);
     }
 
-    // Implicit conversion operator to ease the transition from
-    // "std::string group_name" to "GroupId group_id".
-    //
-    // TODO(mmenke): Remove this once the migration is complete.
-    operator std::string() const { return ToString(); }
-
    private:
     // The host and port of the final destination (not the proxy).
     HostPortPair destination_;
@@ -149,7 +143,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     bool privacy_mode_;
   };
 
-  // Requests a connected socket for a group_name.
+  // Requests a connected socket with a specified GroupId.
   //
   // There are five possible results from calling this function:
   // 1) RequestSocket returns OK and initializes |handle| with a reused socket.
@@ -185,7 +179,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // challenge is seen while establishing a tunnel. It will never be invoked
   // synchronously when RequestSocket is called, and will be invoked once for
   // each challenge seen.
-  virtual int RequestSocket(const std::string& group_name,
+  virtual int RequestSocket(const GroupId& group_id,
                             const void* params,
                             RequestPriority priority,
                             const SocketTag& socket_tag,
@@ -196,7 +190,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                             const NetLogWithSource& net_log) = 0;
 
   // RequestSockets is used to request that |num_sockets| be connected in the
-  // connection group for |group_name|.  If the connection group already has
+  // connection group for |group_id|.  If the connection group already has
   // |num_sockets| idle sockets / active sockets / currently connecting sockets,
   // then this function doesn't do anything.  Otherwise, it will start up as
   // many connections as necessary to reach |num_sockets| total sockets for the
@@ -205,7 +199,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // This priority will probably be lower than all others, since this method
   // is intended to make sure ahead of time that |num_sockets| sockets are
   // available to talk to a host.
-  virtual void RequestSockets(const std::string& group_name,
+  virtual void RequestSockets(const GroupId& group_id,
                               const void* params,
                               int num_sockets,
                               const NetLogWithSource& net_log) = 0;
@@ -216,7 +210,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // RequestSocket call being modified.
   // This function is a no-op if |priority| is the same as the current
   // request priority.
-  virtual void SetPriority(const std::string& group_name,
+  virtual void SetPriority(const GroupId& group_id,
                            ClientSocketHandle* handle,
                            RequestPriority priority) = 0;
 
@@ -224,7 +218,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // same handle parameter must be passed to this method as was passed to the
   // RequestSocket call being cancelled.  The associated callback is not run.
   // However, for performance, we will let one ConnectJob complete and go idle.
-  virtual void CancelRequest(const std::string& group_name,
+  virtual void CancelRequest(const GroupId& group_id,
                              ClientSocketHandle* handle) = 0;
 
   // Called to release a socket once the socket is no longer needed.  If the
@@ -234,7 +228,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // between updated versions of the same pool instance.  The pool's id will
   // change when it flushes, so it can use this |id| to discard sockets with
   // mismatched ids.
-  virtual void ReleaseSocket(const std::string& group_name,
+  virtual void ReleaseSocket(const GroupId& group_id,
                              std::unique_ptr<StreamSocket> socket,
                              int id) = 0;
 
@@ -249,17 +243,16 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   virtual void CloseIdleSockets() = 0;
 
   // Called to close any idle connections held by the connection manager.
-  virtual void CloseIdleSocketsInGroup(const std::string& group_name) = 0;
+  virtual void CloseIdleSocketsInGroup(const GroupId& group_id) = 0;
 
   // The total number of idle sockets in the pool.
   virtual int IdleSocketCount() const = 0;
 
   // The total number of idle sockets in a connection group.
-  virtual size_t IdleSocketCountInGroup(
-      const std::string& group_name) const = 0;
+  virtual size_t IdleSocketCountInGroup(const GroupId& group_id) const = 0;
 
   // Determine the LoadState of a connecting ClientSocketHandle.
-  virtual LoadState GetLoadState(const std::string& group_name,
+  virtual LoadState GetLoadState(const GroupId& group_id,
                                  const ClientSocketHandle* handle) const = 0;
 
   // Retrieves information on the current state of the pool as a
@@ -287,11 +280,11 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 template <typename PoolType>
 void RequestSocketsForPool(
     PoolType* pool,
-    const std::string& group_name,
+    const ClientSocketPool::GroupId& group_id,
     const scoped_refptr<typename PoolType::SocketParams>& params,
     int num_sockets,
     const NetLogWithSource& net_log) {
-  pool->RequestSockets(group_name, &params, num_sockets, net_log);
+  pool->RequestSockets(group_id, &params, num_sockets, net_log);
 }
 
 }  // namespace net

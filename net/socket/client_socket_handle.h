@@ -33,7 +33,7 @@ class SocketTag;
 
 // A container for a StreamSocket.
 //
-// The handle's |group_name| uniquely identifies the origin and type of the
+// The handle's |group_id| uniquely identifies the origin and type of the
 // connection.  It is used by the ClientSocketPool to group similar connected
 // client socket objects.
 //
@@ -80,7 +80,7 @@ class NET_EXPORT ClientSocketHandle {
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
   template <typename PoolType>
-  int Init(const std::string& group_name,
+  int Init(const ClientSocketPool::GroupId& group_id,
            const scoped_refptr<typename PoolType::SocketParams>& socket_params,
            RequestPriority priority,
            const SocketTag& socket_tag,
@@ -94,7 +94,7 @@ class NET_EXPORT ClientSocketHandle {
   // ClientSocketPool::RespectLimits.
   // TODO(mmenke): Remove once the socket pool refactor is complete.
   template <typename PoolType>
-  int Init(const std::string& group_name,
+  int Init(const std::string& group_id,
            const scoped_refptr<typename PoolType::SocketParams>& socket_params,
            RequestPriority priority,
            const SocketTag& socket_tag,
@@ -103,7 +103,7 @@ class NET_EXPORT ClientSocketHandle {
            const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
            PoolType* pool,
            const NetLogWithSource& net_log) {
-    return Init(group_name, socket_params, priority, socket_tag,
+    return Init(group_id, socket_params, priority, socket_tag,
                 respect_limits ? ClientSocketPool::RespectLimits::ENABLED
                                : ClientSocketPool::RespectLimits::DISABLED,
                 std::move(callback), proxy_auth_callback, pool, net_log);
@@ -207,7 +207,7 @@ class NET_EXPORT ClientSocketHandle {
   std::unique_ptr<StreamSocket> PassSocket();
 
   // These may only be used if is_initialized() is true.
-  const std::string& group_name() const { return group_name_; }
+  const ClientSocketPool::GroupId& group_id() const { return group_id_; }
   int id() const { return pool_id_; }
   bool is_reused() const { return reuse_type_ == REUSED_IDLE; }
   base::TimeDelta idle_time() const { return idle_time_; }
@@ -239,7 +239,7 @@ class NET_EXPORT ClientSocketHandle {
   ClientSocketPool* pool_;
   HigherLayeredPool* higher_pool_;
   std::unique_ptr<StreamSocket> socket_;
-  std::string group_name_;
+  ClientSocketPool::GroupId group_id_;
   SocketReuseType reuse_type_;
   CompletionOnceCallback callback_;
   base::TimeDelta idle_time_;
@@ -260,7 +260,7 @@ class NET_EXPORT ClientSocketHandle {
 // Template function implementation:
 template <typename PoolType>
 int ClientSocketHandle::Init(
-    const std::string& group_name,
+    const ClientSocketPool::GroupId& group_id,
     const scoped_refptr<typename PoolType::SocketParams>& socket_params,
     RequestPriority priority,
     const SocketTag& socket_tag,
@@ -271,15 +271,15 @@ int ClientSocketHandle::Init(
     const NetLogWithSource& net_log) {
   requesting_source_ = net_log.source();
 
-  CHECK(!group_name.empty());
+  CHECK(!group_id.destination().IsEmpty());
   ResetInternal(true);
   ResetErrorState();
   pool_ = pool;
-  group_name_ = group_name;
+  group_id_ = group_id;
   CompletionOnceCallback io_complete_callback =
       base::BindOnce(&ClientSocketHandle::OnIOComplete, base::Unretained(this));
   int rv = pool_->RequestSocket(
-      group_name, &socket_params, priority, socket_tag, respect_limits, this,
+      group_id, &socket_params, priority, socket_tag, respect_limits, this,
       std::move(io_complete_callback), proxy_auth_callback, net_log);
   if (rv == ERR_IO_PENDING) {
     callback_ = std::move(callback);
