@@ -318,9 +318,9 @@ views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
 }
 
 int DesktopMediaPickerDialogView::GetDefaultDialogButton() const {
-  // To prevent permissions being accepted accidentally, permission prompts
-  // should not be accepted as the default action.
-  return ui::DIALOG_BUTTON_CANCEL;
+  // OK button will be active only when there is a selection by user. So it's OK
+  // to set it as the primary.
+  return ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
