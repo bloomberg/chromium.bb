@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -58,18 +59,22 @@ public class TabGroupUiMediator implements Destroyable {
     private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
     private final BottomControlsCoordinator
             .BottomControlsVisibilityController mVisibilityController;
+    private final ThemeColorProvider mThemeColorProvider;
+    private final ThemeColorProvider.ThemeColorObserver mThemeColorObserver;
+    private final ThemeColorProvider.TintObserver mTintObserver;
 
     TabGroupUiMediator(
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
             ResetHandler resetHandler, PropertyModel toolbarPropertyModel,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
-            OverviewModeBehavior overviewModeBehavior) {
+            OverviewModeBehavior overviewModeBehavior, ThemeColorProvider themeColorProvider) {
         mResetHandler = resetHandler;
         mToolbarPropertyModel = toolbarPropertyModel;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
         mOverviewModeBehavior = overviewModeBehavior;
         mVisibilityController = visibilityController;
+        mThemeColorProvider = themeColorProvider;
 
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -105,9 +110,16 @@ public class TabGroupUiMediator implements Destroyable {
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
         };
+        mThemeColorObserver = (color, shouldAnimate)
+                -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, color);
+        mTintObserver = (tint,
+                useLight) -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.TINT, tint);
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+        mThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
+        mThemeColorProvider.addTintObserver(mTintObserver);
+
         setupToolbarClickHandlers();
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, true);
         Tab tab = mTabModelSelector.getCurrentTab();
@@ -166,5 +178,7 @@ public class TabGroupUiMediator implements Destroyable {
                     mTabModelObserver);
         }
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
+        mThemeColorProvider.removeTintObserver(mTintObserver);
     }
 }

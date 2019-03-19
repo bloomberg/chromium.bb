@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ThemeColorProvider;
 
 /**
  * Impl class that will resolve components for tab management.
@@ -23,7 +24,8 @@ public class TabManagementModuleImpl implements TabManagementModule {
     }
 
     @Override
-    public TabGroupUi createTabGroupUi(ViewGroup parentView) {
-        return new TabGroupUiCoordinator(parentView);
+    public TabGroupUi createTabGroupUi(
+            ViewGroup parentView, ThemeColorProvider themeColorProvider) {
+        return new TabGroupUiCoordinator(parentView, themeColorProvider);
     }
 }
