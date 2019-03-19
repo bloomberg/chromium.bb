@@ -621,8 +621,8 @@ namespace {
 // Provides functionality to create a window modal dialog.
 class ModalDialogDelegate : public DialogDelegateView {
  public:
-  ModalDialogDelegate() {}
-  ~ModalDialogDelegate() override {}
+  ModalDialogDelegate() = default;
+  ~ModalDialogDelegate() override = default;
 
   // WidgetDelegate overrides.
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }

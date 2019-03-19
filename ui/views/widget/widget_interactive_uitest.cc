@@ -79,8 +79,8 @@ class ExitLoopOnRelease : public View {
 // A view that does a capture on ui::ET_GESTURE_TAP_DOWN events.
 class GestureCaptureView : public View {
  public:
-  GestureCaptureView() {}
-  ~GestureCaptureView() override {}
+  GestureCaptureView() = default;
+  ~GestureCaptureView() override = default;
 
  private:
   // View:
@@ -103,7 +103,7 @@ class MouseView : public View {
         exited_(0),
         pressed_(0) {
   }
-  ~MouseView() override {}
+  ~MouseView() override = default;
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
     pressed_++;
@@ -146,7 +146,7 @@ class NestedLoopCaptureView : public View {
   explicit NestedLoopCaptureView(Widget* widget)
       : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
         widget_(widget) {}
-  ~NestedLoopCaptureView() override {}
+  ~NestedLoopCaptureView() override = default;
 
   base::OnceClosure GetQuitClosure() { return run_loop_.QuitClosure(); }
 
@@ -850,7 +850,7 @@ class WidgetActivationTest : public Widget {
   WidgetActivationTest()
       : active_(false) {}
 
-  ~WidgetActivationTest() override {}
+  ~WidgetActivationTest() override = default;
 
   bool OnNativeWidgetActivationChanged(bool active) override {
     active_ = active;
@@ -1015,7 +1015,7 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
 class ModalDialogDelegate : public DialogDelegateView {
  public:
   explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
-  ~ModalDialogDelegate() override {}
+  ~ModalDialogDelegate() override = default;
 
   // WidgetDelegate overrides.
   ui::ModalType GetModalType() const override { return type_; }
@@ -1781,7 +1781,7 @@ namespace {
 class CaptureOnActivationObserver : public WidgetObserver {
  public:
   CaptureOnActivationObserver() : activation_observed_(false) {}
-  ~CaptureOnActivationObserver() override {}
+  ~CaptureOnActivationObserver() override = default;
 
   // WidgetObserver:
   void OnWidgetActivationChanged(Widget* widget, bool active) override {
@@ -1844,7 +1844,7 @@ namespace {
 class MouseEventTrackingWidget : public Widget {
  public:
   MouseEventTrackingWidget() : got_mouse_event_(false) {}
-  ~MouseEventTrackingWidget() override {}
+  ~MouseEventTrackingWidget() override = default;
 
   bool GetAndClearGotMouseEvent() {
     bool value = got_mouse_event_;
@@ -1908,7 +1908,7 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
 
 class WidgetInputMethodInteractiveTest : public DesktopWidgetTestInteractive {
  public:
-  WidgetInputMethodInteractiveTest() {}
+  WidgetInputMethodInteractiveTest() = default;
 
   // testing::Test:
   void SetUp() override {

@@ -248,8 +248,7 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, public:
 
-NonClientFrameView::~NonClientFrameView() {
-}
+NonClientFrameView::~NonClientFrameView() = default;
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
   return  GetWidget()->IsAlwaysRenderAsActive() ||

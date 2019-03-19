@@ -16,7 +16,7 @@ ViewTargeter::ViewTargeter(ViewTargeterDelegate* delegate)
   DCHECK(delegate_);
 }
 
-ViewTargeter::~ViewTargeter() {}
+ViewTargeter::~ViewTargeter() = default;
 
 bool ViewTargeter::DoesIntersectRect(const View* target,
                                      const gfx::Rect& rect) const {

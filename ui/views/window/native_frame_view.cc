@@ -25,8 +25,7 @@ NativeFrameView::NativeFrameView(Widget* frame)
       frame_(frame) {
 }
 
-NativeFrameView::~NativeFrameView() {
-}
+NativeFrameView::~NativeFrameView() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeFrameView, NonClientFrameView overrides:

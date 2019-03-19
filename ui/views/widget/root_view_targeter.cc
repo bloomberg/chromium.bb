@@ -17,8 +17,7 @@ RootViewTargeter::RootViewTargeter(ViewTargeterDelegate* delegate,
     : ViewTargeter(delegate), root_view_(root_view) {
 }
 
-RootViewTargeter::~RootViewTargeter() {
-}
+RootViewTargeter::~RootViewTargeter() = default;
 
 View* RootViewTargeter::FindTargetForGestureEvent(
     View* root,

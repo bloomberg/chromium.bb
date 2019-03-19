@@ -109,7 +109,7 @@ class VIEWS_EXPORT ViewModelBase {
 template <class T>
 class ViewModelT : public ViewModelBase {
  public:
-  ViewModelT<T>() {}
+  ViewModelT<T>() = default;
 
   // Adds |view| to this model. This does not add |view| to a view hierarchy,
   // only to this model.

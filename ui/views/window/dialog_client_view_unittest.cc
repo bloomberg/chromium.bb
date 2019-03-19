@@ -32,7 +32,7 @@ namespace views {
 class DialogClientViewTest : public test::WidgetTest,
                              public DialogDelegateView {
  public:
-  DialogClientViewTest() {}
+  DialogClientViewTest() = default;
 
   // testing::Test:
   void SetUp() override {

@@ -51,7 +51,7 @@ class VIEWS_EXPORT ViewObserver {
   virtual void OnViewBlurred(View* observed_view) {}
 
  protected:
-  virtual ~ViewObserver() {}
+  virtual ~ViewObserver() = default;
 };
 
 }  // namespace views

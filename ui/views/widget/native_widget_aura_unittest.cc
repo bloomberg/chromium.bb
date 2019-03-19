@@ -44,8 +44,8 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
 // activatability so that the focus rules can be tested.
 class TestFocusRules : public wm::BaseFocusRules {
  public:
-  TestFocusRules() {}
-  ~TestFocusRules() override {}
+  TestFocusRules() = default;
+  ~TestFocusRules() override = default;
 
   void set_can_activate(bool can_activate) { can_activate_ = can_activate; }
 
@@ -66,8 +66,8 @@ class TestFocusRules : public wm::BaseFocusRules {
 
 class NativeWidgetAuraTest : public aura::test::AuraTestBase {
  public:
-  NativeWidgetAuraTest() {}
-  ~NativeWidgetAuraTest() override {}
+  NativeWidgetAuraTest() = default;
+  ~NativeWidgetAuraTest() override = default;
 
   TestFocusRules* test_focus_rules() { return test_focus_rules_; }
 
@@ -220,8 +220,8 @@ TEST_F(NativeWidgetAuraTest, ToggleState) {
 
 class TestLayoutManagerBase : public aura::LayoutManager {
  public:
-  TestLayoutManagerBase() {}
-  ~TestLayoutManagerBase() override {}
+  TestLayoutManagerBase() = default;
+  ~TestLayoutManagerBase() override = default;
 
   // aura::LayoutManager:
   void OnWindowResized() override {}
@@ -240,8 +240,8 @@ class TestLayoutManagerBase : public aura::LayoutManager {
 // Used by ShowMaximizedDoesntBounceAround. See it for details.
 class MaximizeLayoutManager : public TestLayoutManagerBase {
  public:
-  MaximizeLayoutManager() {}
-  ~MaximizeLayoutManager() override {}
+  MaximizeLayoutManager() = default;
+  ~MaximizeLayoutManager() override = default;
 
  private:
   // aura::LayoutManager:
@@ -303,7 +303,7 @@ TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
 class PropertyTestLayoutManager : public TestLayoutManagerBase {
  public:
   PropertyTestLayoutManager() : added_(false) {}
-  ~PropertyTestLayoutManager() override {}
+  ~PropertyTestLayoutManager() override = default;
 
   bool added() const { return added_; }
 
@@ -325,7 +325,7 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
 class PropertyTestWidgetDelegate : public views::WidgetDelegate {
  public:
   explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {}
-  ~PropertyTestWidgetDelegate() override {}
+  ~PropertyTestWidgetDelegate() override = default;
 
  private:
   // views::WidgetDelegate:
@@ -603,7 +603,7 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
 class MoveTestWidgetDelegate : public WidgetDelegateView {
  public:
   MoveTestWidgetDelegate() : got_move_(false) {}
-  ~MoveTestWidgetDelegate() override {}
+  ~MoveTestWidgetDelegate() override = default;
 
   void ClearGotMove() { got_move_ = false; }
   bool got_move() const { return got_move_; }
