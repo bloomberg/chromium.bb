@@ -248,10 +248,12 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
     const GURL& url,
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  // TODO(pasko): Remove PRERENDER_MODE_ENABLED allowance. It is only used for
-  // tests.
-  if (!IsNoStatePrefetchEnabled() && GetMode() != PRERENDER_MODE_ENABLED)
+  // TODO(pasko): Remove DEPRECATED_PRERENDER_MODE_ENABLED allowance. It is only
+  // used for tests.
+  if (!IsNoStatePrefetchEnabled() &&
+      GetMode() != DEPRECATED_PRERENDER_MODE_ENABLED) {
     return nullptr;
+  }
   return AddPrerender(ORIGIN_OMNIBOX, url, content::Referrer(), gfx::Rect(size),
                       session_storage_namespace);
 }

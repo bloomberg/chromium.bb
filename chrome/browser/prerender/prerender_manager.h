@@ -80,7 +80,7 @@ class PrerenderManager : public content::NotificationObserver,
  public:
   enum PrerenderManagerMode {
     // Deprecated: Enables all types of prerendering for any origin.
-    PRERENDER_MODE_ENABLED,
+    DEPRECATED_PRERENDER_MODE_ENABLED,
 
     // For each request to prerender performs a NoStatePrefetch for the same URL
     // instead.

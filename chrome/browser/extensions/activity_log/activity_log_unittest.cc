@@ -243,7 +243,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
   prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
 
