@@ -233,7 +233,6 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
   queue->DetachFromMainThreadScheduler();
   queue->DetachFromFrameScheduler();
   queue->SetBlameContext(nullptr);
-  queue->ShutdownTaskQueueGracefully();
 }
 
 }  // namespace
