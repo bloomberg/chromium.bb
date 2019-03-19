@@ -511,7 +511,9 @@ Response InspectorOverlayAgent::highlightFrame(
   LocalFrame* frame =
       IdentifiersFactory::FrameById(inspected_frames_, frame_id);
   // FIXME: Inspector doesn't currently work cross process.
-  if (frame && frame->DeprecatedLocalOwner()) {
+  if (!frame)
+    return Response::Error("Invalid frame id");
+  if (frame->DeprecatedLocalOwner()) {
     std::unique_ptr<InspectorHighlightConfig> highlight_config =
         std::make_unique<InspectorHighlightConfig>();
     highlight_config->show_info = true;  // Always show tooltips for frames.
@@ -522,6 +524,8 @@ Response InspectorOverlayAgent::highlightFrame(
 
     SetInspectTool(MakeGarbageCollected<NodeHighlightTool>(
         frame->DeprecatedLocalOwner(), String(), std::move(highlight_config)));
+  } else {
+    PickTheRightTool();
   }
   return Response::OK();
 }
