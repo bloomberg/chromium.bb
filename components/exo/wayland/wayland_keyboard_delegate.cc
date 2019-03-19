@@ -85,6 +85,11 @@ uint32_t WaylandKeyboardDelegate::OnKeyboardKey(base::TimeTicks time_stamp,
 }
 
 void WaylandKeyboardDelegate::OnKeyboardModifiers(int modifier_flags) {
+  // CrOS treats numlock as always on, but its event flags actually have that
+  // key disabled, (i.e. chromeos apps specially handle numpad key events as
+  // though numlock is on). In order to get the same result from the linux apps,
+  // we need to ensure they always treat numlock as on.
+  modifier_flags |= ui::EF_NUM_LOCK_ON;
   xkb_state_update_mask(xkb_state_.get(),
                         ModifierFlagsToXkbModifiers(modifier_flags), 0, 0, 0, 0,
                         0);
