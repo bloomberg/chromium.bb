@@ -859,6 +859,28 @@ TEST_F(MessageCenterImplTest, RemoveWhileMessageCenterVisible) {
   EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 }
 
+TEST_F(MessageCenterImplTest, RemoveNonVisibleNotification) {
+  // Add two notifications.
+  message_center()->AddNotification(CreateSimpleNotification("id1"));
+  message_center()->AddNotification(CreateSimpleNotification("id2"));
+  EXPECT_EQ(2u, message_center()->GetVisibleNotifications().size());
+
+  // Add a blocker to block all notifications.
+  NotifierId allowed_notifier_id(NotifierType::APPLICATION, "notifier");
+  TotalNotificationBlocker blocker(message_center(), allowed_notifier_id);
+  blocker.SetNotificationsEnabled(false);
+  EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
+
+  // Removing a non-visible notification should work.
+  message_center()->RemoveNotification("id1", false);
+  blocker.SetNotificationsEnabled(true);
+  EXPECT_EQ(1u, message_center()->GetVisibleNotifications().size());
+
+  // Also try removing a visible notification.
+  message_center()->RemoveNotification("id2", false);
+  EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
+}
+
 TEST_F(MessageCenterImplTest, FindNotificationsByAppId) {
   message_center()->SetHasMessageCenterView(true);
 
