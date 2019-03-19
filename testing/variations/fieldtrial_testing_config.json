@@ -1594,24 +1594,6 @@
             ]
         }
     ],
-    "DefaultEnableGpuRasterization": [
-        {
-            "platforms": [
-                "mac",
-                "windows",
-                "chromeos",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "DefaultEnableGpuRasterization",
-                    "enable_features": [
-                        "DefaultEnableGpuRasterization"
-                    ]
-                }
-            ]
-        }
-    ],
     "DefaultEnableOopRasterization": [
         {
             "platforms": [
