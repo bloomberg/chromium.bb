@@ -342,16 +342,10 @@ class PageLoadTimingMerger {
           new_paint_timing.largest_image_paint;
       target_paint_timing->largest_image_paint_size =
           new_paint_timing.largest_image_paint_size;
-      target_paint_timing->last_image_paint = new_paint_timing.last_image_paint;
-      target_paint_timing->last_image_paint_size =
-          new_paint_timing.last_image_paint_size;
       target_paint_timing->largest_text_paint =
           new_paint_timing.largest_text_paint;
       target_paint_timing->largest_text_paint_size =
           new_paint_timing.largest_text_paint_size;
-      target_paint_timing->last_text_paint = new_paint_timing.last_text_paint;
-      target_paint_timing->last_text_paint_size =
-          new_paint_timing.last_text_paint_size;
     }
   }
 

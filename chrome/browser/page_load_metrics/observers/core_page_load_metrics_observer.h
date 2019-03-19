@@ -27,7 +27,6 @@ extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramFirstMeaningfulPaint[];
 extern const char kHistogramLargestImagePaint[];
-extern const char kHistogramLastImagePaint[];
 extern const char kHistogramLargestTextPaint[];
 extern const char kHistogramLargestContentPaint[];
 extern const char kHistogramLargestContentPaintContentType[];

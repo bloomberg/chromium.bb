@@ -303,48 +303,19 @@ TEST_F(UkmPageLoadMetricsObserverTest,
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, LastImagePaint) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->last_image_paint =
-      base::TimeDelta::FromMilliseconds(600);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kTestUrl1));
-  SimulateTimingUpdate(timing);
-
-  // Simulate closing the tab.
-  DeleteContents();
-
-  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
-  EXPECT_EQ(1ul, merged_entries.size());
-
-  for (const auto& kv : merged_entries) {
-    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLastImagePaintName,
-        600);
-    EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
-}
-
 TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_DiscardBackgroundResult) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
 
   PopulateRequiredTimingFields(&timing);
 
+  // Backgrounding. The backgrounding time will be recorded. This time is very
+  // short but indefinite, so we should make sure we set a large enough time for
+  // the timings so that they are larger than the backgrounding time.
   web_contents()->WasHidden();
-  // Set a large enough value to make sure it will be larger than background
+  // Set a large enough value to make sure it will be larger than backgrounding
   // time, so that the result will be discarded.
   timing.paint_timing->largest_image_paint = base::TimeDelta::FromSeconds(10);
-  timing.paint_timing->last_image_paint = base::TimeDelta::FromSeconds(10);
-  timing.paint_timing->last_text_paint = base::TimeDelta::FromSeconds(10);
   timing.paint_timing->largest_text_paint = base::TimeDelta::FromSeconds(10);
   NavigateAndCommit(GURL(kTestUrl1));
   SimulateTimingUpdate(timing);
@@ -358,6 +329,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_DiscardBackgroundResult) {
     EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
         kv.second.get(),
         PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName));
+    EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kExperimental_PaintTiming_NavigationToLargestTextPaintName));
   }
 }
 
@@ -369,22 +343,17 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_ReportLastCandidate) {
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
-  timing.paint_timing->last_image_paint = base::TimeDelta::FromMilliseconds(60);
   timing.paint_timing->largest_image_paint =
       base::TimeDelta::FromMilliseconds(60);
   timing.paint_timing->largest_image_paint_size = 10u;
-  timing.paint_timing->last_text_paint = base::TimeDelta::FromMilliseconds(60);
   timing.paint_timing->largest_text_paint =
       base::TimeDelta::FromMilliseconds(60);
   timing.paint_timing->largest_text_paint_size = 10u;
   SimulateTimingUpdate(timing);
 
-  timing.paint_timing->last_image_paint =
-      base::TimeDelta::FromMilliseconds(600);
   timing.paint_timing->largest_image_paint =
       base::TimeDelta::FromMilliseconds(600);
   timing.paint_timing->largest_image_paint_size = 10u;
-  timing.paint_timing->last_text_paint = base::TimeDelta::FromMilliseconds(600);
   timing.paint_timing->largest_text_paint =
       base::TimeDelta::FromMilliseconds(600);
   timing.paint_timing->largest_text_paint_size = 10u;
@@ -400,10 +369,6 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_ReportLastCandidate) {
   for (const auto& kv : merged_entries) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
-    test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLastImagePaintName,
-        600);
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
         PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName,
