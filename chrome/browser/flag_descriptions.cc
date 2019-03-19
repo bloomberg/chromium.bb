@@ -825,12 +825,6 @@ const char kOOPHPStackModeNative[] = "Native";
 const char kOOPHPStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kOOPHPStackModePseudo[] = "Trace events";
 
-const char kEnablePictureInPictureName[] = "Enable Picture-in-Picture.";
-const char kEnablePictureInPictureDescription[] =
-    "Show Picture-in-Picture in browser context menu and video native "
-    "controls. The #enable-surfaces-for-videos flag must be enabled as well "
-    "to use it.";
-
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =
     "Pixel canvas recording allows the compositor to raster contents aligned "
