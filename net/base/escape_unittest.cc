@@ -522,5 +522,10 @@ TEST(EscapeTest, ContainsEncodedBytes) {
   EXPECT_FALSE(ContainsEncodedBytes("caf%C3%A9", {'\xe9'}));
 }
 
+TEST(EscapeTest, EscapeNonASCII) {
+  EXPECT_EQ("abc\n%2580%80", EscapeNonASCIIAndPercent("abc\n%80\x80"));
+  EXPECT_EQ("abc\n%80%80", EscapeNonASCII("abc\n%80\x80"));
+}
+
 }  // namespace
 }  // namespace net
