@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_NET_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
-#define ANDROID_WEBVIEW_BROWSER_NET_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
+#define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
 
 #include "android_webview/browser/net/aw_web_resource_response.h"
 #include "base/threading/thread_checker.h"
@@ -107,4 +107,4 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
 
 }  // namespace android_webview
 
-#endif
+#endif  // ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_ANDROID_STREAM_READER_URL_LOADER_H_
