@@ -160,21 +160,19 @@ void TaskQueueImpl::UnregisterTaskQueue() {
 
   {
     base::internal::AutoSchedulerLock lock(any_thread_lock_);
-    if (main_thread_only().time_domain)
-      main_thread_only().time_domain->UnregisterQueue(this);
-
     any_thread_.unregistered = true;
-
-    main_thread_only().on_task_completed_handler = OnTaskCompletedHandler();
     any_thread_.time_domain = nullptr;
-    main_thread_only().time_domain = nullptr;
-
-    main_thread_only().on_next_wake_up_changed_callback =
-        OnNextWakeUpChangedCallback();
     immediate_incoming_queue.swap(any_thread_.immediate_incoming_queue);
-
-    empty_queues_to_reload_handle_.ReleaseAtomicFlag();
   }
+
+  if (main_thread_only().time_domain)
+    main_thread_only().time_domain->UnregisterQueue(this);
+
+  main_thread_only().on_task_completed_handler = OnTaskCompletedHandler();
+  main_thread_only().time_domain = nullptr;
+  main_thread_only().on_next_wake_up_changed_callback =
+      OnNextWakeUpChangedCallback();
+  empty_queues_to_reload_handle_.ReleaseAtomicFlag();
 
   // It is possible for a task to hold a scoped_refptr to this, which
   // will lead to TaskQueueImpl destructor being called when deleting a task.

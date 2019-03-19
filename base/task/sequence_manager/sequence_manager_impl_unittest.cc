@@ -4628,6 +4628,26 @@ TEST_P(SequenceManagerTest, CrossQueueTaskPostingWhenQueueDeleted) {
   FastForwardUntilNoTasksRemain();
 }
 
+TEST_P(SequenceManagerTest, UnregisterTaskQueueTriggersScheduleWork) {
+  constexpr auto kDelay = TimeDelta::FromMinutes(1);
+  auto queue_1 = CreateTaskQueue();
+  auto queue_2 = CreateTaskQueue();
+
+  MockTask task;
+  EXPECT_CALL(task, Run).Times(1);
+
+  queue_1->task_runner()->PostDelayedTask(FROM_HERE, task.Get(), kDelay);
+  queue_2->task_runner()->PostDelayedTask(FROM_HERE, task.Get(), kDelay * 2);
+
+  AdvanceMockTickClock(kDelay * 2);
+
+  // Wakeup time needs to be adjusted to kDelay * 2 when the queue is
+  // unregistered from the TimeDomain
+  queue_1->ShutdownTaskQueue();
+
+  RunLoop().RunUntilIdle();
+}
+
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal
 }  // namespace sequence_manager
