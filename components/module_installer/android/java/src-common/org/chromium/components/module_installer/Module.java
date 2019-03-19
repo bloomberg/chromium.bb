@@ -4,6 +4,8 @@
 
 package org.chromium.components.module_installer;
 
+import org.chromium.base.StrictModeContext;
+
 /**
  * Represents a feature module. Can be used to install the module, access its interface, etc. See
  * {@link ModuleInterface} for how to conveniently create an instance of the module class for a
@@ -34,7 +36,9 @@ public class Module<T> {
     /** Returns true if the module is currently installed and can be accessed. */
     public boolean isInstalled() {
         if (mImpl != null) return true;
-        try {
+        // Accessing classes in the module may cause its DEX file to be loaded. And on some devices
+        // that causes a read mode violation.
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             ModuleInstaller.init();
             Class.forName(mImplClassName);
             return true;
@@ -65,7 +69,9 @@ public class Module<T> {
         assert isInstalled();
         if (mImpl == null) {
             ModuleInstaller.init();
-            try {
+            // Accessing classes in the module may cause its DEX file to be loaded. And on some
+            // devices that causes a read mode violation.
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
                 mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                     | IllegalArgumentException e) {
