@@ -38,7 +38,7 @@ class CastRunner : public WebContentRunner {
   struct PendingComponent;
 
   void GetConfigCallback(PendingComponent* pending_component,
-                         chromium::cast::ApplicationConfigPtr app_config);
+                         chromium::cast::ApplicationConfig app_config);
 
   // Holds StartComponent() requests while the ApplicationConfig is being
   // fetched from the ApplicationConfigManager.

@@ -66,13 +66,14 @@ void CastRunner::StartComponent(
   pending_component->app_config_manager.set_error_handler(
       [this, pending_component = pending_component.get()](zx_status_t status) {
         ZX_LOG(ERROR, status) << "ApplicationConfigManager disconnected.";
-        GetConfigCallback(pending_component, nullptr);
+        GetConfigCallback(pending_component,
+                          chromium::cast::ApplicationConfig());
       });
 
   const std::string cast_app_id(cast_url.GetContent());
   pending_component->app_config_manager->GetConfig(
       cast_app_id, [this, pending_component = pending_component.get()](
-                       chromium::cast::ApplicationConfigPtr app_config) {
+                       chromium::cast::ApplicationConfig app_config) {
         GetConfigCallback(pending_component, std::move(app_config));
       });
 
@@ -84,7 +85,7 @@ const char CastRunner::kAgentComponentUrl[] =
 
 void CastRunner::GetConfigCallback(
     PendingComponent* pending_component,
-    chromium::cast::ApplicationConfigPtr app_config) {
+    chromium::cast::ApplicationConfig app_config) {
   // Ideally the PendingComponent would be move()d out of |pending_components_|
   // here, but that requires extract(), which isn't available until C++17.
   // Instead find |pending_component| and move() the individual fields out
@@ -93,7 +94,7 @@ void CastRunner::GetConfigCallback(
   DCHECK(it != pending_components_.end());
 
   // If no configuration was returned then ignore the request.
-  if (!app_config) {
+  if (!app_config.has_web_url()) {
     pending_components_.erase(it);
     DLOG(WARNING) << "No ApplicationConfig was found.";
     return;
@@ -101,7 +102,7 @@ void CastRunner::GetConfigCallback(
 
   // Create a component based on the returned configuration, and pass it the
   // fields stashed in PendingComponent.
-  GURL cast_app_url(app_config->web_url);
+  GURL cast_app_url(*app_config.web_url());
   auto component = std::make_unique<CastComponent>(
       this, std::move(pending_component->startup_context),
       std::move(pending_component->controller_request),
