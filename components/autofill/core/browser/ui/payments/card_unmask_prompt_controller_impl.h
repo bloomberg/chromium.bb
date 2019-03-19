@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller.h"
 
 namespace autofill {
 
@@ -21,9 +21,8 @@ class CardUnmaskPromptView;
 
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
-  CardUnmaskPromptControllerImpl(
-      PrefService* pref_service,
-      bool is_off_the_record);
+  CardUnmaskPromptControllerImpl(PrefService* pref_service,
+                                 bool is_off_the_record);
   virtual ~CardUnmaskPromptControllerImpl();
 
   // Functions called by ChromeAutofillClient.
@@ -90,4 +89,4 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_

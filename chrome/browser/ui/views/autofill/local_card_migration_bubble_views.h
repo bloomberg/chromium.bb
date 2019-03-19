@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "components/autofill/core/browser/ui/local_card_migration_bubble_controller.h"
+#include "components/autofill/core/browser/ui/payments/local_card_migration_bubble_controller.h"
 
 namespace content {
 class WebContents;

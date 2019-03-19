@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 
 #include <stddef.h>
 
@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -94,8 +94,7 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
   AutofillMetrics::LogRealPanResult(result);
   AutofillMetrics::LogUnmaskingDuration(
       AutofillClock::Now() - verify_timestamp_, result);
-  card_unmask_view_->GotVerificationResult(error_message,
-                                           AllowsRetry(result));
+  card_unmask_view_->GotVerificationResult(error_message, AllowsRetry(result));
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
@@ -126,8 +125,8 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
   if (CanStoreLocally()) {
     pending_response_.should_store_pan = should_store_pan;
     // Remember the last choice the user made (on this device).
-    pref_service_->SetBoolean(
-        prefs::kAutofillWalletImportStorageCheckboxState, should_store_pan);
+    pref_service_->SetBoolean(prefs::kAutofillWalletImportStorageCheckboxState,
+                              should_store_pan);
   } else {
     DCHECK(!should_store_pan);
     pending_response_.should_store_pan = false;
@@ -254,7 +253,8 @@ base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
   return base::TimeDelta::FromMilliseconds(
       card_.record_type() == CreditCard::LOCAL_CARD ||
               reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST
-          ? 0 : 500);
+          ? 0
+          : 500);
 }
 
 AutofillClient::PaymentsRpcResult

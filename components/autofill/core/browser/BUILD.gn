@@ -215,10 +215,10 @@ jumbo_static_library("browser") {
     "test_data_creator.h",
     "travel_field.cc",
     "travel_field.h",
-    "ui/card_unmask_prompt_controller.h",
-    "ui/card_unmask_prompt_controller_impl.cc",
-    "ui/card_unmask_prompt_controller_impl.h",
-    "ui/card_unmask_prompt_view.h",
+    "ui/payments/card_unmask_prompt_controller.h",
+    "ui/payments/card_unmask_prompt_controller_impl.cc",
+    "ui/payments/card_unmask_prompt_controller_impl.h",
+    "ui/payments/card_unmask_prompt_view.h",
     "validation.cc",
     "validation.h",
     "webdata/autocomplete_sync_bridge.cc",
@@ -279,18 +279,18 @@ jumbo_static_library("browser") {
       "payments/autofill_save_card_infobar_delegate_mobile.cc",
       "payments/autofill_save_card_infobar_delegate_mobile.h",
       "payments/autofill_save_card_infobar_mobile.h",
-      "ui/card_expiration_date_fix_flow_view_delegate_mobile.cc",
-      "ui/card_expiration_date_fix_flow_view_delegate_mobile.h",
-      "ui/card_name_fix_flow_view_delegate_mobile.cc",
-      "ui/card_name_fix_flow_view_delegate_mobile.h",
+      "ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.cc",
+      "ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.h",
+      "ui/payments/card_name_fix_flow_view_delegate_mobile.cc",
+      "ui/payments/card_name_fix_flow_view_delegate_mobile.h",
     ]
   }
 
   if (!is_android) {
     sources += [
-      "ui/local_card_migration_bubble_controller.h",
-      "ui/local_card_migration_dialog_controller.h",
-      "ui/save_card_bubble_controller.h",
+      "ui/payments/local_card_migration_bubble_controller.h",
+      "ui/payments/local_card_migration_dialog_controller.h",
+      "ui/payments/save_card_bubble_controller.h",
     ]
   }
 
@@ -582,7 +582,7 @@ source_set("unit_tests") {
     "search_field_unittest.cc",
     "subkey_requester_unittest.cc",
     "suggestion_selection_unittest.cc",
-    "ui/card_unmask_prompt_controller_impl_unittest.cc",
+    "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
     "validation_unittest.cc",
     "webdata/autocomplete_sync_bridge_unittest.cc",
     "webdata/autofill_profile_sync_bridge_unittest.cc",

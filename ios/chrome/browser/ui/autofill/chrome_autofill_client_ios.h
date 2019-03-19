@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/infobars/core/infobar_manager.h"

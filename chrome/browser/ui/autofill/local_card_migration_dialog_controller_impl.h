@@ -12,7 +12,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/autofill/local_card_migration_controller_observer.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
+#include "components/autofill/core/browser/ui/payments/local_card_migration_dialog_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

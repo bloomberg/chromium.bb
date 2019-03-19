@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 
 #include <stddef.h>
 
@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -92,35 +92,30 @@ class CardUnmaskPromptControllerImplGenericTest {
   CardUnmaskPromptControllerImplGenericTest() {}
 
   void ShowPrompt() {
-    controller_->ShowPrompt(test_unmask_prompt_view_.get(),
-                            test::GetMaskedServerCard(),
-                            AutofillClient::UNMASK_FOR_AUTOFILL,
-                            delegate_->GetWeakPtr());
+    controller_->ShowPrompt(
+        test_unmask_prompt_view_.get(), test::GetMaskedServerCard(),
+        AutofillClient::UNMASK_FOR_AUTOFILL, delegate_->GetWeakPtr());
   }
 
   void ShowPromptAmex() {
-    controller_->ShowPrompt(test_unmask_prompt_view_.get(),
-                            test::GetMaskedServerCardAmex(),
-                            AutofillClient::UNMASK_FOR_AUTOFILL,
-                            delegate_->GetWeakPtr());
+    controller_->ShowPrompt(
+        test_unmask_prompt_view_.get(), test::GetMaskedServerCardAmex(),
+        AutofillClient::UNMASK_FOR_AUTOFILL, delegate_->GetWeakPtr());
   }
 
   void ShowPromptAndSimulateResponse(bool should_store_pan) {
     ShowPrompt();
-    controller_->OnUnmaskResponse(ASCIIToUTF16("444"),
-                                  ASCIIToUTF16("01"),
-                                  ASCIIToUTF16("2050"),
-                                  should_store_pan);
-    EXPECT_EQ(
-        should_store_pan,
-        pref_service_->GetBoolean(
-            prefs::kAutofillWalletImportStorageCheckboxState));
+    controller_->OnUnmaskResponse(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
+                                  ASCIIToUTF16("2050"), should_store_pan);
+    EXPECT_EQ(should_store_pan,
+              pref_service_->GetBoolean(
+                  prefs::kAutofillWalletImportStorageCheckboxState));
   }
 
  protected:
   void SetImportCheckboxState(bool value) {
-    pref_service_->SetBoolean(
-        prefs::kAutofillWalletImportStorageCheckboxState, value);
+    pref_service_->SetBoolean(prefs::kAutofillWalletImportStorageCheckboxState,
+                              value);
   }
 
   std::unique_ptr<TestCardUnmaskPromptView> test_unmask_prompt_view_;
@@ -156,9 +151,8 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogShown) {
   base::HistogramTester histogram_tester;
   ShowPrompt();
 
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics::UNMASK_PROMPT_SHOWN, 1);
+  histogram_tester.ExpectUniqueSample("Autofill.UnmaskPrompt.Events",
+                                      AutofillMetrics::UNMASK_PROMPT_SHOWN, 1);
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogClosedNoAttempts) {
@@ -195,8 +189,7 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogClosedFailedToUnmaskRetriable) {
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics
-          ::UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE,
+      AutofillMetrics ::UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE,
       1);
 }
 
@@ -214,8 +207,8 @@ TEST_F(CardUnmaskPromptControllerImplTest,
 
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics
-          ::UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE,
+      AutofillMetrics ::
+          UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE,
       1);
 }
 
@@ -238,8 +231,7 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardFirstAttempt) {
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
   ShowPromptAndSimulateResponse(false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
-  controller_->OnUnmaskResponse(ASCIIToUTF16("444"),
-                                ASCIIToUTF16("01"),
+  controller_->OnUnmaskResponse(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
                                 ASCIIToUTF16("2050"),
                                 false /* should_store_pan */);
   base::HistogramTester histogram_tester;
