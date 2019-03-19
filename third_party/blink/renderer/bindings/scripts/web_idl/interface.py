@@ -1,176 +1,251 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .extended_attribute import ExtendedAttributeList
-from .utilities import assert_no_extra_args
+import exceptions
+from .idl_definition import IdlDefinition
+from .idl_member import IdlMember
 
 
-# https://heycam.github.io/webidl/#idl-interfaces
-class Interface(object):
+class Interface(IdlDefinition):
+    """A summarized interface definition in IDL.
 
-    def __init__(self, **kwargs):
-        self._identifier = kwargs.pop('identifier')
-        self._attributes = tuple(kwargs.pop('attributes', []))
-        self._operations = tuple(kwargs.pop('operations', []))
-        self._constants = tuple(kwargs.pop('constants', []))
-        self._iterable = kwargs.pop('iterable', None)
-        self._maplike = kwargs.pop('maplike', None)
-        self._setlike = kwargs.pop('setlike', None)
-        # BUG(736332): Remove support of legacy serializer members.
-        self._serializer = kwargs.pop('serializer', None)
-        self._inherited_interface_name = kwargs.pop('inherited_interface_name', None)
-        self._is_partial = kwargs.pop('is_partial', False)
-        self._extended_attribute_list = kwargs.pop('extended_attribute_list', ExtendedAttributeList())
-        assert_no_extra_args(kwargs)
-
-        num_declaration = (1 if self.iterable else 0) + (1 if self.maplike else 0) + (1 if self.setlike else 0)
-        if num_declaration > 1:
-            raise ValueError('At most one of iterable<>, maplike<>, or setlike<> must be applied.')
+    Interface provides information about an interface, partial interfaces,
+    interface mixins, and partial interface mixins, as if they were all
+    gathered in an interface.
+    https://heycam.github.io/webidl/#idl-interfaces
+    """
 
     @property
-    def identifier(self):
-        return self._identifier
+    def inherited_interface(self):
+        """
+        Returns an Interface from which this interface inherits. If this
+        interface does not inherit, returns None.
+        @return Interface?
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def attributes(self):
-        return self._attributes
+        """
+        Returns a tuple of attributes including [Unforgeable] attributes in
+        ancestors.
+        @return tuple(Attribute)
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def operations(self):
-        return self._operations
+    def operation_groups(self):
+        """
+        Returns a tuple of OperationGroup. Each OperationGroup has operation(s)
+        defined in this interface and [Unforgeable] operations in ancestors.
+        @return tuple(OperationGroup)
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def constants(self):
-        return self._constants
-
-    @property
-    def iterable(self):
-        return self._iterable
-
-    @property
-    def maplike(self):
-        return self._maplike
-
-    @property
-    def setlike(self):
-        return self._setlike
-
-    @property
-    def serializer(self):
-        return self._serializer
-
-    @property
-    def inherited_interface_name(self):
-        return self._inherited_interface_name
-
-    @property
-    def is_partial(self):
-        return self._is_partial
+        """
+        Returns a tuple of constants defined in this interface.
+        @return tuple(Constant)
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def constructors(self):
-        return self.extended_attribute_list.constructors
+        """
+        Returns ConstructorGroup instance for this interface.
+        @return tuple(ConstructorGroup)
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def named_constructors(self):
-        return self.extended_attribute_list.named_constructors
+    def named_constructor(self):
+        """
+        Returns a named constructor, if this interface has it. Otherwise, returns
+        None.
+        @return NamedConstructor?
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def exposures(self):
-        return self.extended_attribute_list.exposures
+    def exposed_interfaces(self):
+        """
+        Returns a tuple of Interfaces that are exposed to |self|. If |self| is
+        not a global interface, returns an empty tuple.
+        @return tuple(Interface)
+        """
+        raise exceptions.NotImplementedError()
+
+    # Special operations
+    @property
+    def indexed_property_handler(self):
+        """
+        Returns a set of handlers (getter/setter/deleter) for the indexed
+        property.
+        @return IndexedPropertyHandler?
+        """
+        # TODO: Include anonymous handlers of ancestors. https://crbug.com/695972
+        raise exceptions.NotImplementedError()
 
     @property
-    def extended_attribute_list(self):
-        return self._extended_attribute_list
+    def named_property_handler(self):
+        """
+        Returns a set of handlers (getter/setter/deleter) for the named
+        property.
+        @return NamedPropertyHandler?
+        """
+        # TODO: Include anonymous handlers of ancestors. https://crbug.com/695972
+        raise exceptions.NotImplementedError()
+
+    @property
+    def stringifier(self):
+        """
+        Returns stringifier if it is defined. Returns None otherwise.
+        @return TBD?
+        """
+        raise exceptions.NotImplementedError()
+
+    @property
+    def iterable(self):
+        """
+        Returns iterable if it is defined. Returns None otherwise.
+        @return Iterable?
+        """
+        raise exceptions.NotImplementedError()
+
+    @property
+    def maplike(self):
+        """
+        Returns maplike if it is defined. Returns None otherwise.
+        @return Maplike?
+        """
+        raise exceptions.NotImplementedError()
+
+    @property
+    def setlike(self):
+        """
+        Returns setlike if it is defined. Returns None otherwise.
+        @return Setlike?
+        """
+        raise exceptions.NotImplementedError()
 
 
-# https://heycam.github.io/webidl/#idl-iterable
-class Iterable(object):
-
-    def __init__(self, **kwargs):
-        self._key_type = kwargs.pop('key_type', None)
-        self._value_type = kwargs.pop('value_type')
-        self._extended_attribute_list = kwargs.pop('extended_attribute_list', ExtendedAttributeList())
-        assert_no_extra_args(kwargs)
+class Iterable(IdlMember):
+    """https://heycam.github.io/webidl/#idl-iterable"""
 
     @property
     def key_type(self):
-        return self._key_type
+        """
+        Returns its key type or None.
+        @return IdlType?
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def value_type(self):
-        return self._value_type
+        """
+        Returns its value type.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()
 
-    @property
-    def extended_attribute_list(self):
-        return self._extended_attribute_list
 
-
-# https://heycam.github.io/webidl/#idl-maplike
 class Maplike(object):
-
-    def __init__(self, **kwargs):
-        self._key_type = kwargs.pop('key_type')
-        self._value_type = kwargs.pop('value_type')
-        self._is_readonly = kwargs.pop('is_readonly', False)
-        assert_no_extra_args(kwargs)
+    """https://heycam.github.io/webidl/#idl-maplike"""
 
     @property
     def key_type(self):
-        return self._key_type
+        """
+        Returns its key type.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def value_type(self):
-        return self._value_type
+        """
+        Returns its value type.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def is_readonly(self):
-        return self._is_readonly
+        """
+        Returns True if it's readonly.
+        @return bool
+        """
+        raise exceptions.NotImplementedError()
 
 
-# https://heycam.github.io/webidl/#idl-setlike
 class Setlike(object):
-
-    def __init__(self, **kwargs):
-        self._value_type = kwargs.pop('value_type')
-        self._is_readonly = kwargs.pop('is_readonly', False)
-        assert_no_extra_args(kwargs)
+    """https://heycam.github.io/webidl/#idl-setlike"""
 
     @property
     def value_type(self):
-        return self._value_type
+        """
+        Returns its value type.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def is_readonly(self):
-        return self._is_readonly
+        """
+        Returns True if it's readonly.
+        @return bool
+        """
+        raise exceptions.NotImplementedError()
 
 
-# https://www.w3.org/TR/WebIDL-1/#idl-serializers
-# BUG(736332): Remove support of legacy serializer.
-# We support styles only used in production code. i.e.
-# - serializer;
-# - serializer = { attribute };
-# - serializer = { inherit, attribute };
-class Serializer(object):
-
-    def __init__(self, **kwargs):
-        self._is_map = kwargs.pop('is_map', False)
-        self._has_attribute = kwargs.pop('has_attribute', False)
-        self._has_inherit = kwargs.pop('has_inherit', False)
-        assert_no_extra_args(kwargs)
-
-        if (self.has_attribute or self.has_inherit) and not self._is_map:
-            raise ValueError('has_attribute and has_inherit must be set with is_map')
+class IndexedPropertyHandler(IdlMember):
+    @property
+    def getter(self):
+        """
+        Returns an Operation for indexed property getter.
+        @return Operation?
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def is_map(self):
-        return self._is_map
+    def setter(self):
+        """
+        Returns an Operation for indexed property setter.
+        @return Operation?
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def has_attribute(self):
-        return self._has_attribute
+    def deleter(self):
+        """
+        Returns an Operation for indexed property deleter.
+        @return Operation?
+        """
+        raise exceptions.NotImplementedError()
+
+
+class NamedPropertyHandler(IdlMember):
+    @property
+    def getter(self):
+        """
+        Returns an Operation for named property getter.
+        @return Operation?
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def has_inherit(self):
-        return self._has_inherit
+    def setter(self):
+        """
+        Returns an Operation for named property setter.
+        @return Operation?
+        """
+        raise exceptions.NotImplementedError()
+
+    @property
+    def deleter(self):
+        """
+        Returns an Operation for named property deleter.
+        @return Operation?
+        """
+        raise exceptions.NotImplementedError()
