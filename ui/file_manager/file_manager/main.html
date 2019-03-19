@@ -6,7 +6,7 @@
   -->
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
   <head>
-    <title></title>
+    <title>$i18n{FILEMANAGER_APP_NAME}</title>
 
     <meta name="google" value="notranslate">
     <script src="chrome://resources/polymer/v1_0/html-imports/html-imports.min.js"></script>
@@ -30,7 +30,7 @@
     <script src="foreground/js/main_scripts.js" defer></script>
   </head>
 
-  <body tabindex="-1">
+  <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1">
     <custom-style>
       <style is="custom-style">
         #search-box cr-input {
