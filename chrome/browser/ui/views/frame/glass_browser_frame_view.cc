@@ -217,15 +217,6 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   gfx::Size min_size(browser_view()->GetMinimumSize());
   min_size.Enlarge(0, GetTopInset(false));
 
-  // Ensure that the minimum width is enough to hold a min-width tab strip.
-  if (browser_view()->IsTabStripVisible()) {
-    const TabStrip* tabstrip = browser_view()->tabstrip();
-    int min_tabstrip_width = tabstrip->GetMinimumSize().width();
-    int min_tabstrip_area_width =
-        width() - GetBoundsForTabStrip(tabstrip).width() + min_tabstrip_width;
-    min_size.set_width(std::max(min_tabstrip_area_width, min_size.width()));
-  }
-
   return min_size;
 }
 
