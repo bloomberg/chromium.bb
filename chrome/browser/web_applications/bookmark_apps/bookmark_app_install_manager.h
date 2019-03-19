@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_BOOKMARK_APP_INSTALL_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_BOOKMARK_APP_INSTALL_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+
+class Profile;
 
 namespace extensions {
 
@@ -14,7 +18,7 @@ namespace extensions {
 // crbug.com/915043.
 class BookmarkAppInstallManager final : public web_app::InstallManager {
  public:
-  BookmarkAppInstallManager();
+  explicit BookmarkAppInstallManager(Profile* profile);
   ~BookmarkAppInstallManager() override;
 
   // InstallManager:
@@ -28,8 +32,15 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
                                WebappInstallSource install_source,
                                WebAppInstallDialogCallback dialog_callback,
                                OnceInstallCallback callback) override;
+  void InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool no_network_install,
+      WebappInstallSource install_source,
+      OnceInstallCallback callback) override;
 
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallManager);
 };
 

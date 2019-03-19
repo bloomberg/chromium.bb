@@ -74,6 +74,15 @@ void WebAppInstallManager::InstallWebAppFromBanner(
   NOTIMPLEMENTED();
 }
 
+void WebAppInstallManager::InstallWebAppFromInfo(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool no_network_install,
+    WebappInstallSource install_source,
+    OnceInstallCallback callback) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallManager::WebContentsDestroyed() {
   ReturnError(InstallResultCode::kWebContentsDestroyed);
 }

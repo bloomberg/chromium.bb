@@ -6,7 +6,9 @@ source_set("components") {
   sources = [
     "app_registrar.h",
     "install_finalizer.h",
+    "install_manager.cc",
     "install_manager.h",
+    "install_manager_observer.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
     "web_app_audio_focus_id_map.cc",

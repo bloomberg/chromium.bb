@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
@@ -21,6 +22,7 @@ class WebContents;
 namespace web_app {
 
 enum class InstallResultCode;
+class InstallManagerObserver;
 
 // TODO(loyso): Rework this interface once BookmarkAppHelper erased. Unify the
 // API and merge similar InstallWebAppZZZZ functions. crbug.com/915043.
@@ -63,7 +65,27 @@ class InstallManager {
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) = 0;
 
-  virtual ~InstallManager() = default;
+  // Starts a web app installation process using prefilled
+  // |web_application_info|. If |no_network_install| is true, then
+  // |web_application_info| holds all the data needed for installation and
+  // InstallManager should not try to fetch a manifest.
+  virtual void InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool no_network_install,
+      WebappInstallSource install_source,
+      OnceInstallCallback callback) = 0;
+
+  InstallManager();
+  virtual ~InstallManager();
+
+  // Called before the web app system gets destroyed.
+  void Reset();
+
+  void AddObserver(InstallManagerObserver* observer);
+  void RemoveObserver(InstallManagerObserver* observer);
+
+ private:
+  base::ObserverList<InstallManagerObserver, true /*check_empty*/> observers_;
 };
 
 }  // namespace web_app
