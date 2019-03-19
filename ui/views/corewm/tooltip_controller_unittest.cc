@@ -78,7 +78,7 @@ TooltipController* GetController(Widget* widget) {
 class TooltipControllerTest : public ViewsTestBase {
  public:
   TooltipControllerTest() = default;
-  ~TooltipControllerTest() override {}
+  ~TooltipControllerTest() override = default;
 
   void SetUp() override {
 #if !defined(OS_CHROMEOS)
@@ -469,8 +469,8 @@ int IndexInParent(const aura::Window* window) {
 
 class TooltipControllerCaptureTest : public TooltipControllerTest {
  public:
-  TooltipControllerCaptureTest() {}
-  ~TooltipControllerCaptureTest() override {}
+  TooltipControllerCaptureTest() = default;
+  ~TooltipControllerCaptureTest() override = default;
 
   void SetUp() override {
     TooltipControllerTest::SetUp();
@@ -565,7 +565,7 @@ namespace {
 class TestTooltip : public Tooltip {
  public:
   TestTooltip() : is_visible_(false) {}
-  ~TestTooltip() override {}
+  ~TestTooltip() override = default;
 
   const base::string16& tooltip_text() const { return tooltip_text_; }
 
@@ -598,7 +598,7 @@ class TestTooltip : public Tooltip {
 class TooltipControllerTest2 : public aura::test::AuraTestBase {
  public:
   TooltipControllerTest2() : test_tooltip_(new TestTooltip) {}
-  ~TooltipControllerTest2() override {}
+  ~TooltipControllerTest2() override = default;
 
   void SetUp() override {
     at_exit_manager_ = std::make_unique<base::ShadowingAtExitManager>();

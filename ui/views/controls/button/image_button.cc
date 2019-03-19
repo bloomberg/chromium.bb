@@ -39,8 +39,7 @@ ImageButton::ImageButton(ButtonListener* listener)
   EnableCanvasFlippingForRTLUI(true);
 }
 
-ImageButton::~ImageButton() {
-}
+ImageButton::~ImageButton() = default;
 
 const gfx::ImageSkia& ImageButton::GetImage(ButtonState state) const {
   return images_[state];
@@ -221,8 +220,7 @@ ToggleImageButton::ToggleImageButton(ButtonListener* listener)
       toggled_(false) {
 }
 
-ToggleImageButton::~ToggleImageButton() {
-}
+ToggleImageButton::~ToggleImageButton() = default;
 
 void ToggleImageButton::SetToggled(bool toggled) {
   if (toggled == toggled_)

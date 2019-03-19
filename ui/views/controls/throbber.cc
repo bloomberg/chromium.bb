@@ -99,7 +99,7 @@ SmoothedThrobber::SmoothedThrobber()
     : start_delay_ms_(kStartDelay), stop_delay_ms_(kStopDelay) {
 }
 
-SmoothedThrobber::~SmoothedThrobber() {}
+SmoothedThrobber::~SmoothedThrobber() = default;
 
 void SmoothedThrobber::Start() {
   stop_timer_.Stop();

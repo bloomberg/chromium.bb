@@ -97,8 +97,8 @@ const int kMaxHeight = 100;
 
 class FixedView : public View {
  public:
-  FixedView() {}
-  ~FixedView() override {}
+  FixedView() = default;
+  ~FixedView() override = default;
 
   void Layout() override {
     gfx::Size pref = GetPreferredSize();
@@ -113,8 +113,8 @@ class FixedView : public View {
 
 class CustomView : public View {
  public:
-  CustomView() {}
-  ~CustomView() override {}
+  CustomView() = default;
+  ~CustomView() override = default;
 
   const gfx::Point last_location() const { return last_location_; }
 
@@ -183,7 +183,7 @@ using test::ScrollViewTestApi;
 // Simple test harness for testing a ScrollView directly.
 class ScrollViewTest : public ViewsTestBase {
  public:
-  ScrollViewTest() {}
+  ScrollViewTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -239,7 +239,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   static constexpr int kDefaultHeight = 100;
   static constexpr int kDefaultWidth = 100;
 
-  WidgetScrollViewTest() {}
+  WidgetScrollViewTest() = default;
 
   // Call this before adding the ScrollView to test with overlay scrollbars.
   void SetUseOverlayScrollers() {

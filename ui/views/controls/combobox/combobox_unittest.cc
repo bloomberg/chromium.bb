@@ -71,8 +71,8 @@ class TestCombobox : public Combobox {
 // A concrete class is needed to test the combobox.
 class TestComboboxModel : public ui::ComboboxModel {
  public:
-  TestComboboxModel() {}
-  ~TestComboboxModel() override {}
+  TestComboboxModel() = default;
+  ~TestComboboxModel() override = default;
 
   enum { kItemCount = 10 };
 
@@ -117,7 +117,7 @@ class VectorComboboxModel : public ui::ComboboxModel {
  public:
   explicit VectorComboboxModel(std::vector<std::string>* values)
       : values_(values) {}
-  ~VectorComboboxModel() override {}
+  ~VectorComboboxModel() override = default;
 
   void set_default_index(int default_index) { default_index_ = default_index; }
 
@@ -139,7 +139,7 @@ class VectorComboboxModel : public ui::ComboboxModel {
 class EvilListener : public ComboboxListener {
  public:
   EvilListener() : deleted_(false) {}
-  ~EvilListener() override {}
+  ~EvilListener() override = default;
 
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
@@ -158,7 +158,7 @@ class EvilListener : public ComboboxListener {
 class TestComboboxListener : public views::ComboboxListener {
  public:
   TestComboboxListener() : perform_action_index_(-1), actions_performed_(0) {}
-  ~TestComboboxListener() override {}
+  ~TestComboboxListener() override = default;
 
   void OnPerformAction(views::Combobox* combobox) override {
     perform_action_index_ = combobox->selected_index();
@@ -189,7 +189,7 @@ class TestComboboxListener : public views::ComboboxListener {
 
 class ComboboxTest : public ViewsTestBase {
  public:
-  ComboboxTest() {}
+  ComboboxTest() = default;
 
   void TearDown() override {
     if (widget_)

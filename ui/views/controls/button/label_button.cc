@@ -73,7 +73,7 @@ LabelButton::LabelButton(ButtonListener* listener,
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 }
 
-LabelButton::~LabelButton() {}
+LabelButton::~LabelButton() = default;
 
 gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
   if (for_state != STATE_NORMAL && button_state_images_[for_state].isNull())

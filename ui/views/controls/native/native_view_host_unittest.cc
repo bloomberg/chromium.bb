@@ -16,8 +16,7 @@ namespace views {
 
 class NativeViewHostTest : public test::NativeViewHostTestBase {
  public:
-  NativeViewHostTest() {
-  }
+  NativeViewHostTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();

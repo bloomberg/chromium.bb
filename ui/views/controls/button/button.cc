@@ -99,7 +99,7 @@ Button::ButtonState Button::GetButtonStateFrom(ui::NativeTheme::State state) {
 ////////////////////////////////////////////////////////////////////////////////
 // Button, public:
 
-Button::~Button() {}
+Button::~Button() = default;
 
 void Button::SetFocusForPlatform() {
 #if defined(OS_MACOSX)

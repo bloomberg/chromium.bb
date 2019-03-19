@@ -91,7 +91,7 @@ StyledLabel::RangeStyleInfo::RangeStyleInfo() = default;
 StyledLabel::RangeStyleInfo::RangeStyleInfo(const RangeStyleInfo& copy) =
     default;
 
-StyledLabel::RangeStyleInfo::~RangeStyleInfo() {}
+StyledLabel::RangeStyleInfo::~RangeStyleInfo() = default;
 
 // static
 StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
@@ -130,7 +130,7 @@ StyledLabel::StyledLabel(const base::string16& text,
   base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
 }
 
-StyledLabel::~StyledLabel() {}
+StyledLabel::~StyledLabel() = default;
 
 void StyledLabel::SetText(const base::string16& text) {
   text_ = text;

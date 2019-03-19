@@ -36,7 +36,7 @@ OverlayScrollBar::Thumb::Thumb(OverlayScrollBar* scroll_bar)
   // that might reference it yet.
 }
 
-OverlayScrollBar::Thumb::~Thumb() {}
+OverlayScrollBar::Thumb::~Thumb() = default;
 
 void OverlayScrollBar::Thumb::Init() {
   EnableCanvasFlippingForRTLUI(true);
@@ -135,7 +135,7 @@ OverlayScrollBar::OverlayScrollBar(bool horizontal)
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-OverlayScrollBar::~OverlayScrollBar() {}
+OverlayScrollBar::~OverlayScrollBar() = default;
 
 gfx::Rect OverlayScrollBar::GetTrackBounds() const {
   gfx::Rect local = GetLocalBounds();

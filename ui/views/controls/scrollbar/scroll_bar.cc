@@ -8,8 +8,7 @@
 
 namespace views {
 
-ScrollBar::~ScrollBar() {
-}
+ScrollBar::~ScrollBar() = default;
 
 void ScrollBar::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kScrollBar;

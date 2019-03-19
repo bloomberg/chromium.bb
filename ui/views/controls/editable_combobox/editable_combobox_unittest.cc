@@ -41,7 +41,7 @@ using views::test::WaitForMenuClosureAnimation;
 
 class DummyListener : public EditableComboboxListener {
  public:
-  DummyListener() {}
+  DummyListener() = default;
   ~DummyListener() override = default;
   void OnContentChanged(EditableCombobox* editable_combobox) override {
     change_count_++;

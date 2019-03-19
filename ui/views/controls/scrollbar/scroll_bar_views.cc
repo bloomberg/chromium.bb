@@ -72,7 +72,7 @@ ScrollBarButton::ScrollBarButton(ButtonListener* listener, Type type)
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
-ScrollBarButton::~ScrollBarButton() {}
+ScrollBarButton::~ScrollBarButton() = default;
 
 gfx::Size ScrollBarButton::CalculatePreferredSize() const {
   return GetNativeTheme()->GetPartSize(
@@ -141,7 +141,7 @@ ui::NativeTheme::State ScrollBarButton::GetNativeThemeState() const {
 ScrollBarThumb::ScrollBarThumb(BaseScrollBar* scroll_bar)
     : BaseScrollBarThumb(scroll_bar), scroll_bar_(scroll_bar) {}
 
-ScrollBarThumb::~ScrollBarThumb() {}
+ScrollBarThumb::~ScrollBarThumb() = default;
 
 gfx::Size ScrollBarThumb::CalculatePreferredSize() const {
   return GetNativeTheme()->GetPartSize(
@@ -223,7 +223,7 @@ ScrollBarViews::ScrollBarViews(bool horizontal)
   next_button_->set_context_menu_controller(this);
 }
 
-ScrollBarViews::~ScrollBarViews() {}
+ScrollBarViews::~ScrollBarViews() = default;
 
 // static
 int ScrollBarViews::GetVerticalScrollBarWidth(const ui::NativeTheme* theme) {

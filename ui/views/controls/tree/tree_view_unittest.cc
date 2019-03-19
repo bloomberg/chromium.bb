@@ -24,8 +24,8 @@ namespace views {
 
 class TestNode : public TreeNode<TestNode> {
  public:
-  TestNode() {}
-  ~TestNode() override {}
+  TestNode() = default;
+  ~TestNode() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNode);

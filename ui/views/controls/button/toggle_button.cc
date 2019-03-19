@@ -38,7 +38,7 @@ constexpr int kThumbInset = 2;
 class ToggleButton::ThumbView : public InkDropHostView {
  public:
   ThumbView() : color_ratio_(0.0f) {}
-  ~ThumbView() override {}
+  ~ThumbView() override = default;
 
   void Update(const gfx::Rect& bounds, float color_ratio) {
     SetBoundsRect(bounds);

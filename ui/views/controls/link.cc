@@ -33,8 +33,7 @@ Link::Link(const base::string16& title, int text_context, int text_style)
   Init();
 }
 
-Link::~Link() {
-}
+Link::~Link() = default;
 
 // static
 Link::FocusStyle Link::GetDefaultFocusStyle() {

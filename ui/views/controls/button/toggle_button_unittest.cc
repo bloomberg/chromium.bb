@@ -47,8 +47,8 @@ class TestToggleButton : public ToggleButton {
 
 class ToggleButtonTest : public ViewsTestBase {
  public:
-  ToggleButtonTest() {}
-  ~ToggleButtonTest() override {}
+  ToggleButtonTest() = default;
+  ~ToggleButtonTest() override = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();

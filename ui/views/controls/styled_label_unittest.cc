@@ -34,8 +34,8 @@ namespace views {
 
 class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
  public:
-  StyledLabelTest() {}
-  ~StyledLabelTest() override {}
+  StyledLabelTest() = default;
+  ~StyledLabelTest() override = default;
 
   // StyledLabelListener implementation.
   void StyledLabelLinkClicked(StyledLabel* label,

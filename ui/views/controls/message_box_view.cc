@@ -80,8 +80,7 @@ MessageBoxView::InitParams::InitParams(const base::string16& message)
       inter_row_vertical_spacing(LayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL)) {}
 
-MessageBoxView::InitParams::~InitParams() {
-}
+MessageBoxView::InitParams::~InitParams() = default;
 
 MessageBoxView::MessageBoxView(const InitParams& params)
     : prompt_field_(nullptr),
@@ -91,7 +90,7 @@ MessageBoxView::MessageBoxView(const InitParams& params)
   Init(params);
 }
 
-MessageBoxView::~MessageBoxView() {}
+MessageBoxView::~MessageBoxView() = default;
 
 base::string16 MessageBoxView::GetInputText() {
   return prompt_field_ ? prompt_field_->text() : base::string16();

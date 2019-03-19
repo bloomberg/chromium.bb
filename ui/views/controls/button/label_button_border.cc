@@ -49,8 +49,8 @@ void PaintHelper(LabelButtonAssetBorder* border,
 
 }  // namespace
 
-LabelButtonBorder::LabelButtonBorder() {}
-LabelButtonBorder::~LabelButtonBorder() {}
+LabelButtonBorder::LabelButtonBorder() = default;
+LabelButtonBorder::~LabelButtonBorder() = default;
 
 bool LabelButtonBorder::PaintsButtonState(bool focused,
                                           Button::ButtonState state) {
@@ -105,7 +105,7 @@ LabelButtonAssetBorder::LabelButtonAssetBorder(Button::ButtonStyle style) {
   }
 }
 
-LabelButtonAssetBorder::~LabelButtonAssetBorder() {}
+LabelButtonAssetBorder::~LabelButtonAssetBorder() = default;
 
 // static
 gfx::Insets LabelButtonAssetBorder::GetDefaultInsetsForStyle(

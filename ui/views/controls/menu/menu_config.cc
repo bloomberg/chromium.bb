@@ -75,7 +75,7 @@ MenuConfig::MenuConfig()
   Init();
 }
 
-MenuConfig::~MenuConfig() {}
+MenuConfig::~MenuConfig() = default;
 
 int MenuConfig::CornerRadiusForMenu(const MenuController* controller) const {
   if (controller && controller->use_touchable_layout())

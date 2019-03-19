@@ -339,7 +339,7 @@ class MenuLauncherEventHandler : public ui::EventHandler {
  public:
   MenuLauncherEventHandler(MenuRunner* runner, Widget* owner)
       : runner_(runner), owner_(owner) {}
-  ~MenuLauncherEventHandler() override {}
+  ~MenuLauncherEventHandler() override = default;
 
  private:
   // ui::EventHandler:
@@ -362,7 +362,7 @@ class MenuLauncherEventHandler : public ui::EventHandler {
 // Test harness that includes a parent Widget and View invoking the menu.
 class MenuRunnerWidgetTest : public MenuRunnerTest {
  public:
-  MenuRunnerWidgetTest() {}
+  MenuRunnerWidgetTest() = default;
 
   Widget* widget() { return widget_; }
   EventCountView* event_count_view() { return event_count_view_; }
@@ -470,8 +470,8 @@ TEST_F(MenuRunnerWidgetTest, ClearsMouseHandlerOnRun) {
 
 class MenuRunnerImplTest : public MenuRunnerTest {
  public:
-  MenuRunnerImplTest() {}
-  ~MenuRunnerImplTest() override {}
+  MenuRunnerImplTest() = default;
+  ~MenuRunnerImplTest() override = default;
 
   void SetUp() override;
 
@@ -557,8 +557,8 @@ TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
 // during its release.
 class MenuRunnerDestructionTest : public MenuRunnerTest {
  public:
-  MenuRunnerDestructionTest() {}
-  ~MenuRunnerDestructionTest() override {}
+  MenuRunnerDestructionTest() = default;
+  ~MenuRunnerDestructionTest() override = default;
 
   DeletingTestViewsDelegate* views_delegate() { return views_delegate_; }
 

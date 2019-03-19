@@ -16,7 +16,7 @@ namespace {
 // Basic NativeTheme that can customize colors.
 class TestNativeTheme : public ui::NativeThemeBase {
  public:
-  TestNativeTheme() {}
+  TestNativeTheme() = default;
 
   void Set(ColorId id, SkColor color) { colors_[id] = color; }
 
@@ -56,7 +56,7 @@ class TestLabel : public LabelButtonLabel {
 
 class LabelButtonLabelTest : public ViewsTestBase {
  public:
-  LabelButtonLabelTest() {}
+  LabelButtonLabelTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();

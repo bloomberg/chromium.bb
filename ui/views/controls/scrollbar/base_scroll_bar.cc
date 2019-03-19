@@ -41,7 +41,7 @@ BaseScrollBar::BaseScrollBar(bool horizontal)
   set_context_menu_controller(this);
 }
 
-BaseScrollBar::~BaseScrollBar() {}
+BaseScrollBar::~BaseScrollBar() = default;
 
 void BaseScrollBar::SetThumb(BaseScrollBarThumb* thumb) {
   DCHECK(!thumb_);

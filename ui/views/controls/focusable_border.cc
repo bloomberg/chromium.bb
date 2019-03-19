@@ -26,8 +26,7 @@ namespace views {
 
 FocusableBorder::FocusableBorder() : insets_(kInsetSize) {}
 
-FocusableBorder::~FocusableBorder() {
-}
+FocusableBorder::~FocusableBorder() = default;
 
 void FocusableBorder::SetColorId(
     const base::Optional<ui::NativeTheme::ColorId>& color_id) {

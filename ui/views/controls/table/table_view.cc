@@ -127,7 +127,7 @@ struct TableView::GroupSortHelper {
 
 TableView::VisibleColumn::VisibleColumn() : x(0), width(0) {}
 
-TableView::VisibleColumn::~VisibleColumn() {}
+TableView::VisibleColumn::~VisibleColumn() = default;
 
 TableView::PaintRegion::PaintRegion()
     : min_row(0),
@@ -136,7 +136,7 @@ TableView::PaintRegion::PaintRegion()
       max_column(0) {
 }
 
-TableView::PaintRegion::~PaintRegion() {}
+TableView::PaintRegion::~PaintRegion() = default;
 
 // static
 const char TableView::kViewClassName[] = "TableView";
