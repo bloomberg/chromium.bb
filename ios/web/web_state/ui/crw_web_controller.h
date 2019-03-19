@@ -179,8 +179,11 @@ class WebStateImpl;
 - (void)stopLoading;
 
 // Executes |script| in the web view, registering user interaction.
+// |result| will be backed up by different classes depending on resulting JS
+// type: NSString (string), NSNumber (number or boolean), NSDictionary (object),
+// NSArray (array), NSNull (null), NSDate (Date), nil (undefined).
 - (void)executeUserJavaScript:(NSString*)script
-            completionHandler:(web::JavaScriptResultBlock)completion;
+            completionHandler:(void (^)(id result, NSError*))completion;
 
 // Requires that the next load rebuild the web view. This is expensive, and
 // should be used only in the case where something has changed that the web view

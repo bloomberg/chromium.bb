@@ -4186,7 +4186,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NSString* script = @"document.documentElement.outerHTML;";
   __weak Tab* weakTab = tab;
   __weak BrowserViewController* weakSelf = self;
-  web::JavaScriptResultBlock completionHandlerBlock = ^(id result, NSError*) {
+  auto completionHandlerBlock = ^(id result, NSError*) {
     Tab* strongTab = weakTab;
     if (!strongTab)
       return;

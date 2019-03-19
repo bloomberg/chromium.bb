@@ -127,7 +127,7 @@
 }
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)handler {
+        completionHandler:(void (^)(id, NSError*))handler {
   [_staticHTMLViewController executeJavaScript:script
                              completionHandler:handler];
 }

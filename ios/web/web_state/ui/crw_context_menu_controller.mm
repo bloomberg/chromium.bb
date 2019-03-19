@@ -139,7 +139,7 @@ struct ContextMenuInfo {
 // Forwards the execution of |script| to |javaScriptDelegate| and if it is nil,
 // to |webView|.
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler;
+        completionHandler:(void (^)(id, NSError*))completionHandler;
 @end
 
 @implementation CRWContextMenuController {
@@ -258,7 +258,7 @@ struct ContextMenuInfo {
 }
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+        completionHandler:(void (^)(id, NSError*))completionHandler {
   if (self.injectionEvaluator) {
     [self.injectionEvaluator executeJavaScript:script
                              completionHandler:completionHandler];

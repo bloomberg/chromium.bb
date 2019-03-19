@@ -35,7 +35,7 @@
 #pragma mark CRWJSInjectionEvaluatorMethods
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+        completionHandler:(void (^)(id, NSError*))completionHandler {
   [_evaluator executeJavaScript:script completionHandler:completionHandler];
 }
 

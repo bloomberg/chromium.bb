@@ -1399,7 +1399,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (void)executeUserJavaScript:(NSString*)script
-            completionHandler:(web::JavaScriptResultBlock)completion {
+            completionHandler:(void (^)(id, NSError*))completion {
   // For security reasons, executing JavaScript on pages with app-specific URLs
   // is not allowed, because those pages may have elevated privileges.
   GURL lastCommittedURL = self.webState->GetLastCommittedURL();
@@ -1580,7 +1580,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 #pragma mark - CRWJSInjectionEvaluator (Public)
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+        completionHandler:(void (^)(id, NSError*))completionHandler {
   NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
   web::ExecuteJavaScript(self.webView, safeScript, completionHandler);
 }

@@ -135,7 +135,7 @@
 }
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)handler {
+        completionHandler:(void (^)(id, NSError*))handler {
   [webView_ evaluateJavaScript:script completionHandler:handler];
 }
 

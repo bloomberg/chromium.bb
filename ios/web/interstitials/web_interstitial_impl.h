@@ -27,7 +27,7 @@ class WebStateImpl;
 // has access to private ExecuteJavaScript method to be used for testing.
 void ExecuteScriptForTesting(WebInterstitialImpl*,
                              NSString*,
-                             JavaScriptResultBlock);
+                             void (^)(id, NSError*));
 
 // An abstract subclass of WebInterstitial that exposes the views necessary to
 // embed the interstitial into a WebState.
@@ -63,7 +63,7 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   // Calls |completionHandler| with results of the evaluation.
   // The |completionHandler| can be nil. Must be used only for testing.
   virtual void ExecuteJavaScript(NSString* script,
-                                 JavaScriptResultBlock completion_handler);
+                                 void (^completion_handler)(id, NSError*));
 
  private:
   // The WebState this instance is observing. Will be null after
@@ -91,9 +91,10 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   CRWContentView* content_view_;
 
   // Must be implemented only for testing purposes.
-  friend void web::ExecuteScriptForTesting(WebInterstitialImpl*,
-                                           NSString*,
-                                           JavaScriptResultBlock);
+  friend void web::ExecuteScriptForTesting(
+      WebInterstitialImpl*,
+      NSString*,
+      void (^completion_handler)(id, NSError*));
 };
 
 }  // namespace web

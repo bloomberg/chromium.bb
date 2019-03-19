@@ -36,7 +36,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/web/public/block_types.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/test/ios/ui_image_test_utils.h"
