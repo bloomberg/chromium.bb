@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_uma.h"
+#include "device/gamepad/nintendo_controller.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "device/udev_linux/udev_linux.h"
 
@@ -139,9 +140,26 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
   if (device == nullptr)
     return;
 
+  // If the device cannot be opened, the joystick has been disconnected.
+  if (!device->OpenJoydevNode(pad_info, dev)) {
+    if (device->IsEmpty())
+      RemoveDevice(device);
+    return;
+  }
+
+  uint16_t vendor_id = device->GetVendorId();
+  uint16_t product_id = device->GetProductId();
+  if (NintendoController::IsNintendoController(vendor_id, product_id)) {
+    // Nintendo devices are handled by the Nintendo data fetcher.
+    device->CloseJoydevNode();
+    RemoveDevice(device);
+    return;
+  }
+
   PadState* state = GetPadState(joydev_index);
   if (!state) {
     // No slot available for device, don't use.
+    device->CloseJoydevNode();
     RemoveDevice(device);
     return;
   }
@@ -160,18 +178,9 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     return;
   }
 
-  // If the device cannot be opened, the joystick has been disconnected.
-  if (!device->OpenJoydevNode(pad_info, dev)) {
-    if (device->IsEmpty())
-      RemoveDevice(device);
-    return;
-  }
-
   // Joydev uses its own internal list of device IDs to identify known gamepads.
   // If the device is on our list, record it by ID. If the device is unknown,
   // record that an unknown gamepad was enumerated.
-  uint16_t vendor_id = device->GetVendorId();
-  uint16_t product_id = device->GetProductId();
   GamepadId gamepad_id =
       GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
   if (gamepad_id == GamepadId::kUnknownGamepad)
