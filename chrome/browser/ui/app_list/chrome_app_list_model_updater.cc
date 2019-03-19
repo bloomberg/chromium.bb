@@ -20,7 +20,7 @@
 ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
 
-ChromeAppListModelUpdater::~ChromeAppListModelUpdater() {}
+ChromeAppListModelUpdater::~ChromeAppListModelUpdater() = default;
 
 void ChromeAppListModelUpdater::SetActive(bool active) {
   const bool was_active = !!app_list_controller_;
