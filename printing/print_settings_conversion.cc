@@ -33,13 +33,13 @@ void GetCustomMarginsFromJobSettings(const base::Value& settings,
     return;
   }
   page_size_margins->top =
-      custom_margins->FindKey(kSettingMarginTop)->GetDouble();
+      custom_margins->FindIntKey(kSettingMarginTop).value_or(0);
   page_size_margins->bottom =
-      custom_margins->FindKey(kSettingMarginBottom)->GetDouble();
+      custom_margins->FindIntKey(kSettingMarginBottom).value_or(0);
   page_size_margins->left =
-      custom_margins->FindKey(kSettingMarginLeft)->GetDouble();
+      custom_margins->FindIntKey(kSettingMarginLeft).value_or(0);
   page_size_margins->right =
-      custom_margins->FindKey(kSettingMarginRight)->GetDouble();
+      custom_margins->FindIntKey(kSettingMarginRight).value_or(0);
 }
 
 void SetMarginsToJobSettings(const std::string& json_path,
