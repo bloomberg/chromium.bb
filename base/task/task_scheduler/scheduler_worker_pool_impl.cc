@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 #include "base/atomicops.h"
@@ -96,11 +97,12 @@ bool ContainsWorker(const std::vector<scoped_refptr<SchedulerWorker>>& workers,
 
 // Upon destruction, executes actions that control the number of active workers.
 // Useful to satisfy locking requirements of these actions.
-class SchedulerWorkerPoolImpl::ScopedExecutor {
+class SchedulerWorkerPoolImpl::ScopedWorkersExecutor
+    : public SchedulerWorkerPool::BaseScopedWorkersExecutor {
  public:
-  ScopedExecutor(SchedulerWorkerPoolImpl* outer) : outer_(outer) {}
+  ScopedWorkersExecutor(SchedulerWorkerPoolImpl* outer) : outer_(outer) {}
 
-  ~ScopedExecutor() { FlushImpl(); }
+  ~ScopedWorkersExecutor() { FlushImpl(); }
 
   void ScheduleWakeUp(scoped_refptr<SchedulerWorker> worker) {
     workers_to_wake_up_.AddWorker(std::move(worker));
@@ -111,6 +113,11 @@ class SchedulerWorkerPoolImpl::ScopedExecutor {
   }
 
   void Flush(SchedulerLock* held_lock) {
+    static_assert(std::is_pod<BaseScopedWorkersExecutor>::value &&
+                      sizeof(BaseScopedWorkersExecutor) == 1,
+                  "Must add BaseScopedWorkersExecutor::Flush() if it becomes "
+                  "non-trivial");
+
     if (workers_to_wake_up_.empty() && workers_to_start_.empty())
       return;
     AutoSchedulerUnlock auto_unlock(*held_lock);
@@ -190,7 +197,7 @@ class SchedulerWorkerPoolImpl::ScopedExecutor {
   WorkerContainer workers_to_start_;
   bool must_schedule_adjust_max_tasks_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedExecutor);
+  DISALLOW_COPY_AND_ASSIGN(ScopedWorkersExecutor);
 };
 
 class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
@@ -392,7 +399,7 @@ void SchedulerWorkerPoolImpl::Start(
     SchedulerWorkerObserver* scheduler_worker_observer,
     WorkerEnvironment worker_environment,
     Optional<TimeDelta> may_block_threshold) {
-  ScopedExecutor executor(this);
+  ScopedWorkersExecutor executor(this);
 
   AutoSchedulerLock auto_lock(lock_);
 
@@ -435,27 +442,11 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
   DCHECK(workers_.empty());
 }
 
-void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
-    scoped_refptr<Sequence> sequence) {
-  OnCanScheduleSequence(
-      SequenceAndTransaction::FromSequence(std::move(sequence)));
-}
-
-void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
-    SequenceAndTransaction sequence_and_transaction) {
-  PushSequenceAndWakeUpWorkers(std::move(sequence_and_transaction));
-}
-
 void SchedulerWorkerPoolImpl::PushSequenceAndWakeUpWorkers(
     SequenceAndTransaction sequence_and_transaction) {
-  ScopedExecutor executor(this);
-  AutoSchedulerLock auto_lock(lock_);
-  priority_queue_.Push(std::move(sequence_and_transaction.sequence),
-                       sequence_and_transaction.transaction.GetSortKey());
-  EnsureEnoughWorkersLockRequired(&executor);
-  // Terminate the Sequence transaction at the end of this scope to avoid
-  // holding a lock when calling ScheduleAdjustMaxTasks().
-  auto terminate_sequence_transaction = std::move(sequence_and_transaction);
+  ScopedWorkersExecutor executor(this);
+  PushSequenceAndWakeUpWorkersImpl(&executor,
+                                   std::move(sequence_and_transaction));
 }
 
 size_t SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated()
@@ -527,11 +518,6 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   DCHECK(workers_ == workers_copy);
   // Release |workers_| to clear their TrackedRef against |this|.
   workers_.clear();
-}
-
-void SchedulerWorkerPoolImpl::ReEnqueueSequenceChangingPool(
-    SequenceAndTransaction sequence_and_transaction) {
-  PushSequenceAndWakeUpWorkers(std::move(sequence_and_transaction));
 }
 
 size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() const {
@@ -620,7 +606,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   DCHECK(!worker_only().is_running_task);
   DCHECK(!read_worker().is_running_best_effort_task);
 
-  ScopedExecutor executor(outer_.get());
+  ScopedWorkersExecutor executor(outer_.get());
   AutoSchedulerLock auto_lock(outer_->lock_);
 
   DCHECK(ContainsWorker(outer_->workers_, worker));
@@ -685,55 +671,35 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
   // A transaction to the Sequence to reenqueue, if any. Instantiated here as
   // |Sequence::lock_| is a UniversalPredecessor and must always be acquired
   // prior to acquiring a second lock
-  Optional<SequenceAndTransaction> sequence_to_reenqueue_and_transaction;
+  Optional<SequenceAndTransaction> sequence_and_transaction;
   if (sequence) {
-    sequence_to_reenqueue_and_transaction.emplace(
+    sequence_and_transaction.emplace(
         SequenceAndTransaction::FromSequence(std::move(sequence)));
   }
 
-  // The pool in which to reenqueue the Sequence. Initialized below and used
-  // outside the lock after.
-  SchedulerWorkerPool* destination_pool;
+  ScopedWorkersExecutor workers_executor(outer_.get());
+  ScopedReenqueueExecutor reenqueue_executor;
+  AutoSchedulerLock auto_lock(outer_->lock_);
 
-  {
-    AutoSchedulerLock auto_lock(outer_->lock_);
+  DCHECK(!incremented_max_tasks_since_blocked_);
 
-    DCHECK(!incremented_max_tasks_since_blocked_);
+  // Running task bookkeeping.
+  DCHECK_GT(outer_->num_running_tasks_, 0U);
+  --outer_->num_running_tasks_;
+  worker_only().is_running_task = false;
 
-    // Running task bookkeeping.
-    DCHECK_GT(outer_->num_running_tasks_, 0U);
-    --outer_->num_running_tasks_;
-    worker_only().is_running_task = false;
-
-    // Running BEST_EFFORT task bookkeeping.
-    if (read_worker().is_running_best_effort_task) {
-      DCHECK_GT(outer_->num_running_best_effort_tasks_, 0U);
-      --outer_->num_running_best_effort_tasks_;
-      write_worker().is_running_best_effort_task = false;
-    }
-
-    if (!sequence_to_reenqueue_and_transaction)
-      return;
-
-    // Decide in which pool the Sequence should be reenqueued.
-    destination_pool = outer_->delegate_->GetWorkerPoolForTraits(
-        sequence_to_reenqueue_and_transaction->transaction.traits());
-
-    // If the Sequence should be reenqueued in the current pool, reenqueue it
-    // *before* releasing the lock. Note: No wake up needed because the current
-    // worker will pop a Sequence from the PriorityQueue after this returns.
-    if (outer_ == destination_pool) {
-      outer_->priority_queue_.Push(
-          std::move(sequence_to_reenqueue_and_transaction->sequence),
-          sequence_to_reenqueue_and_transaction->transaction.GetSortKey());
-      return;
-    }
+  // Running BEST_EFFORT task bookkeeping.
+  if (read_worker().is_running_best_effort_task) {
+    DCHECK_GT(outer_->num_running_best_effort_tasks_, 0U);
+    --outer_->num_running_best_effort_tasks_;
+    write_worker().is_running_best_effort_task = false;
   }
 
-  // If the Sequence should be reenqueued in a different pool, reenqueue it
-  // *after* releasing the lock.
-  destination_pool->ReEnqueueSequenceChangingPool(
-      std::move(sequence_to_reenqueue_and_transaction.value()));
+  if (sequence_and_transaction) {
+    outer_->ReEnqueueSequenceLockRequired(
+        &workers_executor, &reenqueue_executor,
+        std::move(sequence_and_transaction.value()));
+  }
 }
 
 TimeDelta
@@ -925,7 +891,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
 
-  ScopedExecutor executor(outer_.get());
+  ScopedWorkersExecutor executor(outer_.get());
   AutoSchedulerLock auto_lock(outer_->lock_);
 
   DCHECK(!incremented_max_tasks_since_blocked_);
@@ -942,7 +908,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
 
-  ScopedExecutor executor(outer_.get());
+  ScopedWorkersExecutor executor(outer_.get());
   AutoSchedulerLock auto_lock(outer_->lock_);
 
   DCHECK(!incremented_max_tasks_since_blocked_);
@@ -1010,7 +976,7 @@ void SchedulerWorkerPoolImpl::WaitForWorkersIdleLockRequiredForTesting(
 }
 
 void SchedulerWorkerPoolImpl::MaintainAtLeastOneIdleWorkerLockRequired(
-    ScopedExecutor* executor) {
+    ScopedWorkersExecutor* executor) {
   if (workers_.size() == kMaxNumberOfWorkers)
     return;
   DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
@@ -1029,7 +995,7 @@ void SchedulerWorkerPoolImpl::MaintainAtLeastOneIdleWorkerLockRequired(
 
 scoped_refptr<SchedulerWorker>
 SchedulerWorkerPoolImpl::CreateAndRegisterWorkerLockRequired(
-    ScopedExecutor* executor) {
+    ScopedWorkersExecutor* executor) {
   DCHECK_LT(workers_.size(), max_tasks_);
   DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
   DCHECK(idle_workers_stack_.IsEmpty());
@@ -1082,10 +1048,13 @@ size_t SchedulerWorkerPoolImpl::GetDesiredNumAwakeWorkersLockRequired() const {
 }
 
 void SchedulerWorkerPoolImpl::EnsureEnoughWorkersLockRequired(
-    ScopedExecutor* executor) {
+    BaseScopedWorkersExecutor* base_executor) {
   // Don't do anything if the pool isn't started.
   if (max_tasks_ == 0)
     return;
+
+  ScopedWorkersExecutor* executor =
+      static_cast<ScopedWorkersExecutor*>(base_executor);
 
   const size_t desired_num_awake_workers =
       GetDesiredNumAwakeWorkersLockRequired();
@@ -1118,7 +1087,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
   DCHECK(
       after_start().service_thread_task_runner->RunsTasksInCurrentSequence());
 
-  ScopedExecutor executor(this);
+  ScopedWorkersExecutor executor(this);
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(adjust_max_tasks_posted_);
   adjust_max_tasks_posted_ = false;
@@ -1156,7 +1125,7 @@ void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasks() {
 }
 
 void SchedulerWorkerPoolImpl::MaybeScheduleAdjustMaxTasksLockRequired(
-    ScopedExecutor* executor) {
+    ScopedWorkersExecutor* executor) {
   if (!adjust_max_tasks_posted_ &&
       ShouldPeriodicallyAdjustMaxTasksLockRequired()) {
     executor->ScheduleAdjustMaxTasks();

@@ -99,8 +99,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
-  void ReEnqueueSequenceChangingPool(
-      SequenceAndTransaction sequence_and_transaction) override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
   void ReportHeartbeatMetrics() const override;
 
@@ -145,7 +143,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   size_t NumberOfIdleWorkersForTesting() const;
 
  private:
-  class ScopedExecutor;
+  class ScopedWorkersExecutor;
   class SchedulerWorkerDelegateImpl;
 
   // Friend tests so that they can access |blocked_workers_poll_period| and
@@ -156,18 +154,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                            ThreadBlockUnblockPremature);
 
   // SchedulerWorkerPool:
-  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
-  void OnCanScheduleSequence(
-      SequenceAndTransaction sequence_and_transaction) override;
-
-  // Pushes the Sequence in |sequence_and_transaction| to |priority_queue_| and
-  // wakes up workers as appropriate.
   void PushSequenceAndWakeUpWorkers(
-      SequenceAndTransaction sequence_and_transaction);
+      SequenceAndTransaction sequence_and_transaction) override;
+  void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
+      override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Creates a worker and schedules its start, if needed, to maintain one idle
   // worker, |max_tasks_| permitting.
-  void MaintainAtLeastOneIdleWorkerLockRequired(ScopedExecutor* executor)
+  void MaintainAtLeastOneIdleWorkerLockRequired(ScopedWorkersExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if worker cleanup is permitted.
@@ -176,7 +170,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Creates a worker, adds it to the pool, schedules its start and returns it.
   // Cannot be called before Start().
   scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired(
-      ScopedExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+      ScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the number of workers that are awake (i.e. not on the idle stack).
   size_t GetNumAwakeWorkersLockRequired() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -184,11 +178,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Returns the desired number of awake workers, given current workload and
   // concurrency limits.
   size_t GetDesiredNumAwakeWorkersLockRequired() const
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
-  // Ensures that there are at least GetDesiredNumAwakeWorkersLockRequired()
-  // awake workers.
-  void EnsureEnoughWorkersLockRequired(ScopedExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Examines the list of SchedulerWorkers and increments |max_tasks_| for each
@@ -214,7 +203,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void ScheduleAdjustMaxTasks();
 
   // Schedules AdjustMaxTasks() through |executor| if required.
-  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedExecutor* executor)
+  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedWorkersExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if AdjustMaxTasks() should periodically be called on

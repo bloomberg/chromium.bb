@@ -13,11 +13,37 @@
 namespace base {
 namespace internal {
 
+class PlatformNativeWorkerPoolWin::ScopedWorkersExecutor
+    : public SchedulerWorkerPool::BaseScopedWorkersExecutor {
+ public:
+  ScopedWorkersExecutor(PlatformNativeWorkerPoolWin* outer) : outer_(outer) {}
+  ~ScopedWorkersExecutor() {
+    SchedulerLock::AssertNoLockHeldOnCurrentThread();
+
+    // TODO(fdoray): Handle priorities by having different work objects and
+    // using SetThreadpoolCallbackPriority() and
+    // SetThreadpoolCallbackRunsLong().
+    for (size_t i = 0; i < num_threadpool_work_to_submit_; ++i)
+      ::SubmitThreadpoolWork(outer_->work_);
+  }
+
+  // Sets the number of threadpool work to submit upon destruction.
+  void set_num_threadpool_work_to_submit(size_t num) {
+    DCHECK_EQ(num_threadpool_work_to_submit_, 0U);
+    num_threadpool_work_to_submit_ = num;
+  }
+
+ private:
+  PlatformNativeWorkerPoolWin* const outer_;
+  size_t num_threadpool_work_to_submit_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedWorkersExecutor);
+};
+
 PlatformNativeWorkerPoolWin::PlatformNativeWorkerPoolWin(
     TrackedRef<TaskTracker> task_tracker,
     TrackedRef<Delegate> delegate)
-    : SchedulerWorkerPool(std::move(task_tracker),
-                          std::move(delegate)) {}
+    : SchedulerWorkerPool(std::move(task_tracker), std::move(delegate)) {}
 
 PlatformNativeWorkerPoolWin::~PlatformNativeWorkerPoolWin() {
 #if DCHECK_IS_ON()
@@ -43,17 +69,11 @@ void PlatformNativeWorkerPoolWin::Start() {
   DCHECK(work_) << "LastError: " << GetLastError();
   ::SetThreadpoolCallbackPool(&environment_, pool_);
 
-  size_t local_num_sequences_before_start;
-  {
-    AutoSchedulerLock auto_lock(lock_);
-    DCHECK(!started_);
-    started_ = true;
-    local_num_sequences_before_start = priority_queue_.Size();
-  }
-
-  // Schedule sequences added to |priority_queue_| before Start().
-  for (size_t i = 0; i < local_num_sequences_before_start; ++i)
-    ::SubmitThreadpoolWork(work_);
+  ScopedWorkersExecutor executor(this);
+  AutoSchedulerLock auto_lock(lock_);
+  DCHECK(!started_);
+  started_ = true;
+  EnsureEnoughWorkersLockRequired(&executor);
 }
 
 void PlatformNativeWorkerPoolWin::JoinForTesting() {
@@ -62,11 +82,6 @@ void PlatformNativeWorkerPoolWin::JoinForTesting() {
   DCHECK(!join_for_testing_returned_.IsSet());
   join_for_testing_returned_.Set();
 #endif
-}
-
-void PlatformNativeWorkerPoolWin::ReEnqueueSequenceChangingPool(
-    SequenceAndTransaction sequence_and_transaction) {
-  OnCanScheduleSequence(std::move(sequence_and_transaction));
 }
 
 // static
@@ -85,42 +100,51 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
   sequence = worker_pool->task_tracker_->RunAndPopNextTask(std::move(sequence),
                                                            worker_pool);
 
-  // Reenqueue sequence and then submit another task to the Windows thread pool.
-  //
-  // TODO(fdoray): Use |delegate_| to decide in which pool the Sequence should
-  // be reenqueued.
-  if (sequence)
-    worker_pool->OnCanScheduleSequence(std::move(sequence));
+  if (sequence) {
+    ScopedWorkersExecutor workers_executor(worker_pool);
+    ScopedReenqueueExecutor reenqueue_executor;
+    auto sequence_and_transaction =
+        SequenceAndTransaction::FromSequence(std::move(sequence));
+    AutoSchedulerLock auto_lock(worker_pool->lock_);
+    worker_pool->ReEnqueueSequenceLockRequired(
+        &workers_executor, &reenqueue_executor,
+        std::move(sequence_and_transaction));
+  }
 
   worker_pool->UnbindFromCurrentThread();
 }
 
 scoped_refptr<Sequence> PlatformNativeWorkerPoolWin::GetWork() {
   AutoSchedulerLock auto_lock(lock_);
-  // The PQ should never be empty here as there's a 1:1 correspondence between
-  // a call to ScheduleSequence()/SubmitThreadpoolWork() and GetWork().
-  DCHECK(!priority_queue_.IsEmpty());
+  DCHECK_GT(num_pending_threadpool_work_, 0U);
+  --num_pending_threadpool_work_;
+  // There can be more pending threadpool work than Sequences in the
+  // PriorityQueue after RemoveSequence().
+  if (priority_queue_.IsEmpty())
+    return nullptr;
   return priority_queue_.PopSequence();
 }
 
-void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
-    scoped_refptr<Sequence> sequence) {
-  OnCanScheduleSequence(
-      SequenceAndTransaction::FromSequence(std::move(sequence)));
+void PlatformNativeWorkerPoolWin::PushSequenceAndWakeUpWorkers(
+    SequenceAndTransaction sequence_and_transaction) {
+  ScopedWorkersExecutor executor(this);
+  PushSequenceAndWakeUpWorkersImpl(&executor,
+                                   std::move(sequence_and_transaction));
 }
 
-void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
-    SequenceAndTransaction sequence_and_transaction) {
-  {
-    AutoSchedulerLock auto_lock(lock_);
-    priority_queue_.Push(std::move(sequence_and_transaction.sequence),
-                         sequence_and_transaction.transaction.GetSortKey());
-    if (!started_)
-      return;
+void PlatformNativeWorkerPoolWin::EnsureEnoughWorkersLockRequired(
+    BaseScopedWorkersExecutor* executor) {
+  if (!started_)
+    return;
+  // Ensure that there is at least one pending threadpool work per Sequence in
+  // the PriorityQueue.
+  const size_t desired_num_pending_threadpool_work = priority_queue_.Size();
+  if (desired_num_pending_threadpool_work > num_pending_threadpool_work_) {
+    static_cast<ScopedWorkersExecutor*>(executor)
+        ->set_num_threadpool_work_to_submit(
+            desired_num_pending_threadpool_work - num_pending_threadpool_work_);
+    num_pending_threadpool_work_ = desired_num_pending_threadpool_work;
   }
-  // TODO(fdoray): Handle priorities by having different work objects and using
-  // SetThreadpoolCallbackPriority() and SetThreadpoolCallbackRunsLong().
-  ::SubmitThreadpoolWork(work_);
 }
 
 size_t PlatformNativeWorkerPoolWin::GetMaxConcurrentNonBlockedTasksDeprecated()

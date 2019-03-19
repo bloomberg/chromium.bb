@@ -27,11 +27,30 @@ const SchedulerWorkerPool* GetCurrentWorkerPool() {
 
 }  // namespace
 
-SchedulerWorkerPool::SchedulerWorkerPool(
-    TrackedRef<TaskTracker> task_tracker,
-    TrackedRef<Delegate> delegate)
-    : task_tracker_(std::move(task_tracker)),
-      delegate_(std::move(delegate)) {
+SchedulerWorkerPool::ScopedReenqueueExecutor::ScopedReenqueueExecutor() =
+    default;
+
+SchedulerWorkerPool::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
+  if (destination_pool_) {
+    destination_pool_->PushSequenceAndWakeUpWorkers(
+        std::move(sequence_and_transaction_.value()));
+  }
+}
+
+void SchedulerWorkerPool::ScopedReenqueueExecutor::
+    SchedulePushSequenceAndWakeUpWorkers(
+        SequenceAndTransaction sequence_and_transaction,
+        SchedulerWorkerPool* destination_pool) {
+  DCHECK(destination_pool);
+  DCHECK(!destination_pool_);
+  DCHECK(!sequence_and_transaction_);
+  sequence_and_transaction_.emplace(std::move(sequence_and_transaction));
+  destination_pool_ = destination_pool;
+}
+
+SchedulerWorkerPool::SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
+                                         TrackedRef<Delegate> delegate)
+    : task_tracker_(std::move(task_tracker)), delegate_(std::move(delegate)) {
   DCHECK(task_tracker_);
 }
 
@@ -51,6 +70,12 @@ bool SchedulerWorkerPool::IsBoundToCurrentThread() const {
   return GetCurrentWorkerPool() == this;
 }
 
+void SchedulerWorkerPool::OnCanScheduleSequence(
+    scoped_refptr<Sequence> sequence) {
+  PushSequenceAndWakeUpWorkers(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
+}
+
 void SchedulerWorkerPool::PostTaskWithSequenceNow(
     Task task,
     SequenceAndTransaction sequence_and_transaction) {
@@ -66,7 +91,7 @@ void SchedulerWorkerPool::PostTaskWithSequenceNow(
     // Try to schedule the Sequence locked by |sequence_transaction|.
     if (task_tracker_->WillScheduleSequence(
             sequence_and_transaction.transaction, this)) {
-      OnCanScheduleSequence(std::move(sequence_and_transaction));
+      PushSequenceAndWakeUpWorkers(std::move(sequence_and_transaction));
     }
   }
 }
@@ -83,6 +108,36 @@ void SchedulerWorkerPool::UpdateSortKey(
 bool SchedulerWorkerPool::RemoveSequence(scoped_refptr<Sequence> sequence) {
   AutoSchedulerLock auto_lock(lock_);
   return priority_queue_.RemoveSequence(std::move(sequence));
+}
+
+void SchedulerWorkerPool::ReEnqueueSequenceLockRequired(
+    BaseScopedWorkersExecutor* workers_executor,
+    ScopedReenqueueExecutor* reenqueue_executor,
+    SequenceAndTransaction sequence_and_transaction) {
+  // Decide in which pool the Sequence should be reenqueued.
+  SchedulerWorkerPool* destination_pool = delegate_->GetWorkerPoolForTraits(
+      sequence_and_transaction.transaction.traits());
+
+  if (destination_pool == this) {
+    // If the Sequence should be reenqueued in the current pool, reenqueue it
+    // inside the scope of the lock.
+    priority_queue_.Push(std::move(sequence_and_transaction.sequence),
+                         sequence_and_transaction.transaction.GetSortKey());
+    EnsureEnoughWorkersLockRequired(workers_executor);
+  } else {
+    // Otherwise, schedule a reenqueue after releasing the lock.
+    reenqueue_executor->SchedulePushSequenceAndWakeUpWorkers(
+        std::move(sequence_and_transaction), destination_pool);
+  }
+}
+
+void SchedulerWorkerPool::PushSequenceAndWakeUpWorkersImpl(
+    BaseScopedWorkersExecutor* executor,
+    SequenceAndTransaction sequence_and_transaction) {
+  AutoSchedulerLock auto_lock(lock_);
+  priority_queue_.Push(std::move(sequence_and_transaction.sequence),
+                       sequence_and_transaction.transaction.GetSortKey());
+  EnsureEnoughWorkersLockRequired(executor);
 }
 
 }  // namespace internal

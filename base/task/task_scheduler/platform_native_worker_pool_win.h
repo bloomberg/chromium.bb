@@ -41,22 +41,22 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
 
   // SchedulerWorkerPool:
   void JoinForTesting() override;
-  void ReEnqueueSequenceChangingPool(
-      SequenceAndTransaction sequence_and_transaction) override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
   void ReportHeartbeatMetrics() const override;
 
  private:
+  class ScopedWorkersExecutor;
+
   // Callback that gets run by |pool_|. It runs a task off the next sequence on
   // the |priority_queue_|.
   static void CALLBACK RunNextSequence(PTP_CALLBACK_INSTANCE,
                                        void* scheduler_worker_pool_windows_impl,
                                        PTP_WORK);
-
   // SchedulerWorkerPool:
-  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
-  void OnCanScheduleSequence(
+  void PushSequenceAndWakeUpWorkers(
       SequenceAndTransaction sequence_and_transaction) override;
+  void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
+      override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the top Sequence off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.
@@ -76,6 +76,10 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
 
   // Indicates whether the pool has been started yet.
   bool started_ GUARDED_BY(lock_) = false;
+
+  // Number of threadpool work submitted to the pool which haven't popped a
+  // Sequence from the PriorityQueue yet.
+  size_t num_pending_threadpool_work_ GUARDED_BY(lock_) = 0;
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.
