@@ -36,9 +36,12 @@
 #include <content/browser/renderer_host/input/input_disposition_handler.h>
 #include <content/browser/renderer_host/input/input_router_impl.h>
 #include <content/common/cursors/webcursor.h>
+#include <content/common/text_input_state.h>
 #include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
 #include <ui/base/cursor/cursor_loader.h>
+#include <ui/base/ime/input_method_delegate.h>
+#include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
 
 namespace content {
@@ -47,7 +50,10 @@ class InputRouterImpl;
 
 namespace ui {
 class CursorLoader;
+class InputMethod;
 }  // close namespace ui
+
+struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blpwtk2 {
 
@@ -65,6 +71,8 @@ class RenderWebView final : public WebView
                           , private content::InputRouterImplClient
                           , private content::InputDispositionHandler
                           , private content::FlingControllerSchedulerClient
+                          , private ui::internal::InputMethodDelegate
+                          , private ui::TextInputClient
 {
     class RenderViewObserver;
 
@@ -122,6 +130,18 @@ class RenderWebView final : public WebView
         kConsumed,
         kNotConsumed,
     } d_firstScrollUpdateAckState = FirstScrollUpdateAckState::kNotArrived;
+
+    // State related to keyboard events:
+    bool d_focused = false;
+    std::unique_ptr<ui::InputMethod> d_inputMethod;
+    gfx::Range d_composition_range;
+    std::vector<gfx::Rect> d_compositionCharacterBounds;
+    bool d_hasCompositionText = false;
+    content::TextInputState d_textInputState;
+    gfx::SelectionBound d_selectionAnchor, d_selectionFocus;
+    base::string16 d_selectionText;
+    std::size_t d_selectionTextOffset = 0;
+    gfx::Range d_selectionRange;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -243,10 +263,10 @@ class RenderWebView final : public WebView
 
     // content::InputRouterImplClient overrides:
     content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
-    void OnImeCancelComposition() override {};
+    void OnImeCancelComposition() override;
     void OnImeCompositionRangeChanged(
         const gfx::Range& range,
-        const std::vector<gfx::Rect>& bounds) override {};
+        const std::vector<gfx::Rect>& bounds) override;
 
     // content::InputDispositionHandler overrides:
     void OnWheelEventAck(
@@ -270,6 +290,44 @@ class RenderWebView final : public WebView
         base::WeakPtr<content::FlingController> fling_controller) override {};
     bool NeedsBeginFrameForFlingProgress() override;
 
+    // ui::internal::InputMethodDelegate overrides:
+    ui::EventDispatchDetails DispatchKeyEventPostIME(
+        ui::KeyEvent* key_event,
+        base::OnceCallback<void(bool)> ack_callback) override;
+
+    // ui::TextInputClient overrides:
+    void SetCompositionText(const ui::CompositionText& composition) override;
+    void ConfirmCompositionText() override;
+    void ClearCompositionText() override;
+    void InsertText(const base::string16& text) override;
+    void InsertChar(const ui::KeyEvent& event) override;
+    ui::TextInputType GetTextInputType() const override;
+    ui::TextInputMode GetTextInputMode() const override;
+    base::i18n::TextDirection GetTextDirection() const override;
+    int GetTextInputFlags() const override;
+    bool CanComposeInline() const override;
+    gfx::Rect GetCaretBounds() const override;
+    bool GetCompositionCharacterBounds(uint32_t index,
+        gfx::Rect* rect) const override;
+    bool HasCompositionText() const override;
+    FocusReason GetFocusReason() const override;
+    bool GetTextRange(gfx::Range* range) const override;
+    bool GetCompositionTextRange(gfx::Range* range) const override;
+    bool GetSelectionRange(gfx::Range* range) const override;
+    bool SetSelectionRange(const gfx::Range& range) override;
+    bool DeleteRange(const gfx::Range& range) override;
+    bool GetTextFromRange(const gfx::Range& range,
+        base::string16* text) const override;
+    void OnInputMethodChanged() override;
+    bool ChangeTextDirectionAndLayoutAlignment(
+        base::i18n::TextDirection direction) override;
+    void ExtendSelectionAndDelete(size_t before, size_t after) override;
+    void EnsureCaretNotInRect(const gfx::Rect& rect) override;
+    bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
+    void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
+    ukm::SourceId GetClientSourceForMetrics() const override;
+    bool ShouldDoLearning() override;
+
     // IPC message handlers:
     //
     // Mouse locking:
@@ -280,6 +338,15 @@ class RenderWebView final : public WebView
 
     // Cursor:
     void OnSetCursor(const content::WebCursor& cursor);
+
+    // Keyboard events:
+    void OnSelectionBoundsChanged(
+        const WidgetHostMsg_SelectionBounds_Params& params);
+    void OnSelectionChanged(const base::string16& text,
+        uint32_t offset,
+        const gfx::Range& range);
+    void OnTextInputStateChanged(
+        const content::TextInputState& params);
 
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
@@ -294,12 +361,17 @@ class RenderWebView final : public WebView
     void initialize();
     void updateVisibility();
     void updateGeometry();
+    void updateFocus();
     void detachFromRoutingId();
     bool dispatchToRenderWidget(const IPC::Message& message);
     void sendScreenRects();
     void setPlatformCursor(HCURSOR cursor);
     void onMouseEventAck(
         const content::MouseEventWithLatencyInfo& event,
+        content::InputEventAckSource ack_source,
+        content::InputEventAckState ack_result) {};
+    void onKeyboardEventAck(
+        const content::NativeWebKeyboardEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
         content::InputEventAckState ack_result) {};
     void onQueueWheelEventWithPhaseEnded();
