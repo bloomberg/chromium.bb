@@ -420,6 +420,9 @@ class MetaBuildWrapper(object):
     ])
 
   def _RunUnderSwarming(self, build_dir, target):
+    isolate_server = 'isolateserver.appspot.com'
+    namespace = 'default-gzip'
+    swarming_server = 'chromium-swarm.appspot.com'
     # TODO(dpranke): Look up the information for the target in
     # the //testing/buildbot.json file, if possible, so that we
     # can determine the isolate target, command line, and additional
@@ -434,9 +437,9 @@ class MetaBuildWrapper(object):
         self.executable,
         self.PathJoin('tools', 'swarming_client', 'isolate.py'),
         'archive',
-        '-s',
-        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
-        '-I', 'isolateserver.appspot.com',
+        '-s', self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
+        '-I', isolate_server,
+        '--namespace', namespace,
       ]
     ret, out, _ = self.Run(cmd, force_verbose=False)
     if ret:
@@ -448,8 +451,9 @@ class MetaBuildWrapper(object):
         self.PathJoin('tools', 'swarming_client', 'swarming.py'),
           'run',
           '-s', isolated_hash,
-          '-I', 'isolateserver.appspot.com',
-          '-S', 'chromium-swarm.appspot.com',
+          '-I', isolate_server,
+          '--namespace', namespace,
+          '-S', swarming_server,
       ] + dimensions
     self._AddBaseSoftware(cmd)
     if self.args.extra_args:
