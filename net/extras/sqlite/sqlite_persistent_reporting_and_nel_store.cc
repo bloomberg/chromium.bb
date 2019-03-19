@@ -155,11 +155,11 @@ bool CreateV1NELPoliciesSchema(sql::Database* db) {
       "  origin_port INTEGER NOT NULL,"
       "  received_ip_address TEXT NOT NULL,"
       "  report_to TEXT NOT NULL,"
-      "  expires_ms_since_epoch INTEGER NOT NULL,"
+      "  expires_us_since_epoch INTEGER NOT NULL,"
       "  success_fraction REAL NOT NULL,"
       "  failure_fraction REAL NOT NULL,"
       "  is_include_subdomains INTEGER NOT NULL,"
-      "  last_access_ms_since_epoch INTEGER NOT NULL,"
+      "  last_access_us_since_epoch INTEGER NOT NULL,"
       // Each origin specifies at most one NEL policy.
       "  UNIQUE (origin_scheme, origin_host, origin_port)"
       ")";
@@ -194,13 +194,13 @@ struct SQLitePersistentReportingAndNELStore::Backend::NELPolicyInfo {
         origin_port(nel_policy.origin.port()),
         received_ip_address(nel_policy.received_ip_address.ToString()),
         report_to(nel_policy.report_to),
-        expires_ms_since_epoch(
-            nel_policy.expires.ToDeltaSinceWindowsEpoch().InMilliseconds()),
+        expires_us_since_epoch(
+            nel_policy.expires.ToDeltaSinceWindowsEpoch().InMicroseconds()),
         success_fraction(nel_policy.success_fraction),
         failure_fraction(nel_policy.failure_fraction),
         is_include_subdomains(nel_policy.include_subdomains),
-        last_access_ms_since_epoch(
-            nel_policy.last_used.ToDeltaSinceWindowsEpoch().InMilliseconds()) {}
+        last_access_us_since_epoch(
+            nel_policy.last_used.ToDeltaSinceWindowsEpoch().InMicroseconds()) {}
 
   // Origin the policy was received from.
   std::string origin_scheme;
@@ -210,16 +210,16 @@ struct SQLitePersistentReportingAndNELStore::Backend::NELPolicyInfo {
   std::string received_ip_address;
   // The Reporting group which the policy specifies.
   std::string report_to;
-  // When the policy expires, in milliseconds since the Windows epoch.
-  int64_t expires_ms_since_epoch = 0;
+  // When the policy expires, in microseconds since the Windows epoch.
+  int64_t expires_us_since_epoch = 0;
   // Sampling fractions.
   double success_fraction = 0.0;
   double failure_fraction = 0.0;
   // Whether the policy applies to subdomains of the origin.
   bool is_include_subdomains = false;
-  // Last time the policy was updated or used, in milliseconds since the
+  // Last time the policy was updated or used, in microseconds since the
   // Windows epoch.
-  int64_t last_access_ms_since_epoch = 0;
+  int64_t last_access_us_since_epoch = 0;
 };
 
 void SQLitePersistentReportingAndNELStore::Backend::LoadNELPolicies(
@@ -322,15 +322,15 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
   sql::Statement add_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO nel_policies (origin_scheme, origin_host, origin_port, "
-      "received_ip_address, report_to, expires_ms_since_epoch, "
+      "received_ip_address, report_to, expires_us_since_epoch, "
       "success_fraction, failure_fraction, is_include_subdomains, "
-      "last_access_ms_since_epoch) VALUES (?,?,?,?,?,?,?,?,?,?)"));
+      "last_access_us_since_epoch) VALUES (?,?,?,?,?,?,?,?,?,?)"));
   if (!add_smt.is_valid())
     return;
 
   sql::Statement update_access_smt(db()->GetCachedStatement(
       SQL_FROM_HERE,
-      "UPDATE nel_policies SET last_access_ms_since_epoch=? WHERE "
+      "UPDATE nel_policies SET last_access_us_since_epoch=? WHERE "
       "origin_scheme=? AND origin_host=? AND origin_port=?"));
   if (!update_access_smt.is_valid())
     return;
@@ -352,11 +352,11 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
       add_smt.BindInt(2, nel_policy_info.origin_port);
       add_smt.BindString(3, nel_policy_info.received_ip_address);
       add_smt.BindString(4, nel_policy_info.report_to);
-      add_smt.BindInt64(5, nel_policy_info.expires_ms_since_epoch);
+      add_smt.BindInt64(5, nel_policy_info.expires_us_since_epoch);
       add_smt.BindDouble(6, nel_policy_info.success_fraction);
       add_smt.BindDouble(7, nel_policy_info.failure_fraction);
       add_smt.BindBool(8, nel_policy_info.is_include_subdomains);
-      add_smt.BindInt64(9, nel_policy_info.last_access_ms_since_epoch);
+      add_smt.BindInt64(9, nel_policy_info.last_access_us_since_epoch);
       if (!add_smt.Run())
         DLOG(WARNING) << "Could not add a NEL policy to the DB.";
       break;
@@ -364,7 +364,7 @@ void SQLitePersistentReportingAndNELStore::Backend::CommitNELPolicyOperation(
     case PendingOperation<NELPolicyInfo>::Type::UPDATE_ACCESS_TIME:
       update_access_smt.Reset(true);
       update_access_smt.BindInt64(0,
-                                  nel_policy_info.last_access_ms_since_epoch);
+                                  nel_policy_info.last_access_us_since_epoch);
       update_access_smt.BindString(1, nel_policy_info.origin_scheme);
       update_access_smt.BindString(2, nel_policy_info.origin_host);
       update_access_smt.BindInt(3, nel_policy_info.origin_port);
@@ -475,8 +475,8 @@ void SQLitePersistentReportingAndNELStore::Backend::
 
   sql::Statement smt(db()->GetUniqueStatement(
       "SELECT origin_scheme, origin_host, origin_port, received_ip_address,"
-      "report_to, expires_ms_since_epoch, success_fraction, failure_fraction,"
-      "is_include_subdomains, last_access_ms_since_epoch FROM nel_policies"));
+      "report_to, expires_us_since_epoch, success_fraction, failure_fraction,"
+      "is_include_subdomains, last_access_us_since_epoch FROM nel_policies"));
   if (!smt.is_valid()) {
     Reset();
     return;
@@ -494,12 +494,12 @@ void SQLitePersistentReportingAndNELStore::Backend::
       policy.received_ip_address = IPAddress();
     policy.report_to = smt.ColumnString(4);
     policy.expires = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMilliseconds(smt.ColumnInt64(5)));
+        base::TimeDelta::FromMicroseconds(smt.ColumnInt64(5)));
     policy.success_fraction = smt.ColumnDouble(6);
     policy.failure_fraction = smt.ColumnDouble(7);
     policy.include_subdomains = smt.ColumnBool(8);
     policy.last_used = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMilliseconds(smt.ColumnInt64(9)));
+        base::TimeDelta::FromMicroseconds(smt.ColumnInt64(9)));
 
     loaded_policies.push_back(std::move(policy));
   }
