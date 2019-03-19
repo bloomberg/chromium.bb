@@ -66,14 +66,15 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedPause);
   };
 
-  // Exclude the window from occlusion tracking so that a window behind the
-  // given window is still considered visible. The excluded window itself and
-  // its descendant windows, if tracked, are considered visible. This is useful
-  // for a window being dragged or resized to avoid unnecessary occlusion state
-  // change triggered by these operation, because the window bounds are
-  // temporary until it is finished.
-  // Note that this is intended to be used by window manager and not by mus
-  // client process.
+  // Forces the occlusion state of a window and all its descendants to VISIBLE.
+  // Ignores the window that is forced VISIBLE and its descendants when
+  // computing the occlusion state of other windows is the tree.
+  //
+  // This is useful for a window being dragged or resized to avoid unnecessary
+  // occlusion state change triggered by these operation, because the window
+  // bounds are temporary until it is finished.
+  //
+  // Note that this is intended to be used by window manager, such as Ash.
   class AURA_EXPORT ScopedExclude : public WindowObserver {
    public:
     explicit ScopedExclude(Window* window);
@@ -82,13 +83,36 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     Window* window() { return window_; }
 
    private:
-    // aura::WindowObserver:
-    void OnWindowDestroying(aura::Window* window) override;
+    // WindowObserver:
+    void OnWindowDestroying(Window* window) override;
 
     void Shutdown();
 
     Window* window_;
     DISALLOW_COPY_AND_ASSIGN(ScopedExclude);
+  };
+
+  // Forces the occlusion state of a window to VISIBLE. Causes the occlusion
+  // state of descendants of the window that is forced VISIBLE to be computed
+  // as if they were in an isolated tree with a root that is drawn. Ignores the
+  // window that is forced VISIBLE and its descendants when computing the
+  // occlusion state of other windows is the tree.
+  //
+  // This function is primarily useful for situations that show the contents of
+  // a hidden window, such as overview mode on ChromeOS.
+  class AURA_EXPORT ScopedForceVisible : public WindowObserver {
+   public:
+    explicit ScopedForceVisible(Window* window);
+    ~ScopedForceVisible() override;
+
+   private:
+    // WindowObserver:
+    void OnWindowDestroying(Window* window) override;
+
+    void Shutdown();
+
+    Window* window_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedForceVisible);
   };
 
   // Start tracking the occlusion state of |window|.
@@ -108,6 +132,8 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
       OcclusionChangeBuilderFactory factory) {
     occlusion_change_builder_factory_ = std::move(factory);
   }
+
+  bool IsPaused() const { return num_pause_occlusion_tracking_; }
 
  private:
   friend class test::WindowOcclusionTrackerTestApi;
@@ -174,8 +200,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   bool MaybeObserveAnimatedWindow(Window* window);
 
   // Calls SetOccluded() with |is_occluded| as argument for |window| and its
-  // descendants.
-  void SetWindowAndDescendantsAreOccluded(Window* window, bool is_occluded);
+  // descendants. |is_parent_visible| is true if the parent is visible.
+  void SetWindowAndDescendantsAreOccluded(Window* window,
+                                          bool is_occluded,
+                                          bool is_parent_visible);
 
   // Updates the occlusion state of |window| in |tracked_windows_|, based on
   // |is_occluded| and window->IsVisible(). Updates the occluded region of
@@ -183,6 +211,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // |tracked_windows_|.
   void SetOccluded(Window* window,
                    bool is_occluded,
+                   bool is_parent_visible,
                    const SkRegion& occluded_region);
 
   // Returns true if |window| is in |tracked_windows_|.
@@ -193,6 +222,14 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Returns true if |window| is in |excluded_windows_|.
   bool WindowIsExcluded(Window* window) const;
+
+  // Returns true if |window| is considered visible. Use this over IsVisible()
+  // to ensure forced visible windows are considered.
+  bool WindowIsVisible(Window* window) const;
+
+  // Returns true if |window| is forced visible. This does *not* recurse and
+  // only checks |window|. Use WindowIsVisible() to consider parents.
+  bool WindowIsForcedVisible(Window* window) const;
 
   // If the root of |window| is not dirty and |predicate| is true, marks the
   // root of |window| as dirty. Then, calls MaybeComputeOcclusion().
@@ -207,7 +244,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Marks |root_window| as dirty. Returns false if none of the descendent
   // windows in |root_window| are tracked.
-  bool MarkRootWindowAsDirty(aura::Window* root_window);
+  bool MarkRootWindowAsDirty(Window* root_window);
 
   // Returns true if |window| or one of its parents is in |animated_windows_|.
   bool WindowOrParentIsAnimated(Window* window) const;
@@ -250,10 +287,14 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void Pause();
   void Unpause();
 
-  // Exclucde/Unexclude a window from occlusion tracking. See comment on
+  // Exclude/Unexclude a window from occlusion tracking. See comment on
   // ScopedExclude.
   void Exclude(Window* window);
   void Unexclude(Window* window);
+
+  // Called from ScopedForceVisible.
+  void ForceWindowVisible(Window* window);
+  void RemoveForceWindowVisible(Window* window);
 
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
@@ -287,6 +328,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Windows whose occlusion data is tracked.
   base::flat_map<Window*, OcclusionData> tracked_windows_;
+
+  // Windows whose target visibility is forced to true.
+  base::flat_map<Window*, size_t> forced_visible_count_map_;
 
   // Windows whose bounds or transform are animated.
   //

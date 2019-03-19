@@ -7,10 +7,14 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_state.h"
+#include "services/ws/top_level_proxy_window.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/widget/widget.h"
@@ -132,6 +136,10 @@ void WindowMirrorView::UpdateSourceWindowProperty() {
   target_ = GetWidget()->GetNativeWindow();
   target_->TrackOcclusionState();
 
+  force_occlusion_tracker_visible_.reset();
+  force_proxy_window_visible_.reset();
+  env_observer_.RemoveAll();
+
   // Allocate new memory for |target_window_list| here because as soon as a
   // call is made to SetProperty, the previous memory will be deallocated.
   auto temp_list =
@@ -146,6 +154,19 @@ void WindowMirrorView::UpdateSourceWindowProperty() {
   // NOTE: This will deallocate the current property value so make sure new
   // memory has been allocated for the property value.
   source_->SetProperty(aura::client::kMirrorWindowList, temp_list.release());
+
+  // If |source_| represents a remote client, it needs to be made visible,
+  // otherwise it won't produce frames.
+  if (target_ && NonClientFrameController::Get(source_)) {
+    // Wait for window-occlusion tracker to be running before forcing
+    // visibility. This is done to minimize the amount of work during the
+    // initial animation when entering overview. In particular, telling the
+    // remote client it is visible is likely to result in a fair amount of work.
+    if (source_->env()->GetWindowOcclusionTracker()->IsPaused())
+      env_observer_.Add(target_->env());
+    else
+      ForceVisibilityAndOcclusionForProxyWindow();
+  }
 }
 
 void WindowMirrorView::InitLayerOwner() {
@@ -189,6 +210,28 @@ gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
     return gfx::Rect();
   views::View* client_view = widget->client_view();
   return client_view->ConvertRectToWidget(client_view->GetLocalBounds());
+}
+
+void WindowMirrorView::ForceVisibilityAndOcclusionForProxyWindow() {
+  NonClientFrameController* frame_controller =
+      NonClientFrameController::Get(source_);
+  // Earlier checks ensure we only get here if there is a
+  // NonClientFrameController.
+  DCHECK(frame_controller);
+  // In order for the remote client to produce frames the client needs to think
+  // the window is visible. It may not actually be visible now, so force it.
+  force_proxy_window_visible_ =
+      frame_controller->top_level_proxy_window()->ForceVisible();
+
+  // Similarly, force the occlusion tracker to treat the source as visible.
+  force_occlusion_tracker_visible_ =
+      std::make_unique<aura::WindowOcclusionTracker::ScopedForceVisible>(
+          source_);
+}
+
+void WindowMirrorView::OnWindowOcclusionTrackingResumed() {
+  ForceVisibilityAndOcclusionForProxyWindow();
+  env_observer_.RemoveAll();
 }
 
 }  // namespace wm

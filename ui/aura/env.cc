@@ -248,9 +248,15 @@ WindowOcclusionTracker* Env::GetWindowOcclusionTracker() {
 
 void Env::PauseWindowOcclusionTracking() {
   switch (mode_) {
-    case Mode::LOCAL:
+    case Mode::LOCAL: {
+      const bool was_paused = GetWindowOcclusionTracker();
       GetWindowOcclusionTracker()->Pause();
+      if (!was_paused) {
+        for (EnvObserver& observer : observers_)
+          observer.OnWindowOcclusionTrackingPaused();
+      }
       break;
+    }
     case Mode::MUS:
       // |window_tree_client_| could be null in tests.
       // e.g. WindowTreeClientDestructionTest.*
@@ -264,6 +270,10 @@ void Env::UnpauseWindowOcclusionTracking() {
   switch (mode_) {
     case Mode::LOCAL:
       GetWindowOcclusionTracker()->Unpause();
+      if (!GetWindowOcclusionTracker()->IsPaused()) {
+        for (EnvObserver& observer : observers_)
+          observer.OnWindowOcclusionTrackingResumed();
+      }
       break;
     case Mode::MUS:
       // |window_tree_client_| could be null in tests.
