@@ -192,7 +192,7 @@ TEST_F(BubbleDialogDelegateViewTest, CloseAnchorViewTest) {
   // is still kept, so that the bubble does not jump when the view gets deleted.
   anchor_widget->GetContentsView()->RemoveChildView(anchor_view.get());
   anchor_view.reset();
-  EXPECT_EQ(NULL, bubble_delegate->GetAnchorView());
+  EXPECT_EQ(nullptr, bubble_delegate->GetAnchorView());
   EXPECT_EQ(view_rect.ToString(), bubble_delegate->GetAnchorRect().ToString());
 }
 

@@ -179,7 +179,7 @@ void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
 
 void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
-    SetAnchorView(NULL);
+    SetAnchorView(nullptr);
 }
 
 void BubbleDialogDelegateView::OnWidgetVisibilityChanging(Widget* widget,
@@ -355,7 +355,7 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
         UpdateHighlightedButton(false);
       }
       anchor_widget_->RemoveObserver(this);
-      anchor_widget_ = NULL;
+      anchor_widget_ = nullptr;
     }
     if (anchor_view) {
       anchor_widget_ = anchor_view->GetWidget();
@@ -407,8 +407,8 @@ void BubbleDialogDelegateView::SizeToContents() {
 
 BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
   const NonClientView* view =
-      GetWidget() ? GetWidget()->non_client_view() : NULL;
-  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : NULL;
+      GetWidget() ? GetWidget()->non_client_view() : nullptr;
+  return view ? static_cast<BubbleFrameView*>(view->frame_view()) : nullptr;
 }
 
 void BubbleDialogDelegateView::UpdateColorsFromTheme(
