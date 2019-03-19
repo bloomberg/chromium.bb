@@ -524,7 +524,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
-- (void)DISABLED_testSavingToReadingListAndLoadDistilled {
+- (void)testSavingToReadingListAndLoadDistilled {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -606,7 +606,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
-- (void)DISABLED_testSavingToReadingListAndLoadNoNetwork {
+- (void)testSavingToReadingListAndLoadNoNetwork {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -653,7 +653,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
-- (void)DISABLED_testSavingToReadingListAndLoadBadNetwork {
+- (void)testSavingToReadingListAndLoadBadNetwork {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
