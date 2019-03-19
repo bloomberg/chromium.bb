@@ -1189,9 +1189,9 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, ContextMenuController overrides:
 
-void Textfield::ShowContextMenuForView(View* source,
-                                       const gfx::Point& point,
-                                       ui::MenuSourceType source_type) {
+void Textfield::ShowContextMenuForViewImpl(View* source,
+                                           const gfx::Point& point,
+                                           ui::MenuSourceType source_type) {
   UpdateContextMenu();
   context_menu_runner_->RunMenuAt(GetWidget(), NULL,
                                   gfx::Rect(point, gfx::Size()),

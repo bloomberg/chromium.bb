@@ -27,9 +27,9 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };

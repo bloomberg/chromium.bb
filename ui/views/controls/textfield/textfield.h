@@ -292,9 +292,9 @@ class VIEWS_EXPORT Textfield : public View,
   void OnCompositionTextConfirmedOrCleared() override;
 
   // ContextMenuController overrides:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // DragController overrides:
   void WriteDragDataForView(View* sender,

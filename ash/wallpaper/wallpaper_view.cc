@@ -194,9 +194,9 @@ bool WallpaperView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void WallpaperView::ShowContextMenuForView(views::View* source,
-                                           const gfx::Point& point,
-                                           ui::MenuSourceType source_type) {
+void WallpaperView::ShowContextMenuForViewImpl(views::View* source,
+                                               const gfx::Point& point,
+                                               ui::MenuSourceType source_type) {
   Shell::Get()->ShowContextMenu(point, source_type);
 }
 

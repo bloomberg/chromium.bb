@@ -113,9 +113,9 @@ class DownloadItemView : public views::InkDropHostView,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::ContextMenuController.
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

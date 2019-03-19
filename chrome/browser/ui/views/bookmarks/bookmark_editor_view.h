@@ -118,9 +118,9 @@ class BookmarkEditorView : public BookmarkEditor,
   void Show(gfx::NativeWindow parent);
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
  private:
   friend class BookmarkEditorViewTest;

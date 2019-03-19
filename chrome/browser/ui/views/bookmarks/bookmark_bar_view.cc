@@ -1434,9 +1434,10 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   RecordBookmarkLaunch(node, GetBookmarkLaunchLocation());
 }
 
-void BookmarkBarView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point,
-                                             ui::MenuSourceType source_type) {
+void BookmarkBarView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   if (!model_->loaded()) {
     // Don't do anything if the model isn't loaded.
     return;

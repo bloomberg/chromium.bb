@@ -643,9 +643,9 @@ void Label::VisibilityChanged(View* starting_from, bool is_visible) {
     ClearDisplayText();
 }
 
-void Label::ShowContextMenuForView(View* source,
-                                   const gfx::Point& point,
-                                   ui::MenuSourceType source_type) {
+void Label::ShowContextMenuForViewImpl(View* source,
+                                       const gfx::Point& point,
+                                       ui::MenuSourceType source_type) {
   if (!GetRenderTextForSelectionController())
     return;
 

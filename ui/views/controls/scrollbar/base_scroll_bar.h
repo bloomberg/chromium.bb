@@ -86,9 +86,9 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   bool OnScroll(float dx, float dy) override;
 
   // ContextMenuController overrides:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int id) const override;

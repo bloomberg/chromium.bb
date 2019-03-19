@@ -267,9 +267,9 @@ class VIEWS_EXPORT Label : public View,
   friend class LabelSelectionTest;
 
   // ContextMenuController overrides:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // WordLookupClient overrides:
   bool GetWordLookupDataAtPoint(const gfx::Point& point,

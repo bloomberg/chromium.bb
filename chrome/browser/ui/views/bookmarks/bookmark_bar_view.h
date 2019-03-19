@@ -237,9 +237,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
  private:
   class ButtonSeparatorView;

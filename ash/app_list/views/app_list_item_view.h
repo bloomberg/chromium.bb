@@ -170,9 +170,9 @@ class APP_LIST_EXPORT AppListItemView
                                   std::vector<ash::mojom::MenuItemPtr> menu);
 
   // views::ContextMenuController overrides:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // views::Button overrides:
   bool ShouldEnterPushedState(const ui::Event& event) override;

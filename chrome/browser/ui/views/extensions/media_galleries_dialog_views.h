@@ -56,9 +56,9 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ContextMenuController implementation:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);

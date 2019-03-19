@@ -151,9 +151,10 @@ bool TreeViewExample::CanEdit(TreeView* tree_view,
   return true;
 }
 
-void TreeViewExample::ShowContextMenuForView(View* source,
-                                             const gfx::Point& point,
-                                             ui::MenuSourceType source_type) {
+void TreeViewExample::ShowContextMenuForViewImpl(
+    View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   context_menu_model_.reset(new ui::SimpleMenuModel(this));
   context_menu_model_->AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
   context_menu_model_->AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));

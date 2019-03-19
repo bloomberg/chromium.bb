@@ -77,9 +77,9 @@ class OpenMenuListener : public views::ContextMenuController {
     view_->set_context_menu_controller(nullptr);
   }
 
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override {
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override {
     opened_menu_ = true;
   }
 

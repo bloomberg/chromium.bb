@@ -197,9 +197,9 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
     TouchUMA::RecordGestureAction(TouchUMA::kGestureTabCloseTap);
 }
 
-void Tab::ShowContextMenuForView(views::View* source,
-                                 const gfx::Point& point,
-                                 ui::MenuSourceType source_type) {
+void Tab::ShowContextMenuForViewImpl(views::View* source,
+                                     const gfx::Point& point,
+                                     ui::MenuSourceType source_type) {
   if (!closing_)
     controller_->ShowContextMenuForTab(this, point, source_type);
 }

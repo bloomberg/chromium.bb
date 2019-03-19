@@ -28,14 +28,26 @@ class View;
 // implementation for mouse processing.
 class VIEWS_EXPORT ContextMenuController {
  public:
-  // Invoked to show the context menu for |source|.
-  // |point| is in screen coordinates.
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point,
-                                      ui::MenuSourceType source_type) = 0;
+  // Invoked to show the context menu for |source|. |point| is in screen
+  // coordinates. This method also prevents reentrant calls.
+  void ShowContextMenuForView(View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type);
 
  protected:
   virtual ~ContextMenuController() {}
+
+ private:
+  // Subclasses should override this method.
+  virtual void ShowContextMenuForViewImpl(View* source,
+                                          const gfx::Point& point,
+                                          ui::MenuSourceType source_type) = 0;
+
+  // Used as a flag to prevent a re-entrancy in ShowContextMenuForView().
+  // This is most relevant to Linux, where spawning the textfield context menu
+  // spins a nested message loop that processes input events, which may attempt
+  // to trigger another context menu.
+  bool is_opening_ = false;
 };
 
 }  // namespace views

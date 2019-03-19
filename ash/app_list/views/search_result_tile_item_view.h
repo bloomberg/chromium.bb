@@ -61,15 +61,15 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void OnMetadataChanged() override;
 
   // views::ContextMenuController overrides:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // AppListMenuModelAdapter::Delegate overrides:
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  // Bound by ShowContextMenuForView().
+  // Bound by ShowContextMenuForViewImpl().
   void OnGetContextMenuModel(views::View* source,
                              const gfx::Point& point,
                              ui::MenuSourceType source_type,

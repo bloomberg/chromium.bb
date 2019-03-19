@@ -476,9 +476,10 @@ void AppListItemView::OnContextMenuModelReceived(
   apps_grid_view_->SetSelectedView(this);
 }
 
-void AppListItemView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point,
-                                             ui::MenuSourceType source_type) {
+void AppListItemView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   if (context_menu_ && context_menu_->IsShowingMenu())
     return;
   // Prevent multiple requests for context menus before the current request

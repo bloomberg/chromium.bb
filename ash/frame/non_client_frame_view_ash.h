@@ -125,9 +125,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
                                SplitViewController::State state) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;

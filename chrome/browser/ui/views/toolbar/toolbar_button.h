@@ -84,9 +84,9 @@ class ToolbarButton : public views::LabelButton,
   SkColor GetInkDropBaseColor() const override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   ui::MenuModel* menu_model_for_test() { return model_.get(); }
 

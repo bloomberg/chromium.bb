@@ -520,9 +520,10 @@ void DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
   views::View::OnGestureEvent(event);
 }
 
-void DownloadItemView::ShowContextMenuForView(View* source,
-                                              const gfx::Point& point,
-                                              ui::MenuSourceType source_type) {
+void DownloadItemView::ShowContextMenuForViewImpl(
+    View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   ShowContextMenuImpl(gfx::Rect(point, gfx::Size()), source_type);
 }
 

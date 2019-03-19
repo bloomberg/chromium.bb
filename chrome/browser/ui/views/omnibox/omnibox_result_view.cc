@@ -421,9 +421,10 @@ void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SchedulePaint();
 }
 
-void OmniboxResultView::ShowContextMenuForView(views::View* source,
-                                               const gfx::Point& point,
-                                               ui::MenuSourceType source_type) {
+void OmniboxResultView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   // Deferred unhover of the result until the context menu is closed.
   // If the mouse is still over the result when the context menu is closed, the
   // View will receive an OnMouseMoved call anyways, which sets hover to true.

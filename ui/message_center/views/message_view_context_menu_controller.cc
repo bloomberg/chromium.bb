@@ -19,7 +19,7 @@ MessageViewContextMenuController::MessageViewContextMenuController() = default;
 
 MessageViewContextMenuController::~MessageViewContextMenuController() = default;
 
-void MessageViewContextMenuController::ShowContextMenuForView(
+void MessageViewContextMenuController::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {

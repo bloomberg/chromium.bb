@@ -60,9 +60,9 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   bool CanEdit(TreeView* tree_view, ui::TreeModelNode* node) override;
 
   // ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
