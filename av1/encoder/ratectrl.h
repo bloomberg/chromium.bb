@@ -173,8 +173,7 @@ int av1_rc_get_default_min_gf_interval(int width, int height, double framerate);
 // Note av1_rc_get_default_max_gf_interval() requires the min_gf_interval to
 // be passed in to ensure that the max_gf_interval returned is at least as bis
 // as that.
-int av1_rc_get_default_max_gf_interval(double framerate, int min_frame_rate,
-                                       int max_pyr_height);
+int av1_rc_get_default_max_gf_interval(double framerate, int min_gf_interval);
 
 // Generally at the high level, the following flow is expected
 // to be enforced for rate control:

@@ -40,13 +40,6 @@ static INLINE int get_max_gf_length(int max_pyr_height) {
   }
 }
 
-// Given the maximum allowed height of the pyramid structure, return the fixed
-// GF length to be used.
-static INLINE int get_fixed_gf_length(int max_pyr_height) {
-  const int max_gf_length_allowed = get_max_gf_length(max_pyr_height);
-  return AOMMIN(max_gf_length_allowed, MAX_GF_INTERVAL);
-}
-
 struct AV1_COMP;
 struct EncodeFrameParams;
 

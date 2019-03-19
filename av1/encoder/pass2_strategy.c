@@ -736,6 +736,13 @@ static void allocate_gf_group_bits(
   }
 }
 
+// Given the maximum allowed height of the pyramid structure, return the fixed
+// GF length to be used.
+static INLINE int get_fixed_gf_length(int max_pyr_height) {
+  const int max_gf_length_allowed = get_max_gf_length(max_pyr_height);
+  return AOMMIN(max_gf_length_allowed, MAX_GF_INTERVAL);
+}
+
 // Returns true if KF group and GF group both are almost completely static.
 static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
   return (gf_zero_motion >= 0.995) &&
@@ -762,8 +769,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   int i;
 
   double boost_score = 0.0;
-  int active_min_gf_interval;
-  int active_max_gf_interval;
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
   double gf_group_raw_error = 0.0;
@@ -796,7 +801,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                             frame_params->frame_type == INTRA_ONLY_FRAME;
   const int arf_active_or_kf = is_intra_only || rc->source_alt_ref_active;
 
-  cpi->extra_arf_allowed = 1;
+  cpi->extra_arf_allowed = (oxcf->gf_max_pyr_height > 1);
 
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
@@ -829,8 +834,9 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       (cpi->initial_height + cpi->initial_width) / 4.0;
 
   // TODO(urvang): Try logic to vary min and max interval based on q.
-  active_min_gf_interval = rc->min_gf_interval;
-  active_max_gf_interval = rc->max_gf_interval;
+  const int active_min_gf_interval = rc->min_gf_interval;
+  const int active_max_gf_interval =
+      AOMMIN(rc->max_gf_interval, get_fixed_gf_length(oxcf->gf_max_pyr_height));
 
   double avg_sr_coded_error = 0;
   double avg_raw_err_stdev = 0;
