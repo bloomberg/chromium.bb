@@ -1374,6 +1374,7 @@ component("net") {
       "third_party/quiche/src/quic/core/crypto/crypto_utils.h",
       "third_party/quiche/src/quic/core/crypto/curve25519_key_exchange.cc",
       "third_party/quiche/src/quic/core/crypto/curve25519_key_exchange.h",
+      "third_party/quiche/src/quic/core/crypto/key_exchange.cc",
       "third_party/quiche/src/quic/core/crypto/key_exchange.h",
       "third_party/quiche/src/quic/core/crypto/null_decrypter.cc",
       "third_party/quiche/src/quic/core/crypto/null_decrypter.h",
