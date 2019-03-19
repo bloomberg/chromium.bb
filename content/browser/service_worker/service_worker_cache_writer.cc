@@ -22,8 +22,10 @@ class AsyncOnlyCompletionCallbackAdaptor
     : public base::RefCounted<AsyncOnlyCompletionCallbackAdaptor> {
  public:
   explicit AsyncOnlyCompletionCallbackAdaptor(
-      const net::CompletionCallback& callback)
-      : async_(false), result_(net::ERR_IO_PENDING), callback_(callback) {}
+      net::CompletionOnceCallback callback)
+      : async_(false),
+        result_(net::ERR_IO_PENDING),
+        callback_(std::move(callback)) {}
 
   void set_async(bool async) { async_ = async; }
   bool async() { return async_; }
@@ -32,7 +34,7 @@ class AsyncOnlyCompletionCallbackAdaptor
   void WrappedCallback(int result) {
     result_ = result;
     if (async_)
-      callback_.Run(result);
+      std::move(callback_).Run(result);
   }
 
  private:
@@ -41,7 +43,7 @@ class AsyncOnlyCompletionCallbackAdaptor
 
   bool async_;
   int result_;
-  net::CompletionCallback callback_;
+  net::CompletionOnceCallback callback_;
 };
 
 }  // namespace
@@ -547,7 +549,7 @@ int ServiceWorkerCacheWriter::DoDone(int result) {
 int ServiceWorkerCacheWriter::ReadInfoHelper(
     const std::unique_ptr<ServiceWorkerResponseReader>& reader,
     HttpResponseInfoIOBuffer* buf) {
-  net::CompletionCallback run_callback = base::Bind(
+  net::CompletionOnceCallback run_callback = base::BindOnce(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
@@ -562,7 +564,7 @@ int ServiceWorkerCacheWriter::ReadDataHelper(
     const std::unique_ptr<ServiceWorkerResponseReader>& reader,
     net::IOBuffer* buf,
     int buf_len) {
-  net::CompletionCallback run_callback = base::Bind(
+  net::CompletionOnceCallback run_callback = base::BindOnce(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
@@ -578,7 +580,7 @@ int ServiceWorkerCacheWriter::WriteInfoHelper(
     const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
     HttpResponseInfoIOBuffer* buf) {
   did_replace_ = true;
-  net::CompletionCallback run_callback = base::Bind(
+  net::CompletionOnceCallback run_callback = base::BindOnce(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
@@ -593,7 +595,7 @@ int ServiceWorkerCacheWriter::WriteDataHelper(
     const std::unique_ptr<ServiceWorkerResponseWriter>& writer,
     net::IOBuffer* buf,
     int buf_len) {
-  net::CompletionCallback run_callback = base::Bind(
+  net::CompletionOnceCallback run_callback = base::BindOnce(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
