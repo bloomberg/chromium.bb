@@ -1036,6 +1036,12 @@ def checkout(options, git_slns, specs, revisions, step_text):
   ver = git('version').strip()
   print 'Using %s' % ver
 
+  try:
+    protocol = git('config', '--get', 'protocol.version')
+    print 'Using git protocol version %s' % protocol
+  except SubprocessFailed as e:
+    print 'git protocol version is not specified.'
+
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
   try:
