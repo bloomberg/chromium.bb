@@ -21,7 +21,7 @@ import java.util.List;
  */
 @JNINamespace("send_tab_to_self")
 public class SendTabToSelfAndroidBridge {
-    // TODO(tgupta): Add logic back in to track whether model is loaded.
+    // TODO(https://crbug.com/942549): Add logic back in to track whether model is loaded.
     private boolean mIsNativeSendTabToSelfModelLoaded;
 
     /**
@@ -29,8 +29,8 @@ public class SendTabToSelfAndroidBridge {
      * @returns All GUIDs for all SendTabToSelf entries
      */
     public static List<String> getAllGuids(Profile profile) {
-        // TODO(tgupta): Add this assertion back in once the code to load is in place.
-        // assert mIsNativeSendTabToSelfModelLoaded;
+        // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
+        // place. assert mIsNativeSendTabToSelfModelLoaded;
         List<String> toPopulate = new ArrayList<String>();
         SendTabToSelfAndroidBridgeJni.get().getAllGuids(profile, toPopulate);
         return toPopulate;
@@ -49,8 +49,8 @@ public class SendTabToSelfAndroidBridge {
 
     /** Deletes all SendTabToSelf entries. This is called when the user disables sync. */
     public static void deleteAllEntries(Profile profile) {
-        // TODO(tgupta): Add this assertion back in once the code to load is in place.
-        // assert mIsNativeSendTabToSelfModelLoaded;
+        // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
+        // place. assert mIsNativeSendTabToSelfModelLoaded;
         SendTabToSelfAndroidBridgeJni.get().deleteAllEntries(profile);
     }
 
@@ -60,14 +60,14 @@ public class SendTabToSelfAndroidBridge {
      * @param profile Profile of the user to add entry for.
      * @param url URL to be shared
      * @param title Title of the page
-     * @return The persisted entry which contains additional information such as the GUID or null in
-     *     the case of an error.
+     * @param navigationTime Time the user navigated to the page
+     * @return If the persistent entry in the bridge was created.
      */
-    @Nullable
-    public static SendTabToSelfEntry addEntry(Profile profile, String url, String title) {
-        // TODO(tgupta): Add this assertion back in once the code to load is in place.
-        // assert mIsNativeSendTabToSelfModelLoaded;
-        return SendTabToSelfAndroidBridgeJni.get().addEntry(profile, url, title);
+    public static SendTabToSelfEntry addEntry(
+            Profile profile, String url, String title, long navigationTime) {
+        // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
+        // place. assert mIsNativeSendTabToSelfModelLoaded;
+        return SendTabToSelfAndroidBridgeJni.get().addEntry(profile, url, title, navigationTime);
     }
 
     /**
@@ -79,8 +79,8 @@ public class SendTabToSelfAndroidBridge {
      */
     @Nullable
     public static SendTabToSelfEntry getEntryByGUID(Profile profile, String guid) {
-        // TODO(tgupta): Add this assertion back in once the code to load is in place.
-        // assert mIsNativeSendTabToSelfModelLoaded;
+        // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
+        // place. assert mIsNativeSendTabToSelfModelLoaded;
         return SendTabToSelfAndroidBridgeJni.get().getEntryByGUID(profile, guid);
     }
 
@@ -106,7 +106,7 @@ public class SendTabToSelfAndroidBridge {
 
     @NativeMethods
     interface Natives {
-        SendTabToSelfEntry addEntry(Profile profile, String url, String title);
+        SendTabToSelfEntry addEntry(Profile profile, String url, String title, long navigationTime);
 
         void getAllGuids(Profile profile, List<String> guids);
 

@@ -13,6 +13,10 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/version_info/channel.h"
 
+namespace history {
+class HistoryService;
+}  // namespace history
+
 namespace syncer {
 class ModelTypeControllerDelegate;
 class LocalDeviceInfoProvider;
@@ -28,7 +32,8 @@ class SendTabToSelfSyncService : public KeyedService {
   SendTabToSelfSyncService(
       version_info::Channel channel,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::OnceModelTypeStoreFactory create_store_callback);
+      syncer::OnceModelTypeStoreFactory create_store_callback,
+      history::HistoryService* history_service);
   ~SendTabToSelfSyncService() override;
 
   virtual SendTabToSelfModel* GetSendTabToSelfModel();

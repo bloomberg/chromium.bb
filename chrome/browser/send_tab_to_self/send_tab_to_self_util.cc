@@ -21,6 +21,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
@@ -71,12 +72,18 @@ bool ShouldOfferFeature(Browser* browser) {
 }
 
 void CreateNewEntry(content::WebContents* tab, Profile* profile) {
-  GURL url = tab->GetURL();
-  std::string title = base::UTF16ToUTF8(tab->GetTitle());
-  const send_tab_to_self::SendTabToSelfEntry* entry =
+  content::NavigationEntry* navigation_entry =
+      tab->GetController().GetLastCommittedEntry();
+
+  GURL url = navigation_entry->GetURL();
+  std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
+  base::Time navigation_time = navigation_entry->GetTimestamp();
+
+  const SendTabToSelfEntry* entry =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel()
-          ->AddEntry(url, title);
+          ->AddEntry(url, title, navigation_time);
+
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(entry);
   } else {

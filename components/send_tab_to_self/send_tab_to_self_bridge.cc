@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/local_device_info_provider.h"
@@ -48,13 +49,18 @@ SendTabToSelfBridge::SendTabToSelfBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
     base::Clock* clock,
-    syncer::OnceModelTypeStoreFactory create_store_callback)
+    syncer::OnceModelTypeStoreFactory create_store_callback,
+    history::HistoryService* history_service)
     : ModelTypeSyncBridge(std::move(change_processor)),
       clock_(clock),
       local_device_info_provider_(local_device_info_provider),
+      history_service_(history_service),
       weak_ptr_factory_(this) {
   DCHECK(local_device_info_provider);
   DCHECK(clock_);
+  if (history_service) {
+    history_service->AddObserver(this);
+  }
 
   std::move(create_store_callback)
       .Run(syncer::SEND_TAB_TO_SELF,
@@ -63,6 +69,9 @@ SendTabToSelfBridge::SendTabToSelfBridge(
 }
 
 SendTabToSelfBridge::~SendTabToSelfBridge() {
+  if (history_service_) {
+    history_service_->RemoveObserver(this);
+  }
 }
 
 std::unique_ptr<syncer::MetadataChangeList>
@@ -200,8 +209,14 @@ const SendTabToSelfEntry* SendTabToSelfBridge::GetEntryByGUID(
 
 const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     const GURL& url,
-    const std::string& title) {
+    const std::string& title,
+    base::Time navigation_time) {
   if (!change_processor()->IsTrackingMetadata()) {
+    // TODO(crbug.com/940512) handle failure case.
+    return nullptr;
+  }
+
+  if (navigation_time.is_null()) {
     return nullptr;
   }
 
@@ -220,10 +235,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     trimmed_title = base::CollapseWhitespaceASCII(title, false);
   }
 
-  // TODO(crbug.com/938102) Use history service to find most recent navigation
-  // time for url.
-  base::Time navigation_time = clock_->Now();
-
   auto entry = std::make_unique<SendTabToSelfEntry>(
       guid, url, trimmed_title, clock_->Now(), navigation_time,
       local_device_name_);
@@ -238,11 +249,11 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   const SendTabToSelfEntry* result =
       entries_.emplace(guid, std::move(entry)).first->second.get();
-  SendTabToSelfLocal specifics = result->AsLocalProto();
 
-  batch->WriteData(guid, specifics.SerializeAsString());
+  batch->WriteData(guid, result->AsLocalProto().SerializeAsString());
 
   Commit(std::move(batch));
+
   return result;
 }
 
@@ -276,6 +287,22 @@ void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
 
   batch->WriteData(guid, entry->AsLocalProto().SerializeAsString());
   Commit(std::move(batch));
+}
+
+void SendTabToSelfBridge::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
+  // We only care about actual user (or sync) deletions.
+  if (deletion_info.is_from_expiration())
+    return;
+
+  if (!deletion_info.IsAllHistory()) {
+    // TODO(crbug.com/938102) remove the specific entries that were deleted.
+    return;
+  }
+
+  // All history was cleared: just delete all entries.
+  DeleteAllEntries();
 }
 
 // static

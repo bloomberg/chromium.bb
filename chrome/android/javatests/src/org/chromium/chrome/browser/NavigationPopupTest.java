@@ -71,9 +71,9 @@ public class NavigationPopupTest {
     // Exists solely to expose protected methods to this test.
     private static class TestNavigationEntry extends NavigationEntry {
         public TestNavigationEntry(int index, String url, String virtualUrl, String originalUrl,
-                String title, Bitmap favicon, int transition) {
+                String title, Bitmap favicon, int transition, long timestamp) {
             super(index, url, virtualUrl, originalUrl, /*referrerUrl=*/null, title, favicon,
-                    transition);
+                    transition, timestamp);
         }
     }
 
@@ -84,9 +84,9 @@ public class NavigationPopupTest {
         public TestNavigationController() {
             mHistory = new TestNavigationHistory();
             mHistory.addEntry(new TestNavigationEntry(
-                    1, "about:blank", null, null, "About Blank", null, 0));
+                    1, "about:blank", null, null, "About Blank", null, 0, 0));
             mHistory.addEntry(new TestNavigationEntry(
-                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null, 0));
+                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null, 0, 0));
         }
 
         @Override

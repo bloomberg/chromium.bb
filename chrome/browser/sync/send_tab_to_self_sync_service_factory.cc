@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
@@ -36,6 +37,7 @@ SendTabToSelfSyncServiceFactory::SendTabToSelfSyncServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 SendTabToSelfSyncServiceFactory::~SendTabToSelfSyncServiceFactory() {}
@@ -51,7 +53,11 @@ KeyedService* SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
   syncer::OnceModelTypeStoreFactory store_factory =
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
 
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+
   return new send_tab_to_self::SendTabToSelfSyncService(
       chrome::GetChannel(), local_device_info_provider,
-      std::move(store_factory));
+      std::move(store_factory), history_service);
 }
