@@ -1353,8 +1353,10 @@
   },
   {
     "name": "enable-network-logging-to-file",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "eroman", "net-dev" ],
+    // This flag is used to capture early-browser network logging on platforms
+    // without easy access to startup time configuration.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-new-contacts-picker",
