@@ -61,6 +61,7 @@ if get_option('screenshare')
 		fullscreen_shell_unstable_v1_protocol_c,
 	]
 	deps_screenshare = [
+		dep_libshared,
 		dep_libweston,
 		dep_wayland_client,
 	]
