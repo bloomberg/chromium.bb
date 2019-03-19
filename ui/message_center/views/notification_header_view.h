@@ -58,6 +58,8 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   const base::string16& app_name_for_testing() const;
 
+  const gfx::ImageSkia& app_icon_for_testing() const;
+
  private:
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();

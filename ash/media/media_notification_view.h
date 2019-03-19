@@ -68,6 +68,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateWithMediaActions(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
   void UpdateWithMediaArtwork(const gfx::ImageSkia& image);
+  void UpdateWithMediaIcon(const gfx::ImageSkia& image);
 
  private:
   friend class MediaNotificationViewTest;

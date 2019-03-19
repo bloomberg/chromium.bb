@@ -28,6 +28,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
@@ -220,6 +221,10 @@ class MediaNotificationViewTest : public AshTestBase {
 
   const gfx::ImageSkia& GetArtworkImage() const {
     return view_->GetMediaNotificationBackground()->artwork_;
+  }
+
+  const gfx::ImageSkia& GetAppIcon() const {
+    return view_->header_row_->app_icon_for_testing();
   }
 
  private:
@@ -692,6 +697,30 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   // affected.
   EXPECT_TRUE(GetArtworkImage().isNull());
   EXPECT_EQ(size, view()->size());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateIconFromItem) {
+  gfx::ImageSkia original = GetAppIcon();
+  EXPECT_EQ(message_center::kSmallImageSizeMD, original.width());
+  EXPECT_EQ(message_center::kSmallImageSizeMD, original.height());
+
+  // The size for the image we provide should be different so we can compare.
+  const int alt_size = message_center::kSmallImageSizeMD + 1;
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(alt_size, alt_size);
+
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kSourceIcon, bitmap);
+
+  EXPECT_EQ(alt_size, GetAppIcon().width());
+  EXPECT_EQ(alt_size, GetAppIcon().height());
+
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
+
+  EXPECT_EQ(message_center::kSmallImageSizeMD, GetAppIcon().width());
+  EXPECT_EQ(message_center::kSmallImageSizeMD, GetAppIcon().height());
 }
 
 }  // namespace ash

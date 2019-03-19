@@ -71,6 +71,7 @@ MediaNotificationView::MediaNotificationView(
   header_row_->SetExpandButtonEnabled(true);
   header_row_->SetAppName(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
+  header_row_->ClearAppIcon();
   AddChildView(header_row_);
 
   // |main_row_| holds the main content of the notification.
@@ -275,6 +276,14 @@ void MediaNotificationView::UpdateWithMediaActions(
 void MediaNotificationView::UpdateWithMediaArtwork(
     const gfx::ImageSkia& image) {
   GetMediaNotificationBackground()->UpdateArtwork(image);
+}
+
+void MediaNotificationView::UpdateWithMediaIcon(const gfx::ImageSkia& image) {
+  if (image.isNull()) {
+    header_row_->ClearAppIcon();
+  } else {
+    header_row_->SetAppIcon(image);
+  }
 }
 
 void MediaNotificationView::UpdateControlButtonsVisibilityWithNotification(
