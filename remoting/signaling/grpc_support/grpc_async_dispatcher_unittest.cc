@@ -13,10 +13,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/signaling/grpc_support/grpc_async_dispatcher_test_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_test_server.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 
@@ -24,11 +26,19 @@ namespace remoting {
 
 namespace {
 
+using ::testing::InSequence;
+using ::testing::Invoke;
+using ::testing::Property;
+
 using EchoStreamResponder = test::GrpcServerStreamResponder<EchoResponse>;
 
 base::RepeatingCallback<void(const EchoResponse&)>
 NotReachedStreamingCallback() {
   return base::BindRepeating([](const EchoResponse&) { NOTREACHED(); });
+}
+
+base::RepeatingCallback<void(const grpc::Status&)> NotReachedStatusCallback() {
+  return base::BindRepeating([](const grpc::Status&) { NOTREACHED(); });
 }
 
 EchoResponse ResponseForText(const std::string& text) {
@@ -55,6 +65,8 @@ class GrpcAsyncDispatcherTest : public testing::Test {
 
  protected:
   void HandleOneEchoRequest();
+  std::unique_ptr<test::GrpcServerResponder<EchoResponse>>
+  GetResponderAndFillEchoRequest(EchoRequest* request);
   std::unique_ptr<EchoStreamResponder> HandleEchoStream(
       const base::Location& from_here,
       const std::string& expected_request_text);
@@ -108,11 +120,16 @@ GrpcAsyncDispatcherTest::StartEchoStream(
 
 void GrpcAsyncDispatcherTest::HandleOneEchoRequest() {
   EchoRequest request;
-  auto responder = server_->HandleRequest(
-      &GrpcAsyncDispatcherTestService::AsyncService::RequestEcho, &request);
+  auto responder = GetResponderAndFillEchoRequest(&request);
   EchoResponse response;
   response.set_text(request.text());
-  responder->Respond(response, grpc::Status::OK);
+  ASSERT_TRUE(responder->Respond(response, grpc::Status::OK));
+}
+
+std::unique_ptr<test::GrpcServerResponder<EchoResponse>>
+GrpcAsyncDispatcherTest::GetResponderAndFillEchoRequest(EchoRequest* request) {
+  return server_->HandleRequest(
+      &GrpcAsyncDispatcherTestService::AsyncService::RequestEcho, request);
 }
 
 std::unique_ptr<EchoStreamResponder> GrpcAsyncDispatcherTest::HandleEchoStream(
@@ -194,26 +211,42 @@ TEST_F(GrpcAsyncDispatcherTest, SendTwoTextsAndRespondTogether) {
   run_loop.Run();
 }
 
+TEST_F(GrpcAsyncDispatcherTest,
+       ControlGroup_RpcChannelStillOpenAfterRunLoopQuit) {
+  base::RunLoop run_loop;
+  AsyncSendText("Hello", base::BindLambdaForTesting(
+                             [&](const grpc::Status&, const EchoResponse&) {
+                               NOTREACHED();
+                             }));
+  EchoRequest request;
+  auto responder = GetResponderAndFillEchoRequest(&request);
+  run_loop.RunUntilIdle();
+  ASSERT_TRUE(responder->Respond(EchoResponse(), grpc::Status::OK));
+}
+
 TEST_F(GrpcAsyncDispatcherTest, RpcCanceledOnDestruction) {
   base::RunLoop run_loop;
-  AsyncSendText("Hello",
-                base::BindLambdaForTesting([&](const grpc::Status& status,
-                                               const EchoResponse& response) {
-                  EXPECT_EQ(grpc::StatusCode::CANCELLED, status.error_code());
-                  run_loop.QuitWhenIdle();
-                }));
+  AsyncSendText("Hello", base::BindLambdaForTesting(
+                             [&](const grpc::Status&, const EchoResponse&) {
+                               NOTREACHED();
+                             }));
+  EchoRequest request;
+  auto responder = GetResponderAndFillEchoRequest(&request);
   dispatcher_.reset();
-  run_loop.Run();
+  run_loop.RunUntilIdle();
+  ASSERT_FALSE(responder->Respond(EchoResponse(), grpc::Status::OK));
 }
 
 TEST_F(GrpcAsyncDispatcherTest, ServerStreamNotAcceptedByServer) {
   base::RunLoop run_loop;
-  auto scoped_stream =
-      StartEchoStream("Hello", NotReachedStreamingCallback(),
-                      test::CheckStatusThenQuitRunLoopCallback(
-                          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
+  auto scoped_stream = StartEchoStream(
+      "Hello", NotReachedStreamingCallback(),
+      base::BindLambdaForTesting([&](const grpc::Status&) { NOTREACHED(); }));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() { dispatcher_.reset(); }));
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        dispatcher_.reset();
+        run_loop.QuitWhenIdle();
+      }));
   run_loop.Run();
 }
 
@@ -250,7 +283,6 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamsOneMessageThenClosedByServer) {
   auto scoped_stream = StartEchoStream(
       "Hello", base::BindLambdaForTesting([&](const EchoResponse& response) {
         ASSERT_EQ("Echo 1", response.text());
-        responder->OnClientReceivedMessage();
         responder.reset();
       }),
       test::CheckStatusThenQuitRunLoopCallback(FROM_HERE, grpc::StatusCode::OK,
@@ -263,73 +295,87 @@ TEST_F(GrpcAsyncDispatcherTest, ServerStreamsOneMessageThenClosedByServer) {
 TEST_F(GrpcAsyncDispatcherTest, ServerStreamsTwoMessagesThenClosedByServer) {
   base::RunLoop run_loop;
   std::unique_ptr<EchoStreamResponder> responder;
-  int received_messages_count = 0;
-  auto scoped_stream = StartEchoStream(
-      "Hello", base::BindLambdaForTesting([&](const EchoResponse& response) {
-        if (received_messages_count == 0) {
-          ASSERT_EQ("Echo 1", response.text());
-          responder->OnClientReceivedMessage();
+
+  base::MockCallback<base::RepeatingCallback<void(const EchoResponse&)>>
+      mock_on_incoming_msg;
+
+  {
+    InSequence sequence;
+    EXPECT_CALL(mock_on_incoming_msg,
+                Run(Property(&EchoResponse::text, "Echo 1")))
+        .WillOnce(Invoke([&](const EchoResponse&) {
           responder->SendMessage(ResponseForText("Echo 2"));
-          received_messages_count++;
-          return;
-        }
-        if (received_messages_count == 1) {
-          ASSERT_EQ("Echo 2", response.text());
-          responder->OnClientReceivedMessage();
-          responder.reset();
-          received_messages_count++;
-          return;
-        }
-        NOTREACHED();
-      }),
-      test::CheckStatusThenQuitRunLoopCallback(FROM_HERE, grpc::StatusCode::OK,
-                                               &run_loop));
+        }));
+    EXPECT_CALL(mock_on_incoming_msg,
+                Run(Property(&EchoResponse::text, "Echo 2")))
+        .WillOnce(Invoke([&](const EchoResponse&) { responder.reset(); }));
+  }
+
+  auto scoped_stream =
+      StartEchoStream("Hello", mock_on_incoming_msg.Get(),
+                      test::CheckStatusThenQuitRunLoopCallback(
+                          FROM_HERE, grpc::StatusCode::OK, &run_loop));
   responder = HandleEchoStream(FROM_HERE, "Hello");
-  responder->SendMessage(ResponseForText("Echo 1"));
+  ASSERT_TRUE(responder->SendMessage(ResponseForText("Echo 1")));
   run_loop.Run();
-  ASSERT_EQ(2, received_messages_count);
+}
+
+TEST_F(GrpcAsyncDispatcherTest,
+       ControlGroup_ServerStreamStillOpenAfterRunLoopQuit) {
+  base::RunLoop run_loop;
+  auto scoped_stream = StartEchoStream("Hello", NotReachedStreamingCallback(),
+                                       NotReachedStatusCallback());
+  auto responder = HandleEchoStream(FROM_HERE, "Hello");
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindLambdaForTesting([&]() { run_loop.QuitWhenIdle(); }));
+  run_loop.Run();
+  ASSERT_TRUE(responder->SendMessage(ResponseForText("Echo 1")));
 }
 
 TEST_F(GrpcAsyncDispatcherTest,
        ServerStreamOpenThenClosedByClientAtDestruction) {
   base::RunLoop run_loop;
-  auto scoped_stream =
-      StartEchoStream("Hello", NotReachedStreamingCallback(),
-                      test::CheckStatusThenQuitRunLoopCallback(
-                          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
+  auto scoped_stream = StartEchoStream("Hello", NotReachedStreamingCallback(),
+                                       NotReachedStatusCallback());
   auto responder = HandleEchoStream(FROM_HERE, "Hello");
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() { dispatcher_.reset(); }));
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        dispatcher_.reset();
+        run_loop.QuitWhenIdle();
+      }));
   run_loop.Run();
+  ASSERT_FALSE(responder->SendMessage(ResponseForText("Echo 1")));
 }
 
 TEST_F(GrpcAsyncDispatcherTest, ServerStreamClosedByStreamHolder) {
   base::RunLoop run_loop;
-  std::unique_ptr<EchoStreamResponder> responder;
-  std::unique_ptr<ScopedGrpcServerStream> scoped_stream =
-      StartEchoStream("Hello", NotReachedStreamingCallback(),
-                      test::CheckStatusThenQuitRunLoopCallback(
-                          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
-  responder = HandleEchoStream(FROM_HERE, "Hello");
-  scoped_stream.reset();
+  auto scoped_stream = StartEchoStream("Hello", NotReachedStreamingCallback(),
+                                       NotReachedStatusCallback());
+  auto responder = HandleEchoStream(FROM_HERE, "Hello");
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        scoped_stream.reset();
+        run_loop.QuitWhenIdle();
+      }));
   run_loop.Run();
+  ASSERT_FALSE(responder->SendMessage(ResponseForText("Echo 1")));
 }
 
 TEST_F(GrpcAsyncDispatcherTest,
        ServerStreamsOneMessageThenClosedByStreamHolder) {
   base::RunLoop run_loop;
-  std::unique_ptr<EchoStreamResponder> responder;
   std::unique_ptr<ScopedGrpcServerStream> scoped_stream = StartEchoStream(
       "Hello", base::BindLambdaForTesting([&](const EchoResponse& response) {
         ASSERT_EQ("Echo 1", response.text());
-        responder->OnClientReceivedMessage();
         scoped_stream.reset();
+        run_loop.QuitWhenIdle();
       }),
-      test::CheckStatusThenQuitRunLoopCallback(
-          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
-  responder = HandleEchoStream(FROM_HERE, "Hello");
-  responder->SendMessage(ResponseForText("Echo 1"));
+      NotReachedStatusCallback());
+  auto responder = HandleEchoStream(FROM_HERE, "Hello");
+  ASSERT_TRUE(responder->SendMessage(ResponseForText("Echo 1")));
   run_loop.Run();
+  ASSERT_FALSE(responder->SendMessage(ResponseForText("Echo 2")));
 }
 
 }  // namespace remoting

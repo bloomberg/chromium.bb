@@ -57,6 +57,7 @@ source_set("unit_tests") {
     ":grpc_support",
     ":test_support",
     ":unit_tests_grpc_library",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

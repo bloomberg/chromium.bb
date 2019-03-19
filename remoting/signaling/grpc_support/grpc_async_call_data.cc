@@ -25,11 +25,27 @@ void GrpcAsyncCallData::CancelRequest() {
 }
 
 void GrpcAsyncCallData::DeleteOnCallerThread() {
-  if (caller_task_runner_->BelongsToCurrentThread()) {
-    delete this;
-    return;
-  }
   caller_task_runner_->DeleteSoon(FROM_HERE, this);
+}
+
+void GrpcAsyncCallData::Start() {
+  DCHECK(!is_get_event_tag_allowed_);
+  is_get_event_tag_allowed_ = true;
+  StartInternal();
+  is_get_event_tag_allowed_ = false;
+}
+
+bool GrpcAsyncCallData::OnDequeuedOnDispatcherThread(bool operation_succeeded) {
+  DCHECK(!is_get_event_tag_allowed_);
+  is_get_event_tag_allowed_ = true;
+  bool result = OnDequeuedOnDispatcherThreadInternal(operation_succeeded);
+  is_get_event_tag_allowed_ = false;
+  return result;
+}
+
+void* GrpcAsyncCallData::GetEventTag() {
+  DCHECK(is_get_event_tag_allowed_);
+  return this;
 }
 
 }  // namespace internal

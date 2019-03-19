@@ -16,12 +16,14 @@ GrpcAsyncServerStreamingCallDataBase::GrpcAsyncServerStreamingCallDataBase(
     : GrpcAsyncCallData(std::move(context)), weak_factory_(this) {
   DCHECK(on_channel_closed);
   on_channel_closed_ = std::move(on_channel_closed);
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
-GrpcAsyncServerStreamingCallDataBase::~GrpcAsyncServerStreamingCallDataBase() =
-    default;
+GrpcAsyncServerStreamingCallDataBase::~GrpcAsyncServerStreamingCallDataBase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
-bool GrpcAsyncServerStreamingCallDataBase::OnDequeuedOnDispatcherThread(
+bool GrpcAsyncServerStreamingCallDataBase::OnDequeuedOnDispatcherThreadInternal(
     bool operation_succeeded) {
   base::AutoLock autolock(state_lock_);
   if (state_ == State::CLOSED) {
@@ -55,17 +57,24 @@ bool GrpcAsyncServerStreamingCallDataBase::OnDequeuedOnDispatcherThread(
 
 std::unique_ptr<ScopedGrpcServerStream>
 GrpcAsyncServerStreamingCallDataBase::CreateStreamHolder() {
-  return std::make_unique<ScopedGrpcServerStream>(weak_factory_.GetWeakPtr());
+  return std::make_unique<ScopedGrpcServerStream>(weak_ptr_);
 }
 
 void GrpcAsyncServerStreamingCallDataBase::OnRequestCanceled() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AutoLock autolock(state_lock_);
   if (state_ == State::CLOSED) {
     return;
   }
   state_ = State::CLOSED;
   status_ = grpc::Status::CANCELLED;
-  ResolveChannelClosed();
+  weak_factory_.InvalidateWeakPtrs();
+}
+
+void GrpcAsyncServerStreamingCallDataBase::RunClosure(
+    base::OnceClosure closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::move(closure).Run();
 }
 
 void GrpcAsyncServerStreamingCallDataBase::ResolveChannelClosed() {

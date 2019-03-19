@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "remoting/signaling/grpc_support/grpc_async_call_data.h"
@@ -34,9 +35,13 @@ class GrpcAsyncServerStreamingCallDataBase : public GrpcAsyncCallData {
   ~GrpcAsyncServerStreamingCallDataBase() override;
 
   // GrpcAsyncCallData implementations.
-  bool OnDequeuedOnDispatcherThread(bool operation_succeeded) override;
+  bool OnDequeuedOnDispatcherThreadInternal(bool operation_succeeded) override;
 
   std::unique_ptr<ScopedGrpcServerStream> CreateStreamHolder();
+
+  // Helper method for subclass to run callback only when the weak pointer is
+  // valid.
+  void RunClosure(base::OnceClosure closure);
 
  protected:
   enum class State {
@@ -58,11 +63,14 @@ class GrpcAsyncServerStreamingCallDataBase : public GrpcAsyncCallData {
 
   base::Lock state_lock_;
   State state_ GUARDED_BY(state_lock_) = State::STARTING;
+  base::WeakPtr<GrpcAsyncServerStreamingCallDataBase> weak_ptr_;
 
  private:
   void ResolveChannelClosed();
 
   base::OnceCallback<void(const grpc::Status&)> on_channel_closed_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<GrpcAsyncServerStreamingCallDataBase> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncServerStreamingCallDataBase);
@@ -74,40 +82,48 @@ class GrpcAsyncServerStreamingCallData
  public:
   using OnIncomingMessageCallback =
       base::RepeatingCallback<void(const ResponseType&)>;
+  using StartAndCreateReaderCallback =
+      base::OnceCallback<std::unique_ptr<grpc::ClientAsyncReader<ResponseType>>(
+          void* event_tag)>;
 
   GrpcAsyncServerStreamingCallData(
       std::unique_ptr<grpc::ClientContext> context,
+      StartAndCreateReaderCallback create_reader_callback,
       const OnIncomingMessageCallback& on_incoming_msg,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed)
       : GrpcAsyncServerStreamingCallDataBase(std::move(context),
                                              std::move(on_channel_closed)) {
+    create_reader_callback_ = std::move(create_reader_callback);
     on_incoming_msg_ = on_incoming_msg;
   }
   ~GrpcAsyncServerStreamingCallData() override = default;
 
-  void Initialize(
-      std::unique_ptr<grpc::ClientAsyncReader<ResponseType>> reader) {
-    reader_ = std::move(reader);
+  // GrpcAsyncCallData implementations
+  void StartInternal() override {
+    reader_ = std::move(create_reader_callback_).Run(GetEventTag());
   }
 
  protected:
   // GrpcAsyncServerStreamingCallDataBase implementations.
   void ResolveIncomingMessage() override {
-    caller_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(on_incoming_msg_, response_));
+    caller_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GrpcAsyncServerStreamingCallDataBase::RunClosure,
+                       weak_ptr_, base::BindOnce(on_incoming_msg_, response_)));
   }
 
   void WaitForIncomingMessage() override {
     DCHECK(reader_);
-    reader_->Read(&response_, /* event_tag */ this);
+    reader_->Read(&response_, GetEventTag());
   }
 
   void FinishStream() override {
     DCHECK(reader_);
-    reader_->Finish(&status_, /* event_tag */ this);
+    reader_->Finish(&status_, GetEventTag());
   }
 
  private:
+  StartAndCreateReaderCallback create_reader_callback_;
   ResponseType response_;
   std::unique_ptr<grpc::ClientAsyncReader<ResponseType>> reader_;
   OnIncomingMessageCallback on_incoming_msg_;

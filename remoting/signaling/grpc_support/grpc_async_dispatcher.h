@@ -54,13 +54,9 @@ class GrpcAsyncDispatcher {
   GrpcAsyncDispatcher();
   ~GrpcAsyncDispatcher();
 
-  // Immediately executes |rpc_function| inside the call stack of this function,
-  // and runs |callback| once the server responses. If the dispatcher is
-  // destroyed before the server responses, |callback| will be called with
-  // a CANCELLED status *after* the dispatcher is destroyed.
-  //
-  // It is safe to bind raw pointer into |rpc_function|, but you should bind
-  // weak pointer in |callback|.
+  // Executes |rpc_function| before this function returns, and runs |callback|
+  // once the server responds. Callback will be silently dropped if the
+  // dispatcher is destroyed before the response is received.
   template <typename RequestType, typename ResponseType>
   void ExecuteAsyncRpc(AsyncRpcFunction<RequestType, ResponseType> rpc_function,
                        std::unique_ptr<grpc::ClientContext> context,
@@ -80,13 +76,10 @@ class GrpcAsyncDispatcher {
   //
   // |on_incoming_msg| is called whenever a new message is received from the
   // server.
-  // |on_channel_closed| will be called with CANCELLED if the stream is stopped
-  // by the client, either by deleting the stream holder or deleting the
-  // dispatcher.
-  //
-  // |rpc_function| is called immediately inside the call stack, while
-  // |on_incoming_msg| and |on_channel_closed| might be called after the
-  // dispatcher is deleted.
+  // |on_channel_closed| will be called if the channel is closed by the server
+  // or the connection is dropped.
+  // All callbacks will be silently dropped if the dispatcher is destroyed
+  // before the response is received.
   template <typename RequestType, typename ResponseType>
   std::unique_ptr<ScopedGrpcServerStream> ExecuteAsyncServerStreamingRpc(
       AsyncServerStreamingRpcFunction<RequestType, ResponseType> rpc_function,
@@ -94,14 +87,12 @@ class GrpcAsyncDispatcher {
       const RequestType& request,
       const RpcStreamCallback<ResponseType>& on_incoming_msg,
       RpcChannelClosedCallback on_channel_closed) WARN_UNUSED_RESULT {
-    grpc::ClientContext* raw_context = context.get();
+    auto start_and_create_reader_cb = base::BindOnce(
+        std::move(rpc_function), context.get(), request, &completion_queue_);
     auto data = std::make_unique<
         internal::GrpcAsyncServerStreamingCallData<ResponseType>>(
-        std::move(context), on_incoming_msg, std::move(on_channel_closed));
-    auto reader =
-        std::move(rpc_function)
-            .Run(raw_context, request, &completion_queue_, data.get());
-    data->Initialize(std::move(reader));
+        std::move(context), std::move(start_and_create_reader_cb),
+        on_incoming_msg, std::move(on_channel_closed));
     std::unique_ptr<ScopedGrpcServerStream> stream_holder =
         data->CreateStreamHolder();
     RegisterRpcData(std::move(data));
