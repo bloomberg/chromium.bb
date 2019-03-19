@@ -16,10 +16,12 @@ import android.widget.LinearLayout;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.ui.modelutil.ListModel;
 
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar. This coordinator allows to enable
@@ -78,6 +80,20 @@ class AssistantBottomBarCoordinator {
         mBottomBarContainerView.addView(mSuggestionsCoordinator.getView());
         mBottomBarContainerView.addView(mActionsCoordinator.getView());
 
+        // Set children top margins to have a spacing between them. For the carousels, we set their
+        // margin only when they are not empty given that they are always shown, even if empty. We
+        // do not hide them because there is an incompatibility bug between the animateLayoutChanges
+        // attribute set on mBottomBarContainerView and the animations ran by the carousels
+        // RecyclerView.
+        int childSpacing = context.getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_bottombar_vertical_spacing);
+        setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
+        setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
+        setCarouselMarginTop(mSuggestionsCoordinator.getView(),
+                model.getSuggestionsModel().getChipsModel(), childSpacing);
+        setCarouselMarginTop(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel(),
+                childSpacing);
+
         // We set the horizontal margins of the details and payment request. We don't set a padding
         // to the container as we want the carousels children to be scrolled at the limit of the
         // screen.
@@ -123,6 +139,26 @@ class AssistantBottomBarCoordinator {
             mSwipeIndicatorView.setVisibility(View.GONE);
             setBottomBarPaddingTop(mBottomBarWithoutIndicatorPaddingTop);
         }
+    }
+
+    private void setChildMarginTop(View child, int marginTop) {
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) child.getLayoutParams();
+        params.topMargin = marginTop;
+        child.setLayoutParams(params);
+    }
+
+    /**
+     * Observe {@code model} such that we set the topMargin of {@code carouselView} to {@code
+     * marginTop} when {@code model} is not empty and set it to 0 otherwise.
+     */
+    private void setCarouselMarginTop(
+            View carouselView, ListModel<AssistantChip> chipsModel, int marginTop) {
+        chipsModel.addObserver(new AbstractListObserver<Void>() {
+            @Override
+            public void onDataSetChanged() {
+                setChildMarginTop(carouselView, chipsModel.size() > 0 ? marginTop : 0);
+            }
+        });
     }
 
     @VisibleForTesting
