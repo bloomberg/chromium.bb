@@ -32,6 +32,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -440,9 +441,9 @@ class SuccessStorage : public AccountMigrationRunner::Step {
 
   void Run() override {
     const int num_times_ran_successfully = pref_service_->GetInteger(
-        prefs::kAccountManagerNumTimesMigrationRanSuccessfully);
+        ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully);
     pref_service_->SetInteger(
-        prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
+        ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully,
         num_times_ran_successfully + 1);
     FinishWithSuccess();
   }
@@ -493,7 +494,7 @@ bool AccountManagerMigrator::ShouldRunMigrations() const {
   // Do not unnecessarily run migrations if they have been successfully run
   // before.
   if (profile_->GetPrefs()->GetInteger(
-          prefs::kAccountManagerNumTimesMigrationRanSuccessfully) >=
+          ::prefs::kAccountManagerNumTimesMigrationRanSuccessfully) >=
       kMaxMigrationRuns) {
     VLOG(1) << "Skipping migrations because of previous successful runs";
     return false;
@@ -523,20 +524,27 @@ void AccountManagerMigrator::AddMigrationSteps() {
       GetDeviceAccount(profile_), account_manager, identity_manager,
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
-  migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
-      account_manager, identity_manager));
 
-  if (arc::IsArcProvisioned(profile_)) {
-    // Add a migration step for ARC only if ARC has been provisioned. If ARC has
-    // not been provisioned yet, there cannot be any accounts that need to be
-    // migrated.
-    migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
-        account_manager, identity_manager,
-        arc::ArcAuthService::GetForBrowserContext(
-            profile_) /* arc_auth_service */));
-  } else {
-    VLOG(1) << "Skipping migration of ARC accounts. ARC has not been "
-               "provisioned yet";
+  const bool is_secondary_google_account_signin_allowed =
+      profile_->GetPrefs()->GetBoolean(
+          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed);
+
+  if (is_secondary_google_account_signin_allowed) {
+    migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
+        account_manager, identity_manager));
+
+    if (arc::IsArcProvisioned(profile_)) {
+      // Add a migration step for ARC only if ARC has been provisioned. If ARC
+      // has not been provisioned yet, there cannot be any accounts that need to
+      // be migrated.
+      migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
+          account_manager, identity_manager,
+          arc::ArcAuthService::GetForBrowserContext(
+              profile_) /* arc_auth_service */));
+    } else {
+      VLOG(1) << "Skipping migration of ARC accounts. ARC has not been "
+                 "provisioned yet";
+    }
   }
 
   // This MUST be the last step. Check the class level documentation of
