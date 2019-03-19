@@ -40,6 +40,7 @@ class PromptAction : public Action {
   void OnAutoSelectElementExists(int choice_index, bool exists);
   void OnAutoSelectDone();
   void OnSuggestionChosen(int choice_index);
+  void OnTerminated();
 
   ProcessActionCallback callback_;
   ActionDelegate* delegate_;
