@@ -50,12 +50,21 @@ FuzzerBrowserProcess::~FuzzerBrowserProcess() {
 }
 
 void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
-    CompositorFrame fuzzed_frame) {
+    CompositorFrame fuzzed_frame,
+    std::vector<FuzzedBitmap> allocated_bitmaps) {
   mojom::CompositorFrameSinkPtr sink_ptr;
   FakeCompositorFrameSinkClient sink_client;
   frame_sink_manager_.CreateCompositorFrameSink(kEmbeddedFrameSinkId,
                                                 mojo::MakeRequest(&sink_ptr),
                                                 sink_client.BindInterfacePtr());
+
+  for (auto& fuzzed_bitmap : allocated_bitmaps) {
+    mojo::ScopedSharedBufferHandle handle =
+        bitmap_allocation::DuplicateAndCloseMappedBitmap(
+            fuzzed_bitmap.shared_memory.get(), fuzzed_bitmap.size,
+            ResourceFormat::RGBA_8888);
+    sink_ptr->DidAllocateSharedBitmap(std::move(handle), fuzzed_bitmap.id);
+  }
 
   lsi_allocator_.GenerateId();
   SurfaceId embedded_surface_id(
@@ -69,6 +78,10 @@ void FuzzerBrowserProcess::EmbedFuzzedCompositorFrame(
   root_compositor_frame_sink_ptr_->SubmitCompositorFrame(
       root_local_surface_id_, std::move(browser_frame), base::nullopt, 0);
   display_private_->ForceImmediateDrawAndSwapIfPossible();
+
+  for (auto& fuzzed_bitmap : allocated_bitmaps) {
+    sink_ptr->DidDeleteSharedBitmap(fuzzed_bitmap.id);
+  }
 
   base::RunLoop().RunUntilIdle();  // needed to actually run queued messages
 
