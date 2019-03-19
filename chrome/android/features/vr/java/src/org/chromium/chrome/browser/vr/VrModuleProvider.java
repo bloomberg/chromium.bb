@@ -10,7 +10,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.module_installer.ModuleInstaller;
 import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
 
 import java.util.ArrayList;
@@ -46,11 +45,11 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
      */
     public static void maybeRequestModuleIfDaydreamReady() {
         if (!VrBuildConfig.IS_VR_ENABLED) return;
-        if (isModuleInstalled()) return;
+        if (VrModule.isInstalled()) return;
         if (!getDelegate().isDaydreamReadyDevice()) return;
 
         // Installs module when on unmetered network connection and device is charging.
-        ModuleInstaller.installDeferred("vr");
+        VrModule.installDeferred();
     }
 
     public static VrDelegate getDelegate() {
@@ -97,9 +96,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     }
 
     /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
-        assert !isModuleInstalled();
-
-        ModuleInstaller.install("vr", (success) -> {
+        VrModule.install((success) -> {
             if (success) {
                 // Re-create delegate provider.
                 sDelegateProvider = null;
@@ -119,20 +116,10 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     private static VrDelegateProvider getDelegateProvider() {
         if (sDelegateProvider == null) {
-            if (sAlwaysUseFallbackDelegate) {
+            if (sAlwaysUseFallbackDelegate || !VrModule.isInstalled()) {
                 sDelegateProvider = new VrDelegateProviderFallback();
-                return sDelegateProvider;
-            }
-            // Need to be called before trying to access the VR module.
-            ModuleInstaller.init();
-            try {
-                sDelegateProvider =
-                        (VrDelegateProvider) Class
-                                .forName("org.chromium.chrome.browser.vr.VrDelegateProviderImpl")
-                                .newInstance();
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | IllegalArgumentException e) {
-                sDelegateProvider = new VrDelegateProviderFallback();
+            } else {
+                sDelegateProvider = VrModule.getImpl();
             }
         }
         return sDelegateProvider;
@@ -144,8 +131,8 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
     }
 
     @CalledByNative
-    /* package */ static boolean isModuleInstalled() {
-        return !(getDelegateProvider() instanceof VrDelegateProviderFallback);
+    private static boolean isModuleInstalled() {
+        return VrModule.isInstalled();
     }
 
     @Override

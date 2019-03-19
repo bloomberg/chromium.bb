@@ -294,6 +294,7 @@ android_library("chrome_java") {
     "//components/location/android:location_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/module_installer/android:module_installer_java",
+    "//components/module_installer/android:module_interface_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/offline_items_collection/core:core_java",
     "//components/omnibox/browser:browser_java",
@@ -444,6 +445,7 @@ android_library("chrome_java") {
   annotation_processor_deps = [
     "//base/android/jni_generator:jni_processor",
     "//third_party/android_deps:dagger_processor",
+    "//components/module_installer/android:module_interface_processor",
   ]
 
   if (async_ar) {

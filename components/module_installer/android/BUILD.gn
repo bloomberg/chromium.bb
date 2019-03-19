@@ -12,6 +12,7 @@ android_library("module_installer_java") {
   java_files = [
     "java/src-stub/org/chromium/components/module_installer/ModuleInstaller.java",
     "java/src-common/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
+    "java/src-common/org/chromium/components/module_installer/Module.java",
   ]
   jar_excluded_patterns = [ "*/ModuleInstaller.class" ]
   deps = [
@@ -51,5 +52,22 @@ android_library("module_installer_test_java") {
   deps = [
     ":module_installer_java",
     "//base:base_java",
+  ]
+}
+
+java_library("module_interface_java") {
+  supports_android = true
+  java_files = [ "java/src-common/org/chromium/components/module_installer/ModuleInterface.java" ]
+}
+
+java_annotation_processor("module_interface_processor") {
+  java_files = [ "java/src-common/org/chromium/components/module_installer/ModuleInterfaceProcessor.java" ]
+  main_class =
+      "org.chromium.components.module_installer.ModuleInterfaceProcessor"
+  annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
+  deps = [
+    ":module_interface_java",
+    "//third_party/android_deps:com_squareup_javapoet_java",
+    "//third_party/auto:auto_service_java",
   ]
 }
