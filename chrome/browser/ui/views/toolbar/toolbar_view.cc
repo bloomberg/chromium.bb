@@ -404,7 +404,9 @@ void ToolbarView::OnMenuButtonClicked(views::MenuButton* source,
                                       const ui::Event* event) {
   TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
-  app_menu_button_->ShowMenu(AppMenu::NO_FLAGS);
+  app_menu_button_->ShowMenu((event && event->IsKeyEvent())
+                                 ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+                                 : views::MenuRunner::NO_FLAGS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

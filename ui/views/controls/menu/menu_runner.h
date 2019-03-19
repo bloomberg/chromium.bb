@@ -61,6 +61,8 @@ class MenuRunnerTestAPI;
 class VIEWS_EXPORT MenuRunner {
  public:
   enum RunTypes {
+    NO_FLAGS = 0,
+
     // The menu has mnemonics.
     HAS_MNEMONICS = 1 << 0,
 
