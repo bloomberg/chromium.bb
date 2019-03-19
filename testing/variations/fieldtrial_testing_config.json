@@ -471,6 +471,21 @@
             ]
         }
     ],
+    "AndroidSurfaceControl": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableAndroidSurfaceControl",
+                    "enable_features": [
+                        "AndroidSurfaceControl"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppLauncherRefresh": [
         {
             "platforms": [
