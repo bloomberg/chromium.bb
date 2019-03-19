@@ -30,7 +30,7 @@
 
 namespace views {
 
-typedef ViewsTestBase BubbleFrameViewTest;
+using BubbleFrameViewTest = ViewsTestBase;
 
 namespace {
 

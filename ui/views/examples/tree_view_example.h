@@ -77,7 +77,7 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   LabelButton* remove_;
   LabelButton* change_title_;
 
-  typedef ui::TreeNodeWithValue<int> NodeType;
+  using NodeType = ui::TreeNodeWithValue<int>;
 
   ui::TreeNodeModel<NodeType> model_;
 

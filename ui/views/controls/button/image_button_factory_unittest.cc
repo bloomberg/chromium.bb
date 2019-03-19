@@ -15,7 +15,7 @@
 
 namespace views {
 
-typedef ViewsTestBase ImageButtonFactoryTest;
+using ImageButtonFactoryTest = ViewsTestBase;
 
 TEST_F(ImageButtonFactoryTest, CreateVectorImageButton) {
   ImageButton* button = CreateVectorImageButton(nullptr);

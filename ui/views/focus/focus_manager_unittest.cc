@@ -414,7 +414,7 @@ TEST_F(FocusManagerTest, SuspendAccelerators) {
 
 class FocusManagerDtorTest : public FocusManagerTest {
  protected:
-  typedef std::vector<std::string> DtorTrackVector;
+  using DtorTrackVector = std::vector<std::string>;
 
   class FocusManagerDtorTracked : public FocusManager {
    public:

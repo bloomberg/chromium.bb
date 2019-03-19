@@ -102,7 +102,7 @@ class VIEWS_EXPORT TableView
     bool ascending;
   };
 
-  typedef std::vector<SortDescriptor> SortDescriptors;
+  using SortDescriptors = std::vector<SortDescriptor>;
 
   // Creates a new table using the model and columns specified.
   // The table type applies to the content of the first column (text, icon and

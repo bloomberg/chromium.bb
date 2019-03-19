@@ -200,7 +200,7 @@ void ScrambleTree(views::View* view) {
 
 namespace views {
 
-typedef ViewsTestBase ViewTest;
+using ViewTest = ViewsTestBase;
 
 // A derived class for testing purpose.
 class TestView : public View {

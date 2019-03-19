@@ -180,7 +180,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   bool is_translucent() const { return is_translucent_; }
 
  private:
-  typedef std::set<DWORD> TouchIDs;
+  using TouchIDs = std::set<DWORD>;
   enum class DwmFrameState { OFF, ON };
 
   // Overridden from WindowImpl:
@@ -494,7 +494,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Receives Windows Session Change notifications.
   void OnSessionChange(WPARAM status_code);
 
-  typedef std::vector<ui::TouchEvent> TouchEvents;
+  using TouchEvents = std::vector<ui::TouchEvent>;
   // Helper to handle the list of touch events passed in. We need this because
   // touch events on windows don't fire if we enter a modal loop in the context
   // of a touch event.

@@ -258,7 +258,7 @@ void CheckSubmenu(const RootModel& model,
 
 namespace views {
 
-typedef ViewsTestBase MenuModelAdapterTest;
+using MenuModelAdapterTest = ViewsTestBase;
 
 TEST_F(MenuModelAdapterTest, BasicTest) {
   // Build model and adapter.

@@ -85,7 +85,7 @@ class VIEWS_EXPORT ViewModelBase {
     View* view;
     gfx::Rect ideal_bounds;
   };
-  typedef std::vector<Entry> Entries;
+  using Entries = std::vector<Entry>;
 
 #if !defined(NDEBUG)
   void check_index(int index) const {
@@ -125,7 +125,7 @@ class ViewModelT : public ViewModelBase {
 // ViewModel is a collection of views with no specfic type. If all views have
 // the same type, the use of ViewModelT is preferred so that the views can be
 // retrieved without potentially unsafe downcasts.
-typedef ViewModelT<View> ViewModel;
+using ViewModel = ViewModelT<View>;
 
 }  // namespace views
 

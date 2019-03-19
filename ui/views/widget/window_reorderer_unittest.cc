@@ -48,7 +48,7 @@ std::string ChildWindowNamesAsString(const aura::Window& parent) {
   return names;
 }
 
-typedef aura::test::AuraTestBase WindowReordererTest;
+using WindowReordererTest = aura::test::AuraTestBase;
 
 // Test that views with layers and views with associated windows are reordered
 // according to the view hierarchy.

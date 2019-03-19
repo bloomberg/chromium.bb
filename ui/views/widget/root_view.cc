@@ -25,7 +25,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-typedef ui::EventDispatchDetails DispatchDetails;
+using DispatchDetails = ui::EventDispatchDetails;
 
 namespace views {
 namespace internal {
