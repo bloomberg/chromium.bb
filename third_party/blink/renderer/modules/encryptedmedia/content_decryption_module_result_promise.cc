@@ -82,7 +82,7 @@ void ContentDecryptionModuleResultPromise::CompleteWithKeyStatus(
 
 void ContentDecryptionModuleResultPromise::CompleteWithError(
     WebContentDecryptionModuleException exception_code,
-    unsigned long system_code,
+    uint32_t system_code,
     const WebString& error_message) {
   if (!IsValidToFulfillPromise())
     return;
