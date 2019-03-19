@@ -38,6 +38,7 @@ class XRReferenceSpaceOptions;
 class XRRenderState;
 class XRRenderStateInit;
 class XRView;
+class XRViewerSpace;
 
 class XRSession final : public EventTargetWithInlineData,
                         public device::mojom::blink::XRSessionClient,
@@ -74,6 +75,7 @@ class XRSession final : public EventTargetWithInlineData,
   bool environmentIntegration() const { return environment_integration_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
+  XRSpace* viewerSpace() const;
 
   bool immersive() const;
 
@@ -215,6 +217,7 @@ class XRSession final : public EventTargetWithInlineData,
   const bool environment_integration_;
   String blend_mode_string_;
   Member<XRRenderState> render_state_;
+  Member<XRViewerSpace> viewer_space_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
   HeapVector<Member<XRView>> views_;
   InputSourceMap input_sources_;

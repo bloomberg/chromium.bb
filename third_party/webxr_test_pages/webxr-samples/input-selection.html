@@ -218,9 +218,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let rotationDeltaQuat = quat.create();
 
       function onSelect(ev) {
-        let refSpace = getRefSpace(ev.frame.session);
+        let session = ev.frame.session;
+        let refSpace = getRefSpace(session);
 
-        let headPose = ev.frame.getViewerPose(refSpace);
+        let headPose = ev.frame.getPose(session.viewerSpace, refSpace);
         if (!headPose) return;
 
         // Get the position offset in world space from the tracking space origin
