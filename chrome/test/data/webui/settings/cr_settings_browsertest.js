@@ -1440,6 +1440,32 @@ TEST_F('CrSettingsProtocolHandlersTest', 'All', function() {
 });
 
 /**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/security_keys_subpage.html
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSecurityKeysSubpageTest() {}
+
+CrSettingsSecurityKeysSubpageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/security_keys_subpage.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
+    '../test_browser_proxy.js',
+    'security_keys_subpage_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSecurityKeysSubpageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */

@@ -135,6 +135,15 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableSecurityKeysSubpage_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('enableSecurityKeysSubpage');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -359,6 +368,11 @@ Polymer({
   onDialogClosed_: function() {
     settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA.parent);
     cr.ui.focusWithoutInk(assert(this.$.clearBrowsingData));
+  },
+
+  /** @private */
+  onSecurityKeysTap_: function() {
+    settings.navigateTo(settings.routes.SECURITY_KEYS);
   },
 
   /**

@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="security_keys_subpage.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
@@ -155,7 +156,15 @@
             label="$i18n{clearBrowsingData}"
             sub-label="$i18n{clearBrowsingDataDescription}"
             on-click="onClearBrowsingDataTap_"></cr-link-row>
+        <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+          <cr-link-row id="security-keys-subpage-trigger"
+            class="hr"
+            label="$i18n{securityKeysTitle}"
+            sub-label="$i18n{securityKeysDesc}"
+            on-click="onSecurityKeysTap_"></cr-link-row>
+        </template>
       </div>
+
 <if expr="use_nss_certs">
       <template is="dom-if" route-path="/certificates">
         <settings-subpage
@@ -165,6 +174,17 @@
         </settings-subpage>
       </template>
 </if>
+
+      <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+        <template is="dom-if" route-path="/securityKeys">
+          <settings-subpage
+              associated-control="[[$$('#security-keys-subpage-trigger')]]"
+              page-title="Security Keys">
+            <security-keys-subpage></security-keys-subpage>
+          </settings-subpage>
+        </template>
+      </template>
+
       <template is="dom-if" route-path="/content">
         <settings-subpage
             associated-control="[[$$('#site-settings-subpage-trigger')]]"

@@ -68,6 +68,7 @@
  *   RESET_DIALOG: (undefined|!settings.Route),
  *   SEARCH: (undefined|!settings.Route),
  *   SEARCH_ENGINES: (undefined|!settings.Route),
+ *   SECURITY_KEYS: (undefined|!settings.Route),
  *   SIGN_OUT: (undefined|!settings.Route),
  *   SITE_SETTINGS: (undefined|!settings.Route),
  *   SITE_SETTINGS_ADS: (undefined|!settings.Route),
@@ -324,6 +325,9 @@ cr.define('settings', function() {
         r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
         r.CERTIFICATES = r.PRIVACY.createChild('/certificates');
         r.SITE_SETTINGS = r.PRIVACY.createChild('/content');
+        if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
+          r.SECURITY_KEYS = r.PRIVACY.createChild('/securityKeys');
+        }
       }
 
       if (loadTimeData.getBoolean('enableSiteSettings')) {

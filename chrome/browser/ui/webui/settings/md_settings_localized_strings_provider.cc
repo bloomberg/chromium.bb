@@ -50,6 +50,7 @@
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
+#include "device/fido/features.h"
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -2816,6 +2817,50 @@ void AddExtensionsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL);
 }
 
+void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString kSecurityKeysStrings[] = {
+      {"securityKeysTitle", IDS_SETTINGS_SECURITY_KEYS_TITLE},
+      {"securityKeysDesc", IDS_SETTINGS_SECURITY_KEYS_DESC},
+      {"securityKeysSetPIN", IDS_SETTINGS_SECURITY_KEYS_SET_PIN},
+      {"securityKeysSetPINDesc", IDS_SETTINGS_SECURITY_KEYS_SET_PIN_DESC},
+      {"securityKeysReset", IDS_SETTINGS_SECURITY_KEYS_RESET},
+      {"securityKeysResetDesc", IDS_SETTINGS_SECURITY_KEYS_RESET_DESC},
+      {"securityKeysResetTitle", IDS_SETTINGS_SECURITY_KEYS_RESET_TITLE},
+      {"securityKeysResetIntro", IDS_SETTINGS_SECURITY_KEYS_RESET_INTRO},
+      {"securityKeysResetStep1", IDS_SETTINGS_SECURITY_KEYS_RESET_STEP1},
+      {"securityKeysResetStep2", IDS_SETTINGS_SECURITY_KEYS_RESET_STEP2},
+      {"securityKeysNoReset", IDS_SETTINGS_SECURITY_KEYS_NO_RESET},
+      {"securityKeysResetError", IDS_SETTINGS_SECURITY_KEYS_RESET_ERROR},
+      {"securityKeysResetSuccess", IDS_SETTINGS_SECURITY_KEYS_RESET_SUCCESS},
+      {"securityKeysResetNotAllowed",
+       IDS_SETTINGS_SECURITY_KEYS_RESET_NOTALLOWED},
+      {"securityKeysPINDesc", IDS_SETTINGS_SECURITY_KEYS_PINS_DESC},
+      {"securityKeysPINTouch", IDS_SETTINGS_SECURITY_KEYS_PIN_TOUCH},
+      {"securityKeysNoPIN", IDS_SETTINGS_SECURITY_KEYS_NO_PIN},
+      {"securityKeysCurrentPINIntro",
+       IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN_INTRO},
+      {"securityKeysPINIncorrect", IDS_SETTINGS_SECURITY_KEYS_PIN_INCORRECT},
+      {"securityKeysCurrentPINRetriesPl",
+       IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN_RETRIES_PL},
+      {"securityKeysCurrentPINRetriesSin",
+       IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN_RETRIES_SIN},
+      {"securityKeysNewPIN", IDS_SETTINGS_SECURITY_KEYS_NEW_PIN},
+      {"securityKeysCurrentPIN", IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN},
+      {"securityKeysPIN", IDS_SETTINGS_SECURITY_KEYS_PIN},
+      {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
+      {"securityKeysPINSuccess", IDS_SETTINGS_SECURITY_KEYS_PIN_SUCCESS},
+      {"securityKeysPINError", IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR},
+      {"securityKeysPINHardLock", IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK},
+      {"securityKeysPINSoftLock", IDS_SETTINGS_SECURITY_KEYS_PIN_SOFT_LOCK},
+  };
+  AddLocalizedStringsBulk(html_source, kSecurityKeysStrings,
+                          base::size(kSecurityKeysStrings));
+
+  html_source->AddBoolean(
+      "enableSecurityKeysSubpage",
+      base::FeatureList::IsEnabled(device::kWebAuthPINSupport));
+}
+
 }  // namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
@@ -2880,6 +2925,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   chromeos::network_element::AddErrorLocalizedStrings(html_source);
 #endif
   policy_indicator::AddLocalizedStrings(html_source);
+  AddSecurityKeysStrings(html_source);
 
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
