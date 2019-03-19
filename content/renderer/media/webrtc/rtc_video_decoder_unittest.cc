@@ -369,7 +369,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 0;
   input_image._encodedHeight = 0;
-  input_image._frameType = webrtc::kVideoFrameDelta;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameDelta;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
@@ -406,7 +406,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForRunningOutOfPendingBuffers) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 640;
   input_image._encodedHeight = 480;
-  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
 
@@ -445,7 +445,7 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForSendingFramesWithoutSize) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 0;
   input_image._encodedHeight = 0;
-  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
   const int kNumDecodeRequests = 3;
@@ -467,7 +467,7 @@ TEST_P(RTCVideoDecoderTest, Reinitialize) {
   input_image._completeFrame = true;
   input_image._encodedWidth = 640;
   input_image._encodedHeight = 480;
-  input_image._frameType = webrtc::kVideoFrameKey;
+  input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
   input_image.set_buffer(buffer, sizeof(buffer));
   input_image.set_size(sizeof(buffer));
   EXPECT_CALL(*mock_vda_, Decode(_)).Times(1);

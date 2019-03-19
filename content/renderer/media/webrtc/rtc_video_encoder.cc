@@ -572,7 +572,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   image.SetTimestamp(rtp_timestamp.value());
   image.capture_time_ms_ = capture_timestamp_ms.value();
   image._frameType =
-      (metadata.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
+      (metadata.key_frame ? webrtc::VideoFrameType::kVideoFrameKey
+                          : webrtc::VideoFrameType::kVideoFrameDelta);
   image.content_type_ = video_content_type_;
   image._completeFrame = true;
 
@@ -802,7 +803,7 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
     info.codecSpecific.VP8.keyIdx = -1;
   } else if (video_codec_type_ == webrtc::kVideoCodecVP9) {
-    bool key_frame = image._frameType == webrtc::kVideoFrameKey;
+    bool key_frame = image._frameType == webrtc::VideoFrameType::kVideoFrameKey;
     info.codecSpecific.VP9.inter_pic_predicted = key_frame ? false : true;
     info.codecSpecific.VP9.flexible_mode = false;
     info.codecSpecific.VP9.ss_data_available = key_frame ? true : false;
@@ -918,8 +919,9 @@ int32_t RTCVideoEncoder::Encode(
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
-  const bool want_key_frame = frame_types && frame_types->size() &&
-                              frame_types->front() == webrtc::kVideoFrameKey;
+  const bool want_key_frame =
+      frame_types && frame_types->size() &&
+      frame_types->front() == webrtc::VideoFrameType::kVideoFrameKey;
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent encode_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
