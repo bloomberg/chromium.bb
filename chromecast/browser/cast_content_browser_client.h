@@ -220,6 +220,8 @@ class CastContentBrowserClient
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   void RegisterIOThreadServiceHandlers(
       content::ServiceManagerConnection* connection) override;
+  bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
+                                       const GURL& effective_site_url) override;
   CastFeatureListCreator* GetCastFeatureListCreator() {
     return cast_feature_list_creator_;
   }
