@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -26,7 +28,8 @@ class Clipboard : public EventTargetWithInlineData,
   ScriptPromise read(ScriptState*);
   ScriptPromise readText(ScriptState*);
 
-  ScriptPromise write(ScriptState*, HeapVector<Member<Blob>>);
+  ScriptPromise write(ScriptState*,
+                      HeapVector<std::pair<String, Member<Blob>>>);
   ScriptPromise writeText(ScriptState*, const String&);
 
   // EventTarget
