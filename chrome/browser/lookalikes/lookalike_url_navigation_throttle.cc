@@ -168,7 +168,6 @@ LookalikeUrlNavigationThrottle::~LookalikeUrlNavigationThrottle() {}
 ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
     const GURL& url) {
   content::NavigationHandle* handle = navigation_handle();
-  content::WebContents* web_contents = handle->GetWebContents();
 
   // Ignore subframe and same document navigations.
   if (!handle->IsInMainFrame() || handle->IsSameDocument()) {
@@ -181,7 +180,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
 
   // If the URL is in the allowlist, don't show any warning.
   LookalikeUrlAllowlist* allowlist =
-      LookalikeUrlAllowlist::GetOrCreateAllowlist(web_contents);
+      LookalikeUrlAllowlist::GetOrCreateAllowlist(handle->GetWebContents());
   if (allowlist->IsDomainInList(url.host())) {
     return content::NavigationThrottle::PROCEED;
   }
@@ -207,25 +206,12 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   return PerformChecks(url, navigated_domain, service->GetLatestEngagedSites());
 }
 
-ThrottleCheckResult LookalikeUrlNavigationThrottle::WillProcessResponse() {
-  if (navigation_handle()->GetNetErrorCode() != net::OK) {
-    return content::NavigationThrottle::PROCEED;
-  }
+ThrottleCheckResult LookalikeUrlNavigationThrottle::WillStartRequest() {
   return HandleThrottleRequest(navigation_handle()->GetURL());
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::WillRedirectRequest() {
-  const std::vector<GURL>& chain = navigation_handle()->GetRedirectChain();
-
-  // WillRedirectRequest is called after a redirect occurs, so the end of the
-  // chain is the URL that was redirected to. We need to check the preceding URL
-  // that caused the redirection. The final URL in the chain is checked either:
-  //  - after the next redirection (when there is a longer chain), or
-  //  - by WillProcessResponse (before content is rendered).
-  if (chain.size() < 2) {
-    return content::NavigationThrottle::PROCEED;
-  }
-  return HandleThrottleRequest(chain[chain.size() - 2]);
+  return HandleThrottleRequest(navigation_handle()->GetURL());
 }
 
 const char* LookalikeUrlNavigationThrottle::GetNameForLogging() {
@@ -339,6 +325,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     return ShowInterstitial(suggested_url, url, source_id, match_type);
   }
 
+  // Interstitial normally records UKM, but still record when it's not shown.
   LookalikeUrlInterstitialPage::RecordUkmEvent(
       source_id, match_type, UserAction::kInterstitialNotShown);
 

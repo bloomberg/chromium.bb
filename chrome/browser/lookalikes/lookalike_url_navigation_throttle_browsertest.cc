@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -157,7 +158,8 @@ void SendInterstitialCommandSync(Browser* browser,
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_TRUE(GetCurrentInterstitial(web_contents));
+  EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+            GetInterstitialType(web_contents));
 
   content::TestNavigationObserver navigation_observer(web_contents, 1);
   SendInterstitialCommand(web_contents, command);
@@ -248,6 +250,16 @@ class LookalikeUrlNavigationThrottleBrowserTest
   void CheckNoUkm() {
     EXPECT_TRUE(
         test_ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName).empty());
+  }
+
+  void VerifyInterstitialShowingIfNeeded(Browser* browser) {
+    if (!ui_enabled()) {
+      return;
+    }
+    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+              GetInterstitialType(
+                  browser->tab_strip_model()->GetActiveWebContents()));
+    EXPECT_FALSE(IsUrlShowing(browser));
   }
 
   // Tests that the histogram event |expected_event| is recorded. If the UI is
@@ -487,9 +499,11 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckNoUkm();
 }
 
-// Test that the heuristics aren't triggered on net errors.
+// Test that the heuristics are triggered even with net errors.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
-                       NetError_NoMatch) {
+                       NetError_Interstitial) {
+  base::HistogramTester histograms;
+
   // Create a test server that returns invalid responses.
   net::EmbeddedTestServer custom_test_server;
   custom_test_server.RegisterRequestHandler(
@@ -497,18 +511,50 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   ASSERT_TRUE(custom_test_server.Start());
 
   // Matches google.com but page returns an invalid response.
-  TestInterstitialNotShown(
-      browser(), custom_test_server.GetURL("gooogle.com", "/title1.html"));
-  CheckNoUkm();
+  NavigateToURLSync(browser(),
+                    custom_test_server.GetURL("gooogle.com", "/title1.html"));
+  VerifyInterstitialShowingIfNeeded(browser());
+  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                              1);
 
-  TestInterstitialNotShown(
-      browser(), custom_test_server.GetURL("googlé.com", "/title1.html"));
-  CheckNoUkm();
+  NavigateToURLSync(browser(),
+                    custom_test_server.GetURL("googlé.com", "/title1.html"));
+  VerifyInterstitialShowingIfNeeded(browser());
+  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                              2);
 
   SetEngagementScore(browser(), GURL("http://site1.com"), kHighEngagement);
-  TestInterstitialNotShown(
-      browser(), custom_test_server.GetURL("sité1.com", "/title1.html"));
-  CheckNoUkm();
+  // Advance clock to force a fetch of new engaged sites list.
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
+  NavigateToURLSync(browser(),
+                    custom_test_server.GetURL("sité1.com", "/title1.html"));
+  VerifyInterstitialShowingIfNeeded(browser());
+  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                              3);
+}
+
+// Verify that, after dismissing a lookalike warning when enabled, the user
+// sees a net error when applicable.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       NetError_NetErrorAfterDismiss) {
+  // Create a test server that returns invalid responses.
+  net::EmbeddedTestServer custom_test_server;
+  custom_test_server.RegisterRequestHandler(
+      base::BindRepeating(&NetworkErrorResponseHandler));
+  ASSERT_TRUE(custom_test_server.Start());
+
+  NavigateToURLSync(browser(),
+                    custom_test_server.GetURL("googlé.com", "/title1.html"));
+  if (ui_enabled()) {
+    SendInterstitialCommandSync(browser(),
+                                SecurityInterstitialCommand::CMD_PROCEED);
+  }
+
+  EXPECT_GE(ui_test_utils::FindInPage(
+                browser()->tab_strip_model()->GetActiveWebContents(),
+                base::ASCIIToUTF16("ERR_EMPTY_RESPONSE"), true, true, nullptr,
+                nullptr),
+            1);
 }
 
 // Navigate to a domain whose visual representation looks like a domain with a
@@ -705,6 +751,16 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
     LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
   }
+
+  NavigateToURLSync(browser(), GetURL("example.com"));
+
+  {
+    // ...or when it's last in the chain
+    const GURL kNavigatedUrl =
+        GetLongRedirect("example.net", "example.com", "goooglé.com");
+    SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+    LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
+  }
 }
 
 // Verify that the user action in UKM is recorded properly when the interstitial
@@ -800,4 +856,27 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                               SecurityInterstitialCommand::CMD_PROCEED);
 
   LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
+}
+
+// Verify reloading the page does not result in dismissing an interstitial.
+// Regression test for crbug/941886.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+                       RefreshDoesntDismiss) {
+  // Verify it works when the lookalike domain is the first in the chain
+  const GURL kNavigatedUrl =
+      GetLongRedirect("googlé.com", "example.net", "example.com");
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
+
+  content::TestNavigationObserver navigation_observer(web_contents);
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  navigation_observer.Wait();
+
+  EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+            GetInterstitialType(web_contents));
+  EXPECT_FALSE(IsUrlShowing(browser()));
 }
