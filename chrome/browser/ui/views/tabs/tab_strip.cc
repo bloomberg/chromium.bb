@@ -1128,7 +1128,7 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
   if (should_show)
     hover_card_->UpdateAndShow(tab);
   else
-    hover_card_->Hide();
+    hover_card_->FadeOutToHide();
 }
 
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {

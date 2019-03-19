@@ -75,7 +75,9 @@ class HoverCardVisibleWaiter : public views::WidgetObserver {
 
 class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
  public:
-  TabHoverCardBubbleViewBrowserTest() = default;
+  TabHoverCardBubbleViewBrowserTest() {
+    TabHoverCardBubbleView::disable_animations_for_testing_ = true;
+  }
   ~TabHoverCardBubbleViewBrowserTest() override = default;
 
   void SetUp() override {

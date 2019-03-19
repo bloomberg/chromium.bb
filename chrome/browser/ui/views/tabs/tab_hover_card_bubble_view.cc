@@ -15,6 +15,9 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
@@ -76,6 +79,100 @@ base::TimeDelta GetMaximumTriggerDelay() {
 
 }  // namespace
 
+// static
+bool TabHoverCardBubbleView::disable_animations_for_testing_ = false;
+
+// TODO(corising): Move this to a place where it could be used for all widgets.
+class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
+    : public gfx::AnimationDelegate {
+ public:
+  explicit WidgetFadeAnimationDelegate(views::Widget* hover_card)
+      : widget_(hover_card),
+        fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {}
+  ~WidgetFadeAnimationDelegate() override {}
+
+  enum class FadeAnimationState {
+    // No animation is running.
+    IDLE,
+    FADE_IN,
+    FADE_OUT,
+  };
+
+  void set_animation_state(FadeAnimationState state) {
+    animation_state_ = state;
+  }
+
+  bool IsFadingIn() const {
+    return animation_state_ == FadeAnimationState::FADE_IN;
+  }
+
+  bool IsFadingOut() const {
+    return animation_state_ == FadeAnimationState::FADE_OUT;
+  }
+
+  void FadeIn() {
+    if (IsFadingIn())
+      return;
+    constexpr base::TimeDelta kFadeInDuration =
+        base::TimeDelta::FromMilliseconds(200);
+    set_animation_state(FadeAnimationState::FADE_IN);
+    widget_->SetOpacity(0);
+    fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
+    fade_animation_->SetDuration(kFadeInDuration);
+    fade_animation_->Start();
+  }
+
+  void FadeOut() {
+    if (IsFadingOut())
+      return;
+    constexpr base::TimeDelta kFadeOutDuration =
+        base::TimeDelta::FromMilliseconds(150);
+    fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
+    set_animation_state(FadeAnimationState::FADE_OUT);
+    fade_animation_->SetDuration(kFadeOutDuration);
+    fade_animation_->Start();
+  }
+
+  void CancelFadeOut() {
+    if (!IsFadingOut())
+      return;
+
+    fade_animation_->Stop();
+    set_animation_state(FadeAnimationState::IDLE);
+    widget_->SetOpacity(1);
+  }
+
+ private:
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    // Get the value of the animation with a material ease applied.
+    double value = gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                              animation->GetCurrentValue());
+    float opaqueness = 0;
+    if (IsFadingOut()) {
+      opaqueness = gfx::Tween::FloatValueBetween(value, 1.0f, 0.0f);
+    } else if (animation_state_ == FadeAnimationState::FADE_IN) {
+      opaqueness = gfx::Tween::FloatValueBetween(value, 0.0f, 1.0f);
+    }
+
+    if (IsFadingOut() && opaqueness == 0) {
+      widget_->Hide();
+    } else {
+      widget_->SetOpacity(opaqueness);
+    }
+  }
+
+  void AnimationEnded(const gfx::Animation* animation) override {
+    AnimationProgressed(animation);
+    set_animation_state(FadeAnimationState::IDLE);
+  }
+
+  views::Widget* const widget_;
+  std::unique_ptr<gfx::LinearAnimation> fade_animation_;
+  FadeAnimationState animation_state_ = FadeAnimationState::IDLE;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetFadeAnimationDelegate);
+};
+
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
   // We'll do all of our own layout inside the bubble, so no need to inset this
@@ -124,6 +221,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new gfx::Insets(kLineSpacing, kOuterMargin, kOuterMargin, kOuterMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
+  fade_animation_delegate_ =
+      std::make_unique<WidgetFadeAnimationDelegate>(widget_);
 }
 
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
@@ -133,19 +232,25 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   views::BubbleDialogDelegateView::SetAnchorView(tab);
 
+  fade_animation_delegate_->CancelFadeOut();
+
   // Start trigger timer if necessary.
   if (!widget_->IsVisible()) {
     // Note that this will restart the timer if it is already running. If the
     // hover cards are not yet visible, moving the cursor within the tabstrip
     // will not trigger the hover cards.
     delayed_show_timer_.Start(FROM_HERE, GetDelay(tab->width()), this,
-                              &TabHoverCardBubbleView::ShowImmediately);
+                              &TabHoverCardBubbleView::FadeInToShow);
   }
 }
 
-void TabHoverCardBubbleView::Hide() {
+void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
-  widget_->Hide();
+  if (disable_animations_for_testing_) {
+    widget_->Hide();
+  } else {
+    fade_animation_delegate_->FadeOut();
+  }
 }
 
 int TabHoverCardBubbleView::GetDialogButtons() const {
@@ -185,8 +290,10 @@ base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
   return delay;
 }
 
-void TabHoverCardBubbleView::ShowImmediately() {
+void TabHoverCardBubbleView::FadeInToShow() {
   widget_->Show();
+  if (!disable_animations_for_testing_)
+    fade_animation_delegate_->FadeIn();
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
