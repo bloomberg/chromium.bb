@@ -267,7 +267,8 @@ class SyncerTest : public testing::Test,
 
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        UssMigrator(), &cancelation_signal_);
+        UssMigrator(), &cancelation_signal_,
+        test_user_share_.keystore_keys_handler());
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
@@ -4846,36 +4847,28 @@ TEST_F(SyncerTest, ConfigureFailedUnregisteredType) {
 }
 
 TEST_F(SyncerTest, GetKeySuccess) {
-  {
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
-  }
+  KeystoreKeysHandler* keystore_keys_handler =
+      model_type_registry_->keystore_keys_handler();
+  EXPECT_TRUE(keystore_keys_handler->NeedKeystoreKey());
 
   SyncShareConfigure();
 
   EXPECT_EQ(SyncerError::SYNCER_OK,
             cycle_->status_controller().last_get_key_result().value());
-  {
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_FALSE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
-  }
+  EXPECT_FALSE(keystore_keys_handler->NeedKeystoreKey());
 }
 
 TEST_F(SyncerTest, GetKeyEmpty) {
-  {
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
-  }
+  KeystoreKeysHandler* keystore_keys_handler =
+      model_type_registry_->keystore_keys_handler();
+  EXPECT_TRUE(keystore_keys_handler->NeedKeystoreKey());
 
   mock_server_->SetKeystoreKey(std::string());
   SyncShareConfigure();
 
   EXPECT_NE(SyncerError::SYNCER_OK,
             cycle_->status_controller().last_get_key_result().value());
-  {
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
-  }
+  EXPECT_TRUE(keystore_keys_handler->NeedKeystoreKey());
 }
 
 // Trigger an update that contains a progress marker only and verify that

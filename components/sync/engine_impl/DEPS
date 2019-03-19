@@ -3,6 +3,7 @@ include_rules = [
   "+components/sync/engine",
   "+components/sync/js",
   "+components/sync/model",
+  "+components/sync/nigori",
   "+components/sync/protocol",
   "+components/sync/syncable",
   "+components/sync/test",
