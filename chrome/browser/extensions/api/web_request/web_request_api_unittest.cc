@@ -322,35 +322,31 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     response->new_url = not_chosen_redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension1_id, kEventName,
+        kEventName + "/1", request->identifier(), response));
 
     // Extension2 response. Arrives second, and chosen because of install_time.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension2_id, kEventName,
+        kEventName + "/2", request->identifier(), response));
 
     // Extension2 response to the redirected URL. Arrives first, and chosen.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension2_id, kEventName,
+        kEventName + "/2", request->identifier(), response));
 
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension1_id, kEventName,
+        kEventName + "/1", request->identifier(), response));
 
     request->Start();
     base::RunLoop().Run();
@@ -372,35 +368,31 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
     response->new_url = redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension2_id, kEventName,
+        kEventName + "/2", request2->identifier(), response));
 
     // Extension1 response. Arrives second, but ignored due to install_time.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
     response->new_url = not_chosen_redirect_url;
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension1_id, kEventName,
+        kEventName + "/1", request2->identifier(), response));
 
     // Extension2 response to the redirected URL. Arrives first, and chosen.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension2_id, base::Time::FromDoubleT(2));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension2_id, kEventName, kEventName + "/2",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension2_id, kEventName,
+        kEventName + "/2", request2->identifier(), response));
 
     // Extension1 response to the redirected URL. Arrives second, and ignored.
     response = new ExtensionWebRequestEventRouter::EventResponse(
         extension1_id, base::Time::FromDoubleT(1));
-    ipc_sender_.PushTask(
-        base::Bind(&EventHandledOnIOThread,
-            &profile_, extension1_id, kEventName, kEventName + "/1",
-            request2->identifier(), response));
+    ipc_sender_.PushTask(base::BindRepeating(
+        &EventHandledOnIOThread, &profile_, extension1_id, kEventName,
+        kEventName + "/1", request2->identifier(), response));
 
     request2->Start();
     base::RunLoop().Run();
@@ -453,20 +445,18 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
   response = new ExtensionWebRequestEventRouter::EventResponse(
       extension1_id, base::Time::FromDoubleT(1));
   response->cancel = true;
-  ipc_sender_.PushTask(
-      base::Bind(&EventHandledOnIOThread,
-          &profile_, extension1_id, kEventName, kEventName + "/1",
-          request->identifier(), response));
+  ipc_sender_.PushTask(base::BindRepeating(
+      &EventHandledOnIOThread, &profile_, extension1_id, kEventName,
+      kEventName + "/1", request->identifier(), response));
 
   // Extension2 response. Arrives second, but has higher precedence
   // due to its later install_time.
   response = new ExtensionWebRequestEventRouter::EventResponse(
       extension2_id, base::Time::FromDoubleT(2));
   response->new_url = redirect_url;
-  ipc_sender_.PushTask(
-      base::Bind(&EventHandledOnIOThread,
-          &profile_, extension2_id, kEventName, kEventName + "/2",
-          request->identifier(), response));
+  ipc_sender_.PushTask(base::BindRepeating(
+      &EventHandledOnIOThread, &profile_, extension2_id, kEventName,
+      kEventName + "/2", request->identifier(), response));
 
   request->Start();
 
@@ -520,18 +510,17 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
       extension_id, base::Time::FromDoubleT(1));
   GURL redirect_url("about:redirected");
   response->new_url = redirect_url;
-  ipc_sender_.PushTask(
-      base::Bind(&EventHandledOnIOThread,
-          &profile_, extension_id, kEventName, kEventName + "/1",
-          request->identifier(), response));
+  ipc_sender_.PushTask(base::BindRepeating(
+      &EventHandledOnIOThread, &profile_, extension_id, kEventName,
+      kEventName + "/1", request->identifier(), response));
 
   base::RunLoop run_loop;
 
   // Extension response for OnErrorOccurred: Terminate the message loop.
-  ipc_sender_.PushTask(
-      base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-                 base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
-                 run_loop.QuitWhenIdleClosure()));
+  ipc_sender_.PushTask(base::BindRepeating(
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+      run_loop.QuitWhenIdleClosure()));
 
   request->Start();
   // request->Start() will have submitted OnBeforeRequest by the time we cancel.
@@ -1063,10 +1052,10 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   // Extension response for OnErrorOccurred: Terminate the message loop.
   {
     base::RunLoop run_loop;
-    ipc_sender_.PushTask(
-        base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-                   base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
-                   run_loop.QuitWhenIdleClosure()));
+    ipc_sender_.PushTask(base::BindRepeating(
+        base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+        base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+        run_loop.QuitWhenIdleClosure()));
     request->Start();
     run_loop.Run();
   }
@@ -1228,11 +1217,11 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
     // the block of modifications for the next extension starts.
     if (i+1 == test.modification_size ||
         mod.extension_id != test.modification[i+1].extension_id) {
-      ipc_sender_.PushTask(
-          base::Bind(&EventHandledOnIOThread,
-              &profile_, mod.extension_id == 1 ? extension1_id : extension2_id,
-              kEventName, kEventName + (mod.extension_id == 1 ? "/1" : "/2"),
-              request->identifier(), response));
+      ipc_sender_.PushTask(base::BindRepeating(
+          &EventHandledOnIOThread, &profile_,
+          mod.extension_id == 1 ? extension1_id : extension2_id, kEventName,
+          kEventName + (mod.extension_id == 1 ? "/1" : "/2"),
+          request->identifier(), response));
       response = NULL;
     }
   }
