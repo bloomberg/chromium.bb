@@ -6160,4 +6160,7 @@ crbug.com/943388 [ Win ] virtual/binary-for-devtools/http/tests/devtools/network
 #Imperceptible gradient changes. Will rebaseline after Skia roll.
 crbug.com/938592 virtual/gpu/fast/canvas/canvas-text-alignment.html [ Pass Failure ]
 crbug.com/938592 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure Timeout ]
+#
+# Trooper 2019-03-19
+crbug.com/836242 [ Mac ] external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Pass Failure ]
 
