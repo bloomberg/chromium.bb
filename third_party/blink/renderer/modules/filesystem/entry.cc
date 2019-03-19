@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -59,10 +60,29 @@ void Entry::getMetadata(ScriptState* script_state,
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_GetMetadata_Method_IsolatedFileSystem);
   }
-  file_system_->GetMetadata(
-      this,
-      MetadataCallbacks::OnDidReadMetadataV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+
+  auto success_callback_wrapper = WTF::Bind(
+      [](V8PersistentCallbackInterface<V8MetadataCallback>* callback,
+         Metadata* metadata) {
+        callback->InvokeAndReportException(nullptr, metadata);
+      },
+      WrapPersistentIfNeeded(
+          ToV8PersistentCallbackInterface(success_callback)));
+
+  auto error_callback_wrapper = MetadataCallbacks::ErrorCallback();
+  if (error_callback) {
+    error_callback_wrapper = WTF::Bind(
+        [](V8PersistentCallbackInterface<V8ErrorCallback>* callback,
+           base::File::Error error) {
+          callback->InvokeAndReportException(
+              nullptr, file_error::CreateDOMException(error));
+        },
+        WrapPersistentIfNeeded(
+            ToV8PersistentCallbackInterface(error_callback)));
+  }
+
+  file_system_->GetMetadata(this, std::move(success_callback_wrapper),
+                            std::move(error_callback_wrapper));
 }
 
 void Entry::moveTo(ScriptState* script_state,

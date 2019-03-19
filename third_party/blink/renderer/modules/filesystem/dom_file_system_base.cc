@@ -206,11 +206,11 @@ File* DOMFileSystemBase::CreateFile(const FileMetadata& metadata,
 
 void DOMFileSystemBase::GetMetadata(
     const EntryBase* entry,
-    MetadataCallbacks::OnDidReadMetadataCallback* success_callback,
-    ErrorCallbackBase* error_callback,
+    MetadataCallbacks::SuccessCallback success_callback,
+    MetadataCallbacks::ErrorCallback error_callback,
     SynchronousType synchronous_type) {
   auto callbacks = std::make_unique<MetadataCallbacks>(
-      success_callback, error_callback, context_, this);
+      std::move(success_callback), std::move(error_callback), context_, this);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
   if (synchronous_type == kSynchronous) {

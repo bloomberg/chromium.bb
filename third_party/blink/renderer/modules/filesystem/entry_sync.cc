@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/modules/filesystem/metadata.h"
 #include "third_party/blink/renderer/modules/filesystem/sync_callback_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -48,8 +49,15 @@ EntrySync* EntrySync::Create(EntryBase* entry) {
 
 Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
   auto* sync_helper = MakeGarbageCollected<MetadataCallbacksSyncHelper>();
-  file_system_->GetMetadata(this, sync_helper->GetSuccessCallback(),
-                            sync_helper->GetErrorCallback(),
+
+  auto success_callback_wrapper =
+      WTF::Bind(&MetadataCallbacksSyncHelper::OnSuccess,
+                WrapPersistentIfNeeded(sync_helper));
+  auto error_callback_wrapper = WTF::Bind(&MetadataCallbacksSyncHelper::OnError,
+                                          WrapPersistentIfNeeded(sync_helper));
+
+  file_system_->GetMetadata(this, std::move(success_callback_wrapper),
+                            std::move(error_callback_wrapper),
                             DOMFileSystemBase::kSynchronous);
   return sync_helper->GetResultOrThrow(exception_state);
 }

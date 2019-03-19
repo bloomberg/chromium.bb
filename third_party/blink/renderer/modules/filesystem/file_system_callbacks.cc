@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -306,36 +307,26 @@ void ResolveURICallbacks::DidFail(base::File::Error error) {
 
 // MetadataCallbacks ----------------------------------------------------------
 
-void MetadataCallbacks::OnDidReadMetadataV8Impl::Trace(
-    blink::Visitor* visitor) {
-  visitor->Trace(callback_);
-  OnDidReadMetadataCallback::Trace(visitor);
-}
-
-void MetadataCallbacks::OnDidReadMetadataV8Impl::OnSuccess(Metadata* metadata) {
-  callback_->InvokeAndReportException(nullptr, metadata);
-}
-
-MetadataCallbacks::MetadataCallbacks(
-    OnDidReadMetadataCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    DOMFileSystemBase* file_system)
-    : FileSystemCallbacksBase(error_callback, file_system, context),
-      success_callback_(success_callback) {}
+MetadataCallbacks::MetadataCallbacks(SuccessCallback success_callback,
+                                     ErrorCallback error_callback,
+                                     ExecutionContext* context,
+                                     DOMFileSystemBase* file_system)
+    : FileSystemCallbacksBase(/*error_callback=*/nullptr, file_system, context),
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 void MetadataCallbacks::DidReadMetadata(const FileMetadata& metadata) {
   if (!success_callback_)
     return;
 
-  success_callback_.Release()->OnSuccess(Metadata::Create(metadata));
+  std::move(success_callback_).Run(Metadata::Create(metadata));
 }
 
 void MetadataCallbacks::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // FileWriterCallbacks ----------------------------------------------------
