@@ -15,6 +15,7 @@ WebRtcSetDescriptionObserver::States::States()
 
 WebRtcSetDescriptionObserver::States::States(States&& other)
     : signaling_state(other.signaling_state),
+      sctp_transport_state(std::move(other.sctp_transport_state)),
       transceiver_states(std::move(other.transceiver_states)) {}
 
 WebRtcSetDescriptionObserver::States::~States() = default;
@@ -22,6 +23,7 @@ WebRtcSetDescriptionObserver::States::~States() = default;
 WebRtcSetDescriptionObserver::States& WebRtcSetDescriptionObserver::States::
 operator=(States&& other) {
   signaling_state = other.signaling_state;
+  sctp_transport_state = std::move(other.sctp_transport_state);
   transceiver_states = std::move(other.transceiver_states);
   return *this;
 }
@@ -70,7 +72,7 @@ void WebRtcSetDescriptionObserverHandlerImpl::OnSetDescriptionComplete(
   }
   TransceiverStateSurfacer transceiver_state_surfacer(main_task_runner_,
                                                       signaling_task_runner_);
-  transceiver_state_surfacer.Initialize(track_adapter_map_,
+  transceiver_state_surfacer.Initialize(pc_, track_adapter_map_,
                                         std::move(transceivers));
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcSetDescriptionObserverHandlerImpl::
@@ -87,6 +89,8 @@ void WebRtcSetDescriptionObserverHandlerImpl::
   CHECK(main_task_runner_->BelongsToCurrentThread());
   WebRtcSetDescriptionObserver::States states;
   states.signaling_state = signaling_state;
+  states.sctp_transport_state =
+      transceiver_state_surfacer.SctpTransportSnapshot();
   states.transceiver_states = transceiver_state_surfacer.ObtainStates();
   observer_->OnSetDescriptionComplete(std::move(error), std::move(states));
 }

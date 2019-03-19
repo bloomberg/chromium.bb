@@ -37,12 +37,21 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/sctp_transport_interface.h"
 
 namespace blink {
 
 class WebRTCICECandidate;
 class WebRTCRtpReceiver;
 class WebRTCRtpTransceiver;
+
+struct BLINK_PLATFORM_EXPORT WebRTCSctpTransportSnapshot {
+  rtc::scoped_refptr<webrtc::SctpTransportInterface> transport;
+  webrtc::SctpTransportInformation sctp_transport_state =
+      webrtc::SctpTransportInformation(webrtc::SctpTransportState::kNew);
+  webrtc::DtlsTransportInformation dtls_transport_state =
+      webrtc::DtlsTransportInformation(webrtc::DtlsTransportState::kNew);
+};
 
 class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
  public:
@@ -63,6 +72,7 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual void DidModifyTransceivers(
       std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
       bool is_remote_description) = 0;
+  virtual void DidModifySctpTransport(WebRTCSctpTransportSnapshot) = 0;
   virtual void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface>) = 0;
   virtual void DidNoteInterestingUsage(int usage_pattern) = 0;

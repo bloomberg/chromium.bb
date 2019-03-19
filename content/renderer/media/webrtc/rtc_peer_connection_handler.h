@@ -26,6 +26,7 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
@@ -223,6 +224,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnRenegotiationNeeded();
   void OnAddReceiverPlanB(RtpReceiverState receiver_state);
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
+  void OnModifySctpTransport(blink::WebRTCSctpTransportSnapshot state);
   void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
                             bool is_remote_description);
   void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);

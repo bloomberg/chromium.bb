@@ -6,6 +6,7 @@
 
 #include "content/renderer/media/webrtc/webrtc_util.h"
 #include "third_party/webrtc/api/rtp_transceiver_interface.h"
+#include "third_party/webrtc/api/sctp_transport_interface.h"
 
 namespace content {
 
@@ -26,6 +27,7 @@ TransceiverStateSurfacer::TransceiverStateSurfacer(
       signaling_task_runner_(other.signaling_task_runner_),
       is_initialized_(other.is_initialized_),
       states_obtained_(other.states_obtained_),
+      sctp_transport_snapshot_(other.sctp_transport_snapshot_),
       transceiver_states_(std::move(other.transceiver_states_)) {
   // Explicitly null |other|'s task runners for use in destructor.
   other.main_task_runner_ = nullptr;
@@ -43,6 +45,7 @@ TransceiverStateSurfacer& TransceiverStateSurfacer::operator=(
   main_task_runner_ = other.main_task_runner_;
   signaling_task_runner_ = other.signaling_task_runner_;
   states_obtained_ = other.states_obtained_;
+  sctp_transport_snapshot_ = other.sctp_transport_snapshot_;
   transceiver_states_ = std::move(other.transceiver_states_);
   // Explicitly null |other|'s task runners for use in destructor.
   other.main_task_runner_ = nullptr;
@@ -51,11 +54,25 @@ TransceiverStateSurfacer& TransceiverStateSurfacer::operator=(
 }
 
 void TransceiverStateSurfacer::Initialize(
+    scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map,
     std::vector<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
         webrtc_transceivers) {
   DCHECK(signaling_task_runner_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
+  DCHECK(native_peer_connection);
+  sctp_transport_snapshot_.transport =
+      native_peer_connection->GetSctpTransport();
+  if (sctp_transport_snapshot_.transport) {
+    sctp_transport_snapshot_.sctp_transport_state =
+        sctp_transport_snapshot_.transport->Information();
+    if (sctp_transport_snapshot_.sctp_transport_state.dtls_transport()) {
+      sctp_transport_snapshot_.dtls_transport_state =
+          sctp_transport_snapshot_.sctp_transport_state.dtls_transport()
+              ->Information();
+    }
+  }
+
   for (auto& webrtc_transceiver : webrtc_transceivers) {
     // Create the sender state.
     base::Optional<RtpSenderState> sender_state;
@@ -105,6 +122,13 @@ void TransceiverStateSurfacer::Initialize(
         ToBaseOptional(webrtc_transceiver->fired_direction())));
   }
   is_initialized_ = true;
+}
+
+blink::WebRTCSctpTransportSnapshot
+TransceiverStateSurfacer::SctpTransportSnapshot() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(is_initialized_);
+  return sctp_transport_snapshot_;
 }
 
 std::vector<RtpTransceiverState> TransceiverStateSurfacer::ObtainStates() {

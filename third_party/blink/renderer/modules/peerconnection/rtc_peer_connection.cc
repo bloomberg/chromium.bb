@@ -97,6 +97,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_init.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_sctp_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_request_impl.h"
@@ -2221,6 +2222,10 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   }
 }
 
+RTCSctpTransport* RTCPeerConnection::sctp() const {
+  return sctp_transport_;
+}
+
 RTCDataChannel* RTCPeerConnection::createDataChannel(
     ScriptState* script_state,
     String label,
@@ -2691,6 +2696,27 @@ void RTCPeerConnection::DidRemoveReceiverPlanB(
       MediaStreamSource::kReadyStateMuted);
 }
 
+void RTCPeerConnection::DidModifySctpTransport(
+    WebRTCSctpTransportSnapshot snapshot) {
+  if (!snapshot.transport) {
+    sctp_transport_ = nullptr;
+    return;
+  }
+  if (!sctp_transport_ ||
+      sctp_transport_->native_transport() != snapshot.transport) {
+    sctp_transport_ = MakeGarbageCollected<RTCSctpTransport>(
+        GetExecutionContext(), snapshot.transport);
+    sctp_transport_->ChangeState(snapshot.sctp_transport_state);
+  }
+  if (!sctp_transport_->transport() ||
+      sctp_transport_->transport()->native_transport() !=
+          snapshot.sctp_transport_state.dtls_transport()) {
+    sctp_transport_->SetTransport(CreateOrUpdateDtlsTransport(
+        snapshot.sctp_transport_state.dtls_transport(),
+        snapshot.dtls_transport_state));
+  }
+}
+
 void RTCPeerConnection::DidModifyTransceivers(
     std::vector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers,
     bool is_remote_description) {
@@ -3001,6 +3027,9 @@ void RTCPeerConnection::CloseInternal() {
   for (auto& transceiver : transceivers_) {
     transceiver->OnPeerConnectionClosed();
   }
+  if (sctp_transport_) {
+    sctp_transport_->Close();
+  }
 
   Document* document = To<Document>(GetExecutionContext());
   HostsUsingFeatures::CountAnyWorld(
@@ -3078,6 +3107,7 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(scheduled_events_);
   visitor->Trace(dtls_transports_by_native_transport_);
   visitor->Trace(ice_transports_by_native_transport_);
+  visitor->Trace(sctp_transport_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);

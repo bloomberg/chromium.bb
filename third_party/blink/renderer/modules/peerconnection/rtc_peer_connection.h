@@ -73,6 +73,7 @@ class RTCPeerConnectionTest;
 class RTCRtpReceiver;
 class RTCRtpSender;
 class RTCRtpTransceiverInit;
+class RTCSctpTransport;
 class RTCSessionDescription;
 class RTCSessionDescriptionInit;
 class ScriptState;
@@ -227,6 +228,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void removeTrack(RTCRtpSender*, ExceptionState&);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(track, kTrack)
 
+  RTCSctpTransport* sctp() const;
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,
                                     const RTCDataChannelInit*,
@@ -286,6 +288,7 @@ class MODULES_EXPORT RTCPeerConnection final
       webrtc::PeerConnectionInterface::PeerConnectionState) override;
   void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
+  void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
   void DidModifyTransceivers(std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
                              bool is_remote_description) override;
   void DidAddRemoteDataChannel(
@@ -519,6 +522,7 @@ class MODULES_EXPORT RTCPeerConnection final
   String last_offer_;
   String last_answer_;
 
+  Member<RTCSctpTransport> sctp_transport_;
   bool has_data_channels_;  // For RAPPOR metrics
   // In Plan B, senders and receivers are added or removed independently of one
   // another. In Unified Plan, senders and receivers are created in pairs as

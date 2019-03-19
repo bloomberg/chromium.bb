@@ -2,6 +2,6 @@ This is a testharness.js-based test.
 PASS Initial connectionState should be new
 PASS Closing the connection should set connectionState to closed
 PASS connection with one data channel should eventually have connected connection state
-FAIL connection with one data channel should eventually have transports in connected state assert_true: Expect ICE transport to be in connected or completed state expected true got false
+FAIL connection with one data channel should eventually have transports in connected state Cannot read property 'transport' of null
 Harness: the test ran to completion.
 

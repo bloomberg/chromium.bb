@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/sctp_transport_interface.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 
 namespace content {
@@ -166,6 +167,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
       const override;
   std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> GetReceivers()
       const override;
+  MOCK_CONST_METHOD0(GetSctpTransport,
+                     rtc::scoped_refptr<webrtc::SctpTransportInterface>());
   rtc::scoped_refptr<webrtc::DataChannelInterface>
       CreateDataChannel(const std::string& label,
                         const webrtc::DataChannelInit* config) override;
