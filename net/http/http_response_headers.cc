@@ -71,15 +71,11 @@ const char* const kCookieResponseHeaders[] = {
   "clear-site-data",
 };
 
-// By default, do not cache Strict-Transport-Security or Public-Key-Pins.
-// This avoids erroneously re-processing them on page loads from cache ---
-// they are defined to be valid only on live and error-free HTTPS
-// connections.
-// TODO(https://crbug.com/893055): remove Public-Key-Pins from non-cachable
-// headers?
+// By default, do not cache Strict-Transport-Security.
+// This avoids erroneously re-processing it on page loads from cache ---
+// it is defined to be valid only on live and error-free HTTPS connections.
 const char* const kSecurityStateHeaders[] = {
   "strict-transport-security",
-  "public-key-pins"
 };
 
 // These response headers are not copied from a 304/206 response to the cached
