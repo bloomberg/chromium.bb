@@ -40,7 +40,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
                    base::Unretained(this)),
-        &cancelation_signal_);
+        &cancelation_signal_, test_user_share_.keystore_keys_handler());
   }
 
   void TearDown() override {

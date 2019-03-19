@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
 
 namespace syncer {
@@ -43,11 +44,12 @@ class WriteTransaction;
 // random salt. Used with scrypt key derivation method.
 //
 // Note: See sync_encryption_handler.h for a description of the chrome visible
-// methods and what they do, and nigori_handler.h for a description of the
-// sync methods.
+// methods and what they do, and nigori_handler.h and keystore_keys_handler.h
+// for a description of the sync methods.
 // All methods are non-thread-safe and should only be called from the sync
 // thread unless explicitly noted otherwise.
-class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
+class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
+                                  public SyncEncryptionHandler,
                                   public syncable::NigoriHandler {
  public:
   SyncEncryptionHandlerImpl(
@@ -74,15 +76,16 @@ class SyncEncryptionHandlerImpl : public SyncEncryptionHandler,
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
       syncable::BaseTransaction* const trans) const override;
-  bool NeedKeystoreKey(syncable::BaseTransaction* const trans) const override;
-  bool SetKeystoreKeys(
-      const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
-      syncable::BaseTransaction* const trans) override;
   // Can be called from any thread.
   ModelTypeSet GetEncryptedTypes(
       syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
       syncable::BaseTransaction* const trans) const override;
+
+  // KeystoreKeysHandler implementation.
+  bool NeedKeystoreKey() const override;
+  bool SetKeystoreKeys(
+      const google::protobuf::RepeatedPtrField<std::string>& keys) override;
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
   // of other threads calling this.

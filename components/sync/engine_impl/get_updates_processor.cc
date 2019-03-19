@@ -15,8 +15,7 @@
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/nigori_handler.h"
+#include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 
 namespace syncer {
@@ -28,24 +27,22 @@ using TypeSyncEntityMap = std::map<ModelType, SyncEntityList>;
 using TypeToIndexMap = std::map<ModelType, size_t>;
 
 bool ShouldRequestEncryptionKey(SyncCycleContext* context) {
-  syncable::Directory* dir = context->directory();
-  syncable::ReadTransaction trans(FROM_HERE, dir);
-  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
-  return nigori_handler->NeedKeystoreKey(&trans);
+  return context->model_type_registry()
+      ->keystore_keys_handler()
+      ->NeedKeystoreKey();
 }
 
 SyncerError HandleGetEncryptionKeyResponse(
     const sync_pb::ClientToServerResponse& update_response,
-    syncable::Directory* dir) {
+    SyncCycleContext* context) {
   bool success = false;
   if (update_response.get_updates().encryption_keys_size() == 0) {
     LOG(ERROR) << "Failed to receive encryption key from server.";
     return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
-  syncable::ReadTransaction trans(FROM_HERE, dir);
-  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
-  success = nigori_handler->SetKeystoreKeys(
-      update_response.get_updates().encryption_keys(), &trans);
+  success =
+      context->model_type_registry()->keystore_keys_handler()->SetKeystoreKeys(
+          update_response.get_updates().encryption_keys());
 
   DVLOG(1) << "GetUpdates returned "
            << update_response.get_updates().encryption_keys_size()
@@ -259,9 +256,8 @@ SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
 
   if (need_encryption_key ||
       update_response.get_updates().encryption_keys_size() > 0) {
-    syncable::Directory* dir = cycle->context()->directory();
     status->set_last_get_key_result(
-        HandleGetEncryptionKeyResponse(update_response, dir));
+        HandleGetEncryptionKeyResponse(update_response, cycle->context()));
   }
 
   SyncerError process_result =

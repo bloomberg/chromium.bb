@@ -392,11 +392,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
 
     EXPECT_CALL(*observer(),
                 OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    {
-      ReadTransaction trans(FROM_HERE, user_share());
-      encryption_handler()->SetKeystoreKeys(proto_keystore_keys,
-                                            trans.GetWrappedTrans());
-    }
+    encryption_handler()->SetKeystoreKeys(proto_keystore_keys);
     PumpLoop();
     Mock::VerifyAndClearExpectations(observer());
   }
@@ -849,14 +845,11 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
 TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   // Passing no keys should do nothing.
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, _)).Times(0);
-  {
-    WriteTransaction trans(FROM_HERE, user_share());
-    EXPECT_FALSE(GetCryptographer()->is_initialized());
-    EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
-    EXPECT_FALSE(encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(std::string()), trans.GetWrappedTrans()));
-    EXPECT_TRUE(encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
-  }
+  EXPECT_FALSE(GetCryptographer()->is_initialized());
+  EXPECT_TRUE(encryption_handler()->NeedKeystoreKey());
+  EXPECT_FALSE(encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(std::string())));
+  EXPECT_TRUE(encryption_handler()->NeedKeystoreKey());
   Mock::VerifyAndClearExpectations(observer());
 
   // Build a set of keystore keys.
@@ -878,14 +871,9 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN))
       .WillOnce(SaveArg<0>(&keystore_bootstrap));
-  {
-    WriteTransaction trans(FROM_HERE, user_share());
-    EXPECT_TRUE(
-        encryption_handler()->SetKeystoreKeys(keys, trans.GetWrappedTrans()));
-    EXPECT_FALSE(
-        encryption_handler()->NeedKeystoreKey(trans.GetWrappedTrans()));
-    EXPECT_FALSE(GetCryptographer()->is_initialized());
-  }
+  EXPECT_TRUE(encryption_handler()->SetKeystoreKeys(keys));
+  EXPECT_FALSE(encryption_handler()->NeedKeystoreKey());
+  EXPECT_FALSE(GetCryptographer()->is_initialized());
   PumpLoop();
   EXPECT_TRUE(GetCryptographer()->is_initialized());
   VerifyMigratedNigori(PassphraseType::KEYSTORE_PASSPHRASE, kKeystoreKey,
@@ -919,10 +907,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
                                      keystore_bootstrap,
                                      fake_random_salt_generator_);
 
-  {
-    WriteTransaction trans(FROM_HERE, user_share());
-    EXPECT_FALSE(handler2.NeedKeystoreKey(trans.GetWrappedTrans()));
-  }
+  EXPECT_FALSE(handler2.NeedKeystoreKey());
 }
 
 // Ensure GetKeystoreDecryptor only updates the keystore decryptor token if it
@@ -948,14 +933,12 @@ TEST_F(SyncEncryptionHandlerImplTest, GetKeystoreDecryptor) {
 // migrated, we should be in keystore passphrase state.
 TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptImplicitPass) {
   const char kOtherKey[] = "other";
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-    Mock::VerifyAndClearExpectations(observer());
-  }
+
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
+  Mock::VerifyAndClearExpectations(observer());
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
   {
@@ -1000,14 +983,12 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptImplicitPass) {
 // migrated, we should be in custom passphrase state with encrypt everything.
 TEST_F(SyncEncryptionHandlerImplTest, MigrateOnDecryptCustomPass) {
   const char kOtherKey[] = "other";
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-    Mock::VerifyAndClearExpectations(observer());
-  }
+
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
+  Mock::VerifyAndClearExpectations(observer());
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
   {
@@ -1072,15 +1053,12 @@ TEST_F(SyncEncryptionHandlerImplTest, MigrateOnKeystoreKeyAvailableImplicit) {
   encryption_handler()->Init();
   Mock::VerifyAndClearExpectations(observer());
 
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    // Once we provide a keystore key, we should perform the migration.
-    EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  // Once we provide a keystore key, we should perform the migration.
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   // The actual migration gets posted, so run all pending tasks.
@@ -1112,15 +1090,12 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_CALL(*observer(), OnEncryptionComplete());
   encryption_handler()->EnableEncryptEverything();
 
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    // Once we provide a keystore key, we should perform the migration.
-    EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  // Once we provide a keystore key, we should perform the migration.
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
   EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
                                PassphraseType::FROZEN_IMPLICIT_PASSPHRASE, _));
 
@@ -1174,17 +1149,14 @@ TEST_F(SyncEncryptionHandlerImplTest,
   Mock::VerifyAndClearExpectations(observer());
 
   SyncEncryptionHandler::NigoriState captured_nigori_state;
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    // Once we provide a keystore key, we should perform the migration.
-    EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
-        .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  // Once we provide a keystore key, we should perform the migration.
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
+      .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
 
   // The actual migration gets posted, so run all pending tasks.
   PumpLoop();
@@ -1226,15 +1198,12 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_FALSE(encryption_handler()->custom_passphrase_time().is_null());
   Mock::VerifyAndClearExpectations(observer());
 
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    // Once we provide a keystore key, we should perform the migration.
-    EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  // Once we provide a keystore key, we should perform the migration.
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(_, true));
   SyncEncryptionHandler::NigoriState captured_nigori_state;
   EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
@@ -1277,28 +1246,26 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriKeystorePass) {
   // Now build a nigori node with the generated keystore decryptor token and
   // initialize the encryption handler with it. The cryptographer should be
   // initialized properly to decrypt both kCurKey and kKeystoreKey.
+  sync_pb::NigoriSpecifics nigori;
+  nigori.mutable_keystore_decryptor_token()->CopyFrom(keystore_decryptor_token);
+  other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
+  nigori.set_keybag_is_frozen(true);
+  nigori.set_keystore_migration_time(1);
+  nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  EXPECT_CALL(*observer(),
+              OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
   {
     WriteTransaction trans(FROM_HERE, user_share());
     WriteNode nigori_node(&trans);
     ASSERT_EQ(nigori_node.InitTypeRoot(NIGORI), BaseNode::INIT_OK);
-    sync_pb::NigoriSpecifics nigori;
-    nigori.mutable_keystore_decryptor_token()->CopyFrom(
-        keystore_decryptor_token);
-    other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
-    nigori.set_keybag_is_frozen(true);
-    nigori.set_keystore_migration_time(1);
-    nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
-
-    EXPECT_CALL(*observer(), OnPassphraseAccepted());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    EXPECT_CALL(*observer(), OnPassphraseTypeChanged(
-                                 PassphraseType::KEYSTORE_PASSPHRASE, _));
-    EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
     encryption_handler()->ApplyNigoriUpdate(nigori, trans.GetWrappedTrans());
     nigori_node.SetNigoriSpecifics(nigori);
   }
@@ -1341,13 +1308,10 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriFrozenImplicitPass) {
   other_cryptographer.AddKey(cur_key);
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
   {
@@ -1418,13 +1382,10 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriCustomPass) {
   other_cryptographer.AddKey(cur_key);
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
   EXPECT_FALSE(encryption_handler()->MigratedToKeystore());
 
   {
@@ -1522,13 +1483,11 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveUnmigratedNigoriAfterMigration) {
                                     PassphraseType::CUSTOM_PASSPHRASE, kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
+
   Mock::VerifyAndClearExpectations(observer());
 
   // Now build an old unmigrated nigori node with old encrypted types. We should
@@ -1613,13 +1572,11 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldMigratedNigori) {
                                     kCurKey,
                                     {KeyDerivationParams::CreateForPbkdf2()});
 
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
+
   Mock::VerifyAndClearExpectations(observer());
 
   // Now build an old keystore nigori node with old encrypted types. We should
@@ -1722,13 +1679,11 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreAfterReceivingMigratedNigori) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
+
   PumpLoop();
   EXPECT_TRUE(encryption_handler()->MigratedToKeystore());
   EXPECT_TRUE(GetCryptographer()->is_ready());
@@ -1782,11 +1737,11 @@ TEST_F(SyncEncryptionHandlerImplTest, SetCustomPassAfterMigration) {
     nigori.set_keystore_migration_time(migration_time);
     nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
     nigori_node.SetNigoriSpecifics(nigori);
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
   }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
 
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(),
@@ -2091,13 +2046,11 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveMigratedNigoriWithOldPassphrase) {
   EXPECT_TRUE(GetCryptographer()->is_ready());
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
 
-  {
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
+
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::KEYSTORE_PASSPHRASE, _));
   PumpLoop();
@@ -2217,16 +2170,14 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysAfterPendingGaiaResolved) {
   InitAndVerifyUnmigratedNigori(kOldGaiaKey,
                                 PassphraseType::IMPLICIT_PASSPHRASE);
 
-  {
-    // Pass multiple keystore keys, signaling a rotation has happened.
-    google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
-    keys.Add()->assign(kRawOldKeystoreKey);
-    keys.Add()->assign(kRawKeystoreKey);
-    ReadTransaction trans(FROM_HERE, user_share());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(keys, trans.GetWrappedTrans());
-  }
+  // Pass multiple keystore keys, signaling a rotation has happened.
+  google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
+  keys.Add()->assign(kRawOldKeystoreKey);
+  keys.Add()->assign(kRawKeystoreKey);
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(keys);
+
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
 
@@ -2287,16 +2238,14 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysWhenMigratedNigoriArrives) {
   InitAndVerifyUnmigratedNigori(kOldGaiaKey,
                                 PassphraseType::IMPLICIT_PASSPHRASE);
 
-  {
-    // Pass multiple keystore keys, signaling a rotation has happened.
-    google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
-    keys.Add()->assign(kRawOldKeystoreKey);
-    keys.Add()->assign(kRawKeystoreKey);
-    ReadTransaction trans(FROM_HERE, user_share());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(keys, trans.GetWrappedTrans());
-  }
+  // Pass multiple keystore keys, signaling a rotation has happened.
+  google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
+  keys.Add()->assign(kRawOldKeystoreKey);
+  keys.Add()->assign(kRawKeystoreKey);
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(keys);
+
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
 
@@ -2336,16 +2285,14 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysUnmigratedCustomPassphrase) {
   EXPECT_CALL(*observer(), OnPassphraseRequired(_, _, _));
   InitAndVerifyUnmigratedNigori(kCustomPass, PassphraseType::CUSTOM_PASSPHRASE);
 
-  {
-    // Pass multiple keystore keys, signaling a rotation has happened.
-    google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
-    keys.Add()->assign(kRawOldKeystoreKey);
-    keys.Add()->assign(kRawKeystoreKey);
-    ReadTransaction trans(FROM_HERE, user_share());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    encryption_handler()->SetKeystoreKeys(keys, trans.GetWrappedTrans());
-  }
+  // Pass multiple keystore keys, signaling a rotation has happened.
+  google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
+  keys.Add()->assign(kRawOldKeystoreKey);
+  keys.Add()->assign(kRawKeystoreKey);
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  encryption_handler()->SetKeystoreKeys(keys);
+
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
 
@@ -2393,19 +2340,17 @@ TEST_F(SyncEncryptionHandlerImplTest, RotateKeysMigratedCustomPassphrase) {
       {KeyDerivationParams::CreateForPbkdf2()});
 
   SyncEncryptionHandler::NigoriState captured_nigori_state;
-  {
-    // Pass multiple keystore keys, signaling a rotation has happened.
-    google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
-    keys.Add()->assign(kRawOldKeystoreKey);
-    keys.Add()->assign(kRawKeystoreKey);
-    ReadTransaction trans(FROM_HERE, user_share());
-    EXPECT_CALL(*observer(),
-                OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-    EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
-    EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
-        .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
-    encryption_handler()->SetKeystoreKeys(keys, trans.GetWrappedTrans());
-  }
+  // Pass multiple keystore keys, signaling a rotation has happened.
+  google::protobuf::RepeatedPtrField<google::protobuf::string> keys;
+  keys.Add()->assign(kRawOldKeystoreKey);
+  keys.Add()->assign(kRawKeystoreKey);
+  EXPECT_CALL(*observer(),
+              OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
+  EXPECT_CALL(*observer(), OnLocalSetPassphraseEncryption(_))
+      .WillOnce(testing::SaveArg<0>(&captured_nigori_state));
+  encryption_handler()->SetKeystoreKeys(keys);
+
   PumpLoop();
   Mock::VerifyAndClearExpectations(observer());
 
@@ -2456,11 +2401,8 @@ TEST_F(SyncEncryptionHandlerImplTest, MissingKeystoreMigrationTime) {
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*observer(),
               OnBootstrapTokenUpdated(_, KEYSTORE_BOOTSTRAP_TOKEN));
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    encryption_handler()->SetKeystoreKeys(
-        BuildEncryptionKeyProto(kRawKeystoreKey), trans.GetWrappedTrans());
-  }
+  encryption_handler()->SetKeystoreKeys(
+      BuildEncryptionKeyProto(kRawKeystoreKey));
 }
 
 // When we receive a remote Nigori with UNSPECIFIED as the key derivation

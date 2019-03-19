@@ -129,7 +129,8 @@ class SyncSchedulerImplTest : public testing::Test {
 
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        UssMigrator(), &cancelation_signal_);
+        UssMigrator(), &cancelation_signal_,
+        test_user_share_.keystore_keys_handler());
     model_type_registry_->RegisterDirectoryType(HISTORY_DELETE_DIRECTIVES,
                                                 GROUP_UI);
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);

@@ -35,6 +35,7 @@
 #include "components/sync/syncable/read_transaction.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
+#include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/sync/syncable/write_node.h"
@@ -769,16 +770,16 @@ void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
                                            encrypt_everything_, nigori);
 }
 
-bool SyncEncryptionHandlerImpl::NeedKeystoreKey(
-    syncable::BaseTransaction* const trans) const {
+bool SyncEncryptionHandlerImpl::NeedKeystoreKey() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
   return keystore_key_.empty();
 }
 
 bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
-    const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys,
-    syncable::BaseTransaction* const trans) {
+    const google::protobuf::RepeatedPtrField<google::protobuf::string>& keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
   if (keys.size() == 0)
     return false;
   // The last key in the vector is the current keystore key. The others are kept
@@ -797,7 +798,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   for (int i = 0; i < keys.size() - 1; ++i)
     base::Base64Encode(keys.Get(i), &old_keystore_keys_[i]);
 
-  Cryptographer* cryptographer = &UnlockVaultMutable(trans)->cryptographer;
+  Cryptographer* cryptographer = &UnlockVaultMutable(&trans)->cryptographer;
 
   // Update the bootstrap token. If this fails, we persist an empty string,
   // which will force us to download the keystore keys again on the next
@@ -814,7 +815,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // If this is a first time sync, we get the encryption keys before we process
   // the nigori node. Just return for now, ApplyNigoriUpdate will be invoked
   // once we have the nigori node.
-  syncable::Entry entry(trans, syncable::GET_TYPE_ROOT, NIGORI);
+  syncable::Entry entry(&trans, syncable::GET_TYPE_ROOT, NIGORI);
   if (!entry.good())
     return true;
 
@@ -831,7 +832,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // Note that triggering migration will have no effect if we're already
   // properly migrated with the newest keystore keys.
   if (ShouldTriggerMigration(nigori, *cryptographer,
-                             GetPassphraseType(trans))) {
+                             GetPassphraseType(&trans))) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SyncEncryptionHandlerImpl::RewriteNigori,
                                   weak_ptr_factory_.GetWeakPtr()));
