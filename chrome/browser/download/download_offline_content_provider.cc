@@ -167,7 +167,7 @@ void DownloadOfflineContentProvider::OnThumbnailRetrieved(
 void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
                                                 const std::string& name,
                                                 RenameCallback callback) {
-  DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (!item) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
