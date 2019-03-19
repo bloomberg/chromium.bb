@@ -41,6 +41,37 @@ TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRange) {
       text_provider->get_DocumentRange(&text_range_provider));
 }
 
+TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderDocumentRangeNested) {
+  ui::AXNodeData text_data;
+  text_data.id = 3;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData paragraph_data;
+  paragraph_data.id = 2;
+  paragraph_data.role = ax::mojom::Role::kParagraph;
+  paragraph_data.child_ids.push_back(3);
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids.push_back(2);
+
+  Init(root_data, paragraph_data, text_data);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+}
+
 TEST_F(AXPlatformNodeTextProviderTest, TestITextProviderSupportedSelection) {
   ui::AXNodeData text_data;
   text_data.id = 2;
