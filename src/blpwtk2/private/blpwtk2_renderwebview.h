@@ -387,7 +387,16 @@ class RenderWebView final : public WebView
     void OnUpdateDragCursor(
         blink::WebDragOperation drag_operation);
 
+    // Renderer-driven popups:
+    void OnShowWidget(
+        int routing_id, const gfx::Rect initial_rect);
+    void OnClose();
+
     // PRIVATE FUNCTIONS:
+    explicit RenderWebView(ProfileImpl              *profile,
+                           int                       routingId,
+                           const gfx::Rect&          initialRect);
+
     static LPCTSTR GetWindowClass();
     static LRESULT CALLBACK WindowProcedure(HWND   hWnd,
                                             UINT   uMsg,

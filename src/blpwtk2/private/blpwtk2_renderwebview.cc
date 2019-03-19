@@ -33,6 +33,7 @@
 #include <content/browser/renderer_host/display_util.h>
 #include <content/common/drag_messages.h>
 #include <content/common/frame_messages.h>
+#include <content/common/view_messages.h>
 #include <content/common/widget_messages.h>
 #include <content/public/renderer/render_view_observer.h>
 #include <content/renderer/gpu/layer_tree_view.h>
@@ -129,6 +130,71 @@ RenderWebView::RenderWebView(WebViewDelegate          *delegate,
     , d_pendingDestroy(false)
 {
     initialize();
+}
+
+RenderWebView::RenderWebView(ProfileImpl              *profile,
+                             int                       routingId,
+                             const gfx::Rect&          initialRect)
+    : d_proxy(nullptr)
+    , d_delegate(nullptr)
+    , d_profile(profile)
+#if defined(BLPWTK2_FEATURE_FOCUS) || defined(BLPWTK2_FEATURE_REROUTEMOUSEWHEEL)
+    , d_properties({ false, false, false, false, false, false })
+#endif
+    , d_pendingDestroy(false)
+    , d_renderViewRoutingId(0)
+    , d_renderWidgetRoutingId(0)
+    , d_mainFrameRoutingId(0)
+{
+    initialize();
+
+    SetWindowLong(
+        d_hwnd.get(), GWL_STYLE,
+        GetWindowLong(d_hwnd.get(), GWL_STYLE) | WS_POPUP);
+
+    //
+    d_gotRenderViewInfo = true;
+
+    d_renderWidgetRoutingId = routingId;
+
+    RenderMessageDelegate::GetInstance()->AddRoute(
+        d_renderWidgetRoutingId, this);
+
+    // Create a RenderCompositor that is associated with this
+    // content::RenderWidget:
+    d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
+        d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
+
+    updateVisibility();
+    updateGeometry();
+
+    // Set input event routing:
+    d_inputRouterImpl.reset(
+        new content::InputRouterImpl(
+            this, this, this, content::InputRouter::Config()));
+
+    content::mojom::WidgetInputHandlerHostPtr input_handler_host_ptr;
+    auto widgetInputHandlerHostRequest = mojo::MakeRequest(&input_handler_host_ptr);
+
+    content::RenderWidget::FromRoutingID(routingId)->
+        SetupWidgetInputHandler(
+            mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host_ptr));
+
+    d_inputRouterImpl->BindHost(
+        std::move(widgetInputHandlerHostRequest), true);
+
+    updateFocus();
+
+    //
+    d_shown = true;
+
+    SetWindowPos(
+        d_hwnd.get(),
+        0,
+        initialRect.x(),     initialRect.y(),
+        initialRect.width(), initialRect.height(),
+        SWP_SHOWWINDOW | SWP_FRAMECHANGED |
+        SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 }
 
 RenderWebView::~RenderWebView()
@@ -1363,6 +1429,11 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
             OnStartDragging)
         IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor,
             OnUpdateDragCursor)
+        // Renderer-driven popups:
+        IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget,
+            OnShowWidget)
+        IPC_MESSAGE_HANDLER(WidgetHostMsg_Close,
+            OnClose)
     IPC_END_MESSAGE_MAP()
 
     return handled;
@@ -1922,6 +1993,18 @@ void RenderWebView::OnUpdateDragCursor(
     blink::WebDragOperation drag_operation)
 {
     d_dragDrop->UpdateDragCursor(drag_operation);
+}
+
+// Used only for renderer-driven popups:
+void RenderWebView::OnShowWidget(
+    int routing_id, const gfx::Rect initial_rect)
+{
+    new RenderWebView(d_profile, routing_id, initial_rect);
+}
+
+void RenderWebView::OnClose()
+{
+    this->destroy();
 }
 
 }  // close namespace blpwtk2
