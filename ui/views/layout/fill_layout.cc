@@ -8,9 +8,9 @@
 
 namespace views {
 
-FillLayout::FillLayout() {}
+FillLayout::FillLayout() = default;
 
-FillLayout::~FillLayout() {}
+FillLayout::~FillLayout() = default;
 
 void FillLayout::Layout(View* host) {
   if (host->children().empty())

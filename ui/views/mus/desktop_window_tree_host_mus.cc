@@ -58,7 +58,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
 
     observed_.Add(window());
   }
-  ~ClientSideNonClientFrameView() override {}
+  ~ClientSideNonClientFrameView() override = default;
 
  private:
   gfx::Insets GetClientInsets() const {

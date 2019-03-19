@@ -917,7 +917,7 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
 FlexLayout::FlexLayout()
     : internal_(std::make_unique<internal::FlexLayoutInternal>(this)) {}
 
-FlexLayout::~FlexLayout() {}
+FlexLayout::~FlexLayout() = default;
 
 FlexLayout& FlexLayout::SetOrientation(LayoutOrientation orientation) {
   if (orientation != orientation_) {

@@ -20,7 +20,7 @@ TouchSelectionMenuRunnerViews::TestApi::TestApi(
   DCHECK(menu_runner_);
 }
 
-TouchSelectionMenuRunnerViews::TestApi::~TestApi() {}
+TouchSelectionMenuRunnerViews::TestApi::~TestApi() = default;
 
 gfx::Rect TouchSelectionMenuRunnerViews::TestApi::GetAnchorRect() const {
   TouchSelectionMenuViews* menu = menu_runner_->menu_;

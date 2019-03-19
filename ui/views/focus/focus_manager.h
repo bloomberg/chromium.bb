@@ -103,7 +103,7 @@ class VIEWS_EXPORT FocusTraversable {
   virtual View* GetFocusTraversableParentView() = 0;
 
  protected:
-  virtual ~FocusTraversable() {}
+  virtual ~FocusTraversable() = default;
 };
 
 // This interface should be implemented by classes that want to be notified when
@@ -117,7 +117,7 @@ class VIEWS_EXPORT FocusChangeListener {
   virtual void OnDidChangeFocus(View* focused_before, View* focused_now) = 0;
 
  protected:
-  virtual ~FocusChangeListener() {}
+  virtual ~FocusChangeListener() = default;
 };
 
 // FocusManager adds itself as a ViewObserver to the currently focused view.

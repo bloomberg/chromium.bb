@@ -16,8 +16,7 @@ MouseWatcherViewHost::MouseWatcherViewHost(View* view,
       hot_zone_insets_(hot_zone_insets) {
 }
 
-MouseWatcherViewHost::~MouseWatcherViewHost() {
-}
+MouseWatcherViewHost::~MouseWatcherViewHost() = default;
 
 bool MouseWatcherViewHost::Contains(
     const gfx::Point& screen_point,

@@ -20,8 +20,7 @@ TestViewsDelegate::TestViewsDelegate()
       use_desktop_native_widgets_(false),
       use_transparent_windows_(false) {}
 
-TestViewsDelegate::~TestViewsDelegate() {
-}
+TestViewsDelegate::~TestViewsDelegate() = default;
 
 #if defined(OS_WIN)
 HICON TestViewsDelegate::GetSmallWindowIcon() const {
