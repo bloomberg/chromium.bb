@@ -10,7 +10,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.components.signin.ChromeSigninController;
 
 /** Utility functions related to enabled state of Contextual Suggestions. */
@@ -28,8 +28,7 @@ public class ContextualSuggestionsEnabledStateUtils {
     static boolean getSettingsEnabled() {
         return isDSEConditionMet() && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy()
                 && ChromeSigninController.get().isSignedIn()
-                && (ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(false)
-                           || ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true));
+                && UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled();
     }
 
     /** @return Whether the state is currently enabled. */
