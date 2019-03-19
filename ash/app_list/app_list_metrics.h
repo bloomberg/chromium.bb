@@ -184,7 +184,8 @@ enum AppListPageSwitcherSource {
   kMouseWheelScroll = 4,
   kMousePadScroll = 5,
   kDragAppToBorder = 6,
-  kMaxAppListPageSwitcherSource = 7,
+  kMoveAppWithKeyboard = 7,
+  kMaxAppListPageSwitcherSource = 8,
 };
 
 // The different ways to move an app in app list's apps grid. These values are
@@ -194,9 +195,11 @@ enum AppListAppMovingType {
   kMoveIntoFolder = 0,
   kMoveOutOfFolder = 1,
   kMoveIntoAnotherFolder = 2,
-  kReorderInFolder = 3,
-  kReorderInTopLevel = 4,
-  kMaxAppListAppMovingType = 5,
+  kReorderByDragInFolder = 3,
+  kReorderByDragInTopLevel = 4,
+  kReorderByKeyboardInFolder = 5,
+  kReorderByKeyboardInTopLevel = 6,
+  kMaxAppListAppMovingType = 7,
 };
 
 // Different places a search result can be launched from. These values do not
