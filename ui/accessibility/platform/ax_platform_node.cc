@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/platform/ax_platform_node.h"
 
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -79,6 +80,13 @@ void AXPlatformNode::NotifyAddAXModeFlags(AXMode mode_flags) {
   ax_mode_ |= mode_flags;
   for (auto& observer : ax_mode_observers_.Get())
     observer.OnAXModeAdded(mode_flags);
+
+  // Add a crash key with the ax_mode, to enable searching for top crashes that
+  // occur when accessibility is turned on.
+  static auto* ax_mode_crash_key = base::debug::AllocateCrashKeyString(
+      "ax_mode", base::debug::CrashKeySize::Size64);
+  if (ax_mode_crash_key)
+    base::debug::SetCrashKeyString(ax_mode_crash_key, mode_flags.ToString());
 }
 
 // static

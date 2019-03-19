@@ -11,6 +11,10 @@
 namespace ui {
 
 std::ostream& operator<<(std::ostream& stream, const AXMode& mode) {
+  return stream << mode.ToString();
+}
+
+std::string AXMode::ToString() const {
   std::vector<std::string> tokens;
 
   // Written as a loop with a switch so that this crashes if a new
@@ -41,10 +45,10 @@ std::ostream& operator<<(std::ostream& stream, const AXMode& mode) {
 
     DCHECK(flag_name);
 
-    if (mode.has_mode(mode_flag))
+    if (has_mode(mode_flag))
       tokens.push_back(flag_name);
   }
-  return stream << base::JoinString(tokens, " | ");
+  return base::JoinString(tokens, " | ");
 }
 
 }  // namespace ui
