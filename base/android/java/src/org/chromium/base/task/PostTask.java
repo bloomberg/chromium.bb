@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.FutureTask;
 
 /**
  * Java interface to the native chromium scheduler.  Note tasks can be posted before native
@@ -106,6 +107,39 @@ public class PostTask {
             task.run();
         } else {
             postTask(taskTraits, task);
+        }
+    }
+
+    /**
+     * This function executes the task immediately if the current thread is the
+     * same as the one corresponding to the SingleThreadTaskRunner, otherwise it
+     * posts it and blocks until the task finishes.
+     *
+     * It should be executed only for tasks with traits corresponding to
+     * executors backed by a SingleThreadTaskRunner, like UiThreadTaskTraits.
+     *
+     * Use this only for trivial tasks as it ignores task priorities.
+     *
+     * @deprecated In tests, use {@link
+     *         org.chromium.content_public.browser.test.util.TestThreadUtils#runOnUiThreadBlocking(Runnable)
+     *         TestThreadUtils.runOnUiThreadBlocking(Runnable)} instead. Non-test usage is heavily
+     *         discouraged. For non-tests, use callbacks rather than blocking threads. If you
+     * absolutely must block the thread, use FutureTask.get().
+     * @param taskTraits The TaskTraits that describe the desired TaskRunner.
+     * @param task The task to be run with the specified traits.
+     */
+    @Deprecated
+    public static void runSynchronously(TaskTraits taskTraits, Runnable r) {
+        if (getTaskExecutorForTraits(taskTraits).canRunTaskImmediately(taskTraits)) {
+            r.run();
+        } else {
+            FutureTask<Void> task = new FutureTask<Void>(r, null);
+            postTask(taskTraits, task);
+            try {
+                task.get();
+            } catch (Exception e) {
+                throw new RuntimeException("Exception occurred while waiting for runnable", e);
+            }
         }
     }
 

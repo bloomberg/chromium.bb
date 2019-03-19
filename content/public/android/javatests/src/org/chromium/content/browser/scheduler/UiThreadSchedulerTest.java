@@ -201,6 +201,24 @@ public class UiThreadSchedulerTest {
         assertThat(orderList, contains(2, 1));
     }
 
+    @Test
+    @MediumTest
+    public void testRunSynchronously() throws InterruptedException {
+        final Object lock = new Object();
+        final AtomicBoolean taskExecuted = new AtomicBoolean();
+
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+            taskExecuted.set(true);
+        });
+        // We verify that the current execution waited until the synchronous task completed.
+        Assert.assertTrue(taskExecuted.get());
+    }
+
     private void startContentMainOnUiThread() {
         final Object lock = new Object();
         final AtomicBoolean uiThreadInitalized = new AtomicBoolean();
