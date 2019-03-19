@@ -5404,7 +5404,6 @@ TEST_F(CreditCardSaveManagerTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
        features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
       // Disabled
       {});
@@ -5460,7 +5459,6 @@ TEST_F(CreditCardSaveManagerTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
        features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
       // Disabled
       {});

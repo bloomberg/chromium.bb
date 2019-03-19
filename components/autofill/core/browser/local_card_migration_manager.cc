@@ -45,7 +45,9 @@ LocalCardMigrationManager::LocalCardMigrationManager(
   // This is to initialize StrikeDatabase is if it hasn't been already, so that
   // its cache would be loaded and ready to use when the first LCMM is created.
   if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
     // Only init when |kAutofillSaveCreditCardUsesStrikeSystemV2| is enabled. If
     // flag is off and LegacyStrikeDatabase instead of StrikeDatabase is used,
     // this init will cause failure on GetStrikes().
@@ -76,8 +78,6 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
 
   // Don't show the prompt if max strike count was reached.
   if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
-      base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
       GetLocalCardMigrationStrikeDatabase()->IsMaxStrikesLimitReached()) {
     switch (imported_credit_card_record_type) {
@@ -153,8 +153,6 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
 
   // Log number of LocalCardMigration strikes when migration was accepted.
   if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
-      base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
     base::UmaHistogramCounts1000(
         "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted",
@@ -164,8 +162,6 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
   // If there are cards which aren't selected, add 3 strikes to
   // LocalCardMigrationStrikeDatabase.
   if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
-      base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
       (selected_card_guids.size() < migratable_credit_cards_.size())) {
     GetLocalCardMigrationStrikeDatabase()->AddStrikes(

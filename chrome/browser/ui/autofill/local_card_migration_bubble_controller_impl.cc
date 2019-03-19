@@ -103,8 +103,6 @@ void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
   UpdateIcon();
   if (should_add_strikes_on_bubble_close_ &&
       base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
-      base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
     should_add_strikes_on_bubble_close_ = false;
     AddStrikesForBubbleClose();

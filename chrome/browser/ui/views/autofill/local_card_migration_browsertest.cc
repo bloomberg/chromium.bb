@@ -768,12 +768,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingDialogAddsLocalCardMigrationStrikes) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2,
-       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);
@@ -793,12 +789,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ClosingBubbleAddsLocalCardMigrationStrikes) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2,
-       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
   base::HistogramTester histogram_tester;
 
   SaveLocalCard(kFirstCardNumber);
@@ -820,12 +812,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
                        ReshowingBubbleDoesNotAddStrikes) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCreditCardUsesStrikeSystemV2,
-       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
-      // Disabled
-      {});
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
 
   SaveLocalCard(kFirstCardNumber);
   SaveLocalCard(kSecondCardNumber);

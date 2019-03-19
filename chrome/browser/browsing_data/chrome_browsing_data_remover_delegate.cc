@@ -852,11 +852,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           delete_begin_, delete_end_);
 
       // Clear out the Autofill LegacyStrikeDatabase in its entirety.
+      // Both StrikeDatabase and LegacyStrikeDatabase use data from the same
+      // ProtoDatabase, so only one of them needs to call ClearAllStrikes(~).
       // TODO(crbug.com/884817): Respect |delete_begin_| and |delete_end_| and
       // only clear out entries whose last strikes were created in that
       // timeframe.
       if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
+          base::FeatureList::IsEnabled(
+              autofill::features::
+                  kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
         autofill::StrikeDatabase* strike_database =
             autofill::StrikeDatabaseFactory::GetForProfile(profile_);
         if (strike_database)

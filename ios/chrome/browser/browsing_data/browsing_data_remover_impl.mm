@@ -432,8 +432,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
                                                           delete_end);
 
       if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
+          base::FeatureList::IsEnabled(
+              autofill::features::
+                  kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
         // Clear out the Autofill StrikeDatabase in its entirety.
+        // Both StrikeDatabase and LegacyStrikeDatabase use data from the same
+        // ProtoDatabase, so only one of them needs to call ClearAllStrikes(~).
         autofill::StrikeDatabase* strike_database =
             autofill::StrikeDatabaseFactory::GetForBrowserState(browser_state_);
         if (strike_database)
