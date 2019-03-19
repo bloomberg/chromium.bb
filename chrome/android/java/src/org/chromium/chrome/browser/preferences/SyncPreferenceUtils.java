@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.components.sync.StopSource;
 import org.chromium.ui.UiUtils;
 
@@ -77,8 +76,7 @@ public class SyncPreferenceUtils {
                     GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
         }
 
-        if (profileSyncService.getProtocolErrorClientAction()
-                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
+        if (profileSyncService.requiresClientUpgrade()) {
             return res.getString(
                     R.string.sync_error_upgrade_client, BuildInfo.getInstance().hostPackageLabel);
         }
