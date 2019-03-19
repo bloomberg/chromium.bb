@@ -240,6 +240,11 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // preview is displayed.
   void HandleGetInitialSettings(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
+  // Opens printer settings in the Chrome OS Settings App.
+  void HandleOpenPrinterSettings(const base::ListValue* args);
+#endif
+
   void SendInitialSettings(const std::string& callback_id,
                            const std::string& default_printer);
 
