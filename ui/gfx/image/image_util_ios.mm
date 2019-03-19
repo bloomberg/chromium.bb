@@ -27,6 +27,9 @@ bool JPEG1xEncodedDataFromImage(const Image& image,
 }
 
 Image ResizedImageForSearchByImage(const Image& image) {
+  if (image.IsEmpty()) {
+    return image;
+  }
   UIImage* ui_image = image.ToUIImage();
 
   if (ui_image &&
