@@ -127,6 +127,12 @@ def main():
       help='Directory on the device where Chrome stores cached files,'
       ' crashpad stores dumps in a subdirectory of it')
   args = parser.parse_args()
+
+  stackwalk_path = os.path.join(args.build_path, 'minidump_stackwalk')
+  if not os.path.exists(stackwalk_path):
+    logging.error('Missing minidump_stackwalk executable')
+    return 1
+
   devil_chromium.Initialize(adb_path=args.adb_path)
   device = device_utils.DeviceUtils(args.device)
 
@@ -147,10 +153,7 @@ def main():
       library_names = _ExtractLibraryNamesFromDump(args.build_path,
                                                    dump_full_path)
       symbols_dir = _CreateSymbolsDir(args.build_path, library_names)
-      stackwalk_cmd = [
-          os.path.join(args.build_path, 'minidump_stackwalk'), dump_full_path,
-          symbols_dir
-      ]
+      stackwalk_cmd = [stackwalk_path, dump_full_path, symbols_dir]
       subprocess.call(stackwalk_cmd)
     finally:
       shutil.rmtree(dump_dir, ignore_errors=True)
