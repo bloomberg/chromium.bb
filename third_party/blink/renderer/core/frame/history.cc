@@ -202,8 +202,7 @@ void History::go(ScriptState* script_state,
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/C/#dom-history-go
-    GetFrame()->Reload(WebFrameLoadType::kReload,
-                       ClientRedirectPolicy::kClientRedirect);
+    GetFrame()->Reload(WebFrameLoadType::kReload);
   }
 }
 

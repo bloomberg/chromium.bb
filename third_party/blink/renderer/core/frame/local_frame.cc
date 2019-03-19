@@ -524,22 +524,19 @@ Frame* LocalFrame::FindFrameForNavigation(const AtomicString& name,
   return frame;
 }
 
-void LocalFrame::Reload(WebFrameLoadType load_type,
-                        ClientRedirectPolicy client_redirect_policy) {
+void LocalFrame::Reload(WebFrameLoadType load_type) {
   DCHECK(IsReloadLoadType(load_type));
   if (!loader_.GetDocumentLoader()->GetHistoryItem())
     return;
   FrameLoadRequest request = FrameLoadRequest(
-      nullptr,
-      loader_.ResourceRequestForReload(load_type, client_redirect_policy));
-  request.SetClientRedirect(client_redirect_policy);
+      nullptr, loader_.ResourceRequestForReload(
+                   load_type, ClientRedirectPolicy::kClientRedirect));
+  request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     request.SetInputStartTime(input_event->TimeStamp());
-  if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
-    probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
-                                    0.0, ClientNavigationReason::kReload);
-    probe::FrameClearedScheduledNavigation(this);
-  }
+  probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(), 0.0,
+                                  ClientNavigationReason::kReload);
+  probe::FrameClearedScheduledNavigation(this);
 
   loader_.StartNavigation(request, load_type);
 }
