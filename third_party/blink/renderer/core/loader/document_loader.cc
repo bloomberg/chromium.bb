@@ -1497,7 +1497,7 @@ void DocumentLoader::InstallNewDocument(
     if (document->GetSettings()
             ->GetForceTouchEventFeatureDetectionForInspector()) {
       OriginTrialContext::FromOrCreate(document)->AddFeature(
-          "ForceTouchEventFeatureDetectionForInspector");
+          OriginTrialFeature::kTouchEventFeatureDetection);
     }
 
 #if defined(OS_CHROMEOS)
@@ -1508,7 +1508,7 @@ void DocumentLoader::InstallNewDocument(
         origin.DomainIs("mhjfbmdgcfjbbpaeojofohoefgiehjai") &&
         origin.port() == 0) {
       OriginTrialContext::FromOrCreate(document)->AddFeature(
-          origin_trials::kLowLatencyCanvasTrialName);
+          OriginTrialFeature::kLowLatencyCanvas);
     }
     // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video
     // Player app.
@@ -1516,7 +1516,7 @@ void DocumentLoader::InstallNewDocument(
         origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
         origin.port() == 0) {
       OriginTrialContext::FromOrCreate(document)->AddFeature(
-          origin_trials::kAutoPictureInPictureTrialName);
+          OriginTrialFeature::kAutoPictureInPicture);
     }
 #endif
 

@@ -169,6 +169,7 @@ def origin_trial_features_context(generator_name, feature_info):
         'platform/bindings/origin_trial_features.h',
         'platform/bindings/script_state.h',
         'platform/bindings/v8_per_context_data.h',
+        'platform/runtime_enabled_features.h',
         # TODO(iclelland): Remove the need to explicitly include this; it is
         # here because the ContextFeatureSettings code needs it.
         'bindings/core/v8/v8_window.h',
@@ -189,7 +190,7 @@ def origin_trial_features_context(generator_name, feature_info):
     # functions to call, organized by interface.
     context['installers_by_feature'] = [
         {'name': feature_name,
-         'name_constant': 'origin_trials::k%sTrialName' % feature_name,
+         'name_constant': 'OriginTrialFeature::k%s' % feature_name,
          'installers': get_install_functions(interfaces, [feature_name])}
         for feature_name, interfaces in types_for_feature.items()]
     context['installers_by_feature'].sort(key=lambda x: x['name'])
