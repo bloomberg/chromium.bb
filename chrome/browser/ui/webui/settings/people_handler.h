@@ -112,6 +112,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       RestartSyncAfterDashboardClearWithStandaloneTransport);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DashboardClearWhileSettingsOpen_ConfirmSoon);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DashboardClearWhileSettingsOpen_ConfirmLater);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
                            StoredAccountsList);
 
