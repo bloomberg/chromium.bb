@@ -94,7 +94,8 @@ ProgressCenterImpl.Notifications_.NotificationState_ = {
  */
 ProgressCenterImpl.Notifications_.prototype.updateItem = function(
     item, newItemAcceptable) {
-  const NotificationState = ProgressCenterImpl.Notifications_.NotificationState_;
+  const NotificationState =
+      ProgressCenterImpl.Notifications_.NotificationState_;
   const newlyAdded = !(item.id in this.ids_);
 
   // If new item is not acceptable, just return.
@@ -136,7 +137,8 @@ ProgressCenterImpl.Notifications_.prototype.updateItem = function(
       message: item.message,
       buttons: item.cancelable ? [{title: str('CANCEL_LABEL')}] : undefined,
       progress: item.state === ProgressItemState.PROGRESSING ?
-          item.progressRateInPercent : undefined,
+          item.progressRateInPercent :
+          undefined,
       priority: (item.state === ProgressItemState.ERROR || !item.quiet) ? 0 : -1
     };
     if (newlyAdded) {

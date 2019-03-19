@@ -159,8 +159,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
       if (entry.isDirectory) {
         // If it's directory, open the directory with file manager.
         launcher.launchFileManager(
-            { currentDirectoryURL: entry.toURL() },
-            undefined, /* App ID */
+            {currentDirectoryURL: entry.toURL()}, undefined, /* App ID */
             LaunchType.FOCUS_SAME_OR_CREATE);
       } else {
         // getFileTasks supports only native entries.
@@ -220,8 +219,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
  */
 LauncherSearch.prototype.openFileManagerWithSelectionURL_ = selectionURL => {
   launcher.launchFileManager(
-      {selectionURL: selectionURL},
-      undefined, /* App ID */
+      {selectionURL: selectionURL}, undefined, /* App ID */
       LaunchType.FOCUS_SAME_OR_CREATE);
 };
 

@@ -77,48 +77,50 @@ VolumeManagerImpl.prototype.__proto__ = cr.EventTarget.prototype;
  * @private
  */
 VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
-  return volumeManagerUtil.createVolumeInfo(volumeMetadata).then(
-      /**
-      * @param {!VolumeInfo} volumeInfo
-      * @return {!VolumeInfo}
-      */
-      volumeInfo => {
-        // We don't show Downloads and Drive on volume list if they have mount
-        // error, since users can do nothing in this situation.
-        // We show Removable and Provided volumes regardless of mount error so
-        // that users can unmount or format the volume.
-        // TODO(fukino): Once the Files app gets ready, show erroneous Drive
-        // volume so that users can see auth warning banner on the volume.
-        // crbug.com/517772.
-        let shouldShow = true;
-        switch (volumeInfo.volumeType) {
-          case VolumeManagerCommon.VolumeType.DOWNLOADS:
-          case VolumeManagerCommon.VolumeType.DRIVE:
-            shouldShow = !!volumeInfo.fileSystem;
-            break;
-        }
-        if (!shouldShow) {
-          return volumeInfo;
-        }
-        if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
-          this.volumeInfoList.add(volumeInfo);
+  return volumeManagerUtil.createVolumeInfo(volumeMetadata)
+      .then(
+          /**
+           * @param {!VolumeInfo} volumeInfo
+           * @return {!VolumeInfo}
+           */
+          volumeInfo => {
+            // We don't show Downloads and Drive on volume list if they have
+            // mount error, since users can do nothing in this situation. We
+            // show Removable and Provided volumes regardless of mount error so
+            // that users can unmount or format the volume.
+            // TODO(fukino): Once the Files app gets ready, show erroneous Drive
+            // volume so that users can see auth warning banner on the volume.
+            // crbug.com/517772.
+            let shouldShow = true;
+            switch (volumeInfo.volumeType) {
+              case VolumeManagerCommon.VolumeType.DOWNLOADS:
+              case VolumeManagerCommon.VolumeType.DRIVE:
+                shouldShow = !!volumeInfo.fileSystem;
+                break;
+            }
+            if (!shouldShow) {
+              return volumeInfo;
+            }
+            if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
+              this.volumeInfoList.add(volumeInfo);
 
-          // Update the network connection status, because until the drive is
-          // initialized, the status is set to not ready.
-          // TODO(mtomasz): The connection status should be migrated into
-          // chrome.fileManagerPrivate.VolumeMetadata.
-          if (volumeMetadata.volumeType ===
-              VolumeManagerCommon.VolumeType.DRIVE) {
-            this.onDriveConnectionStatusChanged_();
-          }
-        } else if (volumeMetadata.volumeType ===
-            VolumeManagerCommon.VolumeType.REMOVABLE) {
-          // Update for remounted USB external storage, because they were
-          // remounted to switch read-only policy.
-          this.volumeInfoList.add(volumeInfo);
-        }
-        return volumeInfo;
-      });
+              // Update the network connection status, because until the drive
+              // is initialized, the status is set to not ready.
+              // TODO(mtomasz): The connection status should be migrated into
+              // chrome.fileManagerPrivate.VolumeMetadata.
+              if (volumeMetadata.volumeType ===
+                  VolumeManagerCommon.VolumeType.DRIVE) {
+                this.onDriveConnectionStatusChanged_();
+              }
+            } else if (
+                volumeMetadata.volumeType ===
+                VolumeManagerCommon.VolumeType.REMOVABLE) {
+              // Update for remounted USB external storage, because they were
+              // remounted to switch read-only policy.
+              this.volumeInfoList.add(volumeInfo);
+            }
+            return volumeInfo;
+          });
 };
 
 /**
@@ -140,14 +142,12 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
     // volumes in the volumeMetadataList are mounted. crbug.com/135477.
     this.mountQueue_.run(inCallback => {
       // Create VolumeInfo for each volume.
-      Promise.all(
-          volumeMetadataList.map(volumeMetadata => {
-            console.warn(
-                'Initializing volume: ' + volumeMetadata.volumeId);
-            return this.addVolumeMetadata_(volumeMetadata).then(
-                volumeInfo => {
-                  console.warn('Initialized volume: ' + volumeInfo.volumeId);
-                });
+      Promise
+          .all(volumeMetadataList.map(volumeMetadata => {
+            console.warn('Initializing volume: ' + volumeMetadata.volumeId);
+            return this.addVolumeMetadata_(volumeMetadata).then(volumeInfo => {
+              console.warn('Initialized volume: ' + volumeInfo.volumeId);
+            });
           }))
           .then(() => {
             console.warn('Initialized all volumes.');
@@ -171,21 +171,19 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
     switch (event.eventType) {
       case 'mount':
         var requestKey = this.makeRequestKey_(
-            'mount',
-            event.volumeMetadata.sourcePath || '');
+            'mount', event.volumeMetadata.sourcePath || '');
 
         if (event.status === 'success' ||
             event.status ===
                 VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM ||
             event.status ===
                 VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
-          this.addVolumeMetadata_(event.volumeMetadata).then(
-              volumeInfo => {
-                this.finishRequest_(requestKey, event.status, volumeInfo);
-                callback();
-              });
-        } else if (event.status ===
-            VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
+          this.addVolumeMetadata_(event.volumeMetadata).then(volumeInfo => {
+            this.finishRequest_(requestKey, event.status, volumeInfo);
+            callback();
+          });
+        } else if (
+            event.status === VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
           const navigationEvent =
               new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
           navigationEvent.volumeId = event.volumeMetadata.volumeId;
@@ -204,10 +202,10 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         const status = event.status;
         var requestKey = this.makeRequestKey_('unmount', volumeId);
         const requested = requestKey in this.requests_;
-        const volumeInfoIndex =
-            this.volumeInfoList.findIndex(volumeId);
+        const volumeInfoIndex = this.volumeInfoList.findIndex(volumeId);
         const volumeInfo = volumeInfoIndex !== -1 ?
-            this.volumeInfoList.item(volumeInfoIndex) : null;
+            this.volumeInfoList.item(volumeInfoIndex) :
+            null;
         if (event.status === 'success' && !requested && volumeInfo) {
           console.warn('Unmounted volume without a request: ' + volumeId);
           const e = new Event('externally-unmounted');
@@ -251,9 +249,8 @@ VolumeManagerImpl.prototype.mountArchive = function(
 };
 
 /** @override */
-VolumeManagerImpl.prototype.unmount = function(volumeInfo,
-                                           successCallback,
-                                           errorCallback) {
+VolumeManagerImpl.prototype.unmount = function(
+    volumeInfo, successCallback, errorCallback) {
   chrome.fileManagerPrivate.removeMount(volumeInfo.volumeId);
   const requestKey = this.makeRequestKey_('unmount', volumeInfo.volumeId);
   this.startRequest_(requestKey, successCallback, errorCallback);
@@ -313,7 +310,7 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
     console.error('Invalid entry passed to getLocationInfo: ' + entry);
     return null;
   }
-   const volumeInfo = this.getVolumeInfo(entry);
+  const volumeInfo = this.getVolumeInfo(entry);
 
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
@@ -452,8 +449,8 @@ VolumeManagerImpl.prototype.getDefaultDisplayRoot = callback => {
  *     when the request fails.
  * @private
  */
-VolumeManagerImpl.prototype.startRequest_ = function(key,
-    successCallback, errorCallback) {
+VolumeManagerImpl.prototype.startRequest_ = function(
+    key, successCallback, errorCallback) {
   if (key in this.requests_) {
     const request = this.requests_[key];
     request.successCallbacks.push(successCallback);
@@ -463,8 +460,8 @@ VolumeManagerImpl.prototype.startRequest_ = function(key,
       successCallbacks: [successCallback],
       errorCallbacks: [errorCallback],
 
-      timeout: setTimeout(this.onTimeout_.bind(this, key),
-                          volumeManagerUtil.TIMEOUT)
+      timeout:
+          setTimeout(this.onTimeout_.bind(this, key), volumeManagerUtil.TIMEOUT)
     };
   }
 };
@@ -475,8 +472,8 @@ VolumeManagerImpl.prototype.startRequest_ = function(key,
  * @private
  */
 VolumeManagerImpl.prototype.onTimeout_ = function(key) {
-  this.invokeRequestCallbacks_(this.requests_[key],
-                               VolumeManagerCommon.VolumeError.TIMEOUT);
+  this.invokeRequestCallbacks_(
+      this.requests_[key], VolumeManagerCommon.VolumeError.TIMEOUT);
   delete this.requests_[key];
 };
 
@@ -487,8 +484,8 @@ VolumeManagerImpl.prototype.onTimeout_ = function(key) {
  * @param {VolumeInfo=} opt_volumeInfo Volume info of the mounted volume.
  * @private
  */
-VolumeManagerImpl.prototype.finishRequest_ =
-    function(key, status, opt_volumeInfo) {
+VolumeManagerImpl.prototype.finishRequest_ = function(
+    key, status, opt_volumeInfo) {
   const request = this.requests_[key];
   if (!request) {
     return;

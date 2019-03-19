@@ -121,8 +121,7 @@ DriveSyncHandlerImpl.prototype.getCompletedEventName = () => {
  * @return {boolean}
  */
 DriveSyncHandlerImpl.prototype.isSyncSuppressed = function() {
-  return navigator.connection.type === 'cellular' &&
-      this.cellularDisabled_;
+  return navigator.connection.type === 'cellular' && this.cellularDisabled_;
 };
 
 /**
@@ -168,8 +167,7 @@ DriveSyncHandlerImpl.prototype.onFileTransfersUpdated_ = function(status) {
       }
       break;
     default:
-      throw new Error(
-          'Invalid transfer state: ' + status.transferState + '.');
+      throw new Error('Invalid transfer state: ' + status.transferState + '.');
   }
 };
 
@@ -214,7 +212,8 @@ DriveSyncHandlerImpl.prototype.updateItem_ = function(status) {
 DriveSyncHandlerImpl.prototype.removeItem_ = function(status) {
   this.queue_.run(callback => {
     this.item_.state = status.transferState === 'completed' ?
-        ProgressItemState.COMPLETED : ProgressItemState.CANCELED;
+        ProgressItemState.COMPLETED :
+        ProgressItemState.CANCELED;
     this.progressCenter_.updateItem(this.item_);
     this.syncing_ = false;
     this.dispatchEvent(new Event(this.getCompletedEventName()));
@@ -244,8 +243,7 @@ DriveSyncHandlerImpl.prototype.onDriveSyncError_ = function(event) {
     item.state = ProgressItemState.ERROR;
     switch (event.type) {
       case 'delete_without_permission':
-        item.message =
-            strf('SYNC_DELETE_WITHOUT_PERMISSION_ERROR', entry.name);
+        item.message = strf('SYNC_DELETE_WITHOUT_PERMISSION_ERROR', entry.name);
         break;
       case 'service_unavailable':
         item.message = str('SYNC_SERVICE_UNAVAILABLE_ERROR');
@@ -275,14 +273,16 @@ DriveSyncHandlerImpl.prototype.onDriveSyncError_ = function(event) {
  * @param {number} buttonIndex Index of the button.
  * @private
  */
-DriveSyncHandlerImpl.prototype.onNotificationButtonClicked_ = (notificationId, buttonIndex) => {
-  const expectedId = DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_;
-  if (notificationId !== expectedId) {
-    return;
-  }
-  chrome.notifications.clear(notificationId, () => {});
-  chrome.fileManagerPrivate.setPreferences({cellularDisabled: false});
-};
+DriveSyncHandlerImpl.prototype.onNotificationButtonClicked_ =
+    (notificationId, buttonIndex) => {
+      const expectedId =
+          DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_;
+      if (notificationId !== expectedId) {
+        return;
+      }
+      chrome.notifications.clear(notificationId, () => {});
+      chrome.fileManagerPrivate.setPreferences({cellularDisabled: false});
+    };
 
 /**
  * Handles preferences change.

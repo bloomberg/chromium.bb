@@ -80,8 +80,7 @@ FileOperationManagerImpl.prototype.dispatchEvent = function() {
  */
 FileOperationManagerImpl.prototype.hasQueuedTasks = function() {
   return Object.keys(this.runningCopyTasks_).length > 0 ||
-      this.pendingCopyTasks_.length > 0 ||
-      this.deleteTasks_.length > 0;
+      this.pendingCopyTasks_.length > 0 || this.deleteTasks_.length > 0;
 };
 
 /**
@@ -107,8 +106,7 @@ FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
     }
     task.requestCancel();
     this.eventRouter_.sendProgressEvent(
-        fileOperationUtil.EventRouter.EventType.CANCELED,
-        task.getStatus(),
+        fileOperationUtil.EventRouter.EventType.CANCELED, task.getStatus(),
         task.taskId);
     this.pendingCopyTasks_.splice(i, 1);
   }
@@ -146,40 +144,41 @@ FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
  * @return {Promise} Promise fulfilled with the filtered entry. This is not
  *     rejected.
  */
-FileOperationManagerImpl.prototype.filterSameDirectoryEntry = (sourceEntries, targetEntry, isMove) => {
-  if (!isMove) {
-    return Promise.resolve(sourceEntries);
-  }
-  // Utility function to concat arrays.
-  const compactArrays = arrays => {
-    return arrays.filter(element => {
-      return !!element;
-    });
-  };
-  // Call processEntry for each item of entries.
-  const processEntries = entries => {
-    const promises = entries.map(processFileOrDirectoryEntries);
-    return Promise.all(promises).then(compactArrays);
-  };
-  // Check all file entries and keeps only those need sharing operation.
-  var processFileOrDirectoryEntries = entry => {
-    return new Promise(resolve => {
-      entry.getParent(
-          inParentEntry => {
-            if (!util.isSameEntry(inParentEntry, targetEntry)) {
-              resolve(entry);
-            } else {
-              resolve(null);
-            }
-          },
-          error => {
-            console.error(error.stack || error);
-            resolve(null);
-          });
-    });
-  };
-  return processEntries(sourceEntries);
-};
+FileOperationManagerImpl.prototype.filterSameDirectoryEntry =
+    (sourceEntries, targetEntry, isMove) => {
+      if (!isMove) {
+        return Promise.resolve(sourceEntries);
+      }
+      // Utility function to concat arrays.
+      const compactArrays = arrays => {
+        return arrays.filter(element => {
+          return !!element;
+        });
+      };
+      // Call processEntry for each item of entries.
+      const processEntries = entries => {
+        const promises = entries.map(processFileOrDirectoryEntries);
+        return Promise.all(promises).then(compactArrays);
+      };
+      // Check all file entries and keeps only those need sharing operation.
+      var processFileOrDirectoryEntries = entry => {
+        return new Promise(resolve => {
+          entry.getParent(
+              inParentEntry => {
+                if (!util.isSameEntry(inParentEntry, targetEntry)) {
+                  resolve(entry);
+                } else {
+                  resolve(null);
+                }
+              },
+              error => {
+                console.error(error.stack || error);
+                resolve(null);
+              });
+        });
+      };
+      return processEntries(sourceEntries);
+    };
 
 /**
  * Kick off pasting.
@@ -232,8 +231,8 @@ FileOperationManagerImpl.prototype.queueCopy_ = function(
     // When moving between different volumes, moving is implemented as a copy
     // and delete. This is because moving between volumes is slow, and moveTo()
     // is not cancellable nor provides progress feedback.
-    if (util.isSameFileSystem(entries[0].filesystem,
-                              targetDirEntry.filesystem)) {
+    if (util.isSameFileSystem(
+            entries[0].filesystem, targetDirEntry.filesystem)) {
       task = new fileOperationUtil.MoveTask(taskId, entries, targetDirEntry);
     } else {
       task =
@@ -245,8 +244,7 @@ FileOperationManagerImpl.prototype.queueCopy_ = function(
   }
 
   this.eventRouter_.sendProgressEvent(
-      fileOperationUtil.EventRouter.EventType.BEGIN,
-      task.getStatus(),
+      fileOperationUtil.EventRouter.EventType.BEGIN, task.getStatus(),
       task.taskId);
 
   task.initialize(() => {
@@ -293,8 +291,7 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
         /** @type {!DirectoryEntry} */ (task.targetDirEntry));
     if (volumeInfo === null) {
       this.eventRouter_.sendProgressEvent(
-          fileOperationUtil.EventRouter.EventType.ERROR,
-          task.getStatus(),
+          fileOperationUtil.EventRouter.EventType.ERROR, task.getStatus(),
           task.taskId,
           new fileOperationUtil.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
@@ -321,8 +318,7 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
 
   const onTaskProgress = function(task) {
     this.eventRouter_.sendProgressEvent(
-        fileOperationUtil.EventRouter.EventType.PROGRESS,
-        task.getStatus(),
+        fileOperationUtil.EventRouter.EventType.PROGRESS, task.getStatus(),
         task.taskId);
   }.bind(this, nextTask);
 
@@ -339,10 +335,8 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
     const reason = err.data.name === util.FileError.ABORT_ERR ?
         fileOperationUtil.EventRouter.EventType.CANCELED :
         fileOperationUtil.EventRouter.EventType.ERROR;
-    this.eventRouter_.sendProgressEvent(reason,
-                                        task.getStatus(),
-                                        task.taskId,
-                                        err);
+    this.eventRouter_.sendProgressEvent(
+        reason, task.getStatus(), task.taskId, err);
     this.serviceAllTasks_();
   }.bind(this, nextTaskVolumeId);
 
@@ -351,8 +345,7 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
     delete this.runningCopyTasks_[volumeId];
 
     this.eventRouter_.sendProgressEvent(
-        fileOperationUtil.EventRouter.EventType.SUCCESS,
-        task.getStatus(),
+        fileOperationUtil.EventRouter.EventType.SUCCESS, task.getStatus(),
         task.taskId);
     this.serviceAllTasks_();
   }.bind(this, nextTaskVolumeId);
@@ -361,8 +354,7 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
   this.runningCopyTasks_[nextTaskVolumeId] = nextTask;
 
   this.eventRouter_.sendProgressEvent(
-      fileOperationUtil.EventRouter.EventType.PROGRESS,
-      nextTask.getStatus(),
+      fileOperationUtil.EventRouter.EventType.PROGRESS, nextTask.getStatus(),
       nextTask.taskId);
   nextTask.run(onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
 };
@@ -422,14 +414,12 @@ FileOperationManagerImpl.prototype.deleteEntries = function(entries) {
  * @private
  */
 FileOperationManagerImpl.prototype.serviceAllDeleteTasks_ = function() {
-  this.serviceDeleteTask_(
-      this.deleteTasks_[0],
-      () => {
-        this.deleteTasks_.shift();
-        if (this.deleteTasks_.length) {
-          this.serviceAllDeleteTasks_();
-        }
-      });
+  this.serviceDeleteTask_(this.deleteTasks_[0], () => {
+    this.deleteTasks_.shift();
+    if (this.deleteTasks_.length) {
+      this.serviceAllDeleteTasks_();
+    }
+  });
 };
 
 /**
@@ -496,8 +486,7 @@ FileOperationManagerImpl.prototype.zipSelection = function(
   const zipTask = new fileOperationUtil.ZipTask(
       this.generateTaskId(), selectionEntries, dirEntry, dirEntry);
   this.eventRouter_.sendProgressEvent(
-      fileOperationUtil.EventRouter.EventType.BEGIN,
-      zipTask.getStatus(),
+      fileOperationUtil.EventRouter.EventType.BEGIN, zipTask.getStatus(),
       zipTask.taskId);
   zipTask.initialize(() => {
     this.pendingCopyTasks_.push(zipTask);
