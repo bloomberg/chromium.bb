@@ -106,6 +106,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad, SkPaint* paint);
   void DrawTextureQuad(const TextureDrawQuad* quad, SkPaint* paint);
+  void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad, SkPaint* paint);
   bool MustDrawBatchedTileQuads(const DrawQuad* new_quad,
                                 const gfx::Transform& content_device_transform,
                                 bool apply_transform_and_scissor,

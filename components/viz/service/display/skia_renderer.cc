@@ -17,6 +17,7 @@
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -508,8 +509,10 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
     case DrawQuad::YUV_VIDEO_CONTENT:
       DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), &paint);
       break;
-    case DrawQuad::INVALID:
     case DrawQuad::STREAM_VIDEO_CONTENT:
+      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), &paint);
+      break;
+    case DrawQuad::INVALID:
       DrawUnsupportedQuad(quad, &paint);
       NOTREACHED();
       break;
@@ -700,6 +703,26 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
   }
   paint->setFilterQuality(quad->nearest_neighbor ? kNone_SkFilterQuality
                                                  : kLow_SkFilterQuality);
+  current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
+}
+
+void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                                       SkPaint* paint) {
+  DCHECK(paint);
+  ScopedSkImageBuilder builder(this, quad->resource_id(),
+                               kUnpremul_SkAlphaType);
+  const SkImage* image = builder.sk_image();
+  if (!image)
+    return;
+  gfx::RectF uv_rect = gfx::ScaleRect(
+      gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
+      image->width(), image->height());
+  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
+      uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
+  SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
+  SkRect quad_rect = gfx::RectToSkRect(quad->visible_rect);
+  // TODO: figure out how to set correct filter quality.
+  paint->setFilterQuality(kLow_SkFilterQuality);
   current_canvas_->drawImageRect(image, sk_uv_rect, quad_rect, paint);
 }
 
