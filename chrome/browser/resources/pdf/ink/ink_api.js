@@ -20,6 +20,7 @@ class InkAPI {
   constructor(embed) {
     this.embed_ = embed;
     this.brush_ = ink.BrushModel.getInstance(embed);
+    this.camera_ = null;
   }
 
   /**
@@ -49,8 +50,12 @@ class InkAPI {
     return this.embed_.getPDFDestructive();
   }
 
-  setCamera(camera) {
+  async setCamera(camera) {
+    this.camera_ = camera;
     this.embed_.setCamera(camera);
+    // Wait for the next task to avoid a race where Ink drops the camera value
+    // when the canvas is rotated in low-latency mode.
+    setTimeout(() => this.embed_.setCamera(this.camera_), 0);
   }
 
   /** @param {AnnotationTool} tool */
