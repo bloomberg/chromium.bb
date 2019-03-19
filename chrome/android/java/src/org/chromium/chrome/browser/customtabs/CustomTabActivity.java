@@ -37,7 +37,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -557,15 +556,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (TextUtils.isEmpty(clientName)) clientName = mIntentDataProvider.getClientPackageName();
         final String packageName = clientName;
         if (TextUtils.isEmpty(packageName) || packageName.contains(getPackageName())) return;
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                RapporServiceBridge.sampleString(
-                        "CustomTabs.ServiceClient.PackageName", packageName);
-                if (GSAState.isGsaPackageName(packageName)) return;
-                RapporServiceBridge.sampleString(
-                        "CustomTabs.ServiceClient.PackageNameThirdParty", packageName);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            RapporServiceBridge.sampleString("CustomTabs.ServiceClient.PackageName", packageName);
+            if (GSAState.isGsaPackageName(packageName)) return;
+            RapporServiceBridge.sampleString(
+                    "CustomTabs.ServiceClient.PackageNameThirdParty", packageName);
         });
     }
 

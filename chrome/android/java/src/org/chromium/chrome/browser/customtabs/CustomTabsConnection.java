@@ -1301,7 +1301,8 @@ public class CustomTabsConnection {
      */
     @VisibleForTesting
     void cleanUpSession(final CustomTabsSessionToken session) {
-        ThreadUtils.runOnUiThread(() -> mClientManager.cleanupSession(session));
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> mClientManager.cleanupSession(session));
     }
 
     /**

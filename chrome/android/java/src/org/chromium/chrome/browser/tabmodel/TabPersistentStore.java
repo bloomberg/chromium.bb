@@ -1217,7 +1217,7 @@ public class TabPersistentStore extends TabPersister {
         for (TabPersistentStoreObserver observer : mObservers) {
             // mergeState() starts an AsyncTask to call this and this calls
             // onTabStateInitialized which should be called from the UI thread.
-            ThreadUtils.runOnUiThread(() -> observer.onStateLoaded());
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> observer.onStateLoaded());
         }
     }
 
