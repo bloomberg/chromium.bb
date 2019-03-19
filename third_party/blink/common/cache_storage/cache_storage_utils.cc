@@ -18,7 +18,7 @@ int64_t CreateTraceId() {
   // The bottom 32-bits are an atomic number sequence specific to this
   // process.
   static base::AtomicSequenceNumber seq;
-  id += (seq.GetNext() & 0x0ffff);
+  id += (seq.GetNext() & 0x0ffffffff);
 
   return id;
 }
