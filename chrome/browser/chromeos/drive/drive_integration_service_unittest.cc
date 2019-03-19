@@ -33,7 +33,9 @@ class DriveIntegrationServiceTest : public testing::Test {
   TestingProfileManager profile_manager_;
 };
 
-TEST_F(DriveIntegrationServiceTest, ServiceInstanceIdentity) {
+// This test is flaky on chromeos.
+// https://crbug.com/943376
+TEST_F(DriveIntegrationServiceTest, DISABLED_ServiceInstanceIdentity) {
   TestingProfile* user1 = profile_manager_.CreateTestingProfile("user1");
 
   // Integration Service is created as a profile keyed service.
