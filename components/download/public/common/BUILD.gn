@@ -59,6 +59,8 @@ component("public") {
     "parallel_download_configs.h",
     "rate_estimator.h",
     "resume_mode.h",
+    "simple_download_manager.h",
+    "simple_download_manager_coordinator.h",
     "stream_handle_input_stream.h",
     "url_download_handler_factory.h",
     "url_download_request_handle.h",
