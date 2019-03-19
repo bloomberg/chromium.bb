@@ -60,7 +60,7 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
         display::DisplayList::Type::NOT_PRIMARY);
 
 #if defined(OS_CHROMEOS)
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
 #endif
 
     controller_ =

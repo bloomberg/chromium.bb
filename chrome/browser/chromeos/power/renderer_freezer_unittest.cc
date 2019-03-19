@@ -134,7 +134,7 @@ class RendererFreezerTest : public testing::Test {
   ~RendererFreezerTest() override = default;
 
   // testing::Test:
-  void SetUp() override { PowerManagerClient::Initialize(); }
+  void SetUp() override { PowerManagerClient::InitializeFake(); }
 
   void TearDown() override {
     DCHECK(renderer_freezer_);

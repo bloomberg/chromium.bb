@@ -37,6 +37,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   FakePowerManagerClient();
   ~FakePowerManagerClient() override;
 
+  // Checks that FakePowerManagerClient was initialized and returns it.
+  static FakePowerManagerClient* Get();
+
   const power_manager::PowerManagementPolicy& policy() { return policy_; }
   int num_request_restart_calls() const { return num_request_restart_calls_; }
   int num_request_shutdown_calls() const { return num_request_shutdown_calls_; }
@@ -183,8 +186,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   void set_keyboard_brightness_percent(const base::Optional<double>& percent) {
     keyboard_brightness_percent_ = percent;
   }
-
-  static FakePowerManagerClient* Get();
 
  private:
   // Callback that will be run by asynchronous suspend delays to report

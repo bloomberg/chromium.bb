@@ -90,7 +90,7 @@ class AdaptiveScreenBrightnessManagerTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     auto logger = std::make_unique<TestingAdaptiveScreenBrightnessUkmLogger>();
     ukm_logger_ = logger.get();
 

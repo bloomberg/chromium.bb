@@ -64,7 +64,7 @@ class NativeTimerTest : public testing::Test {
   ~NativeTimerTest() override = default;
 
   // testing::Test:
-  void SetUp() override { PowerManagerClient::Initialize(); }
+  void SetUp() override { PowerManagerClient::InitializeFake(); }
 
   void TearDown() override { PowerManagerClient::Shutdown(); }
 

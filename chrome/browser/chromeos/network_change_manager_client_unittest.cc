@@ -114,7 +114,7 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
     DBusThreadManager::Initialize();
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     NetworkHandler::Initialize();
     proxy_ = std::make_unique<NetworkChangeManagerClient>(
         static_cast<net::NetworkChangeNotifierPosix*>(

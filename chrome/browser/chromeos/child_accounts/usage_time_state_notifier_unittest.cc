@@ -46,7 +46,7 @@ class UsageTimeStateNotifierTest : public testing::Test {
   ~UsageTimeStateNotifierTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
   }

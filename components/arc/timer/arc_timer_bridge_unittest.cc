@@ -90,7 +90,7 @@ class ArcTimerTest : public testing::Test {
  public:
   ArcTimerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     timer_bridge_ = ArcTimerBridge::GetForBrowserContextForTesting(&context_);
     // This results in ArcTimerBridge::OnInstanceReady being called.
     ArcServiceManager::Get()->arc_bridge_service()->timer()->SetInstance(

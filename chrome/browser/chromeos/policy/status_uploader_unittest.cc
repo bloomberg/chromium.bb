@@ -90,7 +90,7 @@ class StatusUploaderTest : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     client_.SetDMToken("dm_token");
     collector_.reset(new MockDeviceStatusCollector(&prefs_));
 

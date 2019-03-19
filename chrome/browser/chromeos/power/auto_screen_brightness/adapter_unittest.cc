@@ -126,7 +126,7 @@ class AdapterTest : public testing::Test {
   ~AdapterTest() override = default;
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     power_manager::SetBacklightBrightnessRequest request;
     request.set_percent(1);
     chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);

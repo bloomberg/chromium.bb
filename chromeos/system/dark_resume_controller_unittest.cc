@@ -43,7 +43,7 @@ class DarkResumeControllerTest : public testing::Test {
         device::mojom::WakeLockReason::kOther, kWakeLockDescription,
         mojo::MakeRequest(&wake_lock_));
 
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
 
     dark_resume_controller_ = std::make_unique<DarkResumeController>(
         connector_factory_.GetDefaultConnector());

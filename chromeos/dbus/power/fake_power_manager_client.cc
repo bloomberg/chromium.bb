@@ -55,9 +55,15 @@ power_manager::BacklightBrightnessChange_Cause RequestCauseToChangeCause(
 
 }  // namespace
 
+// static
+FakePowerManagerClient* FakePowerManagerClient::Get() {
+  CHECK(g_instance);
+  return g_instance;
+}
+
 FakePowerManagerClient::FakePowerManagerClient()
     : props_(power_manager::PowerSupplyProperties()) {
-  DCHECK(!g_instance);
+  CHECK(!g_instance);
   g_instance = this;
 
   props_->set_battery_percent(50);
@@ -71,7 +77,7 @@ FakePowerManagerClient::FakePowerManagerClient()
 }
 
 FakePowerManagerClient::~FakePowerManagerClient() {
-  DCHECK_EQ(g_instance, this);
+  CHECK_EQ(g_instance, this);
   g_instance = nullptr;
 }
 
@@ -420,11 +426,6 @@ void FakePowerManagerClient::UpdatePowerProperties(
 void FakePowerManagerClient::NotifyObservers() {
   for (auto& observer : observers_)
     observer.PowerChanged(*props_);
-}
-
-FakePowerManagerClient* FakePowerManagerClient::Get() {
-  DCHECK(g_instance);
-  return g_instance;
 }
 
 void FakePowerManagerClient::HandleSuspendReadiness() {

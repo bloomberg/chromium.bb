@@ -1144,31 +1144,35 @@ class PowerManagerClientImpl : public PowerManagerClient {
 };
 
 PowerManagerClient::PowerManagerClient() {
-  DCHECK_EQ(g_instance, nullptr);
+  CHECK(!g_instance);
   g_instance = this;
 }
 
 PowerManagerClient::~PowerManagerClient() {
-  DCHECK_EQ(g_instance, this);
+  CHECK_EQ(this, g_instance);
   g_instance = nullptr;
 }
 
 // static
 void PowerManagerClient::Initialize(dbus::Bus* bus) {
-  if (bus)
-    (new PowerManagerClientImpl())->Init(bus);
-  else
-    new FakePowerManagerClient();
+  CHECK(bus);
+  (new PowerManagerClientImpl())->Init(bus);
+}
+
+// static
+void PowerManagerClient::InitializeFake() {
+  new FakePowerManagerClient();
+}
+
+// static
+void PowerManagerClient::Shutdown() {
+  CHECK(g_instance);
+  delete g_instance;
 }
 
 // static
 PowerManagerClient* PowerManagerClient::Get() {
   return g_instance;
-}
-
-// static
-void PowerManagerClient::Shutdown() {
-  delete g_instance;
 }
 
 }  // namespace chromeos

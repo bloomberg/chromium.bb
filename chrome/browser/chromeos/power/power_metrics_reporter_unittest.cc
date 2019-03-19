@@ -23,7 +23,7 @@ class PowerMetricsReporterTest : public testing::Test {
   ~PowerMetricsReporterTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     PowerMetricsReporter::RegisterLocalStatePrefs(pref_service_.registry());
     ResetReporter();
   }

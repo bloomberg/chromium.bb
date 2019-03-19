@@ -317,11 +317,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient {
   PowerManagerClient();
   virtual ~PowerManagerClient();
 
-  // Creates and inits the instance. If |bus| is null, a FakePowerManagerClient
-  // will be created.
-  static void Initialize(dbus::Bus* bus = nullptr);
-  static PowerManagerClient* Get();
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
   static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static PowerManagerClient* Get();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClient);

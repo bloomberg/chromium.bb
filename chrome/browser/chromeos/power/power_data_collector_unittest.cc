@@ -18,7 +18,7 @@ class PowerDataCollectorTest : public testing::Test {
   ~PowerDataCollectorTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     PowerDataCollector::InitializeForTesting();
     power_data_collector_ = PowerDataCollector::Get();
   }

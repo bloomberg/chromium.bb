@@ -20,7 +20,7 @@ class PowerPolicyControllerTest : public testing::Test {
   ~PowerPolicyControllerTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     PowerPolicyController::Initialize(FakePowerManagerClient::Get());
     ASSERT_TRUE(PowerPolicyController::IsInitialized());
     policy_controller_ = PowerPolicyController::Get();

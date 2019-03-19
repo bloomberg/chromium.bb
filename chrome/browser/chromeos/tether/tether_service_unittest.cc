@@ -343,7 +343,7 @@ class TetherServiceTest : public testing::Test {
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_chrome_user_manager_));
 
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
 
     fake_device_sync_client_ =
         std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();

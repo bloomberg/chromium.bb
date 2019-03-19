@@ -36,7 +36,7 @@ class MetricsReporterTest : public testing::Test {
   ~MetricsReporterTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     MetricsReporter::RegisterLocalStatePrefs(pref_service_.registry());
     ResetReporter();
   }

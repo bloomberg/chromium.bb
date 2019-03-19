@@ -130,8 +130,8 @@ class ProfileProviderTest : public testing::Test {
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
     // chromeos::PowerManagerClient to be initialized.
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-    chromeos::PowerManagerClient::Initialize();
 
     profile_provider_ = std::make_unique<TestProfileProvider>();
     profile_provider_->Init();
@@ -139,8 +139,8 @@ class ProfileProviderTest : public testing::Test {
 
   void TearDown() override {
     profile_provider_.reset();
-    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -302,13 +302,13 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
     // chromeos::PowerManagerClient to be initialized.
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-    chromeos::PowerManagerClient::Initialize();
   }
 
   void TearDown() override {
-    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  private:

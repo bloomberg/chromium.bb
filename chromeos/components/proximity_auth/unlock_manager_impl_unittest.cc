@@ -75,7 +75,7 @@ class MockMessenger : public Messenger {
 
 class MockProximityMonitor : public ProximityMonitor {
  public:
-  MockProximityMonitor(base::OnceClosure destroy_callback)
+  explicit MockProximityMonitor(base::OnceClosure destroy_callback)
       : destroy_callback_(std::move(destroy_callback)), started_(false) {
     ON_CALL(*this, IsUnlockAllowed()).WillByDefault(Return(true));
   }
@@ -171,7 +171,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     life_cycle_.set_messenger(&messenger_);
     life_cycle_.set_channel(fake_client_channel_.get());
 
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
   }
 
   void TearDown() override {
