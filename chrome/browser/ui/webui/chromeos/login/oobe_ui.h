@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -216,6 +217,10 @@ class OobeUI : public ui::MojoWebUIController {
 
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);
   void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
+  void AddAsyncAssetsLoadId(const std::string& assets_load_id);
+
+  // Calls ready_callbacks_ if all the assets are loaded.
+  void CheckIfJSReady();
 
   // Configures all the relevant screen shandlers and resources for OOBE/Login
   // display type.
@@ -257,6 +262,9 @@ class OobeUI : public ui::MojoWebUIController {
   // Flag that indicates whether JS part is fully loaded and ready to accept
   // calls.
   bool ready_ = false;
+
+  // Set of assets are not loaded yet.
+  std::unordered_set<std::string> waiting_load_assets_ids_;
 
   // Callbacks to notify when JS part is fully loaded and ready to accept calls.
   std::vector<base::Closure> ready_callbacks_;

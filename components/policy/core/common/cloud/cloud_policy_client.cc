@@ -672,7 +672,9 @@ void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
     std::unique_ptr<DMAuth> auth,
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
-  DCHECK(auth->has_oauth_token() || auth->has_enrollment_token());
+  // This condition is wrong in case of Attestation enrollment
+  // (https://crbug.com/942013).
+  // DCHECK(auth->has_oauth_token() || auth->has_enrollment_token());
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,

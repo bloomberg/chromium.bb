@@ -713,24 +713,27 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 }
 
 void OobeUI::AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler) {
+  AddAsyncAssetsLoadId(handler->async_assets_load_id());
   webui_handlers_.push_back(handler.get());
   webui_only_handlers_.push_back(handler.get());
   web_ui()->AddMessageHandler(std::move(handler));
 }
 
 void OobeUI::AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler) {
+  AddAsyncAssetsLoadId(handler->async_assets_load_id());
   webui_handlers_.push_back(handler.get());
   screen_handlers_.push_back(handler.get());
   web_ui()->AddMessageHandler(std::move(handler));
 }
 
+void OobeUI::AddAsyncAssetsLoadId(const std::string& assets_load_id) {
+  if (assets_load_id.empty())
+    return;
+  waiting_load_assets_ids_.insert(assets_load_id);
+}
+
 void OobeUI::InitializeHandlers() {
   js_calls_container_->ExecuteDeferredJSCalls();
-
-  ready_ = true;
-  for (size_t i = 0; i < ready_callbacks_.size(); ++i)
-    ready_callbacks_[i].Run();
-  ready_callbacks_.clear();
 
   // Notify 'initialize' for synchronously loaded screens.
   for (BaseWebUIHandler* handler : webui_only_handlers_) {
@@ -744,6 +747,17 @@ void OobeUI::InitializeHandlers() {
       ScreenInitialized(handler->oobe_screen());
     }
   }
+
+  CheckIfJSReady();
+}
+
+void OobeUI::CheckIfJSReady() {
+  if (!waiting_load_assets_ids_.empty())
+    return;
+  ready_ = true;
+  for (size_t i = 0; i < ready_callbacks_.size(); ++i)
+    ready_callbacks_[i].Run();
+  ready_callbacks_.clear();
 }
 
 void OobeUI::CurrentScreenChanged(OobeScreen new_screen) {
@@ -782,6 +796,8 @@ void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {
       ScreenInitialized(handler->oobe_screen());
     }
   }
+  waiting_load_assets_ids_.erase(async_assets_load_id);
+  CheckIfJSReady();
 }
 
 bool OobeUI::IsJSReady(const base::Closure& display_is_ready_callback) {
