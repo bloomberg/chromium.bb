@@ -85,6 +85,9 @@ void LayoutTable::StyleDidChange(StyleDifference diff,
                                  const ComputedStyle* old_style) {
   LayoutBlock::StyleDidChange(diff, old_style);
 
+  if (ShouldCollapseBorders())
+    SetHasNonCollapsedBorderDecoration(false);
+
   bool old_fixed_table_layout =
       old_style ? old_style->IsFixedTableLayout() : false;
 
@@ -924,6 +927,8 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
            cell = cell->NextCell()) {
         DCHECK_EQ(cell->Table(), this);
         cell->InvalidateCollapsedBorderValues();
+        cell->SetHasNonCollapsedBorderDecoration(
+            !ShouldCollapseBorders() && cell->StyleRef().HasBorderDecoration());
       }
     }
   }

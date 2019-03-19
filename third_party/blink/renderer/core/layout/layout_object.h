@@ -2223,6 +2223,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       context->DidPaint();
   }
 
+  // This flag caches StyleRef().HasBorderDecoration() &&
+  // !Table()->ShouldCollapseBorders().
+  bool HasNonCollapsedBorderDecoration() const {
+    // We can only ensure this flag is up-to-date after PrePaint.
+    DCHECK_GE(GetDocument().Lifecycle().GetState(),
+              DocumentLifecycle::kPrePaintClean);
+    return bitfields_.HasNonCollapsedBorderDecoration();
+  }
+  void SetHasNonCollapsedBorderDecoration(bool b) {
+    bitfields_.SetHasNonCollapsedBorderDecoration(b);
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2610,6 +2622,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_global_root_scroller_(false),
           pending_update_first_line_image_observers_(false),
           is_html_legend_element_(false),
+          has_non_collapsed_border_decoration_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
@@ -2855,6 +2868,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Whether this object's |Node| is a HTMLLegendElement. Used to increase
     // performance of |IsRenderedLegend| which is performance sensitive.
     ADD_BOOLEAN_BITFIELD(is_html_legend_element_, IsHTMLLegendElement);
+
+    // Caches StyleRef().HasBorderDecoration() &&
+    // !Table()->ShouldCollapseBorders().
+    ADD_BOOLEAN_BITFIELD(has_non_collapsed_border_decoration_,
+                         HasNonCollapsedBorderDecoration);
 
    private:
     // This is the cached 'position' value of this object

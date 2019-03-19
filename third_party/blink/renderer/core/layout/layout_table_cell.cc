@@ -440,6 +440,9 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   LayoutBlockFlow::StyleDidChange(diff, old_style);
   SetHasBoxDecorationBackground(true);
 
+  if (Row() && Section() && Table() && Table()->ShouldCollapseBorders())
+    SetHasNonCollapsedBorderDecoration(false);
+
   if (!old_style)
     return;
 

@@ -492,6 +492,8 @@ void LayoutBox::UpdateFromStyle() {
   SetFloating(!IsOutOfFlowPositioned() && style_to_use.IsFloating());
   SetHasTransformRelatedProperty(style_to_use.HasTransformRelatedProperty());
   SetHasReflection(style_to_use.BoxReflect());
+  // LayoutTable and LayoutTableCell will overwrite this flag if needed.
+  SetHasNonCollapsedBorderDecoration(style_to_use.HasBorderDecoration());
 }
 
 void LayoutBox::UpdateLayout() {

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
@@ -76,13 +77,12 @@ void TableCellPainter::PaintBoxDecorationBackground(
       !layout_table_cell_.FirstChild())
     return;
 
-  bool is_painting_scrolling_background =
-      BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_table_cell_,
-                                                           paint_info);
+  BoxDecorationData box_decoration_data(paint_info, layout_table_cell_);
+
   const DisplayItemClient* client = nullptr;
   LayoutRect paint_rect;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
-  if (is_painting_scrolling_background) {
+  if (box_decoration_data.IsPaintingScrollingBackground()) {
     // See BoxPainter::PaintBoxDecorationBackground() for explanations.
     // TODO(wangxianzhu): Perhaps we can merge them for CompositeAfterPaint.
     paint_rect = layout_table_cell_.PhysicalLayoutOverflowRect();
@@ -96,45 +96,36 @@ void TableCellPainter::PaintBoxDecorationBackground(
     client = &layout_table_cell_;
   }
 
-  bool has_background = style.HasBackground();
-  bool should_paint_box_shadow =
-      !is_painting_scrolling_background && style.BoxShadow();
-  bool should_paint_border = !is_painting_scrolling_background &&
-                             style.HasBorderDecoration() &&
-                             !table->ShouldCollapseBorders();
+  if (box_decoration_data.ShouldPaint() &&
+      !DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, *client, DisplayItem::kBoxDecorationBackground)) {
+    // TODO(chrishtr): the pixel-snapping here is likely incorrect.
+    DrawingRecorder recorder(paint_info.context, *client,
+                             DisplayItem::kBoxDecorationBackground);
 
-  if (has_background || should_paint_box_shadow || should_paint_border) {
-    if (!DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, *client,
-            DisplayItem::kBoxDecorationBackground)) {
-      // TODO(chrishtr): the pixel-snapping here is likely incorrect.
-      DrawingRecorder recorder(paint_info.context, *client,
-                               DisplayItem::kBoxDecorationBackground);
+    if (box_decoration_data.ShouldPaintShadow())
+      BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
 
-      if (should_paint_box_shadow)
-        BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
+    if (box_decoration_data.ShouldPaintBackground())
+      PaintBackground(paint_info, paint_rect, layout_table_cell_);
 
-      if (has_background)
-        PaintBackground(paint_info, paint_rect, layout_table_cell_);
+    if (box_decoration_data.ShouldPaintShadow()) {
+      // If the table collapses borders, the inner rect is the border box rect
+      // inset by inner half widths of collapsed borders (which are returned
+      // from the overridden BorderXXX() methods). Otherwise the following code
+      // is equivalent to BoxPainterBase::PaintInsetBoxShadowWithBorderRect().
+      auto inner_rect = paint_rect;
+      inner_rect.ContractEdges(
+          layout_table_cell_.BorderTop(), layout_table_cell_.BorderRight(),
+          layout_table_cell_.BorderBottom(), layout_table_cell_.BorderLeft());
+      BoxPainterBase::PaintInsetBoxShadowWithInnerRect(
+          paint_info, inner_rect, layout_table_cell_.StyleRef());
+    }
 
-      if (should_paint_box_shadow) {
-        // If the table collapses borders, the inner rect is the border box rect
-        // inset by inner half widths of collapsed borders (which are returned
-        // from the overriden BorderXXX() methods). Otherwise the following code
-        // is equivalent to BoxPainterBase::PaintInsetBoxShadowWithBorderRect().
-        auto inner_rect = paint_rect;
-        inner_rect.ContractEdges(
-            layout_table_cell_.BorderTop(), layout_table_cell_.BorderRight(),
-            layout_table_cell_.BorderBottom(), layout_table_cell_.BorderLeft());
-        BoxPainterBase::PaintInsetBoxShadowWithInnerRect(
-            paint_info, inner_rect, layout_table_cell_.StyleRef());
-      }
-
-      if (should_paint_border) {
-        BoxPainterBase::PaintBorder(
-            layout_table_cell_, layout_table_cell_.GetDocument(),
-            layout_table_cell_.GeneratingNode(), paint_info, paint_rect, style);
-      }
+    if (box_decoration_data.ShouldPaintBorder()) {
+      BoxPainterBase::PaintBorder(
+          layout_table_cell_, layout_table_cell_.GetDocument(),
+          layout_table_cell_.GeneratingNode(), paint_info, paint_rect, style);
     }
   }
 

@@ -18,14 +18,14 @@
       "backgroundColor": "#C0C0C0",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [3, 65, 235, 235],
-          "reason": "paint property change"
-        },
-        {
           "object": "HorizontalScrollbar",
           "rect": [3, 300, 235, 15],
           "reason": "scroll control"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [3, 65, 52, 17],
+          "reason": "chunk appeared"
         },
         {
           "object": "VerticalScrollbar",
