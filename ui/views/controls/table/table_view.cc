@@ -145,17 +145,17 @@ TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
                      bool single_selection)
-    : model_(NULL),
+    : model_(nullptr),
       columns_(columns),
       active_visible_column_index_(-1),
       header_(nullptr),
       table_type_(table_type),
       single_selection_(single_selection),
       select_on_remove_(true),
-      observer_(NULL),
+      observer_(nullptr),
       last_parent_width_(0),
       layout_width_(0),
-      grouper_(NULL),
+      grouper_(nullptr),
       in_set_visible_column_width_(false) {
   constexpr int kTextContext = style::CONTEXT_TABLE_ROW;
   constexpr int kTextStyle = style::STYLE_PRIMARY;
@@ -178,7 +178,7 @@ TableView::TableView(ui::TableModel* model,
 
 TableView::~TableView() {
   if (model_)
-    model_->SetObserver(NULL);
+    model_->SetObserver(nullptr);
 }
 
 // TODO: this doesn't support arbitrarily changing the model, rename this to
@@ -188,7 +188,7 @@ void TableView::SetModel(ui::TableModel* model) {
     return;
 
   if (model_)
-    model_->SetObserver(NULL);
+    model_->SetObserver(nullptr);
   model_ = model;
   selection_model_.Clear();
   if (model_)
@@ -370,7 +370,7 @@ int TableView::ViewToModel(int view_index) const {
 void TableView::Layout() {
   // parent()->parent() is the scrollview. When its width changes we force
   // recalculating column sizes.
-  View* scroll_view = parent() ? parent()->parent() : NULL;
+  View* scroll_view = parent() ? parent()->parent() : nullptr;
   if (scroll_view) {
     const int scroll_view_width = scroll_view->GetContentsBounds().width();
     if (scroll_view_width != last_parent_width_) {

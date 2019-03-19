@@ -11,9 +11,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 TestTableModel::TestTableModel(int row_count)
-    : row_count_(row_count),
-      observer_(NULL) {
-}
+    : row_count_(row_count), observer_(nullptr) {}
 
 TestTableModel::~TestTableModel() {
 }

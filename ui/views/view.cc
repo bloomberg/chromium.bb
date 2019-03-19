@@ -2425,8 +2425,8 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
       (enabled_ && event.IsOnlyLeftMouseButton() &&
        HitTestPoint(event.location())) ?
        GetDragOperations(event.location()) : 0;
-  ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
-      context_menu_controller_ : 0;
+  ContextMenuController* context_menu_controller =
+      event.IsRightMouseButton() ? context_menu_controller_ : nullptr;
   View::DragInfo* drag_info = GetDragInfo();
 
   const bool enabled = enabled_;

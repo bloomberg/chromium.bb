@@ -125,7 +125,7 @@ class TestTableModel2 : public ui::TableModel {
   DISALLOW_COPY_AND_ASSIGN(TestTableModel2);
 };
 
-TestTableModel2::TestTableModel2() : observer_(NULL) {
+TestTableModel2::TestTableModel2() : observer_(nullptr) {
   AddRow(0, 0, 1);
   AddRow(1, 1, 1);
   AddRow(2, 2, 2);
@@ -257,7 +257,7 @@ bool DragLeftMouseTo(views::View* target, const gfx::Point& point) {
 
 class TableViewTest : public ViewsTestBase {
  public:
-  TableViewTest() : table_(NULL) {}
+  TableViewTest() : table_(nullptr) {}
 
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -956,7 +956,7 @@ TEST_F(TableViewTest, Selection) {
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 TEST_F(TableViewTest, RemoveUnselectedRows) {
@@ -1046,7 +1046,7 @@ TEST_F(TableViewTest, SelectOnTap) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 #endif
 
@@ -1178,7 +1178,7 @@ TEST_F(TableViewTest, KeyUpDown) {
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 // Verifies left/right correctly navigate through visible columns.
@@ -1277,7 +1277,7 @@ TEST_F(TableViewTest, KeyLeftRight) {
   EXPECT_EQ(0, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 // Verifies home/end do the right thing.
@@ -1313,7 +1313,7 @@ TEST_F(TableViewTest, HomeEnd) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 // Verifies multiple selection gestures work (control-click, shift-click ...).
@@ -1369,7 +1369,7 @@ TEST_F(TableViewTest, Multiselection) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 // Verifies multiple selection gestures work when sorted.
@@ -1468,7 +1468,7 @@ TEST_F(TableViewTest, MoveRowsWithMultipleSelection) {
   EXPECT_EQ("active=4 anchor=3 selection=1 3 4", SelectionStateAsString());
   EXPECT_EQ("[1], [77], [0], [2], [3]", GetRowsInViewOrderAsString(table_));
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 TEST_F(TableViewTest, MoveRowsWithMultipleSelectionAndSort) {
@@ -1527,7 +1527,7 @@ TEST_F(TableViewTest, MoveRowsWithMultipleSelectionAndSort) {
   EXPECT_EQ("active=3 anchor=2 selection=2 3 4", SelectionStateAsString());
   EXPECT_EQ(kViewOrder, GetRowsInViewOrderAsString(table_));
 
-  table_->set_observer(NULL);
+  table_->set_observer(nullptr);
 }
 
 // Verifies we don't crash after removing the selected row when there is

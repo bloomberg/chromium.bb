@@ -78,7 +78,7 @@ class VIEWS_EXPORT MouseWatcher {
   class Observer;
 
   // Are we currently observing events?
-  bool is_observing() const { return observer_.get() != NULL; }
+  bool is_observing() const { return observer_.get() != nullptr; }
 
   // Notifies the listener and stops watching events.
   void NotifyListener();

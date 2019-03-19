@@ -159,7 +159,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   EXPECT_EQ(widget.GetRootView(), static_cast<View*>(current_target));
   current_target = targeter->FindNextBestTarget(widget.GetRootView(),
                                                 &key_event);
-  EXPECT_EQ(NULL, static_cast<View*>(current_target));
+  EXPECT_EQ(nullptr, static_cast<View*>(current_target));
 }
 
 // Verifies that the the functions ViewTargeter::FindTargetForEvent()
@@ -210,7 +210,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   EXPECT_EQ(widget.GetRootView(), static_cast<View*>(current_target));
   current_target = targeter->FindNextBestTarget(widget.GetRootView(),
                                                 &scroll);
-  EXPECT_EQ(NULL, static_cast<View*>(current_target));
+  EXPECT_EQ(nullptr, static_cast<View*>(current_target));
 
   // The event falls outside of the original specified bounds of |content|,
   // |child|, and |grandchild|. But since |content| is the contents view,
@@ -292,14 +292,14 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   SetGestureHandlerSetBeforeProcessing(root_view, true);
   SetGestureHandler(root_view, grandchild);
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &tap));
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(grandchild, &tap));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(grandchild, &tap));
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &scroll_begin));
   EXPECT_EQ(child, targeter->FindNextBestTarget(grandchild, &scroll_begin));
 
   // GESTURE_END events should be targeted to the existing gesture handler,
   // but re-targeting should be prohibited.
   EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &end));
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(grandchild, &end));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(grandchild, &end));
 
   // Assume that the view currently handling gestures is still set as
   // |grandchild|, but this was not done by a previous gesture. Thus we are
@@ -313,18 +313,18 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   // GESTURE_END events are not permitted to be re-targeted up the ancestor
   // chain; they are only ever targeted in the case where the gesture handler
   // was established by a previous gesture.
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(grandchild, &end));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(grandchild, &end));
 
   // Assume that the default gesture handler was set by the previous gesture,
   // but that this handler is currently NULL. No gesture events should be
   // re-targeted in this case (regardless of the view that is passed in to
   // FindNextBestTarget() as the previous target).
-  SetGestureHandler(root_view, NULL);
+  SetGestureHandler(root_view, nullptr);
   SetGestureHandlerSetBeforeProcessing(root_view, true);
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(child, &tap));
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(NULL, &tap));
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(content, &scroll_begin));
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(content, &end));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(child, &tap));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(nullptr, &tap));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(content, &scroll_begin));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(content, &end));
 
   // Reset the locations of the gesture events to be in the root view
   // coordinate space since we are about to call FindTargetForEvent()
@@ -350,8 +350,8 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
 
   // If no default gesture handler is currently set, GESTURE_END events
   // should never be re-targeted to any View.
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(NULL, &end));
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(child, &end));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(nullptr, &end));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(child, &end));
 }
 
 // Tests that the contents view is targeted instead of the root view for
@@ -526,7 +526,7 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
 
   // The next target should be NULL and the location of the event should
   // remain unchanged.
-  EXPECT_EQ(NULL, targeter->FindNextBestTarget(widget.GetRootView(), &tap));
+  EXPECT_EQ(nullptr, targeter->FindNextBestTarget(widget.GetRootView(), &tap));
   EXPECT_EQ(location_in_root, tap.location());
 }
 

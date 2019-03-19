@@ -24,7 +24,7 @@ TooltipManagerAura::TooltipManagerAura(Widget* widget) : widget_(widget) {
 }
 
 TooltipManagerAura::~TooltipManagerAura() {
-  wm::SetTooltipText(GetWindow(), NULL);
+  wm::SetTooltipText(GetWindow(), nullptr);
 }
 
 // static
@@ -90,7 +90,7 @@ void TooltipManagerAura::UpdateTooltip() {
   aura::Window* root_window = GetWindow()->GetRootWindow();
   if (wm::GetTooltipClient(root_window)) {
     if (!widget_->IsVisible()) {
-      UpdateTooltipForTarget(NULL, gfx::Point(), root_window);
+      UpdateTooltipForTarget(nullptr, gfx::Point(), root_window);
       return;
     }
     gfx::Point view_point =
@@ -118,7 +118,7 @@ View* TooltipManagerAura::GetViewUnderPoint(const gfx::Point& point) {
   View* root_view = widget_->GetRootView();
   if (root_view)
     return root_view->GetTooltipHandlerForPoint(point);
-  return NULL;
+  return nullptr;
 }
 
 void TooltipManagerAura::UpdateTooltipForTarget(View* target,

@@ -219,7 +219,7 @@ void Link::SetUnderline(bool underline) {
 }
 
 void Link::Init() {
-  listener_ = NULL;
+  listener_ = nullptr;
   pressed_ = false;
   underline_ = GetDefaultFocusStyle() != FocusStyle::UNDERLINE;
   RecalculateFont();

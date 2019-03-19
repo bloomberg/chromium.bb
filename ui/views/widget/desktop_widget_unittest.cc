@@ -26,7 +26,7 @@ TEST_F(DesktopScreenPositionClientTest, PositionDialog) {
   DialogDelegateView* dialog_delegate_view = new DialogDelegateView;
   // Owned by |parent_widget|.
   Widget* dialog = DialogDelegate::CreateDialogWidget(
-      dialog_delegate_view, NULL, parent_widget.GetNativeView());
+      dialog_delegate_view, nullptr, parent_widget.GetNativeView());
   dialog->SetBounds(gfx::Rect(11, 12, 200, 200));
   EXPECT_EQ(gfx::Point(11, 12), dialog->GetWindowBoundsInScreen().origin());
 }

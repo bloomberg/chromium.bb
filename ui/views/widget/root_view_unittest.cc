@@ -78,9 +78,8 @@ class TestContextMenuController : public ContextMenuController {
  public:
   TestContextMenuController()
       : show_context_menu_calls_(0),
-        menu_source_view_(NULL),
-        menu_source_type_(ui::MENU_SOURCE_NONE) {
-  }
+        menu_source_view_(nullptr),
+        menu_source_type_(ui::MENU_SOURCE_NONE) {}
   ~TestContextMenuController() override {}
 
   int show_context_menu_calls() const { return show_context_menu_calls_; }
@@ -89,7 +88,7 @@ class TestContextMenuController : public ContextMenuController {
 
   void Reset() {
     show_context_menu_calls_ = 0;
-    menu_source_view_ = NULL;
+    menu_source_view_ = nullptr;
     menu_source_type_ = ui::MENU_SOURCE_NONE;
   }
 
@@ -141,7 +140,7 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   EXPECT_FALSE(details.target_destroyed);
   EXPECT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(0, controller.show_context_menu_calls());
-  EXPECT_EQ(NULL, controller.menu_source_view());
+  EXPECT_EQ(nullptr, controller.menu_source_view());
   EXPECT_EQ(ui::MENU_SOURCE_NONE, controller.menu_source_type());
   controller.Reset();
 

@@ -143,7 +143,7 @@ TEST_F(WindowReordererTest, Association) {
       parent->GetNativeWindow());
   SetWindowAndLayerName(w1, "w1");
 
-  aura::Window* w2 = aura::test::CreateTestWindowWithId(0, NULL);
+  aura::Window* w2 = aura::test::CreateTestWindowWithId(0, nullptr);
   SetWindowAndLayerName(w2, "w2");
 
   View* host_view2 = new View();

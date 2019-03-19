@@ -137,10 +137,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   struct ViewHierarchyChangedDetails {
     ViewHierarchyChangedDetails()
-        : is_add(false),
-          parent(NULL),
-          child(NULL),
-          move_view(NULL) {}
+        : is_add(false), parent(nullptr), child(nullptr), move_view(nullptr) {}
 
     ViewHierarchyChangedDetails(bool is_add,
                                 View* parent,

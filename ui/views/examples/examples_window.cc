@@ -191,7 +191,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     return base::ASCIIToUTF16("Views Examples");
   }
   void WindowClosing() override {
-    instance_ = NULL;
+    instance_ = nullptr;
     if (on_close_)
       std::move(on_close_).Run();
   }
@@ -223,7 +223,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 };
 
 // static
-ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
+ExamplesWindowContents* ExamplesWindowContents::instance_ = nullptr;
 
 void ShowExamplesWindow(base::OnceClosure on_close,
                         gfx::NativeWindow window_context,

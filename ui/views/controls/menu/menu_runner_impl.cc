@@ -38,7 +38,7 @@ MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
       running_(false),
       delete_after_run_(false),
       for_drop_(false),
-      controller_(NULL),
+      controller_(nullptr),
       owns_controller_(false),
       weak_factory_(this) {}
 

@@ -451,7 +451,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
   CheckScrollbarVisibility(scroll_view_.get(), HORIZONTAL, false);
   EXPECT_TRUE(!scroll_view_->horizontal_scroll_bar() ||
               !scroll_view_->horizontal_scroll_bar()->visible());
-  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
 
   // Size the contents such that horizontal scrollbar is needed.
@@ -488,7 +488,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100 - kTopPadding - kBottomPadding, contents->parent()->height());
   EXPECT_TRUE(!scroll_view_->horizontal_scroll_bar() ||
               !scroll_view_->horizontal_scroll_bar()->visible());
-  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
   gfx::Rect bounds = scroll_view_->vertical_scroll_bar()->bounds();
   EXPECT_EQ(100 - VerticalScrollBarWidth() - kRightPadding, bounds.x());
@@ -503,7 +503,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100 - scroll_view_->GetScrollBarLayoutHeight() - kTopPadding -
                 kBottomPadding,
             contents->parent()->height());
-  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
   EXPECT_TRUE(!scroll_view_->vertical_scroll_bar() ||
               !scroll_view_->vertical_scroll_bar()->visible());
@@ -524,7 +524,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
             contents->parent()->height());
   bounds = scroll_view_->horizontal_scroll_bar()->bounds();
   // Check horiz.
-  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
   bounds = scroll_view_->horizontal_scroll_bar()->bounds();
   EXPECT_EQ(kLeftPadding, bounds.x());
@@ -532,7 +532,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100 - kBottomPadding - HorizontalScrollBarHeight(), bounds.y());
   EXPECT_EQ(100 - kBottomPadding, bounds.bottom());
   // Check vert.
-  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
   bounds = scroll_view_->vertical_scroll_bar()->bounds();
   EXPECT_EQ(100 - VerticalScrollBarWidth() - kRightPadding, bounds.x());
@@ -576,9 +576,9 @@ TEST_F(ScrollViewTest, Header) {
   EXPECT_EQ("0,0 0x0", contents->bounds().ToString());
 
   // Remove the header.
-  scroll_view_->SetHeader(NULL);
-  // SetHeader(NULL) deletes header.
-  header = NULL;
+  scroll_view_->SetHeader(nullptr);
+  // SetHeader(nullptr) deletes header.
+  header = nullptr;
   EXPECT_EQ("0,0 100x0", header_parent->bounds().ToString());
   EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
 }
@@ -606,7 +606,7 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
   EXPECT_EQ(20, header->parent()->height());
   EXPECT_TRUE(!scroll_view_->horizontal_scroll_bar() ||
               !scroll_view_->horizontal_scroll_bar()->visible());
-  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
   // Make sure the vertical scrollbar overlaps the header for traditional
   // scrollbars and doesn't overlap the header for overlay scrollbars.
@@ -629,7 +629,7 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
   EXPECT_EQ(0, header->parent()->y());
   EXPECT_EQ(100, header->parent()->width());
   EXPECT_EQ(20, header->parent()->height());
-  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
   EXPECT_TRUE(!scroll_view_->vertical_scroll_bar() ||
               !scroll_view_->vertical_scroll_bar()->visible());
@@ -648,9 +648,9 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
   EXPECT_EQ(100 - scroll_view_->GetScrollBarLayoutWidth(),
             header->parent()->width());
   EXPECT_EQ(20, header->parent()->height());
-  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
-  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != NULL);
+  ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
   EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
 }
 

@@ -56,7 +56,7 @@ class MenuModelBase : public ui::MenuModel {
   bool IsItemDynamicAt(int index) const override { return false; }
 
   const gfx::FontList* GetLabelFontListAt(int index) const override {
-    return NULL;
+    return nullptr;
   }
 
   bool GetAcceleratorAt(int index,
@@ -71,7 +71,7 @@ class MenuModelBase : public ui::MenuModel {
   bool GetIconAt(int index, gfx::Image* icon) override { return false; }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
-    return NULL;
+    return nullptr;
   }
 
   bool IsEnabledAt(int index) const override { return items_[index].enabled; }
@@ -142,8 +142,9 @@ class MenuModelBase : public ui::MenuModel {
 class SubmenuModel : public MenuModelBase {
  public:
   SubmenuModel() : MenuModelBase(kSubmenuIdBase) {
-    items_.push_back(Item(TYPE_COMMAND, "submenu item 0", NULL, false, true));
-    items_.push_back(Item(TYPE_COMMAND, "submenu item 1", NULL));
+    items_.push_back(
+        Item(TYPE_COMMAND, "submenu item 0", nullptr, false, true));
+    items_.push_back(Item(TYPE_COMMAND, "submenu item 1", nullptr));
   }
 
   ~SubmenuModel() override {}
@@ -155,8 +156,8 @@ class SubmenuModel : public MenuModelBase {
 class ActionableSubmenuModel : public MenuModelBase {
  public:
   ActionableSubmenuModel() : MenuModelBase(kActionableSubmenuIdBase) {
-    items_.push_back(Item(TYPE_COMMAND, "actionable submenu item 0", NULL));
-    items_.push_back(Item(TYPE_COMMAND, "actionable submenu item 1", NULL));
+    items_.push_back(Item(TYPE_COMMAND, "actionable submenu item 0", nullptr));
+    items_.push_back(Item(TYPE_COMMAND, "actionable submenu item 1", nullptr));
   }
   ~ActionableSubmenuModel() override = default;
 
@@ -170,11 +171,11 @@ class RootModel : public MenuModelBase {
     submenu_model_ = std::make_unique<SubmenuModel>();
     actionable_submenu_model_ = std::make_unique<ActionableSubmenuModel>();
 
-    items_.push_back(Item(TYPE_COMMAND, "command 0", NULL, false, false));
-    items_.push_back(Item(TYPE_CHECK, "check 1", NULL));
-    items_.push_back(Item(TYPE_SEPARATOR, "", NULL));
+    items_.push_back(Item(TYPE_COMMAND, "command 0", nullptr, false, false));
+    items_.push_back(Item(TYPE_CHECK, "check 1", nullptr));
+    items_.push_back(Item(TYPE_SEPARATOR, "", nullptr));
     items_.push_back(Item(TYPE_SUBMENU, "submenu 3", submenu_model_.get()));
-    items_.push_back(Item(TYPE_RADIO, "radio 4", NULL));
+    items_.push_back(Item(TYPE_RADIO, "radio 4", nullptr));
     items_.push_back(Item(TYPE_ACTIONABLE_SUBMENU, "actionable 5",
                           actionable_submenu_model_.get()));
   }

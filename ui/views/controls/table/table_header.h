@@ -76,7 +76,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
   // is not in the resize range of any columns.
   int GetResizeColumn(int x) const;
 
-  bool is_resizing() const { return resize_details_.get() != NULL; }
+  bool is_resizing() const { return resize_details_.get() != nullptr; }
 
   const gfx::FontList font_list_;
 

@@ -14,9 +14,8 @@ namespace examples {
 
 WebViewExample::WebViewExample(content::BrowserContext* browser_context)
     : ExampleBase("WebView"),
-      webview_(NULL),
-      browser_context_(browser_context) {
-}
+      webview_(nullptr),
+      browser_context_(browser_context) {}
 
 WebViewExample::~WebViewExample() {
 }

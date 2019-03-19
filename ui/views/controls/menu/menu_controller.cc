@@ -115,7 +115,7 @@ bool TitleMatchesMnemonic(MenuItemView* menu, base::char16 key) {
 // Returns the first descendant of |view| that is hot tracked.
 Button* GetFirstHotTrackedView(View* view) {
   if (!view)
-    return NULL;
+    return nullptr;
   Button* button = Button::AsButton(view);
   if (button && button->IsHotTracked())
     return button;
@@ -125,7 +125,7 @@ Button* GetFirstHotTrackedView(View* view) {
     if (hot_view)
       return hot_view;
   }
-  return NULL;
+  return nullptr;
 }
 
 // Recurses through the child views of |view| returning the first view starting
@@ -224,8 +224,8 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
   if (event->IsMouseEvent()) {
     HWND source_window = HWNDForNativeView(native_view);
     if (!target_window || !source_window ||
-        GetWindowThreadProcessId(source_window, NULL) !=
-            GetWindowThreadProcessId(target_window, NULL)) {
+        GetWindowThreadProcessId(source_window, nullptr) !=
+            GetWindowThreadProcessId(target_window, nullptr)) {
       // Even though we have mouse capture, windows generates a mouse event if
       // the other window is in a separate thread. Only repost an event if
       // |target_window| and |source_window| were created on the same thread,
@@ -306,7 +306,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
 
 class MenuController::MenuScrollTask {
  public:
-  MenuScrollTask() : submenu_(NULL), is_scrolling_up_(false), start_y_(0) {
+  MenuScrollTask() : submenu_(nullptr), is_scrolling_up_(false), start_y_(0) {
     pixels_per_second_ = MenuItemView::pref_menu_height() * 20;
   }
 
@@ -336,7 +336,7 @@ class MenuController::MenuScrollTask {
   void StopScrolling() {
     if (scrolling_timer_.IsRunning()) {
       scrolling_timer_.Stop();
-      submenu_ = NULL;
+      submenu_ = nullptr;
     }
   }
 
@@ -418,7 +418,7 @@ MenuController::State::~State() {}
 // MenuController ------------------------------------------------------------
 
 // static
-MenuController* MenuController::active_instance_ = NULL;
+MenuController* MenuController::active_instance_ = nullptr;
 
 // static
 MenuController* MenuController::GetActiveInstance() {
@@ -538,7 +538,7 @@ void MenuController::Cancel(ExitType type) {
   SendMouseCaptureLostToActiveView();
 
   // Hide windows immediately.
-  SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
+  SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
   if (for_drop_) {
     // If we didn't block the caller we need to notify the menu, which
@@ -661,7 +661,7 @@ bool MenuController::OnMouseDragged(SubmenuView* source,
       StartDrag(source, press_pt_);
     return true;
   }
-  MenuItemView* mouse_menu = NULL;
+  MenuItemView* mouse_menu = nullptr;
   if (part.type == MenuPart::MENU_ITEM) {
     // If there is no menu target, but a submenu target, then we are interacting
     // with an empty menu item within a submenu. These cannot become selection
@@ -720,12 +720,12 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     MenuItemView* menu = part.menu;
     // |menu| is NULL means this event is from an empty menu or a separator.
     // If it is from an empty menu, use parent context menu instead of that.
-    if (menu == NULL && part.submenu->child_count() == 1 &&
+    if (menu == nullptr && part.submenu->child_count() == 1 &&
         part.submenu->child_at(0)->id() == MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
     }
 
-    if (menu != NULL) {
+    if (menu != nullptr) {
       gfx::Point screen_location(event.location());
       View::ConvertPointToScreen(source->GetScrollViewContainer(),
                                  &screen_location);
@@ -1022,7 +1022,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
 
     if (drop_position == MenuDelegate::DROP_NONE ||
         drop_operation == ui::DragDropTypes::DRAG_NONE)
-      menu_item = NULL;
+      menu_item = nullptr;
   } else {
     SetSelection(source->GetMenuItem(), SELECTION_OPEN_SUBMENU);
   }
@@ -1036,7 +1036,7 @@ void MenuController::OnDragExited(SubmenuView* source) {
 
   if (drop_target_) {
     StopShowTimer();
-    SetDropMenuItem(NULL, MenuDelegate::DROP_NONE);
+    SetDropMenuItem(nullptr, MenuDelegate::DROP_NONE);
   }
 }
 
@@ -1053,7 +1053,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   MenuDelegate::DropPosition drop_position = drop_position_;
 
   // Close all menus, including any nested menus.
-  SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
+  SetSelection(nullptr, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
   CloseAllNestedMenus();
 
   // Set state such that we exit.
@@ -1091,7 +1091,7 @@ void MenuController::OnDragEnteredScrollButton(SubmenuView* source,
 
 void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StartCancelAllTimer();
-  SetDropMenuItem(NULL, MenuDelegate::DROP_NONE);
+  SetDropMenuItem(nullptr, MenuDelegate::DROP_NONE);
   StopScrolling();
 }
 
@@ -1223,7 +1223,7 @@ void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
 void MenuController::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(owner_, widget);
   owner_->RemoveObserver(this);
-  owner_ = NULL;
+  owner_ = nullptr;
 }
 
 bool MenuController::IsCancelAllTimerRunningForTest() {
@@ -1283,7 +1283,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
 
   // Notify the old path it isn't selected.
   MenuDelegate* current_delegate =
-      current_path.empty() ? NULL : current_path.front()->GetDelegate();
+      current_path.empty() ? nullptr : current_path.front()->GetDelegate();
   for (size_t i = paths_differ_at; i < current_size; ++i) {
     if (current_delegate &&
         (current_path[i]->GetType() == MenuItemView::SUBMENU ||
@@ -1407,7 +1407,7 @@ void MenuController::StartDrag(SubmenuView* source,
   did_initiate_drag_ = true;
   base::WeakPtr<MenuController> this_ref = AsWeakPtr();
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
-  item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops,
+  item->GetWidget()->RunShellDrag(nullptr, data, widget_loc, drag_ops,
                                   ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   // MenuController may have been deleted so check before accessing member
   // variables.
@@ -1567,7 +1567,7 @@ MenuController::~MenuController() {
   if (owner_)
     owner_->RemoveObserver(this);
   if (active_instance_ == this)
-    active_instance_ = NULL;
+    active_instance_ = nullptr;
   StopShowTimer();
   StopCancelAllTimer();
 }
@@ -1675,7 +1675,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   View::ConvertPointToScreen(source_view, &screen_point);
   MenuAnchorPosition anchor;
   bool has_mnemonics;
-  MenuButton* button = NULL;
+  MenuButton* button = nullptr;
   MenuItemView* alt_menu = source->GetMenuItem()->GetDelegate()->GetSiblingMenu(
       source->GetMenuItem()->GetRootMenuItem(), screen_point, &anchor,
       &has_mnemonics, &button);
@@ -1756,7 +1756,7 @@ MenuItemView* MenuController::GetMenuItemAt(View* source, int x, int y) {
       child_under_mouse->id() == MenuItemView::kMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
-  return NULL;
+  return nullptr;
 }
 
 MenuItemView* MenuController::GetEmptyMenuItemAt(View* source, int x, int y) {
@@ -1765,7 +1765,7 @@ MenuItemView* MenuController::GetEmptyMenuItemAt(View* source, int x, int y) {
       child_under_mouse->id() == MenuItemView::kEmptyMenuItemViewID) {
     return static_cast<MenuItemView*>(child_under_mouse);
   }
-  return NULL;
+  return nullptr;
 }
 
 bool MenuController::IsScrollButtonAt(SubmenuView* source,
@@ -2628,7 +2628,7 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
   MenuItemView* item = pending_state_.item;
   if (!item->HasSubmenu() || !item->enabled())
     return;
-  MenuItemView* to_select = NULL;
+  MenuItemView* to_select = nullptr;
   if (item->GetSubmenu()->GetMenuItemCount() > 0)
     to_select = FindInitialSelectableMenuItem(item, INCREMENT_SELECTION_DOWN);
   if (to_select) {
@@ -2812,7 +2812,7 @@ void MenuController::SetDropMenuItem(MenuItemView* new_target,
 
   if (drop_target_) {
     drop_target_->GetParentMenuItem()->GetSubmenu()->SetDropMenuItem(
-        NULL, MenuDelegate::DROP_NONE);
+        nullptr, MenuDelegate::DROP_NONE);
   }
   drop_target_ = new_target;
   drop_position_ = new_position;
@@ -2832,13 +2832,13 @@ void MenuController::UpdateScrolling(const MenuPart& part) {
 }
 
 void MenuController::StopScrolling() {
-  scroll_task_.reset(NULL);
+  scroll_task_.reset(nullptr);
 }
 
 void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
                                            const ui::MouseEvent& event,
                                            View* target_menu) {
-  View* target = NULL;
+  View* target = nullptr;
   gfx::Point target_menu_loc(event.location());
   if (target_menu && target_menu->has_children()) {
     // Locate the deepest child view to send events to.  This code assumes we
@@ -2850,7 +2850,7 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
     View::ConvertPointFromScreen(target_menu, &target_menu_loc);
     target = target_menu->GetEventHandlerForPoint(target_menu_loc);
     if (target == target_menu || !target->enabled())
-      target = NULL;
+      target = nullptr;
   }
   View* active_mouse_view = active_mouse_view_tracker_->view();
   if (target != active_mouse_view) {

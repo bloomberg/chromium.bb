@@ -58,7 +58,7 @@ void AuraDisplayChangeListener::OnWindowBoundsChanged(
 void AuraDisplayChangeListener::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window, root_window_);
   root_window_->RemoveObserver(this);
-  root_window_ = NULL;
+  root_window_ = nullptr;
 }
 
 // static

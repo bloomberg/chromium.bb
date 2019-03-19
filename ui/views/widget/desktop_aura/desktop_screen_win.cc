@@ -33,12 +33,13 @@ display::Display DesktopScreenWin::GetDisplayMatching(
 
 HWND DesktopScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   aura::WindowTreeHost* host = window->GetHost();
-  return host ? host->GetAcceleratedWidget() : NULL;
+  return host ? host->GetAcceleratedWidget() : nullptr;
 }
 
 gfx::NativeWindow DesktopScreenWin::GetNativeWindowFromHWND(HWND hwnd) const {
-  return (::IsWindow(hwnd)) ?
-      DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd) : NULL;
+  return (::IsWindow(hwnd))
+             ? DesktopWindowTreeHostWin::GetContentWindowForHWND(hwnd)
+             : nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

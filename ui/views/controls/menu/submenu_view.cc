@@ -38,10 +38,10 @@ const char SubmenuView::kViewClassName[] = "SubmenuView";
 
 SubmenuView::SubmenuView(MenuItemView* parent)
     : parent_menu_item_(parent),
-      host_(NULL),
-      drop_item_(NULL),
+      host_(nullptr),
+      drop_item_(nullptr),
       drop_position_(MenuDelegate::DROP_NONE),
-      scroll_view_container_(NULL),
+      scroll_view_container_(nullptr),
       max_minor_text_width_(0),
       minimum_preferred_width_(0),
       resize_open_menu_(false),
@@ -94,7 +94,7 @@ MenuItemView* SubmenuView::GetMenuItemAt(int index) {
     }
   }
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 PrefixSelector* SubmenuView::GetPrefixSelector() {
@@ -423,7 +423,7 @@ void SubmenuView::Close() {
         ax::mojom::Event::kMenuEnd, true);
 
     host_->DestroyMenuHost();
-    host_ = NULL;
+    host_ = nullptr;
   }
 }
 
@@ -461,7 +461,7 @@ void SubmenuView::SetDropMenuItem(MenuItemView* item,
 }
 
 bool SubmenuView::GetShowSelection(MenuItemView* item) {
-  if (drop_item_ == NULL)
+  if (drop_item_ == nullptr)
     return true;
   // Something is being dropped on one of this menus items. Show the
   // selection if the drop is on the passed in item and the drop position is
@@ -487,7 +487,7 @@ MenuItemView* SubmenuView::GetLastItem() {
 }
 
 void SubmenuView::MenuHostDestroyed() {
-  host_ = NULL;
+  host_ = nullptr;
   MenuController* controller = GetMenuItem()->GetMenuController();
   if (controller)
     controller->Cancel(MenuController::EXIT_DESTROYED);
@@ -504,7 +504,7 @@ void SubmenuView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 void SubmenuView::SchedulePaintForDropIndicator(
     MenuItemView* item,
     MenuDelegate::DropPosition position) {
-  if (item == NULL)
+  if (item == nullptr)
     return;
 
   if (position == MenuDelegate::DROP_ON) {

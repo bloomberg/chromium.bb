@@ -21,11 +21,10 @@ const char kWidgetNativeViewHostKey[] = "WidgetNativeViewHost";
 // NativeViewHost, public:
 
 NativeViewHost::NativeViewHost()
-    : native_view_(NULL),
+    : native_view_(nullptr),
       fast_resize_(false),
       fast_resize_at_last_layout_(false),
-      resize_background_color_(SK_ColorWHITE) {
-}
+      resize_background_color_(SK_ColorWHITE) {}
 
 NativeViewHost::~NativeViewHost() {
   // As part of deleting NativeViewHostWrapper the native view is unparented.
@@ -231,11 +230,11 @@ void NativeViewHost::Detach(bool destroyed) {
     if (!destroyed) {
       Widget* widget = Widget::GetWidgetForNativeView(native_view_);
       if (widget)
-        widget->SetNativeWindowProperty(kWidgetNativeViewHostKey, NULL);
+        widget->SetNativeWindowProperty(kWidgetNativeViewHostKey, nullptr);
       ClearFocus();
     }
     native_wrapper_->NativeViewDetaching(destroyed);
-    native_view_ = NULL;
+    native_view_ = nullptr;
   }
 }
 

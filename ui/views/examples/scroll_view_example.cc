@@ -28,7 +28,7 @@ class ScrollViewExample::ScrollableView : public View {
  public:
   ScrollableView() {
     SetColor(SK_ColorRED, SK_ColorCYAN);
-    AddChildView(new LabelButton(NULL, ASCIIToUTF16("Button")));
+    AddChildView(new LabelButton(nullptr, ASCIIToUTF16("Button")));
     AddChildView(new RadioButton(ASCIIToUTF16("Radio Button"), 0));
   }
 

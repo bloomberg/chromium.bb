@@ -123,11 +123,11 @@ class MultilineExample::RenderTextView : public View {
 
 MultilineExample::MultilineExample()
     : ExampleBase("Multiline RenderText"),
-      render_text_view_(NULL),
-      label_(NULL),
-      textfield_(NULL),
-      label_checkbox_(NULL),
-      elision_checkbox_(NULL) {}
+      render_text_view_(nullptr),
+      label_(nullptr),
+      textfield_(nullptr),
+      label_checkbox_(nullptr),
+      elision_checkbox_(nullptr) {}
 
 MultilineExample::~MultilineExample() {
 }

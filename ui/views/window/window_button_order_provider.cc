@@ -7,7 +7,7 @@
 namespace views {
 
 // static
-WindowButtonOrderProvider* WindowButtonOrderProvider::instance_ = NULL;
+WindowButtonOrderProvider* WindowButtonOrderProvider::instance_ = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowButtonOrderProvider, public:

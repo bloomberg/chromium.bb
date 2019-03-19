@@ -171,11 +171,11 @@ ClientView* WidgetDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* WidgetDelegate::CreateNonClientFrameView(Widget* widget) {
-  return NULL;
+  return nullptr;
 }
 
 View* WidgetDelegate::CreateOverlayView() {
-  return NULL;
+  return nullptr;
 }
 
 bool WidgetDelegate::WillProcessWorkAreaChange() const {

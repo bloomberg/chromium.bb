@@ -709,7 +709,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   }
   const ClientView* client_view() const {
     // non_client_view_ may be NULL, especially during creation.
-    return non_client_view_ ? non_client_view_->client_view() : NULL;
+    return non_client_view_ ? non_client_view_->client_view() : nullptr;
   }
 
   ui::Compositor* GetCompositor() {

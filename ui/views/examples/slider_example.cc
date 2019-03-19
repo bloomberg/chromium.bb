@@ -16,10 +16,7 @@ namespace views {
 namespace examples {
 
 SliderExample::SliderExample()
-    : ExampleBase("Slider"),
-      slider_(NULL),
-      label_(NULL) {
-}
+    : ExampleBase("Slider"), slider_(nullptr), label_(nullptr) {}
 
 SliderExample::~SliderExample() {
 }

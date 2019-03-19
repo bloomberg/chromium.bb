@@ -123,14 +123,15 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       ShowWidget(sender, Widget::InitParams(Widget::InitParams::TYPE_POPUP));
       break;
     case DIALOG: {
-      DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), NULL,
+      DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), nullptr,
                                          sender->GetWidget()->GetNativeView())
           ->Show();
       break;
     }
     case MODAL_DIALOG: {
-      DialogDelegate::CreateDialogWidget(new ModalDialogExample(), NULL,
-          sender->GetWidget()->GetNativeView())->Show();
+      DialogDelegate::CreateDialogWidget(new ModalDialogExample(), nullptr,
+                                         sender->GetWidget()->GetNativeView())
+          ->Show();
       break;
     }
     case CHILD:
