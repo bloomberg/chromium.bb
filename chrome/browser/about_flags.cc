@@ -3284,10 +3284,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(printing::features::kUsePdfCompositorServiceForPrint)},
 #endif
 
-    {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
-     flag_descriptions::kAutofillDynamicFormsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
-
     {"autofill-prefilled-fields",
      flag_descriptions::kAutofillPrefilledFieldsName,
      flag_descriptions::kAutofillPrefilledFieldsDescription, kOsAll,

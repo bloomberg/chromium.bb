@@ -138,10 +138,6 @@ const char kAppLauncherRefreshDescription[] =
     "also Apps will launch asynchronously and there will be no logic that"
     "depends on the success or the failure of launching an app.";
 
-const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
-const char kAutofillDynamicFormsDescription[] =
-    "Refills forms that dynamically change after an initial fill";
-
 const char kAutofillNoLocalSaveOnUploadSuccessName[] =
     "Disable saving local copy of uploaded card when credit card upload "
     "succeeds";

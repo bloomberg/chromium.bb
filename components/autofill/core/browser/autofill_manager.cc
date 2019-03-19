@@ -737,8 +737,7 @@ void AutofillManager::FillOrPreviewProfileForm(
         profile, *form_structure, *autofill_field, sync_state_);
 
     // Set up the information needed for an eventual refill of this form.
-    if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
-        !form_structure->GetIdentifierForRefill().empty()) {
+    if (!form_structure->GetIdentifierForRefill().empty()) {
       auto& entry =
           filling_contexts_map_[form_structure->GetIdentifierForRefill()];
       auto filling_context = std::make_unique<FillingContext>();
@@ -1403,7 +1402,6 @@ void AutofillManager::FillOrPreviewDataModelForm(
   if (itr != filling_contexts_map_.end())
     filling_context = itr->second.get();
   bool could_attempt_refill =
-      base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
       filling_context != nullptr && !filling_context->attempted_refill &&
       !is_refill && !is_credit_card;
 
@@ -2015,9 +2013,6 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
 }
 
 bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
-  if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
-    return false;
-
   // Should not refill if a form with the same name has not been filled before.
   auto itr =
       filling_contexts_map_.find(form_structure.GetIdentifierForRefill());

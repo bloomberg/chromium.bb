@@ -61,10 +61,6 @@ const base::Feature kAutofillDeleteDisusedAddresses{
 const base::Feature kAutofillDeleteDisusedCreditCards{
     "AutofillDeleteDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether Autofill attemps to fill dynamically changing forms.
-const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether we download server credit cards to the ephemeral
 // account-based storage when sync the transport is enabled.
 const base::Feature kAutofillEnableAccountWalletStorage{

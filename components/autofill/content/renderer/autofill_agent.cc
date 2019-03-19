@@ -418,9 +418,6 @@ void AutofillAgent::DoAcceptDataListSuggestion(
 }
 
 void AutofillAgent::TriggerRefillIfNeeded(const FormData& form) {
-  if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
-    return;
-
   ReplaceElementIfNowInvalid(form);
 
   FormFieldData field;
@@ -450,8 +447,7 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   was_last_action_fill_ = true;
 
   // If this is a re-fill, replace the triggering element if it's invalid.
-  if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
-      id == kNoQueryId)
+  if (id == kNoQueryId)
     ReplaceElementIfNowInvalid(form);
 
   query_node_autofill_state_ = element_.GetAutofillState();

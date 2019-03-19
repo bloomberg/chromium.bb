@@ -8319,9 +8319,8 @@ TEST_F(AutofillMetricsTest, MAYBE_AutofillSuggestionShownTest) {
 }
 
 TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillDynamicForms},
-      {features::kAutofillRestrictUnownedFieldsToFormlessCheckout});
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
   // Set up our form data.
   FormData form;
