@@ -33,6 +33,10 @@ public class AssistantCarouselCoordinator {
     public AssistantCarouselCoordinator(Context context, AssistantCarouselModel model) {
         mLayoutManager = new LinearLayoutManager(
                 context, LinearLayoutManager.HORIZONTAL, /* reverseLayout= */ false);
+
+        // Workaround for b/128679161.
+        mLayoutManager.setMeasurementCacheEnabled(false);
+
         mView = new RecyclerView(context);
         mView.setLayoutManager(mLayoutManager);
         mView.addItemDecoration(new SpaceItemDecoration(context));
