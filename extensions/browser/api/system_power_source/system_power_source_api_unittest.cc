@@ -29,7 +29,7 @@ class SystemPowerSourceApiUnitTest : public ApiUnitTest {
 
   void SetUp() override {
     ApiUnitTest::SetUp();
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
   }
 
   void TearDown() override {

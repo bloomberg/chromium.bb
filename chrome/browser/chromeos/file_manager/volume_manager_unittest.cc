@@ -244,7 +244,7 @@ class VolumeManagerTest : public testing::Test {
   };
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     disk_mount_manager_ = std::make_unique<FakeDiskMountManager>();
     main_profile_ = std::make_unique<ProfileEnvironment>(
         chromeos::PowerManagerClient::Get(), disk_mount_manager_.get());

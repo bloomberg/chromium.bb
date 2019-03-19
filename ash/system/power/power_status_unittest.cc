@@ -47,7 +47,7 @@ class PowerStatusTest : public testing::Test {
   ~PowerStatusTest() override = default;
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     PowerStatus::Initialize();
     power_status_ = PowerStatus::Get();
     test_observer_.reset(new TestObserver);

@@ -33,7 +33,7 @@ class ArcPowerBridgeTest : public testing::Test {
   ~ArcPowerBridgeTest() override = default;
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
     wake_lock_provider_ = std::make_unique<device::TestWakeLockProvider>(

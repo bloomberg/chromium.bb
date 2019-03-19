@@ -161,7 +161,7 @@ class AssistantServiceTest : public testing::Test {
     // which are irrelevant for these tests.
     test_connector_factory_.set_ignore_unknown_service_requests(true);
 
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     FakePowerManagerClient::Get()->SetTabletMode(
         PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 

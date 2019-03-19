@@ -24,7 +24,7 @@ TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
   TestingProfile profile;
 
   // Set a high battery state.
-  chromeos::PowerManagerClient::Initialize();
+  chromeos::PowerManagerClient::InitializeFake();
   auto* power_manager = chromeos::FakePowerManagerClient::Get();
   power_manager::PowerSupplyProperties props = *power_manager->GetLastStatus();
   props.set_battery_percent(99);

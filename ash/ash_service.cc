@@ -163,14 +163,13 @@ void AshService::InitializeDBusClients() {
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
 
-  // TODO(estade/stevenjb): Modify PowerManagerClient to use InitializeFake.
-  chromeos::PowerManagerClient::Initialize(bus);
-
   if (bus) {
     chromeos::HammerdClient::Initialize(bus);
+    chromeos::PowerManagerClient::Initialize(bus);
     chromeos::SystemClockClient::Initialize(bus);
   } else {
     chromeos::HammerdClient::InitializeFake();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::SystemClockClient::InitializeFake();
   }
 

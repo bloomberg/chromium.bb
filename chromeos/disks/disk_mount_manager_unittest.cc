@@ -502,7 +502,7 @@ class DiskMountManagerTest : public testing::Test {
     fake_cros_disks_client_ = new FakeCrosDisksClient;
     DBusThreadManager::GetSetterForTesting()->SetCrosDisksClient(
         std::unique_ptr<CrosDisksClient>(fake_cros_disks_client_));
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
 
     DiskMountManager::Initialize();
 

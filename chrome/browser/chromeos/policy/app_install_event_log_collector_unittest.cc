@@ -111,9 +111,9 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   void SetUp() override {
     RegisterLocalState(pref_service_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
-    chromeos::PowerManagerClient::Initialize();
 
     chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::NetworkHandler::Initialize();
     profile_ = std::make_unique<TestingProfile>();
 
@@ -136,8 +136,8 @@ class AppInstallEventLogCollectorTest : public testing::Test {
 
     profile_.reset();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 

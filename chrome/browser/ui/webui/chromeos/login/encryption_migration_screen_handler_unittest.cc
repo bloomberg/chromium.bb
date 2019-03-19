@@ -133,10 +133,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     fake_cryptohome_client_ = new FakeCryptohomeClient();
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         base::WrapUnique<CryptohomeClient>(fake_cryptohome_client_));
-
-    PowerManagerClient::Initialize();
-
-    DBusThreadManager::Initialize();
+    PowerManagerClient::InitializeFake();
 
     PowerPolicyController::Initialize(PowerManagerClient::Get());
 

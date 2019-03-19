@@ -181,7 +181,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
 
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::UpstartClient::InitializeFake();
 
     SetArcAvailableCommandLineForTesting(

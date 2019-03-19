@@ -74,7 +74,7 @@ class BrightnessMonitorImplTest : public testing::Test {
   ~BrightnessMonitorImplTest() override {}
 
   // testing::Test:
-  void SetUp() override { PowerManagerClient::Initialize(); }
+  void SetUp() override { PowerManagerClient::InitializeFake(); }
 
   void TearDown() override {
     test_observer_.reset();

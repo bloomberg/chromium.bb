@@ -34,7 +34,7 @@ class PowerManagerProviderImplTest : public testing::Test {
   ~PowerManagerProviderImplTest() override = default;
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
         connector_factory_.GetDefaultConnector(),
         scoped_task_environment_.GetMainThreadTaskRunner());

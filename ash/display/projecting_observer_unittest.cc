@@ -46,7 +46,7 @@ class ProjectingObserverTest : public testing::Test {
   ProjectingObserverTest() = default;
 
   void SetUp() override {
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     observer_ = std::make_unique<ProjectingObserver>(nullptr);
   }
 

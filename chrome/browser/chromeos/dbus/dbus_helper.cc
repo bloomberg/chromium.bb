@@ -38,17 +38,16 @@ void InitializeDBus() {
     }
   }
 
-  // TODO(estade/stevenjb): Modify PowerManagerClient to use InitializeFake.
-  PowerManagerClient::Initialize(bus);
-
   if (bus) {
     BiodClient::Initialize(bus);  // For device::Fingerprint.
     KerberosClient::Initialize(bus);
+    PowerManagerClient::Initialize(bus);
     SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
   } else {
     BiodClient::InitializeFake();  // For device::Fingerprint.
     KerberosClient::InitializeFake();
+    PowerManagerClient::InitializeFake();
     SystemClockClient::InitializeFake();
     UpstartClient::InitializeFake();
   }

@@ -130,7 +130,7 @@ class DBusThreadManagerLifetimeHelper {
     // Set fake clients for testing.
     dbus_thread_manager_setter->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
   }
 
   ~DBusThreadManagerLifetimeHelper() {

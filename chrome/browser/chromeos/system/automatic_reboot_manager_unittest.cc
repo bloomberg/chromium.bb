@@ -327,10 +327,10 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   AutomaticRebootManager::RegisterPrefs(local_state_.registry());
 
-  PowerManagerClient::Initialize();
   update_engine_client_ = new FakeUpdateEngineClient;
   DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
       std::unique_ptr<UpdateEngineClient>(update_engine_client_));
+  PowerManagerClient::InitializeFake();
 
   EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
      .WillRepeatedly(ReturnPointee(&is_user_logged_in_));

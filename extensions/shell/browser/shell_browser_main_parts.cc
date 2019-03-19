@@ -124,8 +124,13 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // helper classes so those classes' tests can initialize stub versions of the
   // D-Bus objects.
   chromeos::DBusThreadManager::Initialize();
-  chromeos::PowerManagerClient::Initialize(
-      chromeos::DBusThreadManager::Get()->GetSystemBus());
+  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  if (bus) {
+    chromeos::PowerManagerClient::Initialize(bus);
+  } else {
+    chromeos::PowerManagerClient::InitializeFake();
+  }
+
   chromeos::disks::DiskMountManager::Initialize();
 
   bluez::BluezDBusManager::Initialize();

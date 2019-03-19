@@ -88,7 +88,7 @@ class DetachableBaseHandlerTest : public testing::Test {
     chromeos::HammerdClient::InitializeFake();
     hammerd_client_ = chromeos::FakeHammerdClient::Get();
 
-    chromeos::PowerManagerClient::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::FakePowerManagerClient::Get()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 

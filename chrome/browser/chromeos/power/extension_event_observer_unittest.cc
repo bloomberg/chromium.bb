@@ -47,7 +47,7 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     extension_event_observer_ = std::make_unique<ExtensionEventObserver>();

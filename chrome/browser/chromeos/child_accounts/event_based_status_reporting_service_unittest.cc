@@ -87,7 +87,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   ~EventBasedStatusReportingServiceTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     SystemClockClient::InitializeFake();
     profile_ = std::make_unique<TestingProfile>();
     profile_.get()->SetSupervisedUserId(supervised_users::kChildAccountSUID);

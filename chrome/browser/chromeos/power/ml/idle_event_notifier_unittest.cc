@@ -86,7 +86,7 @@ class IdleEventNotifierTest : public testing::Test {
   ~IdleEventNotifierTest() override = default;
 
   void SetUp() override {
-    PowerManagerClient::Initialize();
+    PowerManagerClient::InitializeFake();
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
         PowerManagerClient::Get(), &user_activity_detector_,

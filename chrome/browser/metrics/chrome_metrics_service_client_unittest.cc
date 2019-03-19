@@ -60,15 +60,15 @@ class ChromeMetricsServiceClientTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     // ChromeOs Metrics Provider require g_login_state and power manager client
     // initialized before they can be instantiated.
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
-    chromeos::PowerManagerClient::Initialize();
 #endif  // defined(OS_CHROMEOS)
   }
 
   void TearDown() override {
 #if defined(OS_CHROMEOS)
-    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
 #endif  // defined(OS_CHROMEOS)
     service_manager_context_.reset();
   }
