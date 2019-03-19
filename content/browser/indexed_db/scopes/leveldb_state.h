@@ -5,11 +5,15 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_STATE_H_
 #define CONTENT_BROWSER_INDEXED_DB_SCOPES_LEVELDB_STATE_H_
 
-#include "base/memory/ref_counted.h"
-
+#include <atomic>
 #include <memory>
+#include <utility>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
@@ -17,6 +21,9 @@
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 
 namespace content {
+namespace indexed_db {
+class FakeLevelDBFactory;
+}
 
 // Encapsulates a leveldb database and comparator, allowing them to be used
 // safely across thread boundaries.
@@ -36,6 +43,17 @@ class CONTENT_EXPORT LevelDBState
       std::unique_ptr<leveldb::DB> in_memory_database,
       std::string name_for_tracing);
 
+  // Returns if this call was successfully the first call to request destruction
+  // of this state. Can be called on any thread. The given |task_runner| will be
+  // used to call the |on_destruction| closure, which is called on the
+  // destruction of this state.
+  bool RequestDestruction(base::OnceClosure on_destruction,
+                          scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  bool destruction_requested() const {
+    return destruction_requested_.load(std::memory_order_relaxed);
+  }
+
   const leveldb::Comparator* comparator() const { return comparator_; }
   const LevelDBComparator* idb_comparator() const { return idb_comparator_; }
   leveldb::DB* db() const { return db_.get(); }
@@ -47,6 +65,7 @@ class CONTENT_EXPORT LevelDBState
   const base::FilePath& database_path() const { return database_path_; }
 
  private:
+  friend class indexed_db::FakeLevelDBFactory;
   friend class base::RefCountedThreadSafe<LevelDBState>;
 
   LevelDBState(std::unique_ptr<leveldb::Env> optional_in_memory_env,
@@ -63,6 +82,15 @@ class CONTENT_EXPORT LevelDBState
   const std::unique_ptr<leveldb::DB> db_;
   const base::FilePath database_path_;
   const std::string name_for_tracing_;
+
+  // This member transitions from false to true at most once in the instance's
+  // lifetime.
+  std::atomic_bool destruction_requested_;
+  // These members are written only once (when |destruction_requested_|
+  // transitions from false to true) and read only once in the destructor, so
+  // they are thread-compatible.
+  base::OnceClosure on_destruction_;
+  scoped_refptr<base::SequencedTaskRunner> on_destruction_task_runner_;
 };
 
 }  // namespace content
