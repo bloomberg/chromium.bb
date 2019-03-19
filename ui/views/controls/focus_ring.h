@@ -117,6 +117,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
 VIEWS_EXPORT SkPath GetHighlightPath(const View* view);
 
-}  // views
+}  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_FOCUS_RING_H_

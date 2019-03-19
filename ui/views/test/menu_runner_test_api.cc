@@ -24,5 +24,5 @@ void MenuRunnerTestAPI::SetMenuRunnerHandler(
   menu_runner_->SetRunnerHandler(std::move(menu_runner_handler));
 }
 
-}  // test
-}  // views
+}  // namespace test
+}  // namespace views

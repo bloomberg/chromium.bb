@@ -48,6 +48,6 @@ class ViewsTestSuite : public base::TestSuite {
   DISALLOW_COPY_AND_ASSIGN(ViewsTestSuite);
 };
 
-}  // namespace
+}  // namespace views
 
 #endif  // UI_VIEWS_VIEWS_TEST_SUITE_H_
