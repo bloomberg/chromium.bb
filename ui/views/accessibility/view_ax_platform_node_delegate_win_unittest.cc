@@ -262,7 +262,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   content->AddChildView(infobar2);
 
   View* root_view = content->parent();
-  ASSERT_EQ(NULL, root_view->parent());
+  ASSERT_EQ(nullptr, root_view->parent());
 
   ComPtr<IAccessible2_2> root_view_accessible;
   GetIAccessible2InterfaceForView(root_view, &root_view_accessible);
