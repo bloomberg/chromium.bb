@@ -106,9 +106,9 @@ class SQLitePersistentReportingAndNELStoreTest
     return contents;
   }
 
-  bool WithinOneMillisecond(base::Time t1, base::Time t2) {
+  bool WithinOneMicrosecond(base::Time t1, base::Time t2) {
     base::TimeDelta delta = t1 - t2;
-    return delta.magnitude() < base::TimeDelta::FromMilliseconds(1);
+    return delta.magnitude() < base::TimeDelta::FromMicroseconds(1);
   }
 
   void WaitOnEvent(base::WaitableEvent* event) {
@@ -172,11 +172,11 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, PersistNELPolicy) {
   EXPECT_EQ(policy.origin, policies[0].origin);
   EXPECT_EQ(policy.received_ip_address, policies[0].received_ip_address);
   EXPECT_EQ(policy.report_to, policies[0].report_to);
-  EXPECT_TRUE(WithinOneMillisecond(policy.expires, policies[0].expires));
+  EXPECT_TRUE(WithinOneMicrosecond(policy.expires, policies[0].expires));
   EXPECT_EQ(policy.include_subdomains, policies[0].include_subdomains);
   EXPECT_EQ(policy.success_fraction, policies[0].success_fraction);
   EXPECT_EQ(policy.failure_fraction, policies[0].failure_fraction);
-  EXPECT_TRUE(WithinOneMillisecond(policy.last_used, policies[0].last_used));
+  EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
 TEST_F(SQLitePersistentReportingAndNELStoreTest, UpdateNELPolicyAccessTime) {
@@ -198,7 +198,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest, UpdateNELPolicyAccessTime) {
   LoadNELPolicies(&policies);
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy.origin, policies[0].origin);
-  EXPECT_TRUE(WithinOneMillisecond(policy.last_used, policies[0].last_used));
+  EXPECT_TRUE(WithinOneMicrosecond(policy.last_used, policies[0].last_used));
 }
 
 TEST_F(SQLitePersistentReportingAndNELStoreTest, DeleteNELPolicy) {
@@ -257,7 +257,7 @@ TEST_F(SQLitePersistentReportingAndNELStoreTest,
   // Only the first policy we added should be in the store.
   ASSERT_EQ(1u, policies.size());
   EXPECT_EQ(policy1.origin, policies[0].origin);
-  EXPECT_TRUE(WithinOneMillisecond(policy1.last_used, policies[0].last_used));
+  EXPECT_TRUE(WithinOneMicrosecond(policy1.last_used, policies[0].last_used));
 }
 
 TEST_F(SQLitePersistentReportingAndNELStoreTest, CoalesceNELPolicyOperations) {
