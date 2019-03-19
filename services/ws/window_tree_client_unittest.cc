@@ -363,10 +363,6 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
   void OnWindowVisibilityChanged(Id window, bool visible) override {
     tracker()->OnWindowVisibilityChanged(window, visible);
   }
-  void OnWindowOpacityChanged(Id window,
-                              float new_opacity) override {
-    tracker()->OnWindowOpacityChanged(window, new_opacity);
-  }
   void OnWindowParentDrawnStateChanged(Id window, bool drawn) override {
     tracker()->OnWindowParentDrawnStateChanged(window, drawn);
   }

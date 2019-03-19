@@ -554,9 +554,6 @@ interface WindowTreeClient {
   // Invoked when the visibility of the specified window changes.
   OnWindowVisibilityChanged(uint64 window, bool visible);
 
-  // Invoked when the opacity of the specified window has changed.
-  OnWindowOpacityChanged(uint64 window, float new_opacity);
-
   // Invoked when the window moves to a new display. This is only called on
   // a top-level window or an embedded root.
   OnWindowDisplayChanged(uint64 window, int64 display_id);

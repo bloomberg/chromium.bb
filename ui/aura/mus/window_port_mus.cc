@@ -419,10 +419,6 @@ void WindowPortMus::SetVisibleFromServer(bool visible) {
     window_->Hide();
 }
 
-void WindowPortMus::SetOpacityFromServer(float opacity) {
-  window_->layer()->SetOpacity(opacity);
-}
-
 void WindowPortMus::SetCursorFromServer(const ui::Cursor& cursor) {
   // As this does nothing more than set the cursor we don't need to use
   // ServerChange.

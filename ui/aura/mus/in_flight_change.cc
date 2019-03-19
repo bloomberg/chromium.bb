@@ -317,24 +317,6 @@ void InFlightVisibleChange::Revert() {
   window_tree_client_->SetWindowVisibleFromServer(window(), revert_visible_);
 }
 
-// InFlightOpacityChange -------------------------------------------------------
-
-InFlightOpacityChange::InFlightOpacityChange(WindowMus* window,
-                                             float revert_value)
-    : InFlightChange(window, ChangeType::OPACITY),
-      revert_opacity_(revert_value) {}
-
-InFlightOpacityChange::~InFlightOpacityChange() {}
-
-void InFlightOpacityChange::SetRevertValueFrom(const InFlightChange& change) {
-  revert_opacity_ =
-      static_cast<const InFlightOpacityChange&>(change).revert_opacity_;
-}
-
-void InFlightOpacityChange::Revert() {
-  window()->SetOpacityFromServer(revert_opacity_);
-}
-
 // InFlightSetModalTypeChange
 // ------------------------------------------------------
 

@@ -174,11 +174,6 @@ void TestWindowTreeClient::OnWindowVisibilityChanged(Id window, bool visible) {
   tracker_.OnWindowVisibilityChanged(window, visible);
 }
 
-void TestWindowTreeClient::OnWindowOpacityChanged(Id window,
-                                                  float new_opacity) {
-  tracker_.OnWindowOpacityChanged(window, new_opacity);
-}
-
 void TestWindowTreeClient::OnWindowDisplayChanged(Id window_id,
                                                   int64_t display_id) {
   tracker_.OnWindowDisplayChanged(window_id, display_id);

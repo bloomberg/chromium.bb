@@ -1356,19 +1356,6 @@ void WindowTreeClient::OnWindowVisibilityChanged(ws::Id window_id,
   SetWindowVisibleFromServer(window, visible);
 }
 
-void WindowTreeClient::OnWindowOpacityChanged(ws::Id window_id,
-                                              float new_opacity) {
-  WindowMus* window = GetWindowByServerId(window_id);
-  if (!window)
-    return;
-
-  InFlightOpacityChange new_change(window, new_opacity);
-  if (ApplyServerChangeToExistingInFlightChange(new_change))
-    return;
-
-  window->SetOpacityFromServer(new_opacity);
-}
-
 void WindowTreeClient::OnWindowDisplayChanged(ws::Id window_id,
                                               int64_t display_id) {
   WindowMus* window = GetWindowByServerId(window_id);
