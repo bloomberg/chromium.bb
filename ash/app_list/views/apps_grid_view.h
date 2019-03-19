@@ -617,7 +617,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // During an app drag, creates an a11y event to verbalize drop target
   // location.
-  void MaybeCreateReorderAccessibilityEvent();
+  void MaybeCreateDragReorderAccessibilityEvent();
+
+  // Modifies the announcement view to verbalize |target_index|.
+  void AnnounceReorder(const GridIndex& target_index);
 
   // Creates a new GhostImageView at |reorder_placeholder_| and initializes
   // |current_ghost_view_| and |last_ghost_view_|.

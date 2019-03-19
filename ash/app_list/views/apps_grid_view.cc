@@ -665,7 +665,7 @@ void AppsGridView::EndDrag(bool cancel) {
             GetViewDisplayedAtSlotOnCurrentPage(drop_target_.slot);
       } else if (IsValidReorderTargetIndex(drop_target_)) {
         // Ensure reorder event has already been announced by the end of drag.
-        MaybeCreateReorderAccessibilityEvent();
+        MaybeCreateDragReorderAccessibilityEvent();
         MoveItemInModel(drag_view_, drop_target_);
         RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderByDragInFolder
                                                     : kReorderByDragInTopLevel);
@@ -1505,7 +1505,7 @@ bool AppsGridView::DragIsCloseToItem() {
 
 void AppsGridView::OnReorderTimer() {
   reorder_placeholder_ = drop_target_;
-  MaybeCreateReorderAccessibilityEvent();
+  MaybeCreateDragReorderAccessibilityEvent();
   AnimateToIdealBounds();
   CreateGhostImageView();
 }
@@ -1609,6 +1609,7 @@ void AppsGridView::HandleKeyboardAppMovement(ui::KeyboardCode key_code) {
   handling_keyboard_move_ = true;
 
   MoveAppListItemViewForKeyboardMove(target_index);
+  AnnounceReorder(target_index);
 }
 
 bool AppsGridView::HandleVerticalFocusMovement(bool arrow_up) {
@@ -1734,7 +1735,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
       ReparentItemForReorder(drag_view_, drop_target_);
       // Announce accessibility event before the end of drag for reparented
       // item.
-      MaybeCreateReorderAccessibilityEvent();
+      MaybeCreateDragReorderAccessibilityEvent();
     } else {
       NOTREACHED();
     }
@@ -2967,7 +2968,7 @@ void AppsGridView::MaybeCreateFolderDroppingAccessibilityEvent() {
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
-void AppsGridView::MaybeCreateReorderAccessibilityEvent() {
+void AppsGridView::MaybeCreateDragReorderAccessibilityEvent() {
   if (drop_target_region_ == ON_ITEM && !IsFolderItem(drag_view_->item()))
     return;
 
@@ -2987,19 +2988,23 @@ void AppsGridView::MaybeCreateReorderAccessibilityEvent() {
   last_folder_dropping_a11y_event_location_ = GridIndex();
   last_reorder_a11y_event_location_ = drop_target_;
 
-  const int row_number =
-      ((drop_target_.slot - (drop_target_.slot % cols_)) / cols_) + 1;
-  const int col_number = (drop_target_.slot % cols_) + 1;
+  AnnounceReorder(last_reorder_a11y_event_location_);
+}
 
-  // Set accessible name to announce drop target location by row and column.
+void AppsGridView::AnnounceReorder(const GridIndex& target_index) {
+  const int row =
+      ((target_index.slot - (target_index.slot % cols_)) / cols_) + 1;
+  const int col = (target_index.slot % cols_) + 1;
+  const int page = target_index.page + 1;
+
+  // Set the accessible name of the announcement view.
   auto* announcement_view =
       contents_view_->app_list_view()->announcement_view();
   announcement_view->GetViewAccessibility().OverrideName(
       l10n_util::GetStringFUTF16(
           IDS_APP_LIST_APP_DRAG_LOCATION_ACCESSIBILE_NAME,
-          base::NumberToString16(drop_target_.page + 1),
-          base::NumberToString16(row_number),
-          base::NumberToString16(col_number)));
+          base::NumberToString16(page), base::NumberToString16(row),
+          base::NumberToString16(col)));
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
