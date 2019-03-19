@@ -190,10 +190,6 @@ void TracingControllerImpl::ConnectToServiceIfNeeded() {
         tracing::mojom::kServiceName, &coordinator_);
     coordinator_.set_connection_error_handler(base::BindOnce(
         [](TracingControllerImpl* controller) {
-          // If the tracing service dies while we're tracing, the browser is
-          // in an unrecoverable state (it'll keep tracing until shared memory
-          // buffers are full and then stall).
-          CHECK(!controller->IsTracing());
           controller->coordinator_.reset();
         },
         base::Unretained(this)));
@@ -394,7 +390,7 @@ bool TracingControllerImpl::StopTracing(
 bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint,
     const std::string& agent_label) {
-  if (!IsTracing() || drainer_)
+  if (!IsTracing() || drainer_ || !coordinator_)
     return false;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

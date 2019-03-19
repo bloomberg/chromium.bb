@@ -286,7 +286,17 @@ void PerfettoTracingCoordinator::BindCoordinatorRequest(
 void PerfettoTracingCoordinator::StartTracing(const std::string& config,
                                               StartTracingCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  parsed_config_ = base::trace_event::TraceConfig(config);
+  base::trace_event::TraceConfig new_parsed_config(config);
+  bool waiting_for_tracing_start = !start_tracing_callback_.is_null();
+  bool configs_are_identical =
+      (new_parsed_config.ToString() == parsed_config_.ToString());
+  if (waiting_for_tracing_start ||
+      (tracing_session_ && configs_are_identical)) {
+    std::move(callback).Run(configs_are_identical);
+    return;
+  }
+
+  parsed_config_ = new_parsed_config;
   if (!tracing_session_) {
     tracing_session_ = std::make_unique<TracingSession>(
         parsed_config_,
