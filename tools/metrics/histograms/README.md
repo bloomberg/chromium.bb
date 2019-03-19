@@ -364,7 +364,8 @@ interpretations of the data and make no sense.
 
 Please delete the code that emits to histograms that are no longer needed.
 Histograms take up memory.  Cleaning up histograms that you no longer care
-about is good!  But see the note below on [Deleting Histogram Entries](#Deleting-Histogram-Entries).
+about is good!  But see the note below on
+[Cleaning Up Histogram Entries](#Cleaning-Up-Histogram-Entries).
 
 ## Documenting Histograms
 
@@ -424,12 +425,25 @@ usefulness. When a histogram is nearing expiry, a robot will file a reminder bug
 in Monorail. It's important that somebody familiar with the histogram notices
 and triages such bugs!
 
-### Deleting Histogram Entries
+### Cleaning Up Histogram Entries
 
-Do not delete histograms from [histograms.xml](./histograms.xml).  Instead, mark
-unused histograms as obsolete, annotating them with the associated date or
-milestone in the obsolete tag entry.  If your histogram is being replaced by a
-new version, we suggest noting that in the previous histogram's description.
+Do not delete histograms from histograms.xml. Instead, mark unused
+histograms as obsolete and annotate them with the date or milestone in
+the `<obsolete>` tag entry.
+
+If the histogram used [histogram suffixes](#Histogram-Suffixes), mark
+the suffix entry for the histogram as obsolete as well.
+
+If the histogram is being replaced by a new version:
+
+* Note in the `<obsolete>` message the name of the replacement histogram.
+
+* Make sure the descriptions of the original and replacement histogram 
+  are different.  It's never appropriate for them to be identical.  Either 
+  the old description was wrong, and it should be revised to explain what 
+  it actually measured, or the old histogram was measuring something not 
+  as useful as the replacement, in which case the new histogram is 
+  measuring something different and needs to have a new description.
 
 A changelist that marks a histogram as obsolete should be reviewed by all
 current owners.
@@ -454,6 +468,12 @@ suffixes can be applied recursively.
 
 You can also declare ownership of `<histogram_suffixes>`. If there's no owner
 specified, the generated histograms will inherit owners from the parents.
+
+As [with histogram entries](#Cleaning-Up-Histogram-Entries), never delete
+histogram suffixes. If the suffix expansion is no longer used, mark it as
+obsolete.  You can also mark individual histograms within the suffix as
+obsolete, indicating the expansion for that histogram is obsolete yet the
+expansion for other histograms with the same suffix are not.
 
 ### Enum labels
 
