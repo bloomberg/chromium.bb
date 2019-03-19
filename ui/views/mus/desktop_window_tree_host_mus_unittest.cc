@@ -463,40 +463,26 @@ TEST_F(DesktopWindowTreeHostMusTest, SynchronousBoundsWhenTogglingFullscreen) {
   }
 }
 
-TEST_F(DesktopWindowTreeHostMusTest, ClientWindowHasContent) {
-  // Opaque window has content.
-  {
+TEST_F(DesktopWindowTreeHostMusTest, ClientWindowLayerDrawnSet) {
+  struct {
+    ui::LayerType layer_type;
+    bool expected_layer_drawn;
+  } kTestCases[] = {
+      {ui::LayerType::LAYER_TEXTURED, true},
+      {ui::LayerType::LAYER_SOLID_COLOR, true},
+      {ui::LayerType::LAYER_NINE_PATCH, true},
+      {ui::LayerType::LAYER_NOT_DRAWN, false},
+  };
+
+  for (const auto& test : kTestCases) {
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.layer_type = test.layer_type;
 
     Widget widget;
     widget.Init(params);
-    EXPECT_TRUE(widget.GetNativeWindow()->GetProperty(
-        aura::client::kClientWindowHasContent));
-  }
-
-  // Translucent window does not have content.
-  {
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-
-    Widget widget;
-    widget.Init(params);
-    EXPECT_FALSE(widget.GetNativeWindow()->GetProperty(
-        aura::client::kClientWindowHasContent));
-  }
-
-  // Window with LAYER_NOT_DRAWN does not have content.
-  {
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.layer_type = ui::LAYER_NOT_DRAWN;
-
-    Widget widget;
-    widget.Init(params);
-    EXPECT_FALSE(widget.GetNativeWindow()->GetProperty(
-        aura::client::kClientWindowHasContent));
+    EXPECT_EQ(test.expected_layer_drawn, widget.GetNativeWindow()->GetProperty(
+                                             aura::client::kWindowLayerDrawn));
   }
 }
 

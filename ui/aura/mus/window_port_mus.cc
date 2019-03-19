@@ -303,6 +303,10 @@ WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
         if (iter->data.visible == data.visible)
           return iter;
         break;
+      case ServerChangeType::SET_TRANSPARENT:
+        if (iter->data.transparent == data.transparent)
+          return iter;
+        break;
     }
   }
   return iter;
@@ -674,6 +678,15 @@ void WindowPortMus::OnVisibilityChanged(bool visible) {
   change_data.visible = visible;
   if (!RemoveChangeByTypeAndData(ServerChangeType::VISIBLE, change_data))
     window_tree_client_->OnWindowMusSetVisible(this, visible);
+}
+
+void WindowPortMus::OnTransparentChanged(bool transparent) {
+  ServerChangeData change_data;
+  change_data.transparent = transparent;
+  if (!RemoveChangeByTypeAndData(ServerChangeType::SET_TRANSPARENT,
+                                 change_data)) {
+    window_tree_client_->OnWindowMusSetTransparent(this, transparent);
+  }
 }
 
 void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,

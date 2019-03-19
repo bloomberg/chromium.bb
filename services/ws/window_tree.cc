@@ -1185,6 +1185,21 @@ bool WindowTree::SetWindowOpacityImpl(const ClientWindowId& window_id,
   return false;
 }
 
+bool WindowTree::SetWindowTransparentImpl(const ClientWindowId& window_id,
+                                          bool transparent) {
+  aura::Window* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "SetWindowTransparent client=" << client_id_
+           << " client window_id=" << window_id.ToString();
+  if (IsClientCreatedWindow(window) || IsClientRootWindow(window)) {
+    if (window->transparent() == transparent)
+      return true;
+    window->SetTransparent(transparent);
+    return true;
+  }
+  DVLOG(1) << "SetWindowTransparent failed (invalid window or access denied)";
+  return false;
+}
+
 bool WindowTree::SetWindowBoundsImpl(
     const ClientWindowId& window_id,
     const gfx::Rect& bounds,
@@ -1811,6 +1826,14 @@ void WindowTree::SetWindowOpacity(uint32_t change_id,
   window_tree_client_->OnChangeCompleted(
       change_id,
       SetWindowOpacityImpl(MakeClientWindowId(transport_window_id), opacity));
+}
+
+void WindowTree::SetWindowTransparent(uint32_t change_id,
+                                      Id transport_window_id,
+                                      bool transparent) {
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetWindowTransparentImpl(
+                     MakeClientWindowId(transport_window_id), transparent));
 }
 
 void WindowTree::AttachCompositorFrameSink(

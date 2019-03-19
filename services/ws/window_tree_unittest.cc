@@ -2319,7 +2319,7 @@ TEST(WindowTreeTest, OcclusionStateChange) {
   aura::Window* blocking_window =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(blocking_window);
-  blocking_window->SetProperty(aura::client::kClientWindowHasContent, true);
+  blocking_window->SetProperty(aura::client::kWindowLayerDrawn, true);
   blocking_window->SetBounds(gfx::Rect(0, 0, 15, 15));
   blocking_window->Show();
 
@@ -2351,7 +2351,7 @@ TEST(WindowTreeTest, OcclusionStateChangeBatchSameTree) {
   aura::Window* blocking_window =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(blocking_window);
-  blocking_window->SetProperty(aura::client::kClientWindowHasContent, true);
+  blocking_window->SetProperty(aura::client::kWindowLayerDrawn, true);
   blocking_window->SetBounds(gfx::Rect(0, 0, 20, 15));
   blocking_window->Show();
 
@@ -2390,7 +2390,7 @@ TEST(WindowTreeTest, OcclusionStateChangeBatchDifferentTree) {
   aura::Window* blocking_window =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(blocking_window);
-  blocking_window->SetProperty(aura::client::kClientWindowHasContent, true);
+  blocking_window->SetProperty(aura::client::kWindowLayerDrawn, true);
   blocking_window->SetBounds(gfx::Rect(0, 0, 20, 15));
   blocking_window->Show();
 

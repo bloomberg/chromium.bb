@@ -754,7 +754,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
   DCHECK(!IsRoot(window));
 
   window->GetWindow()->SetProperty(
-      aura::client::kClientWindowHasContent,
+      aura::client::kWindowLayerDrawn,
       window->GetWindow()->layer()->type() != ui::LAYER_NOT_DRAWN);
 
   PropertyConverter* property_converter = delegate_->GetPropertyConverter();
@@ -873,6 +873,17 @@ void WindowTreeClient::OnWindowMusSetVisible(WindowMus* window, bool visible) {
   const uint32_t change_id = ScheduleInFlightChange(
       std::make_unique<InFlightVisibleChange>(this, window, !visible));
   tree_->SetWindowVisibility(change_id, window->server_id(), visible);
+}
+
+void WindowTreeClient::OnWindowMusSetTransparent(WindowMus* window,
+                                                 bool transparent) {
+  if (!WasCreatedByThisClient(window) && !IsRoot(window))
+    return;
+  DCHECK(tree_);
+  const uint32_t change_id =
+      ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
+          window, ChangeType::SET_TRANSPARENT));
+  tree_->SetWindowTransparent(change_id, window->server_id(), transparent);
 }
 
 std::unique_ptr<ui::PropertyData>

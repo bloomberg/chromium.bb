@@ -148,6 +148,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     REMOVE,
     REMOVE_TRANSIENT,
     REORDER,
+    SET_TRANSPARENT,
     TRANSFORM,
     VISIBLE,
   };
@@ -164,6 +165,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     std::string property_name;
     // Applies to TRANSFORM.
     gfx::Transform transform;
+    // Applies to SET_TRANSPARENT.
+    bool transparent;
   };
 
   // Used to identify a change the server.
@@ -281,6 +284,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void OnWillRemoveChild(Window* child) override;
   void OnWillMoveChild(size_t current_index, size_t dest_index) override;
   void OnVisibilityChanged(bool visible) override;
+  void OnTransparentChanged(bool transparent) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
   void OnDidChangeTransform(const gfx::Transform& old_transform,

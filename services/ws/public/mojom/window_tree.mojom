@@ -177,6 +177,9 @@ interface WindowTree {
   // Sets the opacity of the specified window to |opacity|.
   SetWindowOpacity(uint32 change_id, uint64 window_id, float opacity);
 
+  // Sets the transparent status of the specified window to |transparent|.
+  SetWindowTransparent(uint32 change_id, uint64 window_id, bool transparent);
+
   // Attaches a CompositorFrameSink to a particular window.
   AttachCompositorFrameSink(
       uint64 window_id,

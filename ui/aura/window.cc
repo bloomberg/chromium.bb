@@ -208,9 +208,13 @@ void Window::SetTitle(const base::string16& title) {
 }
 
 void Window::SetTransparent(bool transparent) {
+  if (transparent == transparent_)
+    return;
   transparent_ = transparent;
   if (layer())
     layer()->SetFillsBoundsOpaquely(!transparent_);
+  if (port_)
+    port_->OnTransparentChanged(transparent);
 }
 
 void Window::SetFillsBoundsCompletely(bool fills_bounds) {

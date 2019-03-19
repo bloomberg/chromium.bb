@@ -35,6 +35,8 @@ void WindowPortForShutdown::OnWillMoveChild(size_t current_index,
 
 void WindowPortForShutdown::OnVisibilityChanged(bool visible) {}
 
+void WindowPortForShutdown::OnTransparentChanged(bool transparent) {}
+
 void WindowPortForShutdown::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {}
 
