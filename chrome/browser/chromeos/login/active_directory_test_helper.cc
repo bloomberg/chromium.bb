@@ -13,7 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"

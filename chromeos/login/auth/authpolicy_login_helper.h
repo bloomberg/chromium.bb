@@ -12,7 +12,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 
 namespace chromeos {
 

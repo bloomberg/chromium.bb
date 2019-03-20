@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_AUTH_POLICY_CLIENT_H_
-#define CHROMEOS_DBUS_AUTH_POLICY_CLIENT_H_
+#ifndef CHROMEOS_DBUS_AUTH_POLICY_AUTH_POLICY_CLIENT_H_
+#define CHROMEOS_DBUS_AUTH_POLICY_AUTH_POLICY_CLIENT_H_
 
 #include <string>
 
@@ -100,4 +100,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) AuthPolicyClient : public DBusClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_AUTH_POLICY_CLIENT_H_
+#endif  // CHROMEOS_DBUS_AUTH_POLICY_AUTH_POLICY_CLIENT_H_

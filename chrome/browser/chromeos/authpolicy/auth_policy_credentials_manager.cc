@@ -27,7 +27,7 @@
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"

@@ -14,7 +14,7 @@
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
