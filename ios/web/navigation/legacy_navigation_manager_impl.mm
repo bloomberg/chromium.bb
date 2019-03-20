@@ -120,6 +120,16 @@ void LegacyNavigationManagerImpl::CommitPendingItem(
   }
 }
 
+std::unique_ptr<web::NavigationItemImpl>
+LegacyNavigationManagerImpl::ReleasePendingItem() {
+  return [session_controller_ releasePendingItem];
+}
+
+void LegacyNavigationManagerImpl::SetPendingItem(
+    std::unique_ptr<web::NavigationItemImpl> item) {
+  [session_controller_ setPendingItem:std::move(item)];
+}
+
 BrowserState* LegacyNavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }

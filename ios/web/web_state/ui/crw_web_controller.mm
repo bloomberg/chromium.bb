@@ -1382,7 +1382,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       // Transfer pending item ownership to NavigationContext.
       // NavigationManager owns pending item after navigation is requested and
       // until navigation context is created.
-      context->SetItem([self.sessionController releasePendingItem]);
+      context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
     }
   } else {
     context = [self registerLoadRequestForURL:URL
@@ -1926,7 +1926,7 @@ GURL URLEscapedForHistory(const GURL& url) {
         !(_webUIManager &&
           web::GetWebClient()->IsAppSpecificURL(context->GetUrl()))) {
       if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
-        context->SetItem([self.sessionController releasePendingItem]);
+        context->SetItem(self.navigationManagerImpl->ReleasePendingItem());
       }
     }
   }
@@ -3733,7 +3733,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       // This NavigationContext will be destroyed, so return pending item
       // ownership to NavigationManager. NavigationContext can only own pending
       // item until the navigation has committed or aborted.
-      [self.sessionController setPendingItem:context->ReleaseItem()];
+      self.navigationManagerImpl->SetPendingItem(context->ReleaseItem());
     }
     web::NavigationItemImpl* item =
         web::GetItemWithUniqueID(self.navigationManagerImpl, context);

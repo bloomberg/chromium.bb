@@ -2759,6 +2759,19 @@ TEST_P(NavigationManagerTest, UpdateCurrentItemForReplaceState) {
             last_committed_item->GetReferrer().url);
 }
 
+// Tests SetPendingItem() and ReleasePendingItem() methods.
+TEST_P(NavigationManagerTest, TransferPendingItem) {
+  auto item = std::make_unique<web::NavigationItemImpl>();
+  web::NavigationItemImpl* item_ptr = item.get();
+
+  navigation_manager()->SetPendingItem(std::move(item));
+  EXPECT_EQ(item_ptr, navigation_manager()->GetPendingItem());
+
+  auto extracted_item = navigation_manager()->ReleasePendingItem();
+  EXPECT_FALSE(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(item_ptr, extracted_item.get());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,
