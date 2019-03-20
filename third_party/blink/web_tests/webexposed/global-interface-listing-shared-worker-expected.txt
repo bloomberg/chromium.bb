@@ -3461,7 +3461,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter connection
 [Worker]     getter deviceMemory
 [Worker]     getter hardwareConcurrency
-[Worker]     getter idle
 [Worker]     getter language
 [Worker]     getter languages
 [Worker]     getter locks
