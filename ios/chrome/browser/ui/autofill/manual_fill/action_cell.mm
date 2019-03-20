@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -139,9 +140,11 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
   UIView* guide = self.contentView;
   self.grayLine = CreateGraySeparatorForContainer(guide);
 
-  self.titleButton = CreateButtonWithSelectorAndTarget(
-      @selector(userDidTapTitleButton:), self);
-  self.titleButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+  self.titleButton = [ManualFillCellButton buttonWithType:UIButtonTypeCustom];
+  [self.titleButton addTarget:self
+                       action:@selector(userDidTapTitleButton:)
+             forControlEvents:UIControlEventTouchUpInside];
+
   [self.contentView addSubview:self.titleButton];
 
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =

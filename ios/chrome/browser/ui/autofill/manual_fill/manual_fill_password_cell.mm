@@ -115,7 +115,7 @@ static const CGFloat NoMultiplier = 1.0;
 
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
-  [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
+  [self.usernameButton setTitleColor:UIColor.cr_manualFillChipDarkTextColor
                             forState:UIControlStateNormal];
 
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
@@ -205,8 +205,7 @@ static const CGFloat NoMultiplier = 1.0;
   self.dynamicConstraints = [[NSMutableArray alloc] init];
   AppendVerticalConstraintsSpacingForViews(
       self.dynamicConstraints, verticalLeadViews, self.contentView,
-      topSystemSpacingMultiplier, MiddleSystemSpacingMultiplier,
-      bottomSystemSpacingMultiplier);
+      topSystemSpacingMultiplier, 1, bottomSystemSpacingMultiplier);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
@@ -216,8 +215,7 @@ static const CGFloat NoMultiplier = 1.0;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* guide = self.contentView;
-  self.grayLine = CreateGraySeparatorForContainer(guide);
+  self.grayLine = CreateGraySeparatorForContainer(self.contentView);
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =
       [[NSMutableArray alloc] init];
 
@@ -226,20 +224,24 @@ static const CGFloat NoMultiplier = 1.0;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
   AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.siteNameLabel ], guide,
-                                      ButtonHorizontalMargin);
+                                      @[ self.siteNameLabel ], self.contentView,
+                                      kButtonHorizontalMargin);
 
-  self.usernameButton = CreateButtonWithSelectorAndTarget(
+  self.usernameButton = CreateChipWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.usernameButton ], guide);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.usernameButton ], self.grayLine,
+      kChipsHorizontalMargin,
+      AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
-  self.passwordButton = CreateButtonWithSelectorAndTarget(
+  self.passwordButton = CreateChipWithSelectorAndTarget(
       @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.passwordButton ], guide);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.passwordButton ], self.grayLine,
+      kChipsHorizontalMargin,
+      AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
   [NSLayoutConstraint activateConstraints:staticConstraints];
 }

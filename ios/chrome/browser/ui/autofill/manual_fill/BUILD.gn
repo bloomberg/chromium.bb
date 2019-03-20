@@ -76,6 +76,8 @@ source_set("manual_fill_ui") {
     "card_list_delegate.h",
     "card_view_controller.h",
     "card_view_controller.mm",
+    "chip_button.h",
+    "chip_button.mm",
     "credential.h",
     "credential.mm",
     "credit_card.h",

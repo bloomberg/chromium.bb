@@ -186,8 +186,9 @@
     self.cardholderButton.hidden = YES;
   }
 
-  AppendVerticalConstraintsSpacingForViews(self.dynamicConstraints,
-                                           verticalViews, self.contentView);
+  AppendVerticalConstraintsSpacingForViews(
+      self.dynamicConstraints, verticalViews, self.contentView,
+      TopSystemSpacingMultiplier, 1, BottomSystemSpacingMultiplier);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
@@ -197,8 +198,7 @@
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* guide = self.contentView;
-  CreateGraySeparatorForContainer(guide);
+  UIView* grayLine = CreateGraySeparatorForContainer(self.contentView);
 
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =
       [[NSMutableArray alloc] init];
@@ -210,35 +210,40 @@
   self.cardIcon.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:self.cardIcon];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.cardLabel, self.cardIcon ], guide,
-      ButtonHorizontalMargin, AppendConstraintsHorizontalExtraSpaceLeft);
+      staticConstraints, @[ self.cardLabel, self.cardIcon ], self.contentView,
+      kButtonHorizontalMargin, AppendConstraintsHorizontalExtraSpaceLeft);
   [NSLayoutConstraint activateConstraints:@[
     [self.cardIcon.bottomAnchor
         constraintEqualToAnchor:self.cardLabel.firstBaselineAnchor]
   ]];
 
   self.cardNumberButton =
-      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
+      CreateChipWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
   [self.contentView addSubview:self.cardNumberButton];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.cardNumberButton ], guide);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.cardNumberButton ], grayLine,
+      kChipsHorizontalMargin,
+      AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
   self.cardholderButton =
-      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
+      CreateChipWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.cardholderButton];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.cardholderButton ], guide);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.cardholderButton ], grayLine,
+      kChipsHorizontalMargin,
+      AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
   // Expiration line.
   self.expirationMonthButton =
-      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
+      CreateChipWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.expirationMonthButton];
   self.expirationYearButton =
-      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
+      CreateChipWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.expirationYearButton];
   UILabel* expirationSeparatorLabel = CreateLabel();
   expirationSeparatorLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  [expirationSeparatorLabel setTextColor:UIColor.cr_manualFillChipColor];
   expirationSeparatorLabel.text = @"/";
   [self.contentView addSubview:expirationSeparatorLabel];
   AppendHorizontalConstraintsForViews(
@@ -247,8 +252,9 @@
         self.expirationMonthButton, expirationSeparatorLabel,
         self.expirationYearButton
       ],
-      guide, 0, AppendConstraintsHorizontalSyncBaselines);
-
+      grayLine, kChipsHorizontalMargin,
+      AppendConstraintsHorizontalSyncBaselines |
+          AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
   // Without this set, Voice Over will read the content vertically instead of
   // horizontally.
