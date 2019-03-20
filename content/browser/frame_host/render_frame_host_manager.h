@@ -292,13 +292,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DidChangeOpener(int opener_routing_id,
                        SiteInstance* source_site_instance);
 
-  // Creates and initializes a RenderFrameHost. If |view_routing_id_ptr|
-  // is not nullptr it will be set to the routing id of the view associated with
-  // the frame.
-  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(
-      SiteInstance* instance,
-      bool hidden,
-      int* view_routing_id_ptr);
+  // Creates and initializes a RenderFrameHost.
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
+                                                         bool hidden);
 
   // Helper method to create and initialize a RenderFrameProxyHost and return
   // its routing id.
