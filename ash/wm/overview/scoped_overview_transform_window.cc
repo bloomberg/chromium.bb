@@ -66,21 +66,6 @@ ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType(
   return ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
 }
 
-OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
-    OverviewSession::EnterExitOverviewType type) {
-  // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
-  // Fade out the minimized window without animation if switch from tablet mode
-  // to clamshell mode.
-  if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
-    return Shell::Get()
-                   ->tablet_mode_controller()
-                   ->IsTabletModeWindowManagerEnabled()
-               ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
-               : OVERVIEW_ANIMATION_NONE;
-  }
-  return OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT;
-}
-
 }  // namespace
 
 class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
@@ -569,6 +554,26 @@ void ScopedOverviewTransformWindow::CreateMirrorWindowForMinimizedState() {
   FadeInWidgetAndMaybeSlideOnEnter(
       minimized_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
       /*slide=*/false);
+}
+
+OverviewAnimationType
+ScopedOverviewTransformWindow::GetExitOverviewAnimationTypeForMinimizedWindow(
+    OverviewSession::EnterExitOverviewType type) {
+  // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
+  // Fade out the minimized window without animation if switch from tablet mode
+  // to clamshell mode.
+  if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
+    return Shell::Get()
+                   ->tablet_mode_controller()
+                   ->IsTabletModeWindowManagerEnabled()
+               ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
+               : OVERVIEW_ANIMATION_NONE;
+  }
+
+  DCHECK(overview_item_);
+  return overview_item_->should_animate_when_exiting()
+             ? OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_FADE_OUT
+             : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
 }  // namespace ash
