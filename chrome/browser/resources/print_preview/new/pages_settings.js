@@ -374,14 +374,6 @@ Polymer({
   },
 
   /**
-   * @param {!Event} e Click event
-   * @private
-   */
-  onCustomInputClick_: function(e) {
-    e.stopPropagation();
-  },
-
-  /**
    * @return {string} Gets message to show as hint.
    * @private
    */
