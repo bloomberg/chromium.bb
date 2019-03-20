@@ -165,6 +165,10 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
       new_event_init->setBubbles(false);
       UpdateCommonPointerEventInit(event, last_global_position, view,
                                    new_event_init);
+      UIEventWithKeyState::SetFromWebInputEventModifiers(
+          new_event_init,
+          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
+
       last_global_position = event.PositionInScreen();
 
       PointerEvent* pointer_event =
@@ -384,6 +388,12 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
   pointer_event_init->setView(pointer_event->view());
 
   SetEventSpecificFields(pointer_event_init, type);
+
+  if (UIEventWithKeyState* key_state_event =
+          FindEventWithKeyState(pointer_event)) {
+    UIEventWithKeyState::SetFromWebInputEventModifiers(
+        pointer_event_init, key_state_event->GetModifiers());
+  }
 
   if (related_target)
     pointer_event_init->setRelatedTarget(related_target);
