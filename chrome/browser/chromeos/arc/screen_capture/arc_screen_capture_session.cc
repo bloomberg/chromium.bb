@@ -284,9 +284,10 @@ void ArcScreenCaptureSession::OnDesktopCaptured(
     return;
 
   // Get the source texture
-  GLuint src_texture = gl_helper_->ConsumeMailboxToTexture(
-      result->GetTextureResult()->mailbox,
-      result->GetTextureResult()->sync_token);
+  gl->WaitSyncTokenCHROMIUM(
+      result->GetTextureResult()->sync_token.GetConstData());
+  GLuint src_texture = gl->CreateAndConsumeTextureCHROMIUM(
+      result->GetTextureResult()->mailbox.name);
   std::unique_ptr<viz::SingleReleaseCallback> release_callback =
       result->TakeTextureOwnership();
 
