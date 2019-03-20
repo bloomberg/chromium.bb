@@ -50,6 +50,10 @@
 #include <ui/events/blink/web_input_event.h>
 #include <ui/views/win/windows_session_change_observer.h>
 
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+#include <ui/base/win/rubberband_windows.h>
+#endif
+
 #include <windowsx.h>
 
 namespace {
@@ -191,6 +195,10 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
         std::move(widgetInputHandlerHostRequest), true);
 
     updateFocus();
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+    updateAltDragRubberBanding();
+#endif
 
     //
     d_shown = true;
@@ -972,6 +980,19 @@ void RenderWebView::onSessionChange(WPARAM status_code)
         forceRedrawWindow(10);
 }
 
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+void RenderWebView::updateAltDragRubberBanding()
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    dispatchToRenderWidget(
+        ViewMsg_EnableAltDragRubberbanding(d_renderViewRoutingId,
+            d_enableAltDragRubberBanding));
+}
+#endif
+
 void RenderWebView::forceRedrawWindow(int attempts)
 {
     if (ui::IsWorkstationLocked()) {
@@ -1251,6 +1272,9 @@ void RenderWebView::replaceMisspelledRange(const StringRef& text)
 void RenderWebView::enableAltDragRubberbanding(bool enabled)
 {
     DCHECK(Statics::isInApplicationMainThread());
+
+    d_enableAltDragRubberBanding = enabled;
+    updateAltDragRubberBanding();
 }
 
 bool RenderWebView::forceStartRubberbanding(int x, int y)
@@ -1526,6 +1550,10 @@ void RenderWebView::notifyRoutingId(int id)
         std::move(widgetInputHandlerHostRequest), true);
 
     updateFocus();
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+    updateAltDragRubberBanding();
+#endif
 }
 
 // IPC::Listener overrideds:
@@ -1562,6 +1590,13 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
         // Native tooltips:
         IPC_MESSAGE_HANDLER(WidgetHostMsg_SetTooltipText,
             OnSetTooltipText)
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+        // Rubber band selection:
+        IPC_MESSAGE_HANDLER(ViewHostMsg_HideRubberbandRect,
+            OnHideRubberbandRect)
+        IPC_MESSAGE_HANDLER(ViewHostMsg_SetRubberbandRect,
+            OnSetRubberbandRect)
+#endif
     IPC_END_MESSAGE_MAP()
 
     return handled;
@@ -2143,6 +2178,23 @@ void RenderWebView::OnSetTooltipText(
     d_tooltipText = tooltip_text;
     updateTooltip();
 }
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+// Rubber band selection:
+void RenderWebView::OnHideRubberbandRect()
+{
+    d_rubberbandOutline.reset();
+}
+
+void RenderWebView::OnSetRubberbandRect(const gfx::Rect& rect)
+{
+    if (!d_rubberbandOutline.get()) {
+        d_rubberbandOutline.reset(new ui::RubberbandOutline());
+    }
+
+    d_rubberbandOutline->SetRect(d_hwnd.get(), rect.ToRECT());
+}
+#endif
 
 }  // close namespace blpwtk2
 
