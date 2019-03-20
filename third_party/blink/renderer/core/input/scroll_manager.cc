@@ -665,8 +665,10 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
   }
 
   ClearGestureScrollState();
+
   if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled())
-    frame_->GetEventHandler().RecomputeMouseHoverState();
+    frame_->GetEventHandler().MarkHoverStateDirty();
+
   return WebInputEventResult::kNotHandled;
 }
 

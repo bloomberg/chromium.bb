@@ -136,6 +136,7 @@ void MouseEventManager::Clear() {
   mouse_down_ = WebMouseEvent();
   svg_pan_ = false;
   drag_start_pos_ = LayoutPoint();
+  hover_state_dirty_ = false;
   fake_mouse_move_event_timer_.Stop();
   ResetDragSource();
   ClearDragDataTransfer();
@@ -369,6 +370,13 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
   RecomputeMouseHoverState();
 }
 
+void MouseEventManager::RecomputeMouseHoverStateIfNeeded() {
+  if (HoverStateDirty()) {
+    RecomputeMouseHoverState();
+    hover_state_dirty_ = false;
+  }
+}
+
 void MouseEventManager::RecomputeMouseHoverState() {
   if (is_mouse_position_unknown_)
     return;
@@ -404,6 +412,18 @@ void MouseEventManager::RecomputeMouseHoverState() {
 
 void MouseEventManager::CancelFakeMouseMoveEvent() {
   fake_mouse_move_event_timer_.Stop();
+}
+
+void MouseEventManager::MarkHoverStateDirty() {
+  DCHECK(RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled());
+  DCHECK(frame_->IsLocalRoot());
+  hover_state_dirty_ = true;
+}
+
+bool MouseEventManager::HoverStateDirty() {
+  DCHECK(RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled());
+  DCHECK(frame_->IsLocalRoot());
+  return hover_state_dirty_;
 }
 
 void MouseEventManager::SetElementUnderMouse(

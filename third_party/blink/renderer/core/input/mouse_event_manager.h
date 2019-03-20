@@ -155,7 +155,10 @@ class CORE_EXPORT MouseEventManager final
 
   bool FakeMouseMovePending() const;
 
+  void RecomputeMouseHoverStateIfNeeded();
   void RecomputeMouseHoverState();
+
+  void MarkHoverStateDirty();
 
  private:
   class MouseEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
@@ -203,6 +206,7 @@ class CORE_EXPORT MouseEventManager final
   DataTransfer* CreateDraggingDataTransfer() const;
 
   void ResetDragSource();
+  bool HoverStateDirty();
 
   // Implementations of |SynchronousMutationObserver|
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
@@ -248,6 +252,11 @@ class CORE_EXPORT MouseEventManager final
   WebMouseEvent mouse_down_;
 
   LayoutPoint drag_start_pos_;
+  // This indicates that whether we should update the hover at each begin
+  // frame. This is set to be true after the compositor or main thread scroll
+  // ends, and at each begin frame, we will dispatch a fake mouse move event to
+  // update hover when this is true.
+  bool hover_state_dirty_ = false;
 
   TaskRunnerTimer<MouseEventManager> fake_mouse_move_event_timer_;
 
