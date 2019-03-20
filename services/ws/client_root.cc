@@ -14,6 +14,7 @@
 #include "services/ws/client_change_tracker.h"
 #include "services/ws/common/switches.h"
 #include "services/ws/proxy_window.h"
+#include "services/ws/top_level_proxy_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
 #include "ui/aura/env.h"
@@ -74,6 +75,9 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
 }
 
 ClientRoot::~ClientRoot() {
+  if (force_visible_)
+    force_visible_->OnClientRootDestroyed();
+
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
   window_->RemoveObserver(this);
   if (window_->GetHost())
@@ -101,6 +105,11 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
   window_->SetEmbedFrameSinkId(frame_sink_id);
 
   UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
+}
+
+void ClientRoot::OnForceVisibleDestroyed() {
+  force_visible_ = nullptr;
+  NotifyClientOfVisibilityChange();
 }
 
 void ClientRoot::GenerateLocalSurfaceIdIfNecessary() {
@@ -248,6 +257,17 @@ void ClientRoot::NotifyClientOfDisplayIdChange() {
       window_->GetHost()->GetDisplayId());
 }
 
+std::unique_ptr<ScopedForceVisible> ClientRoot::ForceWindowVisible() {
+  // At this time there is only a need for a single force visible.
+  DCHECK(!force_visible_);
+  // Use WrapUnique() as constructor is private.
+  std::unique_ptr<ScopedForceVisible> force_visible =
+      base::WrapUnique(new ScopedForceVisible(this));
+  force_visible_ = force_visible.get();
+  NotifyClientOfVisibilityChange();
+  return force_visible;
+}
+
 void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
   GenerateLocalSurfaceIdIfNecessary();
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
@@ -292,8 +312,9 @@ void ClientRoot::NotifyClientOfNewBounds() {
       ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation());
 }
 
-void ClientRoot::NotifyClientOfVisibilityChange(bool new_value) {
-  if (is_top_level_ || last_visible_ == new_value)
+void ClientRoot::NotifyClientOfVisibilityChange(base::Optional<bool> visible) {
+  const bool new_value = visible.has_value() ? *visible : IsWindowVisible();
+  if (last_visible_ == new_value)
     return;
 
   last_visible_ = new_value;
@@ -309,6 +330,13 @@ void ClientRoot::OnPositionInRootChanged() {
   gfx::Rect bounds_in_screen = window_->GetBoundsInScreen();
   if (bounds_in_screen.origin() != last_bounds_.origin())
     NotifyClientOfNewBounds();
+}
+
+bool ClientRoot::IsWindowVisible() {
+  if (force_visible_)
+    return true;
+
+  return is_top_level_ ? window_->TargetVisibility() : window_->IsVisible();
 }
 
 void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
@@ -365,7 +393,7 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   else
     CheckForScaleFactorChange();
 
-  NotifyClientOfVisibilityChange(window_->IsVisible());
+  NotifyClientOfVisibilityChange();
 }
 
 void ClientRoot::OnWindowRemovingFromRootWindow(aura::Window* window,
@@ -393,11 +421,7 @@ void ClientRoot::OnDidMoveWindowToDisplay(aura::Window* window) {
 }
 
 void ClientRoot::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
-  if (!is_top_level_ &&
-      !window_tree_->property_change_tracker_->IsProcessingChangeForWindow(
-          window, ClientChangeType::kVisibility)) {
-    NotifyClientOfVisibilityChange(window_->IsVisible());
-  }
+  NotifyClientOfVisibilityChange();
 }
 
 void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {

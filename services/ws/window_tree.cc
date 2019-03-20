@@ -1451,7 +1451,9 @@ void WindowTree::OnWindowDestroyed(aura::Window* window) {
 
 void WindowTree::OnWindowVisibilityChanging(aura::Window* window,
                                             bool visible) {
-  if (property_change_tracker_->IsProcessingChangeForWindow(
+  // Visibility changes for top-levels are handled by ClientRoot.
+  if (IsTopLevel(window) ||
+      property_change_tracker_->IsProcessingChangeForWindow(
           window, ClientChangeType::kVisibility)) {
     return;
   }
@@ -1551,7 +1553,9 @@ void WindowTree::NewTopLevelWindow(
   // This passes null for the mojom::WindowTreePtr because the client has
   // already been given the mojom::WindowTreePtr that is backed by this
   // WindowTree.
-  CreateClientRoot(top_level, is_top_level)->RegisterVizEmbeddingSupport();
+  ClientRoot* client_root = CreateClientRoot(top_level, is_top_level);
+  client_root->RegisterVizEmbeddingSupport();
+  proxy_window->top_level_proxy_window()->set_client_root(client_root);
   // Creating the ClientRoot should trigger setting a LocalSurfaceIdAllocation.
   DCHECK(proxy_window->local_surface_id_allocation());
   window_tree_client_->OnTopLevelCreated(

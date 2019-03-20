@@ -72,6 +72,10 @@ class ASH_EXPORT NonClientFrameController : public views::WidgetDelegate,
   // value provided by the associated window's aura::WindowDelegate::GetCursor.
   void StoreCursor(const ui::Cursor& cursor);
 
+  ws::TopLevelProxyWindow* top_level_proxy_window() {
+    return top_level_proxy_window_;
+  }
+
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
   bool CanResize() const override;

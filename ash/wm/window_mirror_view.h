@@ -9,6 +9,10 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/views/view.h"
 
 namespace aura {
@@ -19,12 +23,16 @@ namespace ui {
 class LayerTreeOwner;
 }
 
-namespace ash {
+namespace ws {
+class ScopedForceVisible;
+}
 
+namespace ash {
 namespace wm {
 
 // A view that mirrors the client area of a single (source) window.
-class ASH_EXPORT WindowMirrorView : public views::View {
+class ASH_EXPORT WindowMirrorView : public views::View,
+                                    public aura::EnvObserver {
  public:
   WindowMirrorView(aura::Window* source, bool trilinear_filtering_on_init);
   ~WindowMirrorView() override;
@@ -60,6 +68,11 @@ class ASH_EXPORT WindowMirrorView : public views::View {
   // coordinate space.
   gfx::Rect GetClientAreaBounds() const;
 
+  void ForceVisibilityAndOcclusionForProxyWindow();
+
+  // aura::EnvObserver:
+  void OnWindowOcclusionTrackingResumed() override;
+
   // The original window that is being represented by |this|.
   aura::Window* source_;
 
@@ -73,6 +86,14 @@ class ASH_EXPORT WindowMirrorView : public views::View {
   // True if trilinear filtering should be performed on the layer in
   // InitLayerOwner().
   bool trilinear_filtering_on_init_;
+
+  // These are used when mirroring a window from a remote client (a proxy
+  // window from the window-service).
+  std::unique_ptr<aura::WindowOcclusionTracker::ScopedForceVisible>
+      force_occlusion_tracker_visible_;
+  std::unique_ptr<ws::ScopedForceVisible> force_proxy_window_visible_;
+
+  ScopedObserver<aura::Env, aura::EnvObserver> env_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowMirrorView);
 };

@@ -24,6 +24,8 @@ class ClientRootTestHelper {
 
   aura::ClientSurfaceEmbedder* GetClientSurfaceEmbedder();
 
+  bool IsWindowForcedVisible();
+
  private:
   ClientRoot* client_root_;
 

@@ -40,7 +40,7 @@ class MockWindowDelegate : public test::ColorTestWindowDelegate {
   void SetName(const std::string& name) { window_->SetName(name); }
 
   void set_expectation(Window::OcclusionState occlusion_state,
-                       const SkRegion& occluded_region) {
+                       SkRegion occluded_region = SkRegion()) {
     expected_occlusion_state_ = occlusion_state;
     expected_occluded_region_ = occluded_region;
   }
@@ -2168,6 +2168,104 @@ TEST_F(WindowOcclusionTrackerTest, NativeWindowOcclusion) {
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
   host()->SetNativeWindowOcclusionState(Window::OcclusionState::VISIBLE);
   EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+TEST_F(WindowOcclusionTrackerTest, ScopedForceVisible) {
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  Window* window = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::HIDDEN, SkRegion());
+  window->Hide();
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Using ScopedForceVisible when the window is hidden should force it visible.
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  {
+    WindowOcclusionTracker::ScopedForceVisible force_visible(window);
+    EXPECT_FALSE(delegate_a->is_expecting_call());
+
+    // Destroying the ScopedForceVisible should return the window to hidden.
+    delegate_a->set_expectation(Window::OcclusionState::HIDDEN, SkRegion());
+  }
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleSiblingsIgnored) {
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  Window* window = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  CreateUntrackedWindow(gfx::Rect(0, 0, 100, 100), nullptr);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Using ScopedForceVisible when the window is occluded should force it
+  // visible.
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  {
+    WindowOcclusionTracker::ScopedForceVisible force_visible(window);
+    EXPECT_FALSE(delegate_a->is_expecting_call());
+
+    // Destroying the ScopedForceVisible should return the window to hidden.
+    delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  }
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleWithOccludedSibling) {
+  // Creates three windows, a parent with two children. Both children have
+  // the same bounds.
+  std::unique_ptr<WindowOcclusionTracker::ScopedPause>
+      pause_occlusion_tracking =
+          std::make_unique<WindowOcclusionTracker::ScopedPause>(
+              root_window()->env());
+  MockWindowDelegate* parent_delegate = new MockWindowDelegate();
+  Window* parent_window =
+      CreateTrackedWindow(parent_delegate, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(parent_delegate->is_expecting_call());
+  MockWindowDelegate* occluded_child_delegate = new MockWindowDelegate();
+  CreateTrackedWindow(occluded_child_delegate, gfx::Rect(0, 0, 10, 10),
+                      parent_window);
+  EXPECT_FALSE(occluded_child_delegate->is_expecting_call());
+  MockWindowDelegate* visible_child_delegate = new MockWindowDelegate();
+  CreateTrackedWindow(visible_child_delegate, gfx::Rect(0, 0, 10, 10),
+                      parent_window);
+  EXPECT_FALSE(visible_child_delegate->is_expecting_call());
+
+  // Initial state after creation.
+  parent_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  occluded_child_delegate->set_expectation(Window::OcclusionState::OCCLUDED);
+  visible_child_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  pause_occlusion_tracking.reset();
+  EXPECT_FALSE(parent_delegate->is_expecting_call());
+  EXPECT_FALSE(occluded_child_delegate->is_expecting_call());
+  EXPECT_FALSE(visible_child_delegate->is_expecting_call());
+
+  // Hiding the parent should result in all windows being hidden.
+  parent_delegate->set_expectation(Window::OcclusionState::HIDDEN);
+  occluded_child_delegate->set_expectation(Window::OcclusionState::HIDDEN);
+  visible_child_delegate->set_expectation(Window::OcclusionState::HIDDEN);
+  parent_window->Hide();
+  EXPECT_FALSE(parent_delegate->is_expecting_call());
+  EXPECT_FALSE(occluded_child_delegate->is_expecting_call());
+  EXPECT_FALSE(visible_child_delegate->is_expecting_call());
+
+  // Creating a ScopedForceVisible for the parent should return to the initial
+  // state.
+  parent_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  occluded_child_delegate->set_expectation(Window::OcclusionState::OCCLUDED);
+  visible_child_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  WindowOcclusionTracker::ScopedForceVisible force_visible(parent_window);
+  EXPECT_FALSE(parent_delegate->is_expecting_call());
+  EXPECT_FALSE(occluded_child_delegate->is_expecting_call());
+  EXPECT_FALSE(visible_child_delegate->is_expecting_call());
+
+  // Do another show, so that once the |force_visible| is destroyed the
+  // assertions in MockWindowDelegate aren't tripped.
+  parent_window->Show();
 }
 
 }  // namespace aura

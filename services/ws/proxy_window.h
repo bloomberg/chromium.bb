@@ -144,6 +144,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
       std::unique_ptr<DragDropDelegate> drag_drop_delegate);
 
   void SetTopLevelProxyWindow(std::unique_ptr<TopLevelProxyWindowImpl> window);
+  TopLevelProxyWindowImpl* top_level_proxy_window() {
+    return top_level_proxy_window_.get();
+  }
 
   // Returns an id useful for debugging. This returns the id from the client
   // that created the window, otherwise |frame_sink_id_|.

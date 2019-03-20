@@ -31,7 +31,7 @@ constexpr ui::LayerAnimationElement::AnimatableProperties
 // occlusion states before they become stable.
 //
 // TODO(fdoray): This can be changed to 2 once showing/hiding a WebContents
-// doesn't cause a call to Show()/Hide() on the aura::Window of a
+// doesn't cause a call to Show()/Hide() on the Window of a
 // RenderWidgetHostViewAura. https://crbug.com/827268
 constexpr int kMaxRecomputeOcclusion = 3;
 
@@ -47,7 +47,7 @@ bool WindowOrParentHasShape(Window* window) {
 // |parent_transform_relative_to_root| is the transform of |window->parent()|
 // relative to its root.
 gfx::Transform GetWindowTransformRelativeToRoot(
-    aura::Window* window,
+    Window* window,
     const gfx::Transform& parent_transform_relative_to_root) {
   if (window->IsRootWindow())
     return gfx::Transform();
@@ -70,7 +70,7 @@ gfx::Transform GetWindowTransformRelativeToRoot(
 // |transform_relative_to_root| is the transform of |window| relative to its
 // root. If |clipped_bounds| is not null, the returned bounds are clipped by it.
 SkIRect GetWindowBoundsInRootWindow(
-    aura::Window* window,
+    Window* window,
     const gfx::Transform& transform_relative_to_root,
     const SkIRect* clipped_bounds) {
   DCHECK(transform_relative_to_root.Preserves2dAxisAlignment());
@@ -107,8 +107,7 @@ WindowOcclusionTracker::ScopedExclude::~ScopedExclude() {
   Shutdown();
 }
 
-void WindowOcclusionTracker::ScopedExclude::OnWindowDestroying(
-    aura::Window* window) {
+void WindowOcclusionTracker::ScopedExclude::OnWindowDestroying(Window* window) {
   DCHECK_EQ(window_, window);
   Shutdown();
 }
@@ -117,6 +116,31 @@ void WindowOcclusionTracker::ScopedExclude::Shutdown() {
   if (window_) {
     window_->RemoveObserver(this);
     window_->env()->GetWindowOcclusionTracker()->Unexclude(window_);
+    window_ = nullptr;
+  }
+}
+
+WindowOcclusionTracker::ScopedForceVisible::ScopedForceVisible(Window* window)
+    : window_(window) {
+  window_->AddObserver(this);
+  window->env()->GetWindowOcclusionTracker()->ForceWindowVisible(window_);
+}
+
+WindowOcclusionTracker::ScopedForceVisible::~ScopedForceVisible() {
+  Shutdown();
+}
+
+void WindowOcclusionTracker::ScopedForceVisible::OnWindowDestroying(
+    Window* window) {
+  DCHECK_EQ(window_, window);
+  Shutdown();
+}
+
+void WindowOcclusionTracker::ScopedForceVisible::Shutdown() {
+  if (window_) {
+    window_->RemoveObserver(this);
+    window_->env()->GetWindowOcclusionTracker()->RemoveForceWindowVisible(
+        window_);
     window_ = nullptr;
   }
 }
@@ -186,7 +210,8 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
           Window* root_window = root_window_pair.first;
           if (root_window_pair.second.occlusion_state ==
               Window::OcclusionState::OCCLUDED) {
-            SetWindowAndDescendantsAreOccluded(root_window, true);
+            SetWindowAndDescendantsAreOccluded(
+                root_window, /* is_occluded */ true, root_window->IsVisible());
           } else {
             SkRegion occluded_region;
             RecomputeOcclusionImpl(root_window, gfx::Transform(), nullptr,
@@ -214,11 +239,10 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
       // Fallback to VISIBLE/HIDDEN if the maximum number of times that
       // occlusion can be recomputed was exceeded.
       if (exceeded_max_num_times_occlusion_recomputed) {
-        if (window->IsVisible()) {
+        if (WindowIsVisible(window))
           it.second.occlusion_state = Window::OcclusionState::VISIBLE;
-        } else {
+        else
           it.second.occlusion_state = Window::OcclusionState::HIDDEN;
-        }
         it.second.occluded_region = SkRegion();
       }
 
@@ -239,13 +263,19 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
     SkRegion* occluded_region) {
   DCHECK(window);
 
-  if (!window->IsVisible()) {
-    SetWindowAndDescendantsAreOccluded(window, true);
+  const bool force_visible = WindowIsForcedVisible(window);
+  // This does not use Window::IsVisible() as that returns the wrong thing for
+  // any ancestors that are forced visible.
+  const bool is_visible = force_visible || window->layer()->visible();
+  if (!is_visible) {
+    SetWindowAndDescendantsAreOccluded(window, /* is_occluded */ true,
+                                       /* is_parent_visible */ true);
     return false;
   }
 
   if (WindowIsAnimated(window) || WindowIsExcluded(window)) {
-    SetWindowAndDescendantsAreOccluded(window, false);
+    SetWindowAndDescendantsAreOccluded(window, /* is_occluded */ false,
+                                       /* is_parent_visible */ true);
     return true;
   }
 
@@ -256,39 +286,50 @@ bool WindowOcclusionTracker::RecomputeOcclusionImpl(
   if (!transform_relative_to_root.Preserves2dAxisAlignment()) {
     // For simplicity, windows that are not axis-aligned are considered
     // unoccluded and do not occlude other windows.
-    SetWindowAndDescendantsAreOccluded(window, false);
+    SetWindowAndDescendantsAreOccluded(window, /* is_occluded */ false,
+                                       /* is_parent_visible */ true);
     return true;
   }
-  const SkIRect window_bounds = GetWindowBoundsInRootWindow(
-      window, transform_relative_to_root, clipped_bounds);
+  const SkIRect window_bounds =
+      GetWindowBoundsInRootWindow(window, transform_relative_to_root,
+                                  force_visible ? nullptr : clipped_bounds);
 
   // Compute children occlusion states.
   const SkIRect* clipped_bounds_for_children =
       window->layer()->GetMasksToBounds() ? &window_bounds : clipped_bounds;
   bool has_visible_child = false;
   SkRegion occluded_region_before_traversing_children = *occluded_region;
+  // Windows that are forced visible are always considered visible, so have no
+  // clip.
+  SkRegion region_for_forced_visible_windows;
+  SkRegion* occluded_region_for_children =
+      force_visible ? &region_for_forced_visible_windows : occluded_region;
   for (auto* child : base::Reversed(window->children())) {
-    has_visible_child |=
-        RecomputeOcclusionImpl(child, transform_relative_to_root,
-                               clipped_bounds_for_children, occluded_region);
+    has_visible_child |= RecomputeOcclusionImpl(
+        child, transform_relative_to_root, clipped_bounds_for_children,
+        occluded_region_for_children);
   }
 
   // Window is fully occluded.
-  if (occluded_region->contains(window_bounds) && !has_visible_child) {
-    SetOccluded(window, true, SkRegion());
+  if (!force_visible && occluded_region->contains(window_bounds) &&
+      !has_visible_child) {
+    SetOccluded(window, /* is_occluded */ true, /* is_parent_visible */ true,
+                SkRegion());
     return false;
   }
 
-  // Window is partially occluded or unoccluded.
-  SetOccluded(window, false, occluded_region_before_traversing_children);
+  // Window is partially occluded or unoccluded. Windows that are forced visible
+  // are considered completely visible (so they get an empty SkRegion()).
+  SetOccluded(
+      window, false, /* is_parent_visible */ true,
+      force_visible ? SkRegion() : occluded_region_before_traversing_children);
 
-  if (VisibleWindowIsOpaque(window))
+  if (!force_visible && VisibleWindowIsOpaque(window))
     occluded_region->op(window_bounds, SkRegion::kUnion_Op);
   return true;
 }
 
 bool WindowOcclusionTracker::VisibleWindowIsOpaque(Window* window) const {
-  DCHECK(window->IsVisible());
   DCHECK(window->layer());
   return !window->transparent() && WindowHasContent(window) &&
          window->layer()->GetCombinedOpacity() == 1.0f &&
@@ -337,14 +378,18 @@ bool WindowOcclusionTracker::MaybeObserveAnimatedWindow(Window* window) {
 
 void WindowOcclusionTracker::SetWindowAndDescendantsAreOccluded(
     Window* window,
-    bool is_occluded) {
-  SetOccluded(window, is_occluded, SkRegion());
+    bool is_occluded,
+    bool is_parent_visible) {
+  const bool is_visible = WindowIsForcedVisible(window) ||
+                          (is_parent_visible && window->layer()->visible());
+  SetOccluded(window, is_occluded, is_visible, SkRegion());
   for (Window* child_window : window->children())
-    SetWindowAndDescendantsAreOccluded(child_window, is_occluded);
+    SetWindowAndDescendantsAreOccluded(child_window, is_occluded, is_visible);
 }
 
 void WindowOcclusionTracker::SetOccluded(Window* window,
                                          bool is_occluded,
+                                         bool is_parent_visible,
                                          const SkRegion& occluded_region) {
   auto tracked_window = tracked_windows_.find(window);
   if (tracked_window == tracked_windows_.end())
@@ -353,7 +398,9 @@ void WindowOcclusionTracker::SetOccluded(Window* window,
   // Set the occluded region of the window.
   tracked_window->second.occluded_region = occluded_region;
 
-  if (!window->IsVisible())
+  const bool is_visible = WindowIsForcedVisible(window) ||
+                          (is_parent_visible && window->layer()->visible());
+  if (!is_visible)
     tracked_window->second.occlusion_state = Window::OcclusionState::HIDDEN;
   else if (is_occluded)
     tracked_window->second.occlusion_state = Window::OcclusionState::OCCLUDED;
@@ -375,6 +422,24 @@ bool WindowOcclusionTracker::WindowIsAnimated(Window* window) const {
 
 bool WindowOcclusionTracker::WindowIsExcluded(Window* window) const {
   return base::ContainsKey(excluded_windows_, window);
+}
+
+bool WindowOcclusionTracker::WindowIsVisible(Window* window) const {
+  if (forced_visible_count_map_.empty())
+    return window->IsVisible();
+  Window* w = window;
+  Window* last = w;
+  while (w) {
+    if (!w->layer()->visible() && !WindowIsForcedVisible(window))
+      return false;
+    last = w;
+    w = w->parent();
+  }
+  return last->IsRootWindow();
+}
+
+bool WindowOcclusionTracker::WindowIsForcedVisible(Window* window) const {
+  return forced_visible_count_map_.count(window) > 0;
 }
 
 template <typename Predicate>
@@ -414,7 +479,7 @@ void WindowOcclusionTracker::MarkRootWindowStateAsDirty(
   root_window_state->dirty = true;
 }
 
-bool WindowOcclusionTracker::MarkRootWindowAsDirty(aura::Window* root_window) {
+bool WindowOcclusionTracker::MarkRootWindowAsDirty(Window* root_window) {
   auto root_window_state_it = root_windows_.find(root_window);
   if (root_window_state_it == root_windows_.end())
     return false;
@@ -430,7 +495,7 @@ bool WindowOcclusionTracker::WindowOrParentIsAnimated(Window* window) const {
 
 bool WindowOcclusionTracker::WindowOrDescendantIsTrackedAndVisible(
     Window* window) const {
-  if (!window->IsVisible())
+  if (!WindowIsVisible(window))
     return false;
   if (WindowIsTracked(window))
     return true;
@@ -452,7 +517,7 @@ bool WindowOcclusionTracker::WindowOrDescendantIsOpaque(
       parent_window_is_opaque &&
       (assume_window_opaque || window->layer()->opacity() == 1.0f);
 
-  if (!window->IsVisible() || !window->layer() || !window_is_opaque ||
+  if (!WindowIsVisible(window) || !window->layer() || !window_is_opaque ||
       WindowIsAnimated(window)) {
     return false;
   }
@@ -472,7 +537,7 @@ bool WindowOcclusionTracker::WindowOpacityChangeMayAffectOcclusionStates(
   // other windows in the tree if it is visible and not animated (animated
   // windows aren't considered in occlusion computations), unless it is
   // excluded.
-  return window->IsVisible() && !WindowOrParentIsAnimated(window) &&
+  return WindowIsVisible(window) && !WindowOrParentIsAnimated(window) &&
          !WindowIsExcluded(window);
 }
 
@@ -558,7 +623,7 @@ void WindowOcclusionTracker::Exclude(Window* window) {
   // introduce the count.
   DCHECK(!WindowIsExcluded(window));
   excluded_windows_.insert(window);
-  if (window->IsVisible()) {
+  if (WindowIsVisible(window)) {
     if (MarkRootWindowAsDirty(window->GetRootWindow()))
       MaybeComputeOcclusion();
   }
@@ -567,8 +632,27 @@ void WindowOcclusionTracker::Exclude(Window* window) {
 void WindowOcclusionTracker::Unexclude(Window* window) {
   DCHECK(WindowIsExcluded(window));
   excluded_windows_.erase(window);
-  if (window->IsVisible()) {
+  if (WindowIsVisible(window)) {
     if (MarkRootWindowAsDirty(window->GetRootWindow()))
+      MaybeComputeOcclusion();
+  }
+}
+
+void WindowOcclusionTracker::ForceWindowVisible(Window* window) {
+  if (forced_visible_count_map_[window]++ == 0) {
+    Window* root_window = window->GetRootWindow();
+    if (root_window && MarkRootWindowAsDirty(root_window))
+      MaybeComputeOcclusion();
+  }
+}
+
+void WindowOcclusionTracker::RemoveForceWindowVisible(Window* window) {
+  auto iter = forced_visible_count_map_.find(window);
+  DCHECK(iter != forced_visible_count_map_.end());
+  if (--iter->second == 0u) {
+    forced_visible_count_map_.erase(iter);
+    Window* root_window = window->GetRootWindow();
+    if (root_window && MarkRootWindowAsDirty(root_window))
       MaybeComputeOcclusion();
   }
 }
@@ -616,7 +700,7 @@ void WindowOcclusionTracker::OnWindowVisibilityChanged(Window* window,
     // A child isn't visible when its parent isn't IsVisible(). Therefore, there
     // is no need to compute occlusion when Show() or Hide() is called on a
     // window with a hidden parent.
-    return (!window->parent() || window->parent()->IsVisible()) &&
+    return (!window->parent() || WindowIsVisible(window->parent())) &&
            !WindowOrParentIsAnimated(window);
   });
 }
@@ -720,7 +804,7 @@ void WindowOcclusionTracker::OnWindowLayerRecreated(Window* window) {
 
 void WindowOcclusionTracker::OnOcclusionStateChanged(
     WindowTreeHost* host,
-    aura::Window::OcclusionState new_state) {
+    Window::OcclusionState new_state) {
   UMA_HISTOGRAM_ENUMERATION("WindowOcclusionChanged", new_state);
   Window* root_window = host->window();
   auto root_window_state_it = root_windows_.find(root_window);

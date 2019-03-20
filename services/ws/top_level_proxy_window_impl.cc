@@ -4,6 +4,7 @@
 
 #include "services/ws/top_level_proxy_window_impl.h"
 
+#include "services/ws/client_root.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 
 namespace ws {
@@ -26,6 +27,22 @@ void TopLevelProxyWindowImpl::OnWindowResizeLoopEnded() {
 
 void TopLevelProxyWindowImpl::RequestClose() {
   window_tree_client_->RequestClose(window_transport_id_);
+}
+
+std::unique_ptr<ScopedForceVisible> TopLevelProxyWindowImpl::ForceVisible() {
+  return client_root_->ForceWindowVisible();
+}
+
+ScopedForceVisible::~ScopedForceVisible() {
+  if (client_root_)
+    client_root_->OnForceVisibleDestroyed();
+}
+
+ScopedForceVisible::ScopedForceVisible(ClientRoot* client_root)
+    : client_root_(client_root) {}
+
+void ScopedForceVisible::OnClientRootDestroyed() {
+  client_root_ = nullptr;
 }
 
 }  // namespace ws
