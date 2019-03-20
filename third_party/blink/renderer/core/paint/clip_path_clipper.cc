@@ -82,7 +82,7 @@ base::Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
   FloatRect reference_box = LocalReferenceBox(object);
   ClipPathOperation& clip_path = *object.StyleRef().ClipPath();
   if (clip_path.GetType() == ClipPathOperation::SHAPE) {
-    ShapeClipPathOperation& shape = ToShapeClipPathOperation(clip_path);
+    ShapeClipPathOperation& shape = To<ShapeClipPathOperation>(clip_path);
     if (!shape.IsValid())
       return base::nullopt;
     FloatRect bounding_box = shape.GetPath(reference_box).BoundingRect();
@@ -117,7 +117,7 @@ static bool IsClipPathOperationValid(
     const LayoutObject& search_scope,
     LayoutSVGResourceClipper*& resource_clipper) {
   if (clip_path.GetType() == ClipPathOperation::SHAPE) {
-    if (!ToShapeClipPathOperation(clip_path).IsValid())
+    if (!To<ShapeClipPathOperation>(clip_path).IsValid())
       return false;
   } else {
     DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
@@ -249,7 +249,7 @@ base::Optional<Path> ClipPathClipper::PathBasedClip(
   }
 
   DCHECK_EQ(clip_path.GetType(), ClipPathOperation::SHAPE);
-  auto& shape = ToShapeClipPathOperation(clip_path);
+  auto& shape = To<ShapeClipPathOperation>(clip_path);
   return base::Optional<Path>(shape.GetPath(reference_box));
 }
 

@@ -37,7 +37,7 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
         return nullptr;
       if (style.ClipPath()->GetType() != ClipPathOperation::SHAPE)
         return nullptr;
-      return ToShapeClipPathOperation(style.ClipPath())->GetBasicShape();
+      return To<ShapeClipPathOperation>(style.ClipPath())->GetBasicShape();
     default:
       NOTREACHED();
       return nullptr;
