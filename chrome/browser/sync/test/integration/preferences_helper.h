@@ -63,6 +63,11 @@ void ChangeStringPref(int index,
                       const char* pref_name,
                       const std::string& new_value);
 
+// Clears the value of the preference with name |pref_name| in the profile with
+// index |index|. Also changes its value in |verifier| if DisableVerifier()
+// hasn't been called.
+void ClearPref(int index, const char* pref_name);
+
 // Changes the value of the file path preference with name |pref_name| in the
 // profile with index |index| to |new_value|. Also changes its value in
 // |verifier| if DisableVerifier() hasn't been called.
@@ -169,6 +174,15 @@ class IntegerPrefMatchChecker : public PrefMatchChecker {
 class StringPrefMatchChecker : public PrefMatchChecker {
  public:
   explicit StringPrefMatchChecker(const char* path);
+
+  // PrefMatchChecker implementation.
+  bool IsExitConditionSatisfied() override;
+};
+
+// Matcher that blocks until the specified pref is cleared on all clients.
+class ClearedPrefMatchChecker : public PrefMatchChecker {
+ public:
+  explicit ClearedPrefMatchChecker(const char* path);
 
   // PrefMatchChecker implementation.
   bool IsExitConditionSatisfied() override;

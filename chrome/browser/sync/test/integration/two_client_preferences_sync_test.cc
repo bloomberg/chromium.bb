@@ -25,6 +25,7 @@ using preferences_helper::ChangeBooleanPref;
 using preferences_helper::ChangeIntegerPref;
 using preferences_helper::ChangeListPref;
 using preferences_helper::ChangeStringPref;
+using preferences_helper::ClearPref;
 using preferences_helper::GetPrefs;
 using preferences_helper::GetRegistry;
 using testing::Eq;
@@ -133,6 +134,16 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(StringPref)) {
 
   ChangeStringPref(0, prefs::kHomePage, "http://news.google.com");
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(ClearPref)) {
+  ASSERT_TRUE(SetupSync());
+  ChangeStringPref(0, prefs::kHomePage, "http://news.google.com");
+  ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
+
+  ClearPref(0, prefs::kHomePage);
+
+  ASSERT_TRUE(ClearedPrefMatchChecker(prefs::kHomePage).Wait());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest,
