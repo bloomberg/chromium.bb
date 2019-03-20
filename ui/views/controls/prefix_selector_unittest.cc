@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/prefix_selector.h"
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -45,7 +46,7 @@ class TestPrefixDelegate : public View, public PrefixDelegate {
 class PrefixSelectorTest : public ViewsTestBase {
  public:
   PrefixSelectorTest() {
-    selector_.reset(new PrefixSelector(&delegate_, &delegate_));
+    selector_ = std::make_unique<PrefixSelector>(&delegate_, &delegate_);
   }
   ~PrefixSelectorTest() override {
     // Explicitly release |selector_| here which can happen before releasing

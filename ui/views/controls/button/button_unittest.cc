@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/button.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -130,7 +132,7 @@ class ButtonTest : public ViewsTestBase {
 
     // Create a widget so that the Button can query the hover state
     // correctly.
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

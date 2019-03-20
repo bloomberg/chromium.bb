@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/native/native_view_host_aura.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -182,8 +184,8 @@ void NativeViewHostAura::SetHitTestTopInset(int top_inset) {
 }
 
 void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
-  clip_rect_.reset(
-      new gfx::Rect(host_->ConvertRectToWidget(gfx::Rect(x, y, w, h))));
+  clip_rect_ = std::make_unique<gfx::Rect>(
+      host_->ConvertRectToWidget(gfx::Rect(x, y, w, h)));
 }
 
 int NativeViewHostAura::GetHitTestTopInset() const {

@@ -35,7 +35,7 @@ void NativeViewHostTestBase::TearDown() {
 }
 
 void NativeViewHostTestBase::CreateTopLevel() {
-  toplevel_.reset(new Widget);
+  toplevel_ = std::make_unique<Widget>();
   Widget::InitParams toplevel_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -43,7 +43,7 @@ void NativeViewHostTestBase::CreateTopLevel() {
 }
 
 void NativeViewHostTestBase::CreateTestingHost() {
-  host_.reset(new NativeViewHostTesting(this));
+  host_ = std::make_unique<NativeViewHostTesting>(this);
 }
 
 Widget* NativeViewHostTestBase::CreateChildForHost(

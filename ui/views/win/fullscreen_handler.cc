@@ -60,7 +60,7 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
   // for several frames, which looks worse than doing other updates
   // non-atomically.
   if (!ui::win::IsAeroGlassEnabled())
-    visibility.reset(new ScopedFullscreenVisibility(hwnd_));
+    visibility = std::make_unique<ScopedFullscreenVisibility>(hwnd_);
 
   // Save current window state if not already fullscreen.
   if (!fullscreen_) {

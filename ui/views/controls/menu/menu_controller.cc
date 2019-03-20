@@ -2827,7 +2827,7 @@ void MenuController::UpdateScrolling(const MenuPart& part) {
     return;
 
   if (!scroll_task_.get())
-    scroll_task_.reset(new MenuScrollTask());
+    scroll_task_ = std::make_unique<MenuScrollTask>();
   scroll_task_->Update(part);
 }
 

@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -470,8 +472,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   // pre target handlers list. This ensures that it handles input events first
   // when modal windows are at the top of the Zorder.
   if (widget_type_ == Widget::InitParams::TYPE_WINDOW)
-    window_modality_controller_.reset(
-        new wm::WindowModalityController(host_->window()));
+    window_modality_controller_ =
+        std::make_unique<wm::WindowModalityController>(host_->window());
 
   // |root_window_event_filter_| must be created before
   // OnWindowTreeHostCreated() is invoked.
@@ -481,7 +483,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   //             handed way of accomplishing focus.
   // No event filter for aura::Env. Create CompoundEventFilter per
   // WindowEventDispatcher.
-  root_window_event_filter_.reset(new wm::CompoundEventFilter);
+  root_window_event_filter_ = std::make_unique<wm::CompoundEventFilter>();
   host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
 
   use_desktop_native_cursor_manager_ =
@@ -506,7 +508,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   UpdateWindowTransparency();
 
-  capture_client_.reset(new DesktopCaptureClient(host_->window()));
+  capture_client_ = std::make_unique<DesktopCaptureClient>(host_->window());
 
   wm::FocusController* focus_controller =
       new wm::FocusController(new DesktopFocusRules(content_window_));
@@ -530,16 +532,17 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   host_->AddObserver(this);
 
-  window_parenting_client_.reset(
-      new DesktopNativeWidgetAuraWindowParentingClient(host_->window()));
-  drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
+  window_parenting_client_ =
+      std::make_unique<DesktopNativeWidgetAuraWindowParentingClient>(
+          host_->window());
+  drop_helper_ = std::make_unique<DropHelper>(GetWidget()->GetRootView());
   aura::client::SetDragDropDelegate(content_window_, this);
 
   if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
-    tooltip_manager_.reset(new TooltipManagerAura(GetWidget()));
-    tooltip_controller_.reset(
-        new corewm::TooltipController(
-            desktop_window_tree_host_->CreateTooltip()));
+    tooltip_manager_ = std::make_unique<TooltipManagerAura>(GetWidget());
+    tooltip_controller_ = std::make_unique<corewm::TooltipController>(
+
+        desktop_window_tree_host_->CreateTooltip());
     wm::SetTooltipClient(host_->window(), tooltip_controller_.get());
     host_->window()->AddPreTargetHandler(tooltip_controller_.get());
   }
@@ -557,16 +560,16 @@ void DesktopNativeWidgetAura::InitNativeWidget(
         GetWidget(), host_->window());
   }
 
-  event_client_.reset(new DesktopEventClient);
+  event_client_ = std::make_unique<DesktopEventClient>();
   aura::client::SetEventClient(host_->window(), event_client_.get());
 
-  shadow_controller_.reset(new wm::ShadowController(
-      wm::GetActivationClient(host_->window()), nullptr));
+  shadow_controller_ = std::make_unique<wm::ShadowController>(
+      wm::GetActivationClient(host_->window()), nullptr);
 
   OnSizeConstraintsChanged();
 
-  window_reorderer_.reset(new WindowReorderer(content_window_,
-      GetWidget()->GetRootView()));
+  window_reorderer_ = std::make_unique<WindowReorderer>(
+      content_window_, GetWidget()->GetRootView());
 }
 
 void DesktopNativeWidgetAura::OnWidgetInitDone() {

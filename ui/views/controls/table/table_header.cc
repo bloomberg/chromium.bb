@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -265,7 +267,7 @@ bool TableHeader::StartResize(const ui::LocatedEvent& event) {
   if (index == -1)
     return false;
 
-  resize_details_.reset(new ColumnResizeDetails);
+  resize_details_ = std::make_unique<ColumnResizeDetails>();
   resize_details_->column_index = index;
   resize_details_->initial_x = event.root_location().x();
   resize_details_->initial_width = table_->GetVisibleColumn(index).width;

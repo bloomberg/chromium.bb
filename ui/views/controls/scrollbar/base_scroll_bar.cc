@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/scrollbar/base_scroll_bar.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -229,7 +231,7 @@ void BaseScrollBar::OnGestureEvent(ui::GestureEvent* event) {
 
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     if (!scroll_animator_.get())
-      scroll_animator_.reset(new ScrollAnimator(this));
+      scroll_animator_ = std::make_unique<ScrollAnimator>(this);
     scroll_animator_->Start(
         IsHorizontal() ?  event->details().velocity_x() : 0.f,
         IsHorizontal() ? 0.f : event->details().velocity_y());

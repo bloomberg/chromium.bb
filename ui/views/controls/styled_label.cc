@@ -49,10 +49,11 @@ std::unique_ptr<Label> CreateLabelRange(
 
     result.reset(link);
   } else if (style_info.custom_font) {
-    result.reset(new Label(text, {style_info.custom_font.value()}));
+    result = std::make_unique<Label>(
+        text, Label::CustomFont{style_info.custom_font.value()});
   } else {
-    result.reset(new Label(text, text_context,
-                           style_info.text_style.value_or(default_style)));
+    result = std::make_unique<Label>(
+        text, text_context, style_info.text_style.value_or(default_style));
   }
   if (style_info.override_color != SK_ColorTRANSPARENT)
     result->SetEnabledColor(style_info.override_color);

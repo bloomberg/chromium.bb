@@ -4,6 +4,8 @@
 
 #include "ui/views/bubble/info_bubble.h"
 
+#include <memory>
+
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -78,8 +80,8 @@ NonClientFrameView* InfoBubble::CreateNonClientFrameView(Widget* widget) {
   DCHECK(!frame_);
   frame_ = new InfoBubbleFrame(margins());
   frame_->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
-  frame_->SetBubbleBorder(std::unique_ptr<BubbleBorder>(
-      new BubbleBorder(arrow(), GetShadow(), color())));
+  frame_->SetBubbleBorder(
+      std::make_unique<BubbleBorder>(arrow(), GetShadow(), color()));
   return frame_;
 }
 

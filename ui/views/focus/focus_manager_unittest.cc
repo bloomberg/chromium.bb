@@ -875,7 +875,7 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.parent = GetWidget()->GetNativeView();
   Widget child_widget;
-  delegate.reset(new AdvanceFocusWidgetDelegate(&child_widget));
+  delegate = std::make_unique<AdvanceFocusWidgetDelegate>(&child_widget);
   params.delegate = delegate.get();
   child_widget.Init(params);
   View* view1 = new View;

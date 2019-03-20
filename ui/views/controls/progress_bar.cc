@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -110,7 +111,7 @@ void ProgressBar::SetValue(double value) {
 
   current_value_ = adjusted_value;
   if (IsIndeterminate()) {
-    indeterminate_bar_animation_.reset(new gfx::LinearAnimation(this));
+    indeterminate_bar_animation_ = std::make_unique<gfx::LinearAnimation>(this);
     indeterminate_bar_animation_->SetDuration(base::TimeDelta::FromSeconds(2));
     indeterminate_bar_animation_->Start();
   } else {

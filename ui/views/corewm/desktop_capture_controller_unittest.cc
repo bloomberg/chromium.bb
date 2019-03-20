@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/capture_controller.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "ui/aura/env.h"
@@ -110,8 +112,8 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   internal::RootView* root1 =
       static_cast<internal::RootView*>(widget1->GetRootView());
 
-  desktop_position_client1.reset(
-      new DesktopScreenPositionClient(params.context->GetRootWindow()));
+  desktop_position_client1 = std::make_unique<DesktopScreenPositionClient>(
+      params.context->GetRootWindow());
   aura::client::SetScreenPositionClient(
       widget1->GetNativeView()->GetRootWindow(),
       desktop_position_client1.get());
@@ -132,8 +134,8 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
 
   internal::RootView* root2 =
       static_cast<internal::RootView*>(widget2->GetRootView());
-  desktop_position_client2.reset(
-      new DesktopScreenPositionClient(params.context->GetRootWindow()));
+  desktop_position_client2 = std::make_unique<DesktopScreenPositionClient>(
+      params.context->GetRootWindow());
   aura::client::SetScreenPositionClient(
       widget2->GetNativeView()->GetRootWindow(),
       desktop_position_client2.get());

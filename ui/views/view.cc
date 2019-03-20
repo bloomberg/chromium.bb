@@ -1121,7 +1121,7 @@ gfx::PointF View::GetScreenLocationF(const ui::LocatedEvent& event) const {
 
 void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_)
-    accelerators_.reset(new std::vector<ui::Accelerator>());
+    accelerators_ = std::make_unique<std::vector<ui::Accelerator>>();
 
   if (!base::ContainsValue(*accelerators_, accelerator))
     accelerators_->push_back(accelerator);
@@ -2249,7 +2249,7 @@ void View::UnregisterForVisibleBoundsNotification() {
 void View::AddDescendantToNotify(View* view) {
   DCHECK(view);
   if (!descendants_to_notify_)
-    descendants_to_notify_.reset(new Views);
+    descendants_to_notify_ = std::make_unique<Views>();
   descendants_to_notify_->push_back(view);
 }
 

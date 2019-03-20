@@ -1107,7 +1107,7 @@ bool TreeView::ExpandImpl(TreeModelNode* model_node) {
 
 PrefixSelector* TreeView::GetPrefixSelector() {
   if (!selector_)
-    selector_.reset(new PrefixSelector(this, this));
+    selector_ = std::make_unique<PrefixSelector>(this, this);
   return selector_.get();
 }
 

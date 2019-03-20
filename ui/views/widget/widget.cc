@@ -336,7 +336,7 @@ void Widget::Init(const InitParams& in_params) {
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
-  default_theme_provider_.reset(new ui::DefaultThemeProvider);
+  default_theme_provider_ = std::make_unique<ui::DefaultThemeProvider>();
   native_widget_->InitNativeWidget(params);
   if (params.type == InitParams::TYPE_MENU)
     is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();

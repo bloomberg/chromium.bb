@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/menu/menu_runner_impl.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -60,7 +62,7 @@ void MenuRunnerImpl::Release() {
     // Swap in a different delegate. That way we know the original MenuDelegate
     // won't be notified later on (when it's likely already been deleted).
     if (!empty_delegate_.get())
-      empty_delegate_.reset(new MenuDelegate());
+      empty_delegate_ = std::make_unique<MenuDelegate>();
     menu_->set_delegate(empty_delegate_.get());
 
     // Verify that the MenuController is still active. It may have been

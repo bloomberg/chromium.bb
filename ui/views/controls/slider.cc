@@ -5,6 +5,7 @@
 #include "ui/views/controls/slider.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
@@ -144,7 +145,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
     // There is no message-loop when running tests. So we cannot animate then.
     if (!move_animation_) {
       initial_animating_value_ = old_value;
-      move_animation_.reset(new gfx::SlideAnimation(this));
+      move_animation_ = std::make_unique<gfx::SlideAnimation>(this);
       move_animation_->SetSlideDuration(kSlideValueChangeDurationMs);
       move_animation_->Show();
     }

@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
+#include <memory>
+
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -538,10 +540,10 @@ MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
   // These durations are taken from the Paper Tabs source:
   // https://github.com/PolymerElements/paper-tabs/blob/master/paper-tabs.html
   // See |selectionBar.expand| and |selectionBar.contract|.
-  expand_animation_.reset(new gfx::LinearAnimation(this));
+  expand_animation_ = std::make_unique<gfx::LinearAnimation>(this);
   expand_animation_->SetDuration(base::TimeDelta::FromMilliseconds(150));
 
-  contract_animation_.reset(new gfx::LinearAnimation(this));
+  contract_animation_ = std::make_unique<gfx::LinearAnimation>(this);
   contract_animation_->SetDuration(base::TimeDelta::FromMilliseconds(180));
 }
 

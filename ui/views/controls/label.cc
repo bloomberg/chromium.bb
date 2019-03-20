@@ -644,9 +644,9 @@ void Label::ShowContextMenuForViewImpl(View* source,
   if (!GetRenderTextForSelectionController())
     return;
 
-  context_menu_runner_.reset(
-      new MenuRunner(&context_menu_contents_,
-                     MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
+  context_menu_runner_ = std::make_unique<MenuRunner>(
+      &context_menu_contents_,
+      MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU);
   context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
                                   MENU_ANCHOR_TOPLEFT, source_type);

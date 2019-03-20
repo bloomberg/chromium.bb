@@ -736,8 +736,8 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void SetupMenuItem() {
-    menu_delegate_.reset(new TestMenuDelegate);
-    menu_item_.reset(new TestMenuItemViewShown(menu_delegate_.get()));
+    menu_delegate_ = std::make_unique<TestMenuDelegate>();
+    menu_item_ = std::make_unique<TestMenuItemViewShown>(menu_delegate_.get());
     menu_item_->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
     menu_item_->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
     menu_item_->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("Three"));
@@ -745,7 +745,7 @@ class MenuControllerTest : public ViewsTestBase {
   }
 
   void SetupMenuController() {
-    menu_controller_delegate_.reset(new TestMenuControllerDelegate);
+    menu_controller_delegate_ = std::make_unique<TestMenuControllerDelegate>();
     const bool for_drop = false;
     menu_controller_ =
         new MenuController(for_drop, menu_controller_delegate_.get());

@@ -4,6 +4,8 @@
 
 #include "ui/views/accessible_pane_view.h"
 
+#include <memory>
+
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_tracker.h"
@@ -51,7 +53,7 @@ AccessiblePaneView::AccessiblePaneView()
       right_key_(ui::VKEY_RIGHT, ui::EF_NONE),
       last_focused_view_tracker_(std::make_unique<ViewTracker>()),
       method_factory_(this) {
-  focus_search_.reset(new AccessiblePaneViewFocusSearch(this));
+  focus_search_ = std::make_unique<AccessiblePaneViewFocusSearch>(this);
 }
 
 AccessiblePaneView::~AccessiblePaneView() {

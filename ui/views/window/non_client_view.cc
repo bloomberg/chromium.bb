@@ -4,6 +4,8 @@
 
 #include "ui/views/window/non_client_view.h"
 
+#include <memory>
+
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -44,8 +46,7 @@ bool NonClientFrameView::GetClientMask(const gfx::Size& size,
 NonClientView::NonClientView()
     : client_view_(nullptr),
       overlay_view_(nullptr) {
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 NonClientView::~NonClientView() {
@@ -325,8 +326,7 @@ void NonClientFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 NonClientFrameView::NonClientFrameView()
     : active_state_override_(nullptr) {
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 // ViewTargeterDelegate:

@@ -114,7 +114,7 @@ void ViewsTestBase::SetUp() {
   ui::MaterialDesignController::Initialize();
   setup_called_ = true;
   if (!views_delegate_for_setup_)
-    views_delegate_for_setup_.reset(new TestViewsDelegate());
+    views_delegate_for_setup_ = std::make_unique<TestViewsDelegate>();
 
 #if BUILDFLAG(ENABLE_MUS)
   if (is_mus()) {
@@ -143,8 +143,8 @@ void ViewsTestBase::SetUp() {
   }
 #endif
 
-  test_helper_.reset(
-      new ScopedViewsTestHelper(std::move(views_delegate_for_setup_)));
+  test_helper_ = std::make_unique<ScopedViewsTestHelper>(
+      std::move(views_delegate_for_setup_));
 }
 
 void ViewsTestBase::TearDown() {
