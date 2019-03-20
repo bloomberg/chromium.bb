@@ -350,7 +350,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
                                               mojo::ScopedMessagePipeHandle,
-                                              WebRemoteFrame*,
+                                              WebFrame*,
                                               WebSandboxFlags,
                                               ParsedFeaturePolicy);
 
@@ -358,7 +358,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*,
                     mojo::ScopedMessagePipeHandle);
-  WebLocalFrameImpl(WebRemoteFrame*,
+  WebLocalFrameImpl(WebFrame*,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*,
                     mojo::ScopedMessagePipeHandle);
