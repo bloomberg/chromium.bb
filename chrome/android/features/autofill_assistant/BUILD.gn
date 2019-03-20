@@ -6,8 +6,29 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/common/features.gni")
 
+# The animated_poodle_java target is overridden downstream and used
+# instead of this one if the enable_chrome_android_internal flag is
+# enabled.
+android_library("animated_poodle_java") {
+  deps = [
+    ":animated_poodle_resources",
+    "//base:base_java",
+    "//chrome/android:chrome_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+  ]
+
+  java_files = [ "java/src/org/chromium/chrome/browser/" +
+                 "autofill_assistant/header/AnimatedPoodle.java" ]
+}
+
+android_resources("animated_poodle_resources") {
+  resource_dirs = [ "java/res_poodle" ]
+  custom_package = "org.chromium.chrome.autofill_assistant.poodle"
+}
+
 android_library("java") {
   deps = [
+    ":animated_poodle_java",
     ":java_resources",
     "//base:base_java",
     "//chrome/android:chrome_java",
@@ -21,6 +42,7 @@ android_library("java") {
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//ui/android:ui_java",
   ]
+
   java_files = [
     "java/src/org/chromium/chrome/browser/autofill_assistant/AbstractListObserver.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarCoordinator.java",

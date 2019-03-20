@@ -29,13 +29,13 @@ public class AssistantHeaderModel extends PropertyModel {
     public static final WritableBooleanPropertyKey PROGRESS_VISIBLE =
             new WritableBooleanPropertyKey();
 
-    static final WritableBooleanPropertyKey PROGRESS_PULSING = new WritableBooleanPropertyKey();
+    static final WritableBooleanPropertyKey SPIN_POODLE = new WritableBooleanPropertyKey();
 
     static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
     public AssistantHeaderModel() {
-        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, PROGRESS, PROGRESS_VISIBLE, PROGRESS_PULSING,
+        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE,
                 FEEDBACK_BUTTON_CALLBACK);
     }
 
@@ -55,8 +55,8 @@ public class AssistantHeaderModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setProgressPulsingEnabled(boolean enabled) {
-        set(PROGRESS_PULSING, enabled);
+    private void setSpinPoodle(boolean enabled) {
+        set(SPIN_POODLE, enabled);
     }
 
     @CalledByNative
