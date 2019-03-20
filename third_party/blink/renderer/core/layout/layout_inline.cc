@@ -1352,7 +1352,7 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     NGPhysicalOffsetRect result;
-    NGPaintFragment::InlineFragemntsIncludingCulledFor(
+    NGPaintFragment::InlineFragmentsIncludingCulledFor(
         *this,
         [](NGPaintFragment* fragment, void* context) {
           NGPhysicalOffsetRect* result =
