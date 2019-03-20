@@ -124,6 +124,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchTapDisableOverride,
     &kContextualSearchUnityIntegration,
     &kCustomContextMenu,
+    &kDelegateOverscrollSwipes,
     &kDontPrefetchLibraries,
     &kDownloadProgressInfoBar,
     &kDownloadHomeV2,
@@ -345,6 +346,9 @@ const base::Feature kCustomContextMenu{"CustomContextMenu",
 
 const base::Feature kDontPrefetchLibraries{"DontPrefetchLibraries",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDelegateOverscrollSwipes{
+    "DelegateOverscrollSwipes", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
