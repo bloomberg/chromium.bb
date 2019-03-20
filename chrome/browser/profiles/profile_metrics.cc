@@ -26,10 +26,6 @@
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-const int kMaximumReportedProfileCount = 5;
-#endif
-
 const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
 #if !defined(OS_ANDROID)
@@ -180,35 +176,10 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
   return true;
 }
 
-void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  profile_metrics::Counts counts;
-  if (CountProfileInformation(manager, &counts)) {
-    size_t limited_total = counts.total;
-    size_t limited_signedin = counts.signedin;
-    if (limited_total > kMaximumReportedProfileCount) {
-      limited_total = kMaximumReportedProfileCount + 1;
-      limited_signedin =
-          (int)((float)(counts.signedin * limited_total)
-          / counts.total + 0.5);
-    }
-    UpdateReportedOSProfileStatistics(limited_total, limited_signedin);
-  }
-#endif
-}
-
 #if !defined(OS_ANDROID)
 void ProfileMetrics::LogNumberOfProfileSwitches() {
   UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSwitches",
                            number_of_profile_switches_);
-}
-#endif
-
-// The OS_MACOSX implementation of this function is in profile_metrics_mac.mm.
-#if defined(OS_WIN)
-void ProfileMetrics::UpdateReportedOSProfileStatistics(
-    size_t active, size_t signedin) {
-  GoogleUpdateSettings::UpdateProfileCounts(active, signedin);
 }
 #endif
 
@@ -219,13 +190,8 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
   profile_metrics::LogProfileMetricsCounts(counts);
 
   // Ignore other metrics if we have no profiles.
-  if (success) {
+  if (success)
     LogLockedProfileInformation(manager);
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    UpdateReportedOSProfileStatistics(counts.total, counts.signedin);
-#endif
-  }
 }
 
 void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {

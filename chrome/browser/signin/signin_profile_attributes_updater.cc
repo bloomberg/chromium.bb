@@ -51,8 +51,6 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     return;
   }
 
-  std::string old_gaia_id = entry->GetGAIAId();
-
   if (identity_manager_->HasPrimaryAccount()) {
     CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
     entry->SetAuthInfo(account_info.gaia,
@@ -63,9 +61,6 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     if (!signin_util::IsForceSigninEnabled())
       entry->SetIsSigninRequired(false);
   }
-
-  if (old_gaia_id != entry->GetGAIAId())
-    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
 }
 
 void SigninProfileAttributesUpdater::OnErrorChanged() {
