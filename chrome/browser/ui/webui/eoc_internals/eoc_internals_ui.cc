@@ -26,7 +26,8 @@ EocInternalsUI::EocInternalsUI(content::WebUI* web_ui)
 
   source->AddResourcePath("eoc_internals.css", IDR_EOC_INTERNALS_CSS);
   source->AddResourcePath("eoc_internals.js", IDR_EOC_INTERNALS_JS);
-  source->AddResourcePath("eoc_internals.mojom.js", IDR_EOC_INTERNALS_MOJO_JS);
+  source->AddResourcePath("eoc_internals.mojom-lite.js",
+                          IDR_EOC_INTERNALS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_EOC_INTERNALS_HTML);
   source->UseGzip();
 
