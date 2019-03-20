@@ -192,6 +192,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   void CreateMirrorWindowForMinimizedState();
 
+  OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
+      OverviewSession::EnterExitOverviewType type);
+
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
 
