@@ -687,6 +687,17 @@ public class DownloadUtils {
         }
     }
 
+    @CalledByNative
+    private static void openDownload(String filePath, String mimeType, String downloadGuid,
+            boolean isOffTheRecord, String originalUrl, String referer,
+            @DownloadMetrics.DownloadOpenSource int source) {
+        boolean canOpen = DownloadUtils.openFile(
+                filePath, mimeType, downloadGuid, isOffTheRecord, originalUrl, referer, source);
+        if (!canOpen) {
+            DownloadUtils.showDownloadManager(null, null);
+        }
+    }
+
     private static void recordShareHistograms(int count, int filterType) {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
                 filterType, DownloadFilter.Type.NUM_ENTRIES);

@@ -15,10 +15,12 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_item_utils.h"
 #include "jni/DownloadUtils_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using OfflineContentAggregator =
@@ -61,10 +63,8 @@ base::FilePath DownloadUtils::GetUriStringForPath(
     const base::FilePath& file_path) {
   JNIEnv* env = base::android::AttachCurrentThread();
   auto uri_jstring = Java_DownloadUtils_getUriStringForPath(
-      env,
-      base::android::ConvertUTF8ToJavaString(env, file_path.AsUTF8Unsafe()));
-  return base::FilePath(
-      base::android::ConvertJavaStringToUTF8(env, uri_jstring));
+      env, ConvertUTF8ToJavaString(env, file_path.AsUTF8Unsafe()));
+  return base::FilePath(ConvertJavaStringToUTF8(env, uri_jstring));
 }
 
 // static
@@ -76,6 +76,26 @@ int DownloadUtils::GetAutoResumptionSizeLimit() {
   return base::StringToInt(value, &size_limit)
              ? size_limit
              : kDefaultAutoResumptionSizeLimit;
+}
+
+// static
+void DownloadUtils::OpenDownload(download::DownloadItem* item,
+                                 int open_source) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(item);
+  bool is_off_the_record =
+      browser_context ? browser_context->IsOffTheRecord() : false;
+  std::string original_url = item->GetOriginalUrl().SchemeIs(url::kDataScheme)
+                                 ? std::string()
+                                 : item->GetOriginalUrl().spec();
+
+  Java_DownloadUtils_openDownload(
+      env, ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
+      ConvertUTF8ToJavaString(env, item->GetMimeType()),
+      ConvertUTF8ToJavaString(env, item->GetGuid()), is_off_the_record,
+      ConvertUTF8ToJavaString(env, original_url),
+      ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()), open_source);
 }
 
 // static

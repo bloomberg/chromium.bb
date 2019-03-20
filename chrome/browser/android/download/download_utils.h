@@ -11,6 +11,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace download {
+class DownloadItem;
+}
+
 class DownloadOfflineContentProvider;
 
 // Native side of DownloadUtils.java.
@@ -18,6 +22,7 @@ class DownloadUtils {
  public:
   static base::FilePath GetUriStringForPath(const base::FilePath& file_path);
   static int GetAutoResumptionSizeLimit();
+  static void OpenDownload(download::DownloadItem* item, int open_source);
   static DownloadOfflineContentProvider* GetDownloadOfflineContentProvider(
       content::BrowserContext* browser_context);
 };

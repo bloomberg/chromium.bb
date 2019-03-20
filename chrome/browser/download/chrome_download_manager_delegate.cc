@@ -78,6 +78,7 @@
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_location_dialog_bridge_impl.h"
 #include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #endif
 
@@ -674,11 +675,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
                                          false /* show_download_in_folder */);
 
 #if defined(OS_ANDROID)
-  // TODO(shaktisahu@): Pull out to static helper method once
-  // DownloadManagerService goes away.  Put the helper method in the download
-  // component.
-  DownloadManagerService::GetInstance()->OpenDownload(download,
-                                                      0 /* download source */);
+  DownloadUtils::OpenDownload(download, 0 /* download source */);
   return;
 #endif
 

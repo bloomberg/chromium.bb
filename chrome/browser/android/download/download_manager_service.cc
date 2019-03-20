@@ -272,6 +272,9 @@ void DownloadManagerService::ShowDownloadManager(bool show_prefetched_content) {
 
 void DownloadManagerService::OpenDownload(download::DownloadItem* download,
                                           int source) {
+  if (java_ref_.is_null())
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_item =
       JNI_DownloadManagerService_CreateJavaDownloadItem(env, download);
