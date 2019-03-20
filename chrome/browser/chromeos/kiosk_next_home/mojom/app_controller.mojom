@@ -1,0 +1,14 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.kiosk_next_home.mojom;
+
+// Interface for managing Chrome OS apps from the Kiosk Next Home.
+interface AppController {
+  // TODO(ltenorio): Add methods for listing installed apps and their
+  // information, like app_id.
+
+  // Launches the app with the given app_id.
+  LaunchApp(string app_id);
+};

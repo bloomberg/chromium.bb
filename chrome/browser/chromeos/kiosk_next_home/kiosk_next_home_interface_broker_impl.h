@@ -13,6 +13,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace service_manager {
 class Connector;
 }
@@ -20,14 +24,15 @@ class Connector;
 namespace chromeos {
 namespace kiosk_next_home {
 
+class AppControllerImpl;
+
 // Implementation of interface responsible for brokering other interfaces needed
 // to support Kiosk Next Home functionality.
 class KioskNextHomeInterfaceBrokerImpl
     : public mojom::KioskNextHomeInterfaceBroker,
       public base::SupportsUserData::Data {
  public:
-  explicit KioskNextHomeInterfaceBrokerImpl(
-      service_manager::Connector* connector);
+  explicit KioskNextHomeInterfaceBrokerImpl(content::BrowserContext* context);
   ~KioskNextHomeInterfaceBrokerImpl() override;
 
   // Binds client requests to this implementation.
@@ -36,12 +41,14 @@ class KioskNextHomeInterfaceBrokerImpl
   // mojom::KioskNextHomeInterfaceBroker:
   void GetIdentityAccessor(
       ::identity::mojom::IdentityAccessorRequest request) override;
+  void GetAppController(mojom::AppControllerRequest request) override;
 
  private:
   mojo::BindingSet<mojom::KioskNextHomeInterfaceBroker> bindings_;
   // Clone of BrowserContext's Connector, which allows binding to other
   // services.
   std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<AppControllerImpl> app_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskNextHomeInterfaceBrokerImpl);
 };
