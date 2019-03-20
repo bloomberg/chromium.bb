@@ -4271,9 +4271,13 @@ GURL URLEscapedForHistory(const GURL& url) {
         requestURL.SchemeIs(url::kAboutScheme) ||
         requestURL.SchemeIs(url::kBlobScheme);
     if (!webControllerCanShow) {
-      // Stop load if navigation is believed to be happening on the main frame.
-      if ([self isMainFrameNavigationAction:action])
-        [self stopLoading];
+      if (!web::features::StorePendingItemInContext()) {
+        if ([self isMainFrameNavigationAction:action]) {
+          [self stopLoading];
+        }
+      } else {
+        allowLoad = NO;
+      }
 
       // Purge web view if last committed URL is different from the document
       // URL. This can happen if external URL was added to the navigation stack
@@ -4330,6 +4334,14 @@ GURL URLEscapedForHistory(const GURL& url) {
       // if the last item was not a native view, to avoid ugly animation of
       // inserting the webview.
       [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+
+      web::NavigationContextImpl* context =
+          [self contextForPendingMainFrameNavigationWithURL:requestURL];
+      if (context) {
+        // Destroy associated pending item, because this will be the last
+        // WKWebView callback for this navigation context.
+        context->ReleaseItem();
+      }
 
       if (!_isBeingDestroyed && [self shouldClosePageOnNativeApplicationLoad]) {
         // Loading was started for user initiated navigations and should be
