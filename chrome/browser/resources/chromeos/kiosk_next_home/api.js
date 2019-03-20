@@ -82,6 +82,20 @@ kioskNextHome.AppType = {
 };
 
 /**
+ * Readiness status for apps.
+ * These values loosely map to AppService's apps.mojom.Readiness enum.
+ * @enum {string}
+ */
+kioskNextHome.AppReadiness = {
+  /** Installed and launchable. */
+  READY: 'ready',
+  /** App is disabled by policy. */
+  DISABLED: 'disabled',
+  /** App was uninstalled by user. */
+  UNINSTALLED: 'uninstalled',
+};
+
+/**
  * A record representing an installed app on the system.
  * @record
  */
@@ -99,8 +113,10 @@ kioskNextHome.App = class {
     this.displayName;
     /** @type {string | undefined} Base64-encoded thumbnail image, fallback. */
     this.thumbnailImage;
-    /** @type {boolean} Whether the app is suspended by policy. */
-    this.suspended;
+    /**
+     * @type {kioskNextHome.AppReadiness} Current readiness state for the app.
+     */
+    this.readiness;
   }
 };
 

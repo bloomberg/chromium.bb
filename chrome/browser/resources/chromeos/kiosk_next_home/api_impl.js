@@ -18,7 +18,7 @@ function buildApp(packageName) {
     type: kioskNextHome.AppType.ARC,
     displayName: packageName,
     packageName: packageName,
-    suspended: false,
+    readiness: kioskNextHome.AppReadiness.READY,
     thumbnailImage: '',
   };
 }
