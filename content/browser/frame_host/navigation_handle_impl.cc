@@ -538,6 +538,11 @@ void NavigationHandleImpl::InitAppCacheHandle(
       appcache_service, ChildProcessHost::kInvalidUniqueID));
 }
 
+std::unique_ptr<AppCacheNavigationHandle>
+NavigationHandleImpl::TakeAppCacheHandle() {
+  return std::move(appcache_handle_);
+}
+
 void NavigationHandleImpl::WillStartRequest(
     ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,

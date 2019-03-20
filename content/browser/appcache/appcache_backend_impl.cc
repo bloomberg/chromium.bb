@@ -51,6 +51,15 @@ void AppCacheBackendImpl::RegisterHost(
     // here on.
     host->set_frontend(std::move(frontend), render_frame_id);
   } else {
+    if (id < 0) {
+      // Negative ids correspond to precreated hosts. We should be able to
+      // retrieve one, but currently we have a race between this IPC and
+      // browser removing the corresponding frame and precreated AppCacheHost.
+      // Instead of crashing the renderer or returning wrong host, we do not
+      // bind any host and let renderer do nothing until it is destroyed by
+      // the request from browser.
+      return;
+    }
     host = std::make_unique<AppCacheHost>(id, process_id(), render_frame_id,
                                           std::move(frontend), service_);
   }

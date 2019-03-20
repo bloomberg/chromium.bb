@@ -214,6 +214,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
     return appcache_handle_.get();
   }
 
+  std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
+
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
