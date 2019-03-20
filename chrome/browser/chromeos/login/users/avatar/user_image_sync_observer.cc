@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/pref_names.h"
@@ -100,7 +98,7 @@ void UserImageSyncObserver::OnInitialSync() {
   bool local_image_updated = false;
   if (!GetSyncedImageIndex(&synced_index) || local_image_changed_) {
     UpdateSyncedImageFromLocal();
-  } else if (IsIndexSupported(synced_index) && CanUpdateLocalImageNow()) {
+  } else if (IsIndexSupported(synced_index)) {
     UpdateLocalImageFromSynced();
     local_image_updated = true;
   }
@@ -114,7 +112,7 @@ void UserImageSyncObserver::OnPreferenceChanged(const std::string& pref_name) {
     is_synced_ = true;
     prefs_->RemoveObserver(this);
     OnInitialSync();
-  } else if (CanUpdateLocalImageNow()) {
+  } else {
     UpdateLocalImageFromSynced();
   }
 }
@@ -182,19 +180,6 @@ bool UserImageSyncObserver::GetSyncedImageIndex(int* index) {
   *index = user_manager::User::USER_IMAGE_INVALID;
   const base::DictionaryValue* dict = prefs_->GetDictionary(kUserImageInfo);
   return dict && dict->GetInteger(kImageIndex, index);
-}
-
-bool UserImageSyncObserver::CanUpdateLocalImageNow() {
-  if (WizardController* wizard_controller =
-          WizardController::default_controller()) {
-    UserImageScreen* screen =
-        UserImageScreen::Get(wizard_controller->screen_manager());
-    if (wizard_controller->current_screen() == screen) {
-      if (screen->user_selected_image())
-        return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace chromeos

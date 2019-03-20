@@ -28,7 +28,6 @@ class PolicyChangeRegistrar;
 
 namespace chromeos {
 
-class ScreenManager;
 class UserImageManager;
 class UserImageView;
 
@@ -38,8 +37,6 @@ class UserImageScreen : public BaseScreen,
                         public user_manager::UserManager::Observer,
                         public UserImageSyncObserver::Observer {
  public:
-  static UserImageScreen* Get(ScreenManager* manager);
-
   explicit UserImageScreen(UserImageView* view);
   ~UserImageScreen() override;
 
