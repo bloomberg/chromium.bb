@@ -6028,7 +6028,7 @@
         "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 21
         },
         "test": "browser_tests"
       },
@@ -6056,7 +6056,7 @@
         "name": "non_single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests"
       },
@@ -6068,7 +6068,7 @@
         "name": "viz_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests"
       },
