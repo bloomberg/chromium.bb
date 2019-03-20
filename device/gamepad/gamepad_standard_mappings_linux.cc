@@ -677,6 +677,15 @@ void MapperBoomN64Psx(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
+  const size_t kStadiaControllerExtraButtons = 2;
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons_length = BUTTON_INDEX_COUNT + kStadiaControllerExtraButtons;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
@@ -761,6 +770,8 @@ constexpr struct MappingData {
     {GamepadId::kRazer1532Product0900, MapperRazerServal},
     // ADT-1 Controller
     {GamepadId::kGoogleProduct2c40, MapperADT1},
+    // Stadia Controller
+    {GamepadId::kGoogleProduct502e, MapperStadiaController},
     // Moga Pro Controller (HID mode)
     {GamepadId::kVendor20d6Product6271, MapperMoga},
     // Moga 2 HID
