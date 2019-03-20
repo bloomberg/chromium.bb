@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <style>
  span {
   float: left !important;
@@ -50,14 +52,18 @@ function DOMNodeRemoved() {
 document.addEventListener("DOMNodeRemoved", DOMNodeRemoved, true);
 
 window.onload = function() {
-  document.designMode = "on";
+  test(function() {
+    assert_throws(new TypeError, function() {
+      document.designMode = "on";
 
-  var oElement = document.getElementById('col');
-  oElement.parentNode.replaceChild(document.createElementNS('http://www.w3.org/2000/svg', 'feSpecularLighting'), oElement);
+      var oElement = document.getElementById('col');
+      oElement.parentNode.replaceChild(document.createElementNS('http://www.w3.org/2000/svg', 'feSpecularLighting'), oElement);
 
-  document.execCommand('InsertOrderedList', false, false);
-  var oElement = document.getElementById('svg');
-  oElement.parentNode.replaceChild(document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform'), oElement);
+      document.execCommand('InsertOrderedList');
+      var oElement = document.getElementById('svg');
+      oElement.parentNode.replaceChild(document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform'), oElement);
+    });
+  });
 };
 </script>
 
