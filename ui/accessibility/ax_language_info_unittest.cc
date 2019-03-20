@@ -55,7 +55,10 @@ TEST(AXLanguageInfoTest, BoringTree) {
   initial_state.nodes[1].child_ids[0] = 4;
   initial_state.nodes[2].id = 3;
   initial_state.nodes[3].id = 4;
+
   AXTree tree(initial_state);
+  DetectLanguageForSubtree(tree.root(), &tree);
+  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
 
   // Check that tree parenting conforms to expected shape.
   AXNode* node1 = tree.GetFromId(1);
@@ -139,6 +142,8 @@ TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOff) {
   }
 
   AXTree tree(initial_state);
+  DetectLanguageForSubtree(tree.root(), &tree);
+  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -233,6 +238,8 @@ TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOn) {
   }
 
   AXTree tree(initial_state);
+  DetectLanguageForSubtree(tree.root(), &tree);
+  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -337,6 +344,8 @@ TEST(AXLanguageInfoTest, LanguageDetectionBasic) {
   }
 
   AXTree tree(initial_state);
+  DetectLanguageForSubtree(tree.root(), &tree);
+  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -435,6 +444,8 @@ TEST(AXLanguageInfoTest, kLanguageUntouched) {
   }
 
   AXTree tree(initial_state);
+  DetectLanguageForSubtree(tree.root(), &tree);
+  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
 
   {
     // French should be detected, original English attr should be untouched.
