@@ -464,7 +464,7 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
-void NGPaintFragment::InlineFragemntsIncludingCulledFor(
+void NGPaintFragment::InlineFragmentsIncludingCulledFor(
     const LayoutObject& layout_object,
     Callback callback,
     void* context) {
@@ -487,7 +487,7 @@ void NGPaintFragment::InlineFragemntsIncludingCulledFor(
       // rects of |layout_inline|.
       if (!child->IsInline())
         continue;
-      InlineFragemntsIncludingCulledFor(*child, callback, context);
+      InlineFragmentsIncludingCulledFor(*child, callback, context);
     }
   }
 }

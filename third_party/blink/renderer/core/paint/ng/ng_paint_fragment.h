@@ -264,7 +264,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Same as |InlineFragmentsFor()| but this function includes descendants if
   // the |layout_object| is culled (i.e., did not generate fragments.)
   typedef void (*Callback)(NGPaintFragment*, void*);
-  static void InlineFragemntsIncludingCulledFor(const LayoutObject&,
+  static void InlineFragmentsIncludingCulledFor(const LayoutObject&,
                                                 Callback callback,
                                                 void* context);
 
