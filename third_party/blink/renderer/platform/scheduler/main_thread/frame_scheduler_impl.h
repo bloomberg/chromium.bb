@@ -163,10 +163,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   WTF::HashSet<SchedulingPolicy::Feature>
   GetActiveFeaturesOptingOutFromBackForwardCache();
 
-  // Expose for testing.
-  using FrameOrWorkerScheduler::OnStartedUsingFeature;
-  using FrameOrWorkerScheduler::OnStoppedUsingFeature;
-
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
                      PageSchedulerImpl* parent_page_scheduler,
@@ -247,6 +243,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // for loading tasks and non-frame-level tasks.
   static base::Optional<MainThreadTaskQueue::QueueTraits>
       CreateQueueTraitsForTaskType(TaskType);
+
+  // Reset the state which should not persist across navigations.
+  void ResetForNavigation();
 
   // Create QueueTraits for the default (non-finch) task queues.
   static MainThreadTaskQueue::QueueTraits ThrottleableTaskQueueTraits();

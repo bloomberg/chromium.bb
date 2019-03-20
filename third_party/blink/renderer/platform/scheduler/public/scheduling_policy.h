@@ -19,8 +19,16 @@ struct PLATFORM_EXPORT SchedulingPolicy {
     kWebSocket = 0,
     kWebRTC = 1,
 
-    kCount = 2
+    // TODO(altimin): This is a temporary placeholder for testing the
+    // sticky behaviour. Delete when we add real ones.
+    kStickyFeatureForTesting = 2,
+
+    kCount = 3
   };
+
+  // Sticky features can't be unregistered and remain active for the rest
+  // of the lifetime of the document.
+  static bool IsFeatureSticky(Feature feature);
 
   // List of opt-outs which form a policy.
   struct DisableAggressiveThrottling {};

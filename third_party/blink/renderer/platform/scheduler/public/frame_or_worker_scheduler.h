@@ -92,6 +92,13 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
       SchedulingPolicy::Feature feature,
       SchedulingPolicy policy) WARN_UNUSED_RESULT;
 
+  // Register a feature which is used for the rest of the lifetime of
+  // the document and can't be unregistered.
+  // The policy is reset when the main frame navigates away from the current
+  // document.
+  void RegisterStickyFeature(SchedulingPolicy::Feature feature,
+                             SchedulingPolicy policy);
+
   // Adds an Observer instance to be notified on scheduling policy changed.
   // When an Observer is added, the initial state will be notified synchronously
   // through the Observer interface.
