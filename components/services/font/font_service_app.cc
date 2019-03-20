@@ -21,10 +21,6 @@
 #include "components/services/font/ppapi_fontconfig_matching.h"  // nogncheck
 #endif
 
-#if defined(OS_LINUX)
-#include "base/test/fontconfig_util_linux.h"
-#endif
-
 static_assert(
     static_cast<uint32_t>(SkFontStyle::kUpright_Slant) ==
         static_cast<uint32_t>(font_service::mojom::TypefaceSlant::ROMAN),
