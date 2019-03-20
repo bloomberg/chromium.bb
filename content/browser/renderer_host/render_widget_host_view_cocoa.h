@@ -194,6 +194,10 @@ struct DidOverscrollParams;
 
   // Whether the pen's tip is in contact with the stylus digital tablet.
   bool has_pen_contact_;
+
+  bool mouse_locked_;
+  gfx::PointF last_mouse_screen_position_;
+  gfx::PointF mouse_locked_screen_position_;
 }
 
 @property(nonatomic, assign) NSRange markedRange;
@@ -249,6 +253,9 @@ struct DidOverscrollParams;
 // KeyboardLock methods.
 - (void)lockKeyboard:(base::Optional<base::flat_set<ui::DomCode>>)keysToLock;
 - (void)unlockKeyboard;
+
+// Cursorlock methods.
+- (void)setCursorLocked:(BOOL)locked;
 
 // Methods previously marked as private.
 - (id)initWithClient:(content::mojom::RenderWidgetHostNSViewClient*)client

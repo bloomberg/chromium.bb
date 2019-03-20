@@ -242,7 +242,7 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
     return;
   controller->StartMiddleClickAutoscroll(
       layout_object->GetFrame(), LastKnownMousePositionInRootFrame(),
-      mouse_event_manager_->LastKnownMousePositionGlobal());
+      mouse_event_manager_->LastKnownMouseScreenPosition());
   mouse_event_manager_->InvalidateClick();
 }
 
@@ -336,6 +336,10 @@ bool EventHandler::BubblingScroll(ScrollDirection direction,
 FloatPoint EventHandler::LastKnownMousePositionInRootFrame() const {
   return frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
       mouse_event_manager_->LastKnownMousePositionInViewport());
+}
+
+FloatPoint EventHandler::LastKnownMouseScreenPosition() const {
+  return mouse_event_manager_->LastKnownMouseScreenPosition();
 }
 
 IntPoint EventHandler::DragDataTransferLocationForTesting() {
@@ -873,7 +877,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
         page->GetAutoscrollController().StopMiddleClickAutoscroll(frame_);
       } else {
         page->GetAutoscrollController().HandleMouseMoveForMiddleClickAutoscroll(
-            frame_, mouse_event_manager_->LastKnownMousePositionGlobal(),
+            frame_, mouse_event_manager_->LastKnownMouseScreenPosition(),
             mouse_event.button == WebPointerProperties::Button::kMiddle);
       }
     }

@@ -133,7 +133,7 @@ class CORE_EXPORT MouseEventManager final
   Element* GetElementUnderMouse();
   bool IsMousePositionUnknown();
   FloatPoint LastKnownMousePositionInViewport();
-  FloatPoint LastKnownMousePositionGlobal();
+  FloatPoint LastKnownMouseScreenPosition();
 
   bool MousePressed();
   void ReleaseMousePress();
@@ -226,7 +226,7 @@ class CORE_EXPORT MouseEventManager final
   // The last mouse movement position this frame has seen in viewport
   // coordinates.
   FloatPoint last_known_mouse_position_;
-  FloatPoint last_known_mouse_global_position_;
+  FloatPoint last_known_mouse_screen_position_;
 
   unsigned is_mouse_position_unknown_ : 1;
   // Current button-press state for mouse/mouse-like-stylus.

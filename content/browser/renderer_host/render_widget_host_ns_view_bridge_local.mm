@@ -222,14 +222,7 @@ void RenderWidgetHostNSViewBridgeLocal::DisplayCursor(const WebCursor& cursor) {
 }
 
 void RenderWidgetHostNSViewBridgeLocal::SetCursorLocked(bool locked) {
-  if (locked) {
-    CGAssociateMouseAndMouseCursorPosition(NO);
-    [NSCursor hide];
-  } else {
-    // Unlock position of mouse cursor and unhide it.
-    CGAssociateMouseAndMouseCursorPosition(YES);
-    [NSCursor unhide];
-  }
+  [cocoa_view_ setCursorLocked:locked];
 }
 
 void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlayForSelection() {

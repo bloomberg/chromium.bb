@@ -118,6 +118,15 @@ Element* PointerLockController::GetElement() const {
 void PointerLockController::DidAcquirePointerLock() {
   EnqueueEvent(event_type_names::kPointerlockchange, element_.Get());
   lock_pending_ = false;
+  if (element_) {
+    LocalFrame* frame = element_->GetDocument().GetFrame();
+    pointer_lock_position_ = frame->LocalFrameRoot()
+                                 .GetEventHandler()
+                                 .LastKnownMousePositionInRootFrame();
+    pointer_lock_screen_position_ = frame->LocalFrameRoot()
+                                        .GetEventHandler()
+                                        .LastKnownMouseScreenPosition();
+  }
 }
 
 void PointerLockController::DidNotAcquirePointerLock() {
@@ -156,6 +165,17 @@ void PointerLockController::DispatchLockedMouseEvent(
           element_, event, event_type_names::kClick, Vector<WebMouseEvent>(),
           Vector<WebMouseEvent>());
     }
+  }
+}
+
+void PointerLockController::GetPointerLockPosition(
+    FloatPoint* lock_position,
+    FloatPoint* lock_screen_position) {
+  if (element_ && !lock_pending_) {
+    DCHECK(lock_position);
+    DCHECK(lock_screen_position);
+    *lock_position = pointer_lock_position_;
+    *lock_screen_position = pointer_lock_screen_position_;
   }
 }
 
