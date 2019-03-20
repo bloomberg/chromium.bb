@@ -13,7 +13,12 @@ const char kAppListSearchResultOpenTypeHistogram[] =
 
 namespace app_list {
 
-void RecordHistogram(SearchResultType type) {
+void RecordSearchResultOpenTypeHistogram(SearchResultType type) {
+  if (type == SEARCH_RESULT_TYPE_BOUNDARY) {
+    NOTREACHED();
+    return;
+  }
+
   UMA_HISTOGRAM_ENUMERATION(
       kAppListSearchResultOpenTypeHistogram, type, SEARCH_RESULT_TYPE_BOUNDARY);
 }

@@ -62,10 +62,12 @@ std::unique_ptr<LauncherSearchResult> LauncherSearchResult::Duplicate() const {
 }
 
 void LauncherSearchResult::Open(int event_flags) {
-  RecordHistogram(LAUNCHER_SEARCH_PROVIDER_RESULT);
-
   Service* service = Service::Get(profile_);
   service->OnOpenResult(extension_->id(), item_id_);
+}
+
+SearchResultType LauncherSearchResult::GetSearchResultType() const {
+  return LAUNCHER_SEARCH_PROVIDER_RESULT;
 }
 
 void LauncherSearchResult::OnIconImageChanged(

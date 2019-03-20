@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
@@ -72,10 +71,6 @@ void InternalAppResult::ExecuteLaunchCommand(int event_flags) {
 }
 
 void InternalAppResult::Open(int event_flags) {
-  // Record the search metric if the result is not a suggested app.
-  if (display_type() != DisplayType::kRecommendation)
-    RecordHistogram(APP_SEARCH_RESULT);
-
   RecordOpenHistogram(id());
 
   if (id() == kInternalAppIdContinueReading &&
@@ -182,6 +177,10 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
                                                      controller());
   }
   context_menu_->GetMenuModel(std::move(callback));
+}
+
+SearchResultType InternalAppResult::GetSearchResultType() const {
+  return INTERNAL_APP;
 }
 
 AppContextMenu* InternalAppResult::GetAppContextMenu() {

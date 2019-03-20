@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
@@ -134,14 +133,12 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
 ArcPlayStoreSearchResult::~ArcPlayStoreSearchResult() = default;
 
 void ArcPlayStoreSearchResult::Open(int event_flags) {
-  if (!LaunchIntent(install_intent_uri().value(),
-                    list_controller_->GetAppListDisplayId())) {
-    return;
-  }
+  LaunchIntent(install_intent_uri().value(),
+               list_controller_->GetAppListDisplayId());
+}
 
-  // Open the installing page of this result in Play Store.
-  RecordHistogram(is_instant_app() ? PLAY_STORE_INSTANT_APP
-                                   : PLAY_STORE_UNINSTALLED_APP);
+SearchResultType ArcPlayStoreSearchResult::GetSearchResultType() const {
+  return is_instant_app() ? PLAY_STORE_INSTANT_APP : PLAY_STORE_UNINSTALLED_APP;
 }
 
 void ArcPlayStoreSearchResult::GetContextMenuModel(

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -57,9 +56,12 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
 ArcAppShortcutSearchResult::~ArcAppShortcutSearchResult() = default;
 
 void ArcAppShortcutSearchResult::Open(int event_flags) {
-  RecordHistogram(PLAY_STORE_APP_SHORTCUT);
   arc::LaunchAppShortcutItem(profile_, GetAppId(), data_->shortcut_id,
                              list_controller_->GetAppListDisplayId());
+}
+
+SearchResultType ArcAppShortcutSearchResult::GetSearchResultType() const {
+  return PLAY_STORE_APP_SHORTCUT;
 }
 
 void ArcAppShortcutSearchResult::OnAppImageUpdated(

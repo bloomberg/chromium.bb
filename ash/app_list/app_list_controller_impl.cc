@@ -850,8 +850,12 @@ void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
   }
 }
 
-void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
-                                             int event_flags) {
+void AppListControllerImpl::OpenSearchResult(
+    const std::string& result_id,
+    int event_flags,
+    ash::mojom::AppListLaunchedFrom launched_from,
+    ash::mojom::AppListLaunchType launch_type,
+    int suggestion_index) {
   app_list::SearchResult* result = search_model_.FindSearchResult(result_id);
   if (!result)
     return;
@@ -860,9 +864,10 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
                             result->display_type(),
                             ash::SearchResultDisplayType::kLast);
 
-  // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() != ash::SearchResultDisplayType::kRecommendation) {
-    // Count AppList.Search here because it is composed of search + action.
+  // Suggestion chips are not represented to the user as search results, so do
+  // not record search result metrics for them.
+  if (launched_from !=
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
     base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
     UMA_HISTOGRAM_COUNTS_100(app_list::kSearchQueryLength,
@@ -877,6 +882,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   if (presenter_.IsVisible() && result->is_omnibox_search() &&
       IsAssistantAllowedAndEnabled() &&
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    // TODO(newcomer): Record search result launches via assistant.
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(
@@ -884,7 +890,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
             base::UTF16ToUTF8(result->title())));
   } else {
     if (client_)
-      client_->OpenSearchResult(result_id, event_flags);
+      client_->OpenSearchResult(result_id, event_flags, launched_from,
+                                launch_type, suggestion_index);
   }
 
   ResetHomeLauncherIfShown();
@@ -896,14 +903,6 @@ void AppListControllerImpl::LogResultLaunchHistogram(
   app_list::RecordSearchLaunchIndexAndQueryLength(
       launch_location, static_cast<int>(last_raw_query_.size()),
       suggestion_index);
-}
-
-void AppListControllerImpl::LogSearchClick(
-    const std::string& result_id,
-    int suggestion_index,
-    ash::mojom::AppListLaunchedFrom launched_from) {
-  if (client_)
-    client_->LogSearchClick(result_id, suggestion_index, launched_from);
 }
 
 void AppListControllerImpl::LogSearchAbandonHistogram() {

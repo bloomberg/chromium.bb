@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 
 namespace app_list {
 class AppContextMenu;
@@ -133,6 +134,9 @@ class ChromeSearchResult {
   // can use this to return useful values for rankers etc. Currently,
   // OmniboxResult overrides it to return AutocompleteMatch::Type.
   virtual int GetSubType() const;
+
+  // Get the type of the result, used in metrics.
+  virtual app_list::SearchResultType GetSearchResultType() const = 0;
 
  protected:
   // These id setters should be called in derived class constructors only.

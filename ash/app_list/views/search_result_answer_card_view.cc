@@ -223,7 +223,11 @@ class SearchResultAnswerCardView::AnswerCardResultView
     if (result()) {
       RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                    view_delegate_->GetSearchModel());
-      view_delegate_->OpenSearchResult(result()->id(), event.flags());
+      view_delegate_->OpenSearchResult(
+          result()->id(), event.flags(),
+          ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+          ash::mojom::AppListLaunchType::kSearchResult,
+          -1 /* suggestion_index */);
     }
   }
 

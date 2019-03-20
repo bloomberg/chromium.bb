@@ -14,13 +14,11 @@
 
 namespace app_list {
 
-using SearchResultType = ash::SearchResultType;
-
 // Given a |ChromeSearchResult| representing an omnibox result, convert it based
 // on the subtype specified by |ChromeSearchResult::GetSubType|. Any
 // unanticipated subtypes are converted into |RankingItemType::kOmniboxGeneric|.
 RankingItemType ExpandOmniboxType(const ChromeSearchResult& result) {
-  if (result.result_type() != SearchResultType::kOmnibox) {
+  if (result.result_type() != ash::SearchResultType::kOmnibox) {
     NOTREACHED();
     return RankingItemType::kUnknown;
   }
@@ -66,24 +64,24 @@ RankingItemType RankingItemTypeFromSearchResult(
       false);
 
   switch (result.result_type()) {
-    case SearchResultType::kInstalledApp:
-    case SearchResultType::kInternalApp:
+    case ash::SearchResultType::kInstalledApp:
+    case ash::SearchResultType::kInternalApp:
       return RankingItemType::kApp;
-    case SearchResultType::kOmnibox:
+    case ash::SearchResultType::kOmnibox:
       if (expand_omnibox_types)
         return ExpandOmniboxType(result);
       return RankingItemType::kOmniboxGeneric;
-    case SearchResultType::kLauncher:
+    case ash::SearchResultType::kLauncher:
       return RankingItemType::kFile;
-    case SearchResultType::kUnknown:
-    case SearchResultType::kPlayStoreApp:
-    case SearchResultType::kInstantApp:
-    case SearchResultType::kWebStoreApp:
-    case SearchResultType::kAnswerCard:
-    case SearchResultType::kPlayStoreReinstallApp:
-    case SearchResultType::kWebStoreSearch:
+    case ash::SearchResultType::kUnknown:
+    case ash::SearchResultType::kPlayStoreApp:
+    case ash::SearchResultType::kInstantApp:
+    case ash::SearchResultType::kWebStoreApp:
+    case ash::SearchResultType::kAnswerCard:
+    case ash::SearchResultType::kPlayStoreReinstallApp:
+    case ash::SearchResultType::kWebStoreSearch:
       return RankingItemType::kIgnored;
-    case SearchResultType::kArcAppShortcut:
+    case ash::SearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
   }
 }

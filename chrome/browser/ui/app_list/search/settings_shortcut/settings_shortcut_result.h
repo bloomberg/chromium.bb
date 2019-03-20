@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 
 class Profile;
 
@@ -27,6 +28,7 @@ class SettingsShortcutResult : public ChromeSearchResult {
   // SearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   Profile* const profile_;

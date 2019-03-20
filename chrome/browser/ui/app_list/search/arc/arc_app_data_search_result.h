@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/common/app.mojom.h"
 
 class AppListControllerDelegate;
@@ -31,6 +32,7 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   // ChromeSearchResult:
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   const std::string& launch_intent_uri() const {

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 
 class CrostiniAppContextMenu;
 class CrostiniAppIconLoader;
@@ -31,6 +32,7 @@ class CrostiniAppResult : public AppResult, public AppIconLoaderDelegate {
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void ExecuteLaunchCommand(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
   // AppIconLoaderDelegate overrides:
   void OnAppImageUpdated(const std::string& app_id,

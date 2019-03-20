@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/common/app.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -34,6 +35,7 @@ class ArcAppShortcutSearchResult : public ChromeSearchResult,
 
   // ChromeSearchResult:
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   // AppIconLoaderDelegate:
