@@ -166,6 +166,10 @@ bool ServiceFontManager::Deserialize(
   if (!deserializer.Read<uint32_t>(&num_locked_handles))
     return false;
 
+  // Loosely avoid extremely large (but fake) numbers of locked handles.
+  if (memory_size / sizeof(SkDiscardableHandleId) < num_locked_handles)
+    return false;
+
   locked_handles->resize(num_locked_handles);
   for (uint32_t i = 0; i < num_locked_handles; ++i) {
     if (!deserializer.Read<SkDiscardableHandleId>(&locked_handles->at(i)))
