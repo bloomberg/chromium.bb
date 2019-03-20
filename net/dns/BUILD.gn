@@ -59,7 +59,6 @@ source_set("dns") {
       "host_cache.cc",
       "host_resolver.cc",
       "host_resolver_manager.cc",
-      "host_resolver_manager.h",
       "host_resolver_mdns_listener_impl.cc",
       "host_resolver_mdns_listener_impl.h",
       "host_resolver_mdns_task.cc",
@@ -109,6 +108,7 @@ source_set("dns") {
   public_deps = [
     ":dns_client",
     ":host_resolver",
+    ":host_resolver_manager",
     ":mdns_client",
     "//net:net_public_deps",
   ]
@@ -116,6 +116,7 @@ source_set("dns") {
   allow_circular_includes_from = [
     ":dns_client",
     ":host_resolver",
+    ":host_resolver_manager",
     ":mdns_client",
   ]
 }
@@ -133,6 +134,7 @@ source_set("host_resolver") {
   # restriction.
   visibility = [
     ":dns",
+    ":host_resolver_manager",
     ":mdns_client",
     "//net",
   ]
@@ -188,6 +190,47 @@ source_set("host_resolver") {
   }
 
   deps = [
+    "//net:net_deps",
+    "//net/dns/public",
+  ]
+  public_deps = [
+    "//net:net_public_deps",
+  ]
+}
+
+# Shared mostly-global handler of HostResolver requests.
+#
+# Typically should only be directly interacted with by NetworkService (or other
+# mostly-global creators of request contexts), standalone tools, and tests. Host
+# resolution should generally instead go through HostResolvers received from
+# URLRequestContext or network service Mojo IPCs.
+source_set("host_resolver_manager") {
+  # Due to circular dependencies, should only be depended on through //net.
+  # Limit visibility to //net and other source_sets with the same access
+  # restriction.
+  visibility = [
+    ":dns",
+    ":host_resolver",
+    "//net",
+  ]
+
+  # Whitelist-only access so we can keep track of all usage external to the
+  # network stack and network service.
+  friend = [
+    # Network stack/service.
+    "//net/*",
+    "//services/network/*",
+  ]
+
+  sources = []
+  public = []
+
+  if (!is_nacl) {
+    sources += [ "host_resolver_manager.h" ]
+  }
+
+  deps = [
+    ":host_resolver",
     "//net:net_deps",
     "//net/dns/public",
   ]
