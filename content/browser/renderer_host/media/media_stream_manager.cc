@@ -263,6 +263,28 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(bool request_audio) {
   return devices;
 }
 
+void FinalizeGetMediaDeviceIDForHMAC(
+    blink::MediaDeviceType type,
+    const std::string& salt,
+    const url::Origin& security_origin,
+    const std::string& source_id,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback,
+    const MediaDeviceEnumeration& enumeration) {
+  DCHECK(type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
+         type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  for (const auto& device : enumeration[type]) {
+    if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+            salt, security_origin, source_id, device.device_id)) {
+      task_runner->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), device.device_id));
+      return;
+    }
+  }
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), base::nullopt));
+}
+
 }  // namespace
 
 // MediaStreamManager::DeviceRequest represents a request to either enumerate
@@ -2120,6 +2142,29 @@ bool MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
   std::string guid_from_raw_device_id =
       GetHMACForMediaDeviceID(salt, security_origin, raw_unique_id);
   return guid_from_raw_device_id == device_guid;
+}
+
+// static
+void MediaStreamManager::GetMediaDeviceIDForHMAC(
+    blink::MediaStreamType stream_type,
+    std::string salt,
+    url::Origin security_origin,
+    std::string hmac_device_id,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::OnceCallback<void(const base::Optional<std::string>&)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(stream_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         stream_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
+  MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
+  blink::MediaDeviceType device_type = ConvertToMediaDeviceType(stream_type);
+  MediaDevicesManager::BoolDeviceTypes requested_types;
+  requested_types[device_type] = true;
+  msm->media_devices_manager()->EnumerateDevices(
+      requested_types,
+      base::BindOnce(&FinalizeGetMediaDeviceIDForHMAC, device_type,
+                     std::move(salt), std::move(security_origin),
+                     std::move(hmac_device_id), std::move(task_runner),
+                     std::move(callback)));
 }
 
 // static

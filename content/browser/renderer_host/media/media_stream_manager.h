@@ -300,6 +300,18 @@ class CONTENT_EXPORT MediaStreamManager
                                          const std::string& device_guid,
                                          const std::string& raw_unique_id);
 
+  // Convenience method to get the raw device ID from the HMAC |hmac_device_id|
+  // for the given |security_origin| and |salt|. |stream_type| must be
+  // blink::MEDIA_DEVICE_AUDIO_CAPTURE or blink::MEDIA_DEVICE_VIDEO_CAPTURE.
+  // The result will be returned via |callback| on the given |task_runner|.
+  static void GetMediaDeviceIDForHMAC(
+      blink::MediaStreamType stream_type,
+      std::string salt,
+      url::Origin security_origin,
+      std::string hmac_device_id,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::OnceCallback<void(const base::Optional<std::string>&)> callback);
+
   // Returns true if the renderer process identified with |render_process_id|
   // is allowed to access |origin|.
   static bool IsOriginAllowed(int render_process_id, const url::Origin& origin);
