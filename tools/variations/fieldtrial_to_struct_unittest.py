@@ -10,6 +10,13 @@ import os
 
 class FieldTrialToStruct(unittest.TestCase):
 
+  def FullRelativePath(self, relative_path):
+    base_path = os.path.dirname(__file__)
+    if not base_path:
+      # Handle test being run from the current directory.
+      base_path = '.'
+    return base_path + relative_path
+
   def test_FieldTrialToDescription(self):
     config = {
       'Trial1': [
@@ -72,7 +79,8 @@ class FieldTrialToStruct(unittest.TestCase):
                     {'key': 'y', 'value': '2'}
                   ],
                   'enable_features': ['A', 'B'],
-                  'disable_features': ['C']
+                  'disable_features': ['C'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
                 },
                 {
                   'name': 'Group2',
@@ -82,7 +90,8 @@ class FieldTrialToStruct(unittest.TestCase):
                     {'key': 'y', 'value': '4'}
                   ],
                   'enable_features': ['D', 'E'],
-                  'disable_features': ['F']
+                  'disable_features': ['F'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
                 },
               ],
             },
@@ -92,6 +101,7 @@ class FieldTrialToStruct(unittest.TestCase):
                 {
                   'name': 'OtherGroup',
                   'platforms': ['Study::PLATFORM_WINDOWS'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
                 }
               ]
             },
@@ -101,7 +111,8 @@ class FieldTrialToStruct(unittest.TestCase):
                   {
                     'name': 'ForcedGroup',
                     'platforms': ['Study::PLATFORM_WINDOWS'],
-                    'forcing_flag': "my-forcing-flag"
+                    'forcing_flag': "my-forcing-flag",
+                    'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
                   }
               ]
             },
@@ -116,6 +127,7 @@ class FieldTrialToStruct(unittest.TestCase):
     'Trial1': [
       {
         'platforms': ['windows', 'ios'],
+        'is_low_end_device': True,
         'experiments': [
           {
             'name': 'Group1',
@@ -172,7 +184,8 @@ class FieldTrialToStruct(unittest.TestCase):
                     {'key': 'y', 'value': '2'}
                   ],
                   'enable_features': ['A', 'B'],
-                  'disable_features': ['C']
+                  'disable_features': ['C'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_TRUE'
                 },
                 {
                   'name': 'Group2',
@@ -182,11 +195,13 @@ class FieldTrialToStruct(unittest.TestCase):
                     {'key': 'y', 'value': '4'}
                   ],
                   'enable_features': ['D', 'E'],
-                  'disable_features': ['F']
+                  'disable_features': ['F'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_TRUE'
                 },
                 {
                   'name': 'IOSOnly',
                   'platforms': ['Study::PLATFORM_IOS'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
                 },
               ],
             },
@@ -210,6 +225,7 @@ class FieldTrialToStruct(unittest.TestCase):
                 {
                   'name': 'OtherGroup',
                   'platforms': ['Study::PLATFORM_MAC'],
+                  'is_low_end_device': 'Study::OPTIONAL_BOOL_MISSING'
                 },
               ],
             },
@@ -221,10 +237,11 @@ class FieldTrialToStruct(unittest.TestCase):
     self.assertEqual(expected, result)
 
   def test_FieldTrialToStructMain(self):
-    schema = (os.path.dirname(__file__) +
+
+    schema = self.FullRelativePath(
               '/../../components/variations/field_trial_config/'
               'field_trial_testing_config_schema.json')
-    unittest_data_dir = os.path.dirname(__file__) + '/unittest_data/'
+    unittest_data_dir = self.FullRelativePath('/unittest_data/')
     test_output_filename = 'test_output'
     fieldtrial_to_struct.main([
       '--schema=' + schema,

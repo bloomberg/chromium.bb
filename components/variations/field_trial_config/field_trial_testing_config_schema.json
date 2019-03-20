@@ -27,6 +27,13 @@
                 "contents": {"type": "enum", "ctype": "Study::Platform"}
               },
               {
+                "field": "is_low_end_device",
+                "type": "enum",
+                "ctype": "Study::OptionalBool",
+                "default": "Study::OPTIONAL_BOOL_MISSING",
+                "optional": "True"
+              },
+              {
                 "field": "params",
                 "type": "array",
                 "contents": {

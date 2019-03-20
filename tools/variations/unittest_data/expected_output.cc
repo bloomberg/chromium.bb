@@ -10,14 +10,15 @@
 #include "test_output.h"
 
 
-const Study::Platform array_kFieldTrialConfig_platforms_3[] = {
+const Study::Platform array_kFieldTrialConfig_platforms_5[] = {
       Study::PLATFORM_WINDOWS,
 };
-const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
+const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_3[] = {
     {
       "ForcedGroup",
-      array_kFieldTrialConfig_platforms_3,
+      array_kFieldTrialConfig_platforms_5,
       1,
+      Study::OPTIONAL_BOOL_MISSING,
       NULL,
       0,
       NULL,
@@ -25,6 +26,40 @@ const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
       NULL,
       0,
       "my-forcing-flag",
+    },
+};
+const Study::Platform array_kFieldTrialConfig_platforms_4[] = {
+      Study::PLATFORM_WINDOWS,
+};
+const Study::Platform array_kFieldTrialConfig_platforms_3[] = {
+      Study::PLATFORM_WINDOWS,
+};
+const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
+    {
+      "TestGroup1",
+      array_kFieldTrialConfig_platforms_3,
+      1,
+      Study::OPTIONAL_BOOL_TRUE,
+      NULL,
+      0,
+      NULL,
+      0,
+      NULL,
+      0,
+      NULL,
+    },
+    {
+      "TestGroup2",
+      array_kFieldTrialConfig_platforms_4,
+      1,
+      Study::OPTIONAL_BOOL_FALSE,
+      NULL,
+      0,
+      NULL,
+      0,
+      NULL,
+      0,
+      NULL,
     },
 };
 const char* const array_kFieldTrialConfig_enable_features_1[] = {
@@ -38,6 +73,7 @@ const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
       "TestGroup3",
       array_kFieldTrialConfig_platforms_2,
       1,
+      Study::OPTIONAL_BOOL_MISSING,
       NULL,
       0,
       array_kFieldTrialConfig_enable_features_1,
@@ -92,6 +128,7 @@ const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       "TestGroup2",
       array_kFieldTrialConfig_platforms_0,
       1,
+      Study::OPTIONAL_BOOL_MISSING,
       array_kFieldTrialConfig_params,
       2,
       array_kFieldTrialConfig_enable_features,
@@ -104,6 +141,7 @@ const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       "TestGroup2-2",
       array_kFieldTrialConfig_platforms_1,
       1,
+      Study::OPTIONAL_BOOL_MISSING,
       array_kFieldTrialConfig_params_0,
       2,
       array_kFieldTrialConfig_enable_features_0,
@@ -121,6 +159,7 @@ const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
       "TestGroup1",
       array_kFieldTrialConfig_platforms,
       1,
+      Study::OPTIONAL_BOOL_MISSING,
       NULL,
       0,
       NULL,
@@ -147,12 +186,17 @@ const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
     1,
   },
   {
-    "TrialWithForcingFlag",
+    "TrialWithDeviceType",
     array_kFieldTrialConfig_experiments_2,
+    2,
+  },
+  {
+    "TrialWithForcingFlag",
+    array_kFieldTrialConfig_experiments_3,
     1,
   },
 };
 const FieldTrialTestingConfig kFieldTrialConfig = {
   array_kFieldTrialConfig_studies,
-  4,
+  5,
 };
