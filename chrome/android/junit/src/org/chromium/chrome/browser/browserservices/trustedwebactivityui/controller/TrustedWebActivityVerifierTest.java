@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -78,6 +79,7 @@ public class TrustedWebActivityVerifierTest {
     @Mock TabObserverRegistrar mTabObserverRegistrar;
     @Mock ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock OriginVerifier.Factory mOriginVerifierFactory;
+    @Mock CustomTabActivityTabController mCustomTabActivityTabController;
     @Mock Tab mTab;
     @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
@@ -96,7 +98,8 @@ public class TrustedWebActivityVerifierTest {
         doNothing().when(mTabObserverRegistrar).registerTabObserver(mTabObserverCaptor.capture());
         mVerifier = new TrustedWebActivityVerifier(() -> mClientAppDataRecorder,
                 mIntentDataProvider, mCustomTabsConnection, mLifecycleDispatcher,
-                mTabObserverRegistrar, mActivityTabProvider, mOriginVerifierFactory);
+                mTabObserverRegistrar, mActivityTabProvider, mOriginVerifierFactory,
+                mCustomTabActivityTabController);
     }
 
     @Test
