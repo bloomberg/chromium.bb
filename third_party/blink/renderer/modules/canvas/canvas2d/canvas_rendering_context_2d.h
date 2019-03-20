@@ -273,12 +273,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   LinkedHashSet<String> font_lru_list_;
 };
 
-DEFINE_TYPE_CASTS(CanvasRenderingContext2D,
-                  CanvasRenderingContext,
-                  context,
-                  context->Is2d() && context->Host(),
-                  context.Is2d() && context.Host());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
