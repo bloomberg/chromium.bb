@@ -113,6 +113,7 @@ LauncherSearch.prototype.initializeEventListeners_ = function(
 LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   this.queryId_ = queryId;
 
+  const startTime = Date.now();
   // Request an instance of volume manager to ensure that all volumes are
   // initialized. When user searches while background page of the Files app is
   // not running, it happens that this method is executed before all volumes are
@@ -122,8 +123,8 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
   volumeManagerFactory.getInstance()
       .then(() => {
         return Promise.all([
-          this.queryDriveEntries_(queryId, query, limit),
-          this.queryLocalEntries_(queryId, query)
+          this.queryDriveEntries_(queryId, query, limit, startTime),
+          this.queryLocalEntries_(queryId, query, startTime)
         ]);
       })
       .then((results) => {
@@ -228,10 +229,12 @@ LauncherSearch.prototype.openFileManagerWithSelectionURL_ = selectionURL => {
  * @param {number} queryId
  * @param {string} query
  * @param {number} limit
+ * @param {number} startTime
  * @return {!Promise<!Array<!Entry>>}
  * @private
  */
-LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
+LauncherSearch.prototype
+    .queryDriveEntries_ = (queryId, query, limit, startTime) => {
   const param = {query: query, types: 'ALL', maxResults: limit};
   return new Promise((resolve, reject) => {
     chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
@@ -239,6 +242,8 @@ LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
         if (connectionState.type !== 'online') {
           results = results.filter(result => result.availableOffline !== false);
         }
+        chrome.metricsPrivate.recordTime(
+            'FileBrowser.LauncherSearch.Drive', Date.now() - startTime);
         resolve(results.map(result => result.entry));
       });
     });
@@ -249,10 +254,12 @@ LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
  * Queries entries which match the given query in Downloads.
  * @param {number} queryId
  * @param {string} query
+ * @param {number} startTime
  * @return {!Promise<!Array<!Entry>>}
  * @private
  */
-LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
+LauncherSearch.prototype.queryLocalEntries_ = function(
+    queryId, query, startTime) {
   if (!query) {
     return Promise.resolve([]);
   }
@@ -260,7 +267,7 @@ LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
   return this.getDownloadsEntry_()
       .then((downloadsEntry) => {
         return this.queryEntriesRecursively_(
-            downloadsEntry, queryId, query.toLowerCase());
+            downloadsEntry, queryId, query.toLowerCase(), startTime);
       })
       .catch((error) => {
         if (error.name != 'AbortError') {
@@ -288,11 +295,12 @@ LauncherSearch.prototype.getDownloadsEntry_ = () => {
  * @param {!DirectoryEntry} rootEntry
  * @param {number} queryId
  * @param {string} query
+ * @param {number} startTime
  * @return {!Promise<!Array<!Entry>>}
  * @private
  */
 LauncherSearch.prototype.queryEntriesRecursively_ = function(
-    rootEntry, queryId, query) {
+    rootEntry, queryId, query, startTime) {
   return new Promise((resolve, reject) => {
     let foundEntries = [];
     util.readEntriesRecursively(
@@ -305,6 +313,8 @@ LauncherSearch.prototype.queryEntriesRecursively_ = function(
           }
         },
         () => {
+          chrome.metricsPrivate.recordTime(
+              'FileBrowser.LauncherSearch.Local', Date.now() - startTime);
           resolve(foundEntries);
         },
         reject,
