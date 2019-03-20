@@ -89,6 +89,7 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
                           std::vector<std::unique_ptr<CanonicalCookie>> result);
 
   const CommandList& commands() const { return commands_; }
+  CommandList TakeCommands() { return std::move(commands_); }
 
   void Load(const LoadedCallback& loaded_callback,
             const NetLogWithSource& net_log) override;
