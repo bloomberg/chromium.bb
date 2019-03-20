@@ -22,6 +22,11 @@ class LearningTaskControllerImplTest : public testing::Test {
     FakeDistributionReporter(const LearningTask& task)
         : DistributionReporter(task) {}
 
+    // protected => public
+    const base::Optional<std::set<int>>& feature_indices() const {
+      return DistributionReporter::feature_indices();
+    }
+
    protected:
     void OnPrediction(TargetDistribution observed,
                       TargetDistribution predicted) override {
@@ -64,14 +69,18 @@ class LearningTaskControllerImplTest : public testing::Test {
     void Train(const LearningTask& task,
                const TrainingData& training_data,
                TrainedModelCB model_cb) override {
+      task_ = task;
       (*num_models_)++;
       training_data_ = training_data;
       std::move(model_cb).Run(std::make_unique<FakeModel>(target_value_));
     }
 
+    const LearningTask& task() const { return task_; }
+
     const TrainingData& training_data() const { return training_data_; }
 
    private:
+    LearningTask task_;
     int* num_models_ = nullptr;
     TargetValue target_value_;
 
@@ -193,6 +202,51 @@ TEST_F(LearningTaskControllerImplTest, FeatureProviderIsUsed) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(trainer_raw_->training_data()[0].features[0], FeatureValue(124));
   EXPECT_EQ(trainer_raw_->training_data()[0].weight, example.weight);
+}
+
+TEST_F(LearningTaskControllerImplTest, FeatureSubsetsWork) {
+  const char* feature_names[] = {
+      "feature0", "feature1", "feature2", "feature3", "feature4",  "feature5",
+      "feature6", "feature7", "feature8", "feature9", "feature10", "feature11",
+  };
+  const int num_features = sizeof(feature_names) / sizeof(feature_names[0]);
+  for (int i = 0; i < num_features; i++)
+    task_.feature_descriptions.push_back({feature_names[i]});
+  const size_t subset_size = 4;
+  task_.feature_subset_size = subset_size;
+  CreateController();
+
+  // Verify that the reporter is given a subset of the features.
+  auto subset = *reporter_raw_->feature_indices();
+  EXPECT_EQ(subset.size(), subset_size);
+
+  // Train a model.  Each feature will have a unique value.
+  LabelledExample example;
+  for (int i = 0; i < num_features; i++)
+    example.features.push_back(FeatureValue(i));
+  AddExample(example);
+
+  // Verify that all feature names in |subset| are present in the task.
+  FeatureVector expected_features;
+  expected_features.resize(subset_size);
+  EXPECT_EQ(trainer_raw_->task().feature_descriptions.size(), subset_size);
+  for (auto& iter : subset) {
+    bool found = false;
+    for (size_t i = 0; i < subset_size; i++) {
+      if (trainer_raw_->task().feature_descriptions[i].name ==
+          feature_names[iter]) {
+        // Also build a vector with the features in the expected order.
+        expected_features[i] = example.features[iter];
+        found = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+
+  // Verify that the training data has the adjusted features.
+  EXPECT_EQ(trainer_raw_->training_data().size(), 1u);
+  EXPECT_EQ(trainer_raw_->training_data()[0].features, expected_features);
 }
 
 }  // namespace learning
