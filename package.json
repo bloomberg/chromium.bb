@@ -16,19 +16,19 @@
   },
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
   "devDependencies": {
-    "@types/node": "^10.12.18",
+    "@types/node": "^10.14.1",
     "fast-glob": "^2.2.6",
     "grunt": "^1.0.3",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-http-server": "^2.1.0",
     "grunt-run": "^0.8.1",
-    "grunt-ts": "^6.0.0-beta.21",
+    "grunt-ts": "^6.0.0-beta.22",
     "grunt-tslint": "^5.0.2",
     "minimist": "^1.2.0",
     "ts-node": "^7.0.1",
-    "tslint": "^5.12.1",
-    "typescript": "^3.2.4"
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000"
   },
   "dependencies": {}
 }
