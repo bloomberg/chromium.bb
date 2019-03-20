@@ -131,26 +131,29 @@ std::string EventRouter::GetBaseEventName(const std::string& full_event_name) {
 // static
 void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
                                         void* browser_context_id,
+                                        int render_process_id,
                                         const std::string& extension_id,
                                         events::HistogramValue histogram_value,
                                         const std::string& event_name,
+                                        int64_t service_worker_version_id,
                                         std::unique_ptr<ListValue> event_args,
                                         UserGestureState user_gesture,
                                         const EventFilteringInfo& info) {
   int event_id = g_extension_event_id.GetNext();
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DoDispatchEventToSenderBookkeepingOnUI(browser_context_id, extension_id,
-                                           event_id, histogram_value,
-                                           event_name);
+    DoDispatchEventToSenderBookkeepingOnUI(
+        browser_context_id, render_process_id, extension_id, event_id,
+        service_worker_version_id, histogram_value, event_name);
   } else {
     // This is called from WebRequest API.
     // TODO(lazyboy): Skip this entirely: http://crbug.com/488747.
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&EventRouter::DoDispatchEventToSenderBookkeepingOnUI,
-                       browser_context_id, extension_id, event_id,
-                       histogram_value, event_name));
+                       browser_context_id, render_process_id, extension_id,
+                       event_id, service_worker_version_id, histogram_value,
+                       event_name));
   }
 
   DispatchExtensionMessage(ipc_sender,
@@ -702,29 +705,18 @@ void EventRouter::DispatchEventToProcess(
   if (extension) {
     ReportEvent(event->histogram_value, extension, did_enqueue);
 
-    const bool is_for_service_worker = worker_thread_id != kMainThreadId;
-    // TODO(lazyboy): It would be nice to unify inflight-event increment code
-    // for worker and non-worker below. That would also require passing in
-    // dummy worker thread id and service worker context to the unified
-    // method...
-    if (is_for_service_worker) {
-      content::ServiceWorkerContext* service_worker_context =
-          process->GetStoragePartition()->GetServiceWorkerContext();
-      event_ack_data_.IncrementInflightEvent(
-          service_worker_context, process->GetID(), service_worker_version_id,
-          event_id);
-    } else {
-      IncrementInFlightEvents(listener_context, extension, event_id,
-                              event->event_name);
-    }
+    IncrementInFlightEvents(listener_context, process, extension, event_id,
+                            event->event_name, service_worker_version_id);
   }
 }
 
 // static
 void EventRouter::DoDispatchEventToSenderBookkeepingOnUI(
     void* browser_context_id,
+    int render_process_id,
     const std::string& extension_id,
     int event_id,
+    int64_t service_worker_version_id,
     events::HistogramValue histogram_value,
     const std::string& event_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -762,16 +754,19 @@ void EventRouter::DoDispatchEventToSenderBookkeepingOnUI(
     NOTREACHED();
     return;
   }
-  event_router->IncrementInFlightEvents(browser_context, extension, event_id,
-                                        event_name);
+  event_router->IncrementInFlightEvents(
+      browser_context, content::RenderProcessHost::FromID(render_process_id),
+      extension, event_id, event_name, service_worker_version_id);
   event_router->ReportEvent(histogram_value, extension,
                             false /* did_enqueue */);
 }
 
 void EventRouter::IncrementInFlightEvents(BrowserContext* context,
+                                          content::RenderProcessHost* process,
                                           const Extension* extension,
                                           int event_id,
-                                          const std::string& event_name) {
+                                          const std::string& event_name,
+                                          int64_t service_worker_version_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Only increment in-flight events if the lazy background page is active,
@@ -782,6 +777,19 @@ void EventRouter::IncrementInFlightEvents(BrowserContext* context,
     if (host) {
       pm->IncrementLazyKeepaliveCount(extension, Activity::EVENT, event_name);
       host->OnBackgroundEventDispatched(event_name, event_id);
+    }
+  } else if (service_worker_version_id !=
+             blink::mojom::kInvalidServiceWorkerVersionId) {
+    // Check to make sure the rendered process hasn't gone away by the time
+    // we've gotten here. (It's possible it has crashed, etc.) If that's
+    // happened, we don't want to track the expected ACK, since we'll never
+    // get it.
+    if (process) {
+      content::ServiceWorkerContext* service_worker_context =
+          process->GetStoragePartition()->GetServiceWorkerContext();
+      event_ack_data_.IncrementInflightEvent(
+          service_worker_context, process->GetID(), service_worker_version_id,
+          event_id);
     }
   }
 }
