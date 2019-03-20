@@ -271,6 +271,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImage(
 sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
     std::vector<ResourceMetadata> metadatas,
     SkYUVColorSpace yuv_color_space,
+    sk_sp<SkColorSpace> dst_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
@@ -331,7 +332,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
   return SkImage::MakeFromYUVATextures(
       gr_context(), yuv_color_space, yuva_textures, indices,
       SkISize::Make(yuva_textures[0].width(), yuva_textures[1].height()),
-      kTopLeft_GrSurfaceOrigin);
+      kTopLeft_GrSurfaceOrigin, dst_color_space);
 }
 
 gpu::SyncToken SkiaOutputSurfaceImplNonDDL::ReleasePromiseSkImages(
