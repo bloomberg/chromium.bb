@@ -13,7 +13,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -51,20 +50,19 @@ HandleResourceRequestWithPlaintextMimeType(
 class DataSaverSiteBreakdownMetricsObserverBrowserTest
     : public InProcessBrowserTest {
  protected:
-  void EnableDataSaver() {
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kDataSaverEnabled, true);
-    prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
-                      true);
-    // Give the setting notification a chance to propagate.
-    base::RunLoop().RunUntilIdle();
-  }
-
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         data_reduction_proxy::features::
             kDataSaverSiteBreakdownUsingPageLoadMetrics);
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
+                      true);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -105,7 +103,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   };
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  EnableDataSaver();
   for (const auto& test : tests) {
     GURL test_url(embedded_test_server()->GetURL(test.url));
     uint64_t data_usage_before_navigation =
@@ -134,8 +131,6 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   plaintext_server->RegisterRequestHandler(
       base::BindRepeating(&HandleResourceRequestWithPlaintextMimeType));
   ASSERT_TRUE(plaintext_server->Start());
-
-  EnableDataSaver();
 
   GURL test_url(plaintext_server->GetURL("/page"));
 
