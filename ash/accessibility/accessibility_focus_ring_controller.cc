@@ -68,12 +68,8 @@ void AccessibilityFocusRingController::SetFocusRing(
   AccessibilityFocusRingGroup* focus_ring_group =
       GetFocusRingGroupForId(focus_ring_id, true /* Create if missing */);
 
-  focus_ring_group->SetColor(focus_ring->color, this);
-
-  if (focus_ring_group->SetFocusRectsAndBehavior(focus_ring->rects_in_screen,
-                                                 focus_ring->behavior, this)) {
+  if (focus_ring_group->UpdateFocusRing(std::move(focus_ring), this))
     OnLayerChange(focus_ring_group->focus_animation_info());
-  }
 }
 
 void AccessibilityFocusRingController::HideFocusRing(
@@ -185,7 +181,7 @@ void AccessibilityFocusRingController::GetColorAndOpacityFromColor(
 void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
   for (auto iter = focus_ring_groups_.begin(); iter != focus_ring_groups_.end();
        ++iter)
-    iter->second->UpdateFocusRingsFromFocusRects(this);
+    iter->second->UpdateFocusRingsFromInfo(this);
 }
 
 void AccessibilityFocusRingController::OnAnimationStep(
