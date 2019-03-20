@@ -65,16 +65,16 @@ TEST(AXLanguageInfoTest, BoringTree) {
   EXPECT_EQ(node1->parent(), nullptr);
 
   AXNode* node2 = tree.GetFromId(2);
-  EXPECT_EQ(node2->parent(), node1);
+  ASSERT_EQ(node2->parent(), node1);
   EXPECT_EQ(node2->parent()->parent(), nullptr);
 
   AXNode* node3 = tree.GetFromId(3);
-  EXPECT_EQ(node3->parent(), node1);
+  ASSERT_EQ(node3->parent(), node1);
   EXPECT_EQ(node3->parent()->parent(), nullptr);
 
   AXNode* node4 = tree.GetFromId(4);
-  EXPECT_EQ(node4->parent(), node2);
-  EXPECT_EQ(node4->parent()->parent(), node1);
+  ASSERT_EQ(node4->parent(), node2);
+  ASSERT_EQ(node4->parent()->parent(), node1);
   EXPECT_EQ(node4->parent()->parent()->parent(), nullptr);
 
   EXPECT_EQ(node1->GetLanguage(), "");
@@ -572,7 +572,7 @@ TEST(AXLanguageInfoTest, kLanguageUntouched) {
   {
     // French should be detected, original English attr should be untouched.
     AXNode* node1 = tree.GetFromId(1);
-    EXPECT_NE(node1->GetLanguageInfo(), nullptr);
+    ASSERT_NE(node1->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node1->GetLanguageInfo()->language, "fr");
     EXPECT_EQ(node1->GetStringAttribute(ax::mojom::StringAttribute::kLanguage),
               "en");
@@ -582,7 +582,7 @@ TEST(AXLanguageInfoTest, kLanguageUntouched) {
   {
     // English should be detected, original French attr should be untouched.
     AXNode* node2 = tree.GetFromId(2);
-    EXPECT_NE(node2->GetLanguageInfo(), nullptr);
+    ASSERT_NE(node2->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node2->GetLanguageInfo()->language, "en");
     EXPECT_EQ(node2->GetStringAttribute(ax::mojom::StringAttribute::kLanguage),
               "fr");
@@ -592,7 +592,7 @@ TEST(AXLanguageInfoTest, kLanguageUntouched) {
   {
     // German should be detected, original empty attr should be untouched.
     AXNode* node3 = tree.GetFromId(3);
-    EXPECT_NE(node3->GetLanguageInfo(), nullptr);
+    ASSERT_NE(node3->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node3->GetLanguageInfo()->language, "de");
     EXPECT_EQ(node3->GetStringAttribute(ax::mojom::StringAttribute::kLanguage),
               "");
@@ -611,9 +611,9 @@ TEST(AXLanguageInfoTest, StatsBasic) {
     stats.Add(detected_languages);
   }
 
-  EXPECT_EQ(stats.GetScore("en"), 3);
-  EXPECT_EQ(stats.GetScore("fr"), 2);
-  EXPECT_EQ(stats.GetScore("ja"), 1);
+  ASSERT_EQ(stats.GetScore("en"), 3);
+  ASSERT_EQ(stats.GetScore("fr"), 2);
+  ASSERT_EQ(stats.GetScore("ja"), 1);
 
   EXPECT_TRUE(stats.CheckLanguageWithinTop("en"));
   EXPECT_TRUE(stats.CheckLanguageWithinTop("fr"));
@@ -627,10 +627,10 @@ TEST(AXLanguageInfoTest, StatsBasic) {
     stats.Add(detected_languages);
   }
 
-  EXPECT_EQ(stats.GetScore("en"), 6);
-  EXPECT_EQ(stats.GetScore("fr"), 3);
-  EXPECT_EQ(stats.GetScore("de"), 2);
-  EXPECT_EQ(stats.GetScore("ja"), 1);
+  ASSERT_EQ(stats.GetScore("en"), 6);
+  ASSERT_EQ(stats.GetScore("fr"), 3);
+  ASSERT_EQ(stats.GetScore("de"), 2);
+  ASSERT_EQ(stats.GetScore("ja"), 1);
 
   EXPECT_TRUE(stats.CheckLanguageWithinTop("en"));
   EXPECT_TRUE(stats.CheckLanguageWithinTop("fr"));
@@ -644,10 +644,10 @@ TEST(AXLanguageInfoTest, StatsBasic) {
     stats.Add(detected_languages);
   }
 
-  EXPECT_EQ(stats.GetScore("en"), 6);
-  EXPECT_EQ(stats.GetScore("fr"), 6);
-  EXPECT_EQ(stats.GetScore("de"), 2);
-  EXPECT_EQ(stats.GetScore("ja"), 1);
+  ASSERT_EQ(stats.GetScore("en"), 6);
+  ASSERT_EQ(stats.GetScore("fr"), 6);
+  ASSERT_EQ(stats.GetScore("de"), 2);
+  ASSERT_EQ(stats.GetScore("ja"), 1);
 
   EXPECT_TRUE(stats.CheckLanguageWithinTop("en"));
   EXPECT_TRUE(stats.CheckLanguageWithinTop("fr"));
@@ -663,12 +663,12 @@ TEST(AXLanguageInfoTest, StatsBasic) {
     stats.Add(detected_languages);
   }
 
-  EXPECT_EQ(stats.GetScore("en"), 6);
-  EXPECT_EQ(stats.GetScore("fr"), 6);
-  EXPECT_EQ(stats.GetScore("ja"), 4);
-  EXPECT_EQ(stats.GetScore("de"), 2);
-  EXPECT_EQ(stats.GetScore("qq"), 2);
-  EXPECT_EQ(stats.GetScore("zz"), 1);
+  ASSERT_EQ(stats.GetScore("en"), 6);
+  ASSERT_EQ(stats.GetScore("fr"), 6);
+  ASSERT_EQ(stats.GetScore("ja"), 4);
+  ASSERT_EQ(stats.GetScore("de"), 2);
+  ASSERT_EQ(stats.GetScore("qq"), 2);
+  ASSERT_EQ(stats.GetScore("zz"), 1);
 
   EXPECT_TRUE(stats.CheckLanguageWithinTop("en"));
   EXPECT_TRUE(stats.CheckLanguageWithinTop("fr"));
