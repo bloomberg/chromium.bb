@@ -15,7 +15,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
 namespace gfx {
+class Animation;
 class Point;
 }
 namespace views {
@@ -108,6 +112,9 @@ class StatusBubbleViews : public StatusBubble {
   // Set the bounds of the bubble relative to |base_view_|.
   void SetBounds(int x, int y, int w, int h);
 
+  gfx::Animation* GetShowHideAnimationForTest();
+  bool IsDestroyPopupTimerRunningForTest();
+
   // The status text we want to display when there are no URLs to display.
   base::string16 status_text_;
 
@@ -132,8 +139,8 @@ class StatusBubbleViews : public StatusBubble {
   // How vertically offset the bubble is from its root position_.
   int offset_ = 0;
 
-  // We use a HWND for the popup so that it may float above any HWNDs in our
-  // UI (the location bar, for example).
+  // Use a Widget for the popup so that it floats above all content as well as
+  // going outside the bounds of the hosting widget.
   std::unique_ptr<views::Widget> popup_;
 
   views::View* base_view_;
@@ -148,6 +155,11 @@ class StatusBubbleViews : public StatusBubble {
   // If the bubble has already been expanded, and encounters a new URL,
   // change size immediately, with no hover.
   bool is_expanded_ = false;
+
+  // Used for posting tasks. This is typically
+  // base::ThreadTaskRunnerHandle::Get(), but may be set to something else for
+  // tests.
+  base::SequencedTaskRunner* task_runner_;
 
   // Times expansion of status bubble when URL is too long for standard width.
   base::WeakPtrFactory<StatusBubbleViews> expand_timer_factory_{this};
