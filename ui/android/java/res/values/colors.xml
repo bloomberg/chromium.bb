@@ -23,6 +23,12 @@
     <color name="default_icon_color_disabled" tools:ignore="UnusedResources">
         @color/default_icon_color_dark_disabled
     </color>
+    <color name="default_icon_color_inverse" tools:ignore="UnusedResources">
+        @color/default_icon_color_white
+    </color>
+    <color name="default_icon_color_inverse_disabled" tools:ignore="UnusedResources">
+        @color/white_alpha_38
+    </color>
     <color name="default_icon_color_blue" tools:ignore="UnusedResources">
         @color/modern_blue_600
     </color>

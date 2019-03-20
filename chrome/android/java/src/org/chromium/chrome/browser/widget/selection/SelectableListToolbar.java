@@ -204,8 +204,8 @@ public class SelectableListToolbar<E>
 
         mDarkIconColorList =
                 AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
-        mLightIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
+        mLightIconColorList = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_inverse);
 
         setTitleTextAppearance(getContext(), R.style.TextAppearance_BlackHeadline);
         if (mTitleResId != 0) setTitle(mTitleResId);
@@ -214,8 +214,8 @@ public class SelectableListToolbar<E>
         //                    buttons.
         mNormalMenuButton = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.ic_more_vert_black_24dp);
-        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.ic_more_vert_black_24dp, R.color.white_mode_tint);
+        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(getContext(),
+                R.drawable.ic_more_vert_black_24dp, R.color.default_icon_color_inverse);
         mNavigationIconDrawable = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.ic_arrow_back_white_24dp);
 
