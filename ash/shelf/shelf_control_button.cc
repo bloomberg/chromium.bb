@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_control_button.h"
 
+#include "ash/public/cpp/ash_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
@@ -15,6 +16,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -22,7 +24,10 @@ namespace ash {
 ShelfControlButton::ShelfControlButton(ShelfView* shelf_view)
     : ShelfButton(shelf_view), shelf_(shelf_view->shelf()) {
   set_has_ink_drop_action_on_click(true);
-  SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
+
+  SetInstallFocusRingOnFocus(true);
+  focus_ring()->SetColor(kFocusBorderColor);
+  SetFocusPainter(nullptr);
 }
 
 ShelfControlButton::~ShelfControlButton() = default;
@@ -66,6 +71,22 @@ gfx::Rect ShelfControlButton::CalculateButtonBounds() const {
 
 void ShelfControlButton::PaintButtonContents(gfx::Canvas* canvas) {
   PaintBackground(canvas, CalculateButtonBounds());
+}
+
+void ShelfControlButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  const int border_radius = ShelfConstants::control_border_radius();
+  // Some control buttons have a slightly larger size to fill the shelf and
+  // maximize the click target, but we still want their "visual" size to be
+  // the same, so we find the center point and draw a square around that.
+  const gfx::Point center = GetCenterPoint();
+  const int half_size = kShelfControlSize / 2;
+  const gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
+                              kShelfControlSize, kShelfControlSize);
+  auto path = std::make_unique<SkPath>();
+  path->addRoundRect(gfx::RectToSkRect(visual_size), border_radius,
+                     border_radius);
+  SetProperty(views::kHighlightPathKey, path.release());
+  ShelfButton::OnBoundsChanged(previous_bounds);
 }
 
 void ShelfControlButton::PaintBackground(gfx::Canvas* canvas,
