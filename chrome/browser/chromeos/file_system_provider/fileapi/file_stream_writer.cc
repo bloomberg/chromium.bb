@@ -157,9 +157,8 @@ FileStreamWriter::~FileStreamWriter() {
                          this);
 }
 
-void FileStreamWriter::Initialize(
-    const base::Closure& pending_closure,
-    const net::CompletionCallback& error_callback) {
+void FileStreamWriter::Initialize(base::OnceClosure pending_closure,
+                                  net::CompletionOnceCallback error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(NOT_INITIALIZED, state_);
   state_ = INITIALIZING;
@@ -167,14 +166,15 @@ void FileStreamWriter::Initialize(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OperationRunner::OpenFileOnUIThread, runner_, url_,
-                     base::Bind(&FileStreamWriter::OnOpenFileCompleted,
-                                weak_ptr_factory_.GetWeakPtr(), pending_closure,
-                                error_callback)));
+                     base::BindOnce(&FileStreamWriter::OnOpenFileCompleted,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(pending_closure),
+                                    std::move(error_callback))));
 }
 
 void FileStreamWriter::OnOpenFileCompleted(
-    const base::Closure& pending_closure,
-    const net::CompletionCallback& error_callback,
+    base::OnceClosure pending_closure,
+    net::CompletionOnceCallback error_callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_ == INITIALIZING || state_ == CANCELLING);
@@ -185,7 +185,7 @@ void FileStreamWriter::OnOpenFileCompleted(
   // Write() pending request.
   if (result != base::File::FILE_OK) {
     state_ = FAILED;
-    error_callback.Run(net::FileErrorToNetError(result));
+    std::move(error_callback).Run(net::FileErrorToNetError(result));
     return;
   }
 
@@ -193,7 +193,7 @@ void FileStreamWriter::OnOpenFileCompleted(
   state_ = INITIALIZED;
 
   // Run the task waiting for the initialization to be completed.
-  pending_closure.Run();
+  std::move(pending_closure).Run();
 }
 
 int FileStreamWriter::Write(net::IOBuffer* buffer,
@@ -210,13 +210,14 @@ int FileStreamWriter::Write(net::IOBuffer* buffer,
   switch (state_) {
     case NOT_INITIALIZED:
       // Lazily initialize with the first call to Write().
-      Initialize(base::Bind(&FileStreamWriter::WriteAfterInitialized,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::WrapRefCounted(buffer), buffer_length,
-                            base::Bind(&FileStreamWriter::OnWriteCompleted,
-                                       weak_ptr_factory_.GetWeakPtr())),
-                 base::Bind(&FileStreamWriter::OnWriteCompleted,
-                            weak_ptr_factory_.GetWeakPtr()));
+      Initialize(
+          base::BindOnce(&FileStreamWriter::WriteAfterInitialized,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         base::WrapRefCounted(buffer), buffer_length,
+                         base::BindOnce(&FileStreamWriter::OnWriteCompleted,
+                                        weak_ptr_factory_.GetWeakPtr())),
+          base::BindOnce(&FileStreamWriter::OnWriteCompleted,
+                         weak_ptr_factory_.GetWeakPtr()));
       break;
 
     case INITIALIZING:
@@ -225,8 +226,8 @@ int FileStreamWriter::Write(net::IOBuffer* buffer,
 
     case INITIALIZED:
       WriteAfterInitialized(buffer, buffer_length,
-                            base::Bind(&FileStreamWriter::OnWriteCompleted,
-                                       weak_ptr_factory_.GetWeakPtr()));
+                            base::BindOnce(&FileStreamWriter::OnWriteCompleted,
+                                           weak_ptr_factory_.GetWeakPtr()));
       break;
 
     case EXECUTING:
@@ -277,7 +278,7 @@ int FileStreamWriter::Flush(net::CompletionOnceCallback callback) {
 
 void FileStreamWriter::OnWriteFileCompleted(
     int buffer_length,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_ == EXECUTING || state_ == CANCELLING);
@@ -288,12 +289,12 @@ void FileStreamWriter::OnWriteFileCompleted(
 
   if (result != base::File::FILE_OK) {
     state_ = FAILED;
-    callback.Run(net::FileErrorToNetError(result));
+    std::move(callback).Run(net::FileErrorToNetError(result));
     return;
   }
 
   current_offset_ += buffer_length;
-  callback.Run(buffer_length);
+  std::move(callback).Run(buffer_length);
 }
 
 void FileStreamWriter::OnWriteCompleted(int result) {
@@ -308,7 +309,7 @@ void FileStreamWriter::OnWriteCompleted(int result) {
 void FileStreamWriter::WriteAfterInitialized(
     scoped_refptr<net::IOBuffer> buffer,
     int buffer_length,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_ == INITIALIZED || state_ == CANCELLING);
   if (state_ == CANCELLING)
@@ -318,11 +319,11 @@ void FileStreamWriter::WriteAfterInitialized(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &OperationRunner::WriteFileOnUIThread, runner_, buffer,
-          current_offset_, buffer_length,
-          base::Bind(&FileStreamWriter::OnWriteFileCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), buffer_length, callback)));
+      base::BindOnce(&OperationRunner::WriteFileOnUIThread, runner_, buffer,
+                     current_offset_, buffer_length,
+                     base::BindOnce(&FileStreamWriter::OnWriteFileCompleted,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    buffer_length, std::move(callback))));
 }
 
 }  // namespace file_system_provider
