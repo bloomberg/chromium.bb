@@ -120,6 +120,13 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   void set_ssl_info(net::SSLInfo ssl_info) { ssl_info_ = ssl_info; }
 
+  // Whether to complete the swap out of the previous RenderFrameHost during
+  // cross-process navigations. By default this is true, set to false if you
+  // want the old RenderFrameHost to be left in a pending swap out state.
+  void set_drop_swap_out_ack(bool drop_swap_out_ack) {
+    drop_swap_out_ack_ = drop_swap_out_ack;
+  }
+
  private:
   NavigationSimulatorImpl(const GURL& original_url,
                           bool browser_initiated,
@@ -244,6 +251,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   base::Optional<net::SSLInfo> ssl_info_;
 
   bool auto_advance_ = true;
+  bool drop_swap_out_ack_ = false;
 
   // Generic params structure used for fully customized browser initiated
   // navigation requests. Only valid if explicitely provided.
