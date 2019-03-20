@@ -1453,8 +1453,10 @@ void StyleResolver::ApplyAllProperty(
   if (priority == kResolveVariables)
     return;
 
-  unsigned start_css_property = CSSPropertyPriorityData<priority>::First();
-  unsigned end_css_property = CSSPropertyPriorityData<priority>::Last();
+  unsigned start_css_property =
+      static_cast<unsigned>(CSSPropertyPriorityData<priority>::First());
+  unsigned end_css_property =
+      static_cast<unsigned>(CSSPropertyPriorityData<priority>::Last());
 
   for (unsigned i = start_css_property; i <= end_css_property; ++i) {
     CSSPropertyID property_id = static_cast<CSSPropertyID>(i);

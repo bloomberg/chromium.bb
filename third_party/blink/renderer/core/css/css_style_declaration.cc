@@ -141,7 +141,7 @@ CSSPropertyID CssPropertyInfo(const AtomicString& name) {
     unresolved_property = CSSPropertyInvalid;
   map.insert(name, unresolved_property);
   DCHECK(
-      !unresolved_property ||
+      !isValidCSSPropertyID(unresolved_property) ||
       CSSProperty::Get(resolveCSSPropertyID(unresolved_property)).IsEnabled());
   return unresolved_property;
 }
@@ -153,7 +153,7 @@ String CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name) {
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
 
   // Do not handle non-property names.
-  if (!unresolved_property)
+  if (!isValidCSSPropertyID(unresolved_property))
     return String();
 
   return GetPropertyValueInternal(resolveCSSPropertyID(unresolved_property));
@@ -167,7 +167,7 @@ bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
   if (!execution_context)
     return false;
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
-  if (!unresolved_property)
+  if (!isValidCSSPropertyID(unresolved_property))
     return false;
   // We create the ExceptionState manually due to performance issues: adding
   // [RaisesException] to the IDL causes the bindings layer to expensively
@@ -192,7 +192,7 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
   DEFINE_STATIC_LOCAL(PreAllocatedPropertyVector, property_names, ());
 
   if (property_names.IsEmpty()) {
-    for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+    for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
       CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
       const CSSProperty& property_class =
           CSSProperty::Get(resolveCSSPropertyID(property_id));
@@ -213,7 +213,7 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
 
 bool CSSStyleDeclaration::NamedPropertyQuery(const AtomicString& name,
                                              ExceptionState&) {
-  return CssPropertyInfo(name);
+  return isValidCSSPropertyID(CssPropertyInfo(name));
 }
 
 }  // namespace blink

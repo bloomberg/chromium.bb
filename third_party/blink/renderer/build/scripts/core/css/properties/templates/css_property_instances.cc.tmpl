@@ -37,8 +37,8 @@ const CSSProperty& Get{{property_class_data.property_id}}() {
 {% endfor %}
 
 const CSSUnresolvedProperty* GetAliasPropertyInternal(CSSPropertyID id) {
-  DCHECK_GT(id, {{last_property_id}}); // last property id
-  DCHECK_LE(id, {{last_unresolved_property_id}}); // last unresolved property id
+  DCHECK_GT(id, lastCSSProperty);  // last property id
+  DCHECK_LE(id, lastUnresolvedCSSProperty);  // last unresolved property id
   switch (id) {
     {% for property_class_data in alias_classes_by_property_id %}
     case {{property_class_data.property_id}}:
@@ -53,7 +53,7 @@ const CSSUnresolvedProperty* GetAliasPropertyInternal(CSSPropertyID id) {
 const CSSUnresolvedProperty& GetNonAliasPropertyInternal(CSSPropertyID id) {
   DCHECK_NE(id, CSSPropertyInvalid);
   DCHECK_NE(id, CSSPropertyVariable);
-  DCHECK_LE(id, {{last_property_id}}); // last property id
+  DCHECK_LE(id, lastCSSProperty);  // last property id
   static constexpr const CSSUnresolvedProperty* const property_classes[] = {
     {% for property_class_data in property_classes_by_property_id %}
     &property_{{property_class_data.property_id.lower()}},  // {{property_class_data.property_id}}
@@ -61,7 +61,7 @@ const CSSUnresolvedProperty& GetNonAliasPropertyInternal(CSSPropertyID id) {
   };
   // Subtract 2 because CSSPropertyInvalid and CSSPropertyVariable do not
   // appear in the array.
-  return *property_classes[id - 2];
+  return *property_classes[static_cast<int>(id) - 2];
 }
 
 }  // namespace blink

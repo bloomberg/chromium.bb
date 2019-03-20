@@ -140,8 +140,6 @@ static inline void FilterProperties(
     const CSSPropertyValue& property = input[i];
     if (property.IsImportant() != important)
       continue;
-    const unsigned property_id_index = property.Id() - firstCSSProperty;
-
     if (property.Id() == CSSPropertyVariable) {
       const AtomicString& name =
           To<CSSCustomPropertyDeclaration>(property.Value())->GetName();
@@ -149,6 +147,7 @@ static inline void FilterProperties(
         continue;
       seen_custom_properties.insert(name);
     } else {
+      const unsigned property_id_index = GetCSSPropertyIDIndex(property.Id());
       if (seen_properties.test(property_id_index))
         continue;
       seen_properties.set(property_id_index);
