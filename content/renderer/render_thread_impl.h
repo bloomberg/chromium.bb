@@ -480,6 +480,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   bool NeedsToRecordFirstActivePaint(int metric_type) const;
 
+  void RecordMetricsForBackgroundedRendererPurge();
+
   // Sets the current pipeline rendering color space.
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
 
@@ -550,7 +552,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void PurgePluginListCache(bool reload_pages) override;
   void SetProcessState(mojom::RenderProcessState process_state) override;
   void SetSchedulerKeepActive(bool keep_active) override;
-  void ProcessPurgeAndSuspend() override;
   void SetIsLockedToSite() override;
   void EnableV8LowMemoryMode() override;
 
@@ -567,7 +568,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void RecordMemoryUsageAfterBackgrounded(const char* suffix,
                                           int foregrounded_count);
-  void RecordPurgeAndSuspendMemoryGrowthMetrics(
+  void OnRecordMetricsForBackgroundedRendererPurgeTimerExpired(
       const char* suffix,
       int foregrounded_count_when_purged);
 

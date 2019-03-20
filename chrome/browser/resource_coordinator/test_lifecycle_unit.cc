@@ -64,10 +64,6 @@ int TestLifecycleUnit::GetEstimatedMemoryFreedOnDiscardKB() const {
   return 0;
 }
 
-bool TestLifecycleUnit::CanPurge() const {
-  return false;
-}
-
 bool TestLifecycleUnit::CanFreeze(DecisionDetails* decision_details) const {
   return false;
 }

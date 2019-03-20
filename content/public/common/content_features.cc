@@ -368,20 +368,6 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 const base::Feature kPrioritizeBootstrapTasks = {
     "PrioritizeBootstrapTasks", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables Purge+Throttle on platforms except Android and MacOS.
-// (Android) Purge+Throttle depends on TabManager, but TabManager doesn't
-// support Android. Enable after Android is supported.
-// (MacOS X) Enable after Purge+Throttle handles memory pressure signals
-// send by OS correctly.
-const base::Feature kPurgeAndSuspend {
-  "PurgeAndSuspend",
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
 // Enable raster-inducing scroll.
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

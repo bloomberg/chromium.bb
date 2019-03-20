@@ -1091,6 +1091,16 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
 
 //------------------------------------------------------------------------------
 
+void RendererBlinkPlatformImpl::RecordMetricsForBackgroundedRendererPurge() {
+  auto* render_thread = RenderThreadImpl::current();
+  // RenderThreadImpl is null in some tests.
+  if (!render_thread)
+    return;
+  render_thread->RecordMetricsForBackgroundedRendererPurge();
+}
+
+//------------------------------------------------------------------------------
+
 void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
   if (!web_database_host_) {
     web_database_host_ = blink::mojom::ThreadSafeWebDatabaseHostPtr::Create(

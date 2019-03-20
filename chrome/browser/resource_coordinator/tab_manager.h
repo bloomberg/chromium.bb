@@ -134,10 +134,6 @@ class TabManager : public LifecycleUnitObserver,
   void AddObserver(TabLifecycleObserver* observer);
   void RemoveObserver(TabLifecycleObserver* observer);
 
-  // Returns true when a given renderer can be purged if the specified
-  // renderer is eligible for purging.
-  bool CanPurgeBackgroundedRenderer(int render_process_id) const;
-
   // Indicates how TabManager should load pending background tabs. The mode is
   // recorded in tracing for easier debugging. The existing explicit numbering
   // should be kept as is when new modes are added.
@@ -197,14 +193,12 @@ class TabManager : public LifecycleUnitObserver,
   friend class TabManagerStatsCollectorTest;
   friend class TabManagerWithProactiveDiscardExperimentEnabledTest;
 
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ActivateTabResetPurgeState);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabsLoadingOrdering);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DefaultTimeToPurgeInCorrectRange);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
@@ -232,12 +226,10 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProtectRecentlyUsedTabsFromUrgentDiscarding);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            SessionRestoreAfterBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            SessionRestoreBeforeBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ShouldPurgeAtDefaultTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
@@ -263,16 +255,6 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
                            NoUnfreezeWhenUnfreezingVariationParamDisabled);
 
-  // The time of the first purging after a renderer is backgrounded.
-  // The initial value was chosen because most of users activate backgrounded
-  // tabs within 30 minutes. (c.f. Tabs.StateTransfer.Time_Inactive_Active)
-  static constexpr base::TimeDelta kDefaultMinTimeToPurge =
-      base::TimeDelta::FromMinutes(1);
-
-  // The min/max time to purge ratio. The max time to purge is set to be
-  // min time to purge times this value.
-  const int kDefaultMinMaxTimeToPurgeRatio = 4;
-
   // Returns true if the |url| represents an internal Chrome web UI page that
   // can be easily reloaded and hence makes a good choice to discard.
   static bool IsInternalPage(const GURL& url);
@@ -280,26 +262,6 @@ class TabManager : public LifecycleUnitObserver,
   // Callback for when |update_timer_| fires. Takes care of executing the tasks
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
-
-  // Returns a random time-to-purge whose min value is min_time_to_purge and max
-  // value is max_time_to_purge.
-  base::TimeDelta GetTimeToPurge(base::TimeDelta min_time_to_purge,
-                                 base::TimeDelta max_time_to_purge) const;
-
-  // Returns true if the tab specified by |content| is now eligible to have
-  // its memory purged.
-  bool ShouldPurgeNow(content::WebContents* content) const;
-
-  // Purges renderers in backgrounded tabs if the following conditions are
-  // satisfied:
-  // - the renderers are not purged yet,
-  // - the renderers are not playing media,
-  //   (CanPurgeBackgroundedRenderer returns true)
-  // - the renderers are left inactive and background for time-to-purge.
-  // If renderers are purged, their internal states become 'purged'.
-  // The state is reset to be 'not purged' only when they are activated
-  // (=ActiveTabChanged is invoked).
-  void PurgeBackgroundedTabsIfNeeded();
 
   // Makes a request to the WebContents at the specified index to freeze its
   // page.
@@ -325,10 +287,9 @@ class TabManager : public LifecycleUnitObserver,
   // beginning of tab discards.
   void UnregisterMemoryPressureListener();
 
-  // Methods called by OnTabStripModelChanged()
+  // Called by OnTabStripModelChanged()
   void OnActiveTabChanged(content::WebContents* old_contents,
                           content::WebContents* new_contents);
-  void OnTabInserted(content::WebContents* contents, bool foreground);
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -493,9 +454,6 @@ class TabManager : public LifecycleUnitObserver,
   // Parameters for proactive freezing and discarding.
   ProactiveTabFreezeAndDiscardParams proactive_freeze_discard_params_;
 
-  // Timer to periodically update the stats of the renderers.
-  base::RepeatingTimer update_timer_;
-
   // Timer to update the state of LifecycleUnits. This is an std::unique_ptr to
   // allow initialization after mock time is setup in unit tests.
   std::unique_ptr<base::OneShotTimer> state_transitions_timer_;
@@ -507,12 +465,10 @@ class TabManager : public LifecycleUnitObserver,
   // A listener to global memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  // A backgrounded renderer will be purged between min_time_to_purge_ and
-  // max_time_to_purge_.
-  base::TimeDelta min_time_to_purge_;
-  base::TimeDelta max_time_to_purge_;
-
 #if defined(OS_CHROMEOS)
+  // Timer to periodically make OOM adjustments on ChromeOS.
+  base::RepeatingTimer update_timer_;
+
   std::unique_ptr<TabManagerDelegate> delegate_;
 #endif
 

@@ -131,7 +131,6 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
     NOTREACHED();
   }
   void SetSchedulerKeepActive(bool keep_active) override { NOTREACHED(); }
-  void ProcessPurgeAndSuspend() override { NOTREACHED(); }
   void SetIsLockedToSite() override { NOTREACHED(); }
   void EnableV8LowMemoryMode() override { NOTREACHED(); }
 

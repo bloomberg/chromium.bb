@@ -7,8 +7,11 @@
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/rand_util.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 
@@ -24,10 +27,29 @@ base::TimeDelta FreezePurgeMemoryAllPagesFrozenDelay() {
       kFreezePurgeMemoryAllPagesFrozenDelayInMinutes.Get());
 }
 
+int MinTimeToPurgeAfterBackgroundedInSeconds() {
+  static const base::FeatureParam<int>
+      kMinTimeToPurgeAfterBackgroundedInMinutes{
+          &blink::features::kPurgeRendererMemoryWhenBackgrounded,
+          "min-delay-in-minutes",
+          MemoryPurgeManager::kDefaultMinTimeToPurgeAfterBackgrounded};
+  return kMinTimeToPurgeAfterBackgroundedInMinutes.Get() * 60;
+}
+
+int MaxTimeToPurgeAfterBackgroundedInSeconds() {
+  static const base::FeatureParam<int>
+      kMaxTimeToPurgeAfterBackgroundedInMinutes{
+          &blink::features::kPurgeRendererMemoryWhenBackgrounded,
+          "max-delay-in-minutes",
+          MemoryPurgeManager::kDefaultMaxTimeToPurgeAfterBackgrounded};
+  return kMaxTimeToPurgeAfterBackgroundedInMinutes.Get() * 60;
+}
+
 }  // namespace
 
 MemoryPurgeManager::MemoryPurgeManager()
     : renderer_backgrounded_(kLaunchingProcessIsBackgrounded),
+      backgrounded_purge_pending_(false),
       total_page_count_(0),
       frozen_page_count_(0) {}
 
@@ -58,22 +80,50 @@ void MemoryPurgeManager::OnPageFrozen() {
   DCHECK_LT(frozen_page_count_, total_page_count_);
   frozen_page_count_++;
 
-  if (purge_timer_.IsRunning())
-    return;
-
-  if (!CanPurge())
-    return;
-
-  purge_timer_.Start(FROM_HERE, FreezePurgeMemoryAllPagesFrozenDelay(), this,
-                     &MemoryPurgeManager::PerformMemoryPurge);
+  if (CanPurge())
+    RequestMemoryPurgeWithDelay(FreezePurgeMemoryAllPagesFrozenDelay());
 }
 
 void MemoryPurgeManager::OnPageResumed() {
   DCHECK_GT(frozen_page_count_, 0);
   frozen_page_count_--;
+
   if (!CanPurge())
     purge_timer_.Stop();
+
   base::MemoryPressureListener::SetNotificationsSuppressed(false);
+}
+
+void MemoryPurgeManager::SetRendererBackgrounded(bool backgrounded) {
+  renderer_backgrounded_ = backgrounded;
+  if (backgrounded) {
+    OnRendererBackgrounded();
+  } else {
+    OnRendererForegrounded();
+  }
+}
+
+void MemoryPurgeManager::OnRendererBackgrounded() {
+  if (!base::FeatureList::IsEnabled(
+          features::kPurgeRendererMemoryWhenBackgrounded))
+    return;
+
+  backgrounded_purge_pending_ = true;
+  RequestMemoryPurgeWithDelay(GetTimeToPurgeAfterBackgrounded());
+}
+
+void MemoryPurgeManager::OnRendererForegrounded() {
+  backgrounded_purge_pending_ = false;
+  purge_timer_.Stop();
+}
+
+void MemoryPurgeManager::RequestMemoryPurgeWithDelay(base::TimeDelta delay) {
+  if (purge_timer_.IsRunning() &&
+      (purge_timer_.desired_run_time() - base::TimeTicks::Now()) < delay)
+    return;
+
+  purge_timer_.Start(FROM_HERE, delay, this,
+                     &MemoryPurgeManager::PerformMemoryPurge);
 }
 
 void MemoryPurgeManager::PerformMemoryPurge() {
@@ -84,15 +134,17 @@ void MemoryPurgeManager::PerformMemoryPurge() {
 
   if (AreAllPagesFrozen())
     base::MemoryPressureListener::SetNotificationsSuppressed(true);
-}
 
-void MemoryPurgeManager::SetRendererBackgrounded(bool backgrounded) {
-  if (!backgrounded)
-    purge_timer_.Stop();
-  renderer_backgrounded_ = backgrounded;
+  if (backgrounded_purge_pending_) {
+    Platform::Current()->RecordMetricsForBackgroundedRendererPurge();
+    backgrounded_purge_pending_ = false;
+  }
 }
 
 bool MemoryPurgeManager::CanPurge() const {
+  if (backgrounded_purge_pending_)
+    return true;
+
   if (!renderer_backgrounded_)
     return false;
 
@@ -106,6 +158,13 @@ bool MemoryPurgeManager::CanPurge() const {
 
 bool MemoryPurgeManager::AreAllPagesFrozen() const {
   return total_page_count_ == frozen_page_count_;
+}
+
+base::TimeDelta MemoryPurgeManager::GetTimeToPurgeAfterBackgrounded() const {
+  int min_time_in_seconds = MinTimeToPurgeAfterBackgroundedInSeconds();
+  int max_time_in_seconds = MaxTimeToPurgeAfterBackgroundedInSeconds();
+  return base::TimeDelta::FromSeconds(
+      base::RandInt(min_time_in_seconds, max_time_in_seconds));
 }
 
 }  // namespace blink

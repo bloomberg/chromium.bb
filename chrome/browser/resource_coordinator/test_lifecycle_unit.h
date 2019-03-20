@@ -41,7 +41,6 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   LifecycleUnitLoadingState GetLoadingState() const override;
   bool Load() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
-  bool CanPurge() const override;
   bool CanFreeze(DecisionDetails* decision_details) const override;
   bool CanDiscard(LifecycleUnitDiscardReason reason,
                   DecisionDetails* decision_details) const override;

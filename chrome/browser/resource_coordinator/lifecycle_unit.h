@@ -140,12 +140,6 @@ class LifecycleUnit {
   // than for individual LifecycleUnits. https://crbug.com/775644
   virtual int GetEstimatedMemoryFreedOnDiscardKB() const = 0;
 
-  // Whether memory can be purged in the process hosting this LifecycleUnit.
-  //
-  // TODO(fdoray): This method should be on a class that represents a process,
-  // not on a LifecycleUnit. https://crbug.com/775644
-  virtual bool CanPurge() const = 0;
-
   // Returns true if this LifecycleUnit can be frozen. Full details regarding
   // the policy decision are recorded in |decision_details|, for logging.
   // Returning false but with an empty |decision_details| means the transition

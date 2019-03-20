@@ -94,9 +94,11 @@ constexpr TimeDelta kDefaultBackgroundTabLoadTimeout =
 // load the next background tab when the loading slots free up.
 constexpr size_t kNumOfLoadingSlots = 1;
 
+#if defined(OS_CHROMEOS)
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
 constexpr int kAdjustmentIntervalSeconds = 10;
+#endif
 
 struct LifecycleUnitAndSortKey {
   explicit LifecycleUnitAndSortKey(LifecycleUnit* lifecycle_unit)
@@ -170,8 +172,6 @@ class TabManager::TabManagerSessionRestoreObserver final
   TabManager* tab_manager_;
 };
 
-constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
-
 TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
                        TabLoadTracker* tab_load_tracker)
     : state_transitions_callback_(
@@ -223,11 +223,14 @@ void TabManager::Start() {
     return;
 #endif
 
+// TODO(adityakeerthi): Move this logic into TabManagerDelegate.
+#if defined(OS_CHROMEOS)
   if (!update_timer_.IsRunning()) {
     update_timer_.Start(FROM_HERE,
                         TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
                         this, &TabManager::UpdateTimerCallback);
   }
+#endif
 
 // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
 // discarded.
@@ -245,31 +248,6 @@ void TabManager::Start() {
     }
   }
 #endif
-  // purge-and-suspend param is used for Purge+Suspend finch experiment
-  // in the following way:
-  // https://docs.google.com/document/d/1hPHkKtXXBTlsZx9s-9U17XC-ofEIzPo9FYbBEc7PPbk/edit?usp=sharing
-  std::string purge_and_suspend_time = variations::GetVariationParamValue(
-      "PurgeAndSuspendAggressive", "purge-and-suspend-time");
-  unsigned int min_time_to_purge_sec = 0;
-  if (purge_and_suspend_time.empty() ||
-      !base::StringToUint(purge_and_suspend_time, &min_time_to_purge_sec))
-    min_time_to_purge_ = kDefaultMinTimeToPurge;
-  else
-    min_time_to_purge_ = base::TimeDelta::FromSeconds(min_time_to_purge_sec);
-
-  std::string max_purge_and_suspend_time = variations::GetVariationParamValue(
-      "PurgeAndSuspendAggressive", "max-purge-and-suspend-time");
-  unsigned int max_time_to_purge_sec = 0;
-  // If max-purge-and-suspend-time is not specified or
-  // max-purge-and-suspend-time is not valid (not number or smaller than
-  // min-purge-and-suspend-time), use default max-time-to-purge, i.e.
-  // min-time-to-purge times kDefaultMinMaxTimeToPurgeRatio.
-  if (max_purge_and_suspend_time.empty() ||
-      !base::StringToUint(max_purge_and_suspend_time, &max_time_to_purge_sec) ||
-      max_time_to_purge_sec < min_time_to_purge_.InSeconds())
-    max_time_to_purge_ = min_time_to_purge_ * kDefaultMinMaxTimeToPurgeRatio;
-  else
-    max_time_to_purge_ = base::TimeDelta::FromSeconds(max_time_to_purge_sec);
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
@@ -348,26 +326,6 @@ void TabManager::RemoveObserver(TabLifecycleObserver* observer) {
   TabLifecycleUnitExternal::RemoveTabLifecycleObserver(observer);
 }
 
-bool TabManager::CanPurgeBackgroundedRenderer(int render_process_id) const {
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    TabLifecycleUnitExternal* tab_lifecycle_unit_external =
-        lifecycle_unit->AsTabLifecycleUnitExternal();
-    // For now, all LifecycleUnits are TabLifecycleUnitExternals.
-    DCHECK(tab_lifecycle_unit_external);
-    content::WebContents* content =
-        tab_lifecycle_unit_external->GetWebContents();
-    DCHECK(content);
-
-    if (content->IsCrashed())
-      continue;
-    if (content->GetMainFrame()->GetProcess()->GetID() != render_process_id)
-      continue;
-    if (!lifecycle_unit->CanPurge())
-      return false;
-  }
-  return true;
-}
-
 size_t TabManager::GetBackgroundTabLoadingCount() const {
   if (!IsInBackgroundTabOpeningSession())
     return 0;
@@ -421,8 +379,7 @@ bool TabManager::IsInternalPage(const GURL& url) {
 
 // This function is called when |update_timer_| fires. It will adjust the clock
 // if needed (if it detects that the machine was asleep) and will fire the stats
-// updating on ChromeOS via the delegate. This function also tries to purge
-// cache memory.
+// updating on ChromeOS via the delegate.
 void TabManager::UpdateTimerCallback() {
   // If Chrome is shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
@@ -435,61 +392,6 @@ void TabManager::UpdateTimerCallback() {
   // This starts the CrOS specific OOM adjustments in /proc/<pid>/oom_score_adj.
   delegate_->AdjustOomPriorities();
 #endif
-
-  PurgeBackgroundedTabsIfNeeded();
-}
-
-base::TimeDelta TabManager::GetTimeToPurge(
-    base::TimeDelta min_time_to_purge,
-    base::TimeDelta max_time_to_purge) const {
-  return base::TimeDelta::FromSeconds(base::RandInt(
-      min_time_to_purge.InSeconds(), max_time_to_purge.InSeconds()));
-}
-
-bool TabManager::ShouldPurgeNow(content::WebContents* content) const {
-  if (GetWebContentsData(content)->is_purged())
-    return false;
-  if (TabLifecycleUnitExternal::FromWebContents(content)->IsDiscarded())
-    return false;
-
-  base::TimeDelta time_passed =
-      NowTicks() - GetWebContentsData(content)->LastInactiveTime();
-  return time_passed > GetWebContentsData(content)->time_to_purge();
-}
-
-void TabManager::PurgeBackgroundedTabsIfNeeded() {
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    TabLifecycleUnitExternal* tab_lifecycle_unit_external =
-        lifecycle_unit->AsTabLifecycleUnitExternal();
-    // For now, all LifecycleUnits are TabLifecycleUnitExternals.
-    DCHECK(tab_lifecycle_unit_external);
-    content::WebContents* content =
-        tab_lifecycle_unit_external->GetWebContents();
-    DCHECK(content);
-
-    if (content->IsCrashed())
-      continue;
-
-    content::RenderProcessHost* render_process_host =
-        content->GetMainFrame()->GetProcess();
-    int render_process_id = render_process_host->GetID();
-
-    if (!render_process_host->IsProcessBackgrounded())
-      continue;
-    if (!CanPurgeBackgroundedRenderer(render_process_id))
-      continue;
-
-    bool purge_now = ShouldPurgeNow(content);
-    if (!purge_now)
-      continue;
-
-    // Since |content|'s tab is kept inactive and background for more than
-    // time-to-purge time, its purged state changes: false => true.
-    GetWebContentsData(content)->set_is_purged(true);
-    // TODO(tasak): rename PurgeAndSuspend with a better name, e.g.
-    // RequestPurgeCache, because we don't suspend any renderers.
-    render_process_host->PurgeAndSuspend();
-  }
 }
 
 void TabManager::PauseBackgroundTabOpeningIfNeeded() {
@@ -561,19 +463,9 @@ void TabManager::UnregisterMemoryPressureListener() {
 
 void TabManager::OnActiveTabChanged(content::WebContents* old_contents,
                                     content::WebContents* new_contents) {
-  // An active tab is not purged.
-  // Calling GetWebContentsData() early ensures that the WebContentsData is
-  // created for |new_contents|, which |stats_collector_| expects.
-  GetWebContentsData(new_contents)->set_is_purged(false);
-
   // If |old_contents| is set, that tab has switched from being active to
   // inactive, so record the time of that transition.
   if (old_contents) {
-    GetWebContentsData(old_contents)->SetLastInactiveTime(NowTicks());
-    // Re-setting time-to-purge every time a tab becomes inactive.
-    GetWebContentsData(old_contents)
-        ->set_time_to_purge(
-            GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
     // Only record switch-to-tab metrics when a switch happens, i.e.
     // |old_contents| is set.
     stats_collector_->RecordSwitchToTab(old_contents, new_contents);
@@ -582,31 +474,11 @@ void TabManager::OnActiveTabChanged(content::WebContents* old_contents,
   ResumeTabNavigationIfNeeded(new_contents);
 }
 
-void TabManager::OnTabInserted(content::WebContents* contents,
-                               bool foreground) {
-  // Only interested in background tabs, as foreground tabs get taken care of by
-  // OnActiveTabChanged.
-  if (foreground)
-    return;
-
-  // A new background tab is similar to having a tab switch from being active to
-  // inactive.
-  GetWebContentsData(contents)->SetLastInactiveTime(NowTicks());
-  // Re-setting time-to-purge every time a tab becomes inactive.
-  GetWebContentsData(contents)->set_time_to_purge(
-      GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
-}
-
 void TabManager::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& delta : change.deltas()) {
-      OnTabInserted(delta.insert.contents,
-                    delta.insert.contents == selection.new_contents);
-    }
-  } else if (change.type() == TabStripModelChange::kReplaced) {
+  if (change.type() == TabStripModelChange::kReplaced) {
     for (const auto& delta : change.deltas()) {
       WebContentsData::CopyState(delta.replace.old_contents,
                                  delta.replace.new_contents);

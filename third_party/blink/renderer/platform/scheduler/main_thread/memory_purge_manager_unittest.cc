@@ -47,10 +47,11 @@ class MemoryPurgeManagerTest : public testing::Test {
 
  protected:
   void SetupDelayedPurgeAfterFreezeExperiment() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kFreezePurgeMemoryAllPagesFrozen,
-        {{"delay-in-minutes",
-          base::IntToString(kDelayForPurgeAfterFreeze.InMinutes())}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kFreezePurgeMemoryAllPagesFrozen,
+          {{"delay-in-minutes",
+            base::IntToString(kDelayForPurgeAfterFreeze.InMinutes())}}}},
+        {features::kPurgeRendererMemoryWhenBackgrounded});
   }
 
   void ExpectMemoryPressure(
@@ -89,6 +90,10 @@ class MemoryPurgeManagerTest : public testing::Test {
 // Verify that OnPageFrozen() triggers a memory pressure notification in a
 // backgrounded renderer.
 TEST_F(MemoryPurgeManagerTest, PageFrozenInBackgroundedRenderer) {
+  scoped_feature_list_.InitWithFeatures(
+      {} /* enabled */,
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
+
   memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
   memory_purge_manager_.SetRendererBackgrounded(true);
   memory_purge_manager_.OnPageFrozen();
@@ -98,6 +103,10 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenInBackgroundedRenderer) {
 // Verify that OnPageFrozen() does not trigger a memory pressure notification in
 // a foregrounded renderer.
 TEST_F(MemoryPurgeManagerTest, PageFrozenInForegroundedRenderer) {
+  scoped_feature_list_.InitWithFeatures(
+      {} /* enabled */,
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
+
   memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
   memory_purge_manager_.SetRendererBackgrounded(false);
   memory_purge_manager_.OnPageFrozen();
@@ -105,6 +114,10 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenInForegroundedRenderer) {
 }
 
 TEST_F(MemoryPurgeManagerTest, PageResumedUndoMemoryPressureSuppression) {
+  scoped_feature_list_.InitWithFeatures(
+      {} /* enabled */,
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
+
   memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
 
   memory_purge_manager_.SetRendererBackgrounded(true);
@@ -121,7 +134,8 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenPurgeMemoryAllPagesFrozenDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {} /* enabled */,
-      {features::kFreezePurgeMemoryAllPagesFrozen} /* disabled */);
+      {features::kFreezePurgeMemoryAllPagesFrozen,
+       features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
 
   memory_purge_manager_.SetRendererBackgrounded(true);
 
@@ -159,7 +173,7 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenPurgeMemoryAllPagesFrozenEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kFreezePurgeMemoryAllPagesFrozen} /* enabled */,
-      {} /* disabled */);
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
 
   memory_purge_manager_.SetRendererBackgrounded(true);
 
@@ -261,6 +275,120 @@ TEST_F(MemoryPurgeManagerTest, MemoryPurgeWithDelayNewFrozenPageCreated) {
   ExpectMemoryPressure(kDelayForPurgeAfterFreeze);
 
   memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kFrozen);
+  memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kFrozen);
+}
+
+TEST_F(MemoryPurgeManagerTest, PurgeRendererMemoryWhenBackgroundedEnabled) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* enabled */,
+      {} /* disabled */);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  FastForwardBy(base::TimeDelta::FromMinutes(
+      MemoryPurgeManager::kDefaultMaxTimeToPurgeAfterBackgrounded));
+  ExpectMemoryPressure();
+}
+
+TEST_F(MemoryPurgeManagerTest, PurgeRendererMemoryWhenBackgroundedDisabled) {
+  scoped_feature_list_.InitWithFeatures(
+      {} /* enabled */,
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* disabled */);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  FastForwardBy(base::TimeDelta::Max());
+  ExpectNoMemoryPressure();
+}
+
+TEST_F(MemoryPurgeManagerTest,
+       PurgeRendererMemoryWhenBackgroundedEnabledForegroundedBeforePurge) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kPurgeRendererMemoryWhenBackgrounded} /* enabled */,
+      {} /* disabled */);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  FastForwardBy(base::TimeDelta::FromSeconds(30));
+  ExpectNoMemoryPressure();
+
+  memory_purge_manager_.SetRendererBackgrounded(false);
+  FastForwardBy(base::TimeDelta::Max());
+  ExpectNoMemoryPressure();
+}
+
+TEST_F(MemoryPurgeManagerTest, PageFrozenAndResumedWhileBackgrounded) {
+  constexpr base::TimeDelta kFreezePurgeDelay =
+      base::TimeDelta::FromMinutes(10);
+  constexpr base::TimeDelta kBeforeBackgroundPurgeDelay =
+      base::TimeDelta::FromMinutes(
+          MemoryPurgeManager::kDefaultMinTimeToPurgeAfterBackgrounded) /
+      2;
+
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{features::kFreezePurgeMemoryAllPagesFrozen,
+        {{"delay-in-minutes",
+          base::IntToString(kFreezePurgeDelay.InMinutes())}}},
+       {features::kPurgeRendererMemoryWhenBackgrounded, {}}},
+      {});
+
+  memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  memory_purge_manager_.OnPageFrozen();
+  FastForwardBy(kBeforeBackgroundPurgeDelay);
+  ExpectNoMemoryPressure();
+  memory_purge_manager_.OnPageResumed();
+  FastForwardBy(
+      base::TimeDelta::FromMinutes(
+          MemoryPurgeManager::kDefaultMaxTimeToPurgeAfterBackgrounded) -
+      kBeforeBackgroundPurgeDelay);
+  // Since the renderer is still backgrounded, the memory purge should happen
+  // even though there are no frozen pages.
+  ExpectMemoryPressure();
+
+  memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kActive);
+}
+
+TEST_F(MemoryPurgeManagerTest,
+       PageFrozenAndRendererBackgroundedShorterBackgroundedDelay) {
+  constexpr base::TimeDelta kFreezePurgeDelay =
+      base::TimeDelta::FromMinutes(10);
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{features::kFreezePurgeMemoryAllPagesFrozen,
+        {{"delay-in-minutes",
+          base::IntToString(kFreezePurgeDelay.InMinutes())}}},
+       {features::kPurgeRendererMemoryWhenBackgrounded, {}}},
+      {});
+
+  memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  memory_purge_manager_.OnPageFrozen();
+  ExpectMemoryPressure(base::TimeDelta::FromMinutes(
+      MemoryPurgeManager::kDefaultMaxTimeToPurgeAfterBackgrounded));
+  FastForwardBy(kFreezePurgeDelay);
+  ExpectNoMemoryPressure();
+
+  memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kFrozen);
+}
+
+TEST_F(MemoryPurgeManagerTest,
+       PageFrozenAndRendererBackgroundedShorterFreezeDelay) {
+  constexpr base::TimeDelta kFreezePurgeDelay = base::TimeDelta::FromMinutes(
+      MemoryPurgeManager::kDefaultMinTimeToPurgeAfterBackgrounded);
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{features::kFreezePurgeMemoryAllPagesFrozen,
+        {{"delay-in-minutes",
+          base::IntToString(kFreezePurgeDelay.InMinutes())}}},
+       {features::kPurgeRendererMemoryWhenBackgrounded, {}}},
+      {});
+
+  memory_purge_manager_.OnPageCreated(PageLifecycleState::kActive);
+
+  memory_purge_manager_.SetRendererBackgrounded(true);
+  memory_purge_manager_.OnPageFrozen();
+  ExpectMemoryPressure(kFreezePurgeDelay);
+  FastForwardBy(base::TimeDelta::Max());
+  ExpectNoMemoryPressure();
+
   memory_purge_manager_.OnPageDestroyed(PageLifecycleState::kFrozen);
 }
 

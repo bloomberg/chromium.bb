@@ -217,7 +217,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       RenderProcessHost::KeepAliveClientType) override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
-  void PurgeAndSuspend() override;
   void Resume() override;
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(

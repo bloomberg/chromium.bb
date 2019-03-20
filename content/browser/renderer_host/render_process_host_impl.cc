@@ -2448,11 +2448,6 @@ bool RenderProcessHostImpl::IsKeepAliveRefCountDisabled() {
   return is_keep_alive_ref_count_disabled_;
 }
 
-void RenderProcessHostImpl::PurgeAndSuspend() {
-  TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::PurgeAndSuspend");
-  GetRendererInterface()->ProcessPurgeAndSuspend();
-}
-
 void RenderProcessHostImpl::Resume() {}
 
 mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {

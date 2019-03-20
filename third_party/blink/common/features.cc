@@ -101,6 +101,21 @@ const base::Feature kPreviewsResourceLoadingHintsSpecificResourceTypes{
     "PreviewsResourceLoadingHintsSpecificResourceTypes",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Perform a memory purge after a renderer is backgrounded. Formerly labelled as
+// the "PurgeAndSuspend" experiment.
+//
+// TODO(adityakeerthi): Disabled by default on Mac and Android for historical
+// reasons. Consider enabling by default if experiment results are positive.
+// https://crbug.com/926186
+const base::Feature kPurgeRendererMemoryWhenBackgrounded {
+  "PurgeRendererMemoryWhenBackgrounded",
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
+
 // Enable Implicit Root Scroller. https://crbug.com/903260.
 const base::Feature kImplicitRootScroller{"ImplicitRootScroller",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
