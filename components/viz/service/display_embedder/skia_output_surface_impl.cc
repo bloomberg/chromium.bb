@@ -189,6 +189,7 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
   static sk_sp<SkImage> MakeYUVAPromiseSkImage(
       SkiaOutputSurfaceImpl* impl,
       SkYUVColorSpace yuv_color_space,
+      sk_sp<SkColorSpace> dst_color_space,
       std::vector<ResourceMetadata> metadatas,
       bool has_alpha) {
     DCHECK_CALLED_ON_VALID_THREAD(impl->thread_checker_);
@@ -219,7 +220,7 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
       contexts[i] = new PromiseTextureHelper(
           impl->impl_on_gpu_->weak_ptr(), metadata.size,
           metadata.resource_format, metadata.mailbox_holder,
-          metadata.color_space.ToSkColorSpace(), metadata.alpha_type);
+          nullptr /* color_space */, metadata.alpha_type);
     };
 
     if (is_i420) {
@@ -259,9 +260,9 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
 
     auto image = impl->recorder_->makeYUVAPromiseTexture(
         yuv_color_space, formats, yuva_sizes, indices, yuva_sizes[0].width(),
-        yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin,
-        nullptr /* color_space */, PromiseTextureHelper::Fulfill,
-        PromiseTextureHelper::Release, PromiseTextureHelper::Done, contexts);
+        yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin, dst_color_space,
+        PromiseTextureHelper::Fulfill, PromiseTextureHelper::Release,
+        PromiseTextureHelper::Done, contexts);
     return image;
   }
 
@@ -505,6 +506,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     std::vector<ResourceMetadata> metadatas,
     SkYUVColorSpace yuv_color_space,
+    sk_sp<SkColorSpace> dst_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
@@ -512,7 +514,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
          (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
 
   return YUVAPromiseTextureHelper::MakeYUVAPromiseSkImage(
-      this, yuv_color_space, std::move(metadatas), has_alpha);
+      this, yuv_color_space, dst_color_space, std::move(metadatas), has_alpha);
 }
 
 gpu::SyncToken SkiaOutputSurfaceImpl::ReleasePromiseSkImages(

@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_RENDERER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_RENDERER_H_
 
+#include <map>
+#include <memory>
 #include <tuple>
+#include <vector>
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
@@ -15,6 +18,7 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/latency/latency_info.h"
 
+class SkColorFilter;
 class SkNWayCanvas;
 class SkPictureRecorder;
 
@@ -130,6 +134,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   GrContext* GetGrContext();
   bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
 
+  sk_sp<SkColorFilter> GetColorFilter(const gfx::ColorSpace& src,
+                                      const gfx::ColorSpace& dst);
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;
@@ -218,6 +224,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkPictureRecorder* current_recorder_;
   ContextProvider* context_provider_ = nullptr;
   base::Optional<SyncQueryCollection> sync_queries_;
+
+  std::map<gfx::ColorSpace, std::map<gfx::ColorSpace, sk_sp<SkColorFilter>>>
+      color_filter_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };

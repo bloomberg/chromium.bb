@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_OUTPUT_SURFACE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_OUTPUT_SURFACE_H_
 
+#include <memory>
+#include <vector>
+
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/display/output_surface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -61,6 +64,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
       std::vector<ResourceMetadata> metadatas,
       SkYUVColorSpace yuv_color_space,
+      sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
 
   // Release SkImages created by MakePromiseSkImage on the thread on which

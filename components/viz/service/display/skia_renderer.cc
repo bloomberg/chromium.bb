@@ -4,6 +4,9 @@
 
 #include "components/viz/service/display/skia_renderer.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bits.h"
 #include "base/command_line.h"
 #include "base/optional.h"
@@ -34,14 +37,19 @@
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkOverdrawCanvas.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/src/core/SkColorFilterPriv.h"
+#include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -131,7 +139,9 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
 class SkiaRenderer::ScopedYUVSkImageBuilder {
  public:
   ScopedYUVSkImageBuilder(SkiaRenderer* skia_renderer,
-                          const YUVVideoDrawQuad* quad) {
+                          const YUVVideoDrawQuad* quad,
+                          sk_sp<SkColorSpace> dst_color_space,
+                          bool has_color_conversion_filter) {
     DCHECK(skia_renderer->is_using_ddl());
     DCHECK(IsTextureResource(skia_renderer->resource_provider_,
                              quad->y_plane_resource_id()));
@@ -148,8 +158,13 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
     auto& image = skia_renderer->yuv_promise_images_[std::move(ids)];
 
     if (!image) {
-      auto yuv_color_space = kRec601_SkYUVColorSpace;
-      quad->video_color_space.ToSkYUVColorSpace(&yuv_color_space);
+      SkYUVColorSpace yuv_color_space;
+      if (has_color_conversion_filter) {
+        yuv_color_space = kIdentity_SkYUVColorSpace;
+      } else {
+        yuv_color_space = kRec601_SkYUVColorSpace;
+        quad->video_color_space.ToSkYUVColorSpace(&yuv_color_space);
+      }
 
       const bool is_i420 =
           quad->u_plane_resource_id() != quad->v_plane_resource_id();
@@ -178,7 +193,7 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
       }
 
       image = skia_renderer->skia_output_surface_->MakePromiseSkImageFromYUV(
-          std::move(metadatas), yuv_color_space, has_alpha);
+          std::move(metadatas), yuv_color_space, dst_color_space, has_alpha);
       LOG_IF(ERROR, !image) << "Failed to create the promise sk yuva image.";
     }
     sk_image_ = image.get();
@@ -839,6 +854,37 @@ void SkiaRenderer::DrawBatchedTileQuads() {
   batched_tiles_.clear();
 }
 
+sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
+                                                  const gfx::ColorSpace& dst) {
+  sk_sp<SkColorFilter>& color_filter = color_filter_cache_[dst][src];
+  if (!color_filter) {
+    std::unique_ptr<gfx::ColorTransform> transform =
+        gfx::ColorTransform::NewColorTransform(
+            src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+    // TODO(backer): Support lookup table transforms (e.g.
+    // COLOR_CONVERSION_MODE_LUT).
+    if (!transform->CanGetShaderSource())
+      return nullptr;
+    const char* hdr = R"(
+void main(inout half4 color) {
+  // un-premultiply alpha
+  if (color.a > 0)
+    color.rgb /= color.a;
+)";
+    const char* ftr = R"(
+  // premultiply alpha
+  color.rgb *= color.a;
+}
+)";
+
+    std::string shader = hdr + transform->GetSkShaderSource() + ftr;
+    color_filter =
+        SkRuntimeColorFilterFactory(SkString(shader.c_str(), shader.size()))
+            .make(SkData::MakeEmpty());
+  }
+  return color_filter;
+}
+
 void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                                     SkPaint* paint) {
   DCHECK(paint);
@@ -847,8 +893,18 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
     return;
   }
 
+  gfx::ColorSpace src_color_space = quad->video_color_space;
+  // Invalid or unspecified color spaces should be treated as REC709.
+  if (!src_color_space.IsValid())
+    src_color_space = gfx::ColorSpace::CreateREC709();
+  gfx::ColorSpace dst_color_space =
+      current_frame()->current_render_pass->color_space;
+  sk_sp<SkColorFilter> color_filter =
+      GetColorFilter(src_color_space, dst_color_space);
+
   DCHECK(resource_provider_);
-  ScopedYUVSkImageBuilder builder(this, quad);
+  ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace(),
+                                  !!color_filter);
   const SkImage* image = builder.sk_image();
   if (!image)
     return;
@@ -859,6 +915,8 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
   // TODO(penghuang): figure out how to set correct filter quality.
   paint->setFilterQuality(kLow_SkFilterQuality);
+  if (color_filter)
+    paint->setColorFilter(color_filter);
   current_canvas_->drawImageRect(image, uv_rect,
                                  gfx::RectToSkRect(quad->visible_rect), paint);
 }

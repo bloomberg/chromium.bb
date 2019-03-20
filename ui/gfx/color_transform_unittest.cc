@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include <tuple>
+#include <vector>
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/src/sksl/SkSLCompiler.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/icc_profile.h"
@@ -469,13 +471,17 @@ TEST(SimpleColorSpace, SampleShaderSource) {
   std::string expected =
       "float TransferFn1(float v) {\n"
       "  if (v < 4.04499359e-02)\n"
-      "    return 7.73993805e-02 * v;\n"
-      "  return pow(9.47867334e-01 * v + 5.21326549e-02, 2.40000010e+00);\n"
+      "    v = 7.73993805e-02 * v;\n"
+      "  else\n"
+      "    v = pow(9.47867334e-01 * v + 5.21326549e-02, 2.40000010e+00);\n"
+      "  return v;\n"
       "}\n"
       "float TransferFn3(float v) {\n"
       "  if (v < 0.00000000e+00)\n"
-      "    return 0.00000000e+00 * v;\n"
-      "  return pow(v, 3.57142866e-01);\n"
+      "    v = 0.00000000e+00 * v;\n"
+      "  else\n"
+      "    v = pow(v, 3.57142866e-01);\n"
+      "  return v;\n"
       "}\n"
       "vec3 DoColorConversion(vec3 color) {\n"
       "  color = mat3(1.16438353e+00, 1.16438353e+00, 1.16438353e+00,\n"
@@ -496,6 +502,34 @@ TEST(SimpleColorSpace, SampleShaderSource) {
       "  return color;\n"
       "}\n";
   EXPECT_EQ(source, expected);
+}
+
+// Checks that the generated SkSL fragment shaders can be parsed by
+// SkSL::Compiler.
+TEST(SimpleColorSpace, CanParseSkShaderSource) {
+  std::vector<ColorSpace> common_color_spaces = {
+      ColorSpace::CreateSRGB(),         ColorSpace::CreateDisplayP3D65(),
+      ColorSpace::CreateExtendedSRGB(), ColorSpace::CreateSCRGBLinear(),
+      ColorSpace::CreateJpeg(),         ColorSpace::CreateREC601(),
+      ColorSpace::CreateREC709()};
+  for (const auto& src : common_color_spaces) {
+    for (const auto& dst : common_color_spaces) {
+      auto transform = ColorTransform::NewColorTransform(
+          src, dst, ColorTransform::Intent::INTENT_PERCEPTUAL);
+      if (!transform->CanGetShaderSource())
+        continue;
+
+      std::string source = "void main(inout half4 color) {" +
+                           transform->GetSkShaderSource() + "}";
+      SkSL::Program::Settings settings;
+      SkSL::Compiler compiler;
+      auto program = compiler.convertProgram(
+          SkSL::Program::kPipelineStage_Kind,
+          SkSL::String(source.c_str(), source.length()), settings);
+      EXPECT_NE(nullptr, program.get());
+      EXPECT_EQ(0, compiler.errorCount()) << compiler.errorText();
+    }
+  }
 }
 
 class TransferTest : public testing::TestWithParam<ColorSpace::TransferID> {};
@@ -666,4 +700,4 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::ValuesIn(all_matrices),
                      testing::ValuesIn(all_ranges),
                      testing::ValuesIn(intents)));
-}  // namespace
+}  // namespace gfx

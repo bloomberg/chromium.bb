@@ -633,6 +633,8 @@ test("gfx_unittests") {
     "text_utils_unittest.cc",
   ]
 
+  include_dirs = [ "//third_party/skia/include/private" ]
+
   data = [
     "test/data/",
     "$root_out_dir/ui_test.pak",
