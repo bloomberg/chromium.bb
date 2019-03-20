@@ -8,5 +8,5 @@
 promise_test(async t => {
   await PermissionsHelper.setPermission('clipboard-read', 'denied');
   await promise_rejects(t, 'NotAllowedError', navigator.clipboard.readText());
-}, "navigator.clipboard.readText() fails when permission denied");
+}, 'navigator.clipboard.readText() fails when permission denied');
 </script>
