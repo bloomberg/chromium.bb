@@ -105,6 +105,7 @@ mojom("mojom_platform") {
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
     "webaudio/audio_context_manager.mojom",
+    "webdatabase/web_database.mojom",
     "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",
