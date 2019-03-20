@@ -27,7 +27,7 @@ enum InkDropType { INK_DROP_STUB, INK_DROP_IMPL };
 class InkDropTest : public testing::TestWithParam<testing::tuple<InkDropType>> {
  public:
   InkDropTest();
-  ~InkDropTest();
+  ~InkDropTest() override;
 
  protected:
   // A dummy InkDropHost required to create an InkDrop.
