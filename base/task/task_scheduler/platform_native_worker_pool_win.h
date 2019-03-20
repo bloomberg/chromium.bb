@@ -53,6 +53,7 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
                                        void* scheduler_worker_pool_windows_impl,
                                        PTP_WORK);
   // SchedulerWorkerPool:
+  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction) override;
   void PushSequenceAndWakeUpWorkers(
       SequenceAndTransaction sequence_and_transaction) override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)

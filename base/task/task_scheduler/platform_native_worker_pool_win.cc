@@ -125,6 +125,12 @@ scoped_refptr<Sequence> PlatformNativeWorkerPoolWin::GetWork() {
   return priority_queue_.PopSequence();
 }
 
+void PlatformNativeWorkerPoolWin::UpdateSortKey(
+    SequenceAndTransaction sequence_and_transaction) {
+  ScopedWorkersExecutor executor(this);
+  UpdateSortKeyImpl(&executor, std::move(sequence_and_transaction));
+}
+
 void PlatformNativeWorkerPoolWin::PushSequenceAndWakeUpWorkers(
     SequenceAndTransaction sequence_and_transaction) {
   ScopedWorkersExecutor executor(this);

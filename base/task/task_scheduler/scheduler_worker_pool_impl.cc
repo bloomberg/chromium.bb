@@ -442,6 +442,12 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
   DCHECK(workers_.empty());
 }
 
+void SchedulerWorkerPoolImpl::UpdateSortKey(
+    SequenceAndTransaction sequence_and_transaction) {
+  ScopedWorkersExecutor executor(this);
+  UpdateSortKeyImpl(&executor, std::move(sequence_and_transaction));
+}
+
 void SchedulerWorkerPoolImpl::PushSequenceAndWakeUpWorkers(
     SequenceAndTransaction sequence_and_transaction) {
   ScopedWorkersExecutor executor(this);

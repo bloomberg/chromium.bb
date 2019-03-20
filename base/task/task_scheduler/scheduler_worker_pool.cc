@@ -96,15 +96,6 @@ void SchedulerWorkerPool::PostTaskWithSequenceNow(
   }
 }
 
-void SchedulerWorkerPool::UpdateSortKey(
-    SequenceAndTransaction sequence_and_transaction) {
-  // TODO(fdoray): A worker should be woken up when the priority of a
-  // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
-  // equal to |max_best_effort_tasks_|.
-  AutoSchedulerLock auto_lock(lock_);
-  priority_queue_.UpdateSortKey(std::move(sequence_and_transaction));
-}
-
 bool SchedulerWorkerPool::RemoveSequence(scoped_refptr<Sequence> sequence) {
   AutoSchedulerLock auto_lock(lock_);
   return priority_queue_.RemoveSequence(std::move(sequence));
@@ -129,6 +120,14 @@ void SchedulerWorkerPool::ReEnqueueSequenceLockRequired(
     reenqueue_executor->SchedulePushSequenceAndWakeUpWorkers(
         std::move(sequence_and_transaction), destination_pool);
   }
+}
+
+void SchedulerWorkerPool::UpdateSortKeyImpl(
+    BaseScopedWorkersExecutor* executor,
+    SequenceAndTransaction sequence_and_transaction) {
+  AutoSchedulerLock auto_lock(lock_);
+  priority_queue_.UpdateSortKey(std::move(sequence_and_transaction));
+  EnsureEnoughWorkersLockRequired(executor);
 }
 
 void SchedulerWorkerPool::PushSequenceAndWakeUpWorkersImpl(

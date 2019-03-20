@@ -55,14 +55,18 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // Returns true if the worker pool is registered in TLS.
   bool IsBoundToCurrentThread() const;
 
-  // Updates the position of the Sequence in |sequence_and_transaction| in
-  // |shared_priority_queue| based on the Sequence's current traits.
-  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
-
   // Removes |sequence| from |priority_queue_|. Returns true if successful, or
   // false if |sequence| is not currently in |priority_queue_|, such as when a
   // worker is running a task from it.
   bool RemoveSequence(scoped_refptr<Sequence> sequence);
+
+  // Updates the position of the Sequence in |sequence_and_transaction| in
+  // this pool's PriorityQueue based on the Sequence's current traits.
+  //
+  // Implementations should instantiate a concrete ScopedWorkersExecutor and
+  // invoke UpdateSortKeyImpl().
+  virtual void UpdateSortKey(
+      SequenceAndTransaction sequence_and_transaction) = 0;
 
   // Pushes the Sequence in |sequence_and_transaction| into this pool's
   // PriorityQueue and wakes up workers as appropriate.
@@ -135,7 +139,9 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
       SequenceAndTransaction sequence_and_transaction)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Must be invoked by implementations of PushSequenceAndWakeUpWorkers().
+  // Must be invoked by implementations of the corresponding non-Impl() methods.
+  void UpdateSortKeyImpl(BaseScopedWorkersExecutor* executor,
+                         SequenceAndTransaction sequence_and_transaction);
   void PushSequenceAndWakeUpWorkersImpl(
       BaseScopedWorkersExecutor* executor,
       SequenceAndTransaction sequence_and_transaction);

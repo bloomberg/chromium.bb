@@ -154,6 +154,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                            ThreadBlockUnblockPremature);
 
   // SchedulerWorkerPool:
+  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction) override;
   void PushSequenceAndWakeUpWorkers(
       SequenceAndTransaction sequence_and_transaction) override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
