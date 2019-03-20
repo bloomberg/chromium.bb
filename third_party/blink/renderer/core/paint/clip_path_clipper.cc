@@ -91,8 +91,8 @@ base::Optional<FloatRect> ClipPathClipper::LocalClipPathBoundingBox(
   }
 
   DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
-  LayoutSVGResourceClipper* clipper =
-      ResolveElementReference(object, ToReferenceClipPathOperation(clip_path));
+  LayoutSVGResourceClipper* clipper = ResolveElementReference(
+      object, To<ReferenceClipPathOperation>(clip_path));
   if (!clipper)
     return base::nullopt;
 
@@ -122,7 +122,7 @@ static bool IsClipPathOperationValid(
   } else {
     DCHECK_EQ(clip_path.GetType(), ClipPathOperation::REFERENCE);
     resource_clipper = ResolveElementReference(
-        search_scope, ToReferenceClipPathOperation(clip_path));
+        search_scope, To<ReferenceClipPathOperation>(clip_path));
     if (!resource_clipper)
       return false;
     SECURITY_DCHECK(!resource_clipper->NeedsLayout());

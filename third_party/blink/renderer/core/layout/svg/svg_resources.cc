@@ -172,7 +172,7 @@ std::unique_ptr<SVGResources> SVGResources::BuildResources(
       ClipPathOperation* clip_path_operation = computed_style.ClipPath();
       if (clip_path_operation->GetType() == ClipPathOperation::REFERENCE) {
         const ReferenceClipPathOperation& clip_path_reference =
-            ToReferenceClipPathOperation(*clip_path_operation);
+            To<ReferenceClipPathOperation>(*clip_path_operation);
         EnsureResources(resources).SetClipper(
             CastResource<LayoutSVGResourceClipper>(
                 clip_path_reference.Resource()));
@@ -614,7 +614,7 @@ void SVGResources::UpdateClipPathFilterMask(SVGElement& element,
                                             const ComputedStyle& style) {
   const bool had_client = element.GetSVGResourceClient();
   if (auto* reference_clip =
-          ToReferenceClipPathOperationOrNull(style.ClipPath()))
+          DynamicTo<ReferenceClipPathOperation>(style.ClipPath()))
     reference_clip->AddClient(element.EnsureSVGResourceClient());
   if (style.HasFilter())
     style.Filter().AddClient(element.EnsureSVGResourceClient());
@@ -632,7 +632,7 @@ void SVGResources::ClearClipPathFilterMask(SVGElement& element,
   if (!client)
     return;
   if (auto* old_reference_clip =
-          ToReferenceClipPathOperationOrNull(style->ClipPath()))
+          DynamicTo<ReferenceClipPathOperation>(style->ClipPath()))
     old_reference_clip->RemoveClient(*client);
   if (style->HasFilter())
     style->Filter().RemoveClient(*client);

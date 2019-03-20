@@ -734,7 +734,7 @@ void WriteResources(WTF::TextStream& ts,
     DCHECK(style.ClipPath());
     DCHECK_EQ(style.ClipPath()->GetType(), ClipPathOperation::REFERENCE);
     const ReferenceClipPathOperation& clip_path_reference =
-        ToReferenceClipPathOperation(*style.ClipPath());
+        To<ReferenceClipPathOperation>(*style.ClipPath());
     AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
         clip_path_reference.Url(), tree_scope);
     WriteIndent(ts, indent);

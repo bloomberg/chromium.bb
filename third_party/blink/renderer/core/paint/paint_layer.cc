@@ -201,7 +201,7 @@ PaintLayer::~PaintLayer() {
     if (style.HasFilter())
       style.Filter().RemoveClient(*rare_data_->resource_info);
     if (auto* reference_clip =
-            ToReferenceClipPathOperationOrNull(style.ClipPath()))
+            DynamicTo<ReferenceClipPathOperation>(style.ClipPath()))
       reference_clip->RemoveClient(*rare_data_->resource_info);
     rare_data_->resource_info->ClearLayer();
   }
@@ -2527,7 +2527,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   SVGResource* resource =
-      ToReferenceClipPathOperation(*clip_path_operation).Resource();
+      To<ReferenceClipPathOperation>(*clip_path_operation).Resource();
   LayoutSVGResourceContainer* container =
       resource ? resource->ResourceContainer() : nullptr;
   if (!container || container->ResourceType() != kClipperResourceType)
@@ -3063,10 +3063,11 @@ void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
   if (!new_clip && !old_clip)
     return;
   const bool had_resource_info = ResourceInfo();
-  if (auto* reference_clip = ToReferenceClipPathOperationOrNull(new_clip))
+  if (auto* reference_clip = DynamicTo<ReferenceClipPathOperation>(new_clip))
     reference_clip->AddClient(EnsureResourceInfo());
   if (had_resource_info) {
-    if (auto* old_reference_clip = ToReferenceClipPathOperationOrNull(old_clip))
+    if (auto* old_reference_clip =
+            DynamicTo<ReferenceClipPathOperation>(old_clip))
       old_reference_clip->RemoveClient(*ResourceInfo());
   }
 }
