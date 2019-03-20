@@ -200,7 +200,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.AnchorElementMetricsHost",
-                  "blink.mojom.AudioContextManager",
                   "blink.mojom.Authenticator",
                   "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage",
