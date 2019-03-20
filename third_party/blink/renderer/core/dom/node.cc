@@ -2683,7 +2683,7 @@ void Node::DefaultEventHandler(Event& event) {
     if (event.HasInterface(event_interface_names::kTextEvent)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultTextInputEventHandler(
-            ToTextEvent(&event));
+            To<TextEvent>(&event));
       }
     }
   } else if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled() &&
