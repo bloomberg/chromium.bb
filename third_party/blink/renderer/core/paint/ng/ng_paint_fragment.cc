@@ -482,6 +482,11 @@ void NGPaintFragment::InlineFragemntsIncludingCulledFor(
           ToLayoutInlineOrNull(&layout_object)) {
     for (LayoutObject* child = layout_inline->FirstChild(); child;
          child = child->NextSibling()) {
+      // |layout_inline| may still have non-inline children, e.g.,
+      // 'position:absolute'. Skip them as they don't contribute to the culled
+      // rects of |layout_inline|.
+      if (!child->IsInline())
+        continue;
       InlineFragemntsIncludingCulledFor(*child, callback, context);
     }
   }
