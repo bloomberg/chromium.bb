@@ -163,9 +163,9 @@ ProgressCenterItem.prototype = /** @struct */ {
    * @return {boolean} True if the item can be canceled.
    */
   get cancelable() {
-    return !!(this.state == ProgressItemState.PROGRESSING &&
-              this.cancelCallback &&
-              this.single);
+    return !!(
+        this.state == ProgressItemState.PROGRESSING && this.cancelCallback &&
+        this.single);
   }
 };
 
