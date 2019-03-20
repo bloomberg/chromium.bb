@@ -53,6 +53,7 @@ cr.define('cr.ui.dialogs', function() {
 
     this.frame_ = doc.createElement('div');
     this.frame_.className = 'cr-dialog-frame';
+    this.frame_.setAttribute('role', 'dialog');
     // Elements that have negative tabIndex can be focused but are not traversed
     // by Tab key.
     this.frame_.tabIndex = -1;
@@ -239,9 +240,11 @@ cr.define('cr.ui.dialogs', function() {
     if (title) {
       this.title_.textContent = title;
       this.title_.hidden = false;
+      this.frame_.setAttribute('aria-label', title);
     } else {
       this.title_.textContent = '';
       this.title_.hidden = true;
+      this.frame_.removeAttribute('aria-label');
     }
 
     const self = this;
