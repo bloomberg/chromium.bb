@@ -73,6 +73,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/gtest_util.h"
+#include "net/test/key_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
@@ -3361,42 +3362,6 @@ TEST_F(SSLClientSocketTest, AlpnClientDisabled) {
   EXPECT_EQ(kProtoUnknown, sock_->GetNegotiatedProtocol());
 }
 
-namespace {
-
-bssl::UniquePtr<EVP_PKEY> LoadEVP_PKEY(const base::FilePath& filepath) {
-  std::string data;
-  if (!base::ReadFileToString(filepath, &data)) {
-    LOG(ERROR) << "Could not read private key file: " << filepath.value();
-    return nullptr;
-  }
-  bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(data.data()),
-                                           static_cast<int>(data.size())));
-  if (!bio) {
-    LOG(ERROR) << "Could not allocate BIO for buffer?";
-    return nullptr;
-  }
-  bssl::UniquePtr<EVP_PKEY> result(
-      PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
-  if (!result) {
-    LOG(ERROR) << "Could not decode private key file: " << filepath.value();
-    return nullptr;
-  }
-  return result;
-}
-
-// Loads a PEM-encoded private key file into a SSLPrivateKey object.
-// |filepath| is the private key file path.
-// Returns the new SSLPrivateKey.
-scoped_refptr<SSLPrivateKey> LoadPrivateKeyOpenSSL(
-    const base::FilePath& filepath) {
-  bssl::UniquePtr<EVP_PKEY> key = LoadEVP_PKEY(filepath);
-  if (!key)
-    return nullptr;
-  return WrapOpenSSLPrivateKey(std::move(key));
-}
-
-}  // namespace
-
 // Connect to a server requesting client authentication, do not send
 // any client certificates. It should refuse the connection.
 TEST_F(SSLClientSocketTest, NoCert) {
@@ -3452,7 +3417,7 @@ TEST_F(SSLClientSocketTest, SendGoodCert) {
   ssl_config.send_client_cert = true;
   ssl_config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
   ssl_config.client_private_key =
-      LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -4252,7 +4217,7 @@ TEST_F(SSLClientSocketTest, LateHandshakeFailureSendClientCerts) {
   config.send_client_cert = true;
   config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
   config.client_private_key =
-      LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(), config));
 
@@ -4348,7 +4313,7 @@ TEST_F(SSLClientSocketTest, AccessDeniedClientCerts) {
   config.send_client_cert = true;
   config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
   config.client_private_key =
-      LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       std::move(transport), spawned_test_server()->host_port_pair(), config));
 
@@ -4737,7 +4702,7 @@ TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
       ImportCertFromFile(certs_dir, "ok_cert.pem");
   ASSERT_TRUE(cert);
   bssl::UniquePtr<EVP_PKEY> pkey =
-      LoadEVP_PKEY(certs_dir.AppendASCII("ok_cert.pem"));
+      key_util::LoadEVP_PKEYFromPEM(certs_dir.AppendASCII("ok_cert.pem"));
   ASSERT_TRUE(pkey);
   std::unique_ptr<crypto::RSAPrivateKey> key =
       crypto::RSAPrivateKey::CreateFromKey(pkey.get());
