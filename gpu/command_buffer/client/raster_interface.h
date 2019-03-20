@@ -64,15 +64,10 @@ class RasterInterface {
                               GLfloat post_scale,
                               bool requires_clear) = 0;
 
-  // Determines if an encoded image can be decoded using hardware decode
-  // acceleration. If this method returns true, then the client can be confident
-  // that a call to ScheduleImageDecode() will succeed.
-  virtual bool CanDecodeWithHardwareAcceleration(
-      base::span<const uint8_t> encoded_data) = 0;
-
   // Schedules a hardware-accelerated image decode and a sync token that's
   // released when the image decode is complete. If the decode could not be
-  // scheduled, an empty sync token is returned.
+  // scheduled, an empty sync token is returned. This method should only be
+  // called if ContextSupport::CanDecodeWithHardwareAcceleration() returns true.
   virtual SyncToken ScheduleImageDecode(
       base::span<const uint8_t> encoded_data,
       const gfx::Size& output_size,

@@ -6656,6 +6656,12 @@ unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {
   return 0;
 }
 
+bool GLES2Implementation::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  NOTREACHED();
+  return false;
+}
+
 void GLES2Implementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
   if (!sync_token) {
     SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
