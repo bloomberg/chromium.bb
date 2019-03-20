@@ -154,6 +154,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       urgency_hint_set_(false),
       has_pointer_grab_(false),
       activatable_(true),
+      override_redirect_(false),
       has_pointer_(false),
       has_window_focus_(false),
       has_pointer_focus_(false),
@@ -736,7 +737,9 @@ void DesktopWindowTreeHostX11::Activate() {
 
   Time timestamp = ui::X11EventSource::GetInstance()->GetTimestamp();
 
-  if (wm_supports_active_window) {
+  // override_redirect windows ignore _NET_ACTIVE_WINDOW.
+  // https://crbug.com/940924
+  if (wm_supports_active_window && !override_redirect_) {
     XEvent xclient;
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
@@ -1437,7 +1440,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (!activatable_)
     swa.override_redirect = x11::True;
 
-  if (swa.override_redirect)
+  override_redirect_ = swa.override_redirect == x11::True;
+  if (override_redirect_)
     attribute_mask |= CWOverrideRedirect;
 
   bool enable_transparent_visuals;
