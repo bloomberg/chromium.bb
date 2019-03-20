@@ -4,10 +4,7 @@
 
 #include "components/autofill/core/browser/contact_form_label_formatter.h"
 
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/label_formatter_utils.h"
-#include "components/autofill/core/browser/validation.h"
 
 namespace autofill {
 
@@ -41,57 +38,40 @@ std::vector<base::string16> ContactFormLabelFormatter::GetLabels(
   return labels;
 }
 
-void ContactFormLabelFormatter::MaybeAddEmail(
-    const AutofillProfile& profile,
-    std::vector<base::string16>* label_parts) const {
-  const base::string16 email = ContainsEmail(groups_)
-                                   ? GetLabelEmail(profile, app_locale())
-                                   : base::string16();
-  if (!email.empty() && IsValidEmailAddress(email)) {
-    label_parts->push_back(email);
-  }
+base::string16 ContactFormLabelFormatter::MaybeGetEmail(
+    const AutofillProfile& profile) const {
+  return ContainsEmail(groups_) ? GetLabelEmail(profile, app_locale())
+                                : base::string16();
 }
 
-void ContactFormLabelFormatter::MaybeAddPhone(
-    const AutofillProfile& profile,
-    std::vector<base::string16>* label_parts) const {
-  const base::string16 phone = ContainsPhone(groups_)
-                                   ? GetLabelPhone(profile, app_locale())
-                                   : base::string16();
-  if (!phone.empty()) {
-    label_parts->push_back(phone);
-  }
+base::string16 ContactFormLabelFormatter::MaybeGetPhone(
+    const AutofillProfile& profile) const {
+  return ContainsPhone(groups_) ? GetLabelPhone(profile, app_locale())
+                                : base::string16();
 }
 
 base::string16 ContactFormLabelFormatter::GetLabelForFocusedEmail(
     const AutofillProfile& profile) const {
   std::vector<base::string16> label_parts;
-  MaybeAddPhone(profile, &label_parts);
-
-  const base::string16 name = GetLabelName(profile, app_locale());
-  if (!name.empty()) {
-    label_parts.push_back(name);
-  }
-  return base::JoinString(label_parts, base::WideToUTF16(kLabelDelimiter));
+  AddLabelPartIfNotEmpty(MaybeGetPhone(profile), &label_parts);
+  AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+  return ConstructLabelLine(label_parts);
 }
 
 base::string16 ContactFormLabelFormatter::GetLabelForFocusedPhone(
     const AutofillProfile& profile) const {
   std::vector<base::string16> label_parts;
-  const base::string16 name = GetLabelName(profile, app_locale());
-  if (!name.empty()) {
-    label_parts.push_back(name);
-  }
-  MaybeAddEmail(profile, &label_parts);
-  return base::JoinString(label_parts, base::WideToUTF16(kLabelDelimiter));
+  AddLabelPartIfNotEmpty(GetLabelName(profile, app_locale()), &label_parts);
+  AddLabelPartIfNotEmpty(MaybeGetEmail(profile), &label_parts);
+  return ConstructLabelLine(label_parts);
 }
 
 base::string16 ContactFormLabelFormatter::GetLabelDefault(
     const AutofillProfile& profile) const {
   std::vector<base::string16> label_parts;
-  MaybeAddPhone(profile, &label_parts);
-  MaybeAddEmail(profile, &label_parts);
-  return base::JoinString(label_parts, base::WideToUTF16(kLabelDelimiter));
+  AddLabelPartIfNotEmpty(MaybeGetPhone(profile), &label_parts);
+  AddLabelPartIfNotEmpty(MaybeGetEmail(profile), &label_parts);
+  return ConstructLabelLine(label_parts);
 }
 
 }  // namespace autofill
