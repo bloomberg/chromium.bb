@@ -47,8 +47,10 @@ namespace chromeos {
 
 namespace device_sync {
 
+class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
+class CryptAuthKeyRegistry;
 class GcmDeviceInfoProvider;
 class SoftwareFeatureManager;
 
@@ -77,6 +79,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
+        ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         std::unique_ptr<base::OneShotTimer> timer);
 
@@ -167,6 +170,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
+      ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::Clock* clock,
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate,
@@ -211,6 +215,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   gcm::GCMDriver* gcm_driver_;
   service_manager::Connector* connector_;
   const GcmDeviceInfoProvider* gcm_device_info_provider_;
+  ClientAppMetadataProvider* client_app_metadata_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   base::Clock* clock_;
   std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
@@ -225,6 +230,10 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
   std::unique_ptr<CryptAuthGCMManager> cryptauth_gcm_manager_;
   std::unique_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
+
+  // Only created and used if v2 Enrollment is enabled; null otherwise.
+  std::unique_ptr<CryptAuthKeyRegistry> cryptauth_key_registry_;
+
   std::unique_ptr<CryptAuthEnrollmentManager> cryptauth_enrollment_manager_;
   std::unique_ptr<CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;

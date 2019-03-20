@@ -152,6 +152,8 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
+#include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service.h"
+#include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service_factory.h"
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/locale_change_guard.h"
@@ -1271,6 +1273,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         IdentityManagerFactory::GetForProfile(this),
         gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
         chromeos::GcmDeviceInfoProviderImpl::GetInstance(),
+        chromeos::ClientAppMetadataProviderServiceFactory::GetForProfile(this),
         GetURLLoaderFactory(), std::move(request));
   }
 

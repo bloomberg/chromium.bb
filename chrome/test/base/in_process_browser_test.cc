@@ -137,6 +137,8 @@ class FakeDeviceSyncImplFactory
       service_manager::Connector* connector,
       const chromeos::device_sync::GcmDeviceInfoProvider*
           gcm_device_info_provider,
+      chromeos::device_sync::ClientAppMetadataProvider*
+          client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<base::OneShotTimer> timer) override {
     return std::make_unique<chromeos::device_sync::FakeDeviceSync>();
@@ -374,8 +376,7 @@ void InProcessBrowserTest::TearDown() {
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(browser));
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   CloseBrowserAsynchronously(browser);
   observer.Wait();
 #if defined(OS_CHROMEOS)
@@ -427,10 +428,9 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
   }
 }
 
-void InProcessBrowserTest::AddTabAtIndex(
-    int index,
-    const GURL& url,
-    ui::PageTransition transition) {
+void InProcessBrowserTest::AddTabAtIndex(int index,
+                                         const GURL& url,
+                                         ui::PageTransition transition) {
   AddTabAtIndexToBrowser(browser(), index, url, transition, true);
 }
 
@@ -491,9 +491,8 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   return browser;
 }
 
-Browser* InProcessBrowserTest::CreateBrowserForApp(
-    const std::string& app_name,
-    Profile* profile) {
+Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
+                                                   Profile* profile) {
   Browser* browser = new Browser(Browser::CreateParams::CreateForApp(
       app_name, false /* trusted_source */, gfx::Rect(), profile, true));
   AddBlankTabAndShow(browser);
@@ -505,8 +504,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser,
-                                GURL(url::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser, GURL(url::kAboutBlankURL),
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
 
