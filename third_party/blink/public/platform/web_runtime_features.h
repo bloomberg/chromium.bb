@@ -237,6 +237,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableShadowDOMV0(bool);
   BLINK_PLATFORM_EXPORT static void EnableCustomElementsV0(bool);
   BLINK_PLATFORM_EXPORT static void EnableHTMLImports(bool);
+  BLINK_PLATFORM_EXPORT static void EnableSignedExchangeSubresourcePrefetch(
+      bool);
 
  private:
   WebRuntimeFeatures();

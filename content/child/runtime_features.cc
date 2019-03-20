@@ -495,6 +495,10 @@ void SetIndividualRuntimeFeatures(
 
   if (base::FeatureList::IsEnabled(features::kUserAgentClientHint))
     WebRuntimeFeatures::EnableFeatureFromString("UserAgentClientHint", true);
+
+  WebRuntimeFeatures::EnableSignedExchangeSubresourcePrefetch(
+      base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch));
 }
 
 }  // namespace

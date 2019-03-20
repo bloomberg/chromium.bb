@@ -1317,6 +1317,9 @@
       status: "experimental",
     },
     {
+      name: "SignedExchangeSubresourcePrefetch",
+    },
+    {
       name: "SkipAd",
       depends_on: ["MediaSession"],
       origin_trial_feature_name: "SkipAd",
