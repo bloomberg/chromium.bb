@@ -193,8 +193,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     GLuint texture_id;
     bool cleared;           // Whether the texture is cleared and safe to render
                             // from. See TextureManager for details.
-    // Input fds of the processor. Exported from the decoder.
-    std::vector<base::ScopedFD> processor_input_fds;
     // Output fds. Used only when OutputMode is IMPORT.
     std::vector<base::ScopedFD> output_fds;
   };

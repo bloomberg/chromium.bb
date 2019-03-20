@@ -105,6 +105,15 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // Returns the previously-set number of bytes used for |plane|.
   size_t GetPlaneBytesUsed(const size_t plane) const;
 
+  // Return the VideoFrame underlying this buffer. The VideoFrame's layout
+  // will match that of the V4L2 format. This method will *always* return the
+  // same VideoFrame instance for a given V4L2 buffer. Moreover, the VideoFrame
+  // instance will also be the same across V4L2WritableBufferRef and
+  // V4L2ReadableBufferRef if both references point to the same V4L2 buffer.
+  // Note: at the moment, this method is valid for MMAP buffers only. It will
+  // return nullptr for any other buffer type.
+  const scoped_refptr<VideoFrame>& GetVideoFrame() WARN_UNUSED_RESULT;
+
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
   // removed. See crbug/879971
@@ -154,6 +163,15 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   // TODO(acourbot) This is used for legacy clients but should be ultimately
   // removed. See crbug/879971
   size_t BufferId() const;
+
+  // Return the VideoFrame underlying this buffer. The VideoFrame's layout
+  // will match that of the V4L2 format. This method will *always* return the
+  // same VideoFrame instance for a given V4L2 buffer. Moreover, the VideoFrame
+  // instance will also be the same across V4L2WritableBufferRef and
+  // V4L2ReadableBufferRef if both references point to the same V4L2 buffer.
+  // Note: at the moment, this method is valid for MMAP buffers only. It will
+  // return nullptr for any other buffer type.
+  const scoped_refptr<VideoFrame>& GetVideoFrame() WARN_UNUSED_RESULT;
 
  private:
   friend class V4L2BufferRefFactory;
