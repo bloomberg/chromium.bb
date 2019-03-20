@@ -4,11 +4,15 @@
 
 #include "chromecast/browser/cast_extension_host.h"
 
+#include <string>
+
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/runtime_data.h"
@@ -23,20 +27,17 @@
 
 namespace chromecast {
 
-CastExtensionHost::CastExtensionHost(content::BrowserContext* browser_context,
-                                     CastWebView::Delegate* delegate,
-                                     const extensions::Extension* extension,
-                                     const GURL& initial_url,
-                                     content::SiteInstance* site_instance,
-                                     extensions::ViewType host_type)
+CastExtensionHost::CastExtensionHost(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    const GURL& initial_url,
+    scoped_refptr<content::SiteInstance> site_instance)
     : extensions::ExtensionHost(extension,
-                                site_instance,
+                                site_instance.get(),
                                 initial_url,
-                                host_type),
-      browser_context_(browser_context),
-      delegate_(delegate) {
+                                extensions::VIEW_TYPE_EXTENSION_POPUP),
+      browser_context_(browser_context) {
   DCHECK(browser_context_);
-  DCHECK(delegate_);
 }
 
 CastExtensionHost::~CastExtensionHost() {}
@@ -83,8 +84,15 @@ bool CastExtensionHost::DidAddMessageToConsole(
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
-  return delegate_->OnAddMessageToConsoleReceived(level, message, line_no,
-                                                  source_id);
+  std::string context = "Cast Extension:";
+  base::string16 single_line_message;
+  // Mult-line message is not friendly to dumpstate redact.
+  base::ReplaceChars(message, base::ASCIIToUTF16("\n"),
+                     base::ASCIIToUTF16("\\n "), &single_line_message);
+  logging::LogMessage("CONSOLE", line_no, ::logging::LOG_INFO).stream()
+      << context << " \"" << single_line_message << "\", source: " << source_id
+      << " (" << line_no << ")";
+  return true;
 }
 
 void CastExtensionHost::Observe(int type,

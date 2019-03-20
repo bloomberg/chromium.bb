@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -26,6 +27,19 @@
 
 namespace chromecast {
 
+namespace {
+
+// IDs start at 1, since 0 is reserved for the root content window.
+size_t next_tab_id = 1;
+
+}  // namespace
+
+// static
+std::vector<CastWebContents*>& CastWebContents::GetAll() {
+  static base::NoDestructor<std::vector<CastWebContents*>> instance;
+  return *instance;
+}
+
 CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
                                          const InitParams& init_params)
     : web_contents_(web_contents),
@@ -36,6 +50,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       use_cma_renderer_(init_params.use_cma_renderer),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
+      tab_id_(init_params.is_root_window ? 0 : next_tab_id++),
       closing_(false),
       stopped_(false),
       stop_notified_(false),
@@ -46,6 +61,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   DCHECK(web_contents_);
   DCHECK(web_contents_->GetController().IsInitialNavigation());
   DCHECK(!web_contents_->IsLoading());
+  CastWebContents::GetAll().push_back(this);
   content::WebContentsObserver::Observe(web_contents_);
   if (enabled_for_dev_) {
     LOG(INFO) << "Enabling dev console for CastWebContentsImpl";
@@ -67,6 +83,16 @@ CastWebContentsImpl::~CastWebContentsImpl() {
   for (auto& observer : observer_list_) {
     observer.ResetCastWebContents();
   }
+  auto& all_cast_web_contents = CastWebContents::GetAll();
+  auto it = std::find(all_cast_web_contents.begin(),
+                      all_cast_web_contents.end(), this);
+  if (it != all_cast_web_contents.end()) {
+    all_cast_web_contents.erase(it);
+  }
+}
+
+int CastWebContentsImpl::tab_id() const {
+  return tab_id_;
 }
 
 content::WebContents* CastWebContentsImpl::web_contents() const {
