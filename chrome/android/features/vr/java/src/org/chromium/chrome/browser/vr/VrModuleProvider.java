@@ -10,6 +10,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.module_installer.Module;
 import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
 
 import java.util.ArrayList;
@@ -88,11 +89,11 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     @VisibleForTesting
     public static void setAlwaysUseFallbackDelegate(boolean useFallbackDelegate) {
-        // TODO(bsheedy): Change this to an "assert sDelegateProvider == null" once we change the
-        // restriction checking code to use the Daydream API directly so that a delegate provider
-        // doesn't get created during pre-test setup.
+        // TODO(crbug.com/944216): Remove this method and call Module.setForceUninstalled("vr")
+        // directly once we change the restriction checking code to use the Daydream API directly so
+        // that a delegate provider doesn't get created during pre-test setup.
         sDelegateProvider = null;
-        sAlwaysUseFallbackDelegate = useFallbackDelegate;
+        Module.setForceUninstalled("vr");
     }
 
     /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
@@ -116,7 +117,7 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     private static VrDelegateProvider getDelegateProvider() {
         if (sDelegateProvider == null) {
-            if (sAlwaysUseFallbackDelegate || !VrModule.isInstalled()) {
+            if (!VrModule.isInstalled()) {
                 sDelegateProvider = new VrDelegateProviderFallback();
             } else {
                 sDelegateProvider = VrModule.getImpl();

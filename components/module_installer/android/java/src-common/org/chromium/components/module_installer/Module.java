@@ -5,6 +5,10 @@
 package org.chromium.components.module_installer;
 
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.VisibleForTesting;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a feature module. Can be used to install the module, access its interface, etc. See
@@ -14,10 +18,19 @@ import org.chromium.base.StrictModeContext;
  * @param <T> The interface of the module/
  */
 public class Module<T> {
+    private static final Set<String> sModulesUninstalledForTesting = new HashSet<>();
     private final String mName;
     private final Class<T> mInterfaceClass;
     private final String mImplClassName;
     private T mImpl;
+
+    /** Forces a module to appear uninstalled. */
+    @VisibleForTesting
+    public static void setForceUninstalled(String moduleName) {
+        // TODO(crbug.com/944223): Make sure that this is not set after the module API has been
+        // used.
+        sModulesUninstalledForTesting.add(moduleName);
+    }
 
     /**
      * Instantiates a module.
@@ -35,6 +48,7 @@ public class Module<T> {
 
     /** Returns true if the module is currently installed and can be accessed. */
     public boolean isInstalled() {
+        if (sModulesUninstalledForTesting.contains(mName)) return false;
         if (mImpl != null) return true;
         // Accessing classes in the module may cause its DEX file to be loaded. And on some devices
         // that causes a read mode violation.
