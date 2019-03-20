@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -21,8 +24,12 @@ ResolveHostClientImpl::ResolveHostClientImpl(
     ResolveHostCallback callback,
     network::mojom::NetworkContext* network_context)
     : binding_(this), callback_(std::move(callback)) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::mojom::ResolveHostClientPtr resolve_host_client_ptr;
-  binding_.Bind(mojo::MakeRequest(&resolve_host_client_ptr));
+  binding_.Bind(
+      mojo::MakeRequest(&resolve_host_client_ptr),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect}));
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();
   parameters->initial_priority = net::RequestPriority::IDLE;

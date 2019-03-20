@@ -42,8 +42,8 @@ class CONTENT_EXPORT BrowserUIThreadTaskQueue
     // For tasks on the critical path up to issuing the initial navigation.
     kBootstrap,
 
-    // For navigation related tasks.
-    kNavigation,
+    // For navigation and preconnection related tasks.
+    kNavigationAndPreconnection,
 
     // A generic high priority queue.  Long term we should replace this with
     // additional semantic annotations.
