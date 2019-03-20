@@ -29,13 +29,11 @@ bool IsNoneValue(const InterpolationValue& value) {
 class InheritedTranslateChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
+  InheritedTranslateChecker(
+      scoped_refptr<TranslateTransformOperation> inherited_translate)
+      : inherited_translate_(std::move(inherited_translate)) {}
   ~InheritedTranslateChecker() override = default;
 
-  static std::unique_ptr<InheritedTranslateChecker> Create(
-      scoped_refptr<TranslateTransformOperation> inherited_translate) {
-    return base::WrapUnique(
-        new InheritedTranslateChecker(std::move(inherited_translate)));
-  }
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
@@ -49,10 +47,6 @@ class InheritedTranslateChecker
   }
 
  private:
-  InheritedTranslateChecker(
-      scoped_refptr<TranslateTransformOperation> inherited_translate)
-      : inherited_translate_(std::move(inherited_translate)) {}
-
   scoped_refptr<TransformOperation> inherited_translate_;
 };
 
@@ -115,7 +109,7 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertInherit(
   TranslateTransformOperation* inherited_translate =
       state.ParentStyle()->Translate();
   conversion_checkers.push_back(
-      InheritedTranslateChecker::Create(inherited_translate));
+      std::make_unique<InheritedTranslateChecker>(inherited_translate));
   return ConvertTranslateOperation(inherited_translate,
                                    state.ParentStyle()->EffectiveZoom());
 }

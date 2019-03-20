@@ -68,18 +68,11 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertInitial(
 class InheritedShadowListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedShadowListChecker> Create(
-      const CSSProperty& property,
-      scoped_refptr<ShadowList> shadow_list) {
-    return base::WrapUnique(
-        new InheritedShadowListChecker(property, std::move(shadow_list)));
-  }
-
- private:
   InheritedShadowListChecker(const CSSProperty& property,
                              scoped_refptr<ShadowList> shadow_list)
       : property_(property), shadow_list_(std::move(shadow_list)) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     const ShadowList* inherited_shadow_list =
@@ -102,7 +95,7 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertInherit(
     return nullptr;
   const ShadowList* inherited_shadow_list =
       GetShadowList(CssProperty(), *state.ParentStyle());
-  conversion_checkers.push_back(InheritedShadowListChecker::Create(
+  conversion_checkers.push_back(std::make_unique<InheritedShadowListChecker>(
       CssProperty(),
       const_cast<ShadowList*>(inherited_shadow_list)));  // Take ref.
   return ConvertShadowList(inherited_shadow_list,

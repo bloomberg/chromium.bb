@@ -171,12 +171,6 @@ namespace {
 class UnderlyingSideTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingSideTypesChecker> Create(
-      const SideTypes& underlying_side_types) {
-    return base::WrapUnique(
-        new UnderlyingSideTypesChecker(underlying_side_types));
-  }
-
   static SideTypes GetUnderlyingSideTypes(
       const InterpolationValue& underlying) {
     return ToCSSBorderImageLengthBoxNonInterpolableValue(
@@ -184,10 +178,10 @@ class UnderlyingSideTypesChecker
         .GetSideTypes();
   }
 
- private:
-  UnderlyingSideTypesChecker(const SideTypes& underlying_side_types)
+  explicit UnderlyingSideTypesChecker(const SideTypes& underlying_side_types)
       : underlying_side_types_(underlying_side_types) {}
 
+ private:
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return underlying_side_types_ == GetUnderlyingSideTypes(underlying);
@@ -199,18 +193,11 @@ class UnderlyingSideTypesChecker
 class InheritedSideTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedSideTypesChecker> Create(
-      const CSSProperty& property,
-      const SideTypes& inherited_side_types) {
-    return base::WrapUnique(
-        new InheritedSideTypesChecker(property, inherited_side_types));
-  }
-
- private:
   InheritedSideTypesChecker(const CSSProperty& property,
                             const SideTypes& inherited_side_types)
       : property_(property), inherited_side_types_(inherited_side_types) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return inherited_side_types_ ==
@@ -264,7 +251,7 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertNeutral(
   SideTypes underlying_side_types =
       UnderlyingSideTypesChecker::GetUnderlyingSideTypes(underlying);
   conversion_checkers.push_back(
-      UnderlyingSideTypesChecker::Create(underlying_side_types));
+      std::make_unique<UnderlyingSideTypesChecker>(underlying_side_types));
   return InterpolationValue(underlying.interpolable_value->CloneAndZero(),
                             ToCSSBorderImageLengthBoxNonInterpolableValue(
                                 *underlying.non_interpolable_value)
@@ -285,8 +272,8 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const BorderImageLengthBox& inherited =
       GetBorderImageLengthBox(CssProperty(), *state.ParentStyle());
-  conversion_checkers.push_back(
-      InheritedSideTypesChecker::Create(CssProperty(), SideTypes(inherited)));
+  conversion_checkers.push_back(std::make_unique<InheritedSideTypesChecker>(
+      CssProperty(), SideTypes(inherited)));
   return ConvertBorderImageLengthBox(inherited,
                                      state.ParentStyle()->EffectiveZoom());
 }

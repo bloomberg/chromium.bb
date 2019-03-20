@@ -52,11 +52,9 @@ void SetFilterList(const CSSProperty& property,
 class UnderlyingFilterListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingFilterListChecker> Create(
-      scoped_refptr<NonInterpolableList> non_interpolable_list) {
-    return base::WrapUnique(
-        new UnderlyingFilterListChecker(std::move(non_interpolable_list)));
-  }
+  UnderlyingFilterListChecker(
+      scoped_refptr<NonInterpolableList> non_interpolable_list)
+      : non_interpolable_list_(std::move(non_interpolable_list)) {}
 
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
@@ -75,22 +73,17 @@ class UnderlyingFilterListChecker
   }
 
  private:
-  UnderlyingFilterListChecker(
-      scoped_refptr<NonInterpolableList> non_interpolable_list)
-      : non_interpolable_list_(std::move(non_interpolable_list)) {}
-
   scoped_refptr<NonInterpolableList> non_interpolable_list_;
 };
 
 class InheritedFilterListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedFilterListChecker> Create(
-      const CSSProperty& property,
-      const FilterOperations& filter_operations) {
-    return base::WrapUnique(
-        new InheritedFilterListChecker(property, filter_operations));
-  }
+  InheritedFilterListChecker(const CSSProperty& property,
+                             const FilterOperations& filter_operations)
+      : property_(property),
+        filter_operations_wrapper_(
+            FilterOperationsWrapper::Create(filter_operations)) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
@@ -100,12 +93,6 @@ class InheritedFilterListChecker
   }
 
  private:
-  InheritedFilterListChecker(const CSSProperty& property,
-                             const FilterOperations& filter_operations)
-      : property_(property),
-        filter_operations_wrapper_(
-            FilterOperationsWrapper::Create(filter_operations)) {}
-
   const CSSProperty& property_;
   Persistent<FilterOperationsWrapper> filter_operations_wrapper_;
 };
@@ -140,7 +127,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertNeutral(
   NonInterpolableList& non_interpolable_list = const_cast<NonInterpolableList&>(
       ToNonInterpolableList(*underlying.non_interpolable_value));
   conversion_checkers.push_back(
-      UnderlyingFilterListChecker::Create(&non_interpolable_list));
+      std::make_unique<UnderlyingFilterListChecker>(&non_interpolable_list));
   return InterpolationValue(underlying.interpolable_value->CloneAndZero(),
                             &non_interpolable_list);
 }
@@ -157,7 +144,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const FilterOperations& inherited_filter_operations =
       GetFilterList(CssProperty(), *state.ParentStyle());
-  conversion_checkers.push_back(InheritedFilterListChecker::Create(
+  conversion_checkers.push_back(std::make_unique<InheritedFilterListChecker>(
       CssProperty(), inherited_filter_operations));
   return ConvertFilterList(inherited_filter_operations,
                            state.Style()->EffectiveZoom());
