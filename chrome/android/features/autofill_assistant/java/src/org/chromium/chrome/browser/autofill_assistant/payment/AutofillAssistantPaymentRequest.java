@@ -412,12 +412,15 @@ public class AutofillAssistantPaymentRequest {
                             // Address is complete and user was in the "Add flow": add an item to
                             // the list.
                             mShippingAddressesSection.addAndSelectItem(editedAddress);
+                            mDelegate.onShippingAddressChanged(editedAddress.getProfile());
                         }
 
                         if (mContactSection != null) {
                             // Update |mContactSection| with the new/edited address, which will
                             // update an existing item or add a new one to the end of the list.
                             mContactSection.addOrUpdateWithAutofillAddress(editedAddress);
+                            mDelegate.onContactInfoChanged(
+                                    (AutofillContact) mContactSection.getSelectedItem());
                             mUI.updateSection(
                                     PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
                         }
@@ -447,6 +450,7 @@ public class AutofillAssistantPaymentRequest {
                         // Contact is complete and we were in the "Add flow": add an item to the
                         // list.
                         mContactSection.addAndSelectItem(editedContact);
+                        mDelegate.onContactInfoChanged(editedContact);
                     }
                     // If contact is complete and (toEdit != null), no action needed: the contact
                     // was already selected in the UI.
@@ -476,6 +480,7 @@ public class AutofillAssistantPaymentRequest {
                     } else if (toEdit == null) {
                         // Card is complete and we were in the "Add flow": add an item to the list.
                         mPaymentMethodsSection.addAndSelectItem(editedCard);
+                        mDelegate.onCreditCardChanged(editedCard.getCard());
                     }
                     // If card is complete and (toEdit != null), no action needed: the card was
                     // already selected in the UI.
