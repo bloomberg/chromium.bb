@@ -8,5 +8,5 @@
 promise_test(async () => {
   await PermissionsHelper.setPermission('clipboard-read', 'granted');
   await navigator.clipboard.readText();
-}, "navigator.clipboard.readText() succeeds when permission granted");
+}, 'navigator.clipboard.readText() succeeds when permission granted');
 </script>
