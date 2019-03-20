@@ -36,7 +36,10 @@ SigninManager::SigninManager(
       account_consistency_(account_consistency),
       weak_pointer_factory_(this) {}
 
-SigninManager::~SigninManager() {}
+SigninManager::~SigninManager() {
+  token_service()->RemoveObserver(this);
+  local_state_pref_registrar_.RemoveAll();
+}
 
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
   if (observer_ != nullptr) {
@@ -183,12 +186,6 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
   // It is important to only load credentials after starting to observe the
   // token service.
   token_service()->AddObserver(this);
-}
-
-void SigninManager::Shutdown() {
-  token_service()->RemoveObserver(this);
-  local_state_pref_registrar_.RemoveAll();
-  SigninManagerBase::Shutdown();
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {

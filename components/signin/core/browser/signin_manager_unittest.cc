@@ -85,8 +85,7 @@ class SigninManagerTest : public testing::Test {
 
   ~SigninManagerTest() override {
     if (manager_) {
-      manager_->ClearObserver();
-      manager_->Shutdown();
+      ShutDownManager();
     }
     token_service_.Shutdown();
     test_signin_client_.Shutdown();
@@ -124,7 +123,6 @@ class SigninManagerTest : public testing::Test {
   void ShutDownManager() {
     DCHECK(manager_);
     manager_->ClearObserver();
-    manager_->Shutdown();
     manager_.reset();
   }
 
