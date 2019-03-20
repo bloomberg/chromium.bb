@@ -1100,9 +1100,6 @@ interface Functions {
   static void computeChecksum([instanceof=Entry] object entry,
                               ComputeChecksumCallback callback);
 
-  // Is UMA enabled?
-  static void isUMAEnabled(BooleanCallback callback);
-
   // Sets a tag on a file or a directory. Only Drive files are supported.
   [nocompile]
   static void setEntryTag([instanceof=Entry] object entry,

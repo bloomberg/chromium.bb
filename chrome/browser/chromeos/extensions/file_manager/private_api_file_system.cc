@@ -1106,12 +1106,6 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
   Respond(OneArgument(std::move(result)));
 }
 
-ExtensionFunction::ResponseAction
-FileManagerPrivateIsUMAEnabledFunction::Run() {
-  return RespondNow(OneArgument(std::make_unique<base::Value>(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
-}
-
 FileManagerPrivateInternalSetEntryTagFunction::
     FileManagerPrivateInternalSetEntryTagFunction()
     : chrome_details_(this) {}
