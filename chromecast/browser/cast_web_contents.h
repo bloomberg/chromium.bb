@@ -87,6 +87,7 @@ class CastWebContents {
     Delegate* delegate;
     bool enabled_for_dev;
     bool use_cma_renderer;
+    bool is_root_window = false;
   };
 
   // Page state for the main frame.
@@ -99,8 +100,15 @@ class CastWebContents {
     ERROR,      // Main frame is in an error state.
   };
 
+  static std::vector<CastWebContents*>& GetAll();
+
   CastWebContents() = default;
   virtual ~CastWebContents() = default;
+
+  // Tab identifier for the WebContents, mainly used by the tabs extension API.
+  // Tab IDs may be re-used, but no two live CastWebContents should have the
+  // same tab ID at any given time.
+  virtual int tab_id() const = 0;
 
   // TODO(seantopping): Hide this, clients shouldn't use WebContents directly.
   virtual content::WebContents* web_contents() const = 0;

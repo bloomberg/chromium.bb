@@ -40,6 +40,7 @@ class CastWebContentsImpl : public CastWebContents,
   PageState page_state() const override;
 
   // CastWebContents implementation:
+  int tab_id() const override;
   void SetDelegate(Delegate* delegate) override;
   void AddRendererFeatures(std::vector<RendererFeature> features) override;
   void AllowWebAndMojoWebUiBindings() override;
@@ -95,6 +96,7 @@ class CastWebContentsImpl : public CastWebContents,
   base::flat_set<std::unique_ptr<CastWebContents>> inner_contents_;
   std::vector<RendererFeature> renderer_features_;
 
+  const int tab_id_;
   base::TimeTicks start_loading_ticks_;
   bool closing_;
   bool stopped_;
