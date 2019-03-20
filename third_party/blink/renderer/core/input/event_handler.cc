@@ -1215,8 +1215,12 @@ void EventHandler::AnimateSnapFling(base::TimeTicks monotonic_time) {
   scroll_manager_->AnimateSnapFling(monotonic_time);
 }
 
-void EventHandler::RecomputeMouseHoverState() {
-  mouse_event_manager_->RecomputeMouseHoverState();
+void EventHandler::RecomputeMouseHoverStateIfNeeded() {
+  mouse_event_manager_->RecomputeMouseHoverStateIfNeeded();
+}
+
+void EventHandler::MarkHoverStateDirty() {
+  mouse_event_manager_->MarkHoverStateDirty();
 }
 
 Element* EventHandler::EffectiveMouseEventTargetElement(

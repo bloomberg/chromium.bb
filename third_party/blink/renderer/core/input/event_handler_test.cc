@@ -1254,8 +1254,9 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
   EXPECT_FALSE(iframe_doc->GetActiveElement());
 }
 
-// Test that the hover is updated at the next begin frame after the scroll ends.
-TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
+// Test that the hover is updated at the next begin frame after the compositor
+// scroll ends.
+TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
   RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -1320,12 +1321,114 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
   EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
 
-  // Do a compositor scroll and set |scroll_gesture_did_end| to be true.
+  // Do a compositor scroll and set |hover_needs_update_at_scroll_end| to be
+  // true in WebViewImpl.
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewport()->DidScroll(FloatPoint(0, 500));
   WebView().MainFrameWidget()->ApplyViewportChanges(
       {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, 0,
        cc::BrowserControlsState::kBoth, true});
+  ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
+  EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+
+  // The fake mouse move event is dispatched at the begin frame to update hover.
+  Compositor().BeginFrame();
+  EXPECT_EQ("was hovered", element1.InnerHTML().Utf8());
+  EXPECT_EQ("currently hovered", element2.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+}
+
+// Test that the hover is updated at the next begin frame after the main thread
+// scroll ends.
+TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
+  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body, html {
+        margin: 0;
+      }
+      div {
+        height: 300px;
+        width: 100%;
+      }
+    </style>
+    <body>
+    <div class="hoverme" id="line1">hover over me</div>
+    <div class="hoverme" id="line2">hover over me</div>
+    <div class="hoverme" id="line3">hover over me</div>
+    <div class="hoverme" id="line4">hover over me</div>
+    <div class="hoverme" id="line5">hover over me</div>
+    </body>
+    <script>
+      let array = document.getElementsByClassName('hoverme');
+      for (let element of array) {
+        element.addEventListener('mouseover', function (e) {
+          this.innerHTML = "currently hovered";
+        });
+        element.addEventListener('mouseout', function (e) {
+          this.innerHTML = "was hovered";
+        });
+      }
+    </script>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown, WebFloatPoint(1, 1),
+                                 WebFloatPoint(1, 1),
+                                 WebPointerProperties::Button::kLeft, 1,
+                                 WebInputEvent::Modifiers::kLeftButtonDown,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
+      mouse_down_event);
+
+  WebMouseEvent mouse_up_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
+      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_up_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_up_event);
+
+  WebView().MainFrameWidget()->SetFocus(true);
+  WebView().SetIsActive(true);
+
+  WebElement element1 = GetDocument().getElementById("line1");
+  WebElement element2 = GetDocument().getElementById("line2");
+  WebElement element3 = GetDocument().getElementById("line3");
+  EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
+  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+
+  // Send scroll gesture events which will set
+  // |hover_needs_update_at_scroll_end_| to be true in ScrollManager.
+  WebGestureEvent scroll_begin_event(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchpad);
+  WebGestureEvent scroll_update_event(
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::kWebGestureDeviceTouchpad);
+  scroll_update_event.data.scroll_update.delta_y = -500;
+  WebGestureEvent scroll_end_event(WebInputEvent::kGestureScrollEnd,
+                                   WebInputEvent::kNoModifiers,
+                                   WebInputEvent::GetStaticTimeStampForTests(),
+                                   blink::kWebGestureDeviceTouchpad);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_begin_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_update_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_end_event));
+  LocalFrameView* frame_view = GetDocument().View();
   ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
   EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
