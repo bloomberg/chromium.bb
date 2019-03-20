@@ -125,11 +125,16 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
     return;
   }
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   LocalFileSystem::From(*document)->ResolveURL(
       document, completed_url,
-      std::make_unique<ResolveURICallbacks>(
-          ResolveURICallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-          ScriptErrorCallback::Wrap(error_callback), document),
+      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
+                                            document),
       LocalFileSystem::kAsynchronous);
 }
 

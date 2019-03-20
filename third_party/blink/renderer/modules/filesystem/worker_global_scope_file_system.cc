@@ -150,11 +150,16 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
     return;
   }
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   LocalFileSystem::From(worker)->ResolveURL(
       &worker, completed_url,
-      std::make_unique<ResolveURICallbacks>(
-          ResolveURICallbacks::OnDidGetEntryV8Impl::Create(success_callback),
-          ScriptErrorCallback::Wrap(error_callback), &worker),
+      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
+                                            &worker),
       LocalFileSystem::kAsynchronous);
 }
 
@@ -179,9 +184,16 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
   }
 
   auto* sync_helper = MakeGarbageCollected<EntryCallbacksSyncHelper>();
+
+  auto success_callback_wrapper =
+      WTF::Bind(&EntryCallbacksSyncHelper::OnSuccess,
+                WrapPersistentIfNeeded(sync_helper));
+  auto error_callback_wrapper = WTF::Bind(&EntryCallbacksSyncHelper::OnError,
+                                          WrapPersistentIfNeeded(sync_helper));
+
   std::unique_ptr<ResolveURICallbacks> callbacks =
-      std::make_unique<ResolveURICallbacks>(sync_helper->GetSuccessCallback(),
-                                            sync_helper->GetErrorCallback(),
+      std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
                                             &worker);
 
   LocalFileSystem::From(worker)->ResolveURL(&worker, completed_url,

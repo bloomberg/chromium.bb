@@ -113,15 +113,6 @@ void PromiseErrorCallback::Invoke(base::File::Error error) {
 
 // EntryCallbacks -------------------------------------------------------------
 
-void EntryCallbacks::OnDidGetEntryV8Impl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(callback_);
-  OnDidGetEntryCallback::Trace(visitor);
-}
-
-void EntryCallbacks::OnDidGetEntryV8Impl::OnSuccess(Entry* entry) {
-  callback_->InvokeAndReportException(nullptr, entry);
-}
-
 EntryCallbacks::EntryCallbacks(SuccessCallback success_callback,
                                ErrorCallback error_callback,
                                ExecutionContext* context,
@@ -205,7 +196,9 @@ FileSystemCallbacks::FileSystemCallbacks(SuccessCallback success_callback,
                                          ErrorCallback error_callback,
                                          ExecutionContext* context,
                                          mojom::blink::FileSystemType type)
-    : FileSystemCallbacksBase(/*error_callback=*/nullptr, nullptr, context),
+    : FileSystemCallbacksBase(/*error_callback=*/nullptr,
+                              /*file_system=*/nullptr,
+                              context),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)),
       type_(type) {}
@@ -229,12 +222,14 @@ void FileSystemCallbacks::DidFail(base::File::Error error) {
 
 // ResolveURICallbacks --------------------------------------------------------
 
-ResolveURICallbacks::ResolveURICallbacks(
-    OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context)
-    : FileSystemCallbacksBase(error_callback, nullptr, context),
-      success_callback_(success_callback) {
+ResolveURICallbacks::ResolveURICallbacks(SuccessCallback success_callback,
+                                         ErrorCallback error_callback,
+                                         ExecutionContext* context)
+    : FileSystemCallbacksBase(/*error_callback=*/nullptr,
+                              /*file_system=*/nullptr,
+                              context),
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {
   DCHECK(success_callback_);
 }
 
@@ -259,14 +254,15 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
           ? static_cast<Entry*>(
                 DirectoryEntry::Create(filesystem, absolute_path))
           : static_cast<Entry*>(FileEntry::Create(filesystem, absolute_path));
-  success_callback_.Release()->OnSuccess(entry);
+
+  std::move(success_callback_).Run(entry);
 }
 
 void ResolveURICallbacks::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // MetadataCallbacks ----------------------------------------------------------
