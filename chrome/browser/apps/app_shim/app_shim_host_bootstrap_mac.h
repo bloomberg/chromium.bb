@@ -24,6 +24,14 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   // a file descriptor of a channel created by an UnixDomainSocketAcceptor, and
   // begins listening for messages on it.
   static void CreateForChannel(mojo::PlatformChannelEndpoint endpoint);
+
+  // Creates a new server-side mojo channel at |endpoint|, which contains a
+  // a Mach port for a channel created by an MachBootstrapAcceptor, and
+  // begins listening for messages on it. The PID of the sender of |endpoint|
+  // is stored in |peer_pid|.
+  static void CreateForChannelAndPeerID(mojo::PlatformChannelEndpoint endpoint,
+                                        base::ProcessId peer_pid);
+
   ~AppShimHostBootstrap() override;
 
   // Called in response to connecting (or failing to connect to) an
@@ -44,7 +52,7 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   const std::vector<base::FilePath>& GetLaunchFiles() const { return files_; }
 
  protected:
-  AppShimHostBootstrap();
+  explicit AppShimHostBootstrap(base::ProcessId peer_pid);
   void ServeChannel(mojo::PlatformChannelEndpoint endpoint);
   void ChannelError(uint32_t custom_reason, const std::string& description);
   virtual apps::AppShimHandler* GetHandler();
