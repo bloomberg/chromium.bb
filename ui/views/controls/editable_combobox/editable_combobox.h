@@ -37,6 +37,11 @@ class VIEWS_EXPORT EditableCombobox : public View,
                                       public TextfieldController,
                                       public ViewObserver {
  public:
+  enum class Type {
+    kRegular,
+    kPassword,
+  };
+
   // The class name.
   static const char kViewClassName[];
   static constexpr int kDefaultTextContext = style::CONTEXT_BUTTON;
@@ -51,13 +56,14 @@ class VIEWS_EXPORT EditableCombobox : public View,
   explicit EditableCombobox(std::unique_ptr<ui::ComboboxModel> combobox_model,
                             bool filter_on_edit,
                             bool show_on_empty,
+                            Type type = Type::kRegular,
                             int text_context = kDefaultTextContext,
                             int text_style = kDefaultTextStyle);
 
   ~EditableCombobox() override;
 
-  // Gets the text currently in the textfield.
   const base::string16& GetText() const;
+  void SetText(const base::string16& text);
 
   const gfx::FontList& GetFontList() const;
 
@@ -74,13 +80,16 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // is a label associated with this combobox.
   void SetAssociatedLabel(View* labelling_view);
 
+  // For Type::kPassword, sets whether the textfield and
+  // drop-down menu will reveal their current content.
+  void RevealPasswords(bool revealed);
+
   // Accessors of private members for tests.
   ui::ComboboxModel* GetComboboxModelForTest() { return combobox_model_.get(); }
   int GetItemCountForTest();
   base::string16 GetItemForTest(int index);
   MenuRunner* GetMenuRunnerForTest() { return menu_runner_.get(); }
   Textfield* GetTextfieldForTest() { return textfield_; }
-  void SetTextForTest(const base::string16& text);
 
  private:
   class EditableComboboxMenuModel;
@@ -109,6 +118,8 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void OnViewFocused(View* observed_view) override;
   void OnViewBlurred(View* observed_view) override;
 
+  Textfield* textfield_;
+
   std::unique_ptr<ui::ComboboxModel> combobox_model_;
 
   // The EditableComboboxMenuModel used by |menu_runner_|.
@@ -122,13 +133,17 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // shown in the drop-down menu.
   const int text_style_;
 
-  Textfield* textfield_;
+  const Type type_;
 
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;
 
   // Our listener. Not owned. Notified when the selected index changes.
   EditableComboboxListener* listener_;
+
+  // Whether we are currently showing the passwords for type
+  // Type::kPassword.
+  bool showing_password_text_;
 
   DISALLOW_COPY_AND_ASSIGN(EditableCombobox);
 };
