@@ -337,16 +337,12 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
   const bool result = backend_texture.getGLTextureInfo(&texture_info);
   DCHECK(result);
   DCHECK(context_provider->GetGLHelper());
-  const gpu::MailboxHolder& mailbox_holder =
-      context_provider->GetGLHelper()->ProduceMailboxHolderFromTexture(
-          texture_info.fID);
-  DCHECK_EQ(static_cast<int>(texture_info.fTarget), GL_TEXTURE_2D);
   viz::ReadbackYUVInterface* const yuv_reader =
       context_provider->GetGLHelper()->GetReadbackPipelineYUV(
           surface_origin != kTopLeft_GrSurfaceOrigin);
   yuv_reader->ReadbackYUV(
-      mailbox_holder.mailbox, mailbox_holder.sync_token, image_size,
-      gfx::Rect(image_size), output_frame->stride(media::VideoFrame::kYPlane),
+      texture_info.fID, image_size, gfx::Rect(image_size),
+      output_frame->stride(media::VideoFrame::kYPlane),
       output_frame->visible_data(media::VideoFrame::kYPlane),
       output_frame->stride(media::VideoFrame::kUPlane),
       output_frame->visible_data(media::VideoFrame::kUPlane),
