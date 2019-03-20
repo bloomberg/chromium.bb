@@ -70,6 +70,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
                                std::unique_ptr<AnimationCurve> curve) override {
   }
 
+  bool IsAnimating() const;
+
  private:
   void ReattachScrollOffsetAnimationIfNeeded(ElementId element_id);
 

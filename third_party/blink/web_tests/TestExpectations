@@ -335,6 +335,12 @@ crbug.com/857490 virtual/user-activation-v2/fast/events/touch/gesture/touch-gest
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
 crbug.com/857490 virtual/user-activation-v2/fast/events/wheel/wheel-fling-cancel.html [ Skip ]
 
+# Currently on main thread scrolling path, scrollend gets fired without waiting for scroll/fling snap animation. (The virtual/threaded version of the test passes.)
+crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
+crbug.com/907601 virtual/fractional_scrolling/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
+crbug.com/907601 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
+crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
+
 # Tests not yet passing with Blink FractionalScrollOffsets enabled.
 crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]

@@ -173,6 +173,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   void ScrollAnimationAbort() override;
 
+  bool IsImplOnlyScrollAnimating() const override;
+
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;
 

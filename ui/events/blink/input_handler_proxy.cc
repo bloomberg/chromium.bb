@@ -719,14 +719,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
   DCHECK(expect_scroll_update_end_);
   expect_scroll_update_end_ = false;
 #endif
-  if (ShouldAnimate(gesture_event.data.scroll_end.delta_units !=
-                    blink::WebGestureEvent::ScrollUnits::kPixels)) {
-    // Do nothing if the scroll is being animated; the scroll animation will
-    // generate the ScrollEnd when it is done.
-  } else {
-    cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-    input_handler_->ScrollEnd(&scroll_state, true);
-  }
+
+  cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
+  input_handler_->ScrollEnd(&scroll_state, true);
 
   if (scroll_sequence_ignored_)
     return DROP_EVENT;
