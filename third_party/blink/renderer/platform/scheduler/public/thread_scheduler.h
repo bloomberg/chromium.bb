@@ -16,6 +16,10 @@
 #include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
+namespace v8 {
+class Isolate;
+}
+
 namespace blink {
 namespace scheduler {
 class NonMainThreadSchedulerImpl;
@@ -116,6 +120,9 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual scheduler::PendingUserInputInfo GetPendingUserInputInfo() const {
     return scheduler::PendingUserInputInfo();
   }
+
+  // Associates |isolate| to the scheduler.
+  virtual void SetV8Isolate(v8::Isolate* isolate) = 0;
 
   // Test helpers.
 

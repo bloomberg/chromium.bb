@@ -696,6 +696,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   v8::Isolate* isolate = V8PerIsolateData::Initialize(scheduler->V8TaskRunner(),
                                                       v8_context_snapshot_mode);
+  scheduler->SetV8Isolate(isolate);
 
   // ThreadState::isolate_ needs to be set before setting the EmbedderHeapTracer
   // as setting the tracer indicates that a V8 garbage collection should trace
