@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_scheduler/delayed_task_manager.h"
+#include "base/task/task_scheduler/scheduler_sequenced_task_runner.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/task_tracker.h"
@@ -18,10 +20,13 @@
 #include "base/task/task_scheduler/test_utils.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -330,6 +335,67 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
   // Tasks should run shortly after the pool is started.
   task_1_running.Wait();
   task_2_running.Wait();
+
+  task_tracker_.FlushForTesting();
+}
+
+// Verify that the maximum number of BEST_EFFORT tasks that can run concurrently
+// in a pool does not affect Sequences with a priority that was increased from
+// BEST_EFFORT to USER_BLOCKING.
+TEST_P(TaskSchedulerWorkerPoolTest, UpdatePriorityBestEffortToUserBlocking) {
+  StartWorkerPool();
+
+  SchedulerLock num_tasks_running_lock;
+  std::unique_ptr<ConditionVariable> num_tasks_running_cv =
+      num_tasks_running_lock.CreateConditionVariable();
+  size_t num_tasks_running = 0;
+
+  // Post |kMaxTasks| BEST_EFFORT tasks that block until they all start running.
+  std::vector<scoped_refptr<SchedulerSequencedTaskRunner>> task_runners;
+
+  for (size_t i = 0; i < kMaxTasks; ++i) {
+    task_runners.push_back(MakeRefCounted<SchedulerSequencedTaskRunner>(
+        TaskTraits(TaskPriority::BEST_EFFORT),
+        &mock_scheduler_task_runner_delegate_));
+    task_runners.back()->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          // Increment the number of tasks running.
+          {
+            AutoSchedulerLock auto_lock(num_tasks_running_lock);
+            ++num_tasks_running;
+          }
+          num_tasks_running_cv->Broadcast();
+
+          // Wait until all posted tasks are running.
+          AutoSchedulerLock auto_lock(num_tasks_running_lock);
+          while (num_tasks_running < kMaxTasks) {
+            ScopedClearBlockingObserverForTesting clear_blocking_observer;
+            ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
+            num_tasks_running_cv->Wait();
+          }
+        }));
+  }
+
+  // Wait until |kMaxBestEffort| tasks start running.
+  {
+    AutoSchedulerLock auto_lock(num_tasks_running_lock);
+    while (num_tasks_running < kMaxBestEffortTasks)
+      num_tasks_running_cv->Wait();
+  }
+
+  // Update the priority of all TaskRunners to USER_BLOCKING.
+  for (size_t i = 0; i < kMaxTasks; ++i)
+    task_runners[i]->UpdatePriority(TaskPriority::USER_BLOCKING);
+
+  // Wait until all posted tasks start running. This should not block forever,
+  // even in a pool that enforces a maximum number of concurrent BEST_EFFORT
+  // tasks lower than |kMaxTasks|.
+  static_assert(kMaxBestEffortTasks < kMaxTasks, "");
+  {
+    AutoSchedulerLock auto_lock(num_tasks_running_lock);
+    while (num_tasks_running < kMaxTasks)
+      num_tasks_running_cv->Wait();
+  }
 
   task_tracker_.FlushForTesting();
 }
