@@ -639,21 +639,19 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter newVersion
 [Worker]     getter oldVersion
 [Worker]     method constructor
-[Worker] interface IdleManager
+[Worker] interface IdleDetector : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter onchange
+[Worker]     getter state
 [Worker]     method constructor
-[Worker]     method query
+[Worker]     method start
+[Worker]     method stop
+[Worker]     setter onchange
 [Worker] interface IdleState
 [Worker]     attribute @@toStringTag
 [Worker]     getter screen
 [Worker]     getter user
 [Worker]     method constructor
-[Worker] interface IdleStatus : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter onchange
-[Worker]     getter state
-[Worker]     method constructor
-[Worker]     setter onchange
 [Worker] interface ImageBitmap
 [Worker]     attribute @@toStringTag
 [Worker]     getter height
@@ -3604,7 +3602,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter connection
 [Worker]     getter deviceMemory
 [Worker]     getter hardwareConcurrency
-[Worker]     getter idle
 [Worker]     getter language
 [Worker]     getter languages
 [Worker]     getter locks
