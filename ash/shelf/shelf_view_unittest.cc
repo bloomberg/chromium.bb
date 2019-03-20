@@ -12,7 +12,6 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
-#include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -2280,122 +2279,6 @@ TEST_F(ShelfViewTest, AppListButtonDoesShowContextMenu) {
   generator->MoveMouseTo(app_list_button->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
   EXPECT_TRUE(test_api_->CloseMenu());
-}
-
-void ExpectWithinOnePixel(int a, int b) {
-  EXPECT_TRUE(abs(a - b) <= 1) << "Values " << a << " and " << b
-                               << " should have a difference no greater than 1";
-}
-
-TEST_F(ShelfViewTest, IconCenteringTest) {
-  const display::Display display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-  const int screen_width = display.bounds().width();
-  const int screen_center = screen_width / 2;
-
-  // Show the IME panel, to introduce for asymettry with a larger status area.
-  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
-
-  // At the start, we have exactly one app icon for the browser. That should
-  // be centered on the screen.
-  const ShelfAppButton* button1 = GetButtonByID(model_->items()[2].id);
-  ExpectWithinOnePixel(screen_center,
-                       button1->GetBoundsInScreen().CenterPoint().x());
-  // Also check that the distance between the icon edge and the screen edge is
-  // the same on both sides.
-  ExpectWithinOnePixel(button1->GetBoundsInScreen().x(),
-                       screen_width - button1->GetBoundsInScreen().right());
-
-  const int apps_that_can_fit_at_center_of_screen = 8;
-  std::vector<ShelfAppButton*> app_buttons;
-  // Start with just the browser app button.
-  app_buttons.push_back(GetButtonByID(model_->items()[2].id));
-  int n_buttons = 1;
-
-  // Now repeat the same process by adding apps until they can't fit at the
-  // center of the screen.
-  for (int i = 1; i < apps_that_can_fit_at_center_of_screen; ++i) {
-    // Add a new app and add its button to our list.
-    app_buttons.push_back(GetButtonByID(AddApp()));
-    n_buttons = app_buttons.size();
-    if (n_buttons % 2 == 1) {
-      // Odd number of apps. Check that the middle app is exactly at the center
-      // of the screen.
-      ExpectWithinOnePixel(
-          screen_center,
-          app_buttons[n_buttons / 2]->GetBoundsInScreen().CenterPoint().x());
-    }
-    // Also check that the first icon is at the same distance from the left
-    // screen edge as the last icon is from the right screen edge.
-    ExpectWithinOnePixel(
-        app_buttons[0]->GetBoundsInScreen().x(),
-        screen_width - app_buttons[n_buttons - 1]->GetBoundsInScreen().right());
-  }
-
-  // Add one more app. Now the block of apps should be at the center of the
-  // shelf part of the shelf widget (not including the status area) as opposed
-  // to at the center of the whole screen. But we're not overflowing yet.
-  app_buttons.push_back(GetButtonByID(AddApp()));
-  n_buttons = app_buttons.size();
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->visible());
-  // Icons at either end should also be at the same distance from the app list
-  // button on the left, and the status area on the right.
-  gfx::NativeWindow window = shelf_view_->shelf_widget()->GetNativeWindow();
-  views::View* status_area_view = RootWindowController::ForWindow(window)
-                                      ->GetStatusAreaWidget()
-                                      ->GetContentsView();
-  const int status_area_left = status_area_view->GetBoundsInScreen().x();
-  const int app_list_button_right =
-      shelf_view_->GetAppListButton()->GetBoundsInScreen().right();
-  ExpectWithinOnePixel(
-      app_buttons[0]->GetBoundsInScreen().x() - app_list_button_right,
-      status_area_left -
-          app_buttons[n_buttons - 1]->GetBoundsInScreen().right());
-
-  // Add another app. The overflow button should now appear.
-  app_buttons.push_back(GetButtonByID(AddApp()));
-  n_buttons = app_buttons.size();
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
-}
-
-TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
-  // At the start, the only things visible on the shelf are the app list button
-  // (index 1) and the browser app button (index 2).
-  EXPECT_EQ(1, shelf_view_->first_visible_index());
-  EXPECT_EQ(2, shelf_view_->last_visible_index());
-  // By enabling tablet mode, the back button (index 0) should become visible.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_EQ(0, shelf_view_->first_visible_index());
-  EXPECT_EQ(2, shelf_view_->last_visible_index());
-  // And things should return back to the previous state once tablet mode is off
-  // again.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_EQ(1, shelf_view_->first_visible_index());
-  EXPECT_EQ(2, shelf_view_->last_visible_index());
-  // Now let's add some apps until the overflow button shows up, each time
-  // checking the first and last visible indices are what we expect.
-  int last_visible_index = 2;
-  int last_visible_index_before_overflow;
-  ShelfID last_added_item_id;
-  while (true) {
-    last_added_item_id = AddApp();
-    if (shelf_view_->GetOverflowButton()->visible()) {
-      last_visible_index_before_overflow = last_visible_index;
-      break;
-    }
-    last_visible_index++;
-    EXPECT_EQ(1, shelf_view_->first_visible_index());
-    EXPECT_EQ(last_visible_index, shelf_view_->last_visible_index());
-  }
-  // Now remove the last item we just added. That should get rid of the
-  // overflow button, and get back to the previous state.
-  RemoveByID(last_added_item_id);
-  EXPECT_EQ(1, shelf_view_->first_visible_index());
-  EXPECT_EQ(last_visible_index_before_overflow,
-            shelf_view_->last_visible_index());
-  // Adding another app should let the overflow button appear again.
-  AddApp();
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
 }
 
 // Test class that tests both context and application menus.
