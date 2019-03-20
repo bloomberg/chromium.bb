@@ -16,8 +16,6 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
-#include "content/browser/service_worker/service_worker_url_job_wrapper.h"
-#include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -38,7 +36,7 @@ class ServiceWorkerVersion;
 // shared workers).
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
     : public ServiceWorkerRequestHandler,
-      public ServiceWorkerURLJobWrapper::Delegate {
+      public ServiceWorkerNavigationLoader::Delegate {
  public:
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -55,10 +53,11 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       scoped_refptr<network::ResourceRequestBody> body);
   ~ServiceWorkerControlleeRequestHandler() override;
 
+  // NavigationLoaderInterceptor overrides:
+
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
-  // NavigationLoaderInterceptor overrides:
   void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
                          ResourceContext* resource_context,
                          LoaderCallback callback,
@@ -70,14 +69,17 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       override;
 
   // Exposed for testing.
-  ServiceWorkerURLJobWrapper* url_job() const { return url_job_.get(); }
+  ServiceWorkerNavigationLoader* loader() {
+    return loader_wrapper_ ? loader_wrapper_->get() : nullptr;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
   class ScopedDisallowSetControllerRegistration;
 
-  // For main resource case.
+  // TODO(falken): Remove the "MainResource" names, they are redundant as this
+  // handler is for main resources only.
   void PrepareForMainResource(const GURL& url, const GURL& site_for_cookies);
   void DidLookupRegistrationForMainResource(
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
@@ -104,7 +106,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
           disallow_controller);
 
-  // ServiceWorkerURLJobWrapper::Delegate implementation:
+  // ServiceWorkerNavigationLoader::Delegate implementation:
   void OnPrepareToRestart() override;
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
@@ -116,14 +118,12 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // that job, except for timing information.
   void ClearJob();
 
-  bool IsJobAlive() const;
-
   // Schedules a service worker update to occur shortly after the page and its
   // initial subresources load, if this handler was for a navigation.
   void MaybeScheduleUpdate();
 
   const ResourceType resource_type_;
-  std::unique_ptr<ServiceWorkerURLJobWrapper> url_job_;
+  std::unique_ptr<ServiceWorkerNavigationLoaderWrapper> loader_wrapper_;
   network::mojom::FetchRequestMode request_mode_;
   network::mojom::FetchCredentialsMode credentials_mode_;
   network::mojom::FetchRedirectMode redirect_mode_;

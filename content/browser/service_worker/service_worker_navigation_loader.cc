@@ -130,9 +130,9 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerNavigationLoader::FallbackToNetwork", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  // The URLJobWrapper only calls this if this loader never intercepted the
-  // request. Fallback to network after interception uses |fallback_callback_|
-  // instead.
+  // ServiceWorkerControlleeRequestHandler only calls this if this loader never
+  // intercepted the request. Fallback to network after interception uses
+  // |fallback_callback_| instead.
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
 
@@ -659,6 +659,15 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
   status_ = new_status;
   if (new_status == Status::kCompleted)
     completion_time_ = base::TimeTicks::Now();
+}
+
+ServiceWorkerNavigationLoaderWrapper::ServiceWorkerNavigationLoaderWrapper(
+    std::unique_ptr<ServiceWorkerNavigationLoader> loader)
+    : loader_(std::move(loader)) {}
+
+ServiceWorkerNavigationLoaderWrapper::~ServiceWorkerNavigationLoaderWrapper() {
+  if (loader_)
+    loader_.release()->DetachedFromRequest();
 }
 
 }  // namespace content

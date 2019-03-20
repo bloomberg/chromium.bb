@@ -600,8 +600,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_storage_unittest::ServiceWorkerStorageDiskTest,
       ScriptResponseTime);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
 
   // Contains timeout info for InflightRequest.
   struct InflightRequestTimeoutInfo {
