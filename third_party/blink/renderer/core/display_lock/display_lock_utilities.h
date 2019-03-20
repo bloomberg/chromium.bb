@@ -42,6 +42,9 @@ class CORE_EXPORT DisplayLockUtilities {
   // activatable-locked).
   static const HeapVector<Member<Element>> ActivatableLockedInclusiveAncestors(
       Element& element);
+
+  // Returns the nearest inclusive ancestor of |node| that is display locked.
+  static Element* NearestLockedInclusiveAncestor(const Node& node);
 };
 
 }  // namespace blink

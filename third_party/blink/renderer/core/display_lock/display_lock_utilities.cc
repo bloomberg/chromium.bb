@@ -80,4 +80,23 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
   }
 }
 
+Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
+    const Node& node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      node.GetDocument().LockedDisplayLockCount() == 0) {
+    return nullptr;
+  }
+  // TODO(crbug.com/924550): Once we figure out a more efficient way to
+  // determine whether we're inside a locked subtree or not, change this.
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
+    if (!ancestor.IsElementNode())
+      continue;
+    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+      if (context->IsLocked())
+        return &ToElement(ancestor);
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace blink
