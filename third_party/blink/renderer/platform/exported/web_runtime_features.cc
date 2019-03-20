@@ -657,4 +657,8 @@ void WebRuntimeFeatures::EnableHTMLImports(bool enable) {
   RuntimeEnabledFeatures::SetHTMLImportsOnlyChromeEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSignedExchangeSubresourcePrefetch(bool enable) {
+  RuntimeEnabledFeatures::SetSignedExchangeSubresourcePrefetchEnabled(enable);
+}
+
 }  // namespace blink
