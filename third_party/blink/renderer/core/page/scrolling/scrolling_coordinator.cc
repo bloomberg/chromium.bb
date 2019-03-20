@@ -650,12 +650,6 @@ void ScrollingCoordinator::TouchEventTargetRectsDidChange(LocalFrame* frame) {
   if (!frame_view)
     return;
 
-  // Wait until after layout to update.
-  // TODO(pdr): This check is wrong as we need to mark the rects as dirty
-  // regardless of whether the frame view needs layout. Remove this check.
-  if (frame_view->NeedsLayout())
-    return;
-
   // FIXME: scheduleAnimation() is just a method of forcing the compositor to
   // realize that it needs to commit here. We should expose a cleaner API for
   // this.
