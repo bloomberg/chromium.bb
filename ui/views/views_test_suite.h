@@ -7,13 +7,19 @@
 
 #include "base/test/test_suite.h"
 
-#if defined(USE_AURA)
-#include <memory>
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
 #endif
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include <memory>
 
 namespace aura {
 class Env;
 }
+#endif
 
 namespace views {
 
@@ -42,6 +48,11 @@ class ViewsTestSuite : public base::TestSuite {
   // ViewsTestBase.
   std::unique_ptr<aura::Env> env_;
 #endif
+
+#if defined(OS_WIN)
+  base::win::ScopedCOMInitializer com_initializer_;
+#endif
+
   int argc_;
   char** argv_;
 
