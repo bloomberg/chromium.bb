@@ -1130,23 +1130,25 @@ TEST_P(WebStateObserverTest, WebViewUnsupportedUrlNavigation) {
 }
 
 // Tests failed navigation because URL scheme is not supported by WebState.
-// TODO(crbug.com/917176): Actual callbacks for this navigation should not be
-// different from callbacks observed in WebViewUnsupportedSchemeNavigation.
 TEST_P(WebStateObserverTest, WebStateUnsupportedSchemeNavigation) {
   GURL url("ftp://foo.test/");
 
   // Perform a navigation to url with unsupported scheme.
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
-
-  WebStatePolicyDecider::RequestInfo expected_request_info(
-      ui::PageTransition::PAGE_TRANSITION_TYPED,
-      /*target_main_frame=*/true, /*has_user_gesture=*/false);
-  EXPECT_CALL(*decider_,
-              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
-      .WillOnce(Return(true));
+  if (!web::features::StorePendingItemInContext()) {
+    WebStatePolicyDecider::RequestInfo expected_request_info(
+        ui::PageTransition::PAGE_TRANSITION_TYPED,
+        /*target_main_frame=*/true, /*has_user_gesture=*/false);
+    EXPECT_CALL(*decider_,
+                ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+        .WillOnce(Return(true));
+  }
   test::LoadUrl(web_state(), url);
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  // Typed URL should be discarded after the navigation is rejected.
+  EXPECT_FALSE(web_state()->GetNavigationManager()->GetVisibleItem());
 }
 
 // Tests web page reload navigation.
@@ -2163,6 +2165,9 @@ TEST_P(WebStateObserverTest, DisallowRequest) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  // Typed URL should be discarded after the navigation is rejected.
+  EXPECT_FALSE(web_state()->GetNavigationManager()->GetVisibleItem());
 }
 
 // Tests rejecting the navigation from ShouldAllowResponse. PageLoaded callback
