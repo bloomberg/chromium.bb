@@ -84,6 +84,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
@@ -377,6 +378,17 @@ class HttpNetworkTransactionTest : public PlatformTest,
             base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
+        dummy_connect_job_params_(
+            nullptr /* client_socket_factory */,
+            nullptr /* host_resolver */,
+            nullptr /* proxy_delegate */,
+            nullptr /* http_user_agent_settings */,
+            SSLClientSocketContext(),
+            SSLClientSocketContext(),
+            nullptr /* socket_performance_watcher_factory */,
+            nullptr /* network_quality_estimator */,
+            nullptr /* net_log */,
+            nullptr /* websocket_endpoint_lock_manager */),
         ssl_(ASYNC, OK),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
@@ -552,6 +564,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
 
   void CheckErrorIsPassedBack(int error, IoMode mode);
 
+  const CommonConnectJobParams dummy_connect_job_params_;
+
   // These clocks are defined here, even though they're only used in the
   // Reporting tests below, since they need to be destroyed after
   // |session_deps_|.
@@ -641,11 +655,15 @@ std::string MockGetHostName() {
 }
 #endif  // defined(NTLM_PORTABLE)
 
-template <typename ParentPool>
-class CaptureGroupIdSocketPool : public ParentPool {
+class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
  public:
-  CaptureGroupIdSocketPool(HostResolver* host_resolver,
-                           CertVerifier* cert_verifier);
+  explicit CaptureGroupIdTransportSocketPool(
+      const CommonConnectJobParams* common_connect_job_params)
+      : TransportClientSocketPool(0,
+                                  0,
+                                  base::TimeDelta(),
+                                  common_connect_job_params,
+                                  nullptr /* ssl_config_service */) {}
 
   const ClientSocketPool::GroupId& last_group_id_received() const {
     return last_group_id_;
@@ -689,32 +707,6 @@ class CaptureGroupIdSocketPool : public ParentPool {
   ClientSocketPool::GroupId last_group_id_;
   bool socket_requested_ = false;
 };
-
-typedef CaptureGroupIdSocketPool<TransportClientSocketPool>
-    CaptureGroupIdTransportSocketPool;
-
-template <typename ParentPool>
-CaptureGroupIdSocketPool<ParentPool>::CaptureGroupIdSocketPool(
-    HostResolver* host_resolver,
-    CertVerifier* /* cert_verifier */)
-    : ParentPool(0,
-                 0,
-                 base::TimeDelta(),
-                 nullptr,
-                 host_resolver,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr) {}
 
 //-----------------------------------------------------------------------------
 
@@ -11303,7 +11295,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForDirectConnections) {
 
     HttpNetworkSessionPeer peer(session.get());
     CaptureGroupIdTransportSocketPool* transport_conn_pool =
-        new CaptureGroupIdTransportSocketPool(nullptr, nullptr);
+        new CaptureGroupIdTransportSocketPool(&dummy_connect_job_params_);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                      base::WrapUnique(transport_conn_pool));
@@ -11369,7 +11361,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
     CaptureGroupIdTransportSocketPool* http_proxy_pool =
-        new CaptureGroupIdTransportSocketPool(nullptr, nullptr);
+        new CaptureGroupIdTransportSocketPool(&dummy_connect_job_params_);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
@@ -11442,7 +11434,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
         ProxyServer::FromURI(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
     ASSERT_TRUE(proxy_server.is_valid());
     CaptureGroupIdTransportSocketPool* socks_conn_pool =
-        new CaptureGroupIdTransportSocketPool(nullptr, nullptr);
+        new CaptureGroupIdTransportSocketPool(&dummy_connect_job_params_);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(socks_conn_pool));
@@ -14461,21 +14453,13 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   // to validate that the TCP socket is not released to the pool between
   // each round of multi-round authentication.
   HttpNetworkSessionPeer session_peer(session.get());
+  CommonConnectJobParams common_connect_job_params(
+      session->CreateCommonConnectJobParams());
   TransportClientSocketPool* transport_pool = new TransportClientSocketPool(
       50,                                // Max sockets for pool
       1,                                 // Max sockets per group
       base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
-      session_deps_.socket_factory.get(), session_deps_.host_resolver.get(),
-      nullptr /* proxy_delegate */, nullptr /* http_user_agent_settings */,
-      session_deps_.cert_verifier.get(), session_deps_.channel_id_service.get(),
-      session_deps_.transport_security_state.get(),
-      session_deps_.cert_transparency_verifier.get(),
-      session_deps_.ct_policy_enforcer.get(),
-      nullptr /* ssl_client_session_cache */,
-      nullptr /* ssl_client_session_cache_privacy_mode */,
-      session_deps_.ssl_config_service.get(),
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, session_deps_.net_log);
+      &common_connect_job_params, session_deps_.ssl_config_service.get());
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                    base::WrapUnique(transport_pool));

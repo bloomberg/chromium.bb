@@ -37,6 +37,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
@@ -2070,27 +2071,14 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
 MockTransportClientSocketPool::MockTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    ClientSocketFactory* socket_factory)
+    const CommonConnectJobParams* common_connect_job_params)
     : TransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
           base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
-          socket_factory,
-          nullptr /* host_resolver */,
-          nullptr /* proxy_delegate */,
-          nullptr /* http_user_agent_settings */,
-          nullptr /* cert_verifier */,
-          nullptr /* channel_id_server */,
-          nullptr /* transport_security_state */,
-          nullptr /* cert_transparency_verifier */,
-          nullptr /* ct_policy_enforcer */,
-          nullptr /* ssl_client_session_cache */,
-          nullptr /* ssl_client_session_cache_privacy_mode */,
-          nullptr /* ssl_config_service */,
-          nullptr /* socket_performance_watcher_factory */,
-          nullptr /* network_quality_estimator */,
-          nullptr /* netlog */),
-      client_socket_factory_(socket_factory),
+          common_connect_job_params,
+          nullptr /* ssl_config_service */),
+      client_socket_factory_(common_connect_job_params->client_socket_factory),
       last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),
       cancel_count_(0) {}

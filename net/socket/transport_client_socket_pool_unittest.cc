@@ -32,6 +32,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
@@ -121,48 +122,34 @@ class TransportClientSocketPoolTest : public ::testing::Test,
 
     http_network_session_ =
         SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+
+    common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
+        http_network_session_->CreateCommonConnectJobParams());
+    common_connect_job_params_->client_socket_factory = &client_socket_factory_;
     pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-        &client_socket_factory_, session_deps_.host_resolver.get(),
-        nullptr /* proxy_delegate */, nullptr /* http_user_agent_settings */,
-        session_deps_.cert_verifier.get(), nullptr /* channel_id_server */,
-        session_deps_.transport_security_state.get(),
-        session_deps_.cert_transparency_verifier.get(),
-        session_deps_.ct_policy_enforcer.get(),
-        nullptr /* ssl_client_session_cache */,
-        nullptr /* ssl_client_session_cache_privacy_mode */,
-        session_deps_.ssl_config_service.get(),
-        nullptr /* socket_performance_watcher_factory */,
-        nullptr /* network_quality_estimator */, nullptr /* net_log */);
+        common_connect_job_params_.get(),
+        session_deps_.ssl_config_service.get());
 
+    tagging_common_connect_job_params_ =
+        std::make_unique<CommonConnectJobParams>(
+            http_network_session_->CreateCommonConnectJobParams());
+    tagging_common_connect_job_params_->client_socket_factory =
+        &tagging_client_socket_factory_;
     tagging_pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-        &tagging_client_socket_factory_, session_deps_.host_resolver.get(),
-        nullptr /* proxy_delegate */, nullptr /* http_user_agent_settings */,
-        session_deps_.cert_verifier.get(), nullptr /* channel_id_server */,
-        session_deps_.transport_security_state.get(),
-        session_deps_.cert_transparency_verifier.get(),
-        session_deps_.ct_policy_enforcer.get(),
-        nullptr /* ssl_client_session_cache */,
-        nullptr /* ssl_client_session_cache_privacy_mode */,
-        session_deps_.ssl_config_service.get(),
-        nullptr /* socket_performance_watcher_factory */,
-        nullptr /* network_quality_estimator */, nullptr /* net_log */);
+        tagging_common_connect_job_params_.get(),
+        session_deps_.ssl_config_service.get());
 
+    common_connect_job_params_for_real_sockets_ =
+        std::make_unique<CommonConnectJobParams>(
+            http_network_session_->CreateCommonConnectJobParams());
+    common_connect_job_params_for_real_sockets_->client_socket_factory =
+        ClientSocketFactory::GetDefaultFactory();
     pool_for_real_sockets_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-        ClientSocketFactory::GetDefaultFactory(),
-        session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
-        nullptr /* http_user_agent_settings */,
-        session_deps_.cert_verifier.get(), nullptr /* channel_id_server */,
-        session_deps_.transport_security_state.get(),
-        session_deps_.cert_transparency_verifier.get(),
-        session_deps_.ct_policy_enforcer.get(),
-        nullptr /* ssl_client_session_cache */,
-        nullptr /* ssl_client_session_cache_privacy_mode */,
-        session_deps_.ssl_config_service.get(),
-        nullptr /* socket_performance_watcher_factory */,
-        nullptr /* network_quality_estimator */, nullptr /* net_log */);
+        common_connect_job_params_for_real_sockets_.get(),
+        session_deps_.ssl_config_service.get());
   }
 
   ~TransportClientSocketPoolTest() override {
@@ -226,13 +213,20 @@ class TransportClientSocketPoolTest : public ::testing::Test,
   // these tests depend on.
   std::unique_ptr<HttpNetworkSession> http_network_session_;
 
+  std::unique_ptr<CommonConnectJobParams> common_connect_job_params_;
   std::unique_ptr<TransportClientSocketPool> pool_;
+
   // Just like |pool_|, except it uses a real MockTaggingClientSocketFactory
   // instead of MockTransportClientSocketFactory.
+  std::unique_ptr<CommonConnectJobParams> tagging_common_connect_job_params_;
   std::unique_ptr<TransportClientSocketPool> tagging_pool_;
+
   // Just like |pool_|, except it uses a real ClientSocketFactory instead of
   // |client_socket_factory_|.
+  std::unique_ptr<CommonConnectJobParams>
+      common_connect_job_params_for_real_sockets_;
   std::unique_ptr<TransportClientSocketPool> pool_for_real_sockets_;
+
   ClientSocketPoolTest test_base_;
 
  private:
@@ -515,17 +509,9 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 }
 
 TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsReprioritized) {
-  TransportClientSocketPool pool(
-      kMaxSockets, 1, kUnusedIdleSocketTimeout, &client_socket_factory_,
-      session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
-      nullptr /* http_user_agent_settings */, nullptr /* cert_verifier */,
-      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
-      nullptr /* cert_transparency_verifier */,
-      nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      nullptr /* ssl_client_session_cache_privacy_mode */,
-      nullptr /* ssl_config_service */,
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* net_log */);
+  TransportClientSocketPool pool(kMaxSockets, 1, kUnusedIdleSocketTimeout,
+                                 common_connect_job_params_.get(),
+                                 nullptr /* ssl_config_service */);
 
   // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY.
   TestCompletionCallback callback1;
@@ -1333,19 +1319,9 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   // Create a socket pool which only allows a single connection at a time.
-  TransportClientSocketPool pool(
-      1, 1, kUnusedIdleSocketTimeout, &tagging_client_socket_factory_,
-      session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
-      nullptr /* http_user_agent_settings */, session_deps_.cert_verifier.get(),
-      nullptr /* channel_id_server */,
-      session_deps_.transport_security_state.get(),
-      session_deps_.cert_transparency_verifier.get(),
-      session_deps_.ct_policy_enforcer.get(),
-      nullptr /* ssl_client_session_cache */,
-      nullptr /* ssl_client_session_cache_privacy_mode */,
-      session_deps_.ssl_config_service.get(),
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* net_log */);
+  TransportClientSocketPool pool(1, 1, kUnusedIdleSocketTimeout,
+                                 tagging_common_connect_job_params_.get(),
+                                 session_deps_.ssl_config_service.get());
 
   // First connection attempt will get an error after creating the SpdyStream.
 
@@ -1452,19 +1428,9 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   // Create a socket pool which only allows a single connection at a time.
-  TransportClientSocketPool pool(
-      1, 1, kUnusedIdleSocketTimeout, &tagging_client_socket_factory_,
-      session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
-      nullptr /* http_user_agent_settings */, session_deps_.cert_verifier.get(),
-      nullptr /* channel_id_server */,
-      session_deps_.transport_security_state.get(),
-      session_deps_.cert_transparency_verifier.get(),
-      session_deps_.ct_policy_enforcer.get(),
-      nullptr /* ssl_client_session_cache */,
-      nullptr /* ssl_client_session_cache_privacy_mode */,
-      session_deps_.ssl_config_service.get(),
-      nullptr /* socket_performance_watcher_factory */,
-      nullptr /* network_quality_estimator */, nullptr /* net_log */);
+  TransportClientSocketPool pool(1, 1, kUnusedIdleSocketTimeout,
+                                 tagging_common_connect_job_params_.get(),
+                                 session_deps_.ssl_config_service.get());
 
   SpdyTestUtil spdy_util;
   spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(

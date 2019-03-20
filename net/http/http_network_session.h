@@ -30,6 +30,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -374,7 +375,13 @@ class NET_EXPORT HttpNetworkSession {
 
   // Clear the SSL session cache.
   void ClearSSLSessionCache();
-  void ClearSSLSessionCachePrivacyMode();
+
+  // Returns a CommonConnectJobParams that references the NetworkSession's
+  // components. If |for_websockets| is true, the Params'
+  // |websocket_endpoint_lock_manager| field will be populated. Otherwise, it
+  // will be nullptr.
+  CommonConnectJobParams CreateCommonConnectJobParams(
+      bool for_websockets = false);
 
  private:
   friend class HttpNetworkSessionPeer;

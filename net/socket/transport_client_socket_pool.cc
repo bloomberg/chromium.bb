@@ -22,6 +22,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket_net_log_params.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_connect_job.h"
@@ -130,26 +131,8 @@ TransportClientSocketPool::SocketParams::~SocketParams() = default;
 
 TransportClientSocketPool::TransportConnectJobFactory::
     TransportConnectJobFactory(
-        ClientSocketFactory* client_socket_factory,
-        HostResolver* host_resolver,
-        ProxyDelegate* proxy_delegate,
-        const HttpUserAgentSettings* http_user_agent_settings,
-        const SSLClientSocketContext& ssl_client_socket_context,
-        const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
-        SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-        NetworkQualityEstimator* network_quality_estimator,
-        NetLog* net_log)
-    : common_connect_job_params_(
-          client_socket_factory,
-          host_resolver,
-          proxy_delegate,
-          http_user_agent_settings,
-          ssl_client_socket_context,
-          ssl_client_socket_context_privacy_mode,
-          socket_performance_watcher_factory,
-          network_quality_estimator,
-          net_log,
-          nullptr /* websocket_endpoint_lock_manager */) {}
+        const CommonConnectJobParams* common_connect_job_params)
+    : common_connect_job_params_(common_connect_job_params) {}
 
 TransportClientSocketPool::TransportConnectJobFactory::
     ~TransportConnectJobFactory() = default;
@@ -159,7 +142,7 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return request.params()->create_connect_job_callback().Run(
-      request.priority(), request.socket_tag(), &common_connect_job_params_,
+      request.priority(), request.socket_tag(), common_connect_job_params_,
       delegate);
 }
 
@@ -167,46 +150,14 @@ TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
-    ClientSocketFactory* client_socket_factory,
-    HostResolver* host_resolver,
-    ProxyDelegate* proxy_delegate,
-    const HttpUserAgentSettings* http_user_agent_settings,
-    CertVerifier* cert_verifier,
-    ChannelIDService* channel_id_service,
-    TransportSecurityState* transport_security_state,
-    CTVerifier* cert_transparency_verifier,
-    CTPolicyEnforcer* ct_policy_enforcer,
-    SSLClientSessionCache* ssl_client_session_cache,
-    SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
-    SSLConfigService* ssl_config_service,
-    SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-    NetworkQualityEstimator* network_quality_estimator,
-    NetLog* net_log)
+    const CommonConnectJobParams* common_connect_job_params,
+    SSLConfigService* ssl_config_service)
     : base_(max_sockets,
             max_sockets_per_group,
             unused_idle_socket_timeout,
             ClientSocketPool::used_idle_socket_timeout(),
-            new TransportConnectJobFactory(
-                client_socket_factory,
-                host_resolver,
-                proxy_delegate,
-                http_user_agent_settings,
-                SSLClientSocketContext(cert_verifier,
-                                       channel_id_service,
-                                       transport_security_state,
-                                       cert_transparency_verifier,
-                                       ct_policy_enforcer,
-                                       ssl_client_session_cache),
-                SSLClientSocketContext(cert_verifier,
-                                       channel_id_service,
-                                       transport_security_state,
-                                       cert_transparency_verifier,
-                                       ct_policy_enforcer,
-                                       ssl_client_session_cache_privacy_mode),
-                socket_performance_watcher_factory,
-                network_quality_estimator,
-                net_log)),
-      client_socket_factory_(client_socket_factory),
+            new TransportConnectJobFactory(common_connect_job_params)),
+      client_socket_factory_(common_connect_job_params->client_socket_factory),
       ssl_config_service_(ssl_config_service) {
   base_.EnableConnectBackupJobs();
   if (ssl_config_service_)

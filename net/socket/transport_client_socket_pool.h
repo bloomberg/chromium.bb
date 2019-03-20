@@ -14,7 +14,6 @@
 #include "net/base/net_export.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
@@ -22,22 +21,11 @@
 
 namespace net {
 
-class CertVerifier;
-class ChannelIDService;
+struct CommonConnectJobParams;
 class ClientSocketFactory;
-class CTVerifier;
-class CTPolicyEnforcer;
-class HostResolver;
 class HttpProxySocketParams;
-class HttpUserAgentSettings;
-class NetLog;
-class NetLogWithSource;
-class NetworkQualityEstimator;
-class ProxyDelegate;
-class SocketPerformanceWatcherFactory;
 class SOCKSSocketParams;
 class SSLSocketParams;
-class TransportSecurityState;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool
@@ -96,21 +84,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       int max_sockets,
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
-      ClientSocketFactory* client_socket_factory,
-      HostResolver* host_resolver,
-      ProxyDelegate* proxy_delegate,
-      const HttpUserAgentSettings* http_user_agent_settings,
-      CertVerifier* cert_verifier,
-      ChannelIDService* channel_id_service,
-      TransportSecurityState* transport_security_state,
-      CTVerifier* cert_transparency_verifier,
-      CTPolicyEnforcer* ct_policy_enforcer,
-      SSLClientSessionCache* ssl_client_session_cache,
-      SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
-      SSLConfigService* ssl_config_service,
-      SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-      NetworkQualityEstimator* network_quality_estimator,
-      NetLog* net_log);
+      const CommonConnectJobParams* common_connect_job_params,
+      SSLConfigService* ssl_config_service);
 
   ~TransportClientSocketPool() override;
 
@@ -172,15 +147,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       : public PoolBase::ConnectJobFactory {
    public:
     TransportConnectJobFactory(
-        ClientSocketFactory* client_socket_factory,
-        HostResolver* host_resolver,
-        ProxyDelegate* proxy_delegate,
-        const HttpUserAgentSettings* http_user_agent_settings,
-        const SSLClientSocketContext& ssl_client_socket_context,
-        const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
-        SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
-        NetworkQualityEstimator* network_quality_estimator,
-        NetLog* net_log);
+        const CommonConnectJobParams* common_connect_job_params);
     ~TransportConnectJobFactory() override;
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
@@ -190,7 +157,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         ConnectJob::Delegate* delegate) const override;
 
    private:
-    const CommonConnectJobParams common_connect_job_params_;
+    const CommonConnectJobParams* common_connect_job_params_;
 
     DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);
   };

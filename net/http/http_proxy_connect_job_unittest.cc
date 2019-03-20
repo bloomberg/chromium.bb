@@ -174,23 +174,12 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   // have been created.
   void InitCommonConnectJobParams() {
     common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
-        &socket_factory_, session_deps_.host_resolver.get(),
-        proxy_delegate_.get(), nullptr /* http_user_agent_settings */,
-        SSLClientSocketContext(session_deps_.cert_verifier.get(),
-                               session_deps_.channel_id_service.get(),
-                               session_deps_.transport_security_state.get(),
-                               session_deps_.cert_transparency_verifier.get(),
-                               session_deps_.ct_policy_enforcer.get(),
-                               nullptr /* ssl_session_cache_arg */),
-        SSLClientSocketContext(session_deps_.cert_verifier.get(),
-                               session_deps_.channel_id_service.get(),
-                               session_deps_.transport_security_state.get(),
-                               session_deps_.cert_transparency_verifier.get(),
-                               session_deps_.ct_policy_enforcer.get(),
-                               nullptr /* ssl_session_cache_arg */),
-        nullptr /* socket_performance_watcher_factory */,
-        network_quality_estimator_.get(), nullptr /* net_log */,
-        nullptr /* websocket_endpoint_lock_manager */);
+        session_->CreateCommonConnectJobParams());
+    // TODO(mmenke): Consider reworking this so it can be done through
+    // |session_deps_|.
+    common_connect_job_params_->proxy_delegate = proxy_delegate_.get();
+    common_connect_job_params_->network_quality_estimator =
+        network_quality_estimator_.get();
   }
 
   void Initialize(base::span<const MockRead> reads,
@@ -206,7 +195,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
 
     data_->set_connect_data(MockConnect(connect_and_ssl_io_mode, OK));
 
-    socket_factory_.AddSocketDataProvider(data_.get());
+    session_deps_.socket_factory->AddSocketDataProvider(data_.get());
 
     if (GetParam() != HTTP) {
       ssl_data_ =
@@ -214,7 +203,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
       if (GetParam() == SPDY) {
         InitializeSpdySsl(ssl_data_.get());
       }
-      socket_factory_.AddSSLSocketDataProvider(ssl_data_.get());
+      session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data_.get());
     }
   }
 
@@ -235,7 +224,6 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
 
   std::unique_ptr<SSLSocketDataProvider> ssl_data_;
   std::unique_ptr<SequencedSocketData> data_;
-  MockClientSocketFactory socket_factory_;
   SpdySessionDependencies session_deps_;
 
   std::unique_ptr<TestNetworkQualityEstimator> network_quality_estimator_;
@@ -294,7 +282,7 @@ TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionNoTunnel) {
 
   SequencedSocketData data;
   data.set_connect_data(MockConnect(ASYNC, OK));
-  socket_factory_.AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // Set up SSL, if needed.
   SSLSocketDataProvider ssl_data(ASYNC, OK);
@@ -306,11 +294,11 @@ TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionNoTunnel) {
       // SSL negotiation is the last step in non-tunnel connections over HTTPS
       // proxies, so pause there, to check the final state before completion.
       ssl_data = SSLSocketDataProvider(SYNCHRONOUS, ERR_IO_PENDING);
-      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
       break;
     case SPDY:
       InitializeSpdySsl(&ssl_data);
-      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
       break;
   }
 
@@ -398,16 +386,16 @@ TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionTunnel) {
       break;
     case HTTPS:
       sequenced_data = &http1_data;
-      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
       break;
     case SPDY:
       sequenced_data = &spdy_data;
       InitializeSpdySsl(&ssl_data);
-      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
       break;
   }
 
-  socket_factory_.AddSocketDataProvider(sequenced_data);
+  session_deps_.socket_factory->AddSocketDataProvider(sequenced_data);
 
   TestConnectJobDelegate test_delegate;
   std::unique_ptr<ConnectJob> connect_job =
@@ -882,7 +870,7 @@ TEST_P(HttpProxyConnectJobTest, TCPError) {
 
     SequencedSocketData data;
     data.set_connect_data(MockConnect(io_mode, ERR_CONNECTION_CLOSED));
-    socket_factory_.AddSocketDataProvider(&data);
+    session_deps_.socket_factory->AddSocketDataProvider(&data);
 
     TestConnectJobDelegate test_delegate;
     std::unique_ptr<ConnectJob> connect_job =
@@ -912,13 +900,13 @@ TEST_P(HttpProxyConnectJobTest, SSLError) {
 
     SequencedSocketData data;
     data.set_connect_data(MockConnect(io_mode, OK));
-    socket_factory_.AddSocketDataProvider(&data);
+    session_deps_.socket_factory->AddSocketDataProvider(&data);
 
     SSLSocketDataProvider ssl_data(io_mode, ERR_CERT_AUTHORITY_INVALID);
     if (GetParam() == SPDY) {
       InitializeSpdySsl(&ssl_data);
     }
-    socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
 
     TestConnectJobDelegate test_delegate;
     std::unique_ptr<ConnectJob> connect_job =
