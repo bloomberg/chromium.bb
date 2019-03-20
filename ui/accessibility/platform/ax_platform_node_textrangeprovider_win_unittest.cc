@@ -368,9 +368,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
-       TestITextRangeProviderCompareEndpointsInvalidProvider) {
-  // Test for when this provider is invalid. Because ax tree is not created,
-  // and there is no valid anchor, so this provider fails validate call.
+       TestITextRangeProviderInvalidCalls) {
+  // Test for when a text range provider is invalid. Because no ax tree is
+  // available, the anchor is invalid, so the text range provider fails the
+  // validate call.
   {
     ui::AXNodeData root_data;
     root_data.id = 1;
@@ -391,15 +392,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_HRESULT_SUCCEEDED(
         document_provider->get_DocumentRange(&text_range_provider));
 
-    int result;
+    BOOL compare_result;
+    EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->Compare(
+        text_range_provider.Get(), &compare_result));
+
+    int compare_endpoints_result;
     EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->CompareEndpoints(
         TextPatternRangeEndpoint_Start, text_range_provider.Get(),
-        TextPatternRangeEndpoint_Start, &result));
+        TextPatternRangeEndpoint_Start, &compare_endpoints_result));
   }
 
   // Test for when this provider is valid, but the other provider is not an
-  // instance of AXPlatformNodeTextRangeProviderWin, so it cannot be compared
-  // to this provider.
+  // instance of AXPlatformNodeTextRangeProviderWin, so no operation can be
+  // performed on the other provider.
   {
     ui::AXNodeData root_data;
     root_data.id = 1;
@@ -429,14 +434,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_HRESULT_SUCCEEDED(
         document_provider->get_DocumentRange(&this_provider));
 
-    int result;
     ComPtr<ITextRangeProvider> other_provider_different_type;
     MockAXPlatformNodeTextRangeProviderWin::CreateMockTextRangeProvider(
         &other_provider_different_type);
 
+    BOOL compare_result;
+    EXPECT_UIA_INVALIDOPERATION(this_provider->Compare(
+        other_provider_different_type.Get(), &compare_result));
+
+    int compare_endpoints_result;
     EXPECT_UIA_INVALIDOPERATION(this_provider->CompareEndpoints(
         TextPatternRangeEndpoint_Start, other_provider_different_type.Get(),
-        TextPatternRangeEndpoint_Start, &result));
+        TextPatternRangeEndpoint_Start, &compare_endpoints_result));
 
     AXNodePosition::SetTreeForTesting(nullptr);
   }
@@ -535,6 +544,95 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
   text_content.Reset();
 
   AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderCompare) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("some text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids.push_back(2);
+  root_data.child_ids.push_back(3);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+  AXNode* more_text_node = root_node->children()[1];
+
+  // Get the textRangeProvider for the document,
+  // which contains text "some textsome text".
+  ComPtr<IRawElementProviderSimple> root_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
+  ComPtr<ITextProvider> document_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node_raw->GetPatternProvider(UIA_TextPatternId, &document_provider));
+  ComPtr<ITextRangeProvider> document_text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_text_range_provider));
+
+  // Get the textRangeProvider for text_node which contains "some text".
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  // Get the textRangeProvider for more_text_node which also contains
+  // "some text".
+  ComPtr<IRawElementProviderSimple> more_text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(more_text_node);
+  ComPtr<ITextProvider> more_text_provider;
+  EXPECT_HRESULT_SUCCEEDED(more_text_node_raw->GetPatternProvider(
+      UIA_TextPatternId, &more_text_provider));
+  ComPtr<ITextRangeProvider> more_text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      more_text_provider->get_DocumentRange(&more_text_range_provider));
+
+  BOOL result;
+
+  // Compare text range of the entire document with itself, which should return
+  // that they are equal.
+  EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->Compare(
+      document_text_range_provider.Get(), &result));
+  EXPECT_TRUE(result);
+
+  // Compare the text range of the entire document with one of its child, which
+  // should return that they are not equal.
+  EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->Compare(
+      text_range_provider.Get(), &result));
+  EXPECT_FALSE(result);
+
+  // Compare the text range of text_node which contains "some text" with
+  // text range of more_text_node which also contains "some text". Those two
+  // text ranges should not equal, because their endpoints are different, even
+  // though their contents are the same.
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->Compare(more_text_range_provider.Get(), &result));
+  EXPECT_FALSE(result);
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelection) {
