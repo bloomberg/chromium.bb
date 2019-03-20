@@ -337,8 +337,8 @@ void ThirdPartyConflictsManager::DisableModuleAnalysis() {
   module_analysis_disabled_ = true;
   if (incompatible_applications_updater_)
     incompatible_applications_updater_->DisableModuleAnalysis();
-  if (incompatible_applications_updater_)
-    incompatible_applications_updater_->DisableModuleAnalysis();
+  if (module_blacklist_cache_updater_)
+    module_blacklist_cache_updater_->DisableModuleAnalysis();
 }
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
