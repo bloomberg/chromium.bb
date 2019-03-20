@@ -26,7 +26,7 @@ if (target_cpu == "arm") {
 } else if (target_cpu == "mipsel") {
   _arch_preference = 20
 } else if (target_cpu == "arm64") {
-  _arch_preference = 50
+  _arch_preference = 30
 } else if (target_cpu == "x64") {
   _arch_preference = 60
 } else {
