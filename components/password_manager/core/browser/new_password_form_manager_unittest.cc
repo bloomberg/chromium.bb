@@ -102,6 +102,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                autofill::AutofillDownloadManager*());
 
   MOCK_METHOD0(UpdateFormManagers, void());
+
+  MOCK_CONST_METHOD2(AutofillHttpAuth,
+                     void(const std::map<base::string16, const PasswordForm*>&,
+                          const PasswordForm&));
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,
@@ -352,6 +356,17 @@ class NewPasswordFormManagerTest : public testing::Test {
     form_manager_.reset(new NewPasswordFormManager(
         &client_, driver_.AsWeakPtr(), observed_form, fetcher_.get(),
         std::make_unique<NiceMock<MockFormSaver>>(), nullptr));
+  }
+
+  // Creates NewPasswordFormManager and sets it to |form_manager_| for
+  // |base_auth_observed_form|. Along the way a new |fetcher_| is created.
+  void CreateFormManagerForHttpAuthForm(
+      const PasswordForm& base_auth_observed_form) {
+    fetcher_.reset(new FakeFormFetcher());
+    fetcher_->Fetch();
+    form_manager_.reset(new NewPasswordFormManager(
+        &client_, base_auth_observed_form, fetcher_.get(),
+        std::make_unique<NiceMock<MockFormSaver>>()));
   }
 };
 
@@ -1820,6 +1835,113 @@ TEST_F(NewPasswordFormManagerTest, GenerationUploadOnNeverClicked) {
     form_manager_->OnNeverClicked();
     Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
   }
+}
+
+TEST_F(NewPasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+  for (bool html_credentials_saved : {false, true}) {
+    SCOPED_TRACE(testing::Message("html_credentials_saved=")
+                 << html_credentials_saved);
+    PasswordForm http_auth_form = parsed_observed_form_;
+    http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+
+    // Check that no filling because no http auth credentials are stored.
+    EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+    EXPECT_CALL(client_, AutofillHttpAuth(_, _)).Times(0);
+
+    CreateFormManagerForHttpAuthForm(http_auth_form);
+    MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+    std::vector<const PasswordForm*> saved_matches;
+    if (html_credentials_saved)
+      saved_matches.push_back(&saved_match_);
+    fetcher_->SetNonFederated(saved_matches, 0u);
+
+    base::string16 username = ASCIIToUTF16("user1");
+    base::string16 password = ASCIIToUTF16("pass1");
+    http_auth_form.username_value = username;
+    http_auth_form.password_value = password;
+
+    // Check that submitted credentials are saved.
+    ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(
+        http_auth_form));
+    EXPECT_TRUE(form_manager_->IsNewLogin());
+
+    PasswordForm saved_form;
+    EXPECT_CALL(form_saver, Save(_, _)).WillOnce(SaveArg<0>(&saved_form));
+    form_manager_->Save();
+
+    EXPECT_EQ(http_auth_form.signon_realm, saved_form.signon_realm);
+    EXPECT_EQ(username, saved_form.username_value);
+    EXPECT_EQ(password, saved_form.password_value);
+  }
+}
+
+TEST_F(NewPasswordFormManagerTest, HTTPAuthAlreadySaved) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  PasswordForm http_auth_form = parsed_observed_form_;
+  http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+
+  CreateFormManagerForHttpAuthForm(http_auth_form);
+
+  const base::string16 username = ASCIIToUTF16("user1");
+  const base::string16 password = ASCIIToUTF16("pass1");
+  http_auth_form.username_value = username;
+  http_auth_form.password_value = password;
+  EXPECT_CALL(client_, AutofillHttpAuth(_, http_auth_form)).Times(1);
+  fetcher_->SetNonFederated({&http_auth_form}, 0u);
+
+  // Check that if known credentials are submitted, then |form_manager_| is not
+  // in state new login nor password overridden.
+  ASSERT_TRUE(
+      form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(http_auth_form));
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+  EXPECT_FALSE(form_manager_->IsPasswordOverridden());
+}
+
+TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  PasswordForm http_auth_form = parsed_observed_form_;
+  http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+
+  CreateFormManagerForHttpAuthForm(http_auth_form);
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  PasswordForm saved_http_auth_form = http_auth_form;
+  const base::string16 username = ASCIIToUTF16("user1");
+  const base::string16 password = ASCIIToUTF16("pass1");
+  saved_http_auth_form.username_value = username;
+  saved_http_auth_form.password_value = password;
+  EXPECT_CALL(client_, AutofillHttpAuth(_, saved_http_auth_form)).Times(1);
+  fetcher_->SetNonFederated({&saved_http_auth_form}, 0u);
+
+  // Check that if new password is submitted, then |form_manager_| is in state
+  // password overridden.
+  PasswordForm submitted_http_auth_form = saved_http_auth_form;
+  base::string16 new_password = password + ASCIIToUTF16("1");
+  submitted_http_auth_form.password_value = new_password;
+  ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(
+      submitted_http_auth_form));
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+  EXPECT_TRUE(form_manager_->IsPasswordOverridden());
+
+  // Check that the password is updated in the stored credential.
+  PasswordForm updated_form;
+  std::map<base::string16, const PasswordForm*> best_matches;
+  std::vector<PasswordForm> credentials_to_update;
+  EXPECT_CALL(form_saver, Update(_, _, _, nullptr))
+      .WillOnce(DoAll(SaveArg<0>(&updated_form), SaveArg<1>(&best_matches),
+                      SaveArgPointee<2>(&credentials_to_update)));
+
+  form_manager_->Save();
+
+  EXPECT_TRUE(
+      ArePasswordFormUniqueKeyEqual(saved_http_auth_form, updated_form));
+  EXPECT_EQ(new_password, updated_form.password_value);
+  ASSERT_TRUE(best_matches.find(username) != best_matches.end());
+  EXPECT_EQ(saved_http_auth_form, *best_matches[username]);
+  EXPECT_TRUE(credentials_to_update.empty());
 }
 
 }  // namespace

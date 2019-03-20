@@ -106,12 +106,13 @@
 #include "extensions/common/constants.h"
 #endif
 
-using password_manager::metrics_util::PasswordType;
+using autofill::PasswordForm;
 using password_manager::BadMessageReason;
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerClientHelper;
 using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerMetricsRecorder;
+using password_manager::metrics_util::PasswordType;
 using sessions::SerializedNavigationEntry;
 
 // Shorten the name to spare line breaks. The code provides enough context
@@ -414,9 +415,9 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 }
 
 void ChromePasswordManagerClient::PasswordWasAutofilled(
-    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
     const GURL& origin,
-    const std::vector<const autofill::PasswordForm*>* federated_matches) const {
+    const std::vector<const PasswordForm*>* federated_matches) const {
 #if defined(OS_ANDROID)
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
@@ -431,6 +432,12 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
   manage_passwords_ui_controller->OnPasswordAutofilled(best_matches, origin,
                                                        federated_matches);
 #endif
+}
+
+void ChromePasswordManagerClient::AutofillHttpAuth(
+    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const PasswordForm& preferred_match) const {
+  password_manager_.AutofillHttpAuth(best_matches, preferred_match);
 }
 
 void ChromePasswordManagerClient::CheckSafeBrowsingReputation(

@@ -218,6 +218,12 @@ base::string16 ValueElementVectorToString(
   return base::JoinString(pairs, base::ASCIIToUTF16(", "));
 }
 
+bool IsHttpAuthScheme(PasswordForm::Scheme scheme) {
+  return scheme == PasswordForm::SCHEME_BASIC ||
+         scheme == PasswordForm::SCHEME_DIGEST ||
+         scheme == PasswordForm::SCHEME_OTHER;
+}
+
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
   base::DictionaryValue form_json;
   PasswordFormToJSON(form, &form_json);

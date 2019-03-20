@@ -117,6 +117,10 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void OnPasswordFormSubmitted(PasswordManagerDriver* driver,
                                const autofill::PasswordForm& password_form);
 
+  // Handles submitted http auth credentials.
+  void OnPasswordHttpAuthFormSubmitted(
+      const autofill::PasswordForm& password_form);
+
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission.
   // For example, this is called if |password_form| was filled
@@ -281,6 +285,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
                                                 PasswordManagerDriver* driver);
 
+  // Passes |form| to NewPasswordFormManager that manages it for using it after
+  // detecting submission success for saving.
+  void ProvisionallySaveHttpAuthForm(
+      const autofill::PasswordForm& password_form);
+
   // Returns the best match in |pending_login_managers_| for |form|. May return
   // nullptr if no match exists.
   PasswordFormManager* GetMatchingPendingManager(
@@ -389,11 +398,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // The user-visible URL from the last time a password was provisionally saved.
   GURL main_frame_url_;
-
-  const bool is_new_form_parsing_for_saving_enabled_;
-
-  // If true, it turns off using PasswordFormManager in PasswordManager.
-  const bool is_only_new_parser_enabled_;
 
   // True if Credential Management API function store() was called. In this case
   // PasswordManager does not need to show a save/update prompt since

@@ -83,7 +83,8 @@ namespace {
 void SetNewParsingForSaving(base::test::ScopedFeatureList* scoped_feature_list,
                             bool enabled) {
   std::vector<Feature> features = {features::kNewPasswordFormParsing,
-                                   features::kNewPasswordFormParsingForSaving};
+                                   features::kNewPasswordFormParsingForSaving,
+                                   features::kOnlyNewParser};
 
   std::vector<Feature> enabled_features;
   std::vector<Feature> disabled_features;
@@ -3649,14 +3650,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 // page.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
   for (bool new_parser_enabled : {false, true}) {
+    SCOPED_TRACE(testing::Message("new_parser_enabled=") << new_parser_enabled);
     base::test::ScopedFeatureList scoped_feature_list;
-    if (new_parser_enabled) {
-      scoped_feature_list.InitAndEnableFeature(
-          features::kNewPasswordFormParsing);
-    } else {
-      scoped_feature_list.InitAndDisableFeature(
-          features::kNewPasswordFormParsing);
-    }
+    SetNewParsingForSaving(&scoped_feature_list, new_parser_enabled);
+
     // The embedded_test_server() is already started at this point and adding
     // the request handler to it would not be thread safe. Therefore, use a new
     // server.

@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
 
 namespace password_manager {
@@ -51,6 +52,12 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       std::unique_ptr<FormSaver> form_saver,
       scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder);
 
+  // Constructor for http authentication (aka basic authentication).
+  NewPasswordFormManager(PasswordManagerClient* client,
+                         const autofill::PasswordForm& http_auth_observed_form,
+                         FormFetcher* form_fetcher,
+                         std::unique_ptr<FormSaver> form_saver);
+
   ~NewPasswordFormManager() override;
 
   // The upper limit on how many times Chrome will try to autofill the same
@@ -79,12 +86,22 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Otherwise returns false.
   bool ProvisionallySave(const autofill::FormData& submitted_form,
                          const PasswordManagerDriver* driver);
+
+  // If |submitted_form| is managed by *this then saves |submitted_form| to
+  // |submitted_form_| field, sets |is_submitted| = true and returns true.
+  // Otherwise returns false.
+  bool ProvisionallySaveHttpAuthFormIfIsManaged(
+      const autofill::PasswordForm& submitted_form);
+
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 
   void set_old_parsing_result(const autofill::PasswordForm& form) {
     old_parsing_result_ = form;
   }
+
+  // Returns true if |*this| manages http authentication.
+  bool IsHttpAuth() const;
 
   // Selects from |predictions| predictions that corresponds to
   // |observed_form_|, initiates filling and stores predictions in
@@ -165,6 +182,14 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       size_t filtered_count) override;
 
  private:
+  // Delegating constructor.
+  NewPasswordFormManager(
+      PasswordManagerClient* client,
+      FormFetcher* form_fetcher,
+      std::unique_ptr<FormSaver> form_saver,
+      scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
+      const PasswordStore::FormDigest& form_digest);
+
   // Compares |parsed_form| with |old_parsing_result_| and records UKM metric.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
   // removed.
@@ -216,6 +241,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // triggers some UMA reporting.
   void ProcessUpdate();
 
+  // Sends fill data to the http auth popup.
+  void FillHttpAuth();
+
   // Goes through |not_best_matches_|, updates the password of those which share
   // the old password and username with |pending_credentials_| to the new
   // password of |pending_credentials_|, and returns copies of all such modified
@@ -238,7 +266,11 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
   base::WeakPtr<PasswordManagerDriver> driver_;
 
+  // TODO(https://crbug.com/943045): use std::variant for keeping
+  // |observed_form_| and |observed_http_auth_digest_|.
   autofill::FormData observed_form_;
+
+  base::Optional<PasswordStore::FormDigest> observed_http_auth_digest_;
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by |this|, indexed by username. The PasswordForms are owned
