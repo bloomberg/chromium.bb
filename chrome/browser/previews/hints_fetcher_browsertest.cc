@@ -76,18 +76,23 @@ int RetryForHistogramUntilCountReached(
 }  // namespace
 
 // This test class sets up everything but does not enable any features.
-class PreviewsOnePlatformNoFeaturesBrowserTest : public InProcessBrowserTest {
+class OptimizationGuideServiceNoHintsFetcherBrowserTest
+    : public InProcessBrowserTest {
  public:
-  PreviewsOnePlatformNoFeaturesBrowserTest() = default;
-  ~PreviewsOnePlatformNoFeaturesBrowserTest() override = default;
+  OptimizationGuideServiceNoHintsFetcherBrowserTest() = default;
+  ~OptimizationGuideServiceNoHintsFetcherBrowserTest() override = default;
 
-  void SetUpOnMainThread() override {
+  void SetUp() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    https_server_->RegisterRequestMonitor(
+        base::BindRepeating(&OptimizationGuideServiceNoHintsFetcherBrowserTest::
+                                MonitorResourceRequest,
+                            base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
-    InProcessBrowserTest::SetUpOnMainThread();
+    InProcessBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -97,6 +102,11 @@ class PreviewsOnePlatformNoFeaturesBrowserTest : public InProcessBrowserTest {
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+
+    // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,
+    // only provides the URL.
+    cmd->AppendSwitchASCII(previews::switches::kOptimizationGuideServiceURL,
+                           https_server_->base_url().spec());
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -106,52 +116,60 @@ class PreviewsOnePlatformNoFeaturesBrowserTest : public InProcessBrowserTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
+  // Called by |https_server_|.
+  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+    // The request by HintsFetcher request should happen and be a POST request.
+    EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+    // TODO(mcrouse): Test server returns 404 for now as HintsFetcher does not
+    // currently handle responses.
+  }
+
   void TearDownOnMainThread() override {
     EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
 
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
   GURL https_url_;
 
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsOnePlatformNoFeaturesBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceNoHintsFetcherBrowserTest);
 };
 
 // This test class enables OnePlatform Hints.
-class PreviewsOnePlatformHintsBrowserTest
-    : public PreviewsOnePlatformNoFeaturesBrowserTest {
+class OptimizationGuideServiceHintsFetcherBrowserTest
+    : public OptimizationGuideServiceNoHintsFetcherBrowserTest {
  public:
-  PreviewsOnePlatformHintsBrowserTest() = default;
+  OptimizationGuideServiceHintsFetcherBrowserTest() = default;
 
-  ~PreviewsOnePlatformHintsBrowserTest() override = default;
+  ~OptimizationGuideServiceHintsFetcherBrowserTest() override = default;
 
   void SetUp() override {
-    // Enabled OnePlatformHints with |kPreviewsOnePlatformHints|.
+    // Enable OptimizationHintsFetching with |kOptimizationHintsFetching|.
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews, previews::features::kOptimizationHints,
-         previews::features::kPreviewsOnePlatformHints},
+         previews::features::kOptimizationHintsFetching},
         {});
+
     // Call to inherited class to match same set up with feature flags added.
-    PreviewsOnePlatformNoFeaturesBrowserTest::SetUp();
+    OptimizationGuideServiceNoHintsFetcherBrowserTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PreviewsOnePlatformHintsBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideServiceHintsFetcherBrowserTest);
 };
-
 // This test creates new browser with no profile and loads a random page with
 // the feature flags enables the PreviewsOnePlatformHints. We confirm that the
 // top_host_provider_impl executes and does not crash by checking UMA
 // histograms for the total number of TopEngagementSites and
 // the total number of sites returned controlled by the experiments flag
 // |max_oneplatform_update_hosts|.
-IN_PROC_BROWSER_TEST_F(PreviewsOnePlatformHintsBrowserTest,
-                       OnePlatformHintsEnabled) {
+IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceHintsFetcherBrowserTest,
+                       OptimizationGuideServiceHintsFetcher) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Expect that the browser initialization will record at least one sample
@@ -162,8 +180,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsOnePlatformHintsBrowserTest,
             1);
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsOnePlatformNoFeaturesBrowserTest,
-                       OnePlatformNoFeatures) {
+IN_PROC_BROWSER_TEST_F(OptimizationGuideServiceNoHintsFetcherBrowserTest,
+                       OptimizationGuideServiceNoHintsFetcher) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Expect that the histogram for HintsFetcher to be 0 because the OnePlatform

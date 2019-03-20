@@ -46,6 +46,7 @@ source_set("unit_tests") {
   sources = [
     "hint_cache_leveldb_store_unittest.cc",
     "hint_cache_unittest.cc",
+    "hints_fetcher_unittest.cc",
     "previews_decider_impl_unittest.cc",
     "previews_hints_unittest.cc",
     "previews_hints_util_unittest.cc",

@@ -30,6 +30,10 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -67,15 +71,10 @@ class TestOptimizationGuideService
   bool remove_observer_called_;
 };
 
-// A test class implementation for unit testing previews_optimization_guide.
-class TestPreviewsTopHostProvider : public PreviewsTopHostProvider {
+// A mock class implementation for unittesting previews_optimization_guide.
+class MockPreviewsTopHostProvider : public PreviewsTopHostProvider {
  public:
-  TestPreviewsTopHostProvider() {}
-  ~TestPreviewsTopHostProvider() override {}
-
-  std::vector<std::string> GetTopHosts(size_t max_sites) const override {
-    return std::vector<std::string>();
-  }
+  MOCK_CONST_METHOD1(GetTopHosts, std::vector<std::string>(size_t max_sites));
 };
 
 class PreviewsOptimizationGuideTest : public testing::Test {
@@ -93,6 +92,10 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void TearDown() override { ResetGuide(); }
 
   PreviewsOptimizationGuide* guide() { return guide_.get(); }
+
+  MockPreviewsTopHostProvider* top_host_provider() {
+    return previews_top_host_provider_.get();
+  }
 
   TestOptimizationGuideService* optimization_guide_service() {
     return optimization_guide_service_.get();
@@ -112,13 +115,20 @@ class PreviewsOptimizationGuideTest : public testing::Test {
     if (guide_) {
       ResetGuide();
     }
+    url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
+    if (!previews_top_host_provider_) {
+      previews_top_host_provider_ =
+          std::make_unique<MockPreviewsTopHostProvider>();
+    }
     optimization_guide_service_ =
         std::make_unique<TestOptimizationGuideService>(
             scoped_task_environment_.GetMainThreadTaskRunner());
     guide_ = std::make_unique<PreviewsOptimizationGuide>(
         optimization_guide_service_.get(),
         scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
-        previews_top_host_provider_.get());
+        previews_top_host_provider_.get(), url_loader_factory_);
 
     // Add observer is called after the HintCache is fully initialized,
     // indicating that the PreviewsOptimizationGuide is ready to process hints.
@@ -191,7 +201,10 @@ class PreviewsOptimizationGuideTest : public testing::Test {
 
   std::unique_ptr<PreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
-  std::unique_ptr<TestPreviewsTopHostProvider> previews_top_host_provider_;
+  std::unique_ptr<MockPreviewsTopHostProvider> previews_top_host_provider_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   // Flag set when the OnLoadOptimizationHints callback runs. This indicates
   // that MaybeLoadOptimizationHints() has completed its processing.
@@ -1559,6 +1572,25 @@ TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
   ResetGuide();
 
   EXPECT_TRUE(optimization_guide_service()->RemoveObserverCalled());
+}
+
+TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII("optimization_guide_service_url",
+                                  "https://hintsserver.com");
+
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_));
+  CreateServiceAndGuide();
+}
+
+TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kOptimizationHintsFetching);
+
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+  CreateServiceAndGuide();
 }
 
 }  // namespace previews

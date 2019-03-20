@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -23,6 +24,9 @@
 namespace base {
 class FilePath;
 }  // namespace base
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 namespace optimization_guide {
 struct HintsComponentInfo;
 class OptimizationGuideService;
@@ -30,7 +34,6 @@ namespace proto {
 class Hint;
 }  // namespace proto
 }  // namespace optimization_guide
-
 namespace previews {
 
 class HintsFetcher;
@@ -49,7 +52,8 @@ class PreviewsOptimizationGuide
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const base::FilePath& profile_path,
-      PreviewsTopHostProvider* previews_top_host_provider);
+      PreviewsTopHostProvider* previews_top_host_provider,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~PreviewsOptimizationGuide() override;
 
@@ -122,14 +126,9 @@ class PreviewsOptimizationGuide
                     const GURL& document_url,
                     const optimization_guide::proto::Hint* loaded_hint) const;
 
-  // Method to request OnePlatform client hints for user's sites with top
-  // engagement scores and creates a remote request using |hints_fetcher_| On
-  // request success OnOnePlatformHintsReceived callback will be called.
-  void GetOnePlatformClientHints();
-
-  // Called when the response from the OnePlatform Guide Service is handled and
-  // stored by the |hints_fetcher_|. received.
-  void OnOnePlatformHintsReceived();
+  // Method to request new hints for user's sites based on
+  // engagement scores using |hints_fetcher_|.
+  void FetchHints();
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;
@@ -152,12 +151,15 @@ class PreviewsOptimizationGuide
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
 
-  // HintsFetcher handles the request to update Hints from OnePlatform Guide
-  // Service.
+  // HintsFetcher handles making the request for updated hints from the remote
+  // Optimization Guide Service.
   std::unique_ptr<HintsFetcher> hints_fetcher_;
 
   // TopHostProvider that this guide can query. Not owned.
   PreviewsTopHostProvider* previews_top_host_provider_ = nullptr;
+
+  // Used for fetching Hints by the Hints Fetcher.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
