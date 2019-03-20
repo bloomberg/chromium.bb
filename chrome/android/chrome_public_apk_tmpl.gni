@@ -155,7 +155,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
     if (!_is_monochrome && !_is_trichrome) {
       deps += [
+        "//chrome/android:chrome_public_v8_assets",
         "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
+        "//third_party/icu:icu_assets",
       ]
       if (!defined(loadable_modules)) {
         loadable_modules = []
@@ -286,7 +288,10 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     loadable_modules = []
     secondary_abi_loadable_modules = []
 
-    _deps = [ "//components/crash/android:handler_java" ]
+    _deps = [
+      "//components/crash/android:handler_java",
+      "//chrome/android:chrome_public_non_pak_assets",
+    ]
 
     if (is_monochrome) {
       if (invoker.target_type == "android_app_bundle_module") {
@@ -320,7 +325,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         "//android_webview:monochrome_webview_assets",
         "//android_webview/apk:webview_license_activity_java",
         "//android_webview/glue",
-        "//chrome/android:chrome_public_non_pak_assets",
         "//chrome/android:monochrome_java",
         "//chrome/android/monochrome:monochrome_license_provider_java",
         "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
@@ -342,6 +346,10 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       _pak_prefix = "monochrome"
     }
     if (is_trichrome) {
+      if (!trichrome_shared_assets) {
+        _deps += [ "//android_webview:monochrome_webview_assets" ]
+      }
+
       # Include placeholder libraries to make Chrome multiarch in the same way
       # as Monochrome, even though Chrome only runs with one of the two
       # bitnesses. This allows the "32-bit" and "64-bit" versions of Chrome to
@@ -350,12 +358,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       native_lib_placeholders = [ "libdummy.so" ]
       if (android_64bit_target_cpu && build_apk_secondary_abi) {
         secondary_native_lib_placeholders = [ "libdummy.so" ]
-      }
-      if (android_64bit_target_cpu) {
-        _deps +=
-            [ "//chrome/android:chrome_public_secondary_abi_non_pak_assets" ]
-      } else {
-        _deps += [ "//chrome/android:chrome_public_non_pak_assets" ]
       }
       min_sdk_version = 28
       _pak_prefix = "trichrome_chrome"
