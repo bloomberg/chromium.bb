@@ -89,8 +89,8 @@ class MODULES_EXPORT DOMFileSystem final
   bool HasPendingActivity() const final;
 
   void CreateWriter(const FileEntry*,
-                    FileWriterCallbacks::OnDidCreateFileWriterCallback*,
-                    ErrorCallbackBase*);
+                    FileWriterCallbacks::SuccessCallback,
+                    FileWriterCallbacks::ErrorCallback);
   void CreateFile(const FileEntry*,
                   SnapshotFileCallback::OnDidCreateSnapshotFileCallback*,
                   ErrorCallbackBase*);

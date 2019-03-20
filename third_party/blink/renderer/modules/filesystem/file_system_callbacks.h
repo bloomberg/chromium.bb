@@ -303,6 +303,10 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
 
 class FileWriterCallbacks final : public FileSystemCallbacksBase {
  public:
+  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
+  // Remove it when all classes have switched to simple success/error callbacks
+  // implementation, and there is no reference to it in sync_callback_helper.h
+  // anymore.
   class OnDidCreateFileWriterCallback
       : public GarbageCollectedFinalized<OnDidCreateFileWriterCallback> {
    public:
@@ -314,27 +318,12 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
     OnDidCreateFileWriterCallback() = default;
   };
 
-  class OnDidCreateFileWriterV8Impl : public OnDidCreateFileWriterCallback {
-   public:
-    static OnDidCreateFileWriterV8Impl* Create(V8FileWriterCallback* callback) {
-      return callback
-                 ? MakeGarbageCollected<OnDidCreateFileWriterV8Impl>(callback)
-                 : nullptr;
-    }
-
-    OnDidCreateFileWriterV8Impl(V8FileWriterCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-    void Trace(blink::Visitor*) override;
-    void OnSuccess(FileWriterBase*) override;
-
-   private:
-    Member<V8PersistentCallbackInterface<V8FileWriterCallback>> callback_;
-  };
+  using SuccessCallback = base::OnceCallback<void(FileWriterBase* file_writer)>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
 
   FileWriterCallbacks(FileWriterBase*,
-                      OnDidCreateFileWriterCallback*,
-                      ErrorCallbackBase*,
+                      SuccessCallback,
+                      ErrorCallback,
                       ExecutionContext*);
 
   // Called when an AsyncFileWrter has been created successfully.
@@ -345,7 +334,8 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
 
  private:
   Persistent<FileWriterBase> file_writer_;
-  Persistent<OnDidCreateFileWriterCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
 };
 
 class SnapshotFileCallback final : public SnapshotFileCallbackBase,
