@@ -4,6 +4,7 @@
 
 #include "media/gpu/v4l2/v4l2_device.h"
 
+#include <algorithm>
 #include <set>
 
 #include <libdrm/drm_fourcc.h>
@@ -37,21 +38,23 @@ class V4L2Buffer {
   static std::unique_ptr<V4L2Buffer> Create(scoped_refptr<V4L2Device> device,
                                             enum v4l2_buf_type type,
                                             enum v4l2_memory memory,
-                                            size_t planes_count,
+                                            const struct v4l2_format& format,
                                             size_t buffer_id);
   ~V4L2Buffer();
 
   void* GetPlaneMapping(const size_t plane);
   size_t GetMemoryUsage() const;
   const struct v4l2_buffer* v4l2_buffer() const { return &v4l2_buffer_; }
+  const scoped_refptr<VideoFrame>& GetVideoFrame();
 
  private:
   V4L2Buffer(scoped_refptr<V4L2Device> device,
              enum v4l2_buf_type type,
              enum v4l2_memory memory,
-             size_t planes_count,
+             const struct v4l2_format& format,
              size_t buffer_id);
   bool Query();
+  scoped_refptr<VideoFrame> CreateVideoFrame();
 
   scoped_refptr<V4L2Device> device_;
   std::vector<void*> plane_mappings_;
@@ -63,17 +66,20 @@ class V4L2Buffer {
   // the number of allocated planes, resulting in memory corruption.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES] = {{}};
 
+  struct v4l2_format format_;
+  scoped_refptr<VideoFrame> video_frame_;
+
   DISALLOW_COPY_AND_ASSIGN(V4L2Buffer);
 };
 
 std::unique_ptr<V4L2Buffer> V4L2Buffer::Create(scoped_refptr<V4L2Device> device,
                                                enum v4l2_buf_type type,
                                                enum v4l2_memory memory,
-                                               size_t planes_count,
+                                               const struct v4l2_format& format,
                                                size_t buffer_id) {
   // Not using std::make_unique because constructor is private.
   std::unique_ptr<V4L2Buffer> buffer(
-      new V4L2Buffer(device, type, memory, planes_count, buffer_id));
+      new V4L2Buffer(device, type, memory, format, buffer_id));
 
   if (!buffer->Query())
     return nullptr;
@@ -84,14 +90,16 @@ std::unique_ptr<V4L2Buffer> V4L2Buffer::Create(scoped_refptr<V4L2Device> device,
 V4L2Buffer::V4L2Buffer(scoped_refptr<V4L2Device> device,
                        enum v4l2_buf_type type,
                        enum v4l2_memory memory,
-                       size_t planes_count,
+                       const struct v4l2_format& format,
                        size_t buffer_id)
-    : device_(device) {
+    : device_(device), format_(format) {
   DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
-  DCHECK_LE(planes_count, base::size(v4l2_planes_));
+  DCHECK_LE(format.fmt.pix_mp.num_planes, base::size(v4l2_planes_));
   v4l2_buffer_.m.planes = v4l2_planes_;
   // Just in case we got more planes than we want.
-  v4l2_buffer_.length = std::min(planes_count, base::size(v4l2_planes_));
+  v4l2_buffer_.length =
+      std::min(static_cast<size_t>(format.fmt.pix_mp.num_planes),
+               base::size(v4l2_planes_));
   v4l2_buffer_.index = buffer_id;
   v4l2_buffer_.type = type;
   v4l2_buffer_.memory = memory;
@@ -156,6 +164,43 @@ size_t V4L2Buffer::GetMemoryUsage() const {
   return usage;
 }
 
+scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
+  auto layout = V4L2Device::V4L2FormatToVideoFrameLayout(format_);
+  if (!layout) {
+    DVLOG(1) << "Cannot create frame layout for V4L2 buffers";
+    return nullptr;
+  }
+
+  std::vector<base::ScopedFD> dmabuf_fds = device_->GetDmabufsForV4L2Buffer(
+      v4l2_buffer_.index, v4l2_buffer_.length,
+      static_cast<enum v4l2_buf_type>(v4l2_buffer_.type));
+  if (dmabuf_fds.empty()) {
+    VLOGF(1) << "Failed to get DMABUFs of V4L2 buffer";
+    return nullptr;
+  }
+
+  gfx::Size size(format_.fmt.pix_mp.width, format_.fmt.pix_mp.height);
+
+  return VideoFrame::WrapExternalDmabufs(
+      *layout, gfx::Rect(size), size, std::move(dmabuf_fds), base::TimeDelta());
+}
+
+const scoped_refptr<VideoFrame>& V4L2Buffer::GetVideoFrame() {
+  // We can create the VideoFrame only when using MMAP buffers.
+  if (v4l2_buffer_.memory != V4L2_MEMORY_MMAP) {
+    DVLOGF(1) << "Cannot create video frame from non-MMAP buffer";
+    // video_frame_ should be null since that's its default value.
+    DCHECK_EQ(video_frame_, nullptr);
+    return video_frame_;
+  }
+
+  // Create the video frame instance if requiring it for the first time.
+  if (!video_frame_)
+    video_frame_ = CreateVideoFrame();
+
+  return video_frame_;
+}
+
 // A thread-safe pool of buffer indexes, allowing buffers to be obtained and
 // returned from different threads. All the methods of this class are
 // thread-safe. Users should keep a scoped_refptr to instances of this class
@@ -216,6 +261,8 @@ class V4L2BufferRefBase {
 
   bool QueueBuffer();
   void* GetPlaneMapping(const size_t plane);
+
+  const scoped_refptr<VideoFrame>& GetVideoFrame();
 
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
@@ -283,6 +330,20 @@ void* V4L2BufferRefBase::GetPlaneMapping(const size_t plane) {
   return queue_->buffers_[BufferId()]->GetPlaneMapping(plane);
 }
 
+const scoped_refptr<VideoFrame>& V4L2BufferRefBase::GetVideoFrame() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Used so we can return a const scoped_refptr& in all cases.
+  static const scoped_refptr<VideoFrame> null_videoframe;
+
+  if (!queue_)
+    return null_videoframe;
+
+  DCHECK_LE(BufferId(), queue_->buffers_.size());
+
+  return queue_->buffers_[BufferId()]->GetVideoFrame();
+}
+
 V4L2WritableBufferRef::V4L2WritableBufferRef() {
   // Invalid buffers can be created from any thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -320,6 +381,12 @@ V4L2WritableBufferRef& V4L2WritableBufferRef::operator=(
   buffer_data_ = std::move(other.buffer_data_);
 
   return *this;
+}
+
+const scoped_refptr<VideoFrame>& V4L2WritableBufferRef::GetVideoFrame() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return buffer_data_->GetVideoFrame();
 }
 
 bool V4L2WritableBufferRef::IsValid() const {
@@ -497,6 +564,12 @@ V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+const scoped_refptr<VideoFrame>& V4L2ReadableBuffer::GetVideoFrame() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return buffer_data_->GetVideoFrame();
+}
+
 V4L2ReadableBuffer::~V4L2ReadableBuffer() {
   // This method is thread-safe. Since we are the destructor, we are guaranteed
   // to be called from the only remaining reference to us. Also, we are just
@@ -642,7 +715,7 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
 
   // Now query all buffer information.
   for (size_t i = 0; i < reqbufs.count; i++) {
-    auto buffer = V4L2Buffer::Create(device_, type_, memory_, planes_count_, i);
+    auto buffer = V4L2Buffer::Create(device_, type_, memory_, format, i);
 
     if (!buffer) {
       DeallocateBuffers();

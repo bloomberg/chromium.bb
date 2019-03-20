@@ -434,23 +434,11 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK(!output_record.cleared);
-    DCHECK(output_record.processor_input_fds.empty());
 
     output_record.picture_id = buffers[i].id();
     output_record.texture_id = buffers[i].service_texture_ids().empty()
                                    ? 0
                                    : buffers[i].service_texture_ids()[0];
-
-    if (image_processor_device_) {
-      std::vector<base::ScopedFD> dmabuf_fds = device_->GetDmabufsForV4L2Buffer(
-          i, output_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-      if (dmabuf_fds.empty()) {
-        VLOGF(1) << "Failed to get DMABUFs of decoder.";
-        NOTIFY_ERROR(PLATFORM_FAILURE);
-        return;
-      }
-      output_record.processor_input_fds = std::move(dmabuf_fds);
-    }
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       std::vector<base::ScopedFD> dmabuf_fds;
@@ -2497,17 +2485,9 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  auto layout = VideoFrameLayout::Create(
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-      coded_size_);
-  if (!layout) {
-    return false;
-  }
   OutputRecord& output_record = output_buffer_map_[buf->BufferId()];
-  scoped_refptr<VideoFrame> input_frame = VideoFrame::WrapExternalDmabufs(
-      *layout, gfx::Rect(visible_size_), visible_size_,
-      DuplicateFDs(output_record.processor_input_fds), base::TimeDelta());
 
+  scoped_refptr<VideoFrame> input_frame = buf->GetVideoFrame();
   if (!input_frame) {
     VLOGF(1) << "Failed wrapping input frame!";
     return false;
