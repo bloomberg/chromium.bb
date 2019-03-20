@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/accessibility_event_recorder_uia_win.h"
 
 #include <algorithm>
+#include <numeric>
 #include <utility>
 
 #include "base/strings/string_util.h"
@@ -134,6 +135,15 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
 
   // Subscribe to focus events
   uia_->AddFocusChangedEventHandler(nullptr, uia_event_handler_.Get());
+
+  // Subscribe to all property-change events
+  static const PROPERTYID kMinProp = UIA_RuntimeIdPropertyId;
+  static const PROPERTYID kMaxProp = UIA_HeadingLevelPropertyId;
+  std::array<PROPERTYID, (kMaxProp - kMinProp) + 1> property_list;
+  std::iota(property_list.begin(), property_list.end(), kMinProp);
+  uia_->AddPropertyChangedEventHandlerNativeArray(
+      root_.Get(), TreeScope::TreeScope_Subtree, nullptr,
+      uia_event_handler_.Get(), &property_list[0], property_list.size());
 
   // Subscribe to all automation events
   static const EVENTID kMinEvent = UIA_ToolTipOpenedEventId;
@@ -266,6 +276,25 @@ AccessibilityEventRecorderUia::Thread::EventHandler::HandleFocusChangedEvent(
                                        GetSenderInfo(sender).c_str());
   owner_->OnEvent(log);
 
+  return S_OK;
+}
+
+STDMETHODIMP
+AccessibilityEventRecorderUia::Thread::EventHandler::HandlePropertyChangedEvent(
+    IUIAutomationElement* sender,
+    PROPERTYID property_id,
+    VARIANT new_value) {
+  if (owner_) {
+    std::string prop_str = UiaIdentifierToStringPretty(property_id);
+    if (prop_str.empty()) {
+      VLOG(1) << "Ignoring UIA property-changed event " << property_id;
+      return S_OK;
+    }
+
+    std::string log = base::StringPrintf("%s changed %s", prop_str.c_str(),
+                                         GetSenderInfo(sender).c_str());
+    owner_->OnEvent(log);
+  }
   return S_OK;
 }
 

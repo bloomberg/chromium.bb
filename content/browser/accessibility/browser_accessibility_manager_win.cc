@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -191,13 +192,22 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
       HandleSelectedStateChanged(node);
       break;
-    case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
-    case ui::AXEventGenerator::Event::COLLAPSED:
-    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
-    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::EXPANDED:
+    case ui::AXEventGenerator::Event::COLLAPSED:
+      FireUiaPropertyChangedEvent(
+          UIA_ExpandCollapseExpandCollapseStatePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FullDescriptionPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsDataValidForFormPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
+    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
@@ -245,6 +255,25 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
 
   ::UiaRaiseAutomationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
                             uia_event);
+}
+
+void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
+    LONG uia_property,
+    BrowserAccessibility* node) {
+  if (!ShouldFireEventForNode(node))
+    return;
+
+  // The old value is not used by the system
+  VARIANT old_value = {};
+  old_value.vt = VT_EMPTY;
+
+  auto* provider = ToBrowserAccessibilityWin(node)->GetCOM();
+  base::win::ScopedVariant new_value;
+  if (SUCCEEDED(
+          provider->GetPropertyValue(uia_property, new_value.Receive()))) {
+    ::UiaRaiseAutomationPropertyChangedEvent(provider, uia_property, old_value,
+                                             new_value);
+  }
 }
 
 bool BrowserAccessibilityManagerWin::CanFireEvents() {
