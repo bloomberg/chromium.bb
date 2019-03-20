@@ -103,6 +103,6 @@ public class ChromeBaseAppCompatActivity
     // NightModeStateProvider.Observer implementation.
     @Override
     public void onNightModeStateChanged() {
-        recreate();
+        if (!isFinishing()) recreate();
     }
 }
