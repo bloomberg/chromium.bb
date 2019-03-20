@@ -57,11 +57,7 @@ config("runtime_library") {
     }
   }
 
-  defines += [
-    "CR_LIBCXX_REVISION=$libcxx_svn_revision",
-    "CR_LIBCXXABI_REVISION=$libcxxabi_svn_revision",
-    "_LIBCPP_ENABLE_NODISCARD",
-  ]
+  defines += [ "_LIBCPP_ENABLE_NODISCARD" ]
 
   if (is_win) {
     # Intentionally not using libc++abi on Windows because libc++abi only
@@ -85,6 +81,8 @@ config("runtime_library") {
       "-isystem" + rebase_path("$libcxx_prefix/include", root_build_dir),
       "-isystem" + rebase_path("$libcxxabi_prefix/include", root_build_dir),
     ]
+
+    defines += [ "CR_LIBCXX_REVISION=$libcxx_svn_revision" ]
 
     # Make sure we don't link against the system libstdc++ or libc++.
     if (is_clang) {
