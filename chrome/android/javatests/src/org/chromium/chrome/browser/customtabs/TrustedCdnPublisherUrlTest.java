@@ -329,7 +329,7 @@ public class TrustedCdnPublisherUrlTest {
 
         // Wait until the offline page model has been loaded.
         CallbackHelper callback = new CallbackHelper();
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (offlinePageBridge.isOfflinePageModelLoaded()) {
                 callback.notifyCalled();
                 return;
@@ -345,7 +345,7 @@ public class TrustedCdnPublisherUrlTest {
         callback.waitForCallback(0);
 
         CallbackHelper callback2 = new CallbackHelper();
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             CustomTabActivity customTabActivity = mCustomTabActivityTestRule.getActivity();
             Tab tab = customTabActivity.getActivityTab();
             String pageUrl = tab.getUrl();

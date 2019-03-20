@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.DiscardableReferencePool;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Instrumentation test for {@link ThumbnailProviderImpl}.
@@ -43,7 +44,7 @@ public class ThumbnailProviderImplTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             mReferencePool = new DiscardableReferencePool();
             mThumbnailProvider = new ThumbnailProviderImpl(
                     mReferencePool, ThumbnailProviderImpl.ClientType.NTP_SUGGESTIONS);
@@ -52,7 +53,7 @@ public class ThumbnailProviderImplTest {
 
     @After
     public void tearDown() {
-        ThreadUtils.runOnUiThread(mThumbnailProvider::destroy);
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, mThumbnailProvider::destroy);
     }
 
     @Test
@@ -67,9 +68,8 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
-        });
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { mThumbnailProvider.getThumbnail(request); });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
                 "Reached timeout when fetching a thumbnail for a downloaded image.", 0);
@@ -89,9 +89,8 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
-        });
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { mThumbnailProvider.getThumbnail(request); });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
                 "Reached timeout when fetching a thumbnail for a downloaded image.", 0);
@@ -111,9 +110,8 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
-        });
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { mThumbnailProvider.getThumbnail(request); });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
                 "Reached timeout when fetching a thumbnail for a downloaded image.", 0);
@@ -133,9 +131,8 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
-        });
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { mThumbnailProvider.getThumbnail(request); });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
                 "Reached timeout when fetching a thumbnail for a downloaded image.", 0);
@@ -155,9 +152,8 @@ public class ThumbnailProviderImplTest {
         final TestThumbnailRequest request = new TestThumbnailRequest(
                 testFilePath, requiredSize, thumbnailRetrievedCallbackHelper);
 
-        ThreadUtils.runOnUiThread(() -> {
-            mThumbnailProvider.getThumbnail(request);
-        });
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { mThumbnailProvider.getThumbnail(request); });
 
         thumbnailRetrievedCallbackHelper.waitForCallback(
                 "Reached timeout when fetching a thumbnail for a downloaded image.", 0);

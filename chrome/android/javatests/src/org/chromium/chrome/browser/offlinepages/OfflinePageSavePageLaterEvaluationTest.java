@@ -21,7 +21,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Manual;
 import org.chromium.base.test.util.TimeoutScale;
@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offlinepages.BackgroundSavePageResult;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -132,26 +133,23 @@ public class OfflinePageSavePageLaterEvaluationTest {
                         Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
         final Semaphore mClearingSemaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assert mBridge != null;
-                mBridge.getRequestsInQueue(new Callback<SavePageRequest[]>() {
-                    @Override
-                    public void onResult(SavePageRequest[] results) {
-                        ArrayList<Long> ids = new ArrayList<Long>(results.length);
-                        for (int i = 0; i < results.length; i++) {
-                            ids.add(results[i].getRequestId());
-                        }
-                        mBridge.removeRequestsFromQueue(ids, new Callback<Integer>() {
-                            @Override
-                            public void onResult(Integer removedCount) {
-                                mClearingSemaphore.release();
-                            }
-                        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            assert mBridge != null;
+            mBridge.getRequestsInQueue(new Callback<SavePageRequest[]>() {
+                @Override
+                public void onResult(SavePageRequest[] results) {
+                    ArrayList<Long> ids = new ArrayList<Long>(results.length);
+                    for (int i = 0; i < results.length; i++) {
+                        ids.add(results[i].getRequestId());
                     }
-                });
-            }
+                    mBridge.removeRequestsFromQueue(ids, new Callback<Integer>() {
+                        @Override
+                        public void onResult(Integer removedCount) {
+                            mClearingSemaphore.release();
+                        }
+                    });
+                }
+            });
         });
         checkTrue(mClearingSemaphore.tryAcquire(REMOVE_REQUESTS_TIMEOUT_MS, TimeUnit.MILLISECONDS),
                 "Timed out when clearing remaining requests!");
@@ -229,27 +227,24 @@ public class OfflinePageSavePageLaterEvaluationTest {
     private void initializeBridgeForProfile(final boolean useTestingScheduler)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Profile profile = Profile.getLastUsedProfile();
-                mBridge = new OfflinePageEvaluationBridge(profile, useTestingScheduler);
-                if (mBridge == null) {
-                    Assert.fail("OfflinePageEvaluationBridge initialization failed!");
-                    return;
-                }
-                if (mBridge.isOfflinePageModelLoaded()) {
-                    semaphore.release();
-                    return;
-                }
-                mBridge.addObserver(new OfflinePageEvaluationObserver() {
-                    @Override
-                    public void offlinePageModelLoaded() {
-                        semaphore.release();
-                        mBridge.removeObserver(this);
-                    }
-                });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            Profile profile = Profile.getLastUsedProfile();
+            mBridge = new OfflinePageEvaluationBridge(profile, useTestingScheduler);
+            if (mBridge == null) {
+                Assert.fail("OfflinePageEvaluationBridge initialization failed!");
+                return;
             }
+            if (mBridge.isOfflinePageModelLoaded()) {
+                semaphore.release();
+                return;
+            }
+            mBridge.addObserver(new OfflinePageEvaluationObserver() {
+                @Override
+                public void offlinePageModelLoaded() {
+                    semaphore.release();
+                    mBridge.removeObserver(this);
+                }
+            });
         });
         checkTrue(semaphore.tryAcquire(PAGE_MODEL_LOAD_TIMEOUT_MS, TimeUnit.MILLISECONDS),
                 "Timed out when loading OfflinePageModel!");
@@ -323,12 +318,8 @@ public class OfflinePageSavePageLaterEvaluationTest {
      */
     private void savePageLater(final String url, final String namespace)
             throws InterruptedException {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mBridge.savePageLater(url, namespace, mIsUserRequested);
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { mBridge.savePageLater(url, namespace, mIsUserRequested); });
     }
 
     private void processUrls(List<String> urls) throws InterruptedException, IOException {

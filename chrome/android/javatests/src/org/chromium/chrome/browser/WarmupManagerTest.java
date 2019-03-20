@@ -19,12 +19,14 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -74,7 +76,7 @@ public class WarmupManagerTest {
         final AtomicBoolean isRenderViewReady = new AtomicBoolean();
         final AtomicReference<WebContents> webContentsReference = new AtomicReference<>();
 
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             mWarmupManager.createSpareWebContents(!WarmupManager.FOR_CCT);
             Assert.assertTrue(mWarmupManager.hasSpareWebContents());
             WebContents webContents =
@@ -99,7 +101,8 @@ public class WarmupManagerTest {
                 return isRenderViewReady.get();
             }
         });
-        ThreadUtils.runOnUiThread(() -> webContentsReference.get().destroy());
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> webContentsReference.get().destroy());
     }
 
     /** Tests that taking a spare WebContents makes it unavailable to subsequent callers. */
@@ -226,8 +229,10 @@ public class WarmupManagerTest {
             server.start();
 
             final String url = server.getURL("/hello_world.html");
-            ThreadUtils.runOnUiThread(() -> mWarmupManager.maybePreconnectUrlAndSubResources(
-                    Profile.getLastUsedProfile(), url));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    ()
+                            -> mWarmupManager.maybePreconnectUrlAndSubResources(
+                                    Profile.getLastUsedProfile(), url));
             if (!connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
                 // Starts at -1.
                 int actualConnections = connectionsSemaphore.availablePermits() + 1;

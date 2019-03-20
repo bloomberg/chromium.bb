@@ -1526,6 +1526,7 @@ android_library("browser_java_test_support") {
     "//base:base_java_test_support",
     "//components/offline_items_collection/core:core_java",
     "//components/sync:test_support_proto_java",
+    "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/junit",

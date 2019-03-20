@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -52,6 +53,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.test.util.UiRestriction;
@@ -356,7 +358,7 @@ public class ManualFillingIntegrationTest {
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
         mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
                     InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
                     false);
@@ -396,7 +398,7 @@ public class ManualFillingIntegrationTest {
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
         mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
                     InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
                     false);
@@ -440,7 +442,7 @@ public class ManualFillingIntegrationTest {
 
         // Create a simple, persistent snackbar and verify it's displayed.
         SnackbarManager manager = mActivityTestRule.getActivity().getSnackbarManager();
-        ThreadUtils.runOnUiThread(
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 ()
                         -> manager.showSnackbar(Snackbar.make(kSnackbarText,
                                 new SnackbarManager.SnackbarController() {},
@@ -476,7 +478,7 @@ public class ManualFillingIntegrationTest {
         InfoBarTestAnimationListener listener = new InfoBarTestAnimationListener();
         mActivityTestRule.getInfoBarContainer().addAnimationListener(listener);
         final String kInfoBarText = "SomeInfoBar";
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
                     InfoBarIdentifier.DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID, kInfoBarText,
                     false);

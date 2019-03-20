@@ -10,8 +10,10 @@ import android.view.ViewGroup;
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -55,12 +57,9 @@ public class DefaultSearchEngineDialogHelperUtils {
         });
 
         // Click on the OK button.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                View view = rootView.findViewById(OK_BUTTON_ID);
-                view.performClick();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            View view = rootView.findViewById(OK_BUTTON_ID);
+            view.performClick();
         });
 
         // Confirm the engine was set appropriately.

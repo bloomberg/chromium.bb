@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -41,6 +42,7 @@ import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -515,15 +517,12 @@ public class InfoBarTest {
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
 
         // Fake an unresponsive renderer signal.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
-                mActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getTabWebContentsDelegateAndroid()
-                        .rendererUnresponsive();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
+            mActivityTestRule.getActivity()
+                    .getActivityTab()
+                    .getTabWebContentsDelegateAndroid()
+                    .rendererUnresponsive();
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
@@ -534,14 +533,11 @@ public class InfoBarTest {
         Assert.assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
         // Fake a responsive renderer signal.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getTabWebContentsDelegateAndroid()
-                        .rendererResponsive();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mActivityTestRule.getActivity()
+                    .getActivityTab()
+                    .getTabWebContentsDelegateAndroid()
+                    .rendererResponsive();
         });
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
         Assert.assertTrue("Wrong infobar count", mActivityTestRule.getInfoBars().isEmpty());
@@ -559,15 +555,12 @@ public class InfoBarTest {
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
 
         // Fake an unresponsive renderer signal.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
-                mActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getTabWebContentsDelegateAndroid()
-                        .rendererUnresponsive();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HUNG_RENDERER_INFOBAR);
+            mActivityTestRule.getActivity()
+                    .getActivityTab()
+                    .getTabWebContentsDelegateAndroid()
+                    .rendererUnresponsive();
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added");
 
@@ -578,12 +571,8 @@ public class InfoBarTest {
         Assert.assertTrue(InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
         // Activate the Kill button.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                InfoBarUtil.clickPrimaryButton(infoBars.get(0));
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { InfoBarUtil.clickPrimaryButton(infoBars.get(0)); });
 
         // The renderer should have been killed and the InfoBar removed.
         mListener.removeInfoBarAnimationFinished("InfoBar not removed.");
@@ -617,13 +606,10 @@ public class InfoBarTest {
         // Swap out the WebContents and send the user somewhere so that the InfoBar gets removed.
         InfoBarTestAnimationListener removeListener = new InfoBarTestAnimationListener();
         mActivityTestRule.getInfoBarContainer().addAnimationListener(removeListener);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                WebContents newContents = WebContentsFactory.createWebContents(false, false);
-                mActivityTestRule.getActivity().getActivityTab().swapWebContents(
-                        newContents, false, false);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            WebContents newContents = WebContentsFactory.createWebContents(false, false);
+            mActivityTestRule.getActivity().getActivityTab().swapWebContents(
+                    newContents, false, false);
         });
         mActivityTestRule.loadUrl(HELLO_WORLD_URL);
         removeListener.removeInfoBarAnimationFinished("InfoBar not removed.");

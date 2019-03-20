@@ -22,6 +22,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
@@ -41,6 +42,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.MockDocumentTabModel;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockActivityDelegate;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 import java.io.File;
@@ -182,13 +184,10 @@ public class DocumentModeAssassinTest {
 
         final DocumentModeAssassin assassin =
                 createAssassinForTesting(DocumentModeAssassin.STAGE_UNINITIALIZED, true, false);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assassin.addObserver(observer);
-                Assert.assertEquals(0, doneCallback.getCallCount());
-                assassin.migrateFromDocumentToTabbedMode();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            assassin.addObserver(observer);
+            Assert.assertEquals(0, doneCallback.getCallCount());
+            assassin.migrateFromDocumentToTabbedMode();
         });
 
         doneCallback.waitForCallback(0);
@@ -242,20 +241,17 @@ public class DocumentModeAssassinTest {
         setUpDirectories();
         final DocumentModeAssassin assassin = createAssassinForTesting(
                 DocumentModeAssassin.STAGE_UNINITIALIZED, true, true);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assassin.addObserver(observer);
-                Assert.assertEquals(0, copyStartedCallback.getCallCount());
-                Assert.assertEquals(0, copyDoneCallback.getCallCount());
-                Assert.assertEquals(0, writeStartedCallback.getCallCount());
-                Assert.assertEquals(0, writeDoneCallback.getCallCount());
-                Assert.assertEquals(0, changeStartedCallback.getCallCount());
-                Assert.assertEquals(0, changeDoneCallback.getCallCount());
-                Assert.assertEquals(0, deletionStartedCallback.getCallCount());
-                Assert.assertEquals(0, deletionDoneCallback.getCallCount());
-                assassin.migrateFromDocumentToTabbedMode();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            assassin.addObserver(observer);
+            Assert.assertEquals(0, copyStartedCallback.getCallCount());
+            Assert.assertEquals(0, copyDoneCallback.getCallCount());
+            Assert.assertEquals(0, writeStartedCallback.getCallCount());
+            Assert.assertEquals(0, writeDoneCallback.getCallCount());
+            Assert.assertEquals(0, changeStartedCallback.getCallCount());
+            Assert.assertEquals(0, changeDoneCallback.getCallCount());
+            Assert.assertEquals(0, deletionStartedCallback.getCallCount());
+            Assert.assertEquals(0, deletionDoneCallback.getCallCount());
+            assassin.migrateFromDocumentToTabbedMode();
         });
 
         // Confirm that files got copied over.
@@ -327,17 +323,14 @@ public class DocumentModeAssassinTest {
         setUpDirectories();
         final DocumentModeAssassin assassin =
                 createAssassinForTesting(DocumentModeAssassin.STAGE_UNINITIALIZED, true, true);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assassin.addObserver(observer);
-                Assert.assertEquals(0, writeDoneCallback.getCallCount());
-                Assert.assertEquals(0, changeStartedCallback.getCallCount());
-                Assert.assertEquals(0, changeDoneCallback.getCallCount());
-                Assert.assertEquals(0, deletionStartedCallback.getCallCount());
-                Assert.assertEquals(0, deletionDoneCallback.getCallCount());
-                assassin.migrateFromDocumentToTabbedMode();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            assassin.addObserver(observer);
+            Assert.assertEquals(0, writeDoneCallback.getCallCount());
+            Assert.assertEquals(0, changeStartedCallback.getCallCount());
+            Assert.assertEquals(0, changeDoneCallback.getCallCount());
+            Assert.assertEquals(0, deletionStartedCallback.getCallCount());
+            Assert.assertEquals(0, deletionDoneCallback.getCallCount());
+            assassin.migrateFromDocumentToTabbedMode();
         });
 
         // Confirm that the user got moved into tabbed mode.
@@ -375,14 +368,11 @@ public class DocumentModeAssassinTest {
                 DocumentModeAssassin.STAGE_WRITE_TABMODEL_METADATA_DONE, false, true);
 
         // Write out the preference and wait for it.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                assassin.addObserver(observer);
-                Assert.assertEquals(0, changeStartedCallback.getCallCount());
-                Assert.assertEquals(0, changeDoneCallback.getCallCount());
-                assassin.switchToTabbedMode();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            assassin.addObserver(observer);
+            Assert.assertEquals(0, changeStartedCallback.getCallCount());
+            Assert.assertEquals(0, changeDoneCallback.getCallCount());
+            assassin.switchToTabbedMode();
         });
         changeStartedCallback.waitForCallback(0);
         mFinishAllDocumentActivitiesCallback.waitForCallback(0);

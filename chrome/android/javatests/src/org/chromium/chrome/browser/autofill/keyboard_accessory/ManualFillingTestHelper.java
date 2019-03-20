@@ -36,6 +36,7 @@ import org.hamcrest.Matcher;
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeWindow;
@@ -46,6 +47,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -322,7 +324,8 @@ public class ManualFillingTestHelper {
                             .withCause(new Throwable("No tab at index " + tabIndex))
                             .build();
                 }
-                ThreadUtils.runOnUiThread(() -> tabLayout.getTabAt(tabIndex).select());
+                PostTask.runOrPostTask(
+                        UiThreadTaskTraits.DEFAULT, () -> tabLayout.getTabAt(tabIndex).select());
             }
         };
     }
