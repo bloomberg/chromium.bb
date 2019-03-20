@@ -17,6 +17,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
+#include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -49,9 +50,8 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
-#include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "gpu/vulkan/vulkan_implementation.h"
-#include "gpu/vulkan/vulkan_surface.h"
+#include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
+#include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -99,27 +99,6 @@ class SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider {
   bool valid_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUseContextProvider);
-};
-
-// TODO(backer): Use this wrapper for GL as well.
-// Thin wrapper around gpu::VulkanSurface that allows us to easily inject
-// a fake offscreen surface for tests.
-class SkiaOutputSurfaceImplOnGpu::SurfaceWrapper {
- public:
-  SurfaceWrapper();
-  virtual ~SurfaceWrapper();
-
-  // SkSurface that can be drawn to.
-  virtual sk_sp<SkSurface> DrawSurface() = 0;
-
-  // Changes the size of draw surface and invalidates it's contents.
-  virtual void Reshape(const gfx::Size& size) = 0;
-
-  // Presents DrawSurface.
-  virtual gpu::SwapBuffersCompleteParams SwapBuffers() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SurfaceWrapper);
 };
 
 namespace {
@@ -282,175 +261,6 @@ class ContextCurrentTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(ContextCurrentTaskRunner);
 };
 
-#if BUILDFLAG(ENABLE_VULKAN)
-// Wrap gpu::VulkanSurface for use in Skia API. Creates a sequence of SkSurface
-// around the gpu::VulkanSurface::GetSwapChain().
-class OnScreenVulkanSurface final
-    : public SkiaOutputSurfaceImplOnGpu::SurfaceWrapper {
- public:
-  OnScreenVulkanSurface(VulkanContextProvider* context_provider,
-                        gpu::SurfaceHandle surface_handle)
-      : context_provider_(context_provider), surface_handle_(surface_handle) {}
-
-  ~OnScreenVulkanSurface() override {
-    if (vulkan_surface_)
-      vulkan_surface_->Destroy();
-  }
-
-  // SurfaceWrapper implementation
-  sk_sp<SkSurface> DrawSurface() override { return draw_surface_; }
-
-  void Reshape(const gfx::Size& size) override {
-    if (!vulkan_surface_)
-      CreateVulkanSurface();
-
-    auto old_size = vulkan_surface_->size();
-    vulkan_surface_->SetSize(size);
-    if (vulkan_surface_->size() != old_size) {
-      // Size has been changed, we need to clear all surfaces which will be
-      // recreated later.
-      sk_surfaces_.clear();
-      sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
-    }
-
-    UpdateDrawSurface();
-  }
-
-  gpu::SwapBuffersCompleteParams SwapBuffers() override {
-    // Reshape should have been called first.
-    DCHECK(vulkan_surface_);
-    DCHECK(draw_surface_);
-
-    gpu::SwapBuffersCompleteParams params;
-    params.swap_response.swap_start = base::TimeTicks::Now();
-
-    auto backend = draw_surface_->getBackendRenderTarget(
-        SkSurface::kFlushRead_BackendHandleAccess);
-    GrVkImageInfo vk_image_info;
-    if (!backend.getVkImageInfo(&vk_image_info))
-      NOTREACHED() << "Failed to get the image info.";
-    vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
-        vk_image_info.fImageLayout);
-    params.swap_response.result = vulkan_surface_->SwapBuffers();
-    params.swap_response.swap_end = base::TimeTicks::Now();
-
-    UpdateDrawSurface();
-
-    return params;
-  }
-
- private:
-  void CreateVulkanSurface() {
-    gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
-#if defined(OS_ANDROID)
-    accelerated_widget =
-        gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
-            surface_handle_);
-#else
-    accelerated_widget = surface_handle_;
-#endif
-    auto vulkan_surface =
-        context_provider_->GetVulkanImplementation()->CreateViewSurface(
-            accelerated_widget);
-    if (!vulkan_surface)
-      LOG(FATAL) << "Failed to create vulkan surface.";
-    if (!vulkan_surface->Initialize(context_provider_->GetDeviceQueue(),
-                                    gpu::VulkanSurface::FORMAT_RGBA_32)) {
-      LOG(FATAL) << "Failed to initialize vulkan surface.";
-    }
-    vulkan_surface_ = std::move(vulkan_surface);
-  }
-
-  void UpdateDrawSurface() {
-    DCHECK(vulkan_surface_);
-    auto* swap_chain = vulkan_surface_->GetSwapChain();
-    auto index = swap_chain->current_image();
-    auto& sk_surface = sk_surfaces_[index];
-    if (!sk_surface) {
-      SkSurfaceProps surface_props =
-          SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
-      VkImage vk_image = swap_chain->GetCurrentImage();
-      VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
-      const auto surface_format = vulkan_surface_->surface_format().format;
-      DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
-             surface_format == VK_FORMAT_R8G8B8A8_UNORM);
-      GrVkImageInfo vk_image_info(vk_image, GrVkAlloc(),
-                                  VK_IMAGE_TILING_OPTIMAL, vk_image_layout,
-                                  surface_format, 1 /* level_count */);
-      GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
-                                          vulkan_surface_->size().height(),
-                                          0 /* sample_cnt */, vk_image_info);
-      auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
-                               ? kBGRA_8888_SkColorType
-                               : kRGBA_8888_SkColorType;
-      sk_surface = SkSurface::MakeFromBackendRenderTarget(
-          context_provider_->GetGrContext(), render_target,
-          kTopLeft_GrSurfaceOrigin, sk_color_type, nullptr /* color_space */,
-          &surface_props);
-      DCHECK(sk_surface);
-    } else {
-      auto backend = sk_surface->getBackendRenderTarget(
-          SkSurface::kFlushRead_BackendHandleAccess);
-      backend.setVkImageLayout(swap_chain->GetCurrentImageLayout());
-    }
-
-    draw_surface_ = sk_surface;
-  }
-
-  VulkanContextProvider* const context_provider_;
-
-  const gpu::SurfaceHandle surface_handle_;
-  std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
-
-  // SkSurfaces for swap chain images.
-  std::vector<sk_sp<SkSurface>> sk_surfaces_;
-
-  // SkSurface to be drawn to. Updated after Reshape and SwapBuffers.
-  sk_sp<SkSurface> draw_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnScreenVulkanSurface);
-};
-
-// An offscreen surface suitable for tests.
-class OffscreenVulkanSurface final
-    : public SkiaOutputSurfaceImplOnGpu::SurfaceWrapper {
- public:
-  explicit OffscreenVulkanSurface(GrContext* gr_context)
-      : gr_context_(gr_context) {}
-  ~OffscreenVulkanSurface() override = default;
-
-  // SurfaceWrapper implementation:
-  sk_sp<SkSurface> DrawSurface() override { return draw_surface_; }
-
-  void Reshape(const gfx::Size& size) override {
-    auto image_info =
-        SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
-                          kOpaque_SkAlphaType);
-    draw_surface_ =
-        SkSurface::MakeRenderTarget(gr_context_, SkBudgeted::kNo, image_info);
-  }
-
-  gpu::SwapBuffersCompleteParams SwapBuffers() override {
-    // Reshape should have been called first.
-    DCHECK(draw_surface_);
-
-    gpu::SwapBuffersCompleteParams params;
-    params.swap_response.swap_start = base::TimeTicks::Now();
-    params.swap_response.result = gfx::SwapResult::SWAP_ACK;
-    params.swap_response.swap_end = params.swap_response.swap_start;
-
-    return params;
-  }
-
- private:
-  GrContext* const gr_context_;
-  sk_sp<SkSurface> draw_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(OffscreenVulkanSurface);
-};
-
-#endif  // if BUILDFLAG(ENABLE_VULKAN)
-
 }  // namespace
 
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
@@ -483,10 +293,6 @@ void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
   surface_ = std::move(surface);
   promise_texture_ = {};
 }
-
-SkiaOutputSurfaceImplOnGpu::SurfaceWrapper::SurfaceWrapper() = default;
-
-SkiaOutputSurfaceImplOnGpu::SurfaceWrapper::~SurfaceWrapper() = default;
 
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     gpu::SurfaceHandle surface_handle,
@@ -625,17 +431,17 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     CreateSkSurfaceForGL();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    if (!vulkan_surface_) {
+    if (!output_device_) {
       if (surface_handle_ == gpu::kNullSurfaceHandle) {
-        vulkan_surface_ =
-            std::make_unique<OffscreenVulkanSurface>(gr_context());
+        output_device_ =
+            std::make_unique<SkiaOutputDeviceOffscreen>(gr_context());
       } else {
-        vulkan_surface_ = std::make_unique<OnScreenVulkanSurface>(
+        output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
             vulkan_context_provider_, surface_handle_);
       }
     }
-    vulkan_surface_->Reshape(size);
-    sk_surface_ = vulkan_surface_->DrawSurface();
+    output_device_->Reshape(size);
+    sk_surface_ = output_device_->DrawSurface();
 #else
     NOTREACHED();
 #endif
@@ -709,10 +515,13 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     swap_end = base::TimeTicks::Now();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    DCHECK(vulkan_surface_);
+    DCHECK(output_device_);
     OnSwapBuffers();
-    auto params = vulkan_surface_->SwapBuffers();
-    sk_surface_ = vulkan_surface_->DrawSurface();
+    gpu::SwapBuffersCompleteParams params;
+    params.swap_response.swap_start = base::TimeTicks::Now();
+    params.swap_response.result = output_device_->SwapBuffers();
+    params.swap_response.swap_end = base::TimeTicks::Now();
+    sk_surface_ = output_device_->DrawSurface();
     DidSwapBuffersComplete(params);
     buffer_presented_callback_.Run(gfx::PresentationFeedback(
         params.swap_response.swap_end, base::TimeDelta(), 0 /* flag */));

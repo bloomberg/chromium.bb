@@ -309,6 +309,7 @@ viz_component("service") {
 # then this build target will no longer be needed.
 viz_source_set("gpu_service_dependencies") {
   sources = [
+    "display_embedder/skia_output_device.h",
     "display_embedder/skia_output_surface_impl.cc",
     "display_embedder/skia_output_surface_impl.h",
     "display_embedder/skia_output_surface_impl_non_ddl.cc",
@@ -347,6 +348,13 @@ viz_source_set("gpu_service_dependencies") {
   }
 
   if (enable_vulkan) {
+    sources += [
+      "display_embedder/skia_output_device_offscreen.cc",
+      "display_embedder/skia_output_device_offscreen.h",
+      "display_embedder/skia_output_device_vulkan.cc",
+      "display_embedder/skia_output_device_vulkan.h",
+    ]
+
     public_deps += [ "//gpu/vulkan" ]
   }
 }
