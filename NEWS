@@ -8,10 +8,14 @@ issues]].
 ** New features
 
 ** Bug fixes
+- Remove memoization in ~checkAttr~. It wasn't implemented correctly,
+  caused some weird bugs and probably didn't do much for performance.
+  Thanks to Bert Frees.
 
 ** Braille table improvements
 
 ** Other changes
+- Remove some code duplication in pattern.c thanks to Bert Frees
 
 ** Deprecation notice
 
