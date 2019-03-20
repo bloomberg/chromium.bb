@@ -1370,7 +1370,10 @@ void NavigationRequest::OnRequestFailedInternal(
   // Sanity check that we haven't changed the RenderFrameHost picked for the
   // error page in OnRequestFailedInternal when running the WillFailRequest
   // checks.
-  CHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
+  // TODO(https://crbug.com/636952): Replace this by a CHECK when the bug is
+  // fixed.
+  if (render_frame_host_ && render_frame_host_ != render_frame_host)
+    base::debug::DumpWithoutCrashing();
   render_frame_host_ = render_frame_host;
 
   DCHECK(render_frame_host_);
