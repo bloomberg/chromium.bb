@@ -37,40 +37,43 @@ class AccessibilityFocusRingControllerTest : public AshTestBase {
   TestableAccessibilityFocusRingController controller_;
 };
 
-TEST_F(AccessibilityFocusRingControllerTest, CallingSetOrResetWhenEmpty) {
-  // Ensure that calling reset does not crash the controller if there are
+TEST_F(AccessibilityFocusRingControllerTest, CallingHideWhenEmpty) {
+  // Ensure that calling hide does not crash the controller if there are
   // no focus rings yet for a given ID.
-  controller_.ResetFocusRingColor("catsRCute");
   controller_.HideFocusRing("catsRCute");
 }
 
-TEST_F(AccessibilityFocusRingControllerTest,
-       SetFocusRingOrColorUpdatesCorrectRingGroup) {
+TEST_F(AccessibilityFocusRingControllerTest, SetFocusRingCorrectRingGroup) {
   EXPECT_EQ(nullptr, controller_.GetFocusRingGroupForTesting("catsRCute"));
-  controller_.SetFocusRingColor(SkColorSetARGB(0xFF, 0x42, 0x42, 0x42),
-                                "catsRCute");
-  // A focus ring group was created, but it has no layers yet.
+  SkColor cat_color = SkColorSetARGB(0xFF, 0x42, 0x42, 0x42);
+
+  mojom::FocusRingPtr cat_focus_ring = mojom::FocusRing::New();
+  cat_focus_ring->color = cat_color;
+  cat_focus_ring->rects_in_screen.push_back(gfx::Rect(0, 0, 10, 10));
+  controller_.SetFocusRing("catsRCute", std::move(cat_focus_ring));
+
+  // A focus ring group was created.
   ASSERT_NE(nullptr, controller_.GetFocusRingGroupForTesting("catsRCute"));
-  int size = controller_.GetFocusRingGroupForTesting("catsRCute")
-                 ->focus_layers_for_testing()
-                 .size();
-  EXPECT_EQ(0, size);
+  EXPECT_EQ(1u, controller_.GetFocusRingGroupForTesting("catsRCute")
+                    ->focus_layers_for_testing()
+                    .size());
 
   EXPECT_EQ(nullptr, controller_.GetFocusRingGroupForTesting("dogsRCool"));
-  std::vector<gfx::Rect> rects;
-  rects.push_back(gfx::Rect(10, 30, 70, 150));
-  controller_.SetFocusRing(rects, mojom::FocusRingBehavior::FADE_OUT_FOCUS_RING,
-                           "dogsRCool");
+  mojom::FocusRingPtr dog_focus_ring = mojom::FocusRing::New();
+  dog_focus_ring->rects_in_screen.push_back(gfx::Rect(10, 30, 70, 150));
+  controller_.SetFocusRing("dogsRCool", std::move(dog_focus_ring));
+
   ASSERT_NE(nullptr, controller_.GetFocusRingGroupForTesting("dogsRCool"));
-  size = controller_.GetFocusRingGroupForTesting("dogsRCool")
-             ->focus_layers_for_testing()
-             .size();
+  int size = controller_.GetFocusRingGroupForTesting("dogsRCool")
+                 ->focus_layers_for_testing()
+                 .size();
   EXPECT_EQ(1, size);
   // The first focus ring group was not updated.
-  size = controller_.GetFocusRingGroupForTesting("catsRCute")
-             ->focus_layers_for_testing()
-             .size();
-  EXPECT_EQ(0, size);
+  const std::vector<std::unique_ptr<AccessibilityFocusRingLayer>>& layers =
+      controller_.GetFocusRingGroupForTesting("catsRCute")
+          ->focus_layers_for_testing();
+  EXPECT_EQ(1u, layers.size());
+  EXPECT_EQ(cat_color, layers[0]->color_for_testing());
 }
 
 TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
