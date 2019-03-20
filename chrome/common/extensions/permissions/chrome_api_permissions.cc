@@ -123,8 +123,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kMediaRouterPrivate, "mediaRouterPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kNetworkingCastPrivate, "networking.castPrivate"},
-    {APIPermission::kPreferencesPrivate, "preferencesPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kSystemPrivate, "systemPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kCloudPrintPrivate, "cloudPrintPrivate",

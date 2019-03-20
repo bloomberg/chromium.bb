@@ -571,13 +571,6 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
-  "types.private": {
-    // preferencesPrivate is the only API that uses types.private.
-    // If any other APIs need it then they'll need to be added in
-    // separate rules.
-    "dependencies": ["permission:preferencesPrivate"],
-    "contexts": ["blessed_extension"]
-  },
   "usb": {
     "dependencies": ["permission:usb"],
     "contexts": ["blessed_extension"]

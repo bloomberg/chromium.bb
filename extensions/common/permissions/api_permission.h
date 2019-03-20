@@ -157,7 +157,7 @@ class APIPermission {
     kPlatformKeys = 113,
     kDeleted_Plugin = 114,
     kPower = 115,
-    kPreferencesPrivate = 116,
+    kDeleted_PreferencesPrivate = 116,
     kDeleted_PrincipalsPrivate = 117,
     kPrinterProvider = 118,
     kPrivacy = 119,
