@@ -11,17 +11,18 @@
 
 namespace ui {
 
-// This file contains various helper functions that determine whether a specific
-// accessibility role meets certain criteria.
+// This file contains various helper functions that determine whether an
+// accessibility node data or a specific accessibility role meets certain
+// criteria.
 //
 // Please keep these functions in alphabetic order.
 
 // Checks if the given role is an alert or alert-dialog type.
 AX_EXPORT bool IsAlert(const ax::mojom::Role role);
 
-// Checks if the given role should belong to a control that can respond to
-// clicks.
-AX_EXPORT bool IsClickable(const ax::mojom::Role role);
+// Checks if the given ax node data should belong to a control that can respond
+// to clicks.
+AX_EXPORT bool IsClickable(const AXNodeData& data);
 
 // Returns true if the provided role belongs to a cell or a table header.
 AX_EXPORT bool IsCellOrTableHeader(const ax::mojom::Role role);
@@ -44,6 +45,9 @@ AX_EXPORT bool IsHeadingOrTableHeader(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to an image, graphic, canvas, etc.
 AX_EXPORT bool IsImage(const ax::mojom::Role role);
+
+// Returns true if the provided ax node data is invokable.
+AX_EXPORT bool IsInvokable(const AXNodeData& data);
 
 // Returns true if the provided role is item-like, specifically if it can hold
 // pos_in_set and set_size values.

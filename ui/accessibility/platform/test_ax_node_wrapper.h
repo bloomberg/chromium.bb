@@ -35,6 +35,10 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // Get the last node which ShowContextMenu was called from for testing.
   static const AXNode* GetNodeFromLastShowContextMenu();
 
+  // Get the last node which AccessibilityPerformAction default action was
+  // called from for testing.
+  static const AXNode* GetNodeFromLastDefaultAction();
+
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }

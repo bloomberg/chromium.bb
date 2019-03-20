@@ -1707,6 +1707,23 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
 }
 
 //
+// IInvokeProvider implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::Invoke() {
+  UIA_VALIDATE_CALL();
+
+  if (GetData().GetRestriction() == ax::mojom::Restriction::kDisabled)
+    return UIA_E_ELEMENTNOTENABLED;
+
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+  GetDelegate()->AccessibilityPerformAction(action_data);
+
+  return S_OK;
+}
+
+//
 // IScrollItemProvider implementation.
 //
 
@@ -3587,8 +3604,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_TransformPatternId:
       break;
 
-    // TODO(suproteem): Add checks for control role.
     case UIA_InvokePatternId:
+      if (IsInvokable(data)) {
+        AddRef();
+        *result = static_cast<IInvokeProvider*>(this);
+      }
       break;
 
     case UIA_SelectionItemPatternId:

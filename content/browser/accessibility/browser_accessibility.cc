@@ -824,7 +824,7 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
 }
 
 bool BrowserAccessibility::IsClickable() const {
-  return ui::IsClickable(GetRole());
+  return ui::IsClickable(GetData());
 }
 
 bool BrowserAccessibility::IsPlainTextField() const {
