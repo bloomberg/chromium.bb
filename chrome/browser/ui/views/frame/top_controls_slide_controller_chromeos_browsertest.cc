@@ -809,6 +809,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
       config_properties->rotation = ash::mojom::DisplayRotation::New(rotation);
       ash::mojom::DisplayConfigResult result;
       waiter_for.SetDisplayProperties(display_id, std::move(config_properties),
+                                      ash::mojom::DisplayConfigSource::kUser,
                                       &result);
       EXPECT_EQ(result, ash::mojom::DisplayConfigResult::kSuccess);
 

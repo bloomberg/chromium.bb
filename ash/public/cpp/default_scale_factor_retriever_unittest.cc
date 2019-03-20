@@ -49,6 +49,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
   }
   void SetDisplayProperties(const std::string& id,
                             ash::mojom::DisplayConfigPropertiesPtr properties,
+                            ash::mojom::DisplayConfigSource source,
                             SetDisplayPropertiesCallback callback) override {}
   void SetUnifiedDesktopEnabled(bool enabled) override {}
   void OverscanCalibration(const std::string& display_id,
