@@ -7,6 +7,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
+#import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
@@ -20,7 +22,11 @@
 #endif
 
 @interface InfobarConfirmCoordinator () <InfobarBannerDelegate,
-                                         InfobarModalDelegate>
+                                         InfobarModalDelegate> {
+  // The AnimatedFullscreenDisable disables fullscreen by displaying the
+  // Toolbar/s when an Infobar banner is presented.
+  std::unique_ptr<AnimatedScopedFullscreenDisabler> animatedFullscreenDisabler_;
+}
 
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly) ConfirmInfoBarDelegate* confirmInfobarDelegate;
@@ -38,6 +44,8 @@
 @synthesize badgeDelegate = _badgeDelegate;
 // Property defined in InfobarCoordinating.
 @synthesize bannerTransitionDriver = _bannerTransitionDriver;
+// Property defined in InfobarCoordinating.
+@synthesize browserState = _browserState;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
 // Property defined in InfobarCoordinating.
@@ -91,6 +99,14 @@
 #pragma mark - InfobarCoordinating
 
 - (void)presentInfobarModalFrom:(UIViewController*)baseViewController {
+  // Make sure to display the Toolbar/Omnibox before presenting the Banner.
+  DCHECK(self.browserState);
+  animatedFullscreenDisabler_ =
+      std::make_unique<AnimatedScopedFullscreenDisabler>(
+          FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+              self.browserState));
+  animatedFullscreenDisabler_->StartAnimation();
+
   self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
       initWithTransitionMode:InfobarModalTransitionBase];
   [self presentInfobarModalFrom:baseViewController
@@ -113,6 +129,10 @@
   }
 }
 
+- (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
+  _browserState = browserState;
+}
+
 #pragma mark - InfobarBannerDelegate
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
@@ -127,6 +147,7 @@
                          completion:^{
                            [self.badgeDelegate infobarBannerWasDismissed];
                            self.bannerTransitionDriver = nil;
+                           animatedFullscreenDisabler_ = nullptr;
                          }];
 }
 
