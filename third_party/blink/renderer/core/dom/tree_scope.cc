@@ -82,8 +82,7 @@ void TreeScope::ResetTreeScope() {
   selection_ = nullptr;
 }
 
-bool TreeScope::IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
-    const TreeScope& scope) const {
+bool TreeScope::IsInclusiveAncestorTreeScopeOf(const TreeScope& scope) const {
   for (const TreeScope* current = &scope; current;
        current = current->ParentTreeScope()) {
     if (current == this)
