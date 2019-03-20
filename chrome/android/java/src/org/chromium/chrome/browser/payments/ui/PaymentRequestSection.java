@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -39,6 +39,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
+import org.chromium.ui.HorizontalListDividerDrawable;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
@@ -136,6 +137,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     protected int mDisplayMode = DISPLAY_MODE_NORMAL;
 
     private final int mVerticalSpacing;
+    private final @ColorInt int mUnfocusedBackgroundColor;
     private final int mFocusedBackgroundColor;
     private final LinearLayout mMainSection;
     private final ImageView mLogoView;
@@ -164,6 +166,8 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         setGravity(Gravity.CENTER_VERTICAL);
 
         // Set the styling of the view.
+        mUnfocusedBackgroundColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.payment_request_bg);
         mFocusedBackgroundColor = ApiCompatibilityUtils.getColor(
                 getResources(), R.color.payments_section_edit_background);
         mLargeSpacing =
@@ -454,7 +458,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
         boolean isExpanded =
                 mDisplayMode == DISPLAY_MODE_FOCUSED || mDisplayMode == DISPLAY_MODE_CHECKING;
-        setBackgroundColor(isExpanded ? mFocusedBackgroundColor : Color.WHITE);
+        setBackgroundColor(isExpanded ? mFocusedBackgroundColor : mUnfocusedBackgroundColor);
 
         // Update whether the logo is displayed.
         if (mLogoView != null) {
@@ -1502,8 +1506,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         public SectionSeparator(ViewGroup parent, int index) {
             super(parent.getContext());
             Resources resources = parent.getContext().getResources();
-            setBackgroundColor(ApiCompatibilityUtils.getColor(
-                    resources, R.color.payments_section_separator));
+            setBackground(HorizontalListDividerDrawable.create(getContext()));
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
                             resources.getDimensionPixelSize(R.dimen.separator_height));
