@@ -41,11 +41,13 @@ int GetSysInfoCheckboxStringId(content::BrowserContext* browser_context) {
 #if defined(OS_CHROMEOS)
   if (arc::IsArcPlayStoreEnabledForProfile(
           Profile::FromBrowserContext(browser_context))) {
-    return IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX_ARC;
+    return IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX_ARC;
+  } else {
+    return IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_AND_METRICS_CHKBOX;
   }
-#endif
-
+#else
   return IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX;
+#endif
 }
 
 }  // namespace
