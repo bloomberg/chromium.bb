@@ -617,6 +617,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if (!send_touch) {
     WebMouseEvent event =
         WebMouseEventBuilder::Build(theEvent, self, pointerType_);
+    last_mouse_screen_position_ = event.PositionInScreen();
     clientHelper_->RouteOrProcessMouseEvent(event);
   } else {
     WebTouchEvent event = WebTouchEventBuilder::Build(theEvent, self);
@@ -644,6 +645,26 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)unlockKeyboard {
   keyboardLockActive_ = false;
   lockedKeys_.reset();
+}
+
+- (void)setCursorLocked:(BOOL)locked {
+  mouse_locked_ = locked;
+  if (mouse_locked_) {
+    CGAssociateMouseAndMouseCursorPosition(NO);
+    NSRect bound = [self bounds];
+    bound = [[self window] convertRectToScreen:bound];
+    mouse_locked_screen_position_ = last_mouse_screen_position_;
+    CGDisplayMoveCursorToPoint(CGMainDisplayID(),
+                               NSMakePoint(NSMidX(bound), NSMidY(bound)));
+    [NSCursor hide];
+  } else {
+    // Unlock position of mouse cursor and unhide it.
+    CGAssociateMouseAndMouseCursorPosition(YES);
+    CGDisplayMoveCursorToPoint(CGMainDisplayID(),
+                               NSMakePoint(mouse_locked_screen_position_.x(),
+                                           mouse_locked_screen_position_.y()));
+    [NSCursor unhide];
+  }
 }
 
 // CommandDispatcherTarget implementation:

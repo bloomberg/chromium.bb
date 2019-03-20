@@ -126,7 +126,7 @@ void MouseEventManager::Clear() {
   captures_dragging_ = false;
   is_mouse_position_unknown_ = true;
   last_known_mouse_position_ = FloatPoint();
-  last_known_mouse_global_position_ = FloatPoint();
+  last_known_mouse_screen_position_ = FloatPoint();
   mouse_pressed_ = false;
   click_count_ = 0;
   click_element_ = nullptr;
@@ -402,7 +402,7 @@ void MouseEventManager::RecomputeMouseHoverState() {
   }
   WebMouseEvent fake_mouse_move_event(WebInputEvent::kMouseMove,
                                       last_known_mouse_position_,
-                                      last_known_mouse_global_position_, button,
+                                      last_known_mouse_screen_position_, button,
                                       0, modifiers, CurrentTimeTicks());
   Vector<WebMouseEvent> coalesced_events, predicted_events;
   frame_->GetEventHandler().HandleMouseMoveEvent(
@@ -625,14 +625,14 @@ FloatPoint MouseEventManager::LastKnownMousePositionInViewport() {
   return last_known_mouse_position_;
 }
 
-FloatPoint MouseEventManager::LastKnownMousePositionGlobal() {
-  return last_known_mouse_global_position_;
+FloatPoint MouseEventManager::LastKnownMouseScreenPosition() {
+  return last_known_mouse_screen_position_;
 }
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
   is_mouse_position_unknown_ = event.GetType() == WebInputEvent::kMouseLeave;
   last_known_mouse_position_ = event.PositionInWidget();
-  last_known_mouse_global_position_ = event.PositionInScreen();
+  last_known_mouse_screen_position_ = event.PositionInScreen();
 }
 
 void MouseEventManager::SetLastMousePositionAsUnknown() {
