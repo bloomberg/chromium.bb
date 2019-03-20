@@ -207,6 +207,15 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
   }
 }
 
+// static
+void ModuleDatabase::HandleModuleLoadEvent(content::ProcessType process_type,
+                                           const base::FilePath& module_path,
+                                           uint32_t module_size,
+                                           uint32_t module_time_date_stamp) {
+  ModuleDatabase::GetInstance()->OnModuleLoad(
+      process_type, module_path, module_size, module_time_date_stamp);
+}
+
 void ModuleDatabase::OnModuleBlocked(const base::FilePath& module_path,
                                      uint32_t module_size,
                                      uint32_t module_time_date_stamp) {
