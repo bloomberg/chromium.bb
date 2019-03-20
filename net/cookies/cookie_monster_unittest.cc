@@ -25,6 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread.h"
@@ -56,32 +57,6 @@ using base::TimeDelta;
 using CookieDeletionInfo = net::CookieDeletionInfo;
 
 namespace {
-
-// TODO(erikwright): Replace the pre-existing MockPersistentCookieStore (and
-// brethren) with this one, and remove the 'New' prefix.
-class NewMockPersistentCookieStore
-    : public CookieMonster::PersistentCookieStore {
- public:
-  MOCK_METHOD2(Load,
-               void(const LoadedCallback& loaded_callback,
-                    const NetLogWithSource& net_log));
-  MOCK_METHOD2(LoadCookiesForKey,
-               void(const std::string& key,
-                    const LoadedCallback& loaded_callback));
-  MOCK_METHOD1(AddCookie, void(const CanonicalCookie& cc));
-  MOCK_METHOD1(UpdateCookieAccessTime, void(const CanonicalCookie& cc));
-  MOCK_METHOD1(DeleteCookie, void(const CanonicalCookie& cc));
-  MOCK_METHOD1(SetBeforeCommitCallback, void(base::RepeatingClosure));
-  void Flush(base::OnceClosure callback) override {
-    if (!callback.is_null())
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    std::move(callback));
-  }
-  MOCK_METHOD0(SetForceKeepSessionState, void());
-
- private:
-  ~NewMockPersistentCookieStore() override = default;
-};
 
 // False means 'less than or equal', so we test both ways for full equal.
 MATCHER_P(CookieEquals, expected, "") {
@@ -874,15 +849,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 
 using CookieMonsterTest = CookieMonsterTestBase<CookieMonsterTestTraits>;
 
-// TODO(erikwright): Replace the other callbacks and synchronous helper methods
-// in this test suite with these Mocks.
-using MockClosure = base::MockCallback<base::Closure>;
-using MockSetCookiesCallback =
-    base::MockCallback<CookieStore::SetCookiesCallback>;
-using MockGetCookieListCallback =
-    base::MockCallback<CookieMonster::GetCookieListCallback>;
-using MockDeleteCallback = base::MockCallback<CookieMonster::DeleteCallback>;
-
 struct CookiesInputInfo {
   const GURL url;
   const std::string name;
@@ -896,63 +862,6 @@ struct CookiesInputInfo {
   CookiePriority priority;
 };
 
-ACTION_P(QuitRunLoop, run_loop) {
-  run_loop->Quit();
-}
-
-// TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,
-// rename these, removing the 'Action' suffix.
-ACTION_P4(SetCookieAction, cookie_monster, url, cookie_line, callback) {
-  cookie_monster->SetCookieWithOptionsAsync(url, cookie_line, CookieOptions(),
-                                            callback->Get());
-}
-ACTION_P3(SetAllCookiesAction, cookie_monster, list, callback) {
-  cookie_monster->SetAllCookiesAsync(list, callback->Get());
-}
-ACTION_P3(DeleteAllCreatedInTimeRangeAction,
-          cookie_monster,
-          creation_range,
-          callback) {
-  cookie_monster->DeleteAllCreatedInTimeRangeAsync(creation_range,
-                                                   callback->Get());
-}
-ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
-  cookie_monster->GetAllCookiesAsync(callback->Get());
-}
-
-ACTION_P3(DeleteAllCreatedMatchingInfoAction,
-          cookie_monster,
-          delete_info,
-          callback) {
-  cookie_monster->DeleteAllMatchingInfoAsync(std::move(delete_info),
-                                             callback->Get());
-}
-
-ACTION_P3(DeleteCanonicalCookieAction, cookie_monster, cookie, callback) {
-  cookie_monster->DeleteCanonicalCookieAsync(cookie, callback->Get());
-}
-
-ACTION_P2(DeleteAllAction, cookie_monster, callback) {
-  cookie_monster->DeleteAllAsync(callback->Get());
-}
-
-ACTION_P3(GetCookieListForUrlWithOptionsAction, cookie_monster, url, callback) {
-  cookie_monster->GetCookieListWithOptionsAsync(url, CookieOptions(),
-                                                callback->Get());
-}
-
-ACTION_P3(GetAllCookiesForUrlAction, cookie_monster, url, callback) {
-  cookie_monster->GetAllCookiesForURLAsync(url, callback->Get());
-}
-
-ACTION_P(PushCallbackAction, callback_vector) {
-  callback_vector->push(arg1);
-}
-
-ACTION_P2(DeleteSessionCookiesAction, cookie_monster, callback) {
-  cookie_monster->DeleteSessionCookiesAsync(callback->Get());
-}
-
 }  // namespace
 
 // This test suite verifies the task deferral behaviour of the CookieMonster.
@@ -964,8 +873,9 @@ ACTION_P2(DeleteSessionCookiesAction, cookie_monster, callback) {
 // 3. Invocations after the loading has completed complete immediately.
 class DeferredCookieTaskTest : public CookieMonsterTest {
  protected:
-  DeferredCookieTaskTest() : expect_load_called_(false) {
-    persistent_store_ = new NewMockPersistentCookieStore();
+  DeferredCookieTaskTest() {
+    persistent_store_ = base::MakeRefCounted<MockPersistentCookieStore>();
+    persistent_store_->set_store_load_commands(true);
     cookie_monster_ =
         std::make_unique<CookieMonster>(persistent_store_.get(), &net_log_);
   }
@@ -977,88 +887,47 @@ class DeferredCookieTaskTest : public CookieMonsterTest {
     AddCookieToList(url, cookie_line, creation_time, &loaded_cookies_);
   }
 
-  // Runs the message loop, waiting until PersistentCookieStore::Load is called.
-  // Call CompleteLoading to cause the load to complete.
-  void WaitForLoadCall() {
-    load_run_loop_.Run();
-
-    // Verify that PeristentStore::Load was called.
-    testing::Mock::VerifyAndClear(persistent_store_.get());
-  }
-
-  // Invokes the PersistentCookieStore::LoadCookiesForKey completion callbacks
-  // and PersistentCookieStore::Load completion callback.
-  void CompleteLoading() {
-    while (!loaded_for_key_callbacks_.empty()) {
-      loaded_for_key_callbacks_.front().Run(std::move(loaded_cookies_));
-      loaded_cookies_.clear();
-      loaded_for_key_callbacks_.pop();
+  void ExecuteLoads(CookieStoreCommand::Type type) {
+    for (const auto& command : persistent_store_->commands()) {
+      // Only the first load command will produce the cookies.
+      if (command.type == type) {
+        std::move(command.loaded_callback).Run(std::move(loaded_cookies_));
+      }
     }
-    loaded_callback_.Run(std::move(loaded_cookies_));
   }
 
-  // Performs the provided action, expecting it to cause a call to
-  // PersistentCookieStore::Load. Call WaitForLoadCall to verify the load call
-  // is received.
-  void BeginWith(testing::Action<void(void)> action) {
-    EXPECT_CALL(*this, Begin()).WillOnce(action);
-    ExpectLoadCall();
-    Begin();
+  std::string CommandSummary(
+      const MockPersistentCookieStore::CommandList& commands) {
+    std::string out;
+    for (const auto& command : commands) {
+      switch (command.type) {
+        case CookieStoreCommand::LOAD:
+          base::StrAppend(&out, {"LOAD; "});
+          break;
+        case CookieStoreCommand::LOAD_COOKIES_FOR_KEY:
+          base::StrAppend(&out, {"LOAD_FOR_KEY:", command.key, "; "});
+          break;
+        case CookieStoreCommand::ADD:
+          base::StrAppend(&out, {"ADD; "});
+          break;
+        case CookieStoreCommand::REMOVE:
+          base::StrAppend(&out, {"REMOVE; "});
+          break;
+      }
+    }
+    return out;
   }
 
-  void BeginWithForDomainKey(std::string key,
-                             testing::Action<void(void)> action) {
-    EXPECT_CALL(*this, Begin()).WillOnce(action);
-    ExpectLoadCall();
-    ExpectLoadForKeyCall(key);
-    Begin();
+  std::string TakeCommandSummary() {
+    return CommandSummary(persistent_store_->TakeCommands());
   }
 
-  // Declares an expectation that PersistentCookieStore::Load will be called,
-  // saving the provided callback and sending a quit to |load_run_loop_|.
-  void ExpectLoadCall() {
-    // Make sure the |load_run_loop_| is not reused.
-    CHECK(!expect_load_called_);
-    expect_load_called_ = true;
-    EXPECT_CALL(*persistent_store_.get(), Load(testing::_, testing::_))
-        .WillOnce(testing::DoAll(testing::SaveArg<0>(&loaded_callback_),
-                                 QuitRunLoop(&load_run_loop_)));
-  }
-
-  // Declares an expectation that PersistentCookieStore::LoadCookiesForKey
-  // will be called, saving the provided callback.
-  void ExpectLoadForKeyCall(const std::string& key) {
-    EXPECT_CALL(*persistent_store_.get(), LoadCookiesForKey(key, testing::_))
-        .WillOnce(PushCallbackAction(&loaded_for_key_callbacks_));
-  }
-
-  // Invokes the initial action.
-  MOCK_METHOD0(Begin, void(void));
-
-  // Returns the CookieMonster instance under test.
-  CookieMonster& cookie_monster() { return *cookie_monster_.get(); }
-
- private:
-  // Declares that mock expectations in this test suite are strictly ordered.
-  testing::InSequence in_sequence_;
   // Holds cookies to be returned from PersistentCookieStore::Load or
   // PersistentCookieStore::LoadCookiesForKey.
   std::vector<std::unique_ptr<CanonicalCookie>> loaded_cookies_;
-  // Stores the callback passed from the CookieMonster to the
-  // PersistentCookieStore::Load
-  CookieMonster::PersistentCookieStore::LoadedCallback loaded_callback_;
-  // Stores the callback passed from the CookieMonster to the
-  // PersistentCookieStore::LoadCookiesForKey
-  base::queue<CookieMonster::PersistentCookieStore::LoadedCallback>
-      loaded_for_key_callbacks_;
-  // base::RunLoop used to wait for PersistentCookieStore::Load to be called.
-  base::RunLoop load_run_loop_;
-  // Indicates whether ExpectLoadCall() has been called.
-  bool expect_load_called_;
-  // Stores the CookieMonster under test.
+
   std::unique_ptr<CookieMonster> cookie_monster_;
-  // Stores the mock PersistentCookieStore.
-  scoped_refptr<NewMockPersistentCookieStore> persistent_store_;
+  scoped_refptr<MockPersistentCookieStore> persistent_store_;
 };
 
 TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
@@ -1066,53 +935,57 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookieListCallback get_cookie_list_callback;
+  GetCookieListCallback call1;
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions(), call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWithForDomainKey(
-      http_www_foo_.domain(),
-      GetCookieListForUrlWithOptionsAction(
-          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
+  // Finish the per-key load, not everything-load (which is always initiated).
+  ExecuteLoads(CookieStoreCommand::LOAD_COOKIES_FOR_KEY);
+  call1.WaitUntilDone();
+  EXPECT_THAT(call1.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(get_cookie_list_callback,
-              Run(MatchesCookieLine("X=1"), testing::_))
-      .WillOnce(GetCookieListForUrlWithOptionsAction(
-          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
-
-  base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback,
-              Run(MatchesCookieLine("X=1"), testing::_))
-      .WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  GetCookieListCallback call2;
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions(), call2.MakeCallback());
+  // Already ready, no need for second load.
+  EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
-  MockSetCookiesCallback set_cookies_callback;
+  // Generate puts to store w/o needing a proper expiration.
+  cookie_monster_->SetPersistSessionCookies(true);
 
-  BeginWithForDomainKey(http_www_foo_.domain(),
-                        SetCookieAction(&cookie_monster(), http_www_foo_.url(),
-                                        "A=B", &set_cookies_callback));
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> call1;
+  cookie_monster_->SetCanonicalCookieAsync(
+      CanonicalCookie::Create(http_www_foo_.url(), "A=B", base::Time::Now(),
+                              CookieOptions()),
+      http_www_foo_.url().scheme(), CookieOptions(), call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  WaitForLoadCall();
+  ExecuteLoads(CookieStoreCommand::LOAD_COOKIES_FOR_KEY);
+  call1.WaitUntilDone();
+  EXPECT_EQ(call1.result(), CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ADD; ", TakeCommandSummary());
 
-  EXPECT_CALL(set_cookies_callback,
-              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
-      .WillOnce(SetCookieAction(&cookie_monster(), http_www_foo_.url(), "X=Y",
-                                &set_cookies_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(set_cookies_callback,
-              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
-      .WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> call2;
+  cookie_monster_->SetCanonicalCookieAsync(
+      CanonicalCookie::Create(http_www_foo_.url(), "X=Y", base::Time::Now(),
+                              CookieOptions()),
+      http_www_foo_.url().scheme(), CookieOptions(), call2.MakeCallback());
+  ASSERT_TRUE(call2.was_run());
+  EXPECT_EQ(call2.result(), CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ("ADD; ", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
-  MockSetCookiesCallback set_cookies_callback;
+  // Generate puts to store w/o needing a proper expiration.
+  cookie_monster_->SetPersistSessionCookies(true);
+
   CookieList list;
   list.push_back(CanonicalCookie("A", "B", "." + http_www_foo_.domain(), "/",
                                  base::Time::Now(), base::Time(), base::Time(),
@@ -1123,22 +996,22 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
                                  false, true, CookieSameSite::DEFAULT_MODE,
                                  COOKIE_PRIORITY_DEFAULT));
 
-  BeginWith(
-      SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> call1;
+  cookie_monster_->SetAllCookiesAsync(list, call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  WaitForLoadCall();
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_EQ(call1.result(), CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ("LOAD; ADD; ADD; ", TakeCommandSummary());
 
-  EXPECT_CALL(set_cookies_callback,
-              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
-      .WillOnce(
-          SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(set_cookies_callback,
-              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE))
-      .WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  // 2nd set doesn't need to read from store. It erases the old cookies, though.
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> call2;
+  cookie_monster_->SetAllCookiesAsync(list, call2.MakeCallback());
+  ASSERT_TRUE(call2.was_run());
+  EXPECT_EQ(call2.result(), CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_EQ("REMOVE; REMOVE; ADD; ADD; ", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
@@ -1146,21 +1019,21 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllCookies) {
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookieListCallback get_cookie_list_callback;
+  GetCookieListCallback call1;
+  cookie_monster_->GetAllCookiesAsync(call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWith(GetAllCookiesAction(&cookie_monster(), &get_cookie_list_callback));
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_THAT(call1.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("LOAD; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
-      .WillOnce(
-          GetAllCookiesAction(&cookie_monster(), &get_cookie_list_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
-      .WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  GetCookieListCallback call2;
+  cookie_monster_->GetAllCookiesAsync(call2.MakeCallback());
+  EXPECT_TRUE(call2.was_run());
+  EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
@@ -1168,24 +1041,23 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookieListCallback get_cookie_list_callback;
+  GetCookieListCallback call1;
+  cookie_monster_->GetAllCookiesForURLAsync(http_www_foo_.url(),
+                                            call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWithForDomainKey(
-      http_www_foo_.domain(),
-      GetAllCookiesForUrlAction(&cookie_monster(), http_www_foo_.url(),
-                                &get_cookie_list_callback));
+  ExecuteLoads(CookieStoreCommand::LOAD_COOKIES_FOR_KEY);
+  call1.WaitUntilDone();
+  EXPECT_THAT(call1.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
-      .WillOnce(GetAllCookiesForUrlAction(
-          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
-      .WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  GetCookieListCallback call2;
+  cookie_monster_->GetAllCookiesForURLAsync(http_www_foo_.url(),
+                                            call2.MakeCallback());
+  EXPECT_TRUE(call2.was_run());
+  EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
@@ -1193,160 +1065,192 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookieListCallback get_cookie_list_callback;
+  GetCookieListCallback call1;
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions(), call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWithForDomainKey(
-      http_www_foo_.domain(),
-      GetCookieListForUrlWithOptionsAction(
-          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
+  ExecuteLoads(CookieStoreCommand::LOAD_COOKIES_FOR_KEY);
+  call1.WaitUntilDone();
+  EXPECT_THAT(call1.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
-      .WillOnce(GetCookieListForUrlWithOptionsAction(
-          &cookie_monster(), http_www_foo_.url(), &get_cookie_list_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback, Run(testing::_, testing::_))
-      .WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  GetCookieListCallback call2;
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions(), call2.MakeCallback());
+  EXPECT_TRUE(call2.was_run());
+  EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCookies) {
-  MockDeleteCallback delete_callback;
+  DeclareLoadedCookie(http_www_foo_.url(),
+                      "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                      Time::Now() + TimeDelta::FromDays(3));
 
-  BeginWith(DeleteAllAction(&cookie_monster(), &delete_callback));
+  ResultSavingCookieCallback<uint32_t> call1;
+  cookie_monster_->DeleteAllAsync(call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  WaitForLoadCall();
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_EQ(1u, call1.result());
+  EXPECT_EQ("LOAD; REMOVE; ", TakeCommandSummary());
 
-  EXPECT_CALL(delete_callback, Run(false))
-      .WillOnce(DeleteAllAction(&cookie_monster(), &delete_callback));
-
-  base::RunLoop loop;
-  EXPECT_CALL(delete_callback, Run(false)).WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  ResultSavingCookieCallback<uint32_t> call2;
+  cookie_monster_->DeleteAllAsync(call2.MakeCallback());
+  // This needs an event loop spin since DeleteAllAsync always reports
+  // asynchronously.
+  call2.WaitUntilDone();
+  EXPECT_EQ(0u, call2.result());
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedInTimeRangeCookies) {
-  MockDeleteCallback delete_callback;
-
   const TimeRange time_range(base::Time(), base::Time::Now());
-  BeginWith(DeleteAllCreatedInTimeRangeAction(&cookie_monster(), time_range,
-                                              &delete_callback));
 
-  WaitForLoadCall();
+  ResultSavingCookieCallback<uint32_t> call1;
+  cookie_monster_->DeleteAllCreatedInTimeRangeAsync(time_range,
+                                                    call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  EXPECT_CALL(delete_callback, Run(false))
-      .WillOnce(DeleteAllCreatedInTimeRangeAction(&cookie_monster(), time_range,
-                                                  &delete_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(delete_callback, Run(false)).WillOnce(QuitRunLoop(&loop));
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_EQ(0u, call1.result());
+  EXPECT_EQ("LOAD; ", TakeCommandSummary());
 
-  CompleteLoading();
-  loop.Run();
+  ResultSavingCookieCallback<uint32_t> call2;
+  cookie_monster_->DeleteAllCreatedInTimeRangeAsync(time_range,
+                                                    call2.MakeCallback());
+  call2.WaitUntilDone();
+  EXPECT_EQ(0u, call2.result());
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest,
        DeferredDeleteAllWithPredicateCreatedInTimeRangeCookies) {
-  MockDeleteCallback delete_callback;
+  ResultSavingCookieCallback<uint32_t> call1;
+  cookie_monster_->DeleteAllMatchingInfoAsync(
+      CookieDeletionInfo(Time(), Time::Now()), call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWith(DeleteAllCreatedMatchingInfoAction(
-      &cookie_monster(), CookieDeletionInfo(Time(), Time::Now()),
-      &delete_callback));
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_EQ(0u, call1.result());
+  EXPECT_EQ("LOAD; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(delete_callback, Run(false))
-      .WillOnce(DeleteAllCreatedMatchingInfoAction(
-          &cookie_monster(), CookieDeletionInfo(Time(), Time::Now()),
-          &delete_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(delete_callback, Run(false)).WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  ResultSavingCookieCallback<uint32_t> call2;
+  cookie_monster_->DeleteAllMatchingInfoAsync(
+      CookieDeletionInfo(Time(), Time::Now()), call2.MakeCallback());
+  call2.WaitUntilDone();
+  EXPECT_EQ(0u, call2.result());
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteCanonicalCookie) {
-  std::vector<std::unique_ptr<CanonicalCookie>> cookies;
   std::unique_ptr<CanonicalCookie> cookie = BuildCanonicalCookie(
       http_www_foo_.url(), "X=1; path=/", base::Time::Now());
 
-  MockDeleteCallback delete_cookie_callback;
+  ResultSavingCookieCallback<uint32_t> call1;
+  cookie_monster_->DeleteCanonicalCookieAsync(*cookie, call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWith(DeleteCanonicalCookieAction(&cookie_monster(), *cookie,
-                                        &delete_cookie_callback));
+  // TODO(morlovich): Fix DeleteCanonicalCookieAsync. This test should pass
+  // when using LOAD_COOKIES_FOR_KEY instead, with that reflected in
+  // TakeCommandSummary() as well.
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_EQ(0u, call1.result());
+  EXPECT_EQ("LOAD; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(delete_cookie_callback, Run(0))
-      .WillOnce(DeleteCanonicalCookieAction(&cookie_monster(), *cookie,
-                                            &delete_cookie_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(delete_cookie_callback, Run(0)).WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  ResultSavingCookieCallback<uint32_t> call2;
+  cookie_monster_->DeleteCanonicalCookieAsync(*cookie, call2.MakeCallback());
+  call2.WaitUntilDone();
+  EXPECT_EQ(0u, call2.result());
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 TEST_F(DeferredCookieTaskTest, DeferredDeleteSessionCookies) {
-  MockDeleteCallback delete_callback;
+  ResultSavingCookieCallback<uint32_t> call1;
+  cookie_monster_->DeleteSessionCookiesAsync(call1.MakeCallback());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(call1.was_run());
 
-  BeginWith(DeleteSessionCookiesAction(&cookie_monster(), &delete_callback));
+  ExecuteLoads(CookieStoreCommand::LOAD);
+  call1.WaitUntilDone();
+  EXPECT_EQ(0u, call1.result());
+  EXPECT_EQ("LOAD; ", TakeCommandSummary());
 
-  WaitForLoadCall();
-
-  EXPECT_CALL(delete_callback, Run(false))
-      .WillOnce(
-          DeleteSessionCookiesAction(&cookie_monster(), &delete_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(delete_callback, Run(false)).WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
+  ResultSavingCookieCallback<uint32_t> call2;
+  cookie_monster_->DeleteSessionCookiesAsync(call2.MakeCallback());
+  call2.WaitUntilDone();
+  EXPECT_EQ(0u, call2.result());
+  EXPECT_EQ("", TakeCommandSummary());
 }
 
 // Verify that a series of queued tasks are executed in order upon loading of
 // the backing store and that new tasks received while the queued tasks are
 // being dispatched go to the end of the queue.
 TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
+  cookie_monster_->SetPersistSessionCookies(true);
   DeclareLoadedCookie(http_www_foo_.url(),
                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
                       Time::Now() + TimeDelta::FromDays(3));
 
-  MockGetCookieListCallback get_cookie_list_callback;
-  MockSetCookiesCallback set_cookies_callback;
-  MockGetCookieListCallback get_cookie_list_callback_deferred;
+  bool get_cookie_list_callback_was_run = false;
+  GetCookieListCallback get_cookie_list_callback_deferred;
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
+      set_cookies_callback;
+  base::RunLoop run_loop;
+  cookie_monster_->GetCookieListWithOptionsAsync(
+      http_www_foo_.url(), CookieOptions(),
+      base::BindLambdaForTesting([&](const CookieList& cookies,
+                                     const CookieStatusList& excluded_list) {
+        // This should complete before the set.
+        get_cookie_list_callback_was_run = true;
+        EXPECT_FALSE(set_cookies_callback.was_run());
+        EXPECT_THAT(cookies, MatchesCookieLine("X=1"));
+        // Can't use TakeCommandSummary here since ExecuteLoads is walking
+        // through the data it takes.
+        EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ",
+                  CommandSummary(persistent_store_->commands()));
 
-  EXPECT_CALL(*this, Begin())
-      .WillOnce(testing::DoAll(
-          GetCookieListForUrlWithOptionsAction(&cookie_monster(),
-                                               http_www_foo_.url(),
-                                               &get_cookie_list_callback),
-          SetCookieAction(&cookie_monster(), http_www_foo_.url(), "A=B",
-                          &set_cookies_callback)));
-  ExpectLoadCall();
-  ExpectLoadForKeyCall(http_www_foo_.domain());
-  Begin();
+        // Queue up a second get. It should see the result of the set queued
+        // before it.
+        cookie_monster_->GetCookieListWithOptionsAsync(
+            http_www_foo_.url(), CookieOptions(),
+            get_cookie_list_callback_deferred.MakeCallback());
 
-  WaitForLoadCall();
-  EXPECT_CALL(get_cookie_list_callback,
-              Run(MatchesCookieLine("X=1"), testing::_))
-      .WillOnce(GetCookieListForUrlWithOptionsAction(
-          &cookie_monster(), http_www_foo_.url(),
-          &get_cookie_list_callback_deferred));
-  EXPECT_CALL(set_cookies_callback,
-              Run(CanonicalCookie::CookieInclusionStatus::INCLUDE));
-  base::RunLoop loop;
-  EXPECT_CALL(get_cookie_list_callback_deferred,
-              Run(MatchesCookieLine("A=B; X=1"), testing::_))
-      .WillOnce(QuitRunLoop(&loop));
+        run_loop.Quit();
+      }));
 
-  CompleteLoading();
-  loop.Run();
+  cookie_monster_->SetCanonicalCookieAsync(
+      CanonicalCookie::Create(http_www_foo_.url(), "A=B", base::Time::Now(),
+                              CookieOptions()),
+      http_www_foo_.url().scheme(), CookieOptions(),
+      set_cookies_callback.MakeCallback());
+
+  // Nothing happened yet, before loads are done.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(get_cookie_list_callback_was_run);
+  EXPECT_FALSE(set_cookies_callback.was_run());
+
+  ExecuteLoads(CookieStoreCommand::LOAD_COOKIES_FOR_KEY);
+  run_loop.Run();
+  EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ADD; ", TakeCommandSummary());
+  EXPECT_TRUE(get_cookie_list_callback_was_run);
+  ASSERT_TRUE(set_cookies_callback.was_run());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
+            set_cookies_callback.result());
+
+  ASSERT_TRUE(get_cookie_list_callback_deferred.was_run());
+  EXPECT_THAT(get_cookie_list_callback_deferred.cookies(),
+              MatchesCookieLine("A=B; X=1"));
 }
 
 TEST_F(CookieMonsterTest, TestCookieDeleteAll) {

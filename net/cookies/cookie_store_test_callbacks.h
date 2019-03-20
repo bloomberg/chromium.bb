@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -28,6 +29,10 @@ class CookieCallback {
   // Waits until the callback is invoked.
   void WaitUntilDone();
 
+  // Returns whether the callback was invoked. Should only be used on the thread
+  // the callback runs on.
+  bool was_run() const;
+
  protected:
   // Constructs a callback that expects to be called in the given thread.
   explicit CookieCallback(base::Thread* run_in_thread);
@@ -43,9 +48,12 @@ class CookieCallback {
   void CallbackEpilogue();
 
  private:
+  void ValidateThread() const;
+
   base::Thread* run_in_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> run_in_task_runner_;
   base::RunLoop loop_to_quit_;
+  bool was_run_;
 };
 
 // Callback implementations for the asynchronous CookieStore methods.
@@ -62,6 +70,13 @@ class ResultSavingCookieCallback : public CookieCallback {
   void Run(T result) {
     result_ = result;
     CallbackEpilogue();
+  }
+
+  // Makes a callback that will invoke Run. Assumes that |this| will be kept
+  // alive till the time the callback is used.
+  base::OnceCallback<void(T)> MakeCallback() {
+    return base::BindOnce(&ResultSavingCookieCallback<T>::Run,
+                          base::Unretained(this));
   }
 
   const T& result() { return result_; }
@@ -88,6 +103,13 @@ class GetCookieListCallback : public CookieCallback {
   ~GetCookieListCallback();
 
   void Run(const CookieList& cookies, const CookieStatusList& excluded_cookies);
+
+  // Makes a callback that will invoke Run. Assumes that |this| will be kept
+  // alive till the time the callback is used.
+  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+  MakeCallback() {
+    return base::BindOnce(&GetCookieListCallback::Run, base::Unretained(this));
+  }
 
   const CookieList& cookies() { return cookies_; }
   const CookieStatusList& excluded_cookies() { return excluded_cookies_; }
