@@ -34,7 +34,7 @@ constexpr int kContentWidth = 200;
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
-  TestBubbleDialogDelegateView(View* anchor_view)
+  explicit TestBubbleDialogDelegateView(View* anchor_view)
       : BubbleDialogDelegateView(anchor_view, BubbleBorder::TOP_LEFT) {
     view_->SetFocusBehavior(FocusBehavior::ALWAYS);
     AddChildView(view_);

@@ -190,8 +190,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // working with offsets.
   class LayerOffsetData {
    public:
-    LayerOffsetData(float device_scale_factor = 1.f,
-                    const gfx::Vector2d& offset = gfx::Vector2d())
+    explicit LayerOffsetData(float device_scale_factor = 1.f,
+                             const gfx::Vector2d& offset = gfx::Vector2d())
         : device_scale_factor_(device_scale_factor) {
       AddOffset(offset);
     }

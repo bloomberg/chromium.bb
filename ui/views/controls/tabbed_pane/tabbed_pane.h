@@ -43,8 +43,8 @@ class VIEWS_EXPORT TabbedPane : public View {
     kHighlight,  // Highlight background and text of the selected tab.
   };
 
-  TabbedPane(Orientation orientation = Orientation::kHorizontal,
-             TabStripStyle style = TabStripStyle::kBorder);
+  explicit TabbedPane(Orientation orientation = Orientation::kHorizontal,
+                      TabStripStyle style = TabStripStyle::kBorder);
   ~TabbedPane() override;
 
   TabbedPaneListener* listener() const { return listener_; }

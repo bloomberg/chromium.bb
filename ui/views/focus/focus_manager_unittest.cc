@@ -828,7 +828,7 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
-  TestBubbleDialogDelegateView(View* anchor)
+  explicit TestBubbleDialogDelegateView(View* anchor)
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE) {}
   ~TestBubbleDialogDelegateView() override = default;
 

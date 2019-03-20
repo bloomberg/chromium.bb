@@ -237,7 +237,7 @@ class GestureEventForTest : public ui::GestureEvent {
                      base::TimeTicks(),
                      ui::GestureEventDetails(type)) {}
 
-  GestureEventForTest(ui::GestureEventDetails details)
+  explicit GestureEventForTest(ui::GestureEventDetails details)
       : GestureEvent(details.bounding_box().CenterPoint().x(),
                      details.bounding_box().CenterPoint().y(),
                      0,

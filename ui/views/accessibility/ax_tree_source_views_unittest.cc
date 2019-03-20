@@ -26,7 +26,7 @@ namespace {
 // TestAXTreeSourceViews provides a root with a default tree ID.
 class TestAXTreeSourceViews : public AXTreeSourceViews {
  public:
-  TestAXTreeSourceViews(AXAuraObjWrapper* root)
+  explicit TestAXTreeSourceViews(AXAuraObjWrapper* root)
       : AXTreeSourceViews(root, ui::AXTreeID::CreateNewAXTreeID()) {}
 
   ~TestAXTreeSourceViews() override = default;
