@@ -36,11 +36,11 @@ void SendTabToSelfClientService::SendTabToSelfModelLoaded() {
 
 void SendTabToSelfClientService::EntriesAddedRemotely(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
-  // TODO(tgupta):Figure out whether it is better to pass in one entry at
-  // a time or to pass all the entries at once.
-  for (std::unique_ptr<ReceivingUiHandler>& handler :
-       registry_->GetHandlers()) {
-    handler->DisplayNewEntry(new_entries[0]);
+  for (const SendTabToSelfEntry* entry : new_entries) {
+    for (std::unique_ptr<ReceivingUiHandler>& handler :
+         registry_->GetHandlers()) {
+      handler->DisplayNewEntry(entry);
+    }
   }
 }
 
