@@ -4,10 +4,9 @@
 
   var FetchHelper = await testRunner.loadScript('resources/fetch-test.js');
   var helper = new FetchHelper(testRunner, dp, dp);
-  await helper.enable();
+  await helper.enable(true);
 
   helper.onceRequest().fulfill({
-    fetchId: params.fetchId,
     responseCode: 200,
     responseHeaders: [],
     body: btoa("overriden response body")

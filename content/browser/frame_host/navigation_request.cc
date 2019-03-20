@@ -1329,6 +1329,8 @@ void NavigationRequest::OnRequestFailedInternal(
   frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
       expected_pending_entry_id);
 
+  net_error_ = status.error_code;
+
   // If the request was canceled by the user do not show an error page.
   if (status.error_code == net::ERR_ABORTED) {
     frame_tree_node_->ResetNavigationRequest(false, true);
@@ -1380,7 +1382,6 @@ void NavigationRequest::OnRequestFailedInternal(
                                                            common_params_.url);
 
   has_stale_copy_in_cache_ = status.exists_in_cache;
-  net_error_ = status.error_code;
 
   if (skip_throttles) {
     // The NavigationHandle shouldn't be notified about renderer-debug URLs.

@@ -37,7 +37,7 @@ class FetchHandler {
   }
 
   _handleError(result) {
-    if (result.error)
+    if (result.error && !/Invalid InterceptionId/.test(result.error.message))
       this._testRunner.log(`Got error: ${result.error.message}`);
   }
 };
@@ -57,10 +57,12 @@ class FetchHelper {
     });
   }
 
-  enable(patterns) {
-    this._protocol.Fetch.enable({patterns});
-    this.onceRequest().continueRequest();
-    return this._pageProtocol.Page.reload();
+  async enable(reload) {
+    await this._protocol.Fetch.enable({});
+    if (reload) {
+      this.onceRequest().continueRequest();
+      await this._pageProtocol.Page.reload();
+    }
   }
 
   onRequest(pattern) {
@@ -79,7 +81,7 @@ class FetchHelper {
     const params = event.params;
     const response = event.responseErrorReason || event.responseStatusCode;
     const response_text = response ? 'Response' : 'Request';
-    this._testRunner.log(`${response_text} to ${params.url}, type: ${params.resourceType}`);
+    this._testRunner.log(`${response_text} to ${params.request.url}, type: ${params.resourceType}`);
   }
 
   _findHandler(event) {
