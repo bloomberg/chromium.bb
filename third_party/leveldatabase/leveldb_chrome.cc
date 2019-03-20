@@ -21,9 +21,17 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "util/mutexlock.h"
+
+#if defined(OS_WIN)
+#undef DeleteFile
+#define base_DeleteFile base::DeleteFileW
+#else  // defined(OS_WIN)
+#define base_DeleteFile base::DeleteFile
+#endif  // defined(OS_WIN)
 
 using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
 using base::trace_event::MemoryAllocatorDump;
@@ -365,7 +373,7 @@ leveldb::Status DeleteDB(const base::FilePath& db_path,
 
   // TODO(cmumford): To be fully safe this implementation should acquire a lock
   // as there is some daylight in between DestroyDB and DeleteFile.
-  if (!base::DeleteFile(db_path, true)) {
+  if (!base_DeleteFile(db_path, true)) {
     // Only delete the directory when when DestroyDB is successful. This is
     // because DestroyDB checks for database locks, and will fail if in use.
     return leveldb::Status::IOError(db_path.AsUTF8Unsafe(), "Error deleting");
