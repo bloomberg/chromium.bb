@@ -157,52 +157,6 @@ void RewritePointersToStackMemory(uintptr_t top,
 #endif
 }
 
-// Walks the stack represented by |context| from the current frame downwards,
-// recording the instruction pointer and associated module for each frame.
-std::vector<Frame> RecordStack(ModuleCache* module_cache, CONTEXT* context) {
-#ifdef _WIN64
-  std::vector<Frame> stack;
-
-  // Reserve enough memory for most stacks, to avoid repeated
-  // allocations. Approximately 99.9% of recorded stacks are 128 frames or
-  // fewer.
-  stack.reserve(128);
-
-  Win32StackFrameUnwinder frame_unwinder;
-  while (ContextPC(context)) {
-    const ModuleCache::Module* const module =
-        module_cache->GetModuleForAddress(ContextPC(context));
-
-    if (!module) {
-      // There's no loaded module containing the instruction pointer. This can
-      // be due to executing code that is not in a module. In particular,
-      // runtime-generated code associated with third-party injected DLLs
-      // typically is not in a module. It can also be due to the the module
-      // having been unloaded since we recorded the stack.  In the latter case
-      // the function unwind information was part of the unloaded module, so
-      // it's not possible to unwind further.
-      //
-      // If a module was found, it's still theoretically possible for the
-      // detected module module to be different than the one that was loaded
-      // when the stack was copied (i.e. if the module was unloaded and a
-      // different module loaded in overlapping memory). This likely would cause
-      // a crash, but has not been observed in practice.
-      break;
-    }
-
-    // Record the current frame.
-    stack.emplace_back(ContextPC(context), module);
-
-    if (!frame_unwinder.TryUnwind(context, module))
-      break;
-  }
-
-  return stack;
-#else
-  return {};
-#endif
-}
-
 // ScopedDisablePriorityBoost -------------------------------------------------
 
 // Disables priority boost on a thread for the lifetime of the object.
@@ -292,6 +246,80 @@ bool PointsToGuardPage(uintptr_t stack_pointer) {
   return result != 0 && (memory_info.Protect & PAGE_GUARD);
 }
 
+}  // namespace
+
+// NativeStackSamplerWin ------------------------------------------------------
+
+class NativeStackSamplerWin : public NativeStackSampler {
+ public:
+  NativeStackSamplerWin(win::ScopedHandle thread_handle,
+                        ModuleCache* module_cache,
+                        NativeStackSamplerTestDelegate* test_delegate);
+  ~NativeStackSamplerWin() override;
+
+  // StackSamplingProfiler::NativeStackSampler:
+  void RecordStackFrames(StackBuffer* stack_buffer,
+                         ProfileBuilder* profile_builder) override;
+
+ private:
+  // Suspends the thread with |thread_handle|, copies its stack, register
+  // context, and current metadata and resumes the thread. Returns true on
+  // success.
+  static bool CopyStack(HANDLE thread_handle,
+                        const void* base_address,
+                        StackBuffer* stack_buffer,
+                        ProfileBuilder* profile_builder,
+                        CONTEXT* thread_context);
+
+  // Walks the stack represented by |thread_context|, recording and returning
+  // the frames.
+  std::vector<Frame> WalkStack(CONTEXT* thread_context);
+
+  std::vector<Frame> RecordStack(CONTEXT* context);
+
+  win::ScopedHandle thread_handle_;
+
+  ModuleCache* module_cache_;
+
+  NativeStackSamplerTestDelegate* const test_delegate_;
+
+  // The stack base address corresponding to |thread_handle_|.
+  const void* const thread_stack_base_address_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
+};
+
+NativeStackSamplerWin::NativeStackSamplerWin(
+    win::ScopedHandle thread_handle,
+    ModuleCache* module_cache,
+    NativeStackSamplerTestDelegate* test_delegate)
+    : thread_handle_(thread_handle.Take()),
+      module_cache_(module_cache),
+      test_delegate_(test_delegate),
+      thread_stack_base_address_(
+          GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
+
+NativeStackSamplerWin::~NativeStackSamplerWin() {}
+
+void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
+                                              ProfileBuilder* profile_builder) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
+               "NativeStackSamplerWin::RecordStackFrames");
+  DCHECK(stack_buffer);
+
+  CONTEXT thread_context = {0};
+  thread_context.ContextFlags = CONTEXT_FULL;
+  bool success = CopyStack(thread_handle_.Get(), thread_stack_base_address_,
+                           stack_buffer, profile_builder, &thread_context);
+  if (!success)
+    return;
+
+  if (test_delegate_)
+    test_delegate_->OnPreStackWalk();
+
+  profile_builder->OnSampleCompleted(WalkStack(&thread_context));
+}
+
 // Suspends the thread with |thread_handle|, copies its stack, register context,
 // and current metadata and resumes the thread. Returns true on success.
 //
@@ -299,11 +327,13 @@ bool PointsToGuardPage(uintptr_t stack_pointer) {
 // ScopedSuspendThread scope, including indirectly via use of DCHECK/CHECK or
 // other logging statements. Otherwise this code can deadlock on heap locks in
 // the default heap acquired by the target thread before it was suspended.
-bool CopyStack(HANDLE thread_handle,
-               const void* base_address,
-               NativeStackSampler::StackBuffer* stack_buffer,
-               ProfileBuilder* profile_builder,
-               CONTEXT* thread_context) {
+//
+// static
+bool NativeStackSamplerWin::CopyStack(HANDLE thread_handle,
+                                      const void* base_address,
+                                      StackBuffer* stack_buffer,
+                                      ProfileBuilder* profile_builder,
+                                      CONTEXT* thread_context) {
   // The stack bounds are saved to uintptr_ts for use outside
   // ScopedSuspendThread, as the thread's memory is not safe to dereference
   // beyond that point.
@@ -352,69 +382,51 @@ bool CopyStack(HANDLE thread_handle,
   return true;
 }
 
-std::vector<Frame> WalkStack(ModuleCache* module_cache,
-                             CONTEXT* thread_context) {
+std::vector<Frame> NativeStackSamplerWin::WalkStack(CONTEXT* thread_context) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"), "WalkStack");
-  return RecordStack(module_cache, thread_context);
+  return RecordStack(thread_context);
 }
 
-}  // namespace
+// Walks the stack represented by |context| from the current frame downwards,
+// recording the instruction pointer and associated module for each frame.
+std::vector<Frame> NativeStackSamplerWin::RecordStack(CONTEXT* context) {
+  std::vector<Frame> stack;
 
-// NativeStackSamplerWin ------------------------------------------------------
+  // Reserve enough memory for most stacks, to avoid repeated
+  // allocations. Approximately 99.9% of recorded stacks are 128 frames or
+  // fewer.
+  stack.reserve(128);
 
-class NativeStackSamplerWin : public NativeStackSampler {
- public:
-  NativeStackSamplerWin(win::ScopedHandle thread_handle,
-                        ModuleCache* module_cache,
-                        NativeStackSamplerTestDelegate* test_delegate);
-  ~NativeStackSamplerWin() override;
+  Win32StackFrameUnwinder frame_unwinder;
+  while (ContextPC(context)) {
+    const ModuleCache::Module* const module =
+        module_cache_->GetModuleForAddress(ContextPC(context));
 
-  // StackSamplingProfiler::NativeStackSampler:
-  void RecordStackFrames(StackBuffer* stack_buffer,
-                         ProfileBuilder* profile_builder) override;
+    if (!module) {
+      // There's no loaded module containing the instruction pointer. This can
+      // be due to executing code that is not in a module. In particular,
+      // runtime-generated code associated with third-party injected DLLs
+      // typically is not in a module. It can also be due to the the module
+      // having been unloaded since we recorded the stack.  In the latter case
+      // the function unwind information was part of the unloaded module, so
+      // it's not possible to unwind further.
+      //
+      // If a module was found, it's still theoretically possible for the
+      // detected module module to be different than the one that was loaded
+      // when the stack was copied (i.e. if the module was unloaded and a
+      // different module loaded in overlapping memory). This likely would cause
+      // a crash, but has not been observed in practice.
+      break;
+    }
 
- private:
-  win::ScopedHandle thread_handle_;
+    // Record the current frame.
+    stack.emplace_back(ContextPC(context), module);
 
-  ModuleCache* module_cache_;
+    if (!frame_unwinder.TryUnwind(context, module))
+      break;
+  }
 
-  NativeStackSamplerTestDelegate* const test_delegate_;
-
-  // The stack base address corresponding to |thread_handle_|.
-  const void* const thread_stack_base_address_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
-};
-
-NativeStackSamplerWin::NativeStackSamplerWin(
-    win::ScopedHandle thread_handle,
-    ModuleCache* module_cache,
-    NativeStackSamplerTestDelegate* test_delegate)
-    : thread_handle_(thread_handle.Take()),
-      module_cache_(module_cache),
-      test_delegate_(test_delegate),
-      thread_stack_base_address_(
-          GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
-
-NativeStackSamplerWin::~NativeStackSamplerWin() {}
-
-void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
-                                              ProfileBuilder* profile_builder) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
-               "NativeStackSamplerWin::RecordStackFrames");
-  DCHECK(stack_buffer);
-
-  CONTEXT thread_context = {0};
-  thread_context.ContextFlags = CONTEXT_FULL;
-  bool success = CopyStack(thread_handle_.Get(), thread_stack_base_address_,
-                           stack_buffer, profile_builder, &thread_context);
-  if (!success)
-    return;
-
-  if (test_delegate_)
-    test_delegate_->OnPreStackWalk();
-
-  profile_builder->OnSampleCompleted(WalkStack(module_cache_, &thread_context));
+  return stack;
 }
 
 // NativeStackSampler ---------------------------------------------------------
