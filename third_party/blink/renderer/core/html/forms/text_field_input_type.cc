@@ -264,7 +264,7 @@ void TextFieldInputType::HandleBlurEvent() {
 bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
   return (event.type() == event_type_names::kTextInput &&
           event.HasInterface(event_interface_names::kTextEvent) &&
-          ToTextEvent(event).data() == "\n") ||
+          To<TextEvent>(event).data() == "\n") ||
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
