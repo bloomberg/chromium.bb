@@ -38,6 +38,10 @@ void ApplyIconEffects(apps::IconEffects icon_effects,
   extensions::ChromeAppIcon::ResizeFunction resize_function;
 #if defined(OS_CHROMEOS)
   if (icon_effects & apps::IconEffects::kResizeAndPad) {
+    // TODO(crbug.com/826982): khmel@ notes that MD post-processing is not
+    // always applied: "See legacy code:
+    // https://cs.chromium.org/search/?q=ChromeAppIconLoader&type=cs In one
+    // cases MD design is used in another not."
     resize_function =
         base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
   }

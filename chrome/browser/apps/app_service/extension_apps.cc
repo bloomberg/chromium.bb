@@ -42,6 +42,11 @@
 // TODO(crbug.com/826982): do we also need to watch prefs, the same as
 // ExtensionAppModelBuilder?
 
+// TODO(crbug.com/826982): consider that, per khmel@, "in some places Chrome
+// apps is not used and raw extension app without any effect is displayed...
+// Search where ChromeAppIcon or ChromeAppIconLoader is used compared with
+// direct loading the ExtensionIcon".
+
 namespace {
 
 // Only supporting important permissions for now.

@@ -79,6 +79,13 @@ AppServiceProxy::LoadIconFromIconKey(
   if (app_service_.is_bound() && !icon_key.is_null()) {
     // TODO(crbug.com/826982): implement another IconLoader that coalesces
     // multiple in-flight calls with the same IconLoader::Key, and use it here.
+    //
+    // Possibly related to that, Mojo doesn't guarantee the order of messages,
+    // so multiple calls to this method might not resolve their callbacks in
+    // order. As per khmel@, "you may have race here, assume you publish change
+    // for the app and app requested new icon. But new icon is not delivered
+    // yet and you resolve old one instead. Now new icon arrives asynchronously
+    // but you no longer notify the app or do?"
     app_service_->LoadIcon(std::move(icon_key), icon_compression,
                            size_hint_in_dip, allow_placeholder_icon,
                            std::move(callback));
