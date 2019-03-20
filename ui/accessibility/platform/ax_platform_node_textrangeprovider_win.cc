@@ -242,7 +242,29 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
     TextPatternRangeEndpoint this_endpoint,
     ITextRangeProvider* other,
     TextPatternRangeEndpoint other_endpoint) {
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(&other_provider) != S_OK) {
+    return UIA_E_INVALIDOPERATION;
+  }
+
+  const AXPositionInstance& other_provider_endpoint =
+      (other_endpoint == TextPatternRangeEndpoint_Start)
+          ? other_provider->start_
+          : other_provider->end_;
+
+  if (this_endpoint == TextPatternRangeEndpoint_Start) {
+    start_ = other_provider_endpoint->Clone();
+    if (*start_ > *end_)
+      end_ = start_->Clone();
+  } else {
+    end_ = other_provider_endpoint->Clone();
+    if (*start_ > *end_)
+      start_ = end_->Clone();
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Select() {
