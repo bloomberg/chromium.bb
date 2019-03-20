@@ -91,14 +91,6 @@ void AppendHorizontalConstraintsForViews(
     return;
 
   NSLayoutXAxisAnchor* previousAnchor = guide.leadingAnchor;
-  UILayoutPriority firstPriority =
-      options & AppendConstraintsHorizontalExtraSpaceLeft
-          ? UILayoutPriorityDefaultHigh
-          : UILayoutPriorityDefaultLow;
-  UILayoutPriority lastPriority =
-      options & AppendConstraintsHorizontalExtraSpaceLeft
-          ? UILayoutPriorityDefaultLow
-          : UILayoutPriorityDefaultHigh;
 
   BOOL isFirstView = YES;
   for (UIView* view in views) {
@@ -106,10 +98,10 @@ void AppendHorizontalConstraintsForViews(
     [constraints
         addObject:[view.leadingAnchor constraintEqualToAnchor:previousAnchor
                                                      constant:constant]];
-    [view setContentCompressionResistancePriority:firstPriority
+    [view setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                           forAxis:
                                               UILayoutConstraintAxisHorizontal];
-    [view setContentHuggingPriority:lastPriority
+    [view setContentHuggingPriority:UILayoutPriorityDefaultHigh
                             forAxis:UILayoutConstraintAxisHorizontal];
     previousAnchor = view.trailingAnchor;
     isFirstView = NO;
@@ -127,11 +119,11 @@ void AppendHorizontalConstraintsForViews(
                                               constant:-margin]];
     // Give all remaining space to the last button, minus margin, as per UX.
     [views.lastObject
-        setContentCompressionResistancePriority:lastPriority
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
     [views.lastObject
-        setContentHuggingPriority:firstPriority
+        setContentHuggingPriority:UILayoutPriorityDefaultLow
                           forAxis:UILayoutConstraintAxisHorizontal];
   }
   if (options & AppendConstraintsHorizontalSyncBaselines) {
