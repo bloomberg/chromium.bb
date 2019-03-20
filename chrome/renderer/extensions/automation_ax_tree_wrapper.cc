@@ -324,6 +324,34 @@ bool AutomationAXTreeWrapper::IsDesktopTree() const {
                       : false;
 }
 
+bool AutomationAXTreeWrapper::IsInFocusChain(int32_t node_id) {
+  if (tree()->data().focus_id != node_id)
+    return false;
+
+  if (IsDesktopTree())
+    return true;
+
+  AutomationAXTreeWrapper* child_of_ancestor = this;
+  AutomationAXTreeWrapper* ancestor = nullptr;
+  while ((ancestor =
+              GetParentOfTreeId(child_of_ancestor->tree()->data().tree_id))) {
+    int32_t focus_id = ancestor->tree()->data().focus_id;
+    ui::AXNode* focus = ancestor->tree()->GetFromId(focus_id);
+    if (!focus)
+      return false;
+    if (ui::AXTreeID::FromString(focus->GetStringAttribute(
+            ax::mojom::StringAttribute::kChildTreeId)) !=
+        child_of_ancestor->tree()->data().tree_id)
+      return false;
+
+    if (ancestor->IsDesktopTree())
+      return true;
+
+    child_of_ancestor = ancestor;
+  }
+  return false;
+}
+
 void AutomationAXTreeWrapper::OnNodeDataWillChange(
     ui::AXTree* tree,
     const ui::AXNodeData& old_node_data,
