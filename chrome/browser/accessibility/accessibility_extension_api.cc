@@ -316,12 +316,6 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   accessibility_private::SyntheticMouseEvent* mouse_data = &params->mouse_event;
 
-  // TODO(crbug/893752) Choose correct display
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  int x = (int)(mouse_data->x * display.device_scale_factor());
-  int y = (int)(mouse_data->y * display.device_scale_factor());
-
-  gfx::Point location(x, y);
   ui::EventType type;
   switch (mouse_data->type) {
     case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_PRESS:
@@ -348,6 +342,10 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
 
   int flags = ui::EF_LEFT_MOUSE_BUTTON;
 
+  // Locations are assumed to be display relative (and in DIPs).
+  // TODO(crbug/893752) Choose correct display
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  gfx::Point location(mouse_data->x, mouse_data->y);
   std::unique_ptr<ui::MouseEvent> synthetic_mouse_event =
       std::make_unique<ui::MouseEvent>(type, location, location,
                                        ui::EventTimeForNow(), flags,
