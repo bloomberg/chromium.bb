@@ -11,12 +11,16 @@
 
 namespace android_webview {
 
-ScopedAddFeatureFlags::ScopedAddFeatureFlags(base::CommandLine* cl)
-    : cl_(cl),
-      enabled_features_(base::FeatureList::SplitFeatureListString(
-          cl->GetSwitchValueASCII(switches::kEnableFeatures))),
-      disabled_features_(base::FeatureList::SplitFeatureListString(
-          cl->GetSwitchValueASCII(switches::kDisableFeatures))) {}
+ScopedAddFeatureFlags::ScopedAddFeatureFlags(base::CommandLine* cl) : cl_(cl) {
+  std::string enabled_features =
+      cl->GetSwitchValueASCII(switches::kEnableFeatures);
+  std::string disabled_features =
+      cl->GetSwitchValueASCII(switches::kDisableFeatures);
+  for (auto& sp : base::FeatureList::SplitFeatureListString(enabled_features))
+    enabled_features_.emplace_back(sp);
+  for (auto& sp : base::FeatureList::SplitFeatureListString(disabled_features))
+    disabled_features_.emplace_back(sp);
+}
 
 ScopedAddFeatureFlags::~ScopedAddFeatureFlags() {
   cl_->AppendSwitchASCII(switches::kEnableFeatures,
