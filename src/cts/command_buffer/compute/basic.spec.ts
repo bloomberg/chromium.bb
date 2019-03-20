@@ -13,18 +13,38 @@ group.testf("memcpy", GPUTest, async (t) => {
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   src.setSubData(0, data);
 
-  const module = t.device.createShaderModule({
-    code: new Uint8Array([
-      // TODO: put a shader here (maybe just use shaderc.js for now)
-    ]).buffer,
+  const bgl = t.device.createBindGroupLayout({
+    bindings: [
+      { binding: 0, visibility: 4, type: "storage-buffer" },
+      { binding: 1, visibility: 4, type: "storage-buffer" },
+    ]
   });
+  const bg = t.device.createBindGroup({
+    layout: bgl,
+    bindings: [
+      { binding: 0, resource: { buffer: src, offset: 0, size: 4 } },
+      { binding: 1, resource: { buffer: dst, offset: 0, size: 4 } },
+    ],
+  });
+
+  const code = t.compile("c", `#version 450
+      layout(location = 0) in int src;
+      layout(location = 1) out int dst;
+      void main() {
+        dst = src;
+      }
+    `);
+  const module = t.device.createShaderModule({ code });
+  const pl = t.device.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const pipeline = t.device.createComputePipeline({
-    computeStage: { module }
+    layout: pl,
+    computeStage: { module },
   });
 
   const encoder = t.device.createCommandEncoder({})
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
+  pass.setBindGroup(bg);
   pass.dispatch(1);
   pass.endPass();
   t.device.getQueue().submit([encoder.finish()]);
