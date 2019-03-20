@@ -10,7 +10,6 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
-#include "chrome/browser/ui/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -88,37 +87,31 @@ class ThumbnailTabHelper
   // Creates a thumbnail from the web contents bitmap.
   void ProcessCapturedBitmap(TriggerReason trigger, const SkBitmap& bitmap);
 
-  // Passes the thumbnail to the thumbnail service.
-  void StoreThumbnail(const SkBitmap& thumbnail);
-
-  // Cleans up after thumbnail generation has ended.
-  void CleanUpFromThumbnailGeneration();
-
   // Called when the current tab gets hidden.
   void TabHidden();
 
   static void LogThumbnailingOutcome(TriggerReason trigger, Outcome outcome);
 
-  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
-      observer_;
+  bool did_navigation_finish_ = false;
+  bool has_received_document_since_navigation_finished_ = false;
+  bool has_painted_since_document_received_ = false;
 
-  bool did_navigation_finish_;
-  bool has_received_document_since_navigation_finished_;
-  bool has_painted_since_document_received_;
+  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
+  bool load_interrupted_ = false;
 
-  ui::PageTransition page_transition_;
-  bool load_interrupted_;
-
-  scoped_refptr<thumbnails::ThumbnailingContext> thumbnailing_context_;
-  bool waiting_for_capture_;
+  bool thumbnailing_in_progress_ = false;
+  bool waiting_for_capture_ = false;
 
   base::TimeTicks copy_from_surface_start_time_;
 
   ThumbnailImage thumbnail_;
 
-  base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_;
+  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
+      observer_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
+
+  base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailTabHelper);
 };

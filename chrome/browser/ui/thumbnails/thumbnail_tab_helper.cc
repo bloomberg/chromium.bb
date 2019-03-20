@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,56 +23,8 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scrollbar_size.h"
 
-using thumbnails::ThumbnailingContext;
-
-namespace {
-
-// The desired thumbnail size in DIP. Note that on 1x devices, we actually take
-// thumbnails of twice that size.
-const int kThumbnailWidth = 154;
-const int kThumbnailHeight = 96;
-
-void ComputeThumbnailScore(const SkBitmap& thumbnail,
-                           scoped_refptr<ThumbnailingContext> context) {
-  base::TimeTicks process_bitmap_start_time = base::TimeTicks::Now();
-
-  context->score.boring_score = color_utils::CalculateBoringScore(thumbnail);
-
-  context->score.good_clipping =
-      thumbnails::IsGoodClipping(context->clip_result);
-
-  base::TimeDelta process_bitmap_time =
-      base::TimeTicks::Now() - process_bitmap_start_time;
-  UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_bitmap_time);
-}
-
-}  // namespace
-
-// Overview
-// --------
-// DEPRECATED, thumbnails have been removed from the New Tab Page. See
-// https://crbug.com/893362.
-//
-// This class provides a service for updating thumbnails to be used in the
-// "Most visited" section of the New Tab page. The process is started by
-// StartThumbnailCaptureIfNecessary(), which updates the thumbnail for the
-// current tab if needed. The heuristics to judge whether to update the
-// thumbnail are implemented in ThumbnailService::ShouldAcquirePageThumbnail().
-// There are two triggers that can start the process:
-// - When a renderer is about to be hidden (this usually occurs when the current
-//   tab is closed or another tab is clicked).
-// - Just before navigating away from the current page.
-
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      observer_(this),
-      did_navigation_finish_(false),
-      has_received_document_since_navigation_finished_(false),
-      has_painted_since_document_received_(false),
-      page_transition_(ui::PAGE_TRANSITION_LINK),
-      load_interrupted_(false),
-      waiting_for_capture_(false),
-      weak_factory_(this) {}
+    : content::WebContentsObserver(contents) {}
 
 ThumbnailTabHelper::~ThumbnailTabHelper() = default;
 
@@ -214,7 +167,7 @@ void ThumbnailTabHelper::StartThumbnailCaptureIfNecessary(
   }
 
   // Ignore thumbnail update requests if one is already in progress.
-  if (thumbnailing_context_) {
+  if (thumbnailing_in_progress_) {
     LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_IN_PROGRESS);
     return;
   }
@@ -246,34 +199,28 @@ void ThumbnailTabHelper::StartThumbnailCaptureIfNecessary(
     return;
   }
 
-  // TODO(miu): This is the wrong size. It's the size of the view on-screen, and
-  // not the rendering size of the view. This will be replaced with the view's
-  // actual rendering size in a later change. http://crbug.com/73362
-  gfx::Rect copy_rect = gfx::Rect(view->GetViewBounds().size());
+  // Note: this is the size in pixels on-screen, not the size in DIPs.
+  gfx::Size source_size = view->GetViewBounds().size();
   // Clip the pixels that will commonly hold a scrollbar, which looks bad in
   // thumbnails.
-  int scrollbar_size = gfx::scrollbar_size();
-  copy_rect.Inset(0, 0, scrollbar_size, scrollbar_size);
+  const float scale_factor = view->GetDeviceScaleFactor();
+  const int scrollbar_size = gfx::scrollbar_size() * scale_factor;
+  source_size.Enlarge(-scrollbar_size, -scrollbar_size);
 
-  if (copy_rect.IsEmpty()) {
+  if (source_size.IsEmpty()) {
     LogThumbnailingOutcome(trigger, Outcome::NOT_ATTEMPTED_EMPTY_RECT);
     return;
   }
 
-  bool at_top = view->IsScrollOffsetAtTop();
-  bool load_completed = !web_contents()->IsLoading() && !load_interrupted_;
-  thumbnailing_context_ = new ThumbnailingContext(url, at_top, load_completed);
+  thumbnailing_in_progress_ = true;
 
-  ui::ScaleFactor scale_factor =
-      ui::GetSupportedScaleFactor(view->GetDeviceScaleFactor());
-  thumbnailing_context_->clip_result = thumbnails::GetCanvasCopyInfo(
-      copy_rect.size(), scale_factor,
-      gfx::Size(kThumbnailWidth, kThumbnailHeight), &copy_rect,
-      &thumbnailing_context_->requested_copy_size);
+  const gfx::Size desired_size = TabStyle::GetPreviewImageSize();
+  thumbnails::CanvasCopyInfo copy_info =
+      thumbnails::GetCanvasCopyInfo(source_size, scale_factor, desired_size);
   copy_from_surface_start_time_ = base::TimeTicks::Now();
   waiting_for_capture_ = true;
   view->CopyFromSurface(
-      copy_rect, thumbnailing_context_->requested_copy_size,
+      copy_info.copy_rect, copy_info.target_size,
       base::BindOnce(&ThumbnailTabHelper::ProcessCapturedBitmap,
                      weak_factory_.GetWeakPtr(), trigger));
 }
@@ -294,39 +241,13 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(TriggerReason trigger,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // From here on, nothing can fail, so log success.
     LogThumbnailingOutcome(trigger, Outcome::SUCCESS);
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(&ComputeThumbnailScore, bitmap, thumbnailing_context_),
-        base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
-                       weak_factory_.GetWeakPtr(), bitmap));
+    thumbnail_ = ThumbnailImage::FromSkBitmap(bitmap);
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   } else {
     LogThumbnailingOutcome(
         trigger, was_canceled ? Outcome::CANCELED : Outcome::READBACK_FAILED);
-    // On failure because of shutdown we are not on the UI thread, so ensure
-    // that cleanup happens on that thread.
-    // TODO(treib): Figure out whether it actually happen that we get called
-    // back on something other than the UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ThumbnailTabHelper::CleanUpFromThumbnailGeneration,
-                       weak_factory_.GetWeakPtr()));
   }
-}
-
-void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& thumbnail) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  thumbnail_ = ThumbnailImage::FromSkBitmap(thumbnail);
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-
-  CleanUpFromThumbnailGeneration();
-}
-
-void ThumbnailTabHelper::CleanUpFromThumbnailGeneration() {
-  // Make a note that thumbnail generation is complete.
-  thumbnailing_context_ = nullptr;
+  thumbnailing_in_progress_ = false;
 }
 
 void ThumbnailTabHelper::TabHidden() {

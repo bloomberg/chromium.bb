@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
 
-#include "chrome/browser/ui/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -20,115 +19,57 @@ using content::WebContents;
 
 typedef testing::Test SimpleThumbnailCropTest;
 
-TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfo) {
-  gfx::Size thumbnail_size(200, 120);
-  gfx::Size expected_2x_size = gfx::ScaleToFlooredSize(thumbnail_size, 2.0);
-  float desired_aspect =
-      static_cast<float>(thumbnail_size.width()) / thumbnail_size.height();
-  gfx::Rect clipping_rect_result;
-  gfx::Size target_size_result;
+namespace thumbnails {
 
-  thumbnails::ClipResult clip_result = thumbnails::GetCanvasCopyInfo(
-      gfx::Size(400, 210), ui::SCALE_FACTOR_200P, thumbnail_size,
-      &clipping_rect_result, &target_size_result);
-  gfx::Size clipping_size = clipping_rect_result.size();
-  float clip_aspect =
-      static_cast<float>(clipping_size.width()) / clipping_size.height();
-  EXPECT_EQ(thumbnails::CLIP_RESULT_WIDER_THAN_TALL, clip_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
-  EXPECT_NEAR(desired_aspect, clip_aspect, 0.01);
+// Test which generates thumbnails from various source scales.
+class ThumbnailUtilsTest : public testing::TestWithParam<float> {
+ public:
+  ThumbnailUtilsTest() = default;
 
-  clip_result = thumbnails::GetCanvasCopyInfo(
-      gfx::Size(600, 200), ui::SCALE_FACTOR_200P, thumbnail_size,
-      &clipping_rect_result, &target_size_result);
-  clipping_size = clipping_rect_result.size();
-  clip_aspect =
-      static_cast<float>(clipping_size.width()) / clipping_size.height();
-  EXPECT_EQ(thumbnails::CLIP_RESULT_MUCH_WIDER_THAN_TALL, clip_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
-  EXPECT_NEAR(desired_aspect, clip_aspect, 0.01);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ThumbnailUtilsTest);
+};
 
-  clip_result = thumbnails::GetCanvasCopyInfo(
-      gfx::Size(300, 600), ui::SCALE_FACTOR_200P, thumbnail_size,
-      &clipping_rect_result, &target_size_result);
-  clipping_size = clipping_rect_result.size();
-  clip_aspect =
-      static_cast<float>(clipping_size.width()) / clipping_size.height();
-  EXPECT_EQ(thumbnails::CLIP_RESULT_TALLER_THAN_WIDE, clip_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
-  EXPECT_NEAR(desired_aspect, clip_aspect, 0.01);
-
-  clip_result = thumbnails::GetCanvasCopyInfo(
-      gfx::Size(200, 100), ui::SCALE_FACTOR_200P, thumbnail_size,
-      &clipping_rect_result, &target_size_result);
-  EXPECT_EQ(thumbnails::CLIP_RESULT_SOURCE_IS_SMALLER, clip_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
+static float GetAspect(const gfx::Size& size) {
+  return float{size.width()} / float{size.height()};
 }
 
-TEST_F(SimpleThumbnailCropTest, GetCanvasCopyInfoDifferentScales) {
-  gfx::Size thumbnail_size(200, 120);
+INSTANTIATE_TEST_SUITE_P(,
+                         ThumbnailUtilsTest,
+                         testing::ValuesIn({1.0f, 1.25f, 1.62f, 2.0f}));
 
-  gfx::Rect clipping_rect_result;
-  gfx::Size target_size_result;
+TEST_P(ThumbnailUtilsTest, GetCanvasCopyInfo) {
+  constexpr gfx::Size kThumbnailSize(200, 120);
+  const float scale_factor = GetParam();
+  const gfx::Size expected_size =
+      gfx::ScaleToFlooredSize(kThumbnailSize, scale_factor);
+  const float desired_aspect = GetAspect(kThumbnailSize);
+  const gfx::Size wider_than_tall_source(400, 210);
+  const gfx::Size much_wider_than_tall_source(600, 200);
+  const gfx::Size taller_than_wide_source(300, 600);
+  const gfx::Size small_source(200, 100);
 
-  gfx::Size expected_2x_size = gfx::ScaleToFlooredSize(thumbnail_size, 2.0);
+  CanvasCopyInfo result =
+      GetCanvasCopyInfo(wider_than_tall_source, scale_factor, kThumbnailSize);
+  EXPECT_EQ(ClipResult::kSourceWiderThanTall, result.clip_result);
+  EXPECT_EQ(expected_size, result.target_size);
+  EXPECT_NEAR(desired_aspect, GetAspect(result.copy_rect.size()), 0.01);
 
-  // Test at 1x scale. Expect a 2x thumbnail (we do this for quality).
-  thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_100P,
-                                thumbnail_size, &clipping_rect_result,
-                                &target_size_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
+  result = GetCanvasCopyInfo(much_wider_than_tall_source, scale_factor,
+                             kThumbnailSize);
+  EXPECT_EQ(ClipResult::kSourceMuchWiderThanTall, result.clip_result);
+  EXPECT_EQ(expected_size, result.target_size);
+  EXPECT_NEAR(desired_aspect, GetAspect(result.copy_rect.size()), 0.01);
 
-  // Test at 1.5x scale.
-  gfx::Size expected_15x_size = gfx::ScaleToFlooredSize(thumbnail_size, 1.5);
-  thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_150P,
-                                thumbnail_size, &clipping_rect_result,
-                                &target_size_result);
-  EXPECT_EQ(expected_15x_size, target_size_result);
+  result =
+      GetCanvasCopyInfo(taller_than_wide_source, scale_factor, kThumbnailSize);
+  EXPECT_EQ(ClipResult::kSourceTallerThanWide, result.clip_result);
+  EXPECT_EQ(expected_size, result.target_size);
+  EXPECT_NEAR(desired_aspect, GetAspect(result.copy_rect.size()), 0.01);
 
-  // Test at 2x scale.
-  thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_200P,
-                                thumbnail_size, &clipping_rect_result,
-                                &target_size_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
-
-  // Test at 3x scale. Expect a 2x (!) thumbnail (see crbug.com/670488).
-  thumbnails::GetCanvasCopyInfo(gfx::Size(400, 210), ui::SCALE_FACTOR_300P,
-                                thumbnail_size, &clipping_rect_result,
-                                &target_size_result);
-  EXPECT_EQ(expected_2x_size, target_size_result);
+  result = GetCanvasCopyInfo(small_source, scale_factor, kThumbnailSize);
+  EXPECT_EQ(ClipResult::kSourceSmallerThanTarget, result.clip_result);
+  EXPECT_EQ(expected_size, result.target_size);
 }
 
-TEST_F(SimpleThumbnailCropTest, GetClippingRect) {
-  const gfx::Size desired_size(300, 200);
-  thumbnails::ClipResult clip_result;
-  // Try out 'microsource'.
-  gfx::Rect clip_rect = thumbnails::GetClippingRect(gfx::Size(300, 199),
-                                                    desired_size, &clip_result);
-  EXPECT_EQ(thumbnails::CLIP_RESULT_SOURCE_IS_SMALLER, clip_result);
-  EXPECT_EQ(gfx::Point(0, 0).ToString(), clip_rect.origin().ToString());
-  EXPECT_EQ(desired_size.ToString(), clip_rect.size().ToString());
-
-  // Portrait source.
-  clip_rect = thumbnails::GetClippingRect(gfx::Size(500, 1200), desired_size,
-                                          &clip_result);
-  EXPECT_EQ(thumbnails::CLIP_RESULT_TALLER_THAN_WIDE, clip_result);
-  EXPECT_EQ(gfx::Point(0, 0).ToString(), clip_rect.origin().ToString());
-  EXPECT_EQ(500, clip_rect.width());
-  EXPECT_GE(1200, clip_rect.height());
-
-  clip_rect = thumbnails::GetClippingRect(gfx::Size(2000, 800), desired_size,
-                                          &clip_result);
-  EXPECT_TRUE(clip_result == thumbnails::CLIP_RESULT_WIDER_THAN_TALL ||
-              clip_result == thumbnails::CLIP_RESULT_MUCH_WIDER_THAN_TALL);
-  EXPECT_EQ(0, clip_rect.y());
-  EXPECT_LT(0, clip_rect.x());
-  EXPECT_GE(2000, clip_rect.width());
-  EXPECT_EQ(800, clip_rect.height());
-
-  clip_rect = thumbnails::GetClippingRect(gfx::Size(900, 600), desired_size,
-                                          &clip_result);
-  EXPECT_EQ(thumbnails::CLIP_RESULT_NOT_CLIPPED, clip_result);
-  EXPECT_EQ(gfx::Point(0, 0).ToString(), clip_rect.origin().ToString());
-  EXPECT_EQ(gfx::Size(900, 600).ToString(), clip_rect.size().ToString());
-}
+}  // namespace thumbnails
