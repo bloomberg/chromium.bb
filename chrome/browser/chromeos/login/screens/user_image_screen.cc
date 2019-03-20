@@ -48,14 +48,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr const char kContextKeyIsCameraPresent[] = "isCameraPresent";
-constexpr const char kContextKeyProfilePictureDataURL[] =
-    "profilePictureDataURL";
-constexpr const char kContextKeyIsProfilePictureAvailable[] =
-    "isProfilePictureAvailable";
-constexpr const char kContextKeySelectedImageIndex[] = "selectedImageIndex";
-constexpr const char kContextKeySelectedImageURL[] = "selectedImageURL";
-
 // Time histogram suffix for profile image download.
 const char kProfileDownloadReason[] = "OOBE";
 
@@ -67,10 +59,11 @@ const int kSyncTimeoutSeconds = 10;
 
 UserImageScreen::UserImageScreen(UserImageView* view)
     : BaseScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER), view_(view) {
-  if (view_)
+  if (view_) {
     view_->Bind(this);
+    view_->SetProfilePictureDataURL(std::string());
+  }
   user_manager::UserManager::Get()->AddObserver(this);
-  GetContextEditor().SetString(kContextKeyProfilePictureDataURL, std::string());
 }
 
 UserImageScreen::~UserImageScreen() {
@@ -218,16 +211,16 @@ void UserImageScreen::Show() {
   view_->Show();
 
   selected_image_ = GetUser()->image_index();
-  GetContextEditor().SetInteger(kContextKeySelectedImageIndex, selected_image_);
-  GetContextEditor().SetString(
-      kContextKeySelectedImageURL,
+
+  view_->SetSelectedImageIndex(selected_image_);
+  view_->SetSelectedImageURL(
       default_user_image::GetDefaultImageUrl(selected_image_));
 
   const user_manager::User* user = GetUser();
   // Active Directory accounts do not use a profile image so skip the download
   // and inform the UI that no profile image exists.
   if (user && user->IsActiveDirectoryUser()) {
-    GetContextEditor().SetBoolean(kContextKeyIsProfilePictureAvailable, false);
+    view_->SetIsProfilePictureAvailable(false);
   } else {
     // Start fetching the profile image.
     GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
@@ -246,7 +239,8 @@ void UserImageScreen::Hide() {
 }
 
 void UserImageScreen::OnCameraPresenceCheckDone(bool is_camera_present) {
-  GetContextEditor().SetBoolean(kContextKeyIsCameraPresent, is_camera_present);
+  if (view_)
+    view_->SetIsCameraPresent(is_camera_present);
 }
 
 void UserImageScreen::OnImageDecoded(const SkBitmap& decoded_image) {
@@ -260,26 +254,29 @@ void UserImageScreen::OnDecodeImageFailed() {
 }
 
 void UserImageScreen::OnUserImageChanged(const user_manager::User& user) {
-  GetContextEditor().SetInteger(kContextKeySelectedImageIndex,
-                                GetUser()->image_index());
-  GetContextEditor().SetString(
-      kContextKeySelectedImageURL,
-      default_user_image::GetDefaultImageUrl(GetUser()->image_index()));
+  if (view_) {
+    view_->SetSelectedImageIndex(GetUser()->image_index());
+    view_->SetSelectedImageURL(
+        default_user_image::GetDefaultImageUrl(GetUser()->image_index()));
+  }
 }
 
 void UserImageScreen::OnUserProfileImageUpdateFailed(
     const user_manager::User& user) {
-  // User has a default profile image or fetching profile image has failed.
-  GetContextEditor().SetString(kContextKeyProfilePictureDataURL, std::string());
+  if (view_) {
+    // User has a default profile image or fetching profile image has failed.
+    view_->SetProfilePictureDataURL(std::string());
+  }
 }
 
 void UserImageScreen::OnUserProfileImageUpdated(
     const user_manager::User& user,
     const gfx::ImageSkia& profile_image) {
-  // We've got a new profile image.
-  GetContextEditor().SetString(
-      kContextKeyProfilePictureDataURL,
-      webui::GetBitmapDataUrl(*profile_image.bitmap()));
+  if (view_) {
+    // We've got a new profile image.
+    view_->SetProfilePictureDataURL(
+        webui::GetBitmapDataUrl(*profile_image.bitmap()));
+  }
 }
 
 void UserImageScreen::OnInitialSync(bool local_image_updated) {

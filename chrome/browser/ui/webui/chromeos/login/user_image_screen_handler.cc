@@ -184,4 +184,25 @@ void UserImageScreenHandler::HideCurtain() {
   CallJS("login.UserImageScreen.hideCurtain");
 }
 
+void UserImageScreenHandler::SetIsCameraPresent(bool value) {
+  CallJS("login.UserImageScreen.setIsCameraPresent", value);
+}
+
+void UserImageScreenHandler::SetProfilePictureDataURL(
+    const std::string& value) {
+  CallJS("login.UserImageScreen.setProfilePictureDataURL", value);
+}
+
+void UserImageScreenHandler::SetIsProfilePictureAvailable(bool value) {
+  CallJS("login.UserImageScreen.setIsProfilePictureAvailable", value);
+}
+
+void UserImageScreenHandler::SetSelectedImageIndex(int value) {
+  CallJS("login.UserImageScreen.setSelectedImageIndex", value);
+}
+
+void UserImageScreenHandler::SetSelectedImageURL(const std::string& value) {
+  CallJS("login.UserImageScreen.setSelectedImageURL", value);
+}
+
 }  // namespace chromeos

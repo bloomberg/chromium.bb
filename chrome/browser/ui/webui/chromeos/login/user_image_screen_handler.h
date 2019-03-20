@@ -39,6 +39,11 @@ class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
   void Show() override;
   void Hide() override;
   void HideCurtain() override;
+  void SetIsCameraPresent(bool value) override;
+  void SetProfilePictureDataURL(const std::string& value) override;
+  void SetIsProfilePictureAvailable(bool value) override;
+  void SetSelectedImageIndex(int value) override;
+  void SetSelectedImageURL(const std::string& value) override;
 
   // Sends image data to the page.
   void HandleGetImages();
