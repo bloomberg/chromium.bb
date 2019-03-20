@@ -11,13 +11,15 @@
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
 class AssistantImageDownloader;
 class AssistantSetup;
 
 // Class to handle all assistant in-browser-process functionalities.
-class AssistantClient : chromeos::assistant::mojom::Client {
+class AssistantClient : chromeos::assistant::mojom::Client,
+                        public identity::IdentityManager::Observer {
  public:
   static AssistantClient* Get();
 
@@ -33,6 +35,14 @@ class AssistantClient : chromeos::assistant::mojom::Client {
       RequestAssistantStructureCallback callback) override;
 
  private:
+  // identity::IdentityManager::Observer:
+  // Retry to initiate Assistant service when account info has been updated.
+  // This is necessary if previous calls of MaybeInit() failed due to Assistant
+  // disallowed by account type. This can happen when the chromeos sign-in
+  // finished before account info fetching is finished (|hosted_domain| field
+  // will be empty under this case).
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_;
   mojo::Binding<chromeos::assistant::mojom::DeviceActions>
       device_actions_binding_;
@@ -44,6 +54,10 @@ class AssistantClient : chromeos::assistant::mojom::Client {
   std::unique_ptr<AssistantSetup> assistant_setup_;
 
   bool initialized_ = false;
+
+  // Non-owning pointers.
+  Profile* profile_ = nullptr;
+  identity::IdentityManager* identity_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClient);
 };
