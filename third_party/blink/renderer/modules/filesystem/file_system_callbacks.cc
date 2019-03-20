@@ -291,41 +291,31 @@ void MetadataCallbacks::DidFail(base::File::Error error) {
 
 // FileWriterCallbacks ----------------------------------------------------
 
-void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::Trace(
-    blink::Visitor* visitor) {
-  visitor->Trace(callback_);
-  OnDidCreateFileWriterCallback::Trace(visitor);
-}
-
-void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::OnSuccess(
-    FileWriterBase* file_writer) {
-  // The call sites must pass a FileWriter in |file_writer|.
-  callback_->InvokeAndReportException(nullptr,
-                                      static_cast<FileWriter*>(file_writer));
-}
-
-FileWriterCallbacks::FileWriterCallbacks(
-    FileWriterBase* file_writer,
-    OnDidCreateFileWriterCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context)
-    : FileSystemCallbacksBase(error_callback, nullptr, context),
+FileWriterCallbacks::FileWriterCallbacks(FileWriterBase* file_writer,
+                                         SuccessCallback success_callback,
+                                         ErrorCallback error_callback,
+                                         ExecutionContext* context)
+    : FileSystemCallbacksBase(/*error_callback =*/nullptr,
+                              /*file_system =*/nullptr,
+                              context),
       file_writer_(file_writer),
-      success_callback_(success_callback) {}
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 void FileWriterCallbacks::DidCreateFileWriter(const KURL& path,
                                               int64_t length) {
   if (!success_callback_)
     return;
+
   file_writer_->Initialize(path, length);
-  success_callback_.Release()->OnSuccess(file_writer_);
+  std::move(success_callback_).Run(file_writer_);
 }
 
 void FileWriterCallbacks::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // SnapshotFileCallback -------------------------------------------------------

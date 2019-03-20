@@ -160,13 +160,14 @@ void DOMFileSystem::ReportError(ExecutionContext* execution_context,
 
 void DOMFileSystem::CreateWriter(
     const FileEntry* file_entry,
-    FileWriterCallbacks::OnDidCreateFileWriterCallback* success_callback,
-    ErrorCallbackBase* error_callback) {
+    FileWriterCallbacks::SuccessCallback success_callback,
+    FileWriterCallbacks::ErrorCallback error_callback) {
   DCHECK(file_entry);
 
   FileWriter* file_writer = FileWriter::Create(GetExecutionContext());
   auto callbacks = std::make_unique<FileWriterCallbacks>(
-      file_writer, success_callback, error_callback, context_);
+      file_writer, std::move(success_callback), std::move(error_callback),
+      context_);
   FileSystemDispatcher::From(context_).InitializeFileWriter(
       CreateFileSystemURL(file_entry), std::move(callbacks));
 }
