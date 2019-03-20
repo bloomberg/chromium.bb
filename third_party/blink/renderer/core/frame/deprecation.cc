@@ -759,7 +759,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   // Construct the deprecation report.
   double removal_date = MilestoneDate(info.anticipated_removal);
   DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
-      info.id, removal_date, info.message, SourceLocation::Capture());
+      info.id, removal_date, info.message);
   Report* report = MakeGarbageCollected<Report>(
       "deprecation", document->Url().GetString(), body);
 
