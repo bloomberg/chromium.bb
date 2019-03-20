@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/common/app.mojom.h"
 
 class AppListControllerDelegate;
@@ -36,6 +37,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   // ChromeSearchResult overrides:
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
+  SearchResultType GetSearchResultType() const override;
 
   // app_list::AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

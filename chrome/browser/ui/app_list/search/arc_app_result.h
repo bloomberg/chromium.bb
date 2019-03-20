@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 
 class AppListControllerDelegate;
@@ -33,6 +34,7 @@ class ArcAppResult : public AppResult,
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  SearchResultType GetSearchResultType() const override;
 
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

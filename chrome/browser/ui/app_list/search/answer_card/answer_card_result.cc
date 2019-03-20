@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/search_util.h"
 
 namespace app_list {
 
@@ -32,7 +31,10 @@ void AnswerCardResult::Open(int event_flags) {
   list_controller_->OpenURL(profile_, search_result_url_,
                             ui::PAGE_TRANSITION_GENERATED,
                             ui::DispositionFromEventFlags(event_flags));
-  RecordHistogram(ANSWER_CARD);
+}
+
+SearchResultType AnswerCardResult::GetSearchResultType() const {
+  return ANSWER_CARD;
 }
 
 }  // namespace app_list

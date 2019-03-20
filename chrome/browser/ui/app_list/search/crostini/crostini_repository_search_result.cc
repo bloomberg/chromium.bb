@@ -65,4 +65,8 @@ void CrostiniRepositorySearchResult::Open(int event_flags) {
                          weak_ptr_factory_.GetWeakPtr()));
 }
 
+SearchResultType CrostiniRepositorySearchResult::GetSearchResultType() const {
+  return CROSTINI_APP;
+}
+
 }  // namespace app_list

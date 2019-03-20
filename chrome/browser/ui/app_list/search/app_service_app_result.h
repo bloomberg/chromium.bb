@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 class AppListControllerDelegate;
@@ -26,6 +27,7 @@ class AppServiceAppResult : public AppResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  SearchResultType GetSearchResultType() const override;
   AppContextMenu* GetAppContextMenu() override;
 
   // AppContextMenuDelegate overrides:

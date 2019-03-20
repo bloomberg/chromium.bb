@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "components/arc/common/app.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -38,6 +39,7 @@ class ArcAppReinstallAppResult : public ChromeSearchResult {
   // ChromeSearchResult:
   void Open(int event_flags) override;
   void OnVisibilityChanged(bool visibility) override;
+  SearchResultType GetSearchResultType() const override;
 
  private:
   // Observer passed in constructor. not owned.

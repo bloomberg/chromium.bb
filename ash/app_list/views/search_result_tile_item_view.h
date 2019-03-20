@@ -69,6 +69,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  // Launch the result and log to various histograms.
+  void ActivateResult(int event_flags);
+
   // Bound by ShowContextMenuForViewImpl().
   void OnGetContextMenuModel(views::View* source,
                              const gfx::Point& point,
@@ -92,7 +95,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   bool IsSuggestedAppTileShownInAppPage() const;
 
   // Records an app being launched.
-  void LogAppLaunch() const;
+  void LogAppLaunchForSuggestedApp() const;
 
   void UpdateBackgroundColor();
 
