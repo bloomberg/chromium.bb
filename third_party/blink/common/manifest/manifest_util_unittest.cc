@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/manifest_util.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 TEST(ManifestUtilTest, WebDisplayModeConversions) {
   struct ReversibleConversion {
@@ -74,4 +74,4 @@ TEST(ManifestUtilTest, WebScreenOrientationLockTypeConversions) {
             WebScreenOrientationLockTypeFromString("random"));
 }
 
-}  // namespace content
+}  // namespace blink
