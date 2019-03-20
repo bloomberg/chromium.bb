@@ -29,8 +29,9 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 /**
  * Maintains and provides the night mode state for the entire application.
  */
-public class GlobalNightModeStateController
-        implements NightModeStateProvider, ApplicationStatus.ApplicationStateListener {
+public class GlobalNightModeStateController implements NightModeStateProvider,
+                                                       SystemNightModeMonitor.Observer,
+                                                       ApplicationStatus.ApplicationStateListener {
     private static GlobalNightModeStateController sInstance;
 
     private final ObserverList<Observer> mObservers = new ObserverList<>();
@@ -103,6 +104,12 @@ public class GlobalNightModeStateController
         mObservers.removeObserver(observer);
     }
 
+    // SystemNightModeMonitor.Observer implementation.
+    @Override
+    public void onSystemNightModeChanged() {
+        updateNightMode();
+    }
+
     // ApplicationStatus.ApplicationStateListener implementation.
     @Override
     public void onApplicationStateChange(int newState) {
@@ -123,6 +130,7 @@ public class GlobalNightModeStateController
             ContextUtils.getApplicationContext().registerReceiver(mPowerModeReceiver,
                     new IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED));
         }
+        SystemNightModeMonitor.getInstance().addObserver(this);
         ChromePreferenceManager.getInstance().addObserver(mPreferenceObserver);
         updateNightMode();
     }
@@ -135,12 +143,14 @@ public class GlobalNightModeStateController
         if (mPowerModeReceiver != null) {
             ContextUtils.getApplicationContext().unregisterReceiver(mPowerModeReceiver);
         }
+        SystemNightModeMonitor.getInstance().removeObserver(this);
         ChromePreferenceManager.getInstance().removeObserver(mPreferenceObserver);
     }
 
     private void updateNightMode() {
-        // TODO(huayinz): Listen to system ui mode change.
-        boolean newMode = mPowerSaveModeOn
+        // TODO(https://crbug.com/942771): Update logic for real user settings.
+        final boolean newMode = mPowerSaveModeOn
+                || SystemNightModeMonitor.getInstance().isSystemNightModeOn()
                 || ChromePreferenceManager.getInstance().readBoolean(
                         NIGHT_MODE_SETTINGS_ENABLED_KEY, false);
         if (mNightModeOn != null && newMode == mNightModeOn) return;

@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.dependency_injection.DaggerChromeAppComponent
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -69,7 +71,7 @@ public class ChromeApplication extends Application {
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
-        boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
+        boolean isBrowserProcess = isBrowserProcess();
         if (isBrowserProcess) UmaUtils.recordMainEntryPointTime();
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
@@ -133,6 +135,10 @@ public class ChromeApplication extends Application {
     private static Boolean shouldUseDebugFlags() {
         return ChromePreferenceManager.getInstance().readBoolean(
                 ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
+    }
+
+    private static boolean isBrowserProcess() {
+        return !ContextUtils.getProcessName().contains(":");
     }
 
     private static void updateMemoryPressurePolling(@ApplicationState int newState) {
@@ -222,6 +228,15 @@ public class ChromeApplication extends Application {
             @Override
             public void onDenied() {}
         });
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // TODO(huayinz): Add observer pattern for application configuration changes.
+        if (isBrowserProcess()) {
+            SystemNightModeMonitor.getInstance().onApplicationConfigurationChanged();
+        }
     }
 
     /** Returns the application-scoped component. */
