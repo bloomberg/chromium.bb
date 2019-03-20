@@ -200,8 +200,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
   }
 
  protected:
-  void Preload(std::unique_ptr<PreloadRequest> preload_request,
-               const NetworkHintsInterface&) override {
+  void Preload(std::unique_ptr<PreloadRequest> preload_request) override {
     preload_request_ = std::move(preload_request);
   }
 

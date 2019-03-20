@@ -32,8 +32,7 @@ std::unique_ptr<CachedDocumentParameters> CachedDocumentParametersForFuzzing(
 }
 
 class MockResourcePreloader : public ResourcePreloader {
-  void Preload(std::unique_ptr<PreloadRequest>,
-               const NetworkHintsInterface&) override {}
+  void Preload(std::unique_ptr<PreloadRequest>) override {}
 };
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

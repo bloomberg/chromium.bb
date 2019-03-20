@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
@@ -20,7 +22,6 @@
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
@@ -102,7 +103,6 @@ void PreloadHelper::DnsPrefetchIfNeeded(
     const LinkLoadParameters& params,
     Document* document,
     LocalFrame* frame,
-    const NetworkHintsInterface& network_hints_interface,
     LinkCaller caller) {
   if (params.rel.IsDNSPrefetch()) {
     UseCounter::Count(document, WebFeature::kLinkRelDnsPrefetch);
@@ -121,7 +121,11 @@ void PreloadHelper::DnsPrefetchIfNeeded(
                 String("DNS prefetch triggered for " + params.href.Host())),
             document, frame);
       }
-      network_hints_interface.DnsPrefetchHost(params.href.Host());
+      WebPrescientNetworking* web_prescient_networking =
+          Platform::Current()->PrescientNetworking();
+      if (web_prescient_networking) {
+        web_prescient_networking->PrefetchDNS(params.href.Host());
+      }
     }
   }
 }
@@ -130,7 +134,6 @@ void PreloadHelper::PreconnectIfNeeded(
     const LinkLoadParameters& params,
     Document* document,
     LocalFrame* frame,
-    const NetworkHintsInterface& network_hints_interface,
     LinkCaller caller) {
   if (params.rel.IsPreconnect() && params.href.IsValid() &&
       params.href.ProtocolIsInHTTPFamily()) {
@@ -156,7 +159,12 @@ void PreloadHelper::PreconnectIfNeeded(
             document, frame);
       }
     }
-    network_hints_interface.PreconnectHost(params.href, params.cross_origin);
+    WebPrescientNetworking* web_prescient_networking =
+        Platform::Current()->PrescientNetworking();
+    if (web_prescient_networking) {
+      web_prescient_networking->Preconnect(
+          params.href, params.cross_origin != kCrossOriginAttributeAnonymous);
+    }
   }
 }
 
@@ -445,7 +453,6 @@ void PreloadHelper::LoadLinksFromHeader(
     const KURL& base_url,
     LocalFrame& frame,
     Document* document,
-    const NetworkHintsInterface& network_hints_interface,
     CanLoadResources can_load_resources,
     MediaPreloadPolicy media_policy,
     ViewportDescriptionWrapper* viewport_description_wrapper) {
@@ -466,11 +473,9 @@ void PreloadHelper::LoadLinksFromHeader(
     if (params.href == base_url)
       continue;
     if (can_load_resources != kOnlyLoadResources) {
-      DnsPrefetchIfNeeded(params, document, &frame, network_hints_interface,
-                          kLinkCalledFromHeader);
+      DnsPrefetchIfNeeded(params, document, &frame, kLinkCalledFromHeader);
 
-      PreconnectIfNeeded(params, document, &frame, network_hints_interface,
-                         kLinkCalledFromHeader);
+      PreconnectIfNeeded(params, document, &frame, kLinkCalledFromHeader);
     }
     if (can_load_resources != kDoNotLoadResources) {
       DCHECK(document);

@@ -36,7 +36,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -65,7 +64,6 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
@@ -352,8 +350,7 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
   PreloadHelper::LoadLinksFromHeader(
       GetResponse().HttpHeaderField(http_names::kLink),
       GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
-      NetworkHintsInterfaceImpl(), PreloadHelper::kOnlyLoadResources,
-      media_policy, viewport);
+      PreloadHelper::kOnlyLoadResources, media_policy, viewport);
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
@@ -1166,8 +1163,8 @@ void DocumentLoader::StartLoadingInternal() {
   ParseAndPersistClientHints(response);
   PreloadHelper::LoadLinksFromHeader(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
-      *GetFrame(), nullptr, NetworkHintsInterfaceImpl(),
-      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll, nullptr);
+      *GetFrame(), nullptr, PreloadHelper::kDoNotLoadResources,
+      PreloadHelper::kLoadAll, nullptr);
   if (!frame_->IsMainFrame() && response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         GetFrame(), response, mojom::RequestContextType::HYPERLINK);

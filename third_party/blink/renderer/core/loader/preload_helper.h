@@ -12,7 +12,6 @@ namespace blink {
 
 class Document;
 class LocalFrame;
-class NetworkHintsInterface;
 class SingleModuleClient;
 struct LinkLoadParameters;
 struct ViewportDescription;
@@ -39,7 +38,6 @@ class PreloadHelper final {
                                   const KURL& base_url,
                                   LocalFrame&,
                                   Document*,  // can be nullptr
-                                  const NetworkHintsInterface&,
                                   CanLoadResources,
                                   MediaPreloadPolicy,
                                   ViewportDescriptionWrapper*);
@@ -56,12 +54,10 @@ class PreloadHelper final {
   static void DnsPrefetchIfNeeded(const LinkLoadParameters&,
                                   Document*,
                                   LocalFrame*,
-                                  const NetworkHintsInterface&,
                                   LinkCaller);
   static void PreconnectIfNeeded(const LinkLoadParameters&,
                                  Document*,
                                  LocalFrame*,
-                                 const NetworkHintsInterface&,
                                  LinkCaller);
   static Resource* PrefetchIfNeeded(const LinkLoadParameters&, Document&);
   static Resource* PreloadIfNeeded(const LinkLoadParameters&,

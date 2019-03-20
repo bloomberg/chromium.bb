@@ -25,6 +25,8 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -42,7 +44,6 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -209,8 +210,12 @@ void HTMLAnchorElement::ParseAttribute(
       if (GetDocument().IsDNSPrefetchEnabled()) {
         if (ProtocolIs(parsed_url, "http") || ProtocolIs(parsed_url, "https") ||
             parsed_url.StartsWith("//")) {
-          NetworkHintsInterfaceImpl().DnsPrefetchHost(
-              GetDocument().CompleteURL(parsed_url).Host());
+          WebPrescientNetworking* web_prescient_networking =
+              Platform::Current()->PrescientNetworking();
+          if (web_prescient_networking) {
+            web_prescient_networking->PrefetchDNS(
+                GetDocument().CompleteURL(parsed_url).Host());
+          }
         }
       }
     }
