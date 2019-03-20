@@ -315,7 +315,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   // Reload should reflect the current data saver setting.
   if (IsReloadLoadType(MasterDocumentLoader()->LoadType()))
-    request.ClearHTTPHeaderField(http_names::kSaveData);
+    request.ClearHttpHeaderField(http_names::kSaveData);
 
   if (save_data_enabled_)
     request.SetHTTPHeaderField(http_names::kSaveData, "on");

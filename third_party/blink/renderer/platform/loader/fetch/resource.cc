@@ -939,7 +939,7 @@ void Resource::SetPreviewsState(WebURLRequest::PreviewsState previews_state) {
 }
 
 void Resource::ClearRangeRequestHeader() {
-  resource_request_.ClearHTTPHeaderField("range");
+  resource_request_.ClearHttpHeaderField("range");
 }
 
 void Resource::RevalidationSucceeded(

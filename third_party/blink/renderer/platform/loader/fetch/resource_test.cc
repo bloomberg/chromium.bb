@@ -187,7 +187,7 @@ TEST(ResourceTest, Vary) {
   response.SetHTTPHeaderField(http_names::kVary, http_names::kUserAgent);
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
-  new_request.ClearHTTPHeaderField(http_names::kUserAgent);
+  new_request.ClearHttpHeaderField(http_names::kUserAgent);
 
   ResourceRequest old_request(url);
   old_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
@@ -197,7 +197,7 @@ TEST(ResourceTest, Vary) {
   resource->FinishForTest();
 
   // Header present on old but not new
-  new_request.ClearHTTPHeaderField(http_names::kUserAgent);
+  new_request.ClearHttpHeaderField(http_names::kUserAgent);
   response.SetHTTPHeaderField(http_names::kVary, http_names::kUserAgent);
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));

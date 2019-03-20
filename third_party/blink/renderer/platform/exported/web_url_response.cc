@@ -182,8 +182,8 @@ void WebURLResponse::AddHTTPHeaderField(const WebString& name,
   resource_response_->AddHTTPHeaderField(name, value);
 }
 
-void WebURLResponse::ClearHTTPHeaderField(const WebString& name) {
-  resource_response_->ClearHTTPHeaderField(name);
+void WebURLResponse::ClearHttpHeaderField(const WebString& name) {
+  resource_response_->ClearHttpHeaderField(name);
 }
 
 void WebURLResponse::VisitHTTPHeaderFields(

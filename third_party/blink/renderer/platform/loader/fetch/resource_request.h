@@ -137,7 +137,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetHTTPHeaderField(const AtomicString& name, const AtomicString& value);
   void AddHTTPHeaderField(const AtomicString& name, const AtomicString& value);
   void AddHTTPHeaderFields(const HTTPHeaderMap& header_fields);
-  void ClearHTTPHeaderField(const AtomicString& name);
+  void ClearHttpHeaderField(const AtomicString& name);
 
   const AtomicString& HttpContentType() const {
     return HttpHeaderField(http_names::kContentType);
