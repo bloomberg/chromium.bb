@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
@@ -102,6 +103,13 @@ public abstract class AppHooks {
      * @param instance CommandLine instance to be updated.
      */
     public void initCommandLine(CommandLine instance) {}
+
+    /**
+     * Inform platform of current display mode.
+     * @param displayMode the new display mode (see WebDisplayMode)
+     * @param activity the affected activity.
+     */
+    public void setDisplayModeForActivity(int displayMode, Activity activity) {}
 
     /**
      * Creates a new {@link AccountManagerDelegate}.
