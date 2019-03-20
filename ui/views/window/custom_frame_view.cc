@@ -40,30 +40,30 @@ namespace {
 
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
-const int kFrameBorderThickness = 4;
+constexpr int kFrameBorderThickness = 4;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
-const int kResizeAreaCornerSize = 16;
+constexpr int kResizeAreaCornerSize = 16;
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
-const int kCaptionButtonHeightWithPadding = 19;
+constexpr int kCaptionButtonHeightWithPadding = 19;
 // The titlebar has a 2 px 3D edge along the top and bottom.
-const int kTitlebarTopAndBottomEdgeThickness = 2;
+constexpr int kTitlebarTopAndBottomEdgeThickness = 2;
 // The icon is inset 2 px from the left frame border.
-const int kIconLeftSpacing = 2;
+constexpr int kIconLeftSpacing = 2;
 // The space between the window icon and the title text.
-const int kTitleIconOffsetX = 4;
+constexpr int kTitleIconOffsetX = 4;
 // The space between the title text and the caption buttons.
-const int kTitleCaptionSpacing = 5;
+constexpr int kTitleCaptionSpacing = 5;
 
 #if defined(OS_CHROMEOS)
 // Chrome OS uses a dark gray.
-const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
+constexpr SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
+constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 #else
 // Windows and Linux use a blue.
-const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
+constexpr SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
+constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif
 
 const gfx::FontList& GetTitleFontList() {
@@ -322,7 +322,7 @@ int CustomFrameView::IconSize() const {
   return display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
 #else
   // The icon never shrinks below 16 px on a side.
-  const int kIconMinimumSize = 16;
+  constexpr int kIconMinimumSize = 16;
   return std::max(GetTitleFontList().GetHeight(), kIconMinimumSize);
 #endif
 }

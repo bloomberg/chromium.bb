@@ -71,7 +71,7 @@ class EmptyMenuMenuItem : public MenuItemView {
 }  // namespace
 
 // Padding between child views.
-static const int kChildXPadding = 8;
+static constexpr int kChildXPadding = 8;
 
 // MenuItemView ---------------------------------------------------------------
 

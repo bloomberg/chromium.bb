@@ -118,8 +118,8 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
   // The prominent button hover effect is a shadow.
-  const int kYOffset = 1;
-  const int kSkiaBlurRadius = 2;
+  constexpr int kYOffset = 1;
+  constexpr int kSkiaBlurRadius = 2;
   const int shadow_alpha = is_prominent_ ? 0x3D : 0x1A;
   const SkColor shadow_color =
       is_dark_mode && is_prominent_ ? gfx::kGoogleBlue300 : SK_ColorBLACK;

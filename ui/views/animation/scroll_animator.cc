@@ -11,7 +11,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace {
-const float kDefaultAcceleration = -1500.0f; // in pixels per second^2
+constexpr float kDefaultAcceleration = -1500.0f;  // in pixels per second^2
 
 // Assumes that d0 == 0.0f
 float GetPosition(float v0, float a, float t) {

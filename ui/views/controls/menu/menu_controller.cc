@@ -75,23 +75,23 @@ namespace {
 int menu_selection_hold_time_ms = kMinimumMsPressedToActivate;
 
 // Period of the scroll timer (in milliseconds).
-const int kScrollTimerMS = 30;
+constexpr int kScrollTimerMS = 30;
 
 // Amount of time from when the drop exits the menu and the menu is hidden.
-const int kCloseOnExitTime = 1200;
+constexpr int kCloseOnExitTime = 1200;
 
 // If a context menu is invoked by touch, we shift the menu by this offset so
 // that the finger does not obscure the menu.
-const int kTouchYPadding = 15;
+constexpr int kTouchYPadding = 15;
 
 // The spacing offset for the bubble tip.
-const int kBubbleTipSizeLeftRight = 12;
-const int kBubbleTipSizeTopBottom = 11;
+constexpr int kBubbleTipSizeLeftRight = 12;
+constexpr int kBubbleTipSizeTopBottom = 11;
 
 // The maximum distance (in DIPS) that the mouse can be moved before it should
 // trigger a mouse menu item activation (regardless of how long the menu has
 // been showing).
-const float kMaximumLengthMovedToActivate = 4.0f;
+constexpr float kMaximumLengthMovedToActivate = 4.0f;
 
 // Time to complete a cycle of the menu item alert animation.
 constexpr base::TimeDelta kAlertAnimationThrobDuration =

@@ -39,8 +39,8 @@ class VIEWS_EXPORT EditableCombobox : public View,
  public:
   // The class name.
   static const char kViewClassName[];
-  static const int kDefaultTextContext = style::CONTEXT_BUTTON;
-  static const int kDefaultTextStyle = style::STYLE_PRIMARY;
+  static constexpr int kDefaultTextContext = style::CONTEXT_BUTTON;
+  static constexpr int kDefaultTextStyle = style::STYLE_PRIMARY;
 
   // |combobox_model|: The ComboboxModel that gives us the items to show in the
   // menu.

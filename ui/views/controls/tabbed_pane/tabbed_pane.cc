@@ -44,9 +44,9 @@ constexpr SkColor kTabTitleColor_InactiveBorder =
 constexpr SkColor kTabTitleColor_InactiveHighlight = gfx::kGoogleGrey700;
 constexpr SkColor kTabTitleColor_ActiveBorder = SK_ColorBLACK;
 constexpr SkColor kTabTitleColor_ActiveHighlight = gfx::kGoogleBlue600;
-const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
-const SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
-const SkScalar kTabBorderThickness = 1.0f;
+constexpr SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
+constexpr SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
+constexpr SkScalar kTabBorderThickness = 1.0f;
 constexpr SkColor kTabHighlightBackgroundColor_Active =
     SkColorSetARGB(0xFF, 0xE8, 0xF0, 0xFE);
 constexpr SkColor kTabHighlightBackgroundColor_Focused =
@@ -55,15 +55,16 @@ constexpr int kTabHighlightBorderRadius = 32;
 constexpr int kTabHighlightPreferredHeight = 32;
 constexpr int kTabHighlightPreferredWidth = 192;
 
-const gfx::Font::Weight kHoverWeightBorder = gfx::Font::Weight::NORMAL;
-const gfx::Font::Weight kHoverWeightHighlight = gfx::Font::Weight::MEDIUM;
-const gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
-const gfx::Font::Weight kInactiveWeightBorder = gfx::Font::Weight::NORMAL;
-const gfx::Font::Weight kInactiveWeightHighlight = gfx::Font::Weight::MEDIUM;
+constexpr gfx::Font::Weight kHoverWeightBorder = gfx::Font::Weight::NORMAL;
+constexpr gfx::Font::Weight kHoverWeightHighlight = gfx::Font::Weight::MEDIUM;
+constexpr gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
+constexpr gfx::Font::Weight kInactiveWeightBorder = gfx::Font::Weight::NORMAL;
+constexpr gfx::Font::Weight kInactiveWeightHighlight =
+    gfx::Font::Weight::MEDIUM;
 
 constexpr int kLabelFontSizeDeltaHighlight = 1;
 
-const int kHarmonyTabStripTabHeight = 32;
+constexpr int kHarmonyTabStripTabHeight = 32;
 constexpr int kBorderThickness = 2;
 
 }  // namespace
@@ -142,13 +143,13 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
   if (is_highlight_style && is_vertical) {
-    const int kTabVerticalPadding = 8;
-    const int kTabHorizontalPadding = 32;
+    constexpr int kTabVerticalPadding = 8;
+    constexpr int kTabHorizontalPadding = 32;
     SetBorder(CreateEmptyBorder(gfx::Insets(
         kTabVerticalPadding, kTabHorizontalPadding, kTabVerticalPadding, 0)));
   } else {
-    const int kTabVerticalPadding = 5;
-    const int kTabHorizontalPadding = 10;
+    constexpr int kTabVerticalPadding = 5;
+    constexpr int kTabHorizontalPadding = 10;
     SetBorder(CreateEmptyBorder(
         gfx::Insets(kTabVerticalPadding, kTabHorizontalPadding)));
   }
@@ -411,13 +412,13 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
     : orientation_(orientation), style_(style) {
   std::unique_ptr<BoxLayout> layout;
   if (orientation == TabbedPane::Orientation::kHorizontal) {
-    const int kTabStripLeadingEdgePadding = 9;
+    constexpr int kTabStripLeadingEdgePadding = 9;
     layout = std::make_unique<BoxLayout>(
         BoxLayout::kHorizontal, gfx::Insets(0, kTabStripLeadingEdgePadding));
     layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_END);
   } else {
-    const int kTabStripEdgePadding = 8;
-    const int kTabSpacing = 8;
+    constexpr int kTabStripEdgePadding = 8;
+    constexpr int kTabSpacing = 8;
     layout = std::make_unique<BoxLayout>(
         BoxLayout::kVertical, gfx::Insets(kTabStripEdgePadding, 0, 0, 0),
         kTabSpacing);
@@ -574,8 +575,8 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   if (style() == TabbedPane::TabStripStyle::kHighlight)
     return;
 
-  const int kUnselectedBorderThickness = 1;
-  const int kSelectedBorderThickness = 2;
+  constexpr int kUnselectedBorderThickness = 1;
+  constexpr int kSelectedBorderThickness = 2;
   const bool is_horizontal =
       orientation() == TabbedPane::Orientation::kHorizontal;
 

@@ -11,7 +11,7 @@
 namespace {
 // The distance the mouse can be dragged outside the bounds of the thumb during
 // dragging before the scrollbar will snap back to its regular position.
-static const int kScrollThumbDragOutSnap = 100;
+static constexpr int kScrollThumbDragOutSnap = 100;
 }
 
 namespace views {

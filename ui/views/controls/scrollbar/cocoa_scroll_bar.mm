@@ -21,38 +21,40 @@ namespace views {
 namespace {
 
 // The length of the fade animation.
-const int kFadeDurationMs = 240;
+constexpr int kFadeDurationMs = 240;
 
 // The length of the expand animation.
-const int kExpandDurationMs = 240;
+constexpr int kExpandDurationMs = 240;
 
 // How long we should wait before hiding the scrollbar.
-const int kScrollbarHideTimeoutMs = 500;
+constexpr int kScrollbarHideTimeoutMs = 500;
 
 // The thickness of the normal and expanded scrollbars.
-const int kScrollbarThickness = 12;
-const int kExpandedScrollbarThickness = 16;
+constexpr int kScrollbarThickness = 12;
+constexpr int kExpandedScrollbarThickness = 16;
 
 // The width of the scroller track border.
-const int kScrollerTrackBorderWidth = 1;
+constexpr int kScrollerTrackBorderWidth = 1;
 
 // The amount the thumb is inset from the ends and the inside edge of track
 // border.
-const int kScrollbarThumbInset = 2;
+constexpr int kScrollbarThumbInset = 2;
 
 // Scrollbar thumb colors.
-const SkColor kScrollerDefaultThumbColor = SkColorSetARGB(0x38, 0, 0, 0);
-const SkColor kScrollerHoverThumbColor = SkColorSetARGB(0x80, 0, 0, 0);
+constexpr SkColor kScrollerDefaultThumbColor = SkColorSetARGB(0x38, 0, 0, 0);
+constexpr SkColor kScrollerHoverThumbColor = SkColorSetARGB(0x80, 0, 0, 0);
 
 // Opacity of the overlay scrollbar.
-const float kOverlayOpacity = 0.8f;
+constexpr float kOverlayOpacity = 0.8f;
 
 // Scroller track colors.
-const SkColor kScrollerTrackGradientColors[] = {
+constexpr SkColor kScrollerTrackGradientColors[] = {
     SkColorSetRGB(0xEF, 0xEF, 0xEF), SkColorSetRGB(0xF9, 0xF9, 0xF9),
     SkColorSetRGB(0xFD, 0xFD, 0xFD), SkColorSetRGB(0xF6, 0xF6, 0xF6)};
-const SkColor kScrollerTrackInnerBorderColor = SkColorSetRGB(0xE4, 0xE4, 0xE4);
-const SkColor kScrollerTrackOuterBorderColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+constexpr SkColor kScrollerTrackInnerBorderColor =
+    SkColorSetRGB(0xE4, 0xE4, 0xE4);
+constexpr SkColor kScrollerTrackOuterBorderColor =
+    SkColorSetRGB(0xEF, 0xEF, 0xEF);
 
 }  // namespace
 

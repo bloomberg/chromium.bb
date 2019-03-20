@@ -11,8 +11,8 @@
 namespace views {
 
 // The width/height of the check and submenu arrows.
-const int kMenuCheckSize = 16;
-const int kSubmenuArrowSize = 8;
+constexpr int kMenuCheckSize = 16;
+constexpr int kSubmenuArrowSize = 8;
 
 // Returns the Menu Check box image (always checked).
 gfx::ImageSkia GetMenuCheckImage(SkColor icon_color);

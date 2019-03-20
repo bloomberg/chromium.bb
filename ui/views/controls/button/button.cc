@@ -38,7 +38,7 @@ namespace {
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false)
 
 // How long the hover animation takes if uninterrupted.
-const int kHoverFadeDurationMs = 150;
+constexpr int kHoverFadeDurationMs = 150;
 
 }  // namespace
 

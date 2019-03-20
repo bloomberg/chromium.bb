@@ -39,8 +39,8 @@ class VIEWS_EXPORT Combobox : public View,
  public:
   // The combobox's class name.
   static const char kViewClassName[];
-  static const int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
-  static const int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
+  static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
+  static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
 
   // |model| is owned by the combobox when using this constructor.
   explicit Combobox(std::unique_ptr<ui::ComboboxModel> model,

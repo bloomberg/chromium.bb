@@ -29,7 +29,7 @@
 
 namespace {
 
-const int kDefaultMessageWidth = 400;
+constexpr int kDefaultMessageWidth = 400;
 
 // Paragraph separators are defined in
 // http://www.unicode.org/Public/6.0.0/ucd/extracted/DerivedBidiClass.txt

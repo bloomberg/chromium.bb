@@ -27,11 +27,11 @@ namespace {
 
 // Max visual tooltip width. If a tooltip is greater than this width, it will
 // be wrapped.
-const int kTooltipMaxWidthPixels = 400;
+constexpr int kTooltipMaxWidthPixels = 400;
 
 // FIXME: get cursor offset from actual cursor size.
-const int kCursorOffsetX = 10;
-const int kCursorOffsetY = 15;
+constexpr int kCursorOffsetX = 10;
+constexpr int kCursorOffsetY = 15;
 
 // TODO(varkha): Update if native widget can be transparent on Linux.
 bool CanUseTranslucentTooltipWidget() {
@@ -72,9 +72,9 @@ class TooltipAura::TooltipView : public views::View {
  public:
   TooltipView()
       : render_text_(gfx::RenderText::CreateHarfBuzzInstance()), max_width_(0) {
-    const int kHorizontalPadding = 8;
-    const int kVerticalPaddingTop = 4;
-    const int kVerticalPaddingBottom = 5;
+    constexpr int kHorizontalPadding = 8;
+    constexpr int kVerticalPaddingTop = 4;
+    constexpr int kVerticalPaddingBottom = 5;
     SetBorder(CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
                                 kVerticalPaddingBottom, kHorizontalPadding));
 

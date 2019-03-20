@@ -56,8 +56,6 @@ gfx::Point RightCenter(const gfx::Rect& rect) {
 
 }  // namespace
 
-const int BubbleBorder::kStroke = 1;
-
 BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
     : arrow_(arrow),
       arrow_offset_(0),
