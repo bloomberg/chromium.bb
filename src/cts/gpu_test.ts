@@ -15,7 +15,8 @@ export class GPUTest extends Fixture {
     const device = adapter.createDevice({}); // TODO: await adapter.requestDevice()
     return new GPUTest(log, params, device);
   }
-  public device: GPUDevice;
+  //public device: GPUDevice;
+  public device: any; // TODO: update framework/gpu to match sketch again
   public queue: GPUQueue;
 
   protected constructor(log: CaseRecorder, params: IParamsAny, device: GPUDevice) {
