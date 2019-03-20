@@ -292,6 +292,27 @@ bool GetImageBufferProperty(CVImageBufferRef image_buffer,
   return false;
 }
 
+// Use a matrix id that is coherent with a primary id. Useful when we fail to
+// parse the matrix. Previously it was always defaulting to MatrixID::BT709
+// See http://crbug.com/788236.
+gfx::ColorSpace::MatrixID GetDefaultMatrixID(
+    const gfx::ColorSpace::PrimaryID primary_id) {
+  gfx::ColorSpace::MatrixID matrix_id = gfx::ColorSpace::MatrixID::BT709;
+
+  switch (primary_id) {
+    case gfx::ColorSpace::PrimaryID::BT709:
+      matrix_id = gfx::ColorSpace::MatrixID::BT709;
+      break;
+    case gfx::ColorSpace::PrimaryID::BT470BG:
+      matrix_id = gfx::ColorSpace::MatrixID::BT470BG;
+      break;
+    default:
+      break;
+  }
+
+  return matrix_id;
+}
+
 gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
   // The named primaries. Default to BT709.
   gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::BT709;
@@ -314,7 +335,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
   };
   if (!GetImageBufferProperty(image_buffer, kCVImageBufferColorPrimariesKey,
                               primaries, base::size(primaries), &primary_id)) {
-    DLOG(ERROR) << "Filed to find CVImageBufferRef primaries.";
+    DLOG(ERROR) << "Failed to find CVImageBufferRef primaries.";
   }
 
   // The named transfer function.
@@ -339,7 +360,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
   };
   if (!GetImageBufferProperty(image_buffer, kCVImageBufferTransferFunctionKey,
                               transfers, base::size(transfers), &transfer_id)) {
-    DLOG(ERROR) << "Filed to find CVImageBufferRef transfer.";
+    DLOG(ERROR) << "Failed to find CVImageBufferRef transfer.";
   }
 
   // Transfer functions can also be specified as a gamma value.
@@ -356,15 +377,15 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
         transfer_id = gfx::ColorSpace::TransferID::CUSTOM;
         custom_tr_fn.g = gamma_float;
       } else {
-        DLOG(ERROR) << "Filed to get CVImageBufferRef gamma level as float.";
+        DLOG(ERROR) << "Failed to get CVImageBufferRef gamma level as float.";
       }
     } else {
-      DLOG(ERROR) << "Filed to get CVImageBufferRef gamma level.";
+      DLOG(ERROR) << "Failed to get CVImageBufferRef gamma level.";
     }
   }
 
   // Read the RGB to YUV matrix ID.
-  gfx::ColorSpace::MatrixID matrix_id = gfx::ColorSpace::MatrixID::BT709;
+  gfx::ColorSpace::MatrixID matrix_id = GetDefaultMatrixID(primary_id);
   struct {
     const CFStringRef cfstr;
     gfx::ColorSpace::MatrixID id;
@@ -382,7 +403,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
                   }};
   if (!GetImageBufferProperty(image_buffer, kCVImageBufferYCbCrMatrixKey,
                               matrices, base::size(matrices), &matrix_id)) {
-    DLOG(ERROR) << "Filed to find CVImageBufferRef YUV matrix.";
+    DLOG(ERROR) << "Failed to find CVImageBufferRef YUV matrix.";
   }
 
   // It is specified to the decoder to use luma=[16,235] chroma=[16,240] via
