@@ -23,10 +23,12 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -897,6 +899,47 @@ TEST_F(LabelTest, EmptyLabel) {
   // With no text, neither links nor labels have a size in any dimension.
   Link concrete_link((base::string16()));
   EXPECT_TRUE(concrete_link.GetPreferredSize().IsEmpty());
+}
+
+TEST_F(LabelTest, CanForceDirectionality) {
+  Label bidi_text_force_url(ToRTL("0123456") + base::ASCIIToUTF16(".com"), 0,
+                            style::STYLE_PRIMARY,
+                            gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            bidi_text_force_url.GetTextDirectionForTesting());
+
+  Label rtl_text_force_ltr(ToRTL("0123456"), 0, style::STYLE_PRIMARY,
+                           gfx::DirectionalityMode::DIRECTIONALITY_FORCE_LTR);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            rtl_text_force_ltr.GetTextDirectionForTesting());
+
+  Label ltr_text_force_rtl(base::ASCIIToUTF16("0123456"), 0,
+                           style::STYLE_PRIMARY,
+                           gfx::DirectionalityMode::DIRECTIONALITY_FORCE_RTL);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT,
+            ltr_text_force_rtl.GetTextDirectionForTesting());
+
+  SetRTL(true);
+  Label ltr_use_ui(base::ASCIIToUTF16("0123456"), 0, style::STYLE_PRIMARY,
+                   gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT,
+            ltr_use_ui.GetTextDirectionForTesting());
+
+  SetRTL(false);
+  Label rtl_use_ui(ToRTL("0123456"), 0, style::STYLE_PRIMARY,
+                   gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            rtl_use_ui.GetTextDirectionForTesting());
+}
+
+TEST_F(LabelTest, DefaultDirectionalityIsFromText) {
+  Label ltr(base::ASCIIToUTF16("Foo"));
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            ltr.GetTextDirectionForTesting());
+
+  Label rtl(ToRTL("0123456"));
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT,
+            rtl.GetTextDirectionForTesting());
 }
 
 TEST_F(LabelSelectionTest, Selectable) {

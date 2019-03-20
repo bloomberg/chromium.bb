@@ -234,6 +234,10 @@ base::string16 Label::GetDisplayTextForTesting() {
   return display_text_ ? display_text_->GetDisplayText() : base::string16();
 }
 
+base::i18n::TextDirection Label::GetTextDirectionForTesting() {
+  return full_text_->GetDisplayTextDirection();
+}
+
 bool Label::IsSelectionSupported() const {
   return !obscured() && full_text_->IsSelectionSupported();
 }
