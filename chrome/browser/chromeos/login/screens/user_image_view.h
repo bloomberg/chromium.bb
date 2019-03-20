@@ -31,6 +31,16 @@ class UserImageView {
 
   // Hides curtain with spinner.
   virtual void HideCurtain() = 0;
+
+  virtual void SetIsCameraPresent(bool value) = 0;
+
+  virtual void SetProfilePictureDataURL(const std::string& value) = 0;
+
+  virtual void SetIsProfilePictureAvailable(bool value) = 0;
+
+  virtual void SetSelectedImageIndex(int value) = 0;
+
+  virtual void SetSelectedImageURL(const std::string& value) = 0;
 };
 
 }  // namespace chromeos

@@ -7,41 +7,19 @@
  */
 
 login.createScreen('UserImageScreen', 'user-image', function() {
-  var CONTEXT_KEY_IS_CAMERA_PRESENT = 'isCameraPresent';
-  var CONTEXT_KEY_SELECTED_IMAGE_INDEX = 'selectedImageIndex';
-  var CONTEXT_KEY_SELECTED_IMAGE_URL = 'selectedImageURL';
-  var CONTEXT_KEY_PROFILE_PICTURE_DATA_URL = 'profilePictureDataURL';
-  var CONTEXT_KEY_IS_PROFILE_PICTURE_AVAILABLE = 'isProfilePictureAvailable';
-
   return {
-    EXTERNAL_API: ['setDefaultImages', 'hideCurtain'],
+    EXTERNAL_API: [
+      'setDefaultImages',
+      'hideCurtain',
+      'setIsCameraPresent',
+      'setProfilePictureDataURL',
+      'setIsProfilePictureAvailable',
+      'setSelectedImageIndex',
+      'setSelectedImageURL',
+    ],
 
     /** @override */
     decorate: function(element) {
-      var self = this;
-      this.context.addObserver(
-          CONTEXT_KEY_IS_CAMERA_PRESENT, function(present) {
-            $('changePicture').cameraPresent = present;
-          });
-      this.context.addObserver(
-          CONTEXT_KEY_SELECTED_IMAGE_INDEX, this.setSelectedImageIndex_);
-      this.context.addObserver(
-          CONTEXT_KEY_SELECTED_IMAGE_URL, this.setSelectedImageUrl_);
-      this.context.addObserver(
-          CONTEXT_KEY_PROFILE_PICTURE_DATA_URL, function(url) {
-            self.profileImageLoading = false;
-            if (url)
-              $('changePicture').setProfileImageUrl(url, false /* selected */);
-          });
-      this.context.addObserver(
-          CONTEXT_KEY_IS_PROFILE_PICTURE_AVAILABLE, function(available) {
-            if (!available) {
-              self.profileImageLoading = false;
-              // Empty url hides profile image selection choice.
-              $('changePicture').setProfileImageUrl('', false /* selected */);
-            }
-          });
-
       this.profileImageLoading = true;
       chrome.send('getImages');
     },
@@ -117,26 +95,6 @@ login.createScreen('UserImageScreen', 'user-image', function() {
       chrome.send('screenReady');
     },
 
-    /**
-     * Selects user image with the given index.
-     * @param {number} index Index of the image to select.
-     * @private
-     */
-    setSelectedImageIndex_: function(index) {
-      $('changePicture').selectedImageIndex = index;
-    },
-
-    /**
-     * Selects user image with the given URL.
-     * @param {string} url URL of the image to select.
-     * @private
-     */
-    setSelectedImageUrl_: function(url) {
-      if (!url)
-        return;
-      $('changePicture').selectedImageUrl = url;
-    },
-
     get loading() {
       return this.classList.contains('loading');
     },
@@ -153,6 +111,45 @@ login.createScreen('UserImageScreen', 'user-image', function() {
     hideCurtain: function() {
       this.loading = false;
       $('changePicture').focus();
+    },
+
+    /** @param {boolean} present */
+    setIsCameraPresent: function(present) {
+      $('changePicture').cameraPresent = present;
+    },
+
+    /** @param {string} url */
+    setProfilePictureDataURL: function(url) {
+      this.profileImageLoading = false;
+      if (url)
+        $('changePicture').setProfileImageUrl(url, false /* selected */);
+    },
+
+    /** @param {boolean} available */
+    setIsProfilePictureAvailable: function(available) {
+      if (!available) {
+        this.profileImageLoading = false;
+        // Empty url hides profile image selection choice.
+        $('changePicture').setProfileImageUrl('', false /* selected */);
+      }
+    },
+
+    /**
+     * Selects user image with the given index.
+     * @param {number} index Index of the image to select.
+     */
+    setSelectedImageIndex: function(index) {
+      $('changePicture').selectedImageIndex = index;
+    },
+
+    /**
+     * Selects user image with the given URL.
+     * @param {string} url URL of the image to select.
+     */
+    setSelectedImageURL: function(url) {
+      if (!url)
+        return;
+      $('changePicture').selectedImageUrl = url;
     },
 
     /**
