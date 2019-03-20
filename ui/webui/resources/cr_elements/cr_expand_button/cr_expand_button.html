@@ -21,6 +21,10 @@
         pointer-events: none;
       }
 
+      :host([disabled]) cr-icon-button {
+        display: var(--cr-expand-button-disabled-display, initial);
+      }
+
       #label {
         flex: 1;
         padding: var(--cr-section-vertical-padding) 0;

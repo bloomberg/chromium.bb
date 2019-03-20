@@ -43,8 +43,11 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
       function() {
         Polymer.dom.flush();
 
-        testVisible('#activity-item-main-row', true);
-        testVisible('cr-expand-button', false);
+        testVisible('cr-expand-button', true);
+
+        // Since |cr-expand-button| is always visible, we test that the
+        // |cr-icon-button| within is not visible.
+        testVisible('cr-icon-button', false);
       });
 
   test(

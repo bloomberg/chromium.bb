@@ -4,28 +4,27 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="../shared_style.html">
 <link rel="import" href="../shared_vars.html">
 
 <dom-module id="activity-log-stream-item">
   <template>
-    <style include="cr-icons cr-shared-style">
+    <style include="cr-icons cr-shared-style shared-style">
       :host {
         border-top: var(--cr-separator-line);
         display: block;
         padding: 8px var(--cr-section-padding);
       }
 
-      #activity-item-main-row {
-        align-items: center;
-        display: flex;
-        flex-direction: row;
+      cr-expand-button {
+        --cr-expand-button-disabled-display: none;
+
         /* Match separator height. */
         min-height: calc(var(--cr-section-min-height) - var(--separator-gap));
       }
 
-      #activity-item-main-row cr-expand-button {
-        margin-inline-end: 6px;
+      cr-expand-button[disabled] {
+        opacity: 1;
       }
 
       #activity-call-and-time {
@@ -53,14 +52,11 @@
         text-align: end;
       }
 
-      iron-collapse {
-        max-width: var(--activity-log-call-and-time-width);
-      }
-
       #expanded-data {
         display: flex;
         flex-direction: column;
         margin-inline-start: 16px;
+        max-width: var(--activity-log-call-and-time-width);
       }
 
       #page-url-link {
@@ -100,42 +96,35 @@
         margin-top: 10px;
       }
     </style>
-    <div actionable$="[[isExpandable_]]"
-        id="activity-item-main-row"
-        on-click="onExpandClick_">
+    <cr-expand-button expanded="[[data.expanded]]"
+        disabled="[[!isExpandable_]]" on-click="onExpandClick_">
       <div id="activity-call-and-time">
         <span id="activity-type">[[data.activityType]]</span>
         <span id="activity-name" title="[[data.name]]">[[data.name]]</span>
         <span id="activity-time">[[getFormattedTime_(data.timeStamp)]]</span>
       </div>
-      <cr-expand-button expanded="{{data.expanded}}"
-          hidden$="[[!isExpandable_]]">
-      </cr-expand-button>
-    </div>
-    <iron-collapse opened="[[data.expanded]]">
-      <div id="expanded-data" hidden$="[[!isExpandable_]]">
-        <a id="page-url-link" href="[[data.pageUrl]]"
-            hidden$="[[!hasPageUrl_(data.pageUrl)]]"
-            title="[[data.pageUrl]]">[[data.pageUrl]]</a>
-        <div id="args-list" hidden$="[[!hasArgs_(argsList_)]]">
-          <span class="expanded-data-heading">
-            $i18n{activityArgumentsHeading}
-          </span>
-          <template is="dom-repeat" items="[[argsList_]]">
-            <div class="list-item">
-              <span class="index">[[item.index]]</span>
-              <span class="arg">[[item.arg]]</span>
-            </div>
-          </template>
-        </div>
-        <div id="web-request-section"
-            hidden$="[[!hasWebRequestInfo_(data.webRequestInfo)]]">
-          <span class="expanded-data-heading">
-            $i18n{webRequestInfoHeading}</span>
-          <span id="web-request-details">[[data.webRequestInfo]]</span>
-        </div>
+    </cr-expand-button>
+    <div id="expanded-data" hidden$="[[!data.expanded]]">
+      <a id="page-url-link" href="[[data.pageUrl]]"
+          hidden$="[[!hasPageUrl_(data.pageUrl)]]"
+          title="[[data.pageUrl]]">[[data.pageUrl]]</a>
+      <div id="args-list" hidden$="[[!hasArgs_(argsList_)]]">
+        <span class="expanded-data-heading">
+          $i18n{activityArgumentsHeading}
+        </span>
+        <template is="dom-repeat" items="[[argsList_]]">
+          <div class="list-item">
+            <span class="index">[[item.index]]</span>
+            <span class="arg">[[item.arg]]</span>
+          </div>
+        </template>
       </div>
-    </iron-collapse>
+      <div id="web-request-section"
+          hidden$="[[!hasWebRequestInfo_(data.webRequestInfo)]]">
+        <span class="expanded-data-heading">$i18n{webRequestInfoHeading}</span>
+        <span id="web-request-details">[[data.webRequestInfo]]</span>
+      </div>
+    </div>
   </template>
   <script src="activity_log_stream_item.js"></script>
 </dom-module>
