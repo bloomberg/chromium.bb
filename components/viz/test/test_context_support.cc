@@ -132,6 +132,11 @@ unsigned int TestContextSupport::GetTransferBufferFreeSize() const {
   NOTIMPLEMENTED();
   return 0;
 }
+bool TestContextSupport::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  NOTIMPLEMENTED();
+  return false;
+}
 
 bool TestContextSupport::HasGrContextSupport() const {
   return true;

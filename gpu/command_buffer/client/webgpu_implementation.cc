@@ -139,6 +139,11 @@ unsigned int WebGPUImplementation::GetTransferBufferFreeSize() const {
   NOTREACHED();
   return 0;
 }
+bool WebGPUImplementation::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  NOTREACHED();
+  return false;
+}
 
 // ImplementationBase implementation.
 void WebGPUImplementation::IssueShallowFlush() {
