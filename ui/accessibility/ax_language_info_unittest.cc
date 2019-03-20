@@ -383,6 +383,128 @@ TEST(AXLanguageInfoTest, LanguageDetectionBasic) {
   }
 }
 
+TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+
+  // This tests a Detect step without any matching Label step.
+  //
+  // Tree:
+  //        1
+  //      2   3
+  //    4
+  //  5
+  //
+  //  1 - English lang attribute, no text
+  //  2 - French lang attribute,  no text
+  //  3 - no attribute,           French text
+  //  4 - no attribute,           English text
+  //  5 - no attribute,           German text
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+
+  {
+    AXNodeData& node1 = initial_state.nodes[0];
+    node1.id = 1;
+    node1.child_ids.resize(2);
+    node1.child_ids[0] = 2;
+    node1.child_ids[1] = 3;
+    node1.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "en");
+  }
+
+  {
+    AXNodeData& node2 = initial_state.nodes[1];
+    node2.id = 2;
+    node2.child_ids.resize(1);
+    node2.child_ids[0] = 4;
+    node2.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "fr");
+  }
+
+  {
+    AXNodeData& node3 = initial_state.nodes[2];
+    node3.id = 3;
+    node3.role = ax::mojom::Role::kStaticText;
+    std::string node3_text =
+        "Ce texte a été créé avec Google Translate, il est peu probable qu'il "
+        "soit idiomatique dans la langue cible indiquée Ce texte est "
+        "uniquement utilisé pour tester la détection de la langue.";
+    node3.AddStringAttribute(ax::mojom::StringAttribute::kName, node3_text);
+  }
+
+  {
+    AXNodeData& node4 = initial_state.nodes[3];
+    node4.id = 4;
+    node4.child_ids.resize(1);
+    node4.child_ids[0] = 5;
+    node4.role = ax::mojom::Role::kStaticText;
+    std::string node4_text =
+        "This is text created using Google Translate, it is unlikely to be "
+        "idiomatic in the given target language. This text is only used to "
+        "test language detection";
+    node4.AddStringAttribute(ax::mojom::StringAttribute::kName, node4_text);
+  }
+
+  {
+    AXNodeData& node5 = initial_state.nodes[4];
+    node5.id = 5;
+    node5.role = ax::mojom::Role::kStaticText;
+    std::string node5_text =
+        "Dies ist ein mit Google Translate erstellter Text. Es ist "
+        "unwahrscheinlich, dass er in der angegebenen Zielsprache idiomatisch "
+        "ist. Dieser Text wird nur zum Testen der Spracherkennung verwendet.";
+    node5.AddStringAttribute(ax::mojom::StringAttribute::kName, node5_text);
+  }
+
+  AXTree tree(initial_state);
+  DetectLanguageForSubtree(tree.root(), &tree);
+  // Purposefully not calling Label so we can test Detect in isolation.
+
+  {
+    AXNode* node1 = tree.GetFromId(1);
+    // node1 is not a text node, so no lang info should be attached.
+    EXPECT_EQ(node1->GetLanguageInfo(), nullptr);
+    EXPECT_EQ(node1->GetLanguage(), "en");
+  }
+
+  {
+    AXNode* node2 = tree.GetFromId(2);
+    // node2 is not a text node, so no lang info should be attached.
+    EXPECT_EQ(node2->GetLanguageInfo(), nullptr);
+    EXPECT_EQ(node2->GetLanguage(), "fr");
+  }
+
+  {
+    AXNode* node3 = tree.GetFromId(3);
+    EXPECT_TRUE(node3->IsTextNode());
+    ASSERT_NE(node3->GetLanguageInfo(), nullptr);
+    ASSERT_GT(node3->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
+    ASSERT_EQ(node3->GetLanguageInfo()->detected_languages[0], "fr");
+    EXPECT_TRUE(node3->GetLanguageInfo()->language.empty());
+    EXPECT_EQ(node3->GetLanguage(), "en");
+  }
+
+  {
+    AXNode* node4 = tree.GetFromId(4);
+    EXPECT_TRUE(node4->IsTextNode());
+    ASSERT_NE(node4->GetLanguageInfo(), nullptr);
+    ASSERT_GT(node4->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
+    ASSERT_EQ(node4->GetLanguageInfo()->detected_languages[0], "en");
+    EXPECT_TRUE(node4->GetLanguageInfo()->language.empty());
+    EXPECT_EQ(node4->GetLanguage(), "fr");
+  }
+
+  {
+    AXNode* node5 = tree.GetFromId(5);
+    EXPECT_TRUE(node5->IsTextNode());
+    ASSERT_NE(node5->GetLanguageInfo(), nullptr);
+    ASSERT_GT(node5->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
+    ASSERT_EQ(node5->GetLanguageInfo()->detected_languages[0], "de");
+    EXPECT_TRUE(node5->GetLanguageInfo()->language.empty());
+    EXPECT_EQ(node5->GetLanguage(), "fr");
+  }
+}
+
 TEST(AXLanguageInfoTest, kLanguageUntouched) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
