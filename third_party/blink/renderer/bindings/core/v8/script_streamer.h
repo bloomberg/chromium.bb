@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -18,6 +19,7 @@ namespace blink {
 
 class ScriptResource;
 class SourceStream;
+class ResponseBodyLoaderClient;
 
 // ScriptStreamer streams incomplete script data to V8 so that it can be parsed
 // while it's loaded. ScriptResource holds a reference to ScriptStreamer.
@@ -103,7 +105,9 @@ class CORE_EXPORT ScriptStreamer final
   }
 
   // Called by ScriptResource when data arrives from the network.
-  void NotifyAppendData();
+  bool TryStartStreaming(mojo::ScopedDataPipeConsumerHandle* data_pipe,
+                         ResponseBodyLoaderClient* response_body_loader_client);
+
   // Called by ScriptResource when loading has completed.
   //
   // Should not be called synchronously, as it can trigger script resource

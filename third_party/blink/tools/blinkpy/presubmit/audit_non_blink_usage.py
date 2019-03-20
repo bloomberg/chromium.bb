@@ -365,6 +365,16 @@ _CONFIG = [
         'allowed': ['gin::.+'],
     },
     {
+        'paths': ['third_party/blink/renderer/bindings/core/v8/script_streamer.cc'],
+        'allowed': [
+            # For the script streaming to be able to block when reading from a
+            # mojo datapipe.
+            'base::ScopedAllowBaseSyncPrimitives',
+            'base::ScopedBlockingCall',
+            'base::BlockingType',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.cc'],
         'allowed': [
             # For memory reduction histogram.

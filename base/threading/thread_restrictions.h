@@ -110,6 +110,7 @@ namespace audio {
 class OutputDevice;
 }
 namespace blink {
+class SourceStream;
 class VideoFrameResourceProvider;
 }
 namespace cc {
@@ -381,6 +382,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   // Allowed usage:
   friend class SimpleThread;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
+  friend class blink::SourceStream;
   friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
