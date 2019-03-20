@@ -202,6 +202,12 @@ class BASE_EXPORT SequenceManagerImpl
   friend class ::base::sequence_manager::SequenceManagerForTest;
 
  private:
+  // Returns the SequenceManager running the
+  // current thread. It must only be used on the thread it was obtained.
+  // Only to be used by MessageLoopCurrent for the moment
+  static SequenceManagerImpl* GetCurrent();
+  friend class ::base::MessageLoopCurrent;
+
   enum class ProcessTaskResult {
     kDeferred,
     kExecuted,
