@@ -18915,7 +18915,7 @@ Called by update_net_error_codes.py.-->
   <int value="113" label="kPlatformKeys"/>
   <int value="114" label="kDeleted_Plugin"/>
   <int value="115" label="kPower"/>
-  <int value="116" label="kPreferencesPrivate"/>
+  <int value="116" label="kDeleted_PreferencesPrivate"/>
   <int value="117" label="kDeleted_PrincipalsPrivate"/>
   <int value="118" label="kPrinterProvider"/>
   <int value="119" label="kPrivacy"/>
