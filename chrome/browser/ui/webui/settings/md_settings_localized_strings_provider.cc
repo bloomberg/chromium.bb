@@ -1256,6 +1256,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING},
       {"networkAlwaysOnVpn", IDS_SETTINGS_INTERNET_NETWORK_ALWAYS_ON_VPN},
       {"networkAutoConnect", IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT},
+      {"networkAutoConnectCellular",
+       IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT_CELLULAR},
       {"networkButtonActivate", IDS_SETTINGS_INTERNET_BUTTON_ACTIVATE},
       {"networkButtonConfigure", IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE},
       {"networkButtonConnect", IDS_SETTINGS_INTERNET_BUTTON_CONNECT},

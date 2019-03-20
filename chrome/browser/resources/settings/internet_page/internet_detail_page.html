@@ -175,7 +175,7 @@
               managedNetworkAvailable)]]">
         <div class="settings-box">
           <div id="autoConnectToggleLabel" class="start settings-box-text">
-            $i18n{networkAutoConnect}
+            [[getAutoConnectToggleLabel_(networkProperties_)]]
           </div>
           <template is="dom-if" if="[[isAutoConnectEnforcedByPolicy(
               networkProperties_, globalPolicy)]]">

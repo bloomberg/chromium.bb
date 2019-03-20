@@ -478,6 +478,17 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {string} The text to display for auto-connect toggle label.
+   * @private
+   */
+  getAutoConnectToggleLabel_: function(networkProperties) {
+    return this.isCellular_(networkProperties) ?
+        this.i18n('networkAutoConnectCellular') :
+        this.i18n('networkAutoConnect');
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
