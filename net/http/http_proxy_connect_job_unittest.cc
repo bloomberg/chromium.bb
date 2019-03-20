@@ -228,8 +228,6 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
 
   std::unique_ptr<HttpNetworkSession> session_;
 
-  base::HistogramTester histogram_tester_;
-
   base::FieldTrialList field_trial_list_;
 
   SpdyTestUtil spdy_util_;
@@ -247,10 +245,10 @@ INSTANTIATE_TEST_SUITE_P(HttpProxyType,
 
 TEST_P(HttpProxyConnectJobTest, NoTunnel) {
   InitProxyDelegate();
-  int loop_iterations = 0;
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);
     session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+    base::HistogramTester histogram_tester;
 
     Initialize(base::span<MockRead>(), base::span<MockWrite>(),
                base::span<MockRead>(), base::span<MockWrite>(), io_mode);
@@ -262,14 +260,12 @@ TEST_P(HttpProxyConnectJobTest, NoTunnel) {
                                           io_mode == SYNCHRONOUS);
     EXPECT_FALSE(proxy_delegate_->on_before_tunnel_request_called());
 
-    ++loop_iterations;
     bool is_secure_proxy = GetParam() == HTTPS || GetParam() == SPDY;
-    histogram_tester_.ExpectTotalCount(
+    histogram_tester.ExpectTotalCount(
         "Net.HttpProxy.ConnectLatency.Insecure.Success",
-        is_secure_proxy ? 0 : loop_iterations);
-    histogram_tester_.ExpectTotalCount(
-        "Net.HttpProxy.ConnectLatency.Secure.Success",
-        is_secure_proxy ? loop_iterations : 0);
+        is_secure_proxy ? 0 : 1);
+    histogram_tester.ExpectTotalCount(
+        "Net.HttpProxy.ConnectLatency.Secure.Success", is_secure_proxy ? 1 : 0);
   }
 }
 
@@ -861,10 +857,10 @@ TEST_P(HttpProxyConnectJobTest, TCPError) {
   // established.
   if (GetParam() == SPDY)
     return;
-  int loop_iterations = 0;
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);
     session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+    base::HistogramTester histogram_tester;
 
     SequencedSocketData data;
     data.set_connect_data(MockConnect(io_mode, ERR_CONNECTION_CLOSED));
@@ -877,24 +873,21 @@ TEST_P(HttpProxyConnectJobTest, TCPError) {
         connect_job.get(), ERR_PROXY_CONNECTION_FAILED, io_mode == SYNCHRONOUS);
 
     bool is_secure_proxy = GetParam() == HTTPS;
-    ++loop_iterations;
-    histogram_tester_.ExpectTotalCount(
-        "Net.HttpProxy.ConnectLatency.Insecure.Error",
-        is_secure_proxy ? 0 : loop_iterations);
-    histogram_tester_.ExpectTotalCount(
-        "Net.HttpProxy.ConnectLatency.Secure.Error",
-        is_secure_proxy ? loop_iterations : 0);
+    histogram_tester.ExpectTotalCount(
+        "Net.HttpProxy.ConnectLatency.Insecure.Error", is_secure_proxy ? 0 : 1);
+    histogram_tester.ExpectTotalCount(
+        "Net.HttpProxy.ConnectLatency.Secure.Error", is_secure_proxy ? 1 : 0);
   }
 }
 
 TEST_P(HttpProxyConnectJobTest, SSLError) {
   if (GetParam() == HTTP)
     return;
-  int loop_iterations = 0;
 
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);
     session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+    base::HistogramTester histogram_tester;
 
     SequencedSocketData data;
     data.set_connect_data(MockConnect(io_mode, OK));
@@ -913,10 +906,9 @@ TEST_P(HttpProxyConnectJobTest, SSLError) {
                                           ERR_PROXY_CERTIFICATE_INVALID,
                                           io_mode == SYNCHRONOUS);
 
-    ++loop_iterations;
-    histogram_tester_.ExpectTotalCount(
-        "Net.HttpProxy.ConnectLatency.Secure.Error", loop_iterations);
-    histogram_tester_.ExpectTotalCount(
+    histogram_tester.ExpectTotalCount(
+        "Net.HttpProxy.ConnectLatency.Secure.Error", 1);
+    histogram_tester.ExpectTotalCount(
         "Net.HttpProxy.ConnectLatency.Insecure.Error", 0);
   }
 }
@@ -1043,6 +1035,136 @@ TEST_P(HttpProxyConnectJobTest, TunnelSetupError) {
     test_delegate.StartJobExpectingResult(
         connect_job.get(), ERR_TUNNEL_CONNECTION_FAILED,
         io_mode == SYNCHRONOUS && GetParam() != SPDY);
+    // Need to close the session to prevent reuse in the next loop iteration.
+    session_->spdy_session_pool()->CloseAllSessions();
+  }
+}
+
+TEST_P(HttpProxyConnectJobTest, SslClientAuth) {
+  if (GetParam() == HTTP)
+    return;
+  for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
+    SCOPED_TRACE(io_mode);
+    session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+    base::HistogramTester histogram_tester;
+
+    SequencedSocketData socket_data(MockConnect(io_mode, OK),
+                                    base::span<const MockRead>(),
+                                    base::span<const MockWrite>());
+    session_deps_.socket_factory->AddSocketDataProvider(&socket_data);
+    SSLSocketDataProvider ssl_data(io_mode, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+    if (GetParam() == SPDY)
+      InitializeSpdySsl(&ssl_data);
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+
+    // Redirects in the HTTPS case return errors, but also return sockets.
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+    test_delegate.StartJobExpectingResult(connect_job.get(),
+                                          ERR_SSL_CLIENT_AUTH_CERT_NEEDED,
+                                          io_mode == SYNCHRONOUS);
+
+    histogram_tester.ExpectTotalCount(
+        "Net.HttpProxy.ConnectLatency.Secure.Error", 1);
+    histogram_tester.ExpectTotalCount(
+        "Net.HttpProxy.ConnectLatency.Insecure.Error", 0);
+  }
+}
+
+TEST_P(HttpProxyConnectJobTest, TunnelSetupRedirect) {
+  const std::string kRedirectTarget = "https://foo.google.com/";
+
+  for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
+    SCOPED_TRACE(io_mode);
+    session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+
+    const std::string kResponseText =
+        "HTTP/1.1 302 Found\r\n"
+        "Location: " +
+        kRedirectTarget +
+        "\r\n"
+        "Set-Cookie: foo=bar\r\n"
+        "\r\n";
+
+    MockWrite writes[] = {
+        MockWrite(io_mode, 0,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n\r\n"),
+    };
+    MockRead reads[] = {
+        MockRead(io_mode, 1, kResponseText.c_str()),
+    };
+    SpdyTestUtil spdy_util;
+    spdy::SpdySerializedFrame req(spdy_util.ConstructSpdyConnect(
+        nullptr /* extra_headers */, 0 /* extra_header_count */, 1,
+        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+    spdy::SpdySerializedFrame rst(
+        spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
+
+    MockWrite spdy_writes[] = {
+        CreateMockWrite(req, 0, io_mode),
+        CreateMockWrite(rst, 3, io_mode),
+    };
+
+    const char* const responseHeaders[] = {
+        "location",
+        kRedirectTarget.c_str(),
+        "set-cookie",
+        "foo=bar",
+    };
+    const int responseHeadersSize = base::size(responseHeaders) / 2;
+    spdy::SpdySerializedFrame resp(spdy_util.ConstructSpdyReplyError(
+        "302", responseHeaders, responseHeadersSize, 1));
+    MockRead spdy_reads[] = {
+        CreateMockRead(resp, 1, ASYNC),
+        MockRead(ASYNC, 0, 2),
+    };
+
+    Initialize(reads, writes, spdy_reads, spdy_writes, io_mode);
+
+    // Redirects in the HTTPS case return errors, but also return sockets.
+    TestConnectJobDelegate test_delegate(
+        GetParam() == HTTP
+            ? TestConnectJobDelegate::SocketExpected::ON_SUCCESS_ONLY
+            : TestConnectJobDelegate::SocketExpected::ALWAYS);
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+
+    // H2 never completes synchronously.
+    bool expect_sync_result = (io_mode == SYNCHRONOUS && GetParam() != SPDY);
+
+    if (GetParam() == HTTP) {
+      // We don't trust 302 responses to CONNECT from HTTP proxies.
+      test_delegate.StartJobExpectingResult(
+          connect_job.get(), ERR_TUNNEL_CONNECTION_FAILED, expect_sync_result);
+      EXPECT_FALSE(test_delegate.socket());
+    } else {
+      // Expect ProxyClientSocket to return the proxy's response, sanitized.
+      test_delegate.StartJobExpectingResult(
+          connect_job.get(), ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT,
+          expect_sync_result);
+      ASSERT_TRUE(test_delegate.socket());
+
+      const ProxyClientSocket* tunnel_socket =
+          static_cast<ProxyClientSocket*>(test_delegate.socket());
+      const HttpResponseInfo* response =
+          tunnel_socket->GetConnectResponseInfo();
+      const HttpResponseHeaders* headers = response->headers.get();
+
+      // Make sure Set-Cookie header was stripped.
+      EXPECT_FALSE(headers->HasHeader("set-cookie"));
+
+      // Make sure Content-Length: 0 header was added.
+      EXPECT_TRUE(headers->HasHeaderValue("content-length", "0"));
+
+      // Make sure Location header was included and correct.
+      std::string location;
+      EXPECT_TRUE(headers->IsRedirect(&location));
+      EXPECT_EQ(location, kRedirectTarget);
+    }
+
     // Need to close the session to prevent reuse in the next loop iteration.
     session_->spdy_session_pool()->CloseAllSessions();
   }
