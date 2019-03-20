@@ -145,7 +145,7 @@ bool ShouldIgnoreContents(const Node& node) {
          IsHTMLLegendElement(element) || IsHTMLMeterElement(element) ||
          IsHTMLObjectElement(element) || IsHTMLProgressElement(element) ||
          (IsHTMLSelectElement(element) &&
-          !ToHTMLSelectElement(element).IsMultiple()) ||
+          ToHTMLSelectElement(element).UsesMenuList()) ||
          IsHTMLStyleElement(element) || IsHTMLScriptElement(element) ||
          IsHTMLVideoElement(element) || IsHTMLAudioElement(element) ||
          (element.GetDisplayLockContext() &&
