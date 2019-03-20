@@ -498,11 +498,6 @@ int TabLifecycleUnitSource::TabLifecycleUnit::
   return GetPrivateMemoryKB(GetProcessHandle());
 }
 
-bool TabLifecycleUnitSource::TabLifecycleUnit::CanPurge() const {
-  // A renderer can be purged if it's not playing media.
-  return !IsMediaTabImpl(nullptr);
-}
-
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
     DecisionDetails* decision_details) const {
   DCHECK(decision_details->reasons().empty());

@@ -712,6 +712,10 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // Renderer Memory Metrics ----------------------------------------------
+
+  virtual void RecordMetricsForBackgroundedRendererPurge() {}
+
   // V8 Context Snapshot --------------------------------------------------
 
   // This method returns true only when

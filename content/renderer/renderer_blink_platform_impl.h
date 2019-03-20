@@ -212,6 +212,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
 
+  void RecordMetricsForBackgroundedRendererPurge() override;
+
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
   // SetSandboxEnabledForTesting(false) _before_ creating any instances

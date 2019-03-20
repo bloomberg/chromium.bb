@@ -1664,48 +1664,6 @@ void RenderThreadImpl::SetProcessState(
   process_state_ = process_state;
 }
 
-void RenderThreadImpl::ProcessPurgeAndSuspend() {
-  if (!RendererIsHidden())
-    return;
-
-  if (!base::FeatureList::IsEnabled(features::kPurgeAndSuspend))
-    return;
-
-  if (base::MemoryPressureListener::AreNotificationsSuppressed())
-    return;
-
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  needs_to_record_first_active_paint_ = true;
-
-  RendererMemoryMetrics memory_metrics;
-  if (!GetRendererMemoryMetrics(&memory_metrics))
-    return;
-
-  purge_and_suspend_memory_metrics_ = memory_metrics;
-
-  // Use of Unretained(this) is safe because |this| has the same lifetime as a
-  // renderer process.
-  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          &RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-          base::Unretained(this), "30min", process_foregrounded_count_),
-      base::TimeDelta::FromMinutes(30));
-  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          &RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-          base::Unretained(this), "60min", process_foregrounded_count_),
-      base::TimeDelta::FromMinutes(60));
-  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          &RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics,
-          base::Unretained(this), "90min", process_foregrounded_count_),
-      base::TimeDelta::FromMinutes(90));
-}
-
 void RenderThreadImpl::SetIsLockedToSite() {
   DCHECK(blink_platform_impl_);
   blink_platform_impl_->SetIsLockedToSite();
@@ -1813,14 +1771,14 @@ void RenderThreadImpl::RecordMemoryUsageAfterBackgrounded(
        ? current.allocator - previous.allocator         \
        : 0)
 
-static void RecordPurgeAndSuspendMemoryGrowthKB(const char* basename,
-                                                const char* suffix,
-                                                int memory_usage) {
+static void RecordBackgroundedRenderPurgeMemoryGrowthKB(const char* basename,
+                                                        const char* suffix,
+                                                        int memory_usage) {
   std::string histogram_name = base::StringPrintf("%s.%s", basename, suffix);
   base::UmaHistogramMemoryKB(histogram_name, memory_usage);
 }
 
-void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
+void RenderThreadImpl::OnRecordMetricsForBackgroundedRendererPurgeTimerExpired(
     const char* suffix,
     int foregrounded_count_when_purged) {
   // If this renderer is resumed, we should not update UMA.
@@ -1833,33 +1791,64 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
   if (!GetRendererMemoryMetrics(&memory_metrics))
     return;
 
-  RecordPurgeAndSuspendMemoryGrowthKB(
+  RecordBackgroundedRenderPurgeMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         partition_alloc_kb));
-  RecordPurgeAndSuspendMemoryGrowthKB(
+  RecordBackgroundedRenderPurgeMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.BlinkGCKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         blink_gc_kb));
-  RecordPurgeAndSuspendMemoryGrowthKB(
+  RecordBackgroundedRenderPurgeMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.MallocKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         malloc_mb) *
           1024);
-  RecordPurgeAndSuspendMemoryGrowthKB(
+  RecordBackgroundedRenderPurgeMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.DiscardableKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         discardable_kb));
-  RecordPurgeAndSuspendMemoryGrowthKB(
+  RecordBackgroundedRenderPurgeMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.V8MainThreadIsolateKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         v8_main_thread_isolate_mb) *
           1024);
-  RecordPurgeAndSuspendMemoryGrowthKB(
+  RecordBackgroundedRenderPurgeMemoryGrowthKB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.TotalAllocatedKB", suffix,
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
                         total_allocated_mb) *
           1024);
+}
+
+void RenderThreadImpl::RecordMetricsForBackgroundedRendererPurge() {
+  needs_to_record_first_active_paint_ = true;
+
+  RendererMemoryMetrics memory_metrics;
+  if (!GetRendererMemoryMetrics(&memory_metrics))
+    return;
+
+  purge_and_suspend_memory_metrics_ = memory_metrics;
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RenderThreadImpl::
+              OnRecordMetricsForBackgroundedRendererPurgeTimerExpired,
+          base::Unretained(this), "30min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(30));
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RenderThreadImpl::
+              OnRecordMetricsForBackgroundedRendererPurgeTimerExpired,
+          base::Unretained(this), "60min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(60));
+  GetWebMainThreadScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RenderThreadImpl::
+              OnRecordMetricsForBackgroundedRendererPurgeTimerExpired,
+          base::Unretained(this), "90min", process_foregrounded_count_),
+      base::TimeDelta::FromMinutes(90));
 }
 
 void RenderThreadImpl::CompositingModeFallbackToSoftware() {
