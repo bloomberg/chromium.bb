@@ -7,6 +7,6 @@
 <script>
 promise_test(async () => {
   await PermissionsHelper.setPermission('clipboard-write', 'granted');
-  await navigator.clipboard.writeText('xyz');
-}, 'navigator.clipboard.writeText() succeeds when permission granted');
+  await navigator.clipboard.writeText("xyz");
+}, "navigator.clipboard.writeText() succeeds when permission granted");
 </script>
