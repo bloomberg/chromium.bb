@@ -115,11 +115,11 @@ FuzzedBitmap::FuzzedBitmap(SharedBitmapId id,
                            std::unique_ptr<base::SharedMemory> shared_memory)
     : id(id), size(size), shared_memory(std::move(shared_memory)) {}
 FuzzedBitmap::~FuzzedBitmap() = default;
-FuzzedBitmap::FuzzedBitmap(FuzzedBitmap&& other) = default;
+FuzzedBitmap::FuzzedBitmap(FuzzedBitmap&& other) noexcept = default;
 
 FuzzedData::FuzzedData() = default;
 FuzzedData::~FuzzedData() = default;
-FuzzedData::FuzzedData(FuzzedData&& other) = default;
+FuzzedData::FuzzedData(FuzzedData&& other) noexcept = default;
 
 FuzzedData GenerateFuzzedCompositorFrame(
     const content::fuzzing::proto::RenderPass& render_pass_spec) {
