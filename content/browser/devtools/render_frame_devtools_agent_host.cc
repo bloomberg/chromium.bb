@@ -395,7 +395,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   if (handle->frame_tree_node() != frame_tree_node_)
     return;
   navigation_handles_.erase(handle);
-  NotifyNavigated();
+  if (handle->HasCommitted())
+    NotifyNavigated();
 
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
