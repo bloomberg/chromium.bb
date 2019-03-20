@@ -23443,6 +23443,27 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Unknown Error"/>
 </enum>
 
+<enum name="FileSystemProviderMountType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Zip Unpacker"/>
+  <int value="2" label="File System for Dropbox"/>
+  <int value="3" label="File System for One Drive"/>
+  <int value="4" label="SFTP File System"/>
+  <int value="5" label="Box for ChromeOS"/>
+  <int value="6" label="Ted Talks"/>
+  <int value="7" label="WebDAV File System"/>
+  <int value="8" label="Cloud Storage"/>
+  <int value="9" label="Scan"/>
+  <int value="10" label="File System for SMB CIFS"/>
+  <int value="11" label="Add My Documents"/>
+  <int value="12" label="Wicked Good Unarchiver"/>
+  <int value="13" label="Network File Share for ChromeOS"/>
+  <int value="14" label="LAN Folder"/>
+  <int value="15" label="Zip Archiver"/>
+  <int value="16" label="Secure Shell App"/>
+  <int value="17" label="Native Network SMB"/>
+</enum>
+
 <enum name="FileType">
   <int value="0" label="other"/>
   <int value="1" label=".doc"/>
