@@ -151,10 +151,8 @@ void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
   std::move(callback).Run(true);
 }
 
-void ArCoreGl::CreateSession(
-    mojom::VRDisplayInfoPtr display_info,
-    mojom::XRRuntime::RequestSessionCallback deferred_callback,
-    ArCoreGlCreateSessionCallback callback) {
+void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
+                             ArCoreGlCreateSessionCallback callback) {
   DVLOG(3) << __func__;
 
   DCHECK(IsOnGlThread());
@@ -173,8 +171,7 @@ void ArCoreGl::CreateSession(
       &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 
   std::move(callback).Run(std::move(frame_data_provider_info),
-                          std::move(display_info), std::move(controller_info),
-                          std::move(deferred_callback));
+                          std::move(display_info), std::move(controller_info));
 }
 
 bool ArCoreGl::InitializeGl() {

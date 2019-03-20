@@ -102,10 +102,10 @@ class ArCoreDevice : public VRDeviceBase {
   void OnArCoreGlInitializationComplete(bool success);
 
   void OnCreateSessionCallback(
+      mojom::XRRuntime::RequestSessionCallback deferred_callback,
       mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
       mojom::VRDisplayInfoPtr display_info,
-      mojom::XRSessionControllerPtrInfo session_controller_info,
-      mojom::XRRuntime::RequestSessionCallback deferred_callback);
+      mojom::XRSessionControllerPtrInfo session_controller_info);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<ArCoreFactory> arcore_factory_;

@@ -44,8 +44,7 @@ class ArImageTransport;
 using ArCoreGlCreateSessionCallback = base::OnceCallback<void(
     mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
     mojom::VRDisplayInfoPtr display_info,
-    mojom::XRSessionControllerPtrInfo session_controller_info,
-    mojom::XRRuntime::RequestSessionCallback deferred_callback)>;
+    mojom::XRSessionControllerPtrInfo session_controller_info)>;
 
 // All of this class's methods must be called on the same valid GL thread with
 // the exception of GetGlThreadTaskRunner() and GetWeakPtr().
@@ -61,7 +60,6 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                   base::OnceCallback<void(bool)> callback);
 
   void CreateSession(mojom::VRDisplayInfoPtr display_info,
-                     mojom::XRRuntime::RequestSessionCallback deferred_callback,
                      ArCoreGlCreateSessionCallback callback);
 
   const scoped_refptr<base::SingleThreadTaskRunner>& GetGlThreadTaskRunner() {
