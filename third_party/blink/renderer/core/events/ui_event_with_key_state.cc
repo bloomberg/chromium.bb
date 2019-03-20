@@ -156,7 +156,7 @@ void UIEventWithKeyState::InitModifiers(bool ctrl_key,
 
 UIEventWithKeyState* FindEventWithKeyState(Event* event) {
   for (Event* e = event; e; e = e->UnderlyingEvent())
-    if (e->IsKeyboardEvent() || e->IsMouseEvent())
+    if (e->IsKeyboardEvent() || e->IsMouseEvent() || e->IsPointerEvent())
       return static_cast<UIEventWithKeyState*>(e);
   return nullptr;
 }
