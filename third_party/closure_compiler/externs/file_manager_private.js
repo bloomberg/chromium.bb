@@ -877,12 +877,6 @@ chrome.fileManagerPrivate.openSettingsSubpage = function(sub_page) {};
 chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
 
 /**
- * Gets a flag indicating whether user metrics reporting is enabled.
- * @param {function((boolean|undefined))} callback
- */
-chrome.fileManagerPrivate.isUMAEnabled = function(callback) {};
-
-/**
  * Sets a tag on a file or a directory. Only Drive files are supported.
  * @param {!Entry} entry
  * @param {string} visibility 'private' or 'public'
