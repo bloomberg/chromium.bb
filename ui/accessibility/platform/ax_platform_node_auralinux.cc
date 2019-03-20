@@ -35,6 +35,22 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 12, 0)
+#define ATK_212
+#endif
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 16, 0)
+#define ATK_216
+#endif
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 26, 0)
+#define ATK_226
+#endif
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
+#define ATK_230
+#endif
+
 namespace ui {
 
 namespace {
@@ -181,8 +197,10 @@ AtkCoordTypeToTextRangeBoundsCoordinateSystem(AtkCoordType coordinate_type) {
       return AXPlatformNodeDelegate::Screen;
     case ATK_XY_WINDOW:
       return AXPlatformNodeDelegate::Window;
+#ifdef ATK_230
     case ATK_XY_PARENT:
       return AXPlatformNodeDelegate::Parent;
+#endif  // ATK_230
     default:
       return AXPlatformNodeDelegate::Screen;
   }
@@ -340,18 +358,6 @@ const char* const kRoleNames[] = {
     "superscript",
     "footnote",  // ATK_ROLE_FOOTNOTE = 122.
 };
-
-#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 12, 0)
-#define ATK_212
-#endif
-
-#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 16, 0)
-#define ATK_216
-#endif
-
-#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 26, 0)
-#define ATK_226
-#endif
 
 #if defined(ATK_216)
 constexpr AtkRole kStaticRole = ATK_ROLE_STATIC;

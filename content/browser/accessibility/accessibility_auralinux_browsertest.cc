@@ -232,6 +232,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   }
 }
 
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
+#define ATK_230
+#endif
+
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        TestCharacterExtentsWithInvalidArguments) {
   AtkText* atk_text = SetUpSampleParagraph();
@@ -247,12 +251,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   EXPECT_EQ(0, width);
   EXPECT_EQ(0, height);
 
+#ifdef ATK_230
   atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
                                  &height, ATK_XY_PARENT);
   EXPECT_EQ(0, x);
   EXPECT_EQ(0, y);
   EXPECT_EQ(0, width);
   EXPECT_EQ(0, height);
+#endif  // ATK_230
 
   atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
                                  &height, ATK_XY_WINDOW);
@@ -271,12 +277,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   EXPECT_EQ(0, width);
   EXPECT_EQ(0, height);
 
+#ifdef ATK_230
   atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
                                  &height, ATK_XY_PARENT);
   EXPECT_EQ(0, x);
   EXPECT_EQ(0, y);
   EXPECT_EQ(0, width);
   EXPECT_EQ(0, height);
+#endif  // ATK_230
 
   atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
                                  &height, ATK_XY_WINDOW);
@@ -289,7 +297,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 AtkCoordType kCoordinateTypes[] = {
     ATK_XY_SCREEN,
     ATK_XY_WINDOW,
+#ifdef ATK_230
     ATK_XY_PARENT,
+#endif  // ATK_230
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
