@@ -54,6 +54,7 @@ class SharedURLLoaderFactory;
 namespace syncer {
 class BackendMigrator;
 class NetworkResources;
+class SyncAuthManager;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
@@ -63,8 +64,6 @@ struct UserShare;
 }  // namespace syncer
 
 namespace browser_sync {
-
-class SyncAuthManager;
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync engine. Each subsystem is logically thought of as being a sync
@@ -475,7 +474,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().
-  std::unique_ptr<SyncAuthManager> auth_manager_;
+  std::unique_ptr<syncer::SyncAuthManager> auth_manager_;
 
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;

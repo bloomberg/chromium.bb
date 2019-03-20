@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/sync_auth_manager.h"
+#include "components/sync/driver/sync_auth_manager.h"
 
 #include <utility>
 
@@ -16,7 +16,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
@@ -463,4 +463,4 @@ void SyncAuthManager::AccessTokenFetched(
   credentials_changed_callback_.Run();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

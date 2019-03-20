@@ -16,8 +16,6 @@ static_library("browser_sync") {
     "profile_sync_service.h",
     "signin_confirmation_helper.cc",
     "signin_confirmation_helper.h",
-    "sync_auth_manager.cc",
-    "sync_auth_manager.h",
   ]
 
   public_deps = [
@@ -54,7 +52,6 @@ source_set("unit_tests") {
     "profile_sync_service_bookmark_unittest.cc",
     "profile_sync_service_startup_unittest.cc",
     "profile_sync_service_unittest.cc",
-    "sync_auth_manager_unittest.cc",
   ]
 
   deps = [
