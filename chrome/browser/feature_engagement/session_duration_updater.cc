@@ -40,9 +40,8 @@ base::TimeDelta SessionDurationUpdater::GetCumulativeElapsedSessionTime()
 base::TimeDelta SessionDurationUpdater::GetRecordedObservedSessionTime() const {
   const base::DictionaryValue* dict =
       pref_service_->GetDictionary(prefs::kObservedSessionTime);
-  const base::Value* dict_value =
-      dict->FindKey(observed_session_time_dict_key_);
-  const double stored_value = dict_value ? dict_value->GetDouble() : 0L;
+  const double stored_value =
+      dict->FindDoubleKey(observed_session_time_dict_key_).value_or(0);
   return base::TimeDelta::FromSeconds(stored_value);
 }
 
@@ -85,9 +84,8 @@ void SessionDurationUpdater::OnSessionEnded(base::TimeDelta elapsed) {
 
   const base::DictionaryValue* dict =
       pref_service_->GetDictionary(prefs::kObservedSessionTime);
-  const base::Value* dict_value =
-      dict->FindKey(observed_session_time_dict_key_);
-  const double stored_value = dict_value ? dict_value->GetDouble() : 0L;
+  const double stored_value =
+      dict->FindDoubleKey(observed_session_time_dict_key_).value_or(0);
 
   base::TimeDelta elapsed_session_time =
       base::TimeDelta::FromSeconds(stored_value) + elapsed;
