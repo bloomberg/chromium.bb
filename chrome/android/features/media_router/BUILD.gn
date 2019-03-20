@@ -65,6 +65,16 @@ android_library("java") {
   ]
 }
 
+generate_jni("jni_headers") {
+  sources = [
+    "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
+    "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
+    "java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
+  ]
+  jni_package = "media_router"
+}
+
 android_library("test_java") {
   testonly = true
 
