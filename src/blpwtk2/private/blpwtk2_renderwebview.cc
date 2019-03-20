@@ -43,10 +43,12 @@
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/ime/input_method.h>
 #include <ui/base/ime/input_method_factory.h>
+#include <ui/base/win/lock_state.h>
 #include <ui/base/win/mouse_wheel_util.h>
 #include <ui/display/display.h>
 #include <ui/display/screen.h>
 #include <ui/events/blink/web_input_event.h>
+#include <ui/views/win/windows_session_change_observer.h>
 
 #include <windowsx.h>
 
@@ -314,6 +316,17 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 
             updateGeometry();
         }
+    } return 0;
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        BeginPaint(d_hwnd.get(), &ps);
+
+        if (d_gotRenderViewInfo) {
+            content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId)->
+                Redraw();
+        }
+
+        EndPaint(d_hwnd.get(), &ps);
     } return 0;
     case WM_ERASEBKGND:
         return 1;
@@ -714,6 +727,10 @@ void RenderWebView::initialize()
     d_dragDrop = new DragDrop(d_hwnd.get(), this);
 
     d_tooltip = std::make_unique<views::corewm::TooltipWin>(d_hwnd.get());
+
+    d_windowsSessionChangeObserver =
+        std::make_unique<views::WindowsSessionChangeObserver>(
+            base::Bind(&RenderWebView::onSessionChange, base::Unretained(this)));
 }
 
 void RenderWebView::updateVisibility()
@@ -945,6 +962,32 @@ void RenderWebView::updateTooltip()
             }
         }
     }
+}
+
+void RenderWebView::onSessionChange(WPARAM status_code)
+{
+    // Direct3D presents are ignored while the screen is locked, so force the
+    // window to be redrawn on unlock.
+    if (status_code == WTS_SESSION_UNLOCK)
+        forceRedrawWindow(10);
+}
+
+void RenderWebView::forceRedrawWindow(int attempts)
+{
+    if (ui::IsWorkstationLocked()) {
+        // Presents will continue to fail as long as the input desktop is
+        // unavailable.
+        if (--attempts <= 0)
+            return;
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&RenderWebView::forceRedrawWindow,
+                       base::Unretained(this),
+                       attempts),
+            base::TimeDelta::FromMilliseconds(500));
+        return;
+    }
+    InvalidateRect(d_hwnd.get(), NULL, FALSE);
 }
 
 // blpwtk2::WebView overrides:
