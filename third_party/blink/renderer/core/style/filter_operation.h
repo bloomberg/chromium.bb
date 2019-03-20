@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/graphics/box_reflection.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -205,11 +206,12 @@ inline bool IsBasicColorMatrixFilterOperation(
          type == FilterOperation::HUE_ROTATE;
 }
 
-DEFINE_TYPE_CASTS(BasicColorMatrixFilterOperation,
-                  FilterOperation,
-                  op,
-                  IsBasicColorMatrixFilterOperation(*op),
-                  IsBasicColorMatrixFilterOperation(op));
+template <>
+struct DowncastTraits<BasicColorMatrixFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return IsBasicColorMatrixFilterOperation(op);
+  }
+};
 
 // INVERT, BRIGHTNESS, CONTRAST and OPACITY are variations on a basic component
 // transfer effect.
@@ -251,11 +253,12 @@ inline bool IsBasicComponentTransferFilterOperation(
          type == FilterOperation::CONTRAST;
 }
 
-DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation,
-                  FilterOperation,
-                  op,
-                  IsBasicComponentTransferFilterOperation(*op),
-                  IsBasicComponentTransferFilterOperation(op));
+template <>
+struct DowncastTraits<BasicComponentTransferFilterOperation> {
+  static bool AllowFrom(const FilterOperation& op) {
+    return IsBasicComponentTransferFilterOperation(op);
+  }
+};
 
 class CORE_EXPORT BlurFilterOperation : public FilterOperation {
  public:
