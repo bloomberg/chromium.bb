@@ -130,6 +130,18 @@ class NavigationManagerImpl : public NavigationManager {
   // items owned by navigation manager and/or outside of navigation manager.
   virtual void CommitPendingItem(std::unique_ptr<NavigationItemImpl> item) = 0;
 
+  // Removes pending item, so it can be stored in NavigationContext.
+  // Pending item is stored in this object when NavigationContext object does
+  // not yet exist (e.g. when navigation was just requested, or when navigation
+  // has aborted).
+  virtual std::unique_ptr<NavigationItemImpl> ReleasePendingItem() = 0;
+
+  // Allows transferring pending item from NavigationContext to this object.
+  // Pending item can be moved from NavigationContext to this object when
+  // navigation is aborted, but pending item should be retained.
+  virtual void SetPendingItem(
+      std::unique_ptr<web::NavigationItemImpl> item) = 0;
+
   // Returns the navigation index that differs from the current item (or pending
   // item if it exists) by the specified |offset|, skipping redirect navigation
   // items. The index returned is not guaranteed to be valid.

@@ -330,6 +330,16 @@ int WKBasedNavigationManagerImpl::GetIndexForOffset(int offset) const {
   return current_item_index + offset;
 }
 
+std::unique_ptr<web::NavigationItemImpl>
+WKBasedNavigationManagerImpl::ReleasePendingItem() {
+  return std::move(pending_item_);
+}
+
+void WKBasedNavigationManagerImpl::SetPendingItem(
+    std::unique_ptr<web::NavigationItemImpl> item) {
+  pending_item_ = std::move(item);
+}
+
 int WKBasedNavigationManagerImpl::GetPreviousItemIndex() const {
   return previous_item_index_;
 }
