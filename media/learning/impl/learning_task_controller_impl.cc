@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "media/learning/impl/extra_trees_trainer.h"
@@ -20,12 +21,18 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
     SequenceBoundFeatureProvider feature_provider)
     : task_(task),
       training_data_(std::make_unique<TrainingData>()),
-      reporter_(std::move(reporter)),
-      helper_(std::make_unique<LearningTaskControllerHelper>(
-          task,
-          base::BindRepeating(&LearningTaskControllerImpl::AddFinishedExample,
-                              AsWeakPtr()),
-          std::move(feature_provider))) {
+      reporter_(std::move(reporter)) {
+  // TODO(liberato): Make this compositional.  FeatureSubsetTaskController?
+  if (task_.feature_subset_size)
+    DoFeatureSubsetSelection();
+
+  // Now that we have the updated task, create a helper for it.
+  helper_ = std::make_unique<LearningTaskControllerHelper>(
+      task,
+      base::BindRepeating(&LearningTaskControllerImpl::AddFinishedExample,
+                          AsWeakPtr()),
+      std::move(feature_provider));
+
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
       trainer_ = std::make_unique<ExtraTreesTrainer>();
@@ -41,7 +48,17 @@ LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 void LearningTaskControllerImpl::BeginObservation(
     base::UnguessableToken id,
     const FeatureVector& features) {
-  helper_->BeginObservation(id, features);
+  // Copy just the subset we care about.
+  FeatureVector new_features;
+  if (task_.feature_subset_size) {
+    for (auto& iter : feature_indices_)
+      new_features.push_back(features[iter]);
+  } else {
+    // Use them all.
+    new_features = features;
+  }
+
+  helper_->BeginObservation(id, new_features);
 }
 
 void LearningTaskControllerImpl::CompleteObservation(
@@ -108,6 +125,39 @@ void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {
 void LearningTaskControllerImpl::SetTrainerForTesting(
     std::unique_ptr<TrainingAlgorithm> trainer) {
   trainer_ = std::move(trainer);
+}
+
+void LearningTaskControllerImpl::DoFeatureSubsetSelection() {
+  // Choose a random feature, and trim the descriptions to match.
+  std::vector<size_t> features;
+  for (size_t i = 0; i < task_.feature_descriptions.size(); i++)
+    features.push_back(i);
+
+  for (int i = 0; i < *task_.feature_subset_size; i++) {
+    // Pick an element from |i| to the end of the list, inclusive.
+    // TODO(liberato): For tests, this will happen before any rng is provided
+    // by the test; we'll use an actual rng.
+    int r = rng()->Generate(features.size() - i) + i;
+    // Swap them.
+    std::swap(features[i], features[r]);
+  }
+
+  // Construct the feature subset from the first few elements.  Also adjust the
+  // task's descriptions to match.  We do this in two steps so that the
+  // descriptions are added via iterating over |feature_indices_|, so that the
+  // enumeration order is the same as when we adjust the feature values of
+  // incoming examples.  In both cases, we iterate over |feature_indicies_|,
+  // which might (will) re-order them with respect to |features|.
+  for (int i = 0; i < *task_.feature_subset_size; i++)
+    feature_indices_.insert(features[i]);
+
+  std::vector<LearningTask::ValueDescription> adjusted_descriptions;
+  for (auto& iter : feature_indices_)
+    adjusted_descriptions.push_back(task_.feature_descriptions[iter]);
+
+  task_.feature_descriptions = adjusted_descriptions;
+
+  reporter_->SetFeatureSubset(feature_indices_);
 }
 
 }  // namespace learning

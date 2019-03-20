@@ -61,8 +61,22 @@ class RegressionReporter : public DistributionReporter {
     // Convert to a bucket from which we can get the confusion matrix.
     ConfusionMatrix uma_bucket = static_cast<ConfusionMatrix>(
         (observed_smooth ? 1 : 0) | predicted_bits);
-    base::UmaHistogramEnumeration(task().uma_hacky_confusion_matrix,
-                                  uma_bucket);
+
+    if (!feature_indices() ||
+        feature_indices()->size() == task().feature_descriptions.size()) {
+      base::UmaHistogramEnumeration(task().uma_hacky_confusion_matrix,
+                                    uma_bucket);
+    } else if (feature_indices()->size() == 1) {
+      // Slide the matrix over by whatever feature we're measuring.
+      constexpr int matrix_size =
+          static_cast<int>(ConfusionMatrix::kMaxValue) + 1;
+      int value_max = matrix_size * task().feature_descriptions.size() - 1;
+      int feature_index = *feature_indices()->begin();
+      base::UmaHistogramExactLinear(
+          task().uma_hacky_confusion_matrix,
+          static_cast<int>(uma_bucket) + feature_index * matrix_size,
+          value_max);
+    }  // else do nothing -- we only support one feature for UMA reporting.
   }
 };
 
@@ -86,6 +100,11 @@ Model::PredictionCB DistributionReporter::GetPredictionCallback(
     TargetDistribution observed) {
   return base::BindOnce(&DistributionReporter::OnPrediction,
                         weak_factory_.GetWeakPtr(), observed);
+}
+
+void DistributionReporter::SetFeatureSubset(
+    const std::set<int>& feature_indices) {
+  feature_indices_ = feature_indices;
 }
 
 }  // namespace learning

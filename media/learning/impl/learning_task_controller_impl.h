@@ -6,6 +6,7 @@
 #define MEDIA_LEARNING_IMPL_LEARNING_TASK_CONTROLLER_IMPL_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -59,6 +60,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   void SetTrainerForTesting(std::unique_ptr<TrainingAlgorithm> trainer);
 
+  // Update |task_| to reflect a randomly chosen subset of features.
+  void DoFeatureSubsetSelection();
+
   LearningTask task_;
 
   // Current batch of examples.
@@ -82,6 +86,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   // Helper that we use to handle deferred examples.
   std::unique_ptr<LearningTaskControllerHelper> helper_;
+
+  // If the task specifies feature importance measurement, then this is the
+  // randomly chosen subset of features.
+  std::set<int> feature_indices_;
 
   friend class LearningTaskControllerImplTest;
 };

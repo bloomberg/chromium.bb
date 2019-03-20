@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/optional.h"
 #include "media/learning/common/value.h"
 
 namespace media {
@@ -98,8 +99,16 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   double min_new_data_fraction = 0.1;
 
   // If set, then we'll record a confusion matrix hackily to UMA using this as
-  // the histogram name.
+  // the histogram name.  If we're using a (single) feature subset, then we'll
+  // slide the x-axis to the right by multiples of 6 (== size of one confusion
+  // matrix, see enums.xml) to match the chosen feature index.
   std::string uma_hacky_confusion_matrix;
+
+  // If provided, then we'll randomly select a |*feature_subset_size|-sized set
+  // of feature to train the model with, to allow for feature importance
+  // measurement.  Note that |uma_hacky_confusion_matrix| reporting only
+  // supports subsets of size one, or the whole set.
+  base::Optional<int> feature_subset_size;
 
   // RandomForest parameters
 
