@@ -52,7 +52,6 @@ TaskSchedulerImpl::TaskSchedulerImpl(
           task_tracker_.get(),
           BindRepeating(&TaskSchedulerImpl::ReportHeartbeatMetrics,
                         Unretained(this)))),
-      delayed_task_manager_(histogram_label),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_),
       tracked_ref_factory_(this) {

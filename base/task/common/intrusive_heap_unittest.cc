@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/task/common/intrusive_heap.h"
-#include "base/task/common/test_utils.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,23 +10,43 @@
 namespace base {
 namespace internal {
 
+namespace {
+
+struct TestElement {
+  int key;
+  HeapHandle* handle;
+
+  bool operator<=(const TestElement& other) const { return key <= other.key; }
+
+  void SetHeapHandle(HeapHandle h) {
+    if (handle)
+      *handle = h;
+  }
+
+  void ClearHeapHandle() {
+    if (handle)
+      *handle = HeapHandle();
+  }
+};
+
+}  // namespace
+
 class IntrusiveHeapTest : public testing::Test {
  protected:
-  static bool CompareNodes(const test::TestElement& a,
-                           const test::TestElement& b) {
-    return IntrusiveHeap<test::TestElement>::CompareNodes(a, b);
+  static bool CompareNodes(const TestElement& a, const TestElement& b) {
+    return IntrusiveHeap<TestElement>::CompareNodes(a, b);
   }
 };
 
 TEST_F(IntrusiveHeapTest, Basic) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   EXPECT_TRUE(heap.empty());
   EXPECT_EQ(0u, heap.size());
 }
 
 TEST_F(IntrusiveHeapTest, Clear) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
   HeapHandle index1;
 
   heap.insert({11, &index1});
@@ -43,7 +62,7 @@ TEST_F(IntrusiveHeapTest, Destructor) {
   HeapHandle index1;
 
   {
-    IntrusiveHeap<test::TestElement> heap;
+    IntrusiveHeap<TestElement> heap;
 
     heap.insert({11, &index1});
     EXPECT_EQ(1u, heap.size());
@@ -54,7 +73,7 @@ TEST_F(IntrusiveHeapTest, Destructor) {
 }
 
 TEST_F(IntrusiveHeapTest, Min) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   heap.insert({9, nullptr});
   heap.insert({10, nullptr});
@@ -71,7 +90,7 @@ TEST_F(IntrusiveHeapTest, Min) {
 }
 
 TEST_F(IntrusiveHeapTest, InsertAscending) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 50; i++)
     heap.insert({i, nullptr});
@@ -81,7 +100,7 @@ TEST_F(IntrusiveHeapTest, InsertAscending) {
 }
 
 TEST_F(IntrusiveHeapTest, InsertDescending) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 50; i++)
     heap.insert({50 - i, nullptr});
@@ -96,7 +115,7 @@ TEST_F(IntrusiveHeapTest, HeapIndex) {
   HeapHandle index3;
   HeapHandle index2;
   HeapHandle index1;
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   EXPECT_FALSE(index1.IsValid());
   EXPECT_FALSE(index2.IsValid());
@@ -120,7 +139,7 @@ TEST_F(IntrusiveHeapTest, HeapIndex) {
 }
 
 TEST_F(IntrusiveHeapTest, Pop) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
   HeapHandle index1;
   HeapHandle index2;
 
@@ -142,7 +161,7 @@ TEST_F(IntrusiveHeapTest, Pop) {
 }
 
 TEST_F(IntrusiveHeapTest, PopMany) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 500; i++)
     heap.insert({i, nullptr});
@@ -157,7 +176,7 @@ TEST_F(IntrusiveHeapTest, PopMany) {
 }
 
 TEST_F(IntrusiveHeapTest, Erase) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   HeapHandle index12;
 
@@ -185,7 +204,7 @@ TEST_F(IntrusiveHeapTest, Erase) {
 }
 
 TEST_F(IntrusiveHeapTest, ReplaceMin) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 500; i++)
     heap.insert({500 - i, nullptr});
@@ -199,7 +218,7 @@ TEST_F(IntrusiveHeapTest, ReplaceMin) {
 }
 
 TEST_F(IntrusiveHeapTest, ReplaceMinWithNonLeafNode) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 50; i++) {
     heap.insert({i, nullptr});
@@ -226,7 +245,7 @@ TEST_F(IntrusiveHeapTest, ReplaceMinCheckAllFinalPositions) {
   HeapHandle index[100];
 
   for (int j = -1; j <= 201; j += 2) {
-    IntrusiveHeap<test::TestElement> heap;
+    IntrusiveHeap<TestElement> heap;
     for (size_t i = 0; i < 100; i++) {
       heap.insert({static_cast<int>(i) * 2, &index[i]});
     }
@@ -245,7 +264,7 @@ TEST_F(IntrusiveHeapTest, ReplaceMinCheckAllFinalPositions) {
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyUp) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
   for (size_t i = 0; i < 10; i++) {
@@ -264,7 +283,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyUp) {
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
   for (size_t i = 0; i < 10; i++) {
@@ -283,7 +302,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyUpButDoesntMove) {
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyDown) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
   for (size_t i = 0; i < 10; i++) {
@@ -302,7 +321,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyDown) {
 }
 
 TEST_F(IntrusiveHeapTest, ChangeKeyDownButDoesntMove) {
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
   HeapHandle index[10];
 
   for (size_t i = 0; i < 10; i++) {
@@ -324,7 +343,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
   HeapHandle index[100];
 
   for (int j = -1; j <= 201; j += 2) {
-    IntrusiveHeap<test::TestElement> heap;
+    IntrusiveHeap<TestElement> heap;
     for (size_t i = 0; i < 100; i++) {
       heap.insert({static_cast<int>(i) * 2, &index[i]});
     }
@@ -343,7 +362,7 @@ TEST_F(IntrusiveHeapTest, ChangeKeyCheckAllFinalPositions) {
 }
 
 TEST_F(IntrusiveHeapTest, CompareNodes) {
-  test::TestElement five{5, nullptr}, six{6, nullptr};
+  TestElement five{5, nullptr}, six{6, nullptr};
 
   // Check that we have a strict comparator, otherwise std::is_heap()
   // (used in DCHECK) may fail. See http://crbug.com/661080.
@@ -355,7 +374,7 @@ TEST_F(IntrusiveHeapTest, CompareNodes) {
 
 TEST_F(IntrusiveHeapTest, At) {
   HeapHandle index[10];
-  IntrusiveHeap<test::TestElement> heap;
+  IntrusiveHeap<TestElement> heap;
 
   for (int i = 0; i < 10; i++)
     heap.insert({static_cast<int>(i ^ (i + 1)), &index[i]});
