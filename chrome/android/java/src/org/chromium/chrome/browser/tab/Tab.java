@@ -33,25 +33,19 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
-import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
@@ -71,17 +65,12 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.components.content_capture.ContentCaptureFeatures;
-import org.chromium.components.content_capture.ContentCaptureReceiverManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureListenerManager;
-import org.chromium.content_public.browser.ImeAdapter;
-import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -347,7 +336,7 @@ public class Tab
         mPendingLoadParams = loadUrlParams;
         if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
 
-        TabThemeColorHelper.createForTab(this);
+        TabHelpers.initTabHelpers(this, creationState);
 
         // Restore data from the TabState, if it existed.
         if (frozenState != null) {
@@ -360,18 +349,6 @@ public class Tab
                 mRootId = getTabModelSelector().getTabById(mParentId).getRootId();
             }
         }
-
-        TabFullscreenHandler.createForTab(this);
-        InterceptNavigationDelegateImpl.createForTab(this);
-
-        if (incognito) {
-            CipherFactory.getInstance().triggerKeyGeneration();
-        }
-
-        ContextualSearchTabHelper.createForTab(this);
-        MediaSessionTabHelper.createForTab(this);
-
-        if (creationState != null) TabUma.create(this, creationState);
 
         mAttachStateChangeListener = new OnAttachStateChangeListener() {
             @Override
@@ -1248,34 +1225,25 @@ public class Tab
     }
 
     /**
-     * initializes the {@link WebContents}.
-     *
-     * @param webContents The WebContents object that will initialize all the browser components.
-     */
-    protected void initWebContents(WebContents webContents) {
-        ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
-        cv.setContentDescription(mThemedApplicationContext.getResources().getString(
-                R.string.accessibility_content_view));
-        webContents.initialize(PRODUCT_VERSION, new TabViewAndroidDelegate(this, cv), cv,
-                getWindowAndroid(), WebContents.createDefaultInternalsHolder());
-        SelectionPopupController.fromWebContents(webContents)
-                .setActionModeCallback(new ChromeActionModeCallback(this, webContents));
-        initBrowserComponents(webContents);
-    }
-
-    /**
-     * Completes the browser content components initialization around a native WebContents
-     * pointer. {@link #getNativePage()} will still return the {@link NativePage} if there is one.
+     * Initializes the {@link WebContents}. Completes the browser content components initialization
+     * around a native WebContents pointer.
+     * <p>
+     * {@link #getNativePage()} will still return the {@link NativePage} if there is one.
      * All initialization that needs to reoccur after a web contents swap should be added here.
      * <p />
      * NOTE: If you attempt to pass a native WebContents that does not have the same incognito
      * state as this tab this call will fail.
      *
-     * @param webContents The new web contents.
+     * @param webContents The WebContents object that will initialize all the browser components.
      */
-    private void initBrowserComponents(WebContents webContents) {
+    protected void initWebContents(WebContents webContents) {
         try {
-            TraceEvent.begin("ChromeTab.initBrowserComponents");
+            TraceEvent.begin("ChromeTab.initWebContents");
+            ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
+            cv.setContentDescription(mThemedApplicationContext.getResources().getString(
+                    R.string.accessibility_content_view));
+            webContents.initialize(PRODUCT_VERSION, new TabViewAndroidDelegate(this, cv), cv,
+                    getWindowAndroid(), WebContents.createDefaultInternalsHolder());
             NativePage previousNativePage = mNativePage;
             mNativePage = null;
             destroyNativePageInternal(previousNativePage);
@@ -1287,18 +1255,16 @@ public class Tab
             }
 
             mWebContents = webContents;
-            ContentUtils.setUserAgentOverride(mWebContents);
-            mContentView = mWebContents.getViewAndroidDelegate().getContainerView();
-
             mWebContents.setImportance(mImportance);
+            ContentUtils.setUserAgentOverride(mWebContents);
+
+            mContentView = cv;
             mContentView.setOnHierarchyChangeListener(this);
             mContentView.setOnSystemUiVisibilityChangeListener(this);
-
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
             updateInteractableState();
+
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-            TabWebContentsObserver.from(this);
-            TabFavicon.from(this);
 
             int parentId = getParentId();
             if (parentId != INVALID_TAB_ID) {
@@ -1314,46 +1280,10 @@ public class Tab
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
-            TabGestureStateListener.from(this, this::getFullscreenManager);
-
-            // The InfoBarContainer needs to be created after the ContentView has been natively
-            // initialized.
-            // In the case where restoring a Tab or showing a prerendered one we already have a
-            // valid infobar container, no need to recreate one.
-            InfoBarContainer.from(this);
-
-            SwipeRefreshHandler.from(this);
-            TrustedCdn.from(this);
-
+            TabHelpers.initWebContentsHelpers(this);
             notifyContentChanged();
-
-            // For browser tabs, we want to set accessibility focus to the page
-            // when it loads. This is not the default behavior for embedded
-            // web views.
-            getWebContentsAccessibility(getWebContents()).setShouldFocusOnPageLoad(true);
-
-            ImeAdapter.fromWebContents(mWebContents).addEventObserver(new ImeEventObserver() {
-                @Override
-                public void onImeEvent() {
-                    // Some text was set in the page. Don't reuse it if a tab is
-                    // open from the same external application, we might lose some
-                    // user data.
-                    mAppAssociatedWith = null;
-                }
-
-                @Override
-                public void onNodeAttributeUpdated(boolean editable, boolean password) {
-                    if (getFullscreenManager() == null) return;
-                    updateFullscreenEnabledState();
-                }
-            });
-
-            if (ContentCaptureFeatures.isEnabled()) {
-                // The created object is held by native side.
-                ContentCaptureReceiverManager.create(getWebContents());
-            }
         } finally {
-            TraceEvent.end("ChromeTab.initBrowserComponents");
+            TraceEvent.end("ChromeTab.initWebContents");
         }
     }
 
