@@ -301,8 +301,7 @@ bool PointsToGuardPage(uintptr_t stack_pointer) {
 // the default heap acquired by the target thread before it was suspended.
 bool CopyStack(HANDLE thread_handle,
                const void* base_address,
-               void* stack_copy_buffer,
-               size_t stack_copy_buffer_size,
+               NativeStackSampler::StackBuffer* stack_buffer,
                ProfileBuilder* profile_builder,
                CONTEXT* thread_context) {
   // The stack bounds are saved to uintptr_ts for use outside
@@ -331,7 +330,7 @@ bool CopyStack(HANDLE thread_handle,
       bottom = thread_context->Esp;
 #endif
 
-      if ((top - bottom) > stack_copy_buffer_size)
+      if ((top - bottom) > stack_buffer->size())
         return false;
 
       // Dereferencing a pointer in the guard page in a thread that doesn't own
@@ -342,12 +341,13 @@ bool CopyStack(HANDLE thread_handle,
 
       profile_builder->RecordMetadata();
 
-      CopyMemoryFromStack(stack_copy_buffer,
+      CopyMemoryFromStack(stack_buffer->buffer(),
                           reinterpret_cast<const void*>(bottom), top - bottom);
     }
   }
 
-  RewritePointersToStackMemory(top, bottom, thread_context, stack_copy_buffer);
+  RewritePointersToStackMemory(top, bottom, thread_context,
+                               stack_buffer->buffer());
 
   return true;
 }
@@ -407,8 +407,7 @@ void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
   CONTEXT thread_context = {0};
   thread_context.ContextFlags = CONTEXT_FULL;
   bool success = CopyStack(thread_handle_.Get(), thread_stack_base_address_,
-                           stack_buffer->buffer(), stack_buffer->size(),
-                           profile_builder, &thread_context);
+                           stack_buffer, profile_builder, &thread_context);
   if (!success)
     return;
 
