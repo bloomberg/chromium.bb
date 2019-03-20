@@ -453,7 +453,6 @@ function checkIncognito(url, incognitoExpected) {
 // Listener to check the expected logging is done in the test cases.
 var testCaseIndx = 0;
 var callIndx = -1;
-var enabledTestCases = [];
 var blinkArgs = {
   'blinkRequestResource': 2,
   'blinkSetAttribute': 3
@@ -473,7 +472,7 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
         apiCall += ' ' + args.join(' ');
       }
       expectedCall = 'runtime.onMessageExternal';
-      var testCase = enabledTestCases[testCaseIndx];
+      var testCase = testCases[testCaseIndx];
       if (callIndx > -1) {
         expectedCall = testCase.expected_activity[callIndx];
       }
@@ -504,37 +503,4 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
     }
 );
 
-function setupTestCasesAndRun() {
-  chrome.test.getConfig(function(config) {
-    chrome.runtime.getPlatformInfo(function(info) {
-      var tests = [];
-      for (var i = 0; i < testCases.length; i++) {
-        // Ignore test case if disabled for this OS.
-        if (testCases[i].disabled != undefined &&
-            info.os in testCases[i].disabled &&
-            testCases[i].disabled[info.os]) {
-          console.log('Test case disabled for this OS: ' + info.os);
-          continue;
-        }
-
-        // Add the test case to the enabled list and set the expected activity
-        // appriorate for this OS.
-        if (testCases[i].func != undefined) {
-          tests.push(testCases[i].func);
-          var enabledTestCase = testCases[i];
-          var activityListForOS = 'expected_activity_' + info.os;
-          if (activityListForOS in enabledTestCase) {
-            console.log('Expecting OS specific activity for: ' + info.os);
-            enabledTestCase.expected_activity =
-                enabledTestCase[activityListForOS];
-          }
-
-          enabledTestCases.push(enabledTestCase);
-        }
-      }
-      chrome.test.runTests(tests);
-    });
-  });
-}
-
-setupTestCasesAndRun();
+chrome.test.runTests(testCases.map(testCase => testCase.func));
