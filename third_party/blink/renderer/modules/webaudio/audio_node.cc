@@ -239,7 +239,7 @@ void AudioHandler::SetChannelCount(unsigned channel_count,
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange<unsigned long>(
+        ExceptionMessages::IndexOutsideRange<uint32_t>(
             "channel count", channel_count, 1,
             ExceptionMessages::kInclusiveBound,
             BaseAudioContext::MaxNumberOfChannels(),
