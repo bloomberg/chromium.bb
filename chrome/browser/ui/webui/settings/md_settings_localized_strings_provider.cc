@@ -2014,6 +2014,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER},
     {"printerAddedSuccessfulMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
+    {"printerEditedSuccessfulMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE},
     {"noPrinterNearbyMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
     {"searchingNearbyPrinters",
