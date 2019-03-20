@@ -51,11 +51,6 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
     was_run_ = true;
   }
   bool WasRun() { return was_run_; }
-  ConsoleLogger* GetConsoleLogger() override {
-    was_console_logger_obtained_ = true;
-    return console_logger_;
-  }
-  bool WasConsoleLoggerObtained() { return was_console_logger_obtained_; }
 
   void Trace(blink::Visitor* visitor) override {
     ResourceLoadSchedulerClient::Trace(visitor);
@@ -67,24 +62,47 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
       MakeGarbageCollected<NullConsoleLogger>();
   MockClientDelegate* delegate_;
   bool was_run_ = false;
-  bool was_console_logger_obtained_ = false;
 };
 
 class ResourceLoadSchedulerTest : public testing::Test {
  public:
+  class MockConsoleLogger final
+      : public GarbageCollectedFinalized<MockConsoleLogger>,
+        public ConsoleLogger {
+    USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
+
+   public:
+    void AddInfoMessage(Source source, const String& message) override {
+      has_message_ = true;
+    }
+    void AddWarningMessage(Source source, const String& message) override {
+      has_message_ = true;
+    }
+    void AddErrorMessage(Source source, const String& message) override {
+      has_message_ = true;
+    }
+
+    bool HasMessage() const { return has_message_; }
+
+   private:
+    bool has_message_ = false;
+  };
+
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   void SetUp() override {
     DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     properties->SetShouldBlockLoadingSubResource(true);
     auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
+    console_logger_ = MakeGarbageCollected<MockConsoleLogger>();
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
         ResourceLoadScheduler::ThrottlingPolicy::kTight, *properties,
-        frame_scheduler.get());
+        frame_scheduler.get(), *console_logger_);
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }
 
+  MockConsoleLogger* GetConsoleLogger() { return console_logger_; }
   ResourceLoadScheduler* Scheduler() { return scheduler_; }
 
   bool Release(ResourceLoadScheduler::ClientId client) {
@@ -99,6 +117,7 @@ class ResourceLoadSchedulerTest : public testing::Test {
   }
 
  private:
+  Persistent<MockConsoleLogger> console_logger_;
   Persistent<ResourceLoadScheduler> scheduler_;
 };
 
@@ -655,8 +674,7 @@ TEST_F(ResourceLoadSchedulerTest, ConsoleMessage) {
   mock_clock.Advance(WTF::TimeDelta::FromSeconds(50));
   Scheduler()->OnLifecycleStateChanged(
       scheduler::SchedulingLifecycleState::kNotThrottled);
-  EXPECT_FALSE(client1->WasConsoleLoggerObtained());
-  EXPECT_FALSE(client2->WasConsoleLoggerObtained());
+  EXPECT_FALSE(GetConsoleLogger()->HasMessage());
   Scheduler()->OnLifecycleStateChanged(
       scheduler::SchedulingLifecycleState::kThrottled);
 
@@ -665,8 +683,7 @@ TEST_F(ResourceLoadSchedulerTest, ConsoleMessage) {
   mock_clock.Advance(WTF::TimeDelta::FromSeconds(15));
   Scheduler()->OnLifecycleStateChanged(
       scheduler::SchedulingLifecycleState::kNotThrottled);
-  EXPECT_FALSE(client1->WasConsoleLoggerObtained());
-  EXPECT_TRUE(client2->WasConsoleLoggerObtained());
+  EXPECT_TRUE(GetConsoleLogger()->HasMessage());
   EXPECT_TRUE(Release(id2));
 }
 

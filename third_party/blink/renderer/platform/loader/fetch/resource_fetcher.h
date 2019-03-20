@@ -154,7 +154,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FetchContext& Context() const;
   void ClearContext();
-  ConsoleLogger* GetConsoleLogger() { return console_logger_; }
+  ConsoleLogger& GetConsoleLogger();
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
@@ -237,6 +237,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
  private:
   friend class ResourceCacheValidationSuppressor;
+  class DetachableConsoleLogger;
   class DetachableProperties;
   enum class StopFetchingTarget {
     kExcludingKeepaliveLoaders,
@@ -343,7 +344,7 @@ class PLATFORM_EXPORT ResourceFetcher
   Member<DetachableProperties> properties_;
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  Member<ConsoleLogger> console_logger_;
+  const Member<DetachableConsoleLogger> console_logger_;
   Member<LoaderFactory> loader_factory_;
   const Member<ResourceLoadScheduler> scheduler_;
 

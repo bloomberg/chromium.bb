@@ -50,7 +50,6 @@
 
 namespace blink {
 
-class ConsoleLogger;
 class FetchContext;
 class ResourceError;
 class ResourceFetcher;
@@ -167,7 +166,6 @@ class PLATFORM_EXPORT ResourceLoader final
 
   // ResourceLoadSchedulerClient.
   void Run() override;
-  ConsoleLogger* GetConsoleLogger() override;
 
   // ResponseBodyLoaderClient implementation.
   void DidReceiveData(base::span<const char> data) override;
