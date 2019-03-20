@@ -16,11 +16,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.util.concurrent.Semaphore;
@@ -183,10 +183,12 @@ public class ArchiveTest {
             final String path, boolean autoname, final Callback<String> callback) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> mTestContainerView.getAwContents().saveWebArchive(path, false, callback));
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            // Just wait for this task to having been posted on the UI thread.
-            // This ensures that if the implementation of saveWebArchive posts a task to the UI
-            // thread we will allow that task to run before finishing our test.
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                        // Just wait for this task to having been posted on the UI thread.
+                        // This ensures that if the implementation of saveWebArchive posts a
+                        // task to the UI
+                        // thread we will allow that task to run before finishing our test.
+                      });
     }
 }

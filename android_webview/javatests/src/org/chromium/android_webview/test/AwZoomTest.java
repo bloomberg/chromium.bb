@@ -109,8 +109,7 @@ public class AwZoomTest {
 
     private void waitForScaleToBecome(final float expectedScale) throws Throwable {
         AwActivityTestRule.pollInstrumentationThread(
-                ()
-                        -> Math.abs(expectedScale
+                () -> Math.abs(expectedScale
                                    - mActivityTestRule.getScaleOnUiThread(mAwContents))
                         < EPSILON);
     }

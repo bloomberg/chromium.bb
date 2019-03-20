@@ -16,10 +16,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -54,27 +54,21 @@ public class AwAutocompleteTest {
     }
 
     private void verifyUmaAutocompleteEnabled(final boolean enabled) throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (enabled) {
-                    assertEquals(1, mAutocompleteEnabled.getDelta());
-                    assertEquals(0, mAutocompleteDisabled.getDelta());
-                } else {
-                    assertEquals(0, mAutocompleteEnabled.getDelta());
-                    assertEquals(1, mAutocompleteDisabled.getDelta());
-                }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            if (enabled) {
+                assertEquals(1, mAutocompleteEnabled.getDelta());
+                assertEquals(0, mAutocompleteDisabled.getDelta());
+            } else {
+                assertEquals(0, mAutocompleteEnabled.getDelta());
+                assertEquals(1, mAutocompleteDisabled.getDelta());
             }
         });
     }
 
     private void verifyUmaNotRecorded() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                assertEquals(0, mAutocompleteEnabled.getDelta());
-                assertEquals(0, mAutocompleteDisabled.getDelta());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals(0, mAutocompleteEnabled.getDelta());
+            assertEquals(0, mAutocompleteDisabled.getDelta());
         });
     }
 
@@ -89,7 +83,7 @@ public class AwAutocompleteTest {
     }
 
     private boolean dispatchKeyEvent(final KeyEvent event) throws Throwable {
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+        return TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return mTestContainerView.dispatchKeyEvent(event);
@@ -121,12 +115,8 @@ public class AwAutocompleteTest {
     }
 
     private void disableAwAutocomplete() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mAwContents.getSettings().setSaveFormData(false);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.getSettings().setSaveFormData(false));
     }
 
     @Before
