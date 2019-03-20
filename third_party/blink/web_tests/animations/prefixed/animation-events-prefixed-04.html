@@ -6,33 +6,22 @@
 var webkitAnimationStartReceived = false;
 var webkitAnimationIterationReceived = false;
 
-document.addEventListener('animationstart', () => {
-  assert_unreached("animationstart event listener should not have been called");
-});
-
 document.addEventListener('webkitAnimationStart', () => {
   webkitAnimationStartReceived = true;
-});
-
-document.addEventListener('animationiteration', () => {
-  assert_unreached("animationiteration event listener should not have been called");
 });
 
 document.addEventListener('webkitAnimationIteration', () => {
   webkitAnimationIterationReceived = true;
 });
 
-document.addEventListener('animationend', () => {
-    assert_unreached("animationend event listener should not have been called");
-});
-
 async_test(t => {
-  document.addEventListener('webkitAnimationEnd', () => {
-    t.step(() => {
-      assert_true(webkitAnimationIterationReceived && webkitAnimationIterationReceived);
-      t.done();
-    });
-  });
+  document.addEventListener('animationstart', t.unreached_func('animationstart event listener should not have been called'));
+  document.addEventListener('animationiteration', t.unreached_func('animationiteration event listener should not have been called'));
+  document.addEventListener('animationend', t.unreached_func('animationend event listener should not have been called'));
+  document.addEventListener('webkitAnimationEnd', t.step_func_done(() => {
+    assert_true(webkitAnimationStartReceived);
+    assert_true(webkitAnimationIterationReceived);
+  }));
 
   var custom = document.createEvent('CustomEvent');
   custom.initCustomEvent('webkitAnimationStart', true, true, null);
