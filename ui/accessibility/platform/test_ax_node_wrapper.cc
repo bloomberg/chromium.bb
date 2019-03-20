@@ -405,6 +405,29 @@ base::string16 TestAXNodeWrapper::GetLocalizedRoleDescriptionForUnlabeledImage()
   return base::ASCIIToUTF16("Unlabeled image");
 }
 
+base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kBanner:
+      return base::ASCIIToUTF16("banner");
+
+    case ax::mojom::Role::kComplementary:
+      return base::ASCIIToUTF16("complementary");
+
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+      return base::ASCIIToUTF16("content information");
+
+    case ax::mojom::Role::kRegion:
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return base::ASCIIToUTF16("region");
+      FALLTHROUGH;
+
+    default:
+      return {};
+  }
+}
+
 base::string16 TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
     ax::mojom::ImageAnnotationStatus status) const {
   switch (status) {

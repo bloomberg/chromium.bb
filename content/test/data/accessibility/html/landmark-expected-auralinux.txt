@@ -5,7 +5,7 @@
 ++++[text] name='This is an aside element.'
 ++[section]
 ++++[text] name='This is an address element.'
-++[footer] xml-roles:contentinfo
+++[landmark] xml-roles:contentinfo
 ++++[text] name='This is a footer element.'
 ++[form]
 ++++[text] name='This is a form element.'

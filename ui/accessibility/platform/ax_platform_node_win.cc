@@ -3669,10 +3669,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  const AXNodeData& data = GetData();
-  int int_attribute;
-  ax::mojom::IntListAttribute relation_attribute;
   result->vt = VT_EMPTY;
+
+  int int_attribute;
+  const AXNodeData& data = GetData();
 
   switch (property_id) {
     // Supported by IAccessibleEx.
@@ -3706,8 +3706,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_ControllerForPropertyId:
       result->vt = VT_ARRAY;
-      relation_attribute = ax::mojom::IntListAttribute::kControlsIds;
-      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      result->parray = CreateUIAElementsArrayForRelation(
+          ax::mojom::IntListAttribute::kControlsIds);
       break;
 
     case UIA_ControlTypePropertyId:
@@ -3723,8 +3723,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_DescribedByPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
-      relation_attribute = ax::mojom::IntListAttribute::kDescribedbyIds;
-      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      result->parray = CreateUIAElementsArrayForRelation(
+          ax::mojom::IntListAttribute::kDescribedbyIds);
       break;
 
     case UIA_FlowsFromPropertyId:
@@ -3735,8 +3735,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_FlowsToPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
-      relation_attribute = ax::mojom::IntListAttribute::kFlowtoIds;
-      result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
+      result->parray = CreateUIAElementsArrayForRelation(
+          ax::mojom::IntListAttribute::kFlowtoIds);
       break;
 
     case UIA_FrameworkIdPropertyId:
@@ -3764,23 +3764,20 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_IsDataValidForFormPropertyId:
-      if (GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
-                          &int_attribute)) {
+      if (data.GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
+                               &int_attribute)) {
         result->vt = VT_BOOL;
-        if (int_attribute ==
-            static_cast<int32_t>(ax::mojom::InvalidState::kFalse)) {
-          result->boolVal = VARIANT_TRUE;
-        } else {
-          result->boolVal = VARIANT_FALSE;
-        }
+        result->boolVal =
+            (static_cast<int>(ax::mojom::InvalidState::kFalse) == int_attribute)
+                ? VARIANT_TRUE
+                : VARIANT_FALSE;
       }
       break;
 
     case UIA_IsKeyboardFocusablePropertyId:
       result->vt = VT_BOOL;
-      result->boolVal = (ShouldNodeHaveFocusableState(delegate_->GetData()))
-                            ? VARIANT_TRUE
-                            : VARIANT_FALSE;
+      result->boolVal =
+          ShouldNodeHaveFocusableState(data) ? VARIANT_TRUE : VARIANT_FALSE;
       break;
 
     case UIA_IsOffscreenPropertyId:
@@ -3832,8 +3829,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LabeledByPropertyId:
-      relation_attribute = ax::mojom::IntListAttribute::kLabelledbyIds;
-      for (int32_t id : GetIntListAttribute(relation_attribute)) {
+      for (int32_t id : data.GetIntListAttribute(
+               ax::mojom::IntListAttribute::kLabelledbyIds)) {
         auto* node_win = GetDelegate()->GetFromNodeID(id);
         if (node_win) {
           DCHECK(node_win);
@@ -3846,7 +3843,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LocalizedControlTypePropertyId:
-      if (HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription)) {
+      if (data.HasStringAttribute(
+              ax::mojom::StringAttribute::kRoleDescription)) {
         V_VT(result) = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kRoleDescription,
                                  &V_BSTR(result));
@@ -3906,7 +3904,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_AcceleratorKeyPropertyId:
-      if (HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
         result->vt = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kKeyShortcuts,
                                  &result->bstrVal);
@@ -3914,7 +3912,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_AccessKeyPropertyId:
-      if (HasStringAttribute(ax::mojom::StringAttribute::kAccessKey)) {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kAccessKey)) {
         result->vt = VT_BSTR;
         GetStringAttributeAsBstr(ax::mojom::StringAttribute::kAccessKey,
                                  &result->bstrVal);
@@ -3927,25 +3925,27 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LevelPropertyId:
-      if (HasIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel)) {
+      if (data.GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                               &int_attribute)) {
         result->vt = VT_I4;
-        result->intVal =
-            GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
+        result->intVal = int_attribute;
       }
       break;
 
-    case UIA_LiveSettingPropertyId:
+    case UIA_LiveSettingPropertyId: {
       result->vt = VT_I4;
       result->intVal = LiveSetting::Off;
-      if (HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus)) {
-        std::string live =
-            GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus);
-        if (live == "polite")
+
+      std::string string_attribute;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
+                                  &string_attribute)) {
+        if (string_attribute == "polite")
           result->intVal = LiveSetting::Polite;
-        else if (live == "assertive")
+        else if (string_attribute == "assertive")
           result->intVal = LiveSetting::Assertive;
       }
       break;
+    }
 
     case UIA_OptimizeForVisualContentPropertyId:
       result->vt = VT_BOOL;
@@ -3960,11 +3960,31 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_SizeOfSetPropertyId:
-      if (HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
+      if (data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize,
+                               &int_attribute)) {
         result->vt = VT_I4;
-        result->intVal = GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+        result->intVal = int_attribute;
       }
       break;
+
+    case UIA_LandmarkTypePropertyId: {
+      base::Optional<LONG> landmark_type = ComputeUIALandmarkType();
+      if (landmark_type) {
+        result->vt = VT_I4;
+        result->intVal = landmark_type.value();
+      }
+      break;
+    }
+
+    case UIA_LocalizedLandmarkTypePropertyId: {
+      base::string16 localized_landmark_type =
+          GetDelegate()->GetLocalizedStringForLandmarkType();
+      if (!localized_landmark_type.empty()) {
+        result->vt = VT_BSTR;
+        result->bstrVal = SysAllocString(localized_landmark_type.c_str());
+      }
+      break;
+    }
 
     // Covered by MSAA.
     case UIA_BoundingRectanglePropertyId:
@@ -3982,8 +4002,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_FillTypePropertyId:
     case UIA_GroupControlTypeId:
     case UIA_HeadingLevelPropertyId:
-    case UIA_LandmarkTypePropertyId:
-    case UIA_LocalizedLandmarkTypePropertyId:
     case UIA_MenuControlTypeId:
     case UIA_OutlineColorPropertyId:
     case UIA_OutlineThicknessPropertyId:
@@ -4145,6 +4163,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kDate:
@@ -4246,9 +4265,6 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kFeed:
-      return ROLE_SYSTEM_GROUPING;
-
-    case ax::mojom::Role::kFooter:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kForm:
@@ -4675,8 +4691,8 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
 
   switch (GetData().role) {
     case ax::mojom::Role::kBanner:
-      // CORE-AAM recommends IA2_ROLE_LANDMARK.
-      ia2_role = IA2_ROLE_HEADER;
+      // CORE-AAM recommends LANDMARK instead of HEADER.
+      ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kBlockquote:
       ia2_role = IA2_ROLE_SECTION;
@@ -4693,8 +4709,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_COLOR_CHOOSER;
       break;
     case ax::mojom::Role::kComplementary:
-      // Note: IA2_ROLE_COMPLEMENTARY_CONTENT currently exists but CORE-AAM
-      // maps this to more general IA2_ROLE_LANDMARK.
+      // CORE-AAM recommends LANDMARK instead of COMPLEMENTARY_CONTENT.
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kContentDeletion:
@@ -4704,6 +4719,8 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_CONTENT_INSERTION;
       break;
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+      // CORE-AAM recommends LANDMARK instead of FOOTER.
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kDate:
@@ -4767,9 +4784,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       break;
     case ax::mojom::Role::kForm:
       ia2_role = IA2_ROLE_FORM;
-      break;
-    case ax::mojom::Role::kFooter:
-      ia2_role = IA2_ROLE_FOOTER;
       break;
     case ax::mojom::Role::kGenericContainer:
       ia2_role = IA2_ROLE_SECTION;
@@ -4941,6 +4955,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return L"contentinfo";
 
     case ax::mojom::Role::kDate:
@@ -5042,9 +5057,6 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kFigure:
-      return L"group";
-
-    case ax::mojom::Role::kFooter:
       return L"group";
 
     case ax::mojom::Role::kForm:
@@ -5564,6 +5576,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kDate:
@@ -5665,9 +5678,6 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kFigure:
-      return UIA_GroupControlTypeId;
-
-    case ax::mojom::Role::kFooter:
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kForm:
@@ -6009,6 +6019,37 @@ bool AXPlatformNodeWin::IsUIAControl() const {
            data.GetRestriction() == ax::mojom::Restriction::kReadOnly ||
            data.HasState(ax::mojom::State::kInvisible) ||
            data.role == ax::mojom::Role::kIgnored);
+}
+
+base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kComplementary:
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+      return UIA_CustomLandmarkTypeId;
+
+    case ax::mojom::Role::kForm:
+      return UIA_FormLandmarkTypeId;
+
+    case ax::mojom::Role::kMain:
+      return UIA_MainLandmarkTypeId;
+
+    case ax::mojom::Role::kNavigation:
+      return UIA_NavigationLandmarkTypeId;
+
+    case ax::mojom::Role::kSearch:
+      return UIA_SearchLandmarkTypeId;
+
+    case ax::mojom::Role::kRegion:
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return UIA_CustomLandmarkTypeId;
+      FALLTHROUGH;
+
+    default:
+      return {};
+  }
 }
 
 base::string16 AXPlatformNodeWin::GetValue() const {

@@ -215,6 +215,11 @@ AXPlatformNodeDelegateBase::GetLocalizedRoleDescriptionForUnlabeledImage()
   return base::string16();
 }
 
+base::string16 AXPlatformNodeDelegateBase::GetLocalizedStringForLandmarkType()
+    const {
+  return base::string16();
+}
+
 bool AXPlatformNodeDelegateBase::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }

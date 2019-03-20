@@ -60,6 +60,14 @@ ScopedVariant SELF(CHILDID_SELF);
 // WARNING: These aren't intended to be generic EXPECT_BSTR_EQ macros
 // as the logic is specific to extracting and comparing UIA property
 // values.
+#define EXPECT_UIA_EMPTY(node, property_id)                     \
+  {                                                             \
+    ScopedVariant actual;                                       \
+    ASSERT_HRESULT_SUCCEEDED(                                   \
+        node->GetPropertyValue(property_id, actual.Receive())); \
+    EXPECT_EQ(VT_EMPTY, actual.type());                         \
+  }
+
 #define EXPECT_UIA_VALUE_EQ(node, property_id, expectedVariant) \
   {                                                             \
     ScopedVariant actual;                                       \
@@ -4050,6 +4058,90 @@ TEST_F(AXPlatformNodeWinTest, TestComputeUIAControlType) {
   EXPECT_UIA_INT_EQ(
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(child2_id),
       UIA_ControlTypePropertyId, int{UIA_TableControlTypeId});
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIALandmarkType) {
+  auto TestLandmarkType = [this](ax::mojom::Role node_role,
+                                 base::Optional<LONG> expected_landmark_type,
+                                 const std::string& node_name = {}) {
+    AXNodeData root_data;
+    root_data.id = 0;
+    root_data.role = node_role;
+    if (!node_name.empty())
+      root_data.SetName(node_name);
+    Init(root_data);
+
+    ComPtr<IRawElementProviderSimple> root_provider =
+        GetRootIRawElementProviderSimple();
+
+    if (expected_landmark_type) {
+      EXPECT_UIA_INT_EQ(root_provider, UIA_LandmarkTypePropertyId,
+                        expected_landmark_type.value());
+    } else {
+      EXPECT_UIA_EMPTY(root_provider, UIA_LandmarkTypePropertyId);
+    }
+  };
+
+  TestLandmarkType(ax::mojom::Role::kBanner, UIA_CustomLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kComplementary, UIA_CustomLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kContentInfo, UIA_CustomLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kFooter, UIA_CustomLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kForm, UIA_FormLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kMain, UIA_MainLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kNavigation, UIA_NavigationLandmarkTypeId);
+  TestLandmarkType(ax::mojom::Role::kSearch, UIA_SearchLandmarkTypeId);
+
+  // Only named regions should be exposed as landmarks.
+  TestLandmarkType(ax::mojom::Role::kRegion, {});
+  TestLandmarkType(ax::mojom::Role::kRegion, UIA_CustomLandmarkTypeId, "name");
+
+  TestLandmarkType(ax::mojom::Role::kGroup, {});
+  TestLandmarkType(ax::mojom::Role::kHeading, {});
+  TestLandmarkType(ax::mojom::Role::kList, {});
+  TestLandmarkType(ax::mojom::Role::kTable, {});
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIALocalizedLandmarkType) {
+  auto TestLocalizedLandmarkType =
+      [this](ax::mojom::Role node_role,
+             const std::wstring& expected_localized_landmark,
+             const std::string& node_name = {}) {
+        AXNodeData root_data;
+        root_data.id = 0;
+        root_data.role = node_role;
+        if (!node_name.empty())
+          root_data.SetName(node_name);
+        Init(root_data);
+
+        ComPtr<IRawElementProviderSimple> root_provider =
+            GetRootIRawElementProviderSimple();
+
+        if (expected_localized_landmark.empty()) {
+          EXPECT_UIA_EMPTY(root_provider, UIA_LocalizedLandmarkTypePropertyId);
+        } else {
+          EXPECT_UIA_BSTR_EQ(root_provider, UIA_LocalizedLandmarkTypePropertyId,
+                             expected_localized_landmark.c_str());
+        }
+      };
+
+  TestLocalizedLandmarkType(ax::mojom::Role::kBanner, L"banner");
+  TestLocalizedLandmarkType(ax::mojom::Role::kComplementary, L"complementary");
+  TestLocalizedLandmarkType(ax::mojom::Role::kContentInfo,
+                            L"content information");
+  TestLocalizedLandmarkType(ax::mojom::Role::kFooter, L"content information");
+
+  // Only named regions should be exposed as landmarks.
+  TestLocalizedLandmarkType(ax::mojom::Role::kRegion, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kRegion, L"region", "name");
+
+  TestLocalizedLandmarkType(ax::mojom::Role::kForm, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kGroup, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kHeading, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kList, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kMain, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kNavigation, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kSearch, {});
+  TestLocalizedLandmarkType(ax::mojom::Role::kTable, {});
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIRawElementProviderSimple2ShowContextMenu) {
