@@ -80,8 +80,8 @@ public class UsageStatsBridge {
 
     public void getAllSuspensions(Callback<List<String>> callback) {
         assert mNativeUsageStatsBridge != 0;
-        nativeGetAllSuspensions(
-                mNativeUsageStatsBridge, arr -> { callback.onResult(Arrays.asList(arr)); });
+        nativeGetAllSuspensions(mNativeUsageStatsBridge,
+                arr -> { callback.onResult(new ArrayList<>(Arrays.asList(arr))); });
     }
 
     public void setSuspensions(String[] domains, Callback<Boolean> callback) {
