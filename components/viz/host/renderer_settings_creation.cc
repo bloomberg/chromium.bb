@@ -8,12 +8,17 @@
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "components/viz/common/switches.h"
 #endif
 
 namespace viz {
@@ -77,6 +82,15 @@ RendererSettings CreateRendererSettings() {
                         kMinSlowDownScaleFactor, kMaxSlowDownScaleFactor,
                         &renderer_settings.slow_down_compositing_scale_factor);
   }
+
+#if defined(USE_OZONE)
+  // TODO(crbug.com/930173): Add the default set of overlay strategies if flag
+  // isn't present but ozone platform supports overlays.
+  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
+    renderer_settings.overlay_strategies = ParseOverlayStategies(
+        command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays));
+  }
+#endif
 
   return renderer_settings;
 }

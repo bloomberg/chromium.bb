@@ -31,6 +31,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_manager_gpu.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
@@ -276,6 +277,11 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_factory_.reset(new GbmSurfaceFactory(drm_thread_proxy_.get()));
     if (!using_mojo_) {
       drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
+    }
+
+    if (args.viz_display_compositor) {
+      overlay_manager_ =
+          std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
     }
 
     // If InitializeGPU and InitializeUI are invoked on the same thread, startup
