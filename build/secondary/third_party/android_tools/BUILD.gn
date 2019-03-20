@@ -36,15 +36,13 @@ if (enable_java_templates) {
   }
 
   template("android_test_jar_with_manifest") {
-    _library_name = invoker.library_name
-
     _manifest_output_path = "$target_gen_dir/$target_name/AndroidManifest.xml"
     _manifest_target = "${target_name}__manifest"
     jinja_template(_manifest_target) {
       testonly = true
       input = "//build/secondary/third_party/android_tools/AndroidManifest.xml.jinja2"
       output = _manifest_output_path
-      variables = [ "library_name=$_library_name" ]
+      variables = [ "library_name=${invoker.library_name}" ]
     }
 
     _resources_target = "${target_name}__resources"
@@ -60,8 +58,7 @@ if (enable_java_templates) {
       deps = [
         ":$_resources_target",
       ]
-      input_jars_paths =
-          [ "${android_sdk}/optional/android.test.${_library_name}.jar" ]
+      input_jars_paths = [ "${android_sdk}/optional/${invoker.jar_name}" ]
     }
   }
 
@@ -71,12 +68,15 @@ if (enable_java_templates) {
   # available to be linked against but aren't linked by default.
   android_test_jar_with_manifest("android_test_base_java") {
     library_name = "base"
+    jar_name = "android.test.base.jar"
   }
   android_test_jar_with_manifest("android_test_mock_java") {
     library_name = "mock"
+    jar_name = "android.test.mock.jar"
   }
   android_test_jar_with_manifest("android_test_runner_java") {
     library_name = "runner"
+    jar_name = "android.test.runner.jar"
   }
 
   android_library("android_support_chromium_java") {

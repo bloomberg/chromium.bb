@@ -1023,7 +1023,8 @@ def main(argv):
 
   system_library_deps = deps.Direct('system_java_library')
   direct_library_deps = deps.Direct('java_library')
-  group_deps = deps.All('group')
+  direct_group_deps = deps.Direct('group')
+  all_group_deps = deps.All('group')
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
 
@@ -1252,11 +1253,12 @@ def main(argv):
     javac_full_classpath = [
         c['unprocessed_jar_path'] for c in all_library_deps]
 
-    for dep in group_deps:
+    for dep in direct_group_deps:
       javac_classpath.extend(dep.get('extra_classpath_jars', []))
-      javac_full_classpath.extend(dep.get('extra_classpath_jars', []))
       javac_interface_classpath.extend(
           dep.get('extra_classpath_interface_jars', []))
+    for dep in all_group_deps:
+      javac_full_classpath.extend(dep.get('extra_classpath_jars', []))
       javac_full_interface_classpath.extend(
           dep.get('extra_classpath_interface_jars', []))
 
@@ -1331,7 +1333,7 @@ def main(argv):
           p for p in c.get('proguard_configs', []) if p not in all_configs)
       extra_jars.extend(
           p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
-    for c in group_deps:
+    for c in all_group_deps:
       extra_jars.extend(
           p for p in c.get('extra_classpath_jars', []) if p not in extra_jars)
     if options.type == 'android_app_bundle':
