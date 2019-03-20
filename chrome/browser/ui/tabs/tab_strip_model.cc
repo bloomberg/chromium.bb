@@ -25,10 +25,12 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -1082,7 +1084,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return true;
 
     case CommandFocusMode:
-      return true;
+      return GetIndicesForCommand(context_index).size() == 1;
 
     case CommandSendToMyDevices:
       return true;
@@ -1205,7 +1207,10 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandFocusMode: {
-      // TODO(yiningwang) (936096): Add Implementation.
+      base::RecordAction(UserMetricsAction("TabContextMenu_FocusMode"));
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      WebContents* contents = GetWebContentsAt(indices[0]);
+      ReparentWebContentsForFocusMode(contents);
       break;
     }
 

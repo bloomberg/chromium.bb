@@ -9,6 +9,7 @@
 
 #include "apps/launcher.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -338,6 +340,22 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   return tab;
 }
 
+Browser* ReparentWebContentsWithBrowserCreateParams(
+    content::WebContents* contents,
+    const Browser::CreateParams& browser_params) {
+  Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
+  Browser* target_browser = Browser::Create(browser_params);
+
+  TabStripModel* source_tabstrip = source_browser->tab_strip_model();
+  target_browser->tab_strip_model()->AppendWebContents(
+      source_tabstrip->DetachWebContentsAt(
+          source_tabstrip->GetIndexOfWebContents(contents)),
+      true);
+  target_browser->window()->Show();
+
+  return target_browser;
+}
+
 }  // namespace
 
 WebContents* OpenApplication(const AppLaunchParams& params) {
@@ -468,26 +486,27 @@ bool CanLaunchViaEvent(const extensions::Extension* extension) {
 Browser* ReparentWebContentsIntoAppBrowser(
     content::WebContents* contents,
     const extensions::Extension* extension) {
-  Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   // Incognito tabs reparent correctly, but remain incognito without any
   // indication to the user, so disallow it.
   DCHECK(!profile->IsOffTheRecord());
-
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
       web_app::GenerateApplicationNameFromAppId(extension->id()),
       true /* trusted_source */, gfx::Rect(), profile,
       true /* user_gesture */));
-  Browser* target_browser = new Browser(browser_params);
+  return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
+}
 
-  TabStripModel* source_tabstrip = source_browser->tab_strip_model();
-  target_browser->tab_strip_model()->AppendWebContents(
-      source_tabstrip->DetachWebContentsAt(
-          source_tabstrip->GetIndexOfWebContents(contents)),
-      true);
-  target_browser->window()->Show();
-
-  return target_browser;
+Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
+  DCHECK(base::FeatureList::IsEnabled(features::kFocusMode));
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  // TODO(crbug.com/941577): Remove DCHECK when focus mode is permitted in guest
+  // and incognito sessions.
+  DCHECK(!profile->IsOffTheRecord());
+  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
+      web_app::GenerateApplicationNameForFocusMode(), true /* trusted_source */,
+      gfx::Rect(), profile, true /* user_gesture */));
+  return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
 }
 
 Browser* ReparentSecureActiveTabIntoPwaWindow(Browser* browser) {
