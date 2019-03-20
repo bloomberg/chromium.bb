@@ -67,6 +67,12 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
                                     int len,
                                     bool clipped = false) const override;
 
+  gfx::Rect GetTextRangeBoundsRect(
+      int start_offset,
+      int end_offset,
+      AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem coordinate_system)
+      const override;
+
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
   // hit, if any.

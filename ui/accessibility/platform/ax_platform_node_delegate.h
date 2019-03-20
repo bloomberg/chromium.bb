@@ -92,6 +92,21 @@ class AX_EXPORT AXPlatformNodeDelegate {
                                             int len,
                                             bool clipped = false) const = 0;
 
+  // Get the bounds of the given text range in the given coordinate system.
+  // Screen gets these boundaries in screen coordinates, Window in coordinates
+  // relative to the parent window, and Parent relative to the parent node. The
+  // offsets refer to offsets within the text returned for this node when
+  // treated as a platform text node.
+  enum TextRangeBoundsCoordinateSystem {
+    Screen,
+    Window,
+    Parent,
+  };
+  virtual gfx::Rect GetTextRangeBoundsRect(
+      int start_offset,
+      int end_offset,
+      TextRangeBoundsCoordinateSystem coordinate_system) const = 0;
+
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
   // hit, if any.

@@ -364,6 +364,36 @@ gfx::Rect BrowserAccessibility::GetPageBoundsRect(bool* offscreen,
   return RelativeToAbsoluteBounds(gfx::RectF(), false, offscreen, clip_bounds);
 }
 
+gfx::Rect BrowserAccessibility::GetTextRangeBoundsRect(
+    int start_offset,
+    int end_offset,
+    ui::AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem
+        coordinate_system) const {
+  const base::string16& text_str = GetText();
+  if (start_offset == end_offset)
+    return gfx::Rect();
+
+  if (start_offset > end_offset)
+    std::swap(start_offset, end_offset);
+
+  if (start_offset < 0 || start_offset >= static_cast<int>(text_str.size()))
+    return gfx::Rect();
+  if (end_offset < 0 || end_offset > static_cast<int>(text_str.size()))
+    return gfx::Rect();
+
+  switch (coordinate_system) {
+    case ui::AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem::Screen:
+      return GetScreenBoundsForRange(start_offset, end_offset - start_offset);
+    case ui::AXPlatformNodeDelegate::Window:
+      return GetPageBoundsForRange(start_offset, end_offset - start_offset);
+    case ui::AXPlatformNodeDelegate::Parent:
+      if (!PlatformGetParent())
+        return gfx::Rect();
+      return GetPageBoundsForRange(start_offset, end_offset - start_offset) -
+             PlatformGetParent()->GetPageBoundsRect().OffsetFromOrigin();
+  }
+}
+
 gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
                                                       int len,
                                                       bool clipped) const {

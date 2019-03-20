@@ -174,6 +174,19 @@ static void SetActiveTopLevelFrame(AtkObject* new_top_level_frame) {
   SetWeakGPtrToAtkObject(&g_active_top_level_frame, new_top_level_frame);
 }
 
+AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem
+AtkCoordTypeToTextRangeBoundsCoordinateSystem(AtkCoordType coordinate_type) {
+  switch (coordinate_type) {
+    case ATK_XY_SCREEN:
+      return AXPlatformNodeDelegate::Screen;
+    case ATK_XY_WINDOW:
+      return AXPlatformNodeDelegate::Window;
+    case ATK_XY_PARENT:
+      return AXPlatformNodeDelegate::Parent;
+    default:
+      return AXPlatformNodeDelegate::Screen;
+  }
+}
 }  // namespace
 
 //
@@ -1215,6 +1228,57 @@ static char* AXPlatformNodeAuraLinuxGetStringAtOffset(
 }
 #endif
 
+void AXPlatformNodeAuraLinuxGetCharacterExtents(AtkText* atk_text,
+                                                int offset,
+                                                int* x,
+                                                int* y,
+                                                int* width,
+                                                int* height,
+                                                AtkCoordType coordinate_type) {
+  gfx::Rect rect;
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (obj) {
+    rect = obj->GetDelegate()->GetTextRangeBoundsRect(
+        obj->UnicodeToUTF16OffsetInText(offset),
+        obj->UnicodeToUTF16OffsetInText(offset + 1),
+        AtkCoordTypeToTextRangeBoundsCoordinateSystem(coordinate_type));
+  }
+
+  if (x)
+    *x = rect.x();
+  if (y)
+    *y = rect.y();
+  if (width)
+    *width = rect.width();
+  if (height)
+    *height = rect.height();
+}
+
+void AXPlatformNodeAuraLinuxGetRangeExtents(AtkText* atk_text,
+                                            int start_offset,
+                                            int end_offset,
+                                            AtkCoordType coordinate_type,
+                                            AtkTextRectangle* out_rectangle) {
+  if (!out_rectangle)
+    return;
+
+  gfx::Rect rect;
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (obj) {
+    rect = obj->GetDelegate()->GetTextRangeBoundsRect(
+        obj->UnicodeToUTF16OffsetInText(start_offset),
+        obj->UnicodeToUTF16OffsetInText(end_offset),
+        AtkCoordTypeToTextRangeBoundsCoordinateSystem(coordinate_type));
+  }
+
+  out_rectangle->x = rect.x();
+  out_rectangle->y = rect.y();
+  out_rectangle->width = rect.width();
+  out_rectangle->height = rect.height();
+}
+
 static void AXTextInterfaceBaseInit(AtkTextIface* iface) {
   iface->get_text = AXPlatformNodeAuraLinuxGetText;
   iface->get_run_attributes = AXPlatformNodeAuraLinuxGetRunAttributes;
@@ -1223,6 +1287,8 @@ static void AXTextInterfaceBaseInit(AtkTextIface* iface) {
   iface->get_text_after_offset = AXPlatformNodeAuraLinuxGetTextAfterOffset;
   iface->get_text_before_offset = AXPlatformNodeAuraLinuxGetTextBeforeOffset;
   iface->get_text_at_offset = AXPlatformNodeAuraLinuxGetTextAtOffset;
+  iface->get_character_extents = AXPlatformNodeAuraLinuxGetCharacterExtents;
+  iface->get_range_extents = AXPlatformNodeAuraLinuxGetRangeExtents;
 
 #if ATK_CHECK_VERSION(2, 10, 0)
   iface->get_string_at_offset = AXPlatformNodeAuraLinuxGetStringAtOffset;

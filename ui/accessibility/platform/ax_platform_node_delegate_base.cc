@@ -66,6 +66,14 @@ gfx::Rect AXPlatformNodeDelegateBase::GetScreenBoundsForRange(
   return gfx::Rect();
 }
 
+gfx::Rect AXPlatformNodeDelegateBase::GetTextRangeBoundsRect(
+    int start_offset,
+    int end_offset,
+    AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem coordinate_system)
+    const {
+  return gfx::Rect();
+}
+
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(int x,
                                                                   int y) {
   return nullptr;

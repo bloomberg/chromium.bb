@@ -29,6 +29,11 @@ gfx::NativeViewAccessible AccessibilityBrowserTest::GetRendererAccessible() {
   return web_contents->GetRenderWidgetHostView()->GetNativeViewAccessible();
 }
 
+void AccessibilityBrowserTest::ExecuteScript(const base::string16& script) {
+  shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      script, base::NullCallback());
+}
+
 void AccessibilityBrowserTest::LoadInitialAccessibilityTreeFromHtml(
     const std::string& html,
     ui::AXMode accessibility_mode) {
@@ -81,6 +86,31 @@ void AccessibilityBrowserTest::LoadSampleParagraph(
       </body>
       </html>)HTML",
       accessibility_mode);
+}
+
+// Loads a page with a content editable whose text overflows its height.
+// Places the caret at the beginning of the editable's last line but doesn't
+// scroll the editable.
+void AccessibilityBrowserTest::LoadSampleParagraphInScrollableEditable() {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<p contenteditable="true"
+          style="height: 30px; overflow: scroll;">
+          hello<br><br><br>hello
+      </p>)HTML");
+
+  AccessibilityNotificationWaiter selection_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  ExecuteScript(base::UTF8ToUTF16(
+      "let selection=document.getSelection();"
+      "let range=document.createRange();"
+      "let editable=document.querySelector('p[contenteditable=\"true\"]');"
+      "editable.focus();"
+      "range.setStart(editable.lastChild, 0);"
+      "range.setEnd(editable.lastChild, 0);"
+      "selection.removeAllRanges();"
+      "selection.addRange(range);"));
+  selection_waiter.WaitForNotification();
 }
 
 // static

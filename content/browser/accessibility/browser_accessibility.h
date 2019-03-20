@@ -360,6 +360,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::Rect GetScreenBoundsForRange(int start,
                                     int len,
                                     bool clipped = false) const override;
+  gfx::Rect GetTextRangeBoundsRect(
+      int start_offset,
+      int end_offset,
+      ui::AXPlatformNodeDelegate::TextRangeBoundsCoordinateSystem
+          coordinate_system) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
