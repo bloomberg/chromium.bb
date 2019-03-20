@@ -729,6 +729,14 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
       if tarball:
         self.UploadArtifact(tarball)
 
+  def BuildGuestImagesTarball(self):
+    """Build the tarball containing guest images test bundles."""
+    with osutils.TempDir(prefix='cbuildbot-guest-images') as tempdir:
+      tarball = commands.BuildPinnedGuestImagesTarball(
+          self._build_root, self._current_board, tempdir)
+      if tarball:
+        self.UploadArtifact(tarball)
+
   def _GeneratePayloads(self, image_name, **kwargs):
     """Generate and upload payloads for |image_name|.
 
@@ -778,6 +786,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
         self._run.config.upload_hw_test_artifacts):
       steps.append(self.BuildAutotestTarballs)
       steps.append(self.BuildTastTarball)
+      steps.append(self.BuildGuestImagesTarball)
 
     parallel.RunParallelSteps(steps)
     # If we encountered any exceptions with any of the steps, they should have

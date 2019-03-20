@@ -56,6 +56,9 @@ SDK_OVERLAYS_OUTPUT = 'tmp/sdk-overlays'
 
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
 UNITTEST_PKG_PATH = 'test-packages'
+GUEST_IMAGES_PINS_PATH = 'opt/google/containers/pins'
+PIN_KEY_FILENAME = 'filename'
+PIN_KEY_GSURI = 'gsuri'
 
 # Path to the lsb-release file on the device.
 LSB_RELEASE_PATH = '/etc/lsb-release'

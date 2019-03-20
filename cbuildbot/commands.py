@@ -2808,6 +2808,38 @@ def BuildTastBundleTarball(buildroot, cwd, tarball_dir):
   return tarball
 
 
+def BuildPinnedGuestImagesTarball(buildroot, board, tarball_dir):
+  """Create a tarball of Guest VM and Container images for testing.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board name of build target.
+    tarball_dir: Location for storing the images and tarball.
+
+  Returns:
+    Path of the generated tarball, or None if there are no images.
+  """
+  pins_root = os.path.abspath(os.path.join(buildroot, 'chroot', 'build', board,
+                                           constants.GUEST_IMAGES_PINS_PATH))
+  gs_context = gs.GSContext()
+  files = []
+  for pin_file in sorted(glob.iglob(os.path.join(pins_root, '*.json'))):
+    with open(pin_file) as f:
+      pin = json.load(f)
+      try:
+        filename = os.path.join(tarball_dir, pin[constants.PIN_KEY_FILENAME])
+        gs_context.Copy(pin[constants.PIN_KEY_GSURI], filename)
+        files.append(pin[constants.PIN_KEY_FILENAME])
+      except KeyError as e:
+        logging.warning('Skipping invalid pin file \'%s\': %r', pin_file, e)
+
+  if not files:
+    return None
+  tarball = os.path.join(tarball_dir, 'guest_images.tar')
+  BuildTarball(buildroot, files, tarball, cwd=tarball_dir, compressed=False)
+  return tarball
+
+
 def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   """Tar up the full autotest directory into image_dir.
 
