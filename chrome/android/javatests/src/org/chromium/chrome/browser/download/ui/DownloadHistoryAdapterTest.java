@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.content.SharedPreferences.Editor;
 import android.support.test.filters.SmallTest;
+import android.support.test.rule.ActivityTestRule;
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Assert;
@@ -19,10 +20,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflineContentProvider;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemViewType;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -38,7 +39,8 @@ import java.util.Set;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DownloadHistoryAdapterTest {
     @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+    public ActivityTestRule<DownloadActivity> mActivityTestRule =
+            new ActivityTestRule<>(DownloadActivity.class);
 
     private static class Observer extends RecyclerView.AdapterDataObserver
             implements DownloadHistoryAdapter.TestObserver, SpaceDisplay.Observer {
@@ -128,7 +130,7 @@ public class DownloadHistoryAdapterTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mAdapter.initialize(mBackendProvider, null);
+                mAdapter.initialize(mActivityTestRule.getActivity(), mBackendProvider, null);
             }
         });
         mAdapter.getSpaceDisplayForTests().addObserverForTests(mObserver);
