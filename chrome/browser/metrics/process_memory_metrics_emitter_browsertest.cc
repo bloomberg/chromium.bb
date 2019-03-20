@@ -584,8 +584,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
   DISABLED_FetchAndEmitMetricsWithHostedApps
 #else
+// TODO(crbug.com/943207): Re-enable this test once it's not flaky anymore.
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
-  FetchAndEmitMetricsWithHostedApps
+  DISABLED_FetchAndEmitMetricsWithHostedApps
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetricsWithHostedApps) {
