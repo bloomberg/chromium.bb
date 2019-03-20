@@ -1540,6 +1540,118 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   // auth over HTTP2.
 }
 
+TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
+  const HostPortPair kEndpoint("host.test", 443);
+  const HostPortPair kProxy("proxy.test", 443);
+
+  const std::string kRedirectTarget = "https://some.other.host.test/";
+
+  const std::string kResponseText =
+      "HTTP/1.1 302 Found\r\n"
+      "Location: " +
+      kRedirectTarget +
+      "\r\n"
+      "Set-Cookie: foo=bar\r\n"
+      "\r\n";
+
+  for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
+    SCOPED_TRACE(io_mode);
+    session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+
+    for (bool use_https_proxy : {false, true}) {
+      SCOPED_TRACE(use_https_proxy);
+      MockWrite writes[] = {
+          MockWrite(ASYNC, 0,
+                    "CONNECT host.test:443 HTTP/1.1\r\n"
+                    "Host: host.test:443\r\n"
+                    "Proxy-Connection: keep-alive\r\n\r\n"),
+      };
+      MockRead reads[] = {
+          MockRead(ASYNC, 1, kResponseText.c_str()),
+      };
+
+      SequencedSocketData data(reads, writes);
+      tagging_client_socket_factory_.AddSocketDataProvider(&data);
+      SSLSocketDataProvider ssl(ASYNC, OK);
+      tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+      ClientSocketHandle handle;
+      TestCompletionCallback callback;
+
+      scoped_refptr<TransportSocketParams> transport_params =
+          base::MakeRefCounted<TransportSocketParams>(
+              kProxy, false /* disable_resolver_cache */,
+              OnHostResolutionCallback());
+
+      scoped_refptr<SSLSocketParams> proxy_ssl_params =
+          base::MakeRefCounted<SSLSocketParams>(
+              transport_params, nullptr /* socks_proxy_params */,
+              nullptr /* http_proxy_params */, kProxy, GetSSLConfig(),
+              PRIVACY_MODE_DISABLED);
+
+      scoped_refptr<HttpProxySocketParams> http_proxy_params =
+          base::MakeRefCounted<HttpProxySocketParams>(
+              use_https_proxy ? nullptr : transport_params,
+              use_https_proxy ? proxy_ssl_params : nullptr,
+              quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
+              false /* is_trusted_proxy */, true /* tunnel */,
+              TRAFFIC_ANNOTATION_FOR_TESTS);
+      scoped_refptr<SSLSocketParams> endpoint_ssl_params =
+          base::MakeRefCounted<SSLSocketParams>(
+              nullptr /* direct_params */, nullptr /* socks_proxy_params */,
+              http_proxy_params, kEndpoint, GetSSLConfig(),
+              PRIVACY_MODE_DISABLED);
+
+      // Whether the proxy is HTTPS or not, always connecting to an HTTPS site
+      // through it.
+      scoped_refptr<TransportClientSocketPool::SocketParams> pool_params =
+          TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+              endpoint_ssl_params);
+
+      int rv = handle.Init(
+          ClientSocketPool::GroupId(kEndpoint,
+                                    ClientSocketPool::SocketType::kSsl,
+                                    false /* privacy_mode */),
+          pool_params, LOW, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+          ClientSocketPool::ProxyAuthCallback(), tagging_pool_.get(),
+          NetLogWithSource());
+      rv = callback.GetResult(rv);
+
+      if (!use_https_proxy) {
+        // We don't trust 302 responses to CONNECT from HTTP proxies.
+        EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
+        EXPECT_FALSE(handle.is_initialized());
+        EXPECT_FALSE(handle.release_pending_http_proxy_socket());
+      } else {
+        // Expect ProxyClientSocket to return the proxy's response, sanitized.
+        EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
+        EXPECT_FALSE(handle.is_initialized());
+
+        std::unique_ptr<StreamSocket> stream_socket =
+            handle.release_pending_http_proxy_socket();
+        ASSERT_TRUE(stream_socket);
+        const ProxyClientSocket* tunnel_socket =
+            static_cast<ProxyClientSocket*>(stream_socket.get());
+        const HttpResponseInfo* response =
+            tunnel_socket->GetConnectResponseInfo();
+        const HttpResponseHeaders* headers = response->headers.get();
+
+        // Make sure Set-Cookie header was stripped.
+        EXPECT_FALSE(headers->HasHeader("set-cookie"));
+
+        // Make sure Content-Length: 0 header was added.
+        EXPECT_TRUE(headers->HasHeaderValue("content-length", "0"));
+
+        // Make sure Location header was included and correct.
+        std::string location;
+        EXPECT_TRUE(headers->IsRedirect(&location));
+        EXPECT_EQ(location, kRedirectTarget);
+      }
+    }
+  }
+}
+
 // Test that SocketTag passed into TransportClientSocketPool is applied to
 // returned sockets.
 #if defined(OS_ANDROID)
