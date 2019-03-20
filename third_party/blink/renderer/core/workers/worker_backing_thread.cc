@@ -71,9 +71,11 @@ void WorkerBackingThread::InitializeOnBackingThread(
   backing_thread_->InitializeOnThread();
 
   DCHECK(!isolate_);
+  ThreadScheduler* scheduler = BackingThread().PlatformThread().Scheduler();
   isolate_ = V8PerIsolateData::Initialize(
-      backing_thread_->PlatformThread().Scheduler()->V8TaskRunner(),
+      scheduler->V8TaskRunner(),
       V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot);
+  scheduler->SetV8Isolate(isolate_);
   AddWorkerIsolate(isolate_);
   V8Initializer::InitializeWorker(isolate_);
 
@@ -83,8 +85,7 @@ void WorkerBackingThread::InitializeOnBackingThread(
       ScriptWrappableMarkingVisitor::PerformCleanup);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
     V8PerIsolateData::EnableIdleTasks(
-        isolate_, std::make_unique<V8IdleTaskRunner>(
-                      BackingThread().PlatformThread().Scheduler()));
+        isolate_, std::make_unique<V8IdleTaskRunner>(scheduler));
   }
   Platform::Current()->DidStartWorkerThread();
 
@@ -105,6 +106,7 @@ void WorkerBackingThread::InitializeOnBackingThread(
 
 void WorkerBackingThread::ShutdownOnBackingThread() {
   DCHECK(backing_thread_->IsCurrentThread());
+  BackingThread().PlatformThread().Scheduler()->SetV8Isolate(nullptr);
   Platform::Current()->WillStopWorkerThread();
 
   V8PerIsolateData::WillBeDestroyed(isolate_);

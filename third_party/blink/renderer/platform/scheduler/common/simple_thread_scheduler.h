@@ -68,6 +68,8 @@ class SimpleThreadScheduler : public ThreadScheduler {
   // Return nullptr.
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override;
 
+  void SetV8Isolate(v8::Isolate* isolate) override {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleThreadScheduler);
 };

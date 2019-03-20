@@ -62,6 +62,8 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
     return nullptr;
   }
 
+  void SetV8Isolate(v8::Isolate* isolate) override {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIdleDeadlineScheduler);
 };

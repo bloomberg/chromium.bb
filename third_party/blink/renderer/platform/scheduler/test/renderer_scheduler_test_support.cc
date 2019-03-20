@@ -187,6 +187,7 @@ class SimpleThreadScheduler : public ThreadScheduler {
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
+  void SetV8Isolate(v8::Isolate* isolate) override {}
 };
 
 class SimpleMainThreadScheduler : public WebThreadScheduler,

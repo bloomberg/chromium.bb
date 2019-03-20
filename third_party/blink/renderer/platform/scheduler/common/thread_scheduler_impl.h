@@ -9,6 +9,7 @@
 
 #include <random>
 
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/single_thread_idle_task_runner.h"
@@ -21,6 +22,10 @@ namespace sequence_manager {
 class TimeDomain;
 }
 }  // namespace base
+
+namespace v8 {
+class Isolate;
+}
 
 namespace blink {
 namespace scheduler {
@@ -51,9 +56,14 @@ class PLATFORM_EXPORT ThreadSchedulerImpl : public ThreadScheduler,
 
   virtual const base::TickClock* GetTickClock() = 0;
 
+  void SetV8Isolate(v8::Isolate* isolate) override { isolate_ = isolate; }
+  v8::Isolate* isolate() const { return isolate_; }
+
  protected:
   ThreadSchedulerImpl() {}
   ~ThreadSchedulerImpl() override = default;
+
+  v8::Isolate* isolate_ = nullptr;
 };
 
 }  // namespace scheduler
