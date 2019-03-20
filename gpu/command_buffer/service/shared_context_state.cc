@@ -65,6 +65,8 @@ SharedContextState::SharedContextState(
 SharedContextState::~SharedContextState() {
   if (gr_context_)
     gr_context_->abandonContext();
+  if (context_->IsCurrent(nullptr))
+    context_->ReleaseCurrent(nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
