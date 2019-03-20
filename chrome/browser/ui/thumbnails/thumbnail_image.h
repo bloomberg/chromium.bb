@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_IMAGE_H_
 #define CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_IMAGE_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-
 #include "ui/gfx/image/image_skia.h"
 
 // Value type holding thumbnail image data. Data is internally refcounted, so
@@ -63,15 +64,9 @@ class ThumbnailImage {
                                 CreateThumbnailCallback callback);
 
  private:
-  // TODO(dfried): In a followup CL, change this to be compressed data.
-  using ThumbnailRepresentation = gfx::ImageSkia;
+  class ThumbnailData;
 
-  static gfx::ImageSkia ConvertFromRepresentation(
-      ThumbnailRepresentation representation);
-
-  static ThumbnailRepresentation ConvertToRepresentation(SkBitmap bitmap);
-
-  ThumbnailRepresentation image_representation_;
+  scoped_refptr<ThumbnailData> image_representation_;
 };
 
 #endif  // CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_IMAGE_H_
