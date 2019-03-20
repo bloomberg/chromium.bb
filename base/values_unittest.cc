@@ -674,7 +674,7 @@ TEST(ValuesTest, FindDoubleKey) {
   const Value dict(std::move(storage));
   EXPECT_EQ(base::nullopt, dict.FindDoubleKey("null"));
   EXPECT_EQ(base::nullopt, dict.FindDoubleKey("bool"));
-  EXPECT_EQ(base::nullopt, dict.FindDoubleKey("int"));
+  EXPECT_NE(base::nullopt, dict.FindDoubleKey("int"));
   EXPECT_NE(base::nullopt, dict.FindDoubleKey("double"));
   EXPECT_EQ(base::nullopt, dict.FindDoubleKey("string"));
   EXPECT_EQ(base::nullopt, dict.FindDoubleKey("blob"));

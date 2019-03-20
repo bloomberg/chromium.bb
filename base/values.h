@@ -200,6 +200,8 @@ class BASE_EXPORT Value {
   // function's name.
   base::Optional<bool> FindBoolKey(StringPiece key) const;
   base::Optional<int> FindIntKey(StringPiece key) const;
+  // Note FindDoubleKey() will auto-convert INTEGER keys to their double
+  // value, for consistency with GetDouble().
   base::Optional<double> FindDoubleKey(StringPiece key) const;
 
   // |FindStringKey| returns |nullptr| if value is not found or not a string.
