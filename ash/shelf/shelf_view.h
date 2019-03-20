@@ -247,10 +247,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns whether |item| should belong in the pinned section of the shelf.
   bool IsItemPinned(const ShelfItem& item) const;
 
-  // Enumerates the shelf apps and returns the total size they occupy,
-  // accounting for all apps or, if the total size is greater than |max_size|,
-  // the size of however many app can fit without exceeding |max_size|.
-  int GetDimensionOfAppIcons(int max_size) const;
+  // Enumerates the shelf items that are centered in the new UI and returns
+  // the total size they occupy.
+  int GetDimensionOfCenteredShelfItems() const;
 
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
@@ -344,9 +343,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
-  void CalculateIdealBounds() const;
-
-  void LayoutOverflowButton() const;
+  void CalculateIdealBounds(gfx::Rect* overflow_bounds) const;
 
   // Returns the index of the last view whose max primary axis coordinate is
   // less than |max_value|. Returns -1 if nothing fits, or there are no views.

@@ -50,6 +50,7 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
 
  protected:
   // views::Button:
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
