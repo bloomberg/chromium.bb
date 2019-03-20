@@ -205,7 +205,7 @@ void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                          bool active) {
 #if defined(OS_MACOSX)
   // Install |mac_bubble_closer_| the first time the widget becomes active.
-  if (active && !mac_bubble_closer_ && GetWidget()) {
+  if (widget == GetWidget() && active && !mac_bubble_closer_) {
     mac_bubble_closer_ = std::make_unique<ui::BubbleCloser>(
         GetWidget()->GetNativeWindow().GetNativeNSWindow(),
         base::BindRepeating(&BubbleDialogDelegateView::OnDeactivate,
