@@ -5,8 +5,8 @@
 #ifndef UI_BASE_IME_COMPOSITION_TEXT_UTIL_PANGO_H_
 #define UI_BASE_IME_COMPOSITION_TEXT_UTIL_PANGO_H_
 
+#include "base/component_export.h"
 #include "ui/base/glib/glib_integers.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 
 typedef struct _PangoAttrList PangoAttrList;
 
@@ -16,11 +16,11 @@ struct CompositionText;
 
 // Extracts composition text information (text, underlines, selection range)
 // from given Gtk preedit data (utf-8 text, pango attributes, cursor position).
-UI_BASE_IME_EXPORT void ExtractCompositionTextFromGtkPreedit(
-    const gchar* utf8_text,
-    PangoAttrList* attrs,
-    int cursor_position,
-    CompositionText* composition);
+COMPONENT_EXPORT(UI_BASE_IME)
+void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
+                                          PangoAttrList* attrs,
+                                          int cursor_position,
+                                          CompositionText* composition);
 
 }  // namespace ui
 

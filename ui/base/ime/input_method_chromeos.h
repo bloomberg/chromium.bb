@@ -13,6 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/ime/character_composer.h"
@@ -24,7 +25,8 @@
 namespace ui {
 
 // A ui::InputMethod implementation based on IBus.
-class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodChromeOS
+    : public InputMethodBase {
  public:
   explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
   ~InputMethodChromeOS() override;

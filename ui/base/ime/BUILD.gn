@@ -27,10 +27,9 @@ jumbo_component("ime_types") {
     "ime_text_span.h",
     "infolist_entry.cc",
     "infolist_entry.h",
-    "ui_base_ime_types_export.h",
   ]
 
-  defines = [ "UI_BASE_IME_TYPES_IMPLEMENTATION" ]
+  defines = [ "IS_UI_BASE_IME_TYPES_IMPL" ]
 
   deps = [
     "//base",
@@ -91,7 +90,6 @@ jumbo_component("ime") {
     "text_edit_commands.h",
     "text_input_client.cc",
     "text_input_client.h",
-    "ui_base_ime_export.h",
     "win/imm32_manager.cc",
     "win/imm32_manager.h",
     "win/on_screen_keyboard_display_manager_input_pane.cc",
@@ -144,7 +142,7 @@ jumbo_component("ime") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  defines = [ "UI_BASE_IME_IMPLEMENTATION" ]
+  defines = [ "IS_UI_BASE_IME_IMPL" ]
 
   deps = [
     "//base",

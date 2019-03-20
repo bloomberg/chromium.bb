@@ -14,10 +14,9 @@ jumbo_component("linux") {
     "linux_input_method_context.h",
     "linux_input_method_context_factory.cc",
     "linux_input_method_context_factory.h",
-    "ui_base_ime_linux_export.h",
   ]
 
-  defines = [ "UI_BASE_IME_LINUX_IMPLEMENTATION" ]
+  defines = [ "IS_UI_BASE_IME_LINUX_IMPL" ]
 
   deps = [
     "//base",

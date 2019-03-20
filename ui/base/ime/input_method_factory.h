@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "ui/base/ime/input_method_initializer.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -20,13 +20,15 @@ class InputMethodDelegate;
 class InputMethod;
 
 // Creates a new instance of InputMethod and returns it.
-UI_BASE_IME_EXPORT std::unique_ptr<InputMethod> CreateInputMethod(
+COMPONENT_EXPORT(UI_BASE_IME)
+std::unique_ptr<InputMethod> CreateInputMethod(
     internal::InputMethodDelegate* delegate,
     gfx::AcceleratedWidget widget);
 
 // Makes CreateInputMethod return a MockInputMethod.
-UI_BASE_IME_EXPORT void SetUpInputMethodFactoryForTesting();
-UI_BASE_IME_EXPORT void SetUpInputMethodForTesting(InputMethod* input_method);
+COMPONENT_EXPORT(UI_BASE_IME) void SetUpInputMethodFactoryForTesting();
+COMPONENT_EXPORT(UI_BASE_IME)
+void SetUpInputMethodForTesting(InputMethod* input_method);
 
 }  // namespace ui;
 
