@@ -292,6 +292,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();
 // Returns true if we should skip all other OOBE pages after user login.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldSkipOobePostLogin();
 
+// Returns true if GAIA services has been disabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaServicesDisabled();
+
 }  // namespace switches
 }  // namespace chromeos
 
