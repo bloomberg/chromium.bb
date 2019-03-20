@@ -22,6 +22,9 @@ function initTest(table, completedCb) {
   gClosureCallback = completedCb;
   gFocusedDocument = 0;
 
+  if (window.testRunner)
+    testRunner.overridePreference("ScrollAnimatorEnabled", 0);
+
   prepareMove();
 }
 

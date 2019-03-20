@@ -46,6 +46,7 @@ void TestPreferences::Reset() {
   strict_mixed_content_checking = false;
   strict_powerful_feature_restrictions = false;
   spatial_navigation_enabled = false;
+  scroll_animator_enabled = true;
 }
 
 }  // namespace test_runner

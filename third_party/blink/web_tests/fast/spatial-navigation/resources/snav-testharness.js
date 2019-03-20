@@ -102,7 +102,8 @@
         internals.runtimeFlags.focuslessSpatialNavigationEnabled = true;
 
       testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-      testRunner.overridePreference('WebKitSpatialNavigationEnabled', 1);
+      testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
+      testRunner.overridePreference("ScrollAnimatorEnabled", 0);
     },
 
     triggerMove: triggerMove,

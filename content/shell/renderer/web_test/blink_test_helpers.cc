@@ -94,6 +94,7 @@ void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
   to->strict_powerful_feature_restrictions =
       from.strict_powerful_feature_restrictions;
   to->spatial_navigation_enabled = from.spatial_navigation_enabled;
+  to->enable_scroll_animator = from.scroll_animator_enabled;
 }
 
 // Applies settings that differ between web tests and regular mode. Some
