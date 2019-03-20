@@ -96,9 +96,6 @@ class UserImageSyncObserver
   // Gets synced image index. Returns false if user has no needed preferences.
   bool GetSyncedImageIndex(int* result);
 
-  // If it is allowed to change user image now.
-  bool CanUpdateLocalImageNow();
-
   const user_manager::User* user_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<content::NotificationRegistrar> notification_registrar_;
