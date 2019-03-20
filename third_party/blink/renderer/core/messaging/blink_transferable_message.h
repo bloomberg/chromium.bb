@@ -39,6 +39,12 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
   DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);
 };
 
+CORE_EXPORT scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
+    const SkBitmap& sk_bitmap);
+
+CORE_EXPORT base::Optional<SkBitmap> ToSkBitmap(
+    const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image);
+
 CORE_EXPORT BlinkTransferableMessage
     ToBlinkTransferableMessage(TransferableMessage);
 // Returned message will still be backed by the SerializedScriptValue in the
