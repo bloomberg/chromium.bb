@@ -1076,6 +1076,19 @@ class CC_EXPORT LayerTreeHostImpl
   // in SetPropertyTrees.
   ElementId scroll_animating_latched_element_id_;
 
+  // In scroll animation path CurrentlyScrollingNode does not exist when there
+  // is no ongoing scroll animation (e.g. during overscrolling). In this case we
+  // need to explicitly store the element id of the overscroll event target. The
+  // overscroll event target is either the element that scroll animation is
+  // latched to (scroll_animating_latched_element_id_) when any scrolling has
+  // happened during the current scroll sequence or the last element in the
+  // scroll chain when no scrolling has happened during the current scroll
+  // sequence. TODO(input-dev): Decouple CurrentlyScrollingNode life cycle from
+  // scroll animation life cycle to use CurrentlyScrollingNode instead of both
+  // scroll_animating_latched_element_id_ and
+  // scroll_animating_overscroll_target_element_id_. https://crbug.com/940508
+  ElementId scroll_animating_overscroll_target_element_id_;
+
   // These completion states to be transfered to the main thread when we
   // begin main frame. The pair represents a request id and the completion (ie
   // success) state.
@@ -1141,12 +1154,19 @@ class CC_EXPORT LayerTreeHostImpl
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
 
   // Set to true when a scroll gesture being handled on the compositor has
+  // ended. i.e. When a GSE has arrived and any ongoing scroll animation has
   // ended.
   bool scroll_gesture_did_end_;
 
   // Set in ScrollEnd before clearing the currently scrolling node. This is
   // used to send the scrollend DOM event when scrolling has happened on CC.
   ElementId last_scroller_element_id_;
+
+  // Scroll animation can finish either before or after GSE arrival.
+  // deferred_scroll_end_state_ is set when the GSE has arrvied before scroll
+  // animation completion. ScrollEnd will get called with this deferred state
+  // once the animation is over.
+  base::Optional<ScrollState> deferred_scroll_end_state_;
 };
 
 }  // namespace cc

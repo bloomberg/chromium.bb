@@ -319,7 +319,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       task_graph_runner_(task_graph_runner),
       id_(id),
       consecutive_frame_with_damage_count_(settings.damaged_frame_limit),
-      scroll_animating_latched_element_id_(kInvalidElementId),
       // It is safe to use base::Unretained here since we will outlive the
       // ImageAnimationController.
       image_animation_controller_(GetTaskRunner(),
@@ -3802,6 +3801,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
+  deferred_scroll_end_state_.reset();
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
   if (scroll_node) {
@@ -3826,6 +3826,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   scroll_status = ScrollBegin(scroll_state, WHEEL);
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     scroll_animating_latched_element_id_ = ElementId();
+    scroll_animating_overscroll_target_element_id_ = ElementId();
     ScrollStateData scroll_state_end_data;
     scroll_state_end_data.is_ending = true;
     ScrollState scroll_state_end(scroll_state_end_data);
@@ -4029,7 +4030,30 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         break;
       }
     }
+    // Set overscroll event target since neither an ongoing scroll animation has
+    // been updated nor a new scroll animation has been created for the current
+    // GSU.
+    if (!scroll_animating_latched_element_id_) {
+      // When no scroll animation has been created during the current scroll
+      // sequence (i.e. scroll_animating_latched_element_id_ == ElementId()) we
+      // need to set last_scroller_element_id_ here since scrollEnd won't get
+      // called.
+      last_scroller_element_id_ = scroll_node->element_id;
+      // We will send the overscroll events to viewport or the last element in
+      // the cut chain when no scroll animation has been created during the
+      // current scroll sequence.
+      scroll_animating_overscroll_target_element_id_ = scroll_node->element_id;
+    } else {
+      // When a scroll animation has been created during the current scroll
+      // sequence, the overscroll events target should be the element that
+      // scrolling is latched to.
+      scroll_animating_overscroll_target_element_id_ =
+          scroll_animating_latched_element_id_;
+    }
+    overscroll_delta_for_main_thread_ += pending_delta;
+    client_->SetNeedsCommitOnImplThread();
   }
+
   scroll_state.set_is_ending(true);
   ScrollEndImpl(&scroll_state);
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
@@ -4622,22 +4646,30 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
   DCHECK(scroll_state);
   DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
 
+  // In smooth-scrolling path when the GSE arrives after scroll animation
+  // completion, CurrentlyScrollingNode() is already cleared due to
+  // ScrollEndImpl call inside ScrollOffsetAnimationFinished. In this case
+  // last_scroller_element_id_ is already set in the same ScrollEndImpl call and
+  // we should not reset it here.
+  if (!last_scroller_element_id_ && CurrentlyScrollingNode())
+    last_scroller_element_id_ = CurrentlyScrollingNode()->element_id;
+
   DistributeScrollDelta(scroll_state);
   browser_controls_offset_manager_->ScrollEnd();
   ClearCurrentlyScrollingNode();
 }
 
 void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
-  scroll_gesture_did_end_ = true;
-  last_scroller_element_id_ = CurrentlyScrollingNode()
-                                  ? CurrentlyScrollingNode()->element_id
-                                  : ElementId();
-  client_->SetNeedsCommitOnImplThread();
-
-  if (should_snap && SnapAtScrollEnd())
+  if ((should_snap && SnapAtScrollEnd()) ||
+      mutator_host_->IsImplOnlyScrollAnimating()) {
+    DCHECK(!deferred_scroll_end_state_.has_value());
+    deferred_scroll_end_state_ = *scroll_state;
     return;
-
+  }
+  deferred_scroll_end_state_.reset();
   ScrollEndImpl(scroll_state);
+  scroll_gesture_did_end_ = true;
+  client_->SetNeedsCommitOnImplThread();
 }
 
 void LayerTreeHostImpl::MouseDown() {
@@ -4826,11 +4858,20 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
     scroll_info->scroll_latched_element_id = last_scroller_element_id_;
     last_scroller_element_id_ = ElementId();
   } else {
-    // Send the element id of the currently scrolling node.
-    auto* node =
-        active_tree_->property_trees()->scroll_tree.CurrentlyScrollingNode();
+    // In scroll animation path CurrentlyScrollingNode does not exist during
+    // overscrolling. Use the explicitly stored overscroll target instead.
     scroll_info->scroll_latched_element_id =
-        node ? node->element_id : ElementId();
+        scroll_animating_overscroll_target_element_id_;
+    scroll_animating_overscroll_target_element_id_ = ElementId();
+
+    if (!scroll_info->scroll_latched_element_id) {
+      // In non-animating scroll path the overscroll target is always the
+      // CurrentlyScrollingNode.
+      ScrollNode* node =
+          active_tree_->property_trees()->scroll_tree.CurrentlyScrollingNode();
+      scroll_info->scroll_latched_element_id =
+          node ? node->element_id : ElementId();
+    }
   }
 
   if (browser_controls_manager()) {
@@ -5627,10 +5668,24 @@ void LayerTreeHostImpl::ElementIsAnimatingChanged(
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollOffsetAnimationFinished");
+  // ScrollOffsetAnimationFinished is called in two cases: 1- smooth scrolling
+  // animation is over (is_animating_for_snap_ == false). 2- snap scroll
+  // animation is over (is_animating_for_snap_ == true).  When smooth scroll
+  // animation is over we should check and run snap scroll animation if needed.
+  if (!is_animating_for_snap_ && SnapAtScrollEnd())
+    return;
+
+  // Call scrollEnd with the deferred scroll end state when the scroll animation
+  // completes after GSE arrival.
+  if (deferred_scroll_end_state_.has_value()) {
+    ScrollEnd(&deferred_scroll_end_state_.value(), false);
+    return;
+  }
+
   // TODO(majidvp): We should pass in the original starting scroll position here
   ScrollStateData scroll_state_data;
   ScrollState scroll_state(scroll_state_data);
-  ScrollEnd(&scroll_state, !is_animating_for_snap_);
+  ScrollEndImpl(&scroll_state);
 }
 
 void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(

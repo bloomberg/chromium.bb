@@ -662,6 +662,11 @@ void AnimationHost::ScrollAnimationAbort() {
       false /* needs_completion */);
 }
 
+bool AnimationHost::IsImplOnlyScrollAnimating() const {
+  DCHECK(scroll_offset_animations_impl_);
+  return scroll_offset_animations_impl_->IsAnimating();
+}
+
 void AnimationHost::AddToTicking(scoped_refptr<Animation> animation) {
   DCHECK(!base::ContainsValue(ticking_animations_, animation));
   ticking_animations_.push_back(animation);

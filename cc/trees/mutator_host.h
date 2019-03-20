@@ -134,6 +134,9 @@ class MutatorHost {
 
   virtual void ScrollAnimationAbort() = 0;
 
+  // True when there is an ongoing scroll animation on Impl.
+  virtual bool IsImplOnlyScrollAnimating() const = 0;
+
   virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
