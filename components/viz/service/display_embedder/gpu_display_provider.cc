@@ -58,7 +58,6 @@
 #if defined(USE_OZONE)
 #include "components/viz/service/display_embedder/gl_output_surface_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -213,7 +212,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get());
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
+          renderer_settings.overlay_strategies);
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,

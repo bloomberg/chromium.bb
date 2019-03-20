@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -60,6 +62,19 @@ void DrmThreadProxy::CreateBufferFromFds(
                               base::Unretained(&drm_thread_), widget, size,
                               format, base::Passed(std::move(fds)), planes,
                               buffer, framebuffer));
+}
+
+void DrmThreadProxy::CheckOverlayCapabilities(
+    gfx::AcceleratedWidget widget,
+    const std::vector<OverlaySurfaceCandidate>& candidates,
+    OverlayCapabilitiesCallback callback) {
+  DCHECK(drm_thread_.task_runner());
+
+  drm_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DrmThread::CheckOverlayCapabilities,
+                     base::Unretained(&drm_thread_), widget, candidates,
+                     CreateSafeOnceCallback(std::move(callback))));
 }
 
 void DrmThreadProxy::AddBindingCursorDevice(
