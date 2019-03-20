@@ -474,7 +474,6 @@ void BrowserProcessImpl::SetMetricsServices(
   metrics_services_manager_ = std::move(manager);
   metrics_services_manager_client_ =
       static_cast<ChromeMetricsServicesManagerClient*>(client);
-  metrics_services_manager_->GetVariationsService()->OverrideCachedUIStrings();
 }
 
 namespace {
