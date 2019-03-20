@@ -1963,6 +1963,7 @@ crbug.com/771233 [ Win10 ] http/tests/devtools/audits2/ [ Skip ]
 crbug.com/771233 [ Win10 ] virtual/binary-for-devtools/http/tests/devtools/audits2/ [ Skip ]
 
 crbug.com/923269 virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
+crbug.com/923269 fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -3329,6 +3330,10 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integ
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout Failure ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout Failure ]
 
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
