@@ -190,7 +190,8 @@ class Bypass(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--data-reduction-proxy-experiment=client_test_bypass')
+      test_driver.AddChromeArg('--data-reduction-proxy-experiment='
+                               'client_test_bypass')
 
       # Verify that loading a page other than the specific exp directive test
       # page loads through the proxy without being bypassed.
@@ -200,16 +201,16 @@ class Bypass(IntegrationTest):
       for response in responses:
         self.assertHasChromeProxyViaHeader(response)
 
-      # Verify that loading the exp directive test page with "exp=client_test_bypass" triggers
-      # a bypass.
+      # Verify that loading the exp directive test page with
+      # "exp=client_test_bypass" triggers a bypass.
       test_driver.LoadURL('http://check.googlezip.net/exp/')
       responses = test_driver.GetHTTPResponses()
       self.assertNotEqual(0, len(responses))
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-    # Verify that loading the same test page without setting "exp=client_test_bypass" loads
-    # through the proxy without being bypassed.
+    # Verify that loading the same test page without setting
+    #{ }"exp=client_test_bypass" loads through the proxy without being bypassed.
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
 
@@ -224,10 +225,6 @@ class Bypass(IntegrationTest):
   def testBadHTTPSFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      # Set the primary (HTTPS) proxy to a bad one.
-      # That will force Data Saver to the HTTP proxy for normal page requests.
-      test_driver.AddChromeArg('--spdy-proxy-auth-origin='
-                               'https://nonexistent.googlezip.net')
       test_driver.AddChromeArg('--data-reduction-proxy-http-proxies='
                                'http://compress.googlezip.net')
 
@@ -249,11 +246,13 @@ class Bypass(IntegrationTest):
       self.assertNotEqual(0, len(responses))
       for response in responses:
         self.assertHasChromeProxyViaHeader(response)
-        chrome_proxy_header = response.request_headers['chrome-proxy']
-        chrome_proxy_directives = chrome_proxy_header.split(',')
-        for directive in chrome_proxy_directives:
-            if 'c=' in directive:
-                clientType = directive[3:]
+        if 'chrome-proxy' in response.request_headers:
+            chrome_proxy_header = response.request_headers['chrome-proxy']
+            chrome_proxy_directives = chrome_proxy_header.split(',')
+            for directive in chrome_proxy_directives:
+                if 'c=' in directive:
+                    clientType = directive[3:]
+    self.assertTrue(clientType)
 
     clients = ['android', 'webview', 'ios', 'linux', 'win', 'chromeos']
     for client in clients:
