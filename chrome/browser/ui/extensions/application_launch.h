@@ -59,6 +59,9 @@ Browser* ReparentWebContentsIntoAppBrowser(
     content::WebContents* contents,
     const extensions::Extension* extension);
 
+// Reparents contents to a new app browser when entering the Focus Mode.
+Browser* ReparentWebContentsForFocusMode(content::WebContents* contents);
+
 // Reparents the active tab into a new app browser for the PWA that has the
 // tab's URL in its scope. Does nothing if the tab is not secure or there is no
 // applicable PWA.

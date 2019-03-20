@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
@@ -64,8 +65,11 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                    : l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_UNPIN_TAB,
                                                       num_affected_tabs));
   if (base::FeatureList::IsEnabled(features::kFocusMode)) {
-    AddItemWithStringId(TabStripModel::CommandFocusMode,
-                        IDS_TAB_CXMENU_FOCUS_THIS_TAB);
+    // TODO(crbug.com/941577): Allow Focus Mode in Incognito and Guest Session.
+    if (!tab_strip->profile()->IsOffTheRecord()) {
+      AddItemWithStringId(TabStripModel::CommandFocusMode,
+                          IDS_TAB_CXMENU_FOCUS_THIS_TAB);
+    }
   }
   const bool will_mute =
       !chrome::AreAllSitesMuted(*tab_strip, affected_indices);
