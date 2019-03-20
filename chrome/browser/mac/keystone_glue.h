@@ -96,10 +96,6 @@ extern NSString* const kAutoupdateStatusErrorMessages;
 
   // YES if an update was ever successfully installed by -installUpdate.
   BOOL updateSuccessfullyInstalled_;
-
-  // Profile count information.
-  uint32_t numProfiles_;
-  uint32_t numSignedInProfiles_;
 }
 
 // Return the default Keystone Glue object.
@@ -172,15 +168,12 @@ extern NSString* const kAutoupdateStatusErrorMessages;
 // asynchronous mode.
 - (void)promoteTicket;
 
+// Set the registration active.
+- (void)setRegistrationActive;
+
 // Sets a new value for appPath.  Used during installation to point a ticket
 // at the installed copy.
 - (void)setAppPath:(NSString*)appPath;
-
-// Sets the total number of profiles and the number of signed in profiles.
-// Passing zeroes sets the application as active, but does not update
-// profile metrics.
-- (void)updateProfileCountsWithNumProfiles:(uint32_t)profiles
-                       numSignedInProfiles:(uint32_t)signedInProfiles;
 
 @end  // @interface KeystoneGlue
 

@@ -1485,10 +1485,8 @@ void ProfileImpl::UpdateSupervisedUserIdInStorage() {
   ProfileAttributesEntry* entry;
   bool has_entry = profile_manager->GetProfileAttributesStorage()
                        .GetProfileAttributesWithPath(GetPath(), &entry);
-  if (has_entry) {
+  if (has_entry)
     entry->SetSupervisedUserId(GetPrefs()->GetString(prefs::kSupervisedUserId));
-    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
-  }
 }
 
 void ProfileImpl::UpdateNameInStorage() {

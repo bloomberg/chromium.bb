@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,8 +19,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
-#include "base/win/win_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
@@ -88,35 +85,6 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, base::string16* value) {
                                         name, value);
 }
 
-// Writes |value| into a user-specific value in the key |name| under
-// |app_reg_data|'s ClientStateMedium key in HKLM along with the aggregation
-// method |aggregate|. This function is solely for use by system-level installs.
-bool WriteGoogleUpdateAggregateNumKeyInternal(const wchar_t* const name,
-                                              uint32_t value,
-                                              const wchar_t* const aggregate) {
-  DCHECK(aggregate);
-  DCHECK(install_static::IsSystemInstall());
-
-  // Machine installs require each OS user to write a unique key under a
-  // named key in HKLM as well as an "aggregation" function that describes
-  // how the values of multiple users are to be combined.
-  base::string16 uniquename;
-  if (!base::win::GetUserSidString(&uniquename)) {
-    NOTREACHED();
-    return false;
-  }
-
-  base::string16 reg_path(install_static::GetClientStateMediumKeyPath());
-  reg_path.append(L"\\").append(name);
-  RegKey key;
-  if (key.Create(HKEY_LOCAL_MACHINE, reg_path.c_str(),
-                 KEY_SET_VALUE | KEY_WOW64_32KEY) != ERROR_SUCCESS) {
-    return false;
-  }
-  key.WriteValue(google_update::kRegAggregateMethod, aggregate);
-  return key.WriteValue(uniquename.c_str(), value) == ERROR_SUCCESS;
-}
-
 // Writes |value| into |name| in the app's ClientState key in HKEY_CURRENT_USER.
 // This function is only provided for legacy use. New code needing to load/store
 // per-user data should use install_details::GetRegistryPath().
@@ -127,19 +95,6 @@ bool WriteUserGoogleUpdateStrKey(const wchar_t* const name,
                     install_static::GetClientStateKeyPath().c_str(),
                     KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
          key.WriteValue(name, value.c_str()) == ERROR_SUCCESS;
-}
-
-// Writes the per-user stat |value_name|=|value| either in ClientStateMedium
-// using summation as the aggregation function or in ClientState directly,
-// depending on whether this is is a per-machine or a per-user install.
-void WritePerUserStat(const wchar_t* value_name, uint32_t value) {
-  if (install_static::IsSystemInstall()) {
-    // Write |value| as a DWORD in a per-user value of subkey |value_name|.
-    WriteGoogleUpdateAggregateNumKeyInternal(value_name, value, L"sum()");
-  } else {
-    // Write |value| as a string in value |value_name|.
-    WriteUserGoogleUpdateStrKey(value_name, base::NumberToString16(value));
-  }
 }
 
 // Clears |name| in the app's ClientState key by writing an empty string into
@@ -545,14 +500,6 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
   }
 
   return modified;
-}
-
-void GoogleUpdateSettings::UpdateProfileCounts(size_t profiles_active,
-                                               size_t profiles_signedin) {
-  WritePerUserStat(google_update::kRegProfilesActive,
-                   base::saturated_cast<uint32_t>(profiles_active));
-  WritePerUserStat(google_update::kRegProfilesSignedIn,
-                   base::saturated_cast<uint32_t>(profiles_signedin));
 }
 
 GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(

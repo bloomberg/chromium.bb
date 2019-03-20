@@ -591,8 +591,6 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
           profile_path, name, std::string(), base::string16(), icon_index,
           /*supervised_user_id=*/std::string(), EmptyAccountId());
     }
-
-    ProfileMetrics::UpdateReportedProfilesStatistics(this);
   }
 
   // Call or enqueue the callback.
@@ -1617,7 +1615,6 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
   }
 
   storage.RemoveProfile(profile_dir);
-  ProfileMetrics::UpdateReportedProfilesStatistics(this);
 }
 
 void ProfileManager::FinishDeletingProfile(

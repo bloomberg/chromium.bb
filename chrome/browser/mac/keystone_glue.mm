@@ -133,9 +133,6 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 // Called when Keystone registration completes.
 - (void)registrationComplete:(NSNotification*)notification;
 
-// Set the registration active and pass profile count parameters.
-- (void)setRegistrationActive;
-
 // Called periodically to announce activity by pinging the Keystone server.
 - (void)markActive:(NSTimer*)timer;
 
@@ -492,43 +489,10 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)setRegistrationActive {
   DCHECK(registration_);
-
   registrationActive_ = YES;
-
-  // During startup, numProfiles_ defaults to 0.
-  if (!numProfiles_) {
-    [registration_ setActive];
-    return;
-  }
-
-  NSError* reportingError = nil;
-
-  KSReportingAttribute* numAccountsAttr =
-      [ksUnsignedReportingAttributeClass_
-          reportingAttributeWithValue:numProfiles_
-                                 name:@"_NumAccounts"
-                      aggregationType:kKSReportingAggregationSum
-                                error:&reportingError];
-  if (reportingError != nil)
-    VLOG(1) << [reportingError localizedDescription];
-  reportingError = nil;
-
-  KSReportingAttribute* numSignedInAccountsAttr =
-      [ksUnsignedReportingAttributeClass_
-          reportingAttributeWithValue:numSignedInProfiles_
-                                 name:@"_NumSignedIn"
-                      aggregationType:kKSReportingAggregationSum
-                                error:&reportingError];
-  if (reportingError != nil)
-    VLOG(1) << [reportingError localizedDescription];
-  reportingError = nil;
-
-  NSArray* profileCountsInformation =
-      [NSArray arrayWithObjects:numAccountsAttr, numSignedInAccountsAttr, nil];
-
-  if (![registration_ setActiveWithReportingAttributes:profileCountsInformation
-                                                 error:&reportingError]) {
-    VLOG(1) << [reportingError localizedDescription];
+  NSError* setActiveError = nil;
+  if (![registration_ setActiveWithError:&setActiveError]) {
+    VLOG(1) << [setActiveError localizedDescription];
   }
 }
 
@@ -1177,14 +1141,6 @@ NSString* const kVersionKey = @"KSVersion";
     tagSuffix = [tagSuffix stringByAppendingString:@"-full"];
   }
   return tagSuffix;
-}
-
-
-- (void)updateProfileCountsWithNumProfiles:(uint32_t)profiles
-                       numSignedInProfiles:(uint32_t)signedInProfiles {
-  numProfiles_ = profiles;
-  numSignedInProfiles_ = signedInProfiles;
-  [self setRegistrationActive];
 }
 
 @end  // @implementation KeystoneGlue

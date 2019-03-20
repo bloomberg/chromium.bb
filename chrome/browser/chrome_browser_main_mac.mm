@@ -526,8 +526,7 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
   if (glue && ![glue isRegisteredAndActive]) {
     // If profile loading has failed, we still need to handle other tasks
     // like marking of the product as active.
-    [glue updateProfileCountsWithNumProfiles:0
-                         numSignedInProfiles:0];
+    [glue setRegistrationActive];
   }
 }
 
