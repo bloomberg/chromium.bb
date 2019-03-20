@@ -292,23 +292,19 @@ bool PointsToGuardPage(uintptr_t stack_pointer) {
   return result != 0 && (memory_info.Protect & PAGE_GUARD);
 }
 
-// Suspends the thread with |thread_handle|, copies its stack and resumes the
-// thread, then records the stack frames and associated modules into |stack|.
+// Suspends the thread with |thread_handle|, copies its stack, register context,
+// and current metadata and resumes the thread. Returns true on success.
 //
 // IMPORTANT NOTE: No allocations from the default heap may occur in the
 // ScopedSuspendThread scope, including indirectly via use of DCHECK/CHECK or
 // other logging statements. Otherwise this code can deadlock on heap locks in
 // the default heap acquired by the target thread before it was suspended.
-void SuspendThreadAndRecordStack(
-    HANDLE thread_handle,
-    const void* base_address,
-    void* stack_copy_buffer,
-    size_t stack_copy_buffer_size,
-    ModuleCache* module_cache,
-    ProfileBuilder* profile_builder,
-    NativeStackSamplerTestDelegate* test_delegate) {
-  CONTEXT thread_context = {0};
-  thread_context.ContextFlags = CONTEXT_FULL;
+bool CopyStack(HANDLE thread_handle,
+               const void* base_address,
+               void* stack_copy_buffer,
+               size_t stack_copy_buffer_size,
+               ProfileBuilder* profile_builder,
+               CONTEXT* thread_context) {
   // The stack bounds are saved to uintptr_ts for use outside
   // ScopedSuspendThread, as the thread's memory is not safe to dereference
   // beyond that point.
@@ -322,27 +318,27 @@ void SuspendThreadAndRecordStack(
       ScopedSuspendThread suspend_thread(thread_handle);
 
       if (!suspend_thread.was_successful())
-        return;
+        return false;
 
-      if (!::GetThreadContext(thread_handle, &thread_context))
-        return;
+      if (!::GetThreadContext(thread_handle, thread_context))
+        return false;
 
 #if defined(ARCH_CPU_X86_64)
-      bottom = thread_context.Rsp;
+      bottom = thread_context->Rsp;
 #elif defined(ARCH_CPU_ARM64)
-      bottom = thread_context.Sp;
+      bottom = thread_context->Sp;
 #else
-      bottom = thread_context.Esp;
+      bottom = thread_context->Esp;
 #endif
 
       if ((top - bottom) > stack_copy_buffer_size)
-        return;
+        return false;
 
       // Dereferencing a pointer in the guard page in a thread that doesn't own
       // the stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a
       // crash. This occurs very rarely, but reliably over the population.
       if (PointsToGuardPage(bottom))
-        return;
+        return false;
 
       profile_builder->RecordMetadata();
 
@@ -351,19 +347,15 @@ void SuspendThreadAndRecordStack(
     }
   }
 
-  if (test_delegate)
-    test_delegate->OnPreStackWalk();
+  RewritePointersToStackMemory(top, bottom, thread_context, stack_copy_buffer);
 
-  {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
-                 "RecordStack");
+  return true;
+}
 
-    RewritePointersToStackMemory(top, bottom, &thread_context,
-                                 stack_copy_buffer);
-
-    profile_builder->OnSampleCompleted(
-        RecordStack(module_cache, &thread_context));
-  }
+std::vector<Frame> WalkStack(ModuleCache* module_cache,
+                             CONTEXT* thread_context) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"), "WalkStack");
+  return RecordStack(module_cache, thread_context);
 }
 
 }  // namespace
@@ -412,9 +404,18 @@ void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
                "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
-  SuspendThreadAndRecordStack(thread_handle_.Get(), thread_stack_base_address_,
-                              stack_buffer->buffer(), stack_buffer->size(),
-                              module_cache_, profile_builder, test_delegate_);
+  CONTEXT thread_context = {0};
+  thread_context.ContextFlags = CONTEXT_FULL;
+  bool success = CopyStack(thread_handle_.Get(), thread_stack_base_address_,
+                           stack_buffer->buffer(), stack_buffer->size(),
+                           profile_builder, &thread_context);
+  if (!success)
+    return;
+
+  if (test_delegate_)
+    test_delegate_->OnPreStackWalk();
+
+  profile_builder->OnSampleCompleted(WalkStack(module_cache_, &thread_context));
 }
 
 // NativeStackSampler ---------------------------------------------------------
