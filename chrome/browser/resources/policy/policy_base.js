@@ -298,7 +298,6 @@ cr.define('policy', function() {
      * @private
      */
     toggleExpanded_: function() {
-      // <if expr="not android">
       const row = this.parentElement.parentElement;
       const messageRowDisplay = row.querySelector('.messages.row');
       const valueRowDisplay = row.querySelector('.value.row');
@@ -317,7 +316,6 @@ cr.define('policy', function() {
       }
       row.querySelectorAll('.policy-conflict-data')
           .forEach(row => row.hidden = !row.hidden);
-      // </if>
     },
   };
 

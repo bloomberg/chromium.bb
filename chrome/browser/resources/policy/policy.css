@@ -89,7 +89,7 @@ body > main {
   white-space: pre;
 }
 
-<if expr="not android">
+<if expr="not is_android">
 .messages.row .name,
 .conflict.row .name,
 .value.row .name {
@@ -179,7 +179,7 @@ a {
   display: none;
 }
 
-<if expr="android">
+<if expr="is_android">
 body > main {
   padding: 0;
 }
