@@ -5,10 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_SCOPED_ADD_FEATURE_FLAGS_H_
 #define ANDROID_WEBVIEW_BROWSER_SCOPED_ADD_FEATURE_FLAGS_H_
 
+#include <string>
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/strings/string_piece.h"
 
 namespace base {
 class CommandLine;
@@ -29,8 +29,8 @@ class ScopedAddFeatureFlags {
   void AddFeatureIfNotSet(const base::Feature& feature, bool enable);
 
   base::CommandLine* const cl_;
-  std::vector<base::StringPiece> enabled_features_;
-  std::vector<base::StringPiece> disabled_features_;
+  std::vector<std::string> enabled_features_;
+  std::vector<std::string> disabled_features_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAddFeatureFlags);
 };
