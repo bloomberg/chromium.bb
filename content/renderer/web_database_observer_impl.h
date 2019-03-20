@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
+#include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 #include "third_party/blink/public/platform/web_database_observer.h"
 
 namespace base {

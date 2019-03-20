@@ -28,7 +28,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
-#include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
+#include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
