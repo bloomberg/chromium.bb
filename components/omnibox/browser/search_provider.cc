@@ -1372,7 +1372,7 @@ bool SearchProvider::ShouldCurbDefaultSuggestions() const {
   // non-keyword suggestions if we're not confident that the user entered
   // keyword mode explicitly.
   return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
-         !keyword_input_.text().empty() && keyword_input_.prefer_keyword() &&
+         keyword_input_.prefer_keyword() &&
          keyword_input_.keyword_mode_entry_method() !=
              OmniboxEventProto::SPACE_AT_END &&
          keyword_input_.keyword_mode_entry_method() !=

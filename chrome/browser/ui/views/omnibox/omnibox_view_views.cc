@@ -1515,26 +1515,26 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       return true;
 
     case ui::VKEY_RIGHT:
-      if (!(control || alt || shift)) {
-        if (!base::i18n::IsRTL()) {
-          if (DirectionAwareSelectionAtEnd() && MaybeFocusTabButton())
-            return true;
-        } else {
-          if (MaybeUnfocusTabButton())
-            return true;
-        }
-      }
-      break;
-
     case ui::VKEY_LEFT:
-      if (!(control || alt || shift)) {
-        if (!base::i18n::IsRTL()) {
-          if (MaybeUnfocusTabButton())
-            return true;
-        } else {
-          if (DirectionAwareSelectionAtEnd() && MaybeFocusTabButton())
-            return true;
+      if (control || alt || shift)
+        return false;
+
+      // If advancing cursor (accounting for UI direction)
+      if (base::i18n::IsRTL() == (event.key_code() == ui::VKEY_LEFT)) {
+        if (!DirectionAwareSelectionAtEnd())
+          return false;
+
+        if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
+            model()->is_keyword_hint()) {
+          OnBeforePossibleChange();
+          model()->AcceptKeyword(OmniboxEventProto::SELECT_SUGGESTION);
+          OnAfterPossibleChange(true);
+          return true;
+        } else if (MaybeFocusTabButton()) {
+          return true;
         }
+      } else if (MaybeUnfocusTabButton()) {
+        return true;
       }
       break;
 
