@@ -9,12 +9,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 // Calls the provided callback on WM_WTSSESSION_CHANGE messages along with
 // managing the tricky business of observing a singleton object.
-class WindowsSessionChangeObserver {
+class VIEWS_EXPORT WindowsSessionChangeObserver {
  public:
   typedef base::Callback<void(WPARAM)> WtsCallback;
   explicit WindowsSessionChangeObserver(const WtsCallback& callback);

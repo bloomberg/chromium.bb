@@ -51,9 +51,13 @@ namespace content {
 class InputRouterImpl;
 }  // close namespace content
 
+namespace views {
+class WindowsSessionChangeObserver;
+
 namespace corewm {
 class Tooltip;
-}  // close namespace wm
+}  // close namespace corewm
+}  // close namespace views
 
 namespace ui {
 class CursorLoader;
@@ -164,6 +168,9 @@ class RenderWebView final : public WebView
     base::OneShotTimer d_tooltipShownTimer;
         // Timer to timeout the life of an on-screen tooltip. We hide the tooltip
         // when this timer fires.
+
+    // Observe Windows 'session changes':
+    std::unique_ptr<views::WindowsSessionChangeObserver> d_windowsSessionChangeObserver;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -454,6 +461,8 @@ class RenderWebView final : public WebView
     void showTooltip();
     void hideTooltip();
     void updateTooltip();
+    void onSessionChange(WPARAM status_code);
+    void forceRedrawWindow(int attempts);
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
