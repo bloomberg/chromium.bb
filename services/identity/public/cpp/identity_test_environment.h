@@ -371,6 +371,22 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // IdentityTestEnvironment's constructor.
   std::unique_ptr<TestSigninClient> owned_signin_client_;
 
+  // This will be null if a AccountTrackerService was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<AccountTrackerService> owned_account_tracker_service_;
+
+  // This will be null if a AccountFetcherService was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<AccountFetcherService> owned_account_fetcher_service_;
+
+  // This will be null if a FakeProfileOAuth2TokenService was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<FakeProfileOAuth2TokenService> owned_token_service_;
+
+  // This will be null if a GaiaCookieManagerService was provided to
+  // IdentityTestEnvironment's constructor.
+  std::unique_ptr<GaiaCookieManagerService> owned_gaia_cookie_manager_service_;
+
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager
   // is passed in for required lifetime invariants in that case.
