@@ -107,10 +107,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // SSSSSSSSSSSSSSSSSSSS
   // --------------------
   //
-  BoxLayout(Orientation orientation,
-            const gfx::Insets& inside_border_insets = gfx::Insets(),
-            int between_child_spacing = 0,
-            bool collapse_margins_spacing = false);
+  explicit BoxLayout(Orientation orientation,
+                     const gfx::Insets& inside_border_insets = gfx::Insets(),
+                     int between_child_spacing = 0,
+                     bool collapse_margins_spacing = false);
   ~BoxLayout() override;
 
   void set_main_axis_alignment(MainAxisAlignment main_axis_alignment) {

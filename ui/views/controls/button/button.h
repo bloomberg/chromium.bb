@@ -273,7 +273,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // well.
   class WidgetObserverButtonBridge : public WidgetObserver {
    public:
-    WidgetObserverButtonBridge(Button* owner);
+    explicit WidgetObserverButtonBridge(Button* owner);
     ~WidgetObserverButtonBridge() override;
 
     // WidgetObserver:

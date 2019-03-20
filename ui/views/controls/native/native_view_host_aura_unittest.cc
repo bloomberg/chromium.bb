@@ -442,7 +442,7 @@ namespace {
 
 class TestFocusChangeListener : public FocusChangeListener {
  public:
-  TestFocusChangeListener(FocusManager* focus_manager)
+  explicit TestFocusChangeListener(FocusManager* focus_manager)
       : focus_manager_(focus_manager) {
     focus_manager_->AddFocusChangeListener(this);
   }

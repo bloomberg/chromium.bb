@@ -75,7 +75,7 @@ gfx::Point ConvertPointFromWidgetToView(View* view, const gfx::Point& p) {
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
-  TestBubbleDialogDelegateView(View* anchor)
+  explicit TestBubbleDialogDelegateView(View* anchor)
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE),
         reset_controls_called_(false) {}
   ~TestBubbleDialogDelegateView() override = default;
@@ -1826,7 +1826,7 @@ namespace {
 // proceeds to take capture.
 class CaptureEventConsumer : public ui::EventHandler {
  public:
-  CaptureEventConsumer(Widget* widget)
+  explicit CaptureEventConsumer(Widget* widget)
       : event_count_view_(new EventCountView()), widget_(widget) {}
   ~CaptureEventConsumer() override { widget_->CloseNow(); }
 

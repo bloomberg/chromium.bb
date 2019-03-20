@@ -383,7 +383,7 @@ TEST_F(DesktopWidgetTestInteractive,
 
 class TouchEventHandler : public ui::EventHandler {
  public:
-  TouchEventHandler(Widget* widget) : widget_(widget) {
+  explicit TouchEventHandler(Widget* widget) : widget_(widget) {
     widget_->GetNativeWindow()->GetHost()->window()->AddPreTargetHandler(this);
   }
 

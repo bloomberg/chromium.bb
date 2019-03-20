@@ -4738,7 +4738,8 @@ TEST_F(ViewTest, OnNativeThemeChanged) {
 
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler(TestView* view) : view_(view), had_mouse_event_(false) {}
+  explicit TestEventHandler(TestView* view)
+      : view_(view), had_mouse_event_(false) {}
   ~TestEventHandler() override = default;
 
   void OnMouseEvent(ui::MouseEvent* event) override {
