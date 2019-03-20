@@ -407,13 +407,13 @@ void EventPath::EnsureWindowEventContext() {
 #if DCHECK_IS_ON()
 void EventPath::CheckReachability(TreeScope& tree_scope,
                                   TouchList& touch_list) {
-  for (wtf_size_t i = 0; i < touch_list.length(); ++i)
+  for (wtf_size_t i = 0; i < touch_list.length(); ++i) {
     DCHECK(touch_list.item(i)
                ->target()
                ->ToNode()
                ->GetTreeScope()
-               .IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
-                   tree_scope));
+               .IsInclusiveAncestorTreeScopeOf(tree_scope));
+  }
 }
 #endif
 
