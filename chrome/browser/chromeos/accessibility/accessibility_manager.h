@@ -289,18 +289,9 @@ class AccessibilityManager
   // Starts or stops dictation (type what you speak).
   bool ToggleDictation();
 
-  // Sets the focus ring color.
-  void SetFocusRingColor(SkColor color, std::string caller_id);
-
-  // Resets the focus ring color back to the default.
-  void ResetFocusRingColor(std::string caller_id);
-
-  // Draws a focus ring around the given set of rects in screen coordinates. Use
-  // |focus_ring_behavior| to specify whether the focus ring should persist or
-  // fade out.
-  void SetFocusRing(const std::vector<gfx::Rect>& rects_in_screen,
-                    ash::mojom::FocusRingBehavior focus_ring_behavior,
-                    std::string caller_id);
+  // Sets the focus ring with the given ID based on |focus_ring|.
+  void SetFocusRing(std::string focus_ring_id,
+                    ash::mojom::FocusRingPtr focus_ring);
 
   // Hides focus ring on screen.
   void HideFocusRing(std::string caller_id);

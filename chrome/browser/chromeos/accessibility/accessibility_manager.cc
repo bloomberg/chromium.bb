@@ -1489,21 +1489,11 @@ void AccessibilityManager::RemoveFocusRings(const std::string& extension_id) {
   focus_ring_names_for_extension_id_.erase(extension_id);
 }
 
-void AccessibilityManager::SetFocusRingColor(SkColor color,
-                                             std::string focus_ring_id) {
-  accessibility_focus_ring_controller_->SetFocusRingColor(color, focus_ring_id);
-}
+void AccessibilityManager::SetFocusRing(std::string focus_ring_id,
+                                        ash::mojom::FocusRingPtr focus_ring) {
+  accessibility_focus_ring_controller_->SetFocusRing(focus_ring_id,
+                                                     std::move(focus_ring));
 
-void AccessibilityManager::ResetFocusRingColor(std::string focus_ring_id) {
-  accessibility_focus_ring_controller_->ResetFocusRingColor(focus_ring_id);
-}
-
-void AccessibilityManager::SetFocusRing(
-    const std::vector<gfx::Rect>& rects_in_screen,
-    ash::mojom::FocusRingBehavior focus_ring_behavior,
-    std::string focus_ring_id) {
-  accessibility_focus_ring_controller_->SetFocusRing(
-      rects_in_screen, focus_ring_behavior, focus_ring_id);
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }

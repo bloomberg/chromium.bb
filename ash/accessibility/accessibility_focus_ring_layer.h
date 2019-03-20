@@ -27,6 +27,8 @@ class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
   void EnableDoubleFocusRing(SkColor secondary_color);
   void DisableDoubleFocusRing();
 
+  SkColor color_for_testing() { return custom_color(); }
+
  private:
   // ui::LayerDelegate overrides:
   void OnPaintLayer(const ui::PaintContext& context) override;

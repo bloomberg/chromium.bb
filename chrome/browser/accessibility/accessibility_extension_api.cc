@@ -84,41 +84,66 @@ AccessibilityPrivateSetNativeAccessibilityEnabledFunction::Run() {
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetFocusRingsFunction::Run() {
 #if defined(OS_CHROMEOS)
-
   std::unique_ptr<accessibility_private::SetFocusRings::Params> params(
       accessibility_private::SetFocusRings::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   auto* accessibility_manager = chromeos::AccessibilityManager::Get();
 
-  for (const accessibility_private::FocusRingInfo& focus_ring :
+  for (const accessibility_private::FocusRingInfo& focus_ring_info :
        params->focus_rings) {
+    ash::mojom::FocusRingPtr focus_ring_ptr = ash::mojom::FocusRing::New();
+    focus_ring_ptr->behavior =
+        ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING;
+
     // Convert the given rects into gfx::Rect objects.
-    std::vector<gfx::Rect> rects;
-    for (const accessibility_private::ScreenRect& rect : focus_ring.rects) {
-      rects.push_back(gfx::Rect(rect.left, rect.top, rect.width, rect.height));
+    for (const accessibility_private::ScreenRect& rect :
+         focus_ring_info.rects) {
+      focus_ring_ptr->rects_in_screen.push_back(
+          gfx::Rect(rect.left, rect.top, rect.width, rect.height));
     }
 
     const std::string id = accessibility_manager->GetFocusRingId(
-        extension_id(), focus_ring.id ? *(focus_ring.id) : "");
+        extension_id(), focus_ring_info.id ? *(focus_ring_info.id) : "");
 
-    SkColor color;
-    if (!extensions::image_util::ParseHexColorString(focus_ring.color, &color))
+    if (!extensions::image_util::ParseHexColorString(
+            focus_ring_info.color, &(focus_ring_ptr->color))) {
       return RespondNow(Error("Could not parse hex color"));
-    accessibility_manager->SetFocusRingColor(color, id);
+    }
 
-    // Move the visible focus ring to cover all of these rects.
-    accessibility_manager->SetFocusRing(
-        rects, ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING, id);
+    if (focus_ring_info.secondary_color) {
+      if (!extensions::image_util::ParseHexColorString(
+              *(focus_ring_info.secondary_color),
+              &(focus_ring_ptr->secondary_color))) {
+        return RespondNow(Error("Could not parse secondary hex color"));
+      }
+    }
 
-    // Also update the touch exploration controller so that synthesized
-    // touch events are anchored within the focused object.
+    switch (focus_ring_info.type) {
+      case accessibility_private::FOCUS_TYPE_SOLID:
+        focus_ring_ptr->type = ash::mojom::FocusRingType::SOLID;
+        break;
+      case accessibility_private::FOCUS_TYPE_DASHED:
+        focus_ring_ptr->type = ash::mojom::FocusRingType::DASHED;
+        break;
+      case accessibility_private::FOCUS_TYPE_GLOW:
+        focus_ring_ptr->type = ash::mojom::FocusRingType::GLOW;
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    // Update the touch exploration controller so that synthesized touch events
+    // are anchored within the focused object.
     // NOTE: The final anchor point will be determined by the first rect of the
     // final focus ring.
-    if (!rects.empty()) {
+    if (!focus_ring_ptr->rects_in_screen.empty()) {
       accessibility_manager->SetTouchAccessibilityAnchorPoint(
-          rects[0].CenterPoint());
+          focus_ring_ptr->rects_in_screen[0].CenterPoint());
     }
+
+    // Set the focus ring.
+    accessibility_manager->SetFocusRing(id, std::move(focus_ring_ptr));
   }
 
   return RespondNow(NoArguments());
