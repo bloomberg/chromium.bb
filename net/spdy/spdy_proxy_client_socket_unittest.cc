@@ -199,7 +199,7 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   HostPortPair endpoint_host_port_pair_;
   ProxyServer proxy_;
   SpdySessionKey endpoint_spdy_session_key_;
-  const CommonConnectJobParams common_connect_job_params_;
+  std::unique_ptr<CommonConnectJobParams> common_connect_job_params_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
 };
@@ -216,28 +216,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
                                  proxy_,
                                  PRIVACY_MODE_DISABLED,
                                  SpdySessionKey::IsProxySession::kFalse,
-                                 SocketTag()),
-      common_connect_job_params_(
-          session_deps_.socket_factory.get(),
-          session_deps_.host_resolver.get(),
-          nullptr /* proxy_delegate */,
-          nullptr /* http_user_agent_settings */,
-          SSLClientSocketContext(session_deps_.cert_verifier.get(),
-                                 session_deps_.channel_id_service.get(),
-                                 session_deps_.transport_security_state.get(),
-                                 session_deps_.cert_transparency_verifier.get(),
-                                 session_deps_.ct_policy_enforcer.get(),
-                                 nullptr /* ssl_client_session_cache_arg */),
-          SSLClientSocketContext(session_deps_.cert_verifier.get(),
-                                 session_deps_.channel_id_service.get(),
-                                 session_deps_.transport_security_state.get(),
-                                 session_deps_.cert_transparency_verifier.get(),
-                                 session_deps_.ct_policy_enforcer.get(),
-                                 nullptr /* ssl_client_session_cache_arg */),
-          nullptr /* socket_performance_watcher_factory */,
-          nullptr /* network_quality_estimator */,
-          net_log_.bound().net_log(),
-          nullptr /* websocket_endpoint_lock_manager */) {
+                                 SocketTag()) {
   session_deps_.net_log = net_log_.bound().net_log();
 }
 
@@ -270,11 +249,13 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
+      session_->CreateCommonConnectJobParams());
 
   // Creates the SPDY session and stream.
   spdy_session_ = CreateSpdyProxySession(session_.get(), &session_deps_,
                                          endpoint_spdy_session_key_,
-                                         &common_connect_job_params_);
+                                         common_connect_job_params_.get());
 
   base::WeakPtr<SpdyStream> spdy_stream(
       CreateStreamSynchronously(

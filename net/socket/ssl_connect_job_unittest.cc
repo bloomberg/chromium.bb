@@ -108,24 +108,10 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       nullptr /* ssl_params */,
                                       quic::QUIC_VERSION_UNSUPPORTED,
                                       HostPortPair("host", 80),
-                                      session_->http_auth_cache(),
-                                      session_->http_auth_handler_factory(),
-                                      session_->spdy_session_pool(),
-                                      session_->quic_stream_factory(),
                                       /*is_trusted_proxy=*/false,
                                       /*tunnel=*/true,
                                       TRAFFIC_ANNOTATION_FOR_TESTS)),
-        common_connect_job_params_(
-            &socket_factory_,
-            &host_resolver_,
-            nullptr /* proxy_delegate */,
-            nullptr /* http_user_agent_settings */,
-            ssl_client_socket_context_,
-            ssl_client_socket_context_,
-            nullptr /* socket_performance_watcher */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */,
-            nullptr /* websocket_lock_endpoint_manager */) {
+        common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
 
     // Set an initial delay to ensure that the first call to TimeTicks::Now()

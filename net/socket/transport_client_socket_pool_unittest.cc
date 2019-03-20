@@ -1368,11 +1368,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
       base::MakeRefCounted<HttpProxySocketParams>(
           nullptr /* transport_params */, proxy_ssl_params,
           quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
-          http_network_session_->http_auth_cache(),
-          http_network_session_->http_auth_handler_factory(),
-          http_network_session_->spdy_session_pool(),
-          nullptr /* quic_stream_factory */, false /* is_trusted_proxy */,
-          true /* tunnel */, TRAFFIC_ANNOTATION_FOR_TESTS);
+          false /* is_trusted_proxy */, true /* tunnel */,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
   scoped_refptr<SSLSocketParams> endpoint_ssl_params =
       base::MakeRefCounted<SSLSocketParams>(
           nullptr /* direct_params */, nullptr /* socks_proxy_params */,
@@ -1490,11 +1487,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
       base::MakeRefCounted<HttpProxySocketParams>(
           nullptr /* transport_params */, proxy_ssl_params,
           quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
-          http_network_session_->http_auth_cache(),
-          http_network_session_->http_auth_handler_factory(),
-          http_network_session_->spdy_session_pool(),
-          nullptr /* quic_stream_factory */, false /* is_trusted_proxy */,
-          true /* tunnel */, TRAFFIC_ANNOTATION_FOR_TESTS);
+          false /* is_trusted_proxy */, true /* tunnel */,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
   scoped_refptr<SSLSocketParams> endpoint_ssl_params =
       base::MakeRefCounted<SSLSocketParams>(
           nullptr /* direct_params */, nullptr /* socks_proxy_params */,
@@ -2029,11 +2023,8 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
                   HostPortPair("http.proxy.host", 80), false,
                   OnHostResolutionCallback()),
               nullptr /* ssl_params */, quic::QUIC_VERSION_UNSUPPORTED,
-              kDestination, http_network_session_->http_auth_cache(),
-              http_network_session_->http_auth_handler_factory(),
-              http_network_session_->spdy_session_pool(),
-              nullptr /* quic_stream_factory */, false /* is_trusted_proxy */,
-              false /* tunnel */, TRAFFIC_ANNOTATION_FOR_TESTS));
+              kDestination, false /* is_trusted_proxy */, false /* tunnel */,
+              TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Verify requested socket is tagged properly.
   ClientSocketHandle handle;
@@ -2101,11 +2092,8 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
                   HostPortPair("http.proxy.host", 80), false,
                   OnHostResolutionCallback()),
               nullptr /* ssl_params */, quic::QUIC_VERSION_UNSUPPORTED,
-              kDestination, http_network_session_->http_auth_cache(),
-              http_network_session_->http_auth_handler_factory(),
-              http_network_session_->spdy_session_pool(),
-              nullptr /* quic_stream_factory */, false /* is_trusted_proxy */,
-              true /* tunnel */, TRAFFIC_ANNOTATION_FOR_TESTS));
+              kDestination, false /* is_trusted_proxy */, true /* tunnel */,
+              TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Verify requested socket is tagged properly.
   ClientSocketHandle handle;
