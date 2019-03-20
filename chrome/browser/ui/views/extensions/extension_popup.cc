@@ -24,14 +24,6 @@
 #include "ui/wm/core/window_animations.h"
 #endif
 
-// The minimum/maximum dimensions of the popup.
-// The minimum is just a little larger than the size of the button itself.
-// The maximum is an arbitrary number that should be smaller than most screens.
-const int ExtensionPopup::kMinWidth = 25;
-const int ExtensionPopup::kMinHeight = 25;
-const int ExtensionPopup::kMaxWidth = 800;
-const int ExtensionPopup::kMaxHeight = 600;
-
 // static
 void ExtensionPopup::ShowPopup(
     std::unique_ptr<extensions::ExtensionViewHost> host,
@@ -59,12 +51,14 @@ ExtensionPopup::~ExtensionPopup() {
 gfx::Size ExtensionPopup::CalculatePreferredSize() const {
   // Constrain the size to popup min/max.
   gfx::Size sz = views::View::CalculatePreferredSize();
-  sz.set_width(std::max(kMinWidth, std::min(kMaxWidth, sz.width())));
-  sz.set_height(std::max(kMinHeight, std::min(kMaxHeight, sz.height())));
+  sz.SetToMax(gfx::Size(kMinWidth, kMinHeight));
+  sz.SetToMin(gfx::Size(kMaxWidth, kMaxHeight));
   return sz;
 }
 
 void ExtensionPopup::AddedToWidget() {
+  BubbleDialogDelegateView::AddedToWidget();
+
   const int radius =
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
   const bool contents_has_rounded_corners =
@@ -79,13 +73,14 @@ int ExtensionPopup::GetDialogButtons() const {
 
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
+  BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
+
   if (active && observe_next_widget_activation_) {
     observe_next_widget_activation_ = false;
     views::Widget* const my_widget = GetWidget();
     if (widget != my_widget)
-      my_widget->Close();
+      my_widget->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
   }
-  BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
 bool ExtensionPopup::ShouldHaveRoundCorners() const {
@@ -99,21 +94,18 @@ void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {
 void ExtensionPopup::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      DCHECK_EQ(host()->host_contents(),
-                content::Source<content::WebContents>(source).ptr());
-      // Show when the content finishes loading and its width is computed.
-      ShowBubble();
-      break;
-    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      // If we aren't the host of the popup, then disregard the notification.
-      if (content::Details<extensions::ExtensionHost>(host()) == details)
-        GetWidget()->Close();
-      break;
-    default:
-      NOTREACHED() << "Received unexpected notification";
+  if (type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME) {
+    DCHECK_EQ(host()->host_contents(),
+              content::Source<content::WebContents>(source).ptr());
+    // Show when the content finishes loading and its width is computed.
+    ShowBubble();
+    return;
   }
+
+  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE, type);
+  // If we aren't the host of the popup, then disregard the notification.
+  if (content::Details<extensions::ExtensionHost>(host()) == details)
+    GetWidget()->Close();
 }
 
 void ExtensionPopup::OnTabStripModelChanged(
