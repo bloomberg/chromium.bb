@@ -305,10 +305,6 @@ HostFrameSinkManager::CreateVideoCapturer() {
 
 void HostFrameSinkManager::EvictSurfaces(
     const std::vector<SurfaceId>& surface_ids) {
-  // TODO(sgilhuly): Remove this check once crbug.com/911308 is fixed.
-  for (auto& surface_id : surface_ids) {
-    CHECK(surface_id.is_valid());
-  }
   frame_sink_manager_->EvictSurfaces(surface_ids);
 }
 
