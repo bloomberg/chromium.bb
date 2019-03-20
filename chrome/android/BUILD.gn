@@ -453,13 +453,23 @@ android_library("chrome_java") {
   }
 }
 
-# This is a list of all our base module java dependencies. New features should
-# be added to this list.
+# This is a list of all base module java dependencies. New features should be
+# added to this list.
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
     "//chrome/android/features/autofill_assistant:java",
     "//chrome/android/features/media_router:java",
+  ]
+}
+
+# This is a list of all base module jni headers. New features should add their
+# own jni target to this list.
+group("jni_headers") {
+  public_deps = [
+    ":chrome_jni_headers",
+    "//chrome/android/features/autofill_assistant:jni_headers",
+    "//chrome/android/features/media_router:jni_headers",
   ]
 }
 
@@ -2212,25 +2222,11 @@ monochrome_public_bundle_tmpl("trichrome_chrome_bundle") {
   use_trichrome_library = true
 }
 
-generate_jni("jni_headers") {
+generate_jni("chrome_jni_headers") {
   sources = [
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetails.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBox.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBoxModel.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDelegate.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
-    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
+    # Files under a feature's public/ dir are included in chrome_java's source
+    # files, so include these files in chrome_jni_headers.
     "features/autofill_assistant/public/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
-    "features/media_router/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
-    "features/media_router/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
-    "features/media_router/java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
-    "features/media_router/java/src/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
     "java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
     "java/src/org/chromium/chrome/browser/AppHooks.java",
     "java/src/org/chromium/chrome/browser/ApplicationLifetime.java",
