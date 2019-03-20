@@ -16,6 +16,12 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encoder.h"
 
+#define FEATURE_SIZE_SMS_PRUNE_PART 25
+#define FEATURE_SIZE_SMS_TERM_NONE 28
+#define FEATURE_SIZE_FP_SMS_TERM_NONE 20
+#define FEATURE_SIZE_MAX_MIN_PART_PRED 13
+#define MAX_NUM_CLASSES_MAX_MIN_PART_PRED 4
+
 // Performs a simple_motion_search with a single reference frame and extract
 // the variance of residues. Then use the features to determine whether we want
 // to go straight to splitting without trying PARTITION_NONE
@@ -23,6 +29,48 @@ void av1_simple_motion_search_based_split(
     AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
     BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
     int *partition_vert_allowed, int *do_rectangular_split);
+
+// Performs a simple_motion_search with two reference frames and extract
+// the variance of residues. Then use the features to determine whether we want
+// to prune some partitions.
+void av1_simple_motion_search_prune_part(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
+    int *partition_horz_allowed, int *partition_vert_allowed,
+    int *do_square_split, int *do_rectangular_split, int *prune_horz,
+    int *prune_vert, float *features, int *valid);
+
+// Early terminates PARTITION_NONE using simple_motion_search features and the
+// rate, distortion, and rdcost of PARTITION_NONE. This is only called when:
+//  - The frame is a show frame
+//  - The frame is not intra only
+//  - The current bsize is > BLOCK_8X8
+//  - blk_row + blk_height/2 < total_rows and blk_col + blk_width/2 < total_cols
+void av1_simple_motion_search_early_term_none(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
+    int *early_terminate, float *simple_motion_features,
+    int *simple_motion_features_are_valid);
+
+// Early terminates after PARTITION_NONE in firstpass of two pass partition
+// search.
+void av1_firstpass_simple_motion_search_early_term(AV1_COMP *const cpi,
+                                                   MACROBLOCK *x,
+                                                   PC_TREE *pc_tree, int mi_row,
+                                                   int mi_col, BLOCK_SIZE bsize,
+                                                   const RD_STATS *none_rdc,
+                                                   int *do_square_split);
+
+// Get the features for selecting the max and min partition size. Currently this
+// performs simple_motion_search on 16X16 subblocks of the currnet superblock,
+// and then extract the statistics of sse and motion vectors as features.
+void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
+                                        int mi_row, int mi_col,
+                                        float *features);
+
+// Predict the maximum BLOCK_SIZE to be used to encoder the current superblock.
+BLOCK_SIZE av1_predict_max_partition(
+    const MAX_PART_PRED_MODE max_part_pred_mode, const float *features);
 
 // A simplified version of set_offsets meant to be used for
 // simple_motion_search.
@@ -65,4 +113,41 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
   // R/D setup.
   x->rdmult = cpi->rd.RDMULT;
 }
+
+static INLINE void init_simple_motion_search_mvs(PC_TREE *pc_tree) {
+  for (int idx = 0; idx < REF_FRAMES; idx++) {
+    pc_tree->mv_ref_fulls[idx].row = 0;
+    pc_tree->mv_ref_fulls[idx].col = 0;
+  }
+  if (pc_tree->block_size >= BLOCK_8X8) {
+    init_simple_motion_search_mvs(pc_tree->split[0]);
+    init_simple_motion_search_mvs(pc_tree->split[1]);
+    init_simple_motion_search_mvs(pc_tree->split[2]);
+    init_simple_motion_search_mvs(pc_tree->split[3]);
+  }
+}
+
+static INLINE int is_full_sb(AV1_COMMON *const cm, int mi_row, int mi_col,
+                             BLOCK_SIZE sb_size) {
+  const int sb_mi_wide = mi_size_wide[sb_size];
+  const int sb_mi_high = mi_size_high[sb_size];
+
+  return (mi_row + sb_mi_high) <= cm->mi_rows &&
+         (mi_col + sb_mi_wide) <= cm->mi_cols;
+}
+
+static INLINE int use_auto_max_partition(AV1_COMP *const cpi,
+                                         BLOCK_SIZE sb_size, int mi_row,
+                                         int mi_col) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  return !frame_is_intra_only(cm) &&
+         cpi->sf.auto_max_partition_based_on_simple_motion != NOT_IN_USE &&
+         sb_size == BLOCK_128X128 && is_full_sb(cm, mi_row, mi_col, sb_size) &&
+         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
+             OVERLAY_UPDATE &&
+         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
+             INTNL_OVERLAY_UPDATE;
+}
+
 #endif  // AOM_AV1_ENCODER_PARTITION_STRATEGY_H_
