@@ -14,9 +14,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "net/base/mime_util.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -247,7 +247,7 @@ blink::WebDisplayMode ManifestParser::ParseDisplay(
     return blink::kWebDisplayModeUndefined;
 
   blink::WebDisplayMode display_enum =
-      WebDisplayModeFromString(base::UTF16ToUTF8(display.string()));
+      blink::WebDisplayModeFromString(base::UTF16ToUTF8(display.string()));
   if (display_enum == blink::kWebDisplayModeUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
@@ -262,7 +262,7 @@ blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
     return blink::kWebScreenOrientationLockDefault;
 
   blink::WebScreenOrientationLockType orientation_enum =
-      WebScreenOrientationLockTypeFromString(
+      blink::WebScreenOrientationLockTypeFromString(
           base::UTF16ToUTF8(orientation.string()));
   if (orientation_enum == blink::kWebScreenOrientationLockDefault)
     AddErrorInfo("unknown 'orientation' value ignored.");

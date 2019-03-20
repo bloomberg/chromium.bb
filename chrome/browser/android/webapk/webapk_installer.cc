@@ -41,7 +41,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/manifest_util.h"
 #include "jni/WebApkInstaller_jni.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -49,6 +48,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
@@ -203,9 +203,9 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   web_app_manifest->set_short_name(base::UTF16ToUTF8(shortcut_info.short_name));
   web_app_manifest->set_start_url(shortcut_info.url.spec());
   web_app_manifest->set_orientation(
-      content::WebScreenOrientationLockTypeToString(shortcut_info.orientation));
+      blink::WebScreenOrientationLockTypeToString(shortcut_info.orientation));
   web_app_manifest->set_display_mode(
-      content::WebDisplayModeToString(shortcut_info.display));
+      blink::WebDisplayModeToString(shortcut_info.display));
   web_app_manifest->set_background_color(
       OptionalSkColorToString(shortcut_info.background_color));
   web_app_manifest->set_theme_color(

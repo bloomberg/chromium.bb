@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/manifest_util.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 
 #include "base/strings/string_util.h"
 
-namespace content {
+namespace blink {
 
 std::string WebDisplayModeToString(blink::WebDisplayMode display) {
   switch (display) {
@@ -27,11 +27,11 @@ std::string WebDisplayModeToString(blink::WebDisplayMode display) {
 blink::WebDisplayMode WebDisplayModeFromString(const std::string& display) {
   if (base::LowerCaseEqualsASCII(display, "browser"))
     return blink::kWebDisplayModeBrowser;
-  else if (base::LowerCaseEqualsASCII(display, "minimal-ui"))
+  if (base::LowerCaseEqualsASCII(display, "minimal-ui"))
     return blink::kWebDisplayModeMinimalUi;
-  else if (base::LowerCaseEqualsASCII(display, "standalone"))
+  if (base::LowerCaseEqualsASCII(display, "standalone"))
     return blink::kWebDisplayModeStandalone;
-  else if (base::LowerCaseEqualsASCII(display, "fullscreen"))
+  if (base::LowerCaseEqualsASCII(display, "fullscreen"))
     return blink::kWebDisplayModeFullscreen;
   return blink::kWebDisplayModeUndefined;
 }
@@ -61,25 +61,25 @@ std::string WebScreenOrientationLockTypeToString(
   return "";
 }
 
-blink::WebScreenOrientationLockType
-WebScreenOrientationLockTypeFromString(const std::string& orientation) {
+blink::WebScreenOrientationLockType WebScreenOrientationLockTypeFromString(
+    const std::string& orientation) {
   if (base::LowerCaseEqualsASCII(orientation, "portrait-primary"))
     return blink::kWebScreenOrientationLockPortraitPrimary;
-  else if (base::LowerCaseEqualsASCII(orientation, "portrait-secondary"))
+  if (base::LowerCaseEqualsASCII(orientation, "portrait-secondary"))
     return blink::kWebScreenOrientationLockPortraitSecondary;
-  else if (base::LowerCaseEqualsASCII(orientation, "landscape-primary"))
+  if (base::LowerCaseEqualsASCII(orientation, "landscape-primary"))
     return blink::kWebScreenOrientationLockLandscapePrimary;
-  else if (base::LowerCaseEqualsASCII(orientation, "landscape-secondary"))
+  if (base::LowerCaseEqualsASCII(orientation, "landscape-secondary"))
     return blink::kWebScreenOrientationLockLandscapeSecondary;
-  else if (base::LowerCaseEqualsASCII(orientation, "any"))
+  if (base::LowerCaseEqualsASCII(orientation, "any"))
     return blink::kWebScreenOrientationLockAny;
-  else if (base::LowerCaseEqualsASCII(orientation, "landscape"))
+  if (base::LowerCaseEqualsASCII(orientation, "landscape"))
     return blink::kWebScreenOrientationLockLandscape;
-  else if (base::LowerCaseEqualsASCII(orientation, "portrait"))
+  if (base::LowerCaseEqualsASCII(orientation, "portrait"))
     return blink::kWebScreenOrientationLockPortrait;
-  else if (base::LowerCaseEqualsASCII(orientation, "natural"))
+  if (base::LowerCaseEqualsASCII(orientation, "natural"))
     return blink::kWebScreenOrientationLockNatural;
   return blink::kWebScreenOrientationLockDefault;
 }
 
-}  // namespace content
+}  // namespace blink
