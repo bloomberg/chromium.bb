@@ -1397,7 +1397,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // to be supplied to the loader.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   BuildServiceWorkerNetworkProviderForNavigation(
-      const CommitNavigationParams* commit_params,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);

@@ -256,6 +256,9 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
     params.controller_service_worker_object_host = object_host;
     controller_info->object_info = object_host->CreateIncompleteObjectInfo();
   }
+  for (const auto feature : provider_host_->controller()->used_features()) {
+    controller_info->used_features.push_back(feature);
+  }
   params.controller_service_worker_info = std::move(controller_info);
   return base::Optional<SubresourceLoaderParams>(std::move(params));
 }

@@ -76,7 +76,6 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
   // the controller.
   if (controller_info) {
     SetController(std::move(controller_info),
-                  std::vector<blink::mojom::WebFeature>(),
                   false /* should_notify_controllerchange */);
   }
 }
@@ -283,7 +282,6 @@ void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
 
 void ServiceWorkerProviderContext::SetController(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-    const std::vector<blink::mojom::WebFeature>& used_features,
     bool should_notify_controllerchange) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   ServiceWorkerProviderStateForClient* state = state_for_client_.get();
@@ -320,7 +318,7 @@ void ServiceWorkerProviderContext::SetController(
       worker->OnControllerChanged(state->controller_mode);
     }
   }
-  for (blink::mojom::WebFeature feature : used_features)
+  for (blink::mojom::WebFeature feature : controller_info->used_features)
     state->used_features.insert(feature);
 
   // S13nServiceWorker:

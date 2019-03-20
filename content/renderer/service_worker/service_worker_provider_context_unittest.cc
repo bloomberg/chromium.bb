@@ -333,8 +333,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     auto info = blink::mojom::ControllerServiceWorkerInfo::New();
     info->mode = blink::mojom::ControllerServiceWorkerMode::kControlled;
     info->object_info = std::move(object_info);
-    container_ptr->SetController(std::move(info),
-                                 std::vector<blink::mojom::WebFeature>(), true);
+    container_ptr->SetController(std::move(info), true);
     base::RunLoop().RunUntilIdle();
 
     // Destruction of the provider context should release references to the
@@ -378,8 +377,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     auto info = blink::mojom::ControllerServiceWorkerInfo::New();
     info->mode = blink::mojom::ControllerServiceWorkerMode::kControlled;
     info->object_info = std::move(object_info);
-    container_ptr->SetController(std::move(info),
-                                 std::vector<blink::mojom::WebFeature>(), true);
+    container_ptr->SetController(std::move(info), true);
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(client->was_set_controller_called());
@@ -410,7 +408,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   provider_impl->SetClient(client.get());
 
   container_ptr->SetController(blink::mojom::ControllerServiceWorkerInfo::New(),
-                               std::vector<blink::mojom::WebFeature>(), true);
+                               true);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(provider_context->TakeController());
@@ -496,8 +494,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // object binding being broken.
   base::RunLoop drop_binding_loop;
   object_host1->RunOnConnectionError(drop_binding_loop.QuitClosure());
-  container_ptr->SetController(std::move(controller_info2),
-                               std::vector<blink::mojom::WebFeature>(), true);
+  container_ptr->SetController(std::move(controller_info2), true);
   container_ptr.FlushForTesting();
   drop_binding_loop.Run();
   EXPECT_EQ(0, object_host1->GetBindingCount());
@@ -529,7 +526,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   base::RunLoop drop_binding_loop2;
   object_host2->RunOnConnectionError(drop_binding_loop2.QuitClosure());
   container_ptr->SetController(blink::mojom::ControllerServiceWorkerInfo::New(),
-                               std::vector<blink::mojom::WebFeature>(), true);
+                               true);
 
   // The controller is reset. References to the old controller must be
   // released.
@@ -576,8 +573,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info4->object_info = std::move(object_info4);
   controller_info4->endpoint = controller_ptr4.PassInterface();
-  container_ptr->SetController(std::move(controller_info4),
-                               std::vector<blink::mojom::WebFeature>(), true);
+  container_ptr->SetController(std::move(controller_info4), true);
   container_ptr.FlushForTesting();
 
   // Subresource loader factory must be available.

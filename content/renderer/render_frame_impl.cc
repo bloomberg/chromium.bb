@@ -3514,8 +3514,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
   navigation_params->history_item = item_for_history_navigation;
   navigation_params->service_worker_network_provider =
       BuildServiceWorkerNetworkProviderForNavigation(
-          &commit_params, std::move(controller_service_worker_info),
-          std::move(provider_info));
+          std::move(controller_service_worker_info), std::move(provider_info));
 
   frame_->CommitNavigation(std::move(navigation_params),
                            std::move(document_state));
@@ -7515,7 +7514,6 @@ bool RenderFrameImpl::ShouldThrottleDownload() {
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
-    const CommitNavigationParams* commit_params,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
   // An empty provider will always be created since it is expected in a certain
