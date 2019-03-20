@@ -339,8 +339,14 @@ base::Optional<int> Value::FindIntKey(StringPiece key) const {
 }
 
 base::Optional<double> Value::FindDoubleKey(StringPiece key) const {
-  const Value* result = FindKeyOfType(key, Type::DOUBLE);
-  return result ? base::make_optional(result->double_value_) : base::nullopt;
+  const Value* result = FindKey(key);
+  if (result) {
+    if (result->is_int())
+      return base::make_optional(static_cast<double>(result->int_value_));
+    if (result->is_double())
+      return base::make_optional(result->double_value_);
+  }
+  return base::nullopt;
 }
 
 const std::string* Value::FindStringKey(StringPiece key) const {
