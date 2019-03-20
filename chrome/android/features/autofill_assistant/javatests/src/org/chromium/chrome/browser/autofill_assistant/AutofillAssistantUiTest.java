@@ -28,6 +28,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
@@ -108,6 +109,7 @@ public class AutofillAssistantUiTest {
     // highlight chips and so on.
     @Test
     @MediumTest
+    @DisabledTest // TODO(crbug.com/943483) test fails on "Android CFI" builder.
     public void testStartAndAccept() throws Exception {
         InOrder inOrder = inOrder(mRunnableMock);
 
