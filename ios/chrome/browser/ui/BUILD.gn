@@ -237,8 +237,6 @@ source_set("ui_internal") {
     "browser_view_controller_dependency_factory.mm",
     "browser_view_controller_helper.h",
     "browser_view_controller_helper.mm",
-    "fade_truncated_label.h",
-    "fade_truncated_label.mm",
     "key_commands_provider.h",
     "key_commands_provider.mm",
     "open_in_controller.h",
