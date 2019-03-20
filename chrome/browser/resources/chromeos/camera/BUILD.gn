@@ -7,8 +7,10 @@ chrome_camera_app_dir = "$root_out_dir/resources/chromeos/camera"
 group("chrome_camera_app") {
   deps = [
     ":chrome_camera_app_base",
-    ":chrome_camera_app_mojo",
     "//chrome/browser/resources/chromeos/camera/src/strings:camera_strings",
+  ]
+  data_deps = [
+    ":chrome_camera_app_mojo",
   ]
 }
 
