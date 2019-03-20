@@ -413,7 +413,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Does |xwindow_| have the pointer grab (XI2 or normal)?
   bool has_pointer_grab_;
 
+  // Is this window able to receive focus?
   bool activatable_;
+
+  // Was this window initialized with the override_redirect window attribute?
+  bool override_redirect_;
 
   // The focus-tracking state variables are as described in
   // gtk/docs/focus_tracking.txt
