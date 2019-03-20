@@ -5,6 +5,7 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_MAC_H_
 #define UI_BASE_IME_INPUT_METHOD_MAC_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/input_method_base.h"
 
@@ -14,7 +15,7 @@ namespace ui {
 // On the Mac, key events don't pass through InputMethod.
 // Instead, NSTextInputClient calls are bridged to the currently focused
 // ui::TextInputClient object.
-class UI_BASE_IME_EXPORT InputMethodMac : public InputMethodBase {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodMac : public InputMethodBase {
  public:
   explicit InputMethodMac(internal::InputMethodDelegate* delegate);
   ~InputMethodMac() override;

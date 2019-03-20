@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "ui/base/ime/input_method_win_base.h"
 
 namespace ui {
@@ -16,7 +17,8 @@ namespace ui {
 class TSFEventRouter;
 
 // An InputMethod implementation based on Windows TSF API.
-class UI_BASE_IME_EXPORT InputMethodWinTSF : public InputMethodWinBase {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinTSF
+    : public InputMethodWinBase {
  public:
   InputMethodWinTSF(internal::InputMethodDelegate* delegate,
                     HWND toplevel_window_handle);

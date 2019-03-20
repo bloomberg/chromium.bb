@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace gfx {
 class Rect;
@@ -21,7 +21,7 @@ class CandidateWindow;
 namespace chromeos {
 
 // A interface to handle the candidate window related method call.
-class UI_BASE_IME_EXPORT IMECandidateWindowHandlerInterface {
+class COMPONENT_EXPORT(UI_BASE_IME) IMECandidateWindowHandlerInterface {
  public:
   virtual ~IMECandidateWindowHandlerInterface() {}
 

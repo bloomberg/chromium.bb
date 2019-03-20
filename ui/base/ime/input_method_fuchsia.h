@@ -9,11 +9,11 @@
 #include <lib/fidl/cpp/binding.h>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/fuchsia/input_method_keyboard_controller_fuchsia.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/fuchsia/input_event_dispatcher.h"
 #include "ui/events/fuchsia/input_event_dispatcher_delegate.h"
 #include "ui/gfx/native_widget_types.h"
@@ -21,7 +21,7 @@
 namespace ui {
 
 // Handles input from physical keyboards and the IME service.
-class UI_BASE_IME_EXPORT InputMethodFuchsia
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodFuchsia
     : public InputMethodBase,
       public InputEventDispatcherDelegate,
       public fuchsia::ui::input::InputMethodEditorClient {

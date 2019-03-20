@@ -10,11 +10,11 @@
 #include <deque>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/range/range.h"
 
@@ -99,10 +99,11 @@ class TextInputClient;
 //
 // More information about TSF can be found here:
 //   http://msdn.microsoft.com/en-us/library/ms629032
-class UI_BASE_IME_EXPORT TSFTextStore : public ITextStoreACP,
-                                        public ITfContextOwnerCompositionSink,
-                                        public ITfKeyTraceEventSink,
-                                        public ITfTextEditSink {
+class COMPONENT_EXPORT(UI_BASE_IME) TSFTextStore
+    : public ITextStoreACP,
+      public ITfContextOwnerCompositionSink,
+      public ITfKeyTraceEventSink,
+      public ITfTextEditSink {
  public:
   TSFTextStore();
   virtual ~TSFTextStore();

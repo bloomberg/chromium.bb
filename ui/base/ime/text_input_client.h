@@ -12,6 +12,7 @@
 #include <vector>
 #endif
 
+#include "base/component_export.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -19,7 +20,6 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
@@ -33,7 +33,7 @@ class KeyEvent;
 enum class TextEditCommand;
 
 // An interface implemented by a View that needs text input support.
-class UI_BASE_IME_EXPORT TextInputClient {
+class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
  public:
   // The reason the control was focused, used by the virtual keyboard to detect
   // pen input.

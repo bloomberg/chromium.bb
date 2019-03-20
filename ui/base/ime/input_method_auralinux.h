@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
@@ -17,7 +18,7 @@ namespace ui {
 // A ui::InputMethod implementation for Aura on Linux platforms. The
 // implementation details are separated to ui::LinuxInputMethodContext
 // interface.
-class UI_BASE_IME_EXPORT InputMethodAuraLinux
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodAuraLinux
     : public InputMethodBase,
       public LinuxInputMethodContextDelegate {
  public:

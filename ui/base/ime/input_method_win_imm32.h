@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/input_method_win_base.h"
 #include "ui/base/ime/win/imm32_manager.h"
@@ -17,7 +18,8 @@
 namespace ui {
 
 // A common InputMethod implementation based on IMM32.
-class UI_BASE_IME_EXPORT InputMethodWinImm32 : public InputMethodWinBase {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodWinImm32
+    : public InputMethodWinBase {
  public:
   InputMethodWinImm32(internal::InputMethodDelegate* delegate,
                       HWND toplevel_window_handle);

@@ -6,7 +6,7 @@
 #define UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
 
 #include "base/callback_forward.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
@@ -18,7 +18,7 @@ namespace internal {
 
 // An interface implemented by the object that handles events sent back from an
 // ui::InputMethod implementation.
-class UI_BASE_IME_EXPORT InputMethodDelegate {
+class COMPONENT_EXPORT(UI_BASE_IME) InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 
