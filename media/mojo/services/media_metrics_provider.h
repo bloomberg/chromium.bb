@@ -10,6 +10,7 @@
 #include "media/base/container_names.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"
+#include "media/learning/common/value.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/video_decode_perf_history.h"
@@ -24,16 +25,29 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
  public:
   MediaMetricsProvider(bool is_top_frame,
                        ukm::SourceId source_id,
+                       learning::FeatureValue origin,
                        VideoDecodePerfHistory::SaveCallback save_cb);
   ~MediaMetricsProvider() override;
 
   // Callback for retrieving a ukm::SourceId.
   using GetSourceIdCallback = base::RepeatingCallback<ukm::SourceId(void)>;
 
+  // TODO(liberato): This should be from a FeatureProvider, but the way in which
+  // we attach LearningHelper more or less precludes it.  Per-frame task
+  // controllers would make this easy, but we bypass that here.
+  using GetOriginCallback =
+      base::RepeatingCallback<learning::FeatureValue(void)>;
+
   // Creates a MediaMetricsProvider, |perf_history| may be nullptr if perf
   // history database recording is disabled.
+  //
+  // |get_source_id_cb| and |get_origin_cb| may not be run after this function
+  // returns.  The intention is that they'll be run to produce the constructor
+  // arguments for MediaMetricsProvider synchronously.  They should not be
+  // copied or moved for later.
   static void Create(bool is_top_frame,
                      GetSourceIdCallback get_source_id_cb,
+                     GetOriginCallback get_origin_cb,
                      VideoDecodePerfHistory::SaveCallback save_cb,
                      mojom::MediaMetricsProviderRequest request);
 
@@ -63,6 +77,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   const bool is_top_frame_;
 
   const ukm::SourceId source_id_;
+  const learning::FeatureValue origin_;
 
   const VideoDecodePerfHistory::SaveCallback save_cb_;
 

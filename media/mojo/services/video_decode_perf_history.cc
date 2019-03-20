@@ -207,6 +207,7 @@ VideoDecodePerfHistory::SaveCallback VideoDecodePerfHistory::GetSaveCallback() {
 }
 
 void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
+                                            learning::FeatureValue origin,
                                             bool is_top_frame,
                                             mojom::PredictionFeatures features,
                                             mojom::PredictionTargets targets,
@@ -230,8 +231,8 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
-        source_id, is_top_frame, std::move(features), std::move(targets),
-        player_id, std::move(save_done_cb)));
+        source_id, origin, is_top_frame, std::move(features),
+        std::move(targets), player_id, std::move(save_done_cb)));
     InitDatabase();
     return;
   }
@@ -244,7 +245,7 @@ void VideoDecodePerfHistory::SavePerfRecord(ukm::SourceId source_id,
       targets.frames_power_efficient);
 
   if (learning_helper_)
-    learning_helper_->AppendStats(video_key, new_stats);
+    learning_helper_->AppendStats(video_key, origin, new_stats);
 
   // Get past perf info and report UKM metrics before saving this record.
   db_->GetDecodeStats(

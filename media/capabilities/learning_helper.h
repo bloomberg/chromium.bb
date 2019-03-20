@@ -25,7 +25,12 @@ class MEDIA_EXPORT LearningHelper {
   LearningHelper(learning::FeatureProviderFactoryCB feature_factory);
   ~LearningHelper();
 
+  // |origin| is sent in separately since it's somewhat hacky.  This should be
+  // provided by the FeatureProvider, but the way LearningHelper is used, it
+  // doesn't have access to the origin.  Per-frame LearningTaskControllers will
+  // be able to do this much more easily.
   void AppendStats(const VideoDecodeStatsDB::VideoDescKey& video_key,
+                   learning::FeatureValue origin,
                    const VideoDecodeStatsDB::DecodeStatsEntry& new_stats);
 
  private:

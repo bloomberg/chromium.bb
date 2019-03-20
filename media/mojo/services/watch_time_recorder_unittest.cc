@@ -57,6 +57,8 @@ class WatchTimeRecorderTest : public testing::Test {
         true /* is_top_frame */,
         base::BindRepeating(&WatchTimeRecorderTest::GetSourceId,
                             base::Unretained(this)),
+        base::BindRepeating(
+            []() { return learning::FeatureValue(0); }) /* origin callback */,
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
   }
 
