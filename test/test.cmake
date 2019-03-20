@@ -65,6 +65,7 @@ list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/encode_test_driver.h"
             "${AOM_ROOT}/test/end_to_end_test.cc"
             "${AOM_ROOT}/test/fwd_kf_test.cc"
+            "${AOM_ROOT}/test/gf_max_pyr_height_test.cc"
             "${AOM_ROOT}/test/rt_end_to_end_test.cc"
             "${AOM_ROOT}/test/error_resilience_test.cc"
             "${AOM_ROOT}/test/frame_size_tests.cc"
