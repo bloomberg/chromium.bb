@@ -202,6 +202,17 @@ class BuildConfigGenerator extends DefaultTask {
                 // a call to SplitCompat.install() into it.
                 sb.append('  split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]\n')
                 break
+            case 'androidx_test_rules':
+                // Target needs Android SDK deps which exist in third_party/android_tools.
+                sb.append("""\
+                |  deps += [
+                |    "//third_party/android_tools:android_test_base_java",
+                |    "//third_party/android_tools:android_test_mock_java",
+                |    "//third_party/android_tools:android_test_runner_java",
+                |  ]
+                |
+                |""".stripMargin())
+                break
         }
     }
 

@@ -82,6 +82,8 @@ dependencies {
     // Androidx test libraries
     testCompile "androidx.test:core:1.0.0"
     testCompile "androidx.test:monitor:1.1.0"
+    testCompile "androidx.test:rules:1.1.0"
+    testCompile "androidx.test:runner:1.1.0"
     testCompile "androidx.test.ext:junit:1.0.0"
 }
 
