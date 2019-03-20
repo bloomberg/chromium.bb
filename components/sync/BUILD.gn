@@ -464,6 +464,7 @@ jumbo_static_library("sync") {
     "model_impl/syncable_service_based_bridge.cc",
     "model_impl/syncable_service_based_bridge.h",
     "nigori/keystore_keys_handler.h",
+    "nigori/nigori_local_change_processor.h",
     "nigori/nigori_sync_bridge.h",
     "protocol/proto_enum_conversions.cc",
     "protocol/proto_enum_conversions.h",
