@@ -182,6 +182,9 @@ DialogFooter.prototype.initFileTypeFilter = function(
     const option = document.createElement('option');
     option.innerText = str('ALL_FILES_FILTER');
     option.value = 0;
+    if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
+      option.selected = true;
+    }
     this.fileTypeSelector.appendChild(option);
   }
 
