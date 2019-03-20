@@ -80,7 +80,9 @@ public class TabGroupUiMediator implements Destroyable {
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                if (getRelatedTabsForId(lastId).contains(tab)) return;
+                if (type == TabSelectionType.FROM_CLOSE
+                        || getRelatedTabsForId(lastId).contains(tab))
+                    return;
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
 

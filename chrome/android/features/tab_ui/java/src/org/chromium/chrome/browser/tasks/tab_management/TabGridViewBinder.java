@@ -58,7 +58,7 @@ class TabGridViewBinder {
                 item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
             });
         } else if (TabProperties.FAVICON == propertyKey) {
-            holder.favicon.setImageBitmap(item.get(TabProperties.FAVICON));
+            holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
             TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
             if (fetcher == null) return;

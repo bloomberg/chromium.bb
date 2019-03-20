@@ -4,20 +4,17 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -25,6 +22,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -61,12 +59,10 @@ class TabListMediator {
             mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback);
         }
     }
-    private final int mFaviconSize;
-    private final FaviconHelper mFaviconHelper;
+    private final TabListFaviconProvider mTabListFaviconProvider;
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final TabContentManager mTabContentManager;
-    private final Profile mProfile;
     private final String mComponentName;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
@@ -121,6 +117,16 @@ class TabListMediator {
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
+        public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
+            if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
+            if (navigationHandle.isSameDocument() || !navigationHandle.isInMainFrame()) return;
+            if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
+            mModel.get(mModel.indexFromId(tab.getId()))
+                    .set(TabProperties.FAVICON,
+                            mTabListFaviconProvider.getDefaultFaviconDrawable());
+        }
+
+        @Override
         public void onTitleUpdated(Tab updatedTab) {
             int index = mModel.indexFromId(updatedTab.getId());
             if (index == TabModel.INVALID_TAB_INDEX) return;
@@ -131,7 +137,9 @@ class TabListMediator {
         public void onFaviconUpdated(Tab updatedTab, Bitmap icon) {
             int index = mModel.indexFromId(updatedTab.getId());
             if (index == TabModel.INVALID_TAB_INDEX) return;
-            mModel.get(index).set(TabProperties.FAVICON, icon);
+            Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(
+                    updatedTab.getUrl(), updatedTab.isIncognito(), icon);
+            mModel.get(index).set(TabProperties.FAVICON, drawable);
         }
     };
 
@@ -146,22 +154,19 @@ class TabListMediator {
      * Construct the Mediator with the given Models and observing hooks from the given
      * ChromeActivity.
      * @param model The Model to keep state about a list of {@link Tab}s.
-     * @param context The context to use for accessing {@link android.content.res.Resources}
      * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
      *                                                 the tabs concerned.
      * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
      * @param componentName This is a unique string to identify different components.
      */
-    public TabListMediator(Profile profile, TabListModel model, Context context,
-            TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            FaviconHelper faviconHelper, String componentName) {
-        mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.tab_grid_favicon_size);
 
+    public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
+            TabContentManager tabContentManager, TabListFaviconProvider tabListFaviconProvider,
+            String componentName) {
         mTabModelSelector = tabModelSelector;
         mTabContentManager = tabContentManager;
         mModel = model;
-        mFaviconHelper = faviconHelper;
-        mProfile = profile;
+        mTabListFaviconProvider = tabListFaviconProvider;
         mComponentName = componentName;
 
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -243,7 +248,8 @@ class TabListMediator {
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
                         .with(TabProperties.TITLE, tab.getTitle())
-                        .with(TabProperties.FAVICON, TabFavicon.getBitmap(tab))
+                        .with(TabProperties.FAVICON,
+                                mTabListFaviconProvider.getDefaultFaviconDrawable())
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
@@ -253,11 +259,16 @@ class TabListMediator {
         } else {
             mModel.add(index, tabInfo);
         }
-        mFaviconHelper.getLocalFaviconImageForURL(
-                mProfile, tab.getUrl(), mFaviconSize, (image, iconUrl) -> {
-                    if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
-                    mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.FAVICON, image);
-                });
+
+        Callback<Drawable> faviconCallback = drawable -> {
+            int modelIndex = mModel.indexFromId(tab.getId());
+            if (modelIndex != Tab.INVALID_TAB_ID && drawable != null) {
+                mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
+            }
+        };
+        mTabListFaviconProvider.getFaviconForUrlAsync(
+                tab.getUrl(), tab.isIncognito(), faviconCallback);
+
         ThumbnailFetcher callback =
                 new ThumbnailFetcher(mTabContentManager::getTabThumbnailWithCallback, tab);
         tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
@@ -12,7 +11,6 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -56,14 +54,11 @@ class TabStripViewBinder {
                         R.string.accessibility_tabstrip_tab, title));
             }
         } else if (TabProperties.FAVICON == propertyKey) {
-            Bitmap favicon = item.get(TabProperties.FAVICON);
-            if (favicon == null) return;
-            int faviconSize = holder.itemView.getContext().getResources().getDimensionPixelSize(
-                    R.dimen.default_favicon_size);
-            Drawable drawable = ViewUtils.createRoundedBitmapDrawable(
-                    Bitmap.createScaledBitmap(favicon, faviconSize, faviconSize, true),
-                    ViewUtils.DEFAULT_FAVICON_CORNER_RADIUS);
-            holder.button.setImageDrawable(drawable);
+            Drawable faviconDrawable = item.get(TabProperties.FAVICON);
+            holder.button.setBackgroundResource(R.drawable.tabstrip_favicon_background);
+            if (faviconDrawable != null) {
+                holder.button.setImageDrawable(faviconDrawable);
+            }
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
         }
