@@ -30,7 +30,7 @@ export class GPUTest extends Fixture {
     const Shaderc: any = window.Module;
 
     const compiler = new Shaderc.Compiler();
-    const opts = new Shaderc.CompilerOptions();
+    const opts = new Shaderc.CompileOptions();
     const result = compiler.CompileGlslToSpv(source,
         type === "f" ? Shaderc.shader_kind.fragment :
         type === "v" ? Shaderc.shader_kind.vertex :
