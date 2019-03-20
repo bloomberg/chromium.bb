@@ -1275,7 +1275,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool ShouldDisplayErrorPageForFailedLoad(int error_code,
                                            const GURL& unreachable_url);
 
-  void WillSendRequestInternal(blink::WebURLRequest& request);
+  void WillSendRequestInternal(blink::WebURLRequest& request,
+                               ResourceType resource_type);
 
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;

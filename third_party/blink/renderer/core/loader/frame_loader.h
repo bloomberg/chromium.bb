@@ -34,6 +34,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOADER_H_
 
 #include "base/macros.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -170,7 +171,9 @@ class CORE_EXPORT FrameLoader final {
   void ForceSandboxFlags(SandboxFlags flags) { forced_sandbox_flags_ |= flags; }
   SandboxFlags EffectiveSandboxFlags() const;
 
-  void ModifyRequestForCSP(ResourceRequest&, Document*) const;
+  void ModifyRequestForCSP(ResourceRequest&,
+                           Document*,
+                           network::mojom::RequestContextFrameType) const;
 
   Frame* Opener();
   void SetOpener(LocalFrame*);
@@ -222,7 +225,9 @@ class CORE_EXPORT FrameLoader final {
   void Trace(blink::Visitor*);
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
-  static void UpgradeInsecureRequest(ResourceRequest&, ExecutionContext*);
+  static void UpgradeInsecureRequest(ResourceRequest&,
+                                     ExecutionContext*,
+                                     network::mojom::RequestContextFrameType);
 
   void ClientDroppedNavigation();
   void MarkAsLoading();

@@ -5161,10 +5161,11 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  WillSendRequestInternal(request);
+  WillSendRequestInternal(request, WebURLRequestToResourceType(request));
 }
 
-void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request) {
+void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
+                                              ResourceType resource_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
@@ -5226,35 +5227,6 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request) {
   // present.
   request.SetHTTPOriginIfNeeded(WebSecurityOrigin::CreateUnique());
 
-  WebFrame* parent = frame_->Parent();
-
-  ResourceType resource_type = RESOURCE_TYPE_SUB_RESOURCE;
-  network::mojom::RequestContextFrameType frame_type = request.GetFrameType();
-  if (frame_type != network::mojom::RequestContextFrameType::kNone) {
-    DCHECK(request.GetRequestContext() ==
-               blink::mojom::RequestContextType::FORM ||
-           request.GetRequestContext() ==
-               blink::mojom::RequestContextType::FRAME ||
-           request.GetRequestContext() ==
-               blink::mojom::RequestContextType::HYPERLINK ||
-           request.GetRequestContext() ==
-               blink::mojom::RequestContextType::IFRAME ||
-           request.GetRequestContext() ==
-               blink::mojom::RequestContextType::INTERNAL ||
-           request.GetRequestContext() ==
-               blink::mojom::RequestContextType::LOCATION);
-    if (frame_type == network::mojom::RequestContextFrameType::kTopLevel ||
-        frame_type == network::mojom::RequestContextFrameType::kAuxiliary) {
-      resource_type = RESOURCE_TYPE_MAIN_FRAME;
-    } else if (frame_type == network::mojom::RequestContextFrameType::kNested) {
-      resource_type = RESOURCE_TYPE_SUB_FRAME;
-    } else {
-      NOTREACHED();
-    }
-  } else {
-    resource_type = WebURLRequestToResourceType(request);
-  }
-
   WebDocument frame_document = frame_->GetDocument();
   if (!request.GetExtraData())
     request.SetExtraData(std::make_unique<RequestExtraData>());
@@ -5263,7 +5235,7 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request) {
       GetContentClient()->renderer()->IsPrerenderingFrame(this));
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_render_frame_id(routing_id_);
-  extra_data->set_is_main_frame(!parent);
+  extra_data->set_is_main_frame(IsMainFrame());
   extra_data->set_allow_download(
       navigation_state->common_params().download_policy.IsDownloadAllowed());
   extra_data->set_transition_type(transition_type);
@@ -6994,8 +6966,7 @@ void RenderFrameImpl::BeginNavigationInternal(
 
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
-  if (request.GetFrameType() ==
-      network::mojom::RequestContextFrameType::kTopLevel)
+  if (info->frame_type == network::mojom::RequestContextFrameType::kTopLevel)
     request.SetSiteForCookies(request.Url());
   else
     request.SetSiteForCookies(frame_document.SiteForCookies());
@@ -7010,7 +6981,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  WillSendRequestInternal(request);
+  WillSendRequestInternal(request, frame_->Parent() ? RESOURCE_TYPE_SUB_FRAME
+                                                    : RESOURCE_TYPE_MAIN_FRAME);
 
   // Update the transition type of the request for client side redirects.
   if (!info->url_request.GetExtraData())
@@ -7034,11 +7006,10 @@ void RenderFrameImpl::BeginNavigationInternal(
   DCHECK_EQ(network::mojom::FetchRedirectMode::kManual,
             info->url_request.GetFetchRedirectMode());
   DCHECK(frame_->Parent() ||
-         info->url_request.GetFrameType() ==
+         info->frame_type ==
              network::mojom::RequestContextFrameType::kTopLevel);
   DCHECK(!frame_->Parent() ||
-         info->url_request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kNested);
+         info->frame_type == network::mojom::RequestContextFrameType::kNested);
 
   bool is_form_submission =
       info->navigation_type == blink::kWebNavigationTypeFormSubmitted ||

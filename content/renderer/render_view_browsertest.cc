@@ -656,11 +656,12 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   request.SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kInclude);
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
-  request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(requestor_origin);
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = request;
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   DCHECK(!navigation_info->url_request.RequestorOrigin().IsNull());
@@ -675,6 +676,8 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
       blink::WebURLRequest(GURL("chrome://foo"));
   form_navigation_info->url_request.SetHTTPMethod("POST");
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  form_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   form_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   form_navigation_info->navigation_policy =
@@ -690,6 +693,8 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   popup_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
   popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  popup_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
@@ -718,6 +723,8 @@ TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
     navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
     navigation_info->url_request.SetRequestorOrigin(
         blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
+    navigation_info->frame_type =
+        network::mojom::RequestContextFrameType::kTopLevel;
     navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
     navigation_info->navigation_type = kNavTypes[i];
 
@@ -739,6 +746,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
   navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
 
@@ -752,6 +761,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   webui_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
   webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
+  webui_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   webui_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   webui_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyCurrentTab;
@@ -766,6 +777,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       blink::WebURLRequest(GURL("data:text/html,foo"));
   data_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   data_navigation_info->url_request.SetHTTPMethod("POST");
+  data_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   data_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   data_navigation_info->navigation_policy =
@@ -788,6 +801,8 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request = popup_request;
+  popup_navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
@@ -832,6 +847,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
   // Empty url should never fork.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(empty_url);
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   frame()->BeginNavigation(std::move(navigation_info));
   EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
@@ -849,6 +866,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
   // About blank should never fork.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(blank_url);
+  navigation_info->frame_type =
+      network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   frame()->BeginNavigation(std::move(navigation_info));
   EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(

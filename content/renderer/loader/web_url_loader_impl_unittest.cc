@@ -469,7 +469,6 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   const GURL kRequestURL = GURL(kTestURL);
   const std::string kMimeType = "application/javascript";
   blink::WebURLRequest request(kRequestURL);
-  request.SetFrameType(network::mojom::RequestContextFrameType::kNone);
   request.SetRequestContext(blink::mojom::RequestContextType::SCRIPT);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
