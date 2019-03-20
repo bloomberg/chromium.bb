@@ -493,7 +493,7 @@ Output.RULES = {
           $description $state $restriction`
     },
     menuItem: {
-      speak: `$name $role $if($haspopup, @has_submenu)
+      speak: `$name $role $if($hasPopup, @has_submenu)
           @describe_index($if($posInSet, $posInSet, $indexInParent(menuItem, menuItemCheckBox, menuItemRadio)),
               $if($setSize, $setSize, $parentChildCount(menuItem, menuItemCheckBox, menuItemRadio)))
           $description $state $restriction`
@@ -726,6 +726,8 @@ Output.isTruthy = function(node, attrib) {
   switch (attrib) {
     case 'checked':
       return node.checked && node.checked !== 'false';
+    case 'hasPopup':
+      return node.hasPopup && node.hasPopup !== 'false';
 
     // Chrome automatically calculates these attributes.
     case 'posInSet':
