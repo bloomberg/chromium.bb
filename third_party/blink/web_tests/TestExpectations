@@ -6101,6 +6101,9 @@ crbug.com/938884 [ Win7 Mac ] virtual/binary-for-devtools/http/tests/devtools/el
 crbug.com/931533 media/video-played-collapse.html [ Pass Failure ]
 crbug.com/931533 virtual/video-surface-layer/media/video-played-collapse.html [ Pass Failure ]
 
+crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Pass Failure ]
+crbug.com/940797 virtual/sxg-with-network-service/external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Pass Failure ]
+
 # Flaky failures due to <object> resources not always appearing in the timeline.
 crbug.com/941482 external/wpt/resource-timing/nested-context-navigations.html [ Pass Failure ]
 
@@ -6135,4 +6138,3 @@ crbug.com/938592 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure T
 #
 # Trooper 2019-03-19
 crbug.com/836242 [ Mac ] external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Pass Failure ]
-
