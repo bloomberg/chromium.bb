@@ -374,8 +374,8 @@ TEST(ImageResourceTest, MultipartImage) {
   image_resource->SetIdentifier(CreateUniqueIdentifier());
   fetcher->StartLoad(image_resource);
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
 
   // Send the multipart response. No image or data buffer is created. Note that
@@ -419,8 +419,8 @@ TEST(ImageResourceTest, MultipartImage) {
 
   // Add an observer to check an assertion error doesn't happen
   // (crbug.com/630983).
-  std::unique_ptr<MockImageResourceObserver> observer2 =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer2 =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   EXPECT_EQ(0, observer2->ImageChangedCount());
   EXPECT_FALSE(observer2->ImageNotifyFinishedCalled());
 
@@ -504,8 +504,8 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   fetcher->StartLoad(image_resource);
   GetMemoryCache()->Add(image_resource);
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   EXPECT_EQ(ResourceStatus::kPending, image_resource->GetStatus());
 
   // The load should still be alive, but a timer should be started to cancel the
@@ -584,8 +584,8 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   image_resource->NotifyStartLoad();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   // Send the image response.
   ResourceResponse resource_response(NullURL());
@@ -626,8 +626,8 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   image_resource->NotifyStartLoad();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   // Send the image response.
 
@@ -666,8 +666,8 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->NotifyStartLoad();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   ResourceFetcher* fetcher = CreateFetcher();
 
   // Send the image response.
@@ -714,8 +714,8 @@ TEST_P(ImageResourceReloadTest,
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->NotifyStartLoad();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   ResourceFetcher* fetcher = CreateFetcher();
 
   // Send the image response.
@@ -763,8 +763,8 @@ TEST_P(ImageResourceReloadTest,
   ImageResource* image_resource = ImageResource::Create(request);
   image_resource->NotifyStartLoad();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   ResourceFetcher* fetcher = CreateFetcher();
 
   // Send the image response, without any LoFi image response headers.
@@ -810,8 +810,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
   ImageResource* image_resource = ImageResource::Fetch(fetch_params, fetcher);
   ImageResourceContent* content = image_resource->GetContent();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(content);
+  auto observer = std::make_unique<MockImageResourceObserver>(content);
 
   // Send the image response.
   ResourceResponse resource_response(NullURL());
@@ -851,8 +850,8 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderBeforeResponse) {
   ResourceFetcher* fetcher = CreateFetcher();
 
   ImageResource* image_resource = ImageResource::Fetch(fetch_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   EXPECT_FALSE(image_resource->ErrorOccurred());
   EXPECT_EQ(IsClientPlaceholderForServerLoFiEnabled(),
@@ -883,8 +882,8 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderDuringResponse) {
   ResourceFetcher* fetcher = CreateFetcher();
 
   ImageResource* image_resource = ImageResource::Fetch(fetch_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   // Send the image response.
   ResourceResponse resource_response(test_url);
@@ -935,8 +934,8 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params.GetImageRequestOptimization());
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   TestThatIsPlaceholderRequestAndServeResponse(test_url, image_resource,
                                                observer.get());
@@ -986,8 +985,8 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 TEST(ImageResourceTest, SVGImage) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/svg+xml", kSvgImage,
                   strlen(kSvgImage));
@@ -1003,8 +1002,8 @@ TEST(ImageResourceTest, SVGImage) {
 TEST(ImageResourceTest, SVGImageWithSubresource) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/svg+xml",
                   kSvgImageWithSubresource, strlen(kSvgImageWithSubresource));
@@ -1025,8 +1024,8 @@ TEST(ImageResourceTest, SVGImageWithSubresource) {
   EXPECT_EQ(100, image_resource->GetContent()->GetImage()->height());
 
   // A new client added here shouldn't notified of finish.
-  std::unique_ptr<MockImageResourceObserver> observer2 =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer2 =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
   EXPECT_EQ(1, observer2->ImageChangedCount());
   EXPECT_FALSE(observer2->ImageNotifyFinishedCalled());
 
@@ -1048,8 +1047,8 @@ TEST(ImageResourceTest, SVGImageWithSubresource) {
 TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/jpeg",
                   reinterpret_cast<const char*>(kJpegImage),
@@ -1085,8 +1084,8 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
 TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/svg+xml", kSvgImage,
                   strlen(kSvgImage));
@@ -1118,8 +1117,8 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
 TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/jpeg",
                   reinterpret_cast<const char*>(kJpegImage),
@@ -1153,8 +1152,8 @@ TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
 TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/jpeg",
                   reinterpret_cast<const char*>(kJpegImage),
@@ -1187,8 +1186,8 @@ TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
 TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/svg+xml", kSvgImage,
                   strlen(kSvgImage));
@@ -1221,8 +1220,8 @@ TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
 TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ReceiveResponse(image_resource, url, "image/svg+xml", kSvgImage,
                   strlen(kSvgImage));
@@ -1288,8 +1287,8 @@ TEST(ImageResourceTest, CancelOnDecodeError) {
   ResourceFetcher* fetcher = CreateFetcher();
   FetchParameters params{ResourceRequest(test_url)};
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ResourceResponse resource_response(test_url);
   resource_response.SetMimeType("image/jpeg");
@@ -1316,8 +1315,8 @@ TEST(ImageResourceTest, DecodeErrorWithEmptyBody) {
   ResourceFetcher* fetcher = CreateFetcher();
   FetchParameters params{ResourceRequest(test_url)};
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ResourceResponse resource_response(test_url);
   resource_response.SetMimeType("image/jpeg");
@@ -1351,8 +1350,8 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   FetchParameters params(resource_request);
   ResourceFetcher* fetcher = CreateFetcher();
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   ResourceResponse partial_response(test_url);
   partial_response.SetMimeType("image/jpeg");
@@ -1395,8 +1394,8 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
   FetchParameters params{ResourceRequest(test_url)};
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   TestThatIsNotPlaceholderRequestAndServeResponse(test_url, image_resource,
                                                   observer.get());
@@ -1456,8 +1455,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
             params.GetImageRequestOptimization());
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   TestThatIsPlaceholderRequestAndServeResponse(test_url, image_resource,
                                                observer.get());
@@ -1475,8 +1474,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   EXPECT_EQ("bytes=0-2047",
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   const char kBadData[] = "notanimageresponse";
 
@@ -1519,8 +1518,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
   EXPECT_EQ("bytes=0-2047",
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   const char kBadData[] = "notanimageresponse";
 
@@ -1582,8 +1581,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-    std::unique_ptr<MockImageResourceObserver> observer =
-        MockImageResourceObserver::Create(image_resource->GetContent());
+    auto observer = std::make_unique<MockImageResourceObserver>(
+        image_resource->GetContent());
 
     // TODO(hiroshige): Make the range request header and partial content length
     // consistent. https://crbug.com/689760.
@@ -1633,19 +1632,19 @@ TEST(ImageResourceTest, FetchAllowPlaceholderThenDisallowPlaceholder) {
   placeholder_params.SetAllowImagePlaceholder();
   ImageResource* image_resource =
       ImageResource::Fetch(placeholder_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   FetchParameters non_placeholder_params{ResourceRequest(test_url)};
   ImageResource* image_resource2 =
       ImageResource::Fetch(non_placeholder_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer2 =
-      MockImageResourceObserver::Create(image_resource2->GetContent());
+  auto observer2 = std::make_unique<MockImageResourceObserver>(
+      image_resource2->GetContent());
 
   ImageResource* image_resource3 =
       ImageResource::Fetch(non_placeholder_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer3 =
-      MockImageResourceObserver::Create(image_resource3->GetContent());
+  auto observer3 = std::make_unique<MockImageResourceObserver>(
+      image_resource3->GetContent());
 
   // |imageResource| remains a placeholder, while following non-placeholder
   // requests start non-placeholder loading with a separate ImageResource.
@@ -1683,8 +1682,8 @@ TEST(ImageResourceTest,
   placeholder_params.SetAllowImagePlaceholder();
   ImageResource* image_resource =
       ImageResource::Fetch(placeholder_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   TestThatIsPlaceholderRequestAndServeResponse(test_url, image_resource,
                                                observer.get());
@@ -1692,13 +1691,13 @@ TEST(ImageResourceTest,
   FetchParameters non_placeholder_params{ResourceRequest(test_url)};
   ImageResource* image_resource2 =
       ImageResource::Fetch(non_placeholder_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer2 =
-      MockImageResourceObserver::Create(image_resource2->GetContent());
+  auto observer2 = std::make_unique<MockImageResourceObserver>(
+      image_resource2->GetContent());
 
   ImageResource* image_resource3 =
       ImageResource::Fetch(non_placeholder_params, fetcher);
-  std::unique_ptr<MockImageResourceObserver> observer3 =
-      MockImageResourceObserver::Create(image_resource3->GetContent());
+  auto observer3 = std::make_unique<MockImageResourceObserver>(
+      image_resource3->GetContent());
 
   EXPECT_FALSE(observer2->ImageNotifyFinishedCalled());
   EXPECT_FALSE(observer3->ImageNotifyFinishedCalled());
@@ -1735,8 +1734,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-    std::unique_ptr<MockImageResourceObserver> observer =
-        MockImageResourceObserver::Create(image_resource->GetContent());
+    auto observer = std::make_unique<MockImageResourceObserver>(
+        image_resource->GetContent());
 
     ResourceResponse resource_response(test_url);
     resource_response.SetMimeType("imapge/jpeg");
@@ -1796,8 +1795,8 @@ TEST(ImageResourceTest,
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-    std::unique_ptr<MockImageResourceObserver> observer =
-        MockImageResourceObserver::Create(image_resource->GetContent());
+    auto observer = std::make_unique<MockImageResourceObserver>(
+        image_resource->GetContent());
 
     ResourceResponse resource_response(test_url);
     resource_response.SetMimeType("image/jpeg");
@@ -1830,8 +1829,8 @@ TEST(ImageResourceTest,
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-    std::unique_ptr<MockImageResourceObserver> observer =
-        MockImageResourceObserver::Create(image_resource->GetContent());
+    auto observer = std::make_unique<MockImageResourceObserver>(
+        image_resource->GetContent());
 
     static const char kBadImageData[] = "bad image data";
 
@@ -1887,8 +1886,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
 
   image_resource->NotifyStartLoad();
 
-  std::unique_ptr<MockImageResourceObserver> observer =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+  auto observer =
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   // Send the image response.
   ResourceResponse resource_response(NullURL());
@@ -1964,7 +1963,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
 TEST(ImageResourceTest, DeferredInvalidation) {
   ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   std::unique_ptr<MockImageResourceObserver> obs =
-      MockImageResourceObserver::Create(image_resource->GetContent());
+      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
 
   // Image loaded.
   ReceiveResponse(image_resource, NullURL(), "image/jpeg",
