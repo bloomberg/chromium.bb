@@ -17,8 +17,11 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/label_formatter_utils.h"
+#include "components/grit/components_scaled_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using testing::ElementsAre;
 
@@ -31,9 +34,9 @@ std::vector<ServerFieldType> GetNamePhoneAndEmailFieldTypes() {
 
 base::string16 FormatExpectedLabel(base::StringPiece label_part1,
                                    base::StringPiece label_part2) {
-  return base::JoinString(
-      {base::ASCIIToUTF16(label_part1), base::ASCIIToUTF16(label_part2)},
-      base::WideToUTF16(kLabelDelimiter));
+  return l10n_util::GetStringFUTF16(IDS_AUTOFILL_SUGGESTION_LABEL,
+                                    base::UTF8ToUTF16(label_part1),
+                                    base::UTF8ToUTF16(label_part2));
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsWithMissingProfiles) {

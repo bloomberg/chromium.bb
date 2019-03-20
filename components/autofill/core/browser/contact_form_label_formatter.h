@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -31,15 +30,13 @@ class ContactFormLabelFormatter : public LabelFormatter {
       const std::vector<AutofillProfile*>& profiles) const override;
 
  private:
-  // Adds |profile|'s email address to |label_parts| if |profile| has a valid
-  // email address and if this formatter's associated form has an email field.
-  void MaybeAddEmail(const AutofillProfile& profile,
-                     std::vector<base::string16>* label_parts) const;
+  // Returns |profile|'s email address if |profile| has a valid email address
+  // and if this formatter's associated form has an email field.
+  base::string16 MaybeGetEmail(const AutofillProfile& profile) const;
 
-  // Adds |profile|'s phone number to |label_parts| if |profile| has a phone
-  // number and if this formatter's associated form has a phone field.
-  void MaybeAddPhone(const AutofillProfile& profile,
-                     std::vector<base::string16>* label_parts) const;
+  // Returns |profile|'s phone number if |profile| has a phone number and if
+  // this formatter's associated form has a phone field.
+  base::string16 MaybeGetPhone(const AutofillProfile& profile) const;
 
   // Returns a label to show the user when the focused field is related to
   // phone numbers.
