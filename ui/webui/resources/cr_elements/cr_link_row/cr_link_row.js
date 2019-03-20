@@ -45,11 +45,6 @@ Polymer({
     ariaDescribedBy_: String,
   },
 
-  listeners: {
-    down: 'onDown_',
-    up: 'onUp_',
-  },
-
   /** @type {boolean} */
   get noink() {
     return this.$.icon.noink;
@@ -62,28 +57,6 @@ Polymer({
 
   focus: function() {
     this.$.icon.focus();
-  },
-
-  /** @private */
-  onDown_: function() {
-    // If the icon has focus, we want to preemptively blur it. Otherwise it will
-    // be blurred immediately after gaining focus. The ripple will either
-    // disappear when the mouse button is held down or the ripple will not
-    // be rendered. This is an issue only when the cr-link-row is clicked, not
-    // the icon itself.
-    if (this.shadowRoot.activeElement == this.$.icon) {
-      this.$.icon.blur();
-    }
-    // When cr-link-row is click, <body> will gain focus after the down event is
-    // handled. We need to wait until the next task to focus on the icon.
-    setTimeout(() => {
-      this.focus();
-    });
-  },
-
-  /** @private */
-  onUp_: function() {
-    this.$.icon.hideRipple();
   },
 
   /** @private */

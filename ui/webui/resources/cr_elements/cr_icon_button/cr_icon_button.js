@@ -54,16 +54,17 @@ Polymer({
   },
 
   listeners: {
-    blur: 'hideRipple',
+    blur: 'hideRipple_',
     click: 'onClick_',
     down: 'onDown_',
     focus: 'showRipple_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
-    up: 'hideRipple',
+    up: 'hideRipple_',
   },
 
-  hideRipple: function() {
+  /** @private */
+  hideRipple_: function() {
     this.getRipple().holdDown = false;
   },
 
