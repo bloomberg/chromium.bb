@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/apps/app_shim/mach_bootstrap_acceptor.h"
 #include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -28,6 +29,7 @@ class AppShimHostManagerTestApi;
 // The AppShimHostManager receives connections from app shims on a UNIX
 // socket (|acceptor_|) and creates a helper object to manage the connection.
 class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
+                           public apps::MachBootstrapAcceptor::Delegate,
                            public base::RefCountedThreadSafe<
                                AppShimHostManager,
                                content::BrowserThread::DeleteOnUIThread> {
@@ -55,6 +57,10 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   void OnClientConnected(mojo::PlatformChannelEndpoint endpoint) override;
   void OnListenError() override;
 
+  // MachBootstrapAcceptor::Delegate:
+  void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
+                         base::ProcessId peer_pid) override;
+
   // The |acceptor_| must be created on a thread which allows blocking I/O.
   void InitOnBackgroundThread();
 
@@ -64,6 +70,7 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   base::FilePath directory_in_tmp_;
 
   std::unique_ptr<apps::UnixDomainSocketAcceptor> acceptor_;
+  std::unique_ptr<apps::MachBootstrapAcceptor> mach_acceptor_;
 
   std::unique_ptr<apps::ExtensionAppShimHandler> extension_app_shim_handler_;
 
