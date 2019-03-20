@@ -73,13 +73,15 @@ TermMatches MatchTermInString(const base::string16& term,
 }
 
 // Comparison function for sorting TermMatches by their offsets.
-bool MatchOffsetLess(const TermMatch& m1, const TermMatch& m2) {
-  return m1.offset < m2.offset;
+bool SortMatchComparator(const TermMatch& m1, const TermMatch& m2) {
+  // Return the match that occurs first (smallest offset). In the case of a tie,
+  // return the longer match.
+  return m1.offset == m2.offset ? m1.length > m2.length : m1.offset < m2.offset;
 }
 
 TermMatches SortMatches(const TermMatches& matches) {
   TermMatches sorted_matches(matches);
-  std::sort(sorted_matches.begin(), sorted_matches.end(), MatchOffsetLess);
+  std::sort(sorted_matches.begin(), sorted_matches.end(), SortMatchComparator);
   return sorted_matches;
 }
 
