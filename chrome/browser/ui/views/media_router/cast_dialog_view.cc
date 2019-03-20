@@ -337,7 +337,7 @@ void CastDialogView::RestoreSinkListState() {
 
 void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   sink_buttons_.clear();
-  views::View* sink_list_view = new views::View();
+  auto sink_list_view = std::make_unique<views::View>();
   sink_list_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
@@ -347,7 +347,7 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
     sink_buttons_.push_back(sink_button);
     sink_list_view->AddChildView(sink_button);
   }
-  scroll_view_->SetContents(sink_list_view);
+  scroll_view_->SetContents(std::move(sink_list_view));
 
   MaybeSizeToContents();
   Layout();

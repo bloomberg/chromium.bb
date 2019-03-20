@@ -270,7 +270,8 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
 
   // Need to set the transparent background explicitly, since ScrollView has
   // set the default opaque background color.
-  scroller_->SetContents(new ScrollerContentsView(message_list_view_, this));
+  scroller_->SetContents(
+      std::make_unique<ScrollerContentsView>(message_list_view_, this));
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->SetVerticalScrollBar(scroll_bar_);
   scroller_->set_draw_overflow_indicator(false);

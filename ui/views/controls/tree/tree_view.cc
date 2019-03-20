@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -120,8 +121,8 @@ TreeView::~TreeView() {
 }
 
 View* TreeView::CreateParentIfNecessary() {
-  ScrollView* scroll_view = ScrollView::CreateScrollViewWithBorder();
-  scroll_view->SetContents(this);
+  auto* scroll_view = ScrollView::CreateScrollViewWithBorder();
+  scroll_view->SetContents(base::WrapUnique(this));
   return scroll_view;
 }
 

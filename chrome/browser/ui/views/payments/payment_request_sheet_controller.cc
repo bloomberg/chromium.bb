@@ -250,9 +250,10 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
-  pane_ = new views::View;
+  auto pane = std::make_unique<views::View>();
+  pane_ = pane.get();
   views::GridLayout* pane_layout =
-      pane_->SetLayoutManager(std::make_unique<views::GridLayout>(pane_));
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane.get()));
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
   pane_columns->AddColumn(
       views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
@@ -267,14 +268,14 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
       content_view_, ui::NativeTheme::kColorId_DialogBackground));
   content_view_->set_id(static_cast<int>(DialogViewID::CONTENT_VIEW));
   pane_layout->AddView(content_view_);
-  pane_->SizeToPreferredSize();
+  pane->SizeToPreferredSize();
 
   scroll_ = DisplayDynamicBorderForHiddenContents()
                 ? std::make_unique<BorderedScrollView>()
                 : std::make_unique<views::ScrollView>();
   scroll_->set_owned_by_client();
   scroll_->set_hide_horizontal_scrollbar(true);
-  scroll_->SetContents(pane_);
+  scroll_->SetContents(std::move(pane));
   layout->AddView(scroll_.get());
 
   if (footer) {

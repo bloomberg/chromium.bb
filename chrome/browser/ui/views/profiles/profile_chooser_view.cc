@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -284,7 +283,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
   view_mode_ = view_to_display;
   int width_override = -1;
 
-  views::View* sub_view = nullptr;
+  std::unique_ptr<views::View> sub_view;
   switch (view_mode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
@@ -301,7 +300,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
   }
 
-  SetContentsView(sub_view, width_override);
+  SetContentsView(std::move(sub_view), width_override);
 }
 
 void ProfileChooserView::ShowViewFromMode(profiles::BubbleViewMode mode) {
@@ -513,11 +512,13 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int /*event_flags*/) {
   }
 }
 
-views::View* ProfileChooserView::CreateIncognitoWindowCountView() {
+std::unique_ptr<views::View>
+ProfileChooserView::CreateIncognitoWindowCountView() {
   // TODO(https://crbug.com/896235): Refactor to merge this view with other
   // views.
-  views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width());
+  auto view = std::make_unique<views::View>();
+  views::GridLayout* layout =
+      CreateSingleColumnLayout(view.get(), menu_width());
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   int content_list_vert_spacing =
@@ -568,10 +569,11 @@ views::View* ProfileChooserView::CreateIncognitoWindowCountView() {
   return view;
 }
 
-views::View* ProfileChooserView::CreateProfileChooserView(
+std::unique_ptr<views::View> ProfileChooserView::CreateProfileChooserView(
     AvatarMenu* avatar_menu) {
-  views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width());
+  auto view = std::make_unique<views::View>();
+  views::GridLayout* layout =
+      CreateSingleColumnLayout(view.get(), menu_width());
   // Separate items into active and alternatives.
   Indexes other_profiles;
   views::View* sync_error_view = nullptr;

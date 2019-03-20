@@ -250,7 +250,7 @@ ScrollView* ScrollView::GetScrollViewForContents(View* contents) {
   return scroll_view;
 }
 
-void ScrollView::SetContents(View* a_view) {
+void ScrollView::SetContentsImpl(std::unique_ptr<View> a_view) {
   // Protect against clients passing a contents view that has its own Layer.
   DCHECK(!a_view->layer());
   if (ScrollsWithLayers()) {
@@ -271,11 +271,19 @@ void ScrollView::SetContents(View* a_view) {
     a_view->layer()->SetScrollable(contents_viewport_->bounds().size());
     a_view->layer()->SetFillsBoundsOpaquely(fills_opaquely);
   }
-  SetHeaderOrContents(contents_viewport_, a_view, &contents_);
+  SetHeaderOrContents(contents_viewport_, std::move(a_view), &contents_);
 }
 
-void ScrollView::SetHeader(View* header) {
-  SetHeaderOrContents(header_viewport_, header, &header_);
+void ScrollView::SetContents(std::nullptr_t) {
+  SetContentsImpl(nullptr);
+}
+
+void ScrollView::SetHeaderImpl(std::unique_ptr<View> a_header) {
+  SetHeaderOrContents(header_viewport_, std::move(a_header), &header_);
+}
+
+void ScrollView::SetHeader(std::nullptr_t) {
+  SetHeaderImpl(nullptr);
 }
 
 void ScrollView::SetBackgroundColor(SkColor color) {
@@ -696,15 +704,13 @@ void ScrollView::UpdateViewportLayerForClipping() {
 }
 
 void ScrollView::SetHeaderOrContents(View* parent,
-                                     View* new_view,
+                                     std::unique_ptr<View> new_view,
                                      View** member) {
-  if (*member == new_view)
-    return;
-
   delete *member;
-  *member = new_view;
-  if (*member)
-    parent->AddChildView(*member);
+  if (new_view.get())
+    *member = parent->AddChildView(std::move(new_view));
+  else
+    *member = nullptr;
   Layout();
 }
 

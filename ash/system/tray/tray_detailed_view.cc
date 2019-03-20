@@ -4,6 +4,8 @@
 
 #include "ash/system/tray/tray_detailed_view.h"
 
+#include <utility>
+
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -313,11 +315,11 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
 
 void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
-  scroll_content_ = new ScrollContentsView(delegate_);
+  auto scroll_content = std::make_unique<ScrollContentsView>(delegate_);
   scroller_ = new views::ScrollView;
   scroller_->set_draw_overflow_indicator(
       delegate_->IsOverflowIndicatorEnabled());
-  scroller_->SetContents(scroll_content_);
+  scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetBackgroundColor(
       delegate_->GetBackgroundColor(GetNativeTheme()));

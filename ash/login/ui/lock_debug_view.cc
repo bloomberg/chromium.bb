@@ -25,6 +25,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -746,7 +747,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   auto make_scroll = [](views::View* content, int height) -> views::View* {
     views::ScrollView* scroll = views::ScrollView::CreateScrollViewWithBorder();
     scroll->SetPreferredSize(gfx::Size(600, height));
-    scroll->SetContents(content);
+    scroll->SetContents(base::WrapUnique(content));
     scroll->SetBackgroundColor(SK_ColorTRANSPARENT);
     scroll->SetVerticalScrollBar(new views::OverlayScrollBar(false));
     scroll->SetHorizontalScrollBar(new views::OverlayScrollBar(true));

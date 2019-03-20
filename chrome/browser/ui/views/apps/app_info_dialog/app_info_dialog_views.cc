@@ -128,7 +128,7 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
 
   // Make a vertically stacked view of all the panels we want to display in the
   // dialog.
-  views::View* dialog_body_contents = new views::View();
+  auto dialog_body_contents = std::make_unique<views::View>();
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   dialog_body_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
@@ -159,7 +159,7 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
   const int kMaxDialogHeight = 1000;
   dialog_body_ = new views::ScrollView();
   dialog_body_->ClipHeightTo(kMaxDialogHeight, kMaxDialogHeight);
-  dialog_body_->SetContents(dialog_body_contents);
+  dialog_body_->SetContents(std::move(dialog_body_contents));
 
   AddChildView(dialog_header_);
 

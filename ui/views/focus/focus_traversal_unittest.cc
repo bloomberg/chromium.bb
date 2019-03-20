@@ -433,11 +433,12 @@ void FocusTraversalTest::InitContentView() {
   inner_container->AddChildView(scroll_view);
   scroll_view->SetBounds(1, 1, 148, 178);
 
-  View* scroll_content = new View();
+  auto scroll_content = std::make_unique<View>();
   scroll_content->SetBounds(0, 0, 200, 200);
   scroll_content->SetBackground(
       CreateSolidBackground(SkColorSetRGB(200, 200, 200)));
-  scroll_view->SetContents(scroll_content);
+  auto* scroll_content_ptr =
+      scroll_view->SetContents(std::move(scroll_content));
 
   static const char* const kTitles[] = {
       "Rosetta", "Stupeur et tremblement", "The diner game",
@@ -460,7 +461,7 @@ void FocusTraversalTest::InitContentView() {
     Link* link = new Link(ASCIIToUTF16(kTitles[i]));
     link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     link->set_id(kIDs[i]);
-    scroll_content->AddChildView(link);
+    scroll_content_ptr->AddChildView(link);
     link->SetBounds(5, y, 300, 15);
     y += 15;
   }

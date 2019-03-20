@@ -947,7 +947,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
   if (!rows_.empty()) {
     // Create a container to wrap the "regular" (non-footer) rows.
-    views::View* body_container = new views::View();
+    auto body_container = std::make_unique<views::View>();
     views::BoxLayout* body_layout = body_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     body_layout->set_main_axis_alignment(
@@ -958,9 +958,11 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
     scroll_view_ = new views::ScrollView();
     scroll_view_->set_hide_horizontal_scrollbar(true);
-    scroll_view_->SetContents(body_container);
+    auto* body_container_ptr =
+        scroll_view_->SetContents(std::move(body_container));
     scroll_view_->set_draw_overflow_indicator(false);
-    scroll_view_->ClipHeightTo(0, body_container->GetPreferredSize().height());
+    scroll_view_->ClipHeightTo(0,
+                               body_container_ptr->GetPreferredSize().height());
 
     // Use an additional container to apply padding outside the scroll view, so
     // that the padding area is stationary. This ensures that the rounded

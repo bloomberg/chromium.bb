@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 
 #include <algorithm>
-#include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -112,7 +112,7 @@ int ProfileMenuViewBase::GetMaxHeight() const {
   return std::max(kMinimumScrollableContentHeight, available_space);
 }
 
-void ProfileMenuViewBase::SetContentsView(views::View* view,
+void ProfileMenuViewBase::SetContentsView(std::unique_ptr<views::View> view,
                                           int width_override) {
   RemoveAllChildViews(true);
   if (width_override == -1)
@@ -125,7 +125,7 @@ void ProfileMenuViewBase::SetContentsView(views::View* view,
   // TODO(https://crbug.com/871762): it's a workaround for the crash.
   scroll_view->set_draw_overflow_indicator(false);
   scroll_view->ClipHeightTo(0, GetMaxHeight());
-  scroll_view->SetContents(view);
+  scroll_view->SetContents(std::move(view));
 
   layout->StartRow(1.0, 0);
   layout->AddView(scroll_view);

@@ -4,6 +4,9 @@
 
 #include "ash/login/ui/login_menu_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "base/bind.h"
@@ -139,8 +142,8 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   box_layout->SetFlexForView(scroller_, 1);
 
-  contents_ = new NonAccessibleView();
-  views::BoxLayout* layout = contents_->SetLayoutManager(
+  auto contents = std::make_unique<NonAccessibleView>();
+  views::BoxLayout* layout = contents->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->SetDefaultFlex(1);
   layout->set_minimum_cross_axis_size(kMenuItemWidthDp);
@@ -149,14 +152,14 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
 
   for (size_t i = 0; i < items.size(); i++) {
     const Item& item = items[i];
-    contents_->AddChildView(new MenuItemView(
+    contents->AddChildView(new MenuItemView(
         item, base::BindRepeating(&LoginMenuView::OnHighLightChange,
                                   base::Unretained(this), i)));
 
     if (item.selected)
       selected_index_ = i;
   }
-  scroller_->SetContents(contents_);
+  contents_ = scroller_->SetContents(std::move(contents));
   scroller_->SetVerticalScrollBar(new LoginScrollBar());
 }
 
