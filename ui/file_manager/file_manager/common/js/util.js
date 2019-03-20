@@ -102,9 +102,12 @@ Object.freeze(util.FileError);
 util.htmlEscape = str => {
   return str.replace(/[<>&]/g, entity => {
     switch (entity) {
-      case '<': return '&lt;';
-      case '>': return '&gt;';
-      case '&': return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '&':
+        return '&amp;';
     }
   });
 };
@@ -116,9 +119,12 @@ util.htmlEscape = str => {
 util.htmlUnescape = str => {
   return str.replace(/&(lt|gt|amp);/g, entity => {
     switch (entity) {
-      case '&lt;': return '<';
-      case '&gt;': return '>';
-      case '&amp;': return '&';
+      case '&lt;':
+        return '<';
+      case '&gt;':
+        return '>';
+      case '&amp;':
+        return '&';
     }
   });
 };
@@ -142,22 +148,24 @@ util.rename = (entry, newName, successCallback, errorCallback) => {
     // a new entry may be create on background. However, there is no way not to
     // overwrite the existing file, unfortunately. The risk should be low,
     // assuming the unsafe period is very short.
-    (entry.isFile ? parent.getFile : parent.getDirectory).call(
-        parent, newName, {create: false},
-        entry => {
-          // The entry with the name already exists.
-          errorCallback(util.createDOMError(util.FileError.PATH_EXISTS_ERR));
-        },
-        error => {
-          if (error.name != util.FileError.NOT_FOUND_ERR) {
-            // Unexpected error is found.
-            errorCallback(error);
-            return;
-          }
+    (entry.isFile ? parent.getFile : parent.getDirectory)
+        .call(
+            parent, newName, {create: false},
+            entry => {
+              // The entry with the name already exists.
+              errorCallback(
+                  util.createDOMError(util.FileError.PATH_EXISTS_ERR));
+            },
+            error => {
+              if (error.name != util.FileError.NOT_FOUND_ERR) {
+                // Unexpected error is found.
+                errorCallback(error);
+                return;
+              }
 
-          // No existing entry is found.
-          entry.moveTo(parent, newName, successCallback, errorCallback);
-        });
+              // No existing entry is found.
+              entry.moveTo(parent, newName, successCallback, errorCallback);
+            });
   }, errorCallback);
 };
 
@@ -180,17 +188,16 @@ util.getRenameErrorMessage = (error, entry, newName) => {
     //   a) If we get PATH_EXISTS_ERR, a directory exists.
     //   b) If we get TYPE_MISMATCH_ERR, a file exists.
     return strf(
-        (entry.isFile && error.name ==
-            util.FileError.PATH_EXISTS_ERR) ||
-        (!entry.isFile && error.name ==
-            util.FileError.TYPE_MISMATCH_ERR) ?
+        (entry.isFile && error.name == util.FileError.PATH_EXISTS_ERR) ||
+                (!entry.isFile &&
+                 error.name == util.FileError.TYPE_MISMATCH_ERR) ?
             'FILE_ALREADY_EXISTS' :
             'DIRECTORY_ALREADY_EXISTS',
         newName);
   }
 
-  return strf('ERROR_RENAMING', entry.name,
-      util.getFileErrorString(error.name));
+  return strf(
+      'ERROR_RENAMING', entry.name, util.getFileErrorString(error.name));
 };
 
 /**
@@ -216,20 +223,24 @@ util.removeFileOrDirectory = (entry, onSuccess, onError) => {
  */
 util.bytesToString = bytes => {
   // Translation identifiers for size units.
-  const UNITS = ['SIZE_BYTES',
-               'SIZE_KB',
-               'SIZE_MB',
-               'SIZE_GB',
-               'SIZE_TB',
-               'SIZE_PB'];
+  const UNITS = [
+    'SIZE_BYTES',
+    'SIZE_KB',
+    'SIZE_MB',
+    'SIZE_GB',
+    'SIZE_TB',
+    'SIZE_PB',
+  ];
 
   // Minimum values for the units above.
-  const STEPS = [0,
-               Math.pow(2, 10),
-               Math.pow(2, 20),
-               Math.pow(2, 30),
-               Math.pow(2, 40),
-               Math.pow(2, 50)];
+  const STEPS = [
+    0,
+    Math.pow(2, 10),
+    Math.pow(2, 20),
+    Math.pow(2, 30),
+    Math.pow(2, 40),
+    Math.pow(2, 50),
+  ];
 
   const str = (n, u) => {
     return strf(u, n.toLocaleString());
@@ -272,10 +283,8 @@ util.bytesToString = bytes => {
  * @return {string} Modifiers.
  */
 util.getKeyModifiers = event => {
-  return (event.ctrlKey ? 'Ctrl-' : '') +
-         (event.altKey ? 'Alt-' : '') +
-         (event.shiftKey ? 'Shift-' : '') +
-         (event.metaKey ? 'Meta-' : '');
+  return (event.ctrlKey ? 'Ctrl-' : '') + (event.altKey ? 'Alt-' : '') +
+      (event.shiftKey ? 'Shift-' : '') + (event.metaKey ? 'Meta-' : '');
 };
 
 /**
@@ -294,10 +303,10 @@ util.Transform;
  */
 util.applyTransform = (element, transform) => {
   // The order of rotate and scale matters.
-  element.style.transform =
-      transform ? 'rotate(' + transform.rotate90 * 90 + 'deg)' +
-                  'scaleX(' + transform.scaleX + ') ' +
-                  'scaleY(' + transform.scaleY + ') ' :
+  element.style.transform = transform ?
+      'rotate(' + transform.rotate90 * 90 + 'deg)' +
+          'scaleX(' + transform.scaleX + ') ' +
+          'scaleY(' + transform.scaleY + ') ' :
       '';
 };
 
@@ -308,10 +317,12 @@ util.applyTransform = (element, transform) => {
  */
 util.extractFilePath = url => {
   const match =
-      /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/.
-      exec(url);
+      /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent|temporary)(\/.*)$/
+          .exec(url);
   const path = match && match[2];
-  if (!path) return null;
+  if (!path) {
+    return null;
+  }
   return decodeURIComponent(path);
 };
 
@@ -413,8 +424,9 @@ util.isFullScreen = appWindow => {
   if (appWindow) {
     return appWindow.isFullscreen();
   } else {
-    console.error('App window not passed. Unable to check status of ' +
-                  'the full screen mode.');
+    console.error(
+        'App window not passed. Unable to check status of the full screen ' +
+        'mode.');
     return false;
   }
 };
@@ -725,8 +737,8 @@ util.isSiblingEntry = (entry1, entry2) => {
  * Collator for sorting.
  * @type {Intl.Collator}
  */
-util.collator = new Intl.Collator(
-    [], {usage: 'sort', numeric: true, sensitivity: 'base'});
+util.collator =
+    new Intl.Collator([], {usage: 'sort', numeric: true, sensitivity: 'base'});
 
 /**
  * Compare by name. The 2 entries must be in same directory.
@@ -809,18 +821,15 @@ util.compareLabelAndGroupBottomEntries = (locationInfo, bottomEntries) => {
  *     parent of {@code entry}.
  */
 util.isChildEntry = (entry, directory) => {
-  return new Promise(
-      (resolve, reject) => {
-        if (!entry || !directory) {
-          resolve(false);
-        }
+  return new Promise((resolve, reject) => {
+    if (!entry || !directory) {
+      resolve(false);
+    }
 
-        entry.getParent(
-            parent => {
-              resolve(util.isSameEntry(parent, directory));
-            },
-            reject);
-    });
+    entry.getParent(parent => {
+      resolve(util.isSameEntry(parent, directory));
+    }, reject);
+  });
 };
 
 /**
@@ -948,14 +957,16 @@ util.entriesToURLs = entries => {
  */
 util.URLsToEntries = (urls, opt_callback) => {
   const promises = urls.map(url => {
-    return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url)).
-        then(entry => {
-          return {entry: entry};
-        }, failureUrl => {
-          // Not an error. Possibly, the file is not accessible anymore.
-          console.warn('Failed to resolve the file with url: ' + url + '.');
-          return {failureUrl: url};
-        });
+    return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url))
+        .then(
+            entry => {
+              return {entry: entry};
+            },
+            failureUrl => {
+              // Not an error. Possibly, the file is not accessible anymore.
+              console.warn('Failed to resolve the file with url: ' + url + '.');
+              return {failureUrl: url};
+            });
   });
   const resultPromise = Promise.all(promises).then(results => {
     const entries = [];
@@ -970,20 +981,22 @@ util.URLsToEntries = (urls, opt_callback) => {
     }
     return {
       entries: entries,
-      failureUrls: failureUrls
+      failureUrls: failureUrls,
     };
   });
 
   // Invoke the callback. If opt_callback is specified, resultPromise is still
   // returned and fulfilled with a result.
   if (opt_callback) {
-    resultPromise.then(result => {
-      opt_callback(result.entries, result.failureUrls);
-    }).catch(error => {
-      console.error(
-          'util.URLsToEntries is failed.',
-          error.stack ? error.stack : error);
-    });
+    resultPromise
+        .then(result => {
+          opt_callback(result.entries, result.failureUrls);
+        })
+        .catch(error => {
+          console.error(
+              'util.URLsToEntries is failed.',
+              error.stack ? error.stack : error);
+        });
   }
 
   return resultPromise;
@@ -998,8 +1011,7 @@ util.URLsToEntries = (urls, opt_callback) => {
  *     {!Entry} if possible, else rejects.
  */
 util.urlToEntry = url => {
-  return new Promise(
-      window.webkitResolveLocalFileSystemURL.bind(null, url));
+  return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url));
 };
 
 /**
@@ -1313,8 +1325,7 @@ util.delay = ms => {
  */
 util.timeoutPromise = (promise, ms, opt_message) => {
   return Promise.race([
-    promise,
-    util.delay(ms).then(() => {
+    promise, util.delay(ms).then(() => {
       throw new Error(opt_message || 'Operation timed out.');
     })
   ]);
@@ -1335,59 +1346,55 @@ util.timeoutPromise = (promise, ms, opt_message) => {
  *     If 0 is specified, only the rootEntry will be read. If -1 is specified
  *     or opt_maxDepth is unspecified, the depth of recursion is unlimited.
  */
-util.readEntriesRecursively = (
-  rootEntry,
-  entriesCallback,
-  successCallback,
-  errorCallback,
-  shouldStop,
-  opt_maxDepth
-) => {
-  let numRunningTasks = 0;
-  let error = null;
-  const maxDepth = opt_maxDepth === undefined ? -1 : opt_maxDepth;
-  const maybeRunCallback = () => {
-    if (numRunningTasks === 0) {
-      if (shouldStop()) {
-        errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
-      } else if (error) {
-        errorCallback(error);
-      } else {
-        successCallback();
-      }
-    }
-  };
-  const processEntry = (entry, depth) => {
-    const onError = fileError => {
-      if (!error) {
-        error = fileError;
-      }
-      numRunningTasks--;
-      maybeRunCallback();
-    };
-    const onSuccess = entries => {
-      if (shouldStop() || error || entries.length === 0) {
-        numRunningTasks--;
-        maybeRunCallback();
-        return;
-      }
-      entriesCallback(entries);
-      for (let i = 0; i < entries.length; i++) {
-        if (entries[i].isDirectory && (maxDepth === -1 || depth < maxDepth)) {
-          processEntry(entries[i], depth + 1);
+util.readEntriesRecursively =
+    (rootEntry, entriesCallback, successCallback, errorCallback, shouldStop,
+     opt_maxDepth) => {
+      let numRunningTasks = 0;
+      let error = null;
+      const maxDepth = opt_maxDepth === undefined ? -1 : opt_maxDepth;
+      const maybeRunCallback = () => {
+        if (numRunningTasks === 0) {
+          if (shouldStop()) {
+            errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
+          } else if (error) {
+            errorCallback(error);
+          } else {
+            successCallback();
+          }
         }
-      }
-      // Read remaining entries.
-      reader.readEntries(onSuccess, onError);
+      };
+      const processEntry = (entry, depth) => {
+        const onError = fileError => {
+          if (!error) {
+            error = fileError;
+          }
+          numRunningTasks--;
+          maybeRunCallback();
+        };
+        const onSuccess = entries => {
+          if (shouldStop() || error || entries.length === 0) {
+            numRunningTasks--;
+            maybeRunCallback();
+            return;
+          }
+          entriesCallback(entries);
+          for (let i = 0; i < entries.length; i++) {
+            if (entries[i].isDirectory &&
+                (maxDepth === -1 || depth < maxDepth)) {
+              processEntry(entries[i], depth + 1);
+            }
+          }
+          // Read remaining entries.
+          reader.readEntries(onSuccess, onError);
+        };
+
+        numRunningTasks++;
+        const reader = entry.createReader();
+        reader.readEntries(onSuccess, onError);
+      };
+
+      processEntry(rootEntry, 0);
     };
-
-    numRunningTasks++;
-    const reader = entry.createReader();
-    reader.readEntries(onSuccess, onError);
-  };
-
-  processEntry(rootEntry, 0);
-};
 
 /**
  * Do not remove or modify.  Used in vm.CrostiniFiles tast tests at:
