@@ -231,6 +231,10 @@ if (is_android || is_chromeos) {
 
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
+
+    # Move Trichrome assets to the shared library APK. This will be removed
+    # once P builds are no longer supported. https://crbug.com/943637
+    trichrome_shared_assets = android_sdk_release == "q"
   }
 
   if (notouch_build && defined(extra_keymappings)) {

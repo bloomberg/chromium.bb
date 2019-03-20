@@ -211,7 +211,7 @@ android_assets("pak_file_assets") {
 }
 
 # These assets are needed by both monochrome and stand alone WebView, but not by
-# Chrome.
+# Chrome or TrichromeWebView.
 android_assets("monochrome_webview_assets") {
   deps = [
     "//third_party/icu:icu_assets",
@@ -224,15 +224,6 @@ android_assets("monochrome_webview_assets") {
   if (android_64bit_target_cpu && build_apk_secondary_abi) {
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
-}
-
-java_group("assets") {
-  deps = [
-    ":license_assets",
-    ":locale_pak_assets",
-    ":monochrome_webview_assets",
-    ":pak_file_assets",
-  ]
 }
 
 java_group("stub_assets") {
@@ -433,6 +424,9 @@ if (android_64bit_target_cpu) {
       renaming_sources = [ "$_secondary_abi_out_dir/v8_context_snapshot.bin" ]
       renaming_destinations = [ "v8_context_snapshot_$arch_suffix.bin" ]
     } else {
+      sources = [
+        "$root_out_dir/natives_blob.bin",
+      ]
       renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
       renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
     }
