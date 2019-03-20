@@ -438,7 +438,7 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
 
   if (test_runner()->httpHeadersToClear()) {
     for (const std::string& header : *test_runner()->httpHeadersToClear())
-      request.ClearHTTPHeaderField(blink::WebString::FromUTF8(header));
+      request.ClearHttpHeaderField(blink::WebString::FromUTF8(header));
   }
 
   std::string host = url.host();
@@ -576,7 +576,7 @@ bool WebFrameTestClient::ShouldContinueNavigation(
 
   if (test_runner()->httpHeadersToClear()) {
     for (const std::string& header : *test_runner()->httpHeadersToClear()) {
-      info->url_request.ClearHTTPHeaderField(
+      info->url_request.ClearHttpHeaderField(
           blink::WebString::FromUTF8(header));
     }
   }

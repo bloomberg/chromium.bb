@@ -1448,7 +1448,7 @@ TEST_F(MultibufferDataSourceTest, LengthKnownAtEOF) {
   Initialize(kHttpUrl, true);
   // Server responds without content-length.
   WebURLResponse response = response_generator_->Generate200();
-  response.ClearHTTPHeaderField(WebString::FromUTF8("Content-Length"));
+  response.ClearHttpHeaderField(WebString::FromUTF8("Content-Length"));
   response.SetExpectedContentLength(kPositionNotSpecified);
   Respond(response);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));

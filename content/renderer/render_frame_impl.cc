@@ -5214,7 +5214,7 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
     custom_user_agent = old_extra_data->custom_user_agent();
     if (!custom_user_agent.IsNull()) {
       if (custom_user_agent.IsEmpty())
-        request.ClearHTTPHeaderField("User-Agent");
+        request.ClearHttpHeaderField("User-Agent");
       else
         request.SetHTTPHeaderField("User-Agent", custom_user_agent);
     }

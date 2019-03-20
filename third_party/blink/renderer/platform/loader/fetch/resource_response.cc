@@ -253,7 +253,7 @@ void ResourceResponse::AddHTTPHeaderField(const AtomicString& name,
     result.stored_value->value = result.stored_value->value + ", " + value;
 }
 
-void ResourceResponse::ClearHTTPHeaderField(const AtomicString& name) {
+void ResourceResponse::ClearHttpHeaderField(const AtomicString& name) {
   http_header_fields_.Remove(name);
 }
 

@@ -302,7 +302,7 @@ void ResourceRequest::AddHTTPHeaderFields(const HTTPHeaderMap& header_fields) {
     AddHTTPHeaderField(it->key, it->value);
 }
 
-void ResourceRequest::ClearHTTPHeaderField(const AtomicString& name) {
+void ResourceRequest::ClearHttpHeaderField(const AtomicString& name) {
   http_header_fields_.Remove(name);
 }
 
