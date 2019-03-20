@@ -4,6 +4,8 @@
 
 #import "ios/web/public/test/web_test_with_web_state.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/ios/ios_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -54,11 +56,20 @@ void WebTestWithWebState::SetUp() {
   web::WebState::CreateParams params(GetBrowserState());
   web_state_ = web::WebState::Create(params);
 
-  // Force generation of child views; necessary for some tests.
-  web_state_->GetView();
+  // The WKWebView must be present in the view hierarchy in order to prevent
+  // WebKit optimizations which may pause internal parts of the web view
+  // without notice. Work around this by adding the view directly.
+  // TODO:(crbug.com/944077) Remove this workaround once fixed in ios/web.
+  UIViewController* view_controller =
+      [[[UIApplication sharedApplication] keyWindow] rootViewController];
+  [view_controller.view addSubview:web_state_->GetView()];
 }
 
 void WebTestWithWebState::TearDown() {
+  if (web_state_) {
+    [web_state_->GetView() removeFromSuperview];
+  }
+
   DestroyWebState();
   WebTest::TearDown();
 }
