@@ -6138,3 +6138,6 @@ crbug.com/938592 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure T
 #
 # Trooper 2019-03-19
 crbug.com/836242 [ Mac ] external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Pass Failure ]
+
+# Sheriff 2019-03-20
+crbug.com/732103 [ Mac10.11 ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
