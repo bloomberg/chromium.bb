@@ -235,14 +235,15 @@ public class DownloadHistoryAdapter
 
     /**
      * Initializes the adapter.
+     * @param context The {@link Context} used for inflating views.
      * @param provider The {@link BackendProvider} that provides classes needed by the adapter.
      * @param uiConfig The UiConfig used to observe display style changes.
      */
-    public void initialize(BackendProvider provider, @Nullable UiConfig uiConfig) {
+    public void initialize(Context context, BackendProvider provider, @Nullable UiConfig uiConfig) {
         mBackendProvider = provider;
         mUiConfig = uiConfig;
 
-        generateHeaderItems();
+        generateHeaderItems(context);
 
         DownloadItemSelectionDelegate selectionDelegate =
                 (DownloadItemSelectionDelegate) mBackendProvider.getSelectionDelegate();
@@ -414,15 +415,15 @@ public class DownloadHistoryAdapter
 
     /**
      * Initialize space display view in storage info header and generate header item for it.
+     * @param context The {@link Context} used for inflating views.
      */
-    private void generateHeaderItems() {
-        mSpaceDisplay = new SpaceDisplay(null, this);
+    private void generateHeaderItems(Context context) {
+        mSpaceDisplay = new SpaceDisplay(context, null, this);
         View view = mSpaceDisplay.getViewContainer();
         registerAdapterDataObserver(mSpaceDisplay);
         mSpaceDisplayHeaderItem = new HeaderItem(0, view);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
-            Context context = ContextUtils.getApplicationContext();
             View storageSummaryView =
                     LayoutInflater.from(context).inflate(R.layout.download_storage_summary, null);
             mStorageSummaryProvider =

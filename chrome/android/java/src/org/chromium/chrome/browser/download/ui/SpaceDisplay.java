@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -115,10 +114,10 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     private long mFreeBytes;
     private long mFileSystemBytes;
 
-    SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
+    SpaceDisplay(Context context, final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
         mHistoryAdapter = historyAdapter;
-        mViewContainer = LayoutInflater.from(ContextUtils.getApplicationContext())
-                                 .inflate(R.layout.download_manager_ui_space_widget, parent, false);
+        mViewContainer = LayoutInflater.from(context).inflate(
+                R.layout.download_manager_ui_space_widget, parent, false);
         mView = mViewContainer.findViewById(R.id.space_widget_content);
         mSpaceUsedByDownloadsTextView = (TextView) mView.findViewById(R.id.size_downloaded);
         mSpaceFreeAndOtherAppsTextView =
