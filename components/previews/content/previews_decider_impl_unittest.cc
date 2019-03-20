@@ -51,6 +51,7 @@
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_network_quality_tracker.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -151,11 +152,13 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const base::FilePath& test_path,
-      PreviewsTopHostProvider* previews_top_host_provider)
+      PreviewsTopHostProvider* previews_top_host_provider,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
                                   test_path,
-                                  previews_top_host_provider) {}
+                                  previews_top_host_provider,
+                                  url_loader_factory) {}
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:
@@ -399,7 +402,8 @@ class PreviewsDeciderImplTest : public testing::Test {
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner(),
-            temp_dir_.GetPath(), &previews_top_host_provider_),
+            temp_dir_.GetPath(), &previews_top_host_provider_,
+            url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -444,6 +448,7 @@ class PreviewsDeciderImplTest : public testing::Test {
   TestPreviewsTopHostProvider previews_top_host_provider_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;
+  scoped_refptr<network::TestSharedURLLoaderFactory> url_loader_factory_;
 };
 
 TEST_F(PreviewsDeciderImplTest, AllPreviewsDisabledByFeature) {

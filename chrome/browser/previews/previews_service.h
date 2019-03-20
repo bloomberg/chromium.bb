@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_top_host_provider_impl.h"
@@ -24,6 +25,10 @@ class FilePath;
 namespace content {
 class BrowserContext;
 }
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace optimization_guide {
 class OptimizationGuideService;
@@ -87,6 +92,9 @@ class PreviewsService : public KeyedService {
 
   // The server lite page preview decider.
   std::unique_ptr<PreviewsLitePageDecider> previews_lite_page_decider_;
+
+  // URL Factory for the Previews Optimization Guide's Hints Fetcher.
+  scoped_refptr<network::SharedURLLoaderFactory> previews_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsService);
 };
