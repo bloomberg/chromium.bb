@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:tabTextColor="@color/disabled_text_color"
-            app:tabSelectedTextColor="@color/clear_browsing_data_selected_tab_color"
+            app:tabSelectedTextColor="@color/tab_layout_selected_tab_color"
             app:tabMode="fixed"
             app:tabMaxWidth="0dp"
             app:tabGravity="fill" />

@@ -205,6 +205,6 @@
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="search_box_hint">@color/default_text_color_secondary</color>
     <color name="thumbnail_placeholder_on_primary_bg">@color/modern_secondary_color</color>
-    <color name="clear_browsing_data_selected_tab_color">@color/modern_blue_600</color>
+    <color name="tab_layout_selected_tab_color">@color/default_text_color_blue</color>
 
 </resources>
