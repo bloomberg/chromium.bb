@@ -210,8 +210,7 @@ class InheritedSideTypesChecker
 
 InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
                                                double zoom) {
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kSideIndexCount);
+  auto list = std::make_unique<InterpolableList>(kSideIndexCount);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(
       kSideIndexCount);
   const BorderImageLength* sides[kSideIndexCount] = {};
@@ -225,7 +224,7 @@ InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
     if (side.IsNumber()) {
       list->Set(i, std::make_unique<InterpolableNumber>(side.Number()));
     } else if (side.length().IsAuto()) {
-      list->Set(i, InterpolableList::Create(0));
+      list->Set(i, std::make_unique<InterpolableList>(0));
     } else {
       InterpolationValue converted_side =
           LengthInterpolationFunctions::MaybeConvertLength(side.length(), zoom);
@@ -286,8 +285,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
   if (!quad)
     return nullptr;
 
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kSideIndexCount);
+  auto list = std::make_unique<InterpolableList>(kSideIndexCount);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(
       kSideIndexCount);
   const CSSValue* sides[kSideIndexCount] = {};
@@ -308,7 +306,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
     auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
     if (side_identifier_value &&
         side_identifier_value->GetValueID() == CSSValueAuto) {
-      list->Set(i, InterpolableList::Create(0));
+      list->Set(i, std::make_unique<InterpolableList>(0));
       continue;
     }
 

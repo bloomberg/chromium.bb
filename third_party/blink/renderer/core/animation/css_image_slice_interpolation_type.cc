@@ -130,8 +130,7 @@ class InheritedSliceTypesChecker
 };
 
 InterpolationValue ConvertImageSlice(const ImageSlice& slice, double zoom) {
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kSideIndexCount);
+  auto list = std::make_unique<InterpolableList>(kSideIndexCount);
   const Length* sides[kSideIndexCount] = {};
   sides[kSideTop] = &slice.slices.Top();
   sides[kSideRight] = &slice.slices.Right();
@@ -198,8 +197,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
 
   const cssvalue::CSSBorderImageSliceValue& slice =
       To<cssvalue::CSSBorderImageSliceValue>(value);
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kSideIndexCount);
+  auto list = std::make_unique<InterpolableList>(kSideIndexCount);
   const CSSValue* sides[kSideIndexCount];
   sides[kSideTop] = slice.Slices().Top();
   sides[kSideRight] = slice.Slices().Right();

@@ -22,8 +22,7 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertNeutral(
   if (underlying_length == 0)
     return nullptr;
 
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(underlying_length);
+  auto result = std::make_unique<InterpolableList>(underlying_length);
   for (wtf_size_t i = 0; i < underlying_length; i++)
     result->Set(i, std::make_unique<InterpolableNumber>(0));
   return InterpolationValue(std::move(result));
@@ -35,8 +34,7 @@ InterpolationValue SVGNumberListInterpolationType::MaybeConvertSVGValue(
     return nullptr;
 
   const SVGNumberList& number_list = ToSVGNumberList(svg_value);
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(number_list.length());
+  auto result = std::make_unique<InterpolableList>(number_list.length());
   for (wtf_size_t i = 0; i < number_list.length(); i++) {
     result->Set(
         i, std::make_unique<InterpolableNumber>(number_list.at(i)->Value()));
@@ -61,8 +59,7 @@ static void PadWithZeroes(std::unique_ptr<InterpolableValue>& list_pointer,
   if (list.length() >= padded_length)
     return;
 
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(padded_length);
+  auto result = std::make_unique<InterpolableList>(padded_length);
   wtf_size_t i = 0;
   for (; i < list.length(); i++)
     result->Set(i, std::move(list.GetMutable(i)));

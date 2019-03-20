@@ -100,8 +100,7 @@ class InheritedFilterListChecker
 InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
                                      double zoom) {
   wtf_size_t length = filter_operations.size();
-  std::unique_ptr<InterpolableList> interpolable_list =
-      InterpolableList::Create(length);
+  auto interpolable_list = std::make_unique<InterpolableList>(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue filter_result =
@@ -156,7 +155,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
     ConversionCheckers&) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
-    return InterpolationValue(InterpolableList::Create(0),
+    return InterpolationValue(std::make_unique<InterpolableList>(0),
                               NonInterpolableList::Create());
 
   if (!value.IsBaseValueList())
@@ -164,8 +163,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
 
   const auto& list = To<CSSValueList>(value);
   wtf_size_t length = list.length();
-  std::unique_ptr<InterpolableList> interpolable_list =
-      InterpolableList::Create(length);
+  auto interpolable_list = std::make_unique<InterpolableList>(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item_result =
@@ -222,8 +220,8 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
       ToInterpolableList(*shorter.interpolable_value);
   const NonInterpolableList& longer_non_interpolable_list =
       ToNonInterpolableList(*longer.non_interpolable_value);
-  std::unique_ptr<InterpolableList> extended_interpolable_list =
-      InterpolableList::Create(longer_length);
+  auto extended_interpolable_list =
+      std::make_unique<InterpolableList>(longer_length);
   for (wtf_size_t i = 0; i < longer_length; i++) {
     if (i < shorter_length)
       extended_interpolable_list->Set(
@@ -276,8 +274,7 @@ void CSSFilterListInterpolationType::Composite(
   if (length <= underlying_length)
     return;
 
-  std::unique_ptr<InterpolableList> extended_interpolable_list =
-      InterpolableList::Create(length);
+  auto extended_interpolable_list = std::make_unique<InterpolableList>(length);
   for (wtf_size_t i = 0; i < length; i++) {
     if (i < underlying_length)
       extended_interpolable_list->Set(

@@ -69,8 +69,8 @@ PairwiseInterpolationValue ShadowInterpolationFunctions::MaybeMergeSingles(
 InterpolationValue ShadowInterpolationFunctions::ConvertShadowData(
     const ShadowData& shadow_data,
     double zoom) {
-  std::unique_ptr<InterpolableList> interpolable_list =
-      InterpolableList::Create(kShadowComponentIndexCount);
+  auto interpolable_list =
+      std::make_unique<InterpolableList>(kShadowComponentIndexCount);
   interpolable_list->Set(kShadowX,
                          LengthInterpolationFunctions::CreateInterpolablePixels(
                              shadow_data.X() / zoom));
@@ -105,8 +105,8 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
       return nullptr;
   }
 
-  std::unique_ptr<InterpolableList> interpolable_list =
-      InterpolableList::Create(kShadowComponentIndexCount);
+  auto interpolable_list =
+      std::make_unique<InterpolableList>(kShadowComponentIndexCount);
   static_assert(kShadowX == 0, "Enum ordering check.");
   static_assert(kShadowY == 1, "Enum ordering check.");
   static_assert(kShadowBlur == 2, "Enum ordering check.");
