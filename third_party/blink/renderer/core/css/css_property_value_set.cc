@@ -127,8 +127,8 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             const CSSValue&,
                             uint16_t id,
                             CSSPropertyID property_id) {
-  DCHECK_EQ(id, property_id);
-  bool result = metadata.Property().PropertyID() == id;
+  DCHECK_EQ(id, static_cast<uint16_t>(property_id));
+  bool result = static_cast<uint16_t>(metadata.Property().PropertyID()) == id;
 // Only enabled properties should be part of the style.
 #if DCHECK_IS_ON()
   DCHECK(!result ||
@@ -141,8 +141,8 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             const CSSValue& value,
                             uint16_t id,
                             const AtomicString& custom_property_name) {
-  DCHECK_EQ(id, CSSPropertyVariable);
-  return metadata.Property().PropertyID() == id &&
+  DCHECK_EQ(id, static_cast<uint16_t>(CSSPropertyID::kVariable));
+  return static_cast<uint16_t>(metadata.Property().PropertyID()) == id &&
          To<CSSCustomPropertyDeclaration>(value).GetName() ==
              custom_property_name;
 }

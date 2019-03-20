@@ -1744,7 +1744,7 @@ void AddProperty(CSSPropertyID resolved_property,
   int shorthand_index = 0;
   bool set_from_shorthand = false;
 
-  if (current_shorthand) {
+  if (isValidCSSPropertyID(current_shorthand)) {
     Vector<StylePropertyShorthand, 4> shorthands;
     getMatchingShorthandsForLonghand(resolved_property, &shorthands);
     set_from_shorthand = true;

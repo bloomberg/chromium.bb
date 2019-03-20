@@ -15,24 +15,36 @@ class String;
 
 namespace blink {
 
-enum CSSPropertyID {
-    CSSPropertyInvalid = 0,
-    CSSPropertyVariable = 1,
+enum class CSSPropertyID {
+    kInvalid = 0,
+    kVariable = 1,
 {{property_enums}}
 };
+
+constexpr CSSPropertyID CSSPropertyInvalid = CSSPropertyID::kInvalid;
+constexpr CSSPropertyID CSSPropertyVariable = CSSPropertyID::kVariable;
+{{property_enums_compat}}
 
 const CSSPropertyID kCSSPropertyAliasList[] = {
 {{property_aliases}}
 };
 
-const CSSPropertyID firstCSSProperty = static_cast<CSSPropertyID>({{first_property_id}});
+const int kIntFirstCSSProperty = {{first_property_id}};
+const CSSPropertyID firstCSSProperty = static_cast<CSSPropertyID>(kIntFirstCSSProperty);
 const int numCSSProperties = {{properties_count}};
-const CSSPropertyID lastCSSProperty = static_cast<CSSPropertyID>({{last_property_id}});
+const int kIntLastCSSProperty = {{last_property_id}};
+const CSSPropertyID lastCSSProperty = static_cast<CSSPropertyID>(kIntLastCSSProperty);
 const CSSPropertyID lastUnresolvedCSSProperty = static_cast<CSSPropertyID>({{last_unresolved_property_id}});
-const int numCSSPropertyIDs = lastUnresolvedCSSProperty + 1;
+const int numCSSPropertyIDs = static_cast<int>(lastUnresolvedCSSProperty) + 1;
 const size_t maxCSSPropertyNameLength = {{max_name_length}};
 
-inline bool isCSSPropertyIDWithName(int id)
+inline int GetCSSPropertyIDIndex(CSSPropertyID id) {
+    DCHECK_GE(id, firstCSSProperty);
+    DCHECK_LE(id, lastCSSProperty);
+    return static_cast<int>(id) - kIntFirstCSSProperty;
+}
+
+inline bool isCSSPropertyIDWithName(CSSPropertyID id)
 {
     return id >= firstCSSProperty && id <= lastUnresolvedCSSProperty;
 }
@@ -44,17 +56,17 @@ inline bool isValidCSSPropertyID(CSSPropertyID id)
 
 inline CSSPropertyID convertToCSSPropertyID(int value)
 {
-    DCHECK_GE(value, CSSPropertyInvalid);
-    DCHECK_LE(value, lastCSSProperty);
+    DCHECK_GE(value, static_cast<int>(CSSPropertyID::kInvalid));
+    DCHECK_LE(value, kIntLastCSSProperty);
     return static_cast<CSSPropertyID>(value);
 }
 
 inline CSSPropertyID resolveCSSPropertyID(CSSPropertyID id)
 {
-    return convertToCSSPropertyID(id & ~{{alias_offset}});
+    return convertToCSSPropertyID(static_cast<int>(id) & ~{{alias_offset}});
 }
 
-inline bool isPropertyAlias(CSSPropertyID id) { return id & {{alias_offset}}; }
+inline bool isPropertyAlias(CSSPropertyID id) { return static_cast<int>(id) & {{alias_offset}}; }
 
 CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
 

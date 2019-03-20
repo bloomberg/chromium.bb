@@ -449,7 +449,7 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const {
 String CSSComputedStyleDeclaration::getPropertyValue(
     const String& property_name) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (!property_id)
+  if (!isValidCSSPropertyID(property_id))
     return String();
   if (property_id == CSSPropertyVariable) {
     const CSSValue* value = GetPropertyCSSValue(AtomicString(property_name));

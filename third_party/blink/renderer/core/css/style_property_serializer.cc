@@ -65,7 +65,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
     }
     if (!isCSSPropertyIDWithName(property.Id()))
       continue;
-    longhand_property_used_.set(property.Id() - firstCSSProperty);
+    longhand_property_used_.set(GetCSSPropertyIDIndex(property.Id()));
   }
 }
 
@@ -79,7 +79,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyCount()
     const {
   if (!HasExpandedAllProperty())
     return property_set_->PropertyCount();
-  return lastCSSProperty - firstCSSProperty + 1;
+  return kIntLastCSSProperty - kIntFirstCSSProperty + 1;
 }
 
 StylePropertySerializer::PropertyValueForSerializer
@@ -90,7 +90,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
         property_set_->PropertyAt(index));
 
   CSSPropertyID property_id =
-      static_cast<CSSPropertyID>(index + firstCSSProperty);
+      static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
   DCHECK(isCSSPropertyIDWithName(property_id));
   if (longhand_property_used_.test(index)) {
     int real_index = property_set_->FindPropertyIndex(property_id);
@@ -121,11 +121,11 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
       return true;
     if (!isCSSPropertyIDWithName(property.Id()))
       return false;
-    return longhand_property_used_.test(property.Id() - firstCSSProperty);
+    return longhand_property_used_.test(GetCSSPropertyIDIndex(property.Id()));
   }
 
   CSSPropertyID property_id =
-      static_cast<CSSPropertyID>(index + firstCSSProperty);
+      static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
   DCHECK(isCSSPropertyIDWithName(property_id));
   const CSSProperty& property_class =
       CSSProperty::Get(resolveCSSPropertyID(property_id));
@@ -150,7 +150,7 @@ int StylePropertySerializer::CSSPropertyValueSetForSerializer::
   CSSPropertyID property_id = property.PropertyID();
   if (!HasExpandedAllProperty())
     return property_set_->FindPropertyIndex(property_id);
-  return property_id - firstCSSProperty;
+  return GetCSSPropertyIDIndex(property_id);
 }
 
 const CSSValue*
@@ -245,7 +245,7 @@ String StylePropertySerializer::AsText() const {
       default:
         break;
     }
-    if (longhand_serialized.test(property_id - firstCSSProperty))
+    if (longhand_serialized.test(GetCSSPropertyIDIndex(property_id)))
       continue;
 
     Vector<StylePropertyShorthand, 4> shorthands;
@@ -258,7 +258,7 @@ String StylePropertySerializer::AsText() const {
         continue;
 
       CSSPropertyID shorthand_property = shorthand.id();
-      int shorthand_property_index = shorthand_property - firstCSSProperty;
+      int shorthand_property_index = GetCSSPropertyIDIndex(shorthand_property);
       // We already tried serializing as this shorthand
       if (shorthand_appeared.test(shorthand_property_index))
         continue;
@@ -266,8 +266,8 @@ String StylePropertySerializer::AsText() const {
       shorthand_appeared.set(shorthand_property_index);
       bool serialized_other_longhand = false;
       for (unsigned i = 0; i < shorthand.length(); i++) {
-        if (longhand_serialized.test(shorthand.properties()[i]->PropertyID() -
-                                     firstCSSProperty)) {
+        if (longhand_serialized.test(GetCSSPropertyIDIndex(
+                shorthand.properties()[i]->PropertyID()))) {
           serialized_other_longhand = true;
           break;
         }
@@ -284,8 +284,8 @@ String StylePropertySerializer::AsText() const {
                                     num_decls++));
       serialized_as_shorthand = true;
       for (unsigned i = 0; i < shorthand.length(); i++) {
-        longhand_serialized.set(shorthand.properties()[i]->PropertyID() -
-                                firstCSSProperty);
+        longhand_serialized.set(
+            GetCSSPropertyIDIndex(shorthand.properties()[i]->PropertyID()));
       }
       break;
     }

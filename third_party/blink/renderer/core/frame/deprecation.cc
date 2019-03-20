@@ -649,12 +649,14 @@ void Deprecation::UnmuteForInspector() {
 
 void Deprecation::Suppress(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
-  css_property_deprecation_bits_.QuickSet(unresolved_property);
+  css_property_deprecation_bits_.QuickSet(
+      static_cast<int>(unresolved_property));
 }
 
 bool Deprecation::IsSuppressed(CSSPropertyID unresolved_property) {
   DCHECK(isCSSPropertyIDWithName(unresolved_property));
-  return css_property_deprecation_bits_.QuickGet(unresolved_property);
+  return css_property_deprecation_bits_.QuickGet(
+      static_cast<int>(unresolved_property));
 }
 
 void Deprecation::SetReported(WebFeature feature) {

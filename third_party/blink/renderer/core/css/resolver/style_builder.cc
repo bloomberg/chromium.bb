@@ -86,7 +86,8 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   }
 
   DCHECK(!property.IsShorthand())
-      << "Shorthand property id = " << id << " wasn't expanded at parsing time";
+      << "Shorthand property id = " << static_cast<int>(id)
+      << " wasn't expanded at parsing time";
 
   bool is_inherit = state.ParentNode() && value.IsInheritedValue();
   bool is_initial = value.IsInitialValue() ||

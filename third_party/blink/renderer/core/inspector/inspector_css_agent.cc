@@ -1129,7 +1129,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   CSSComputedStyleDeclaration* computed_style_info =
       CSSComputedStyleDeclaration::Create(node, true);
   *style = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
-  for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+  for (int id = kIntFirstCSSProperty; id <= kIntLastCSSProperty; ++id) {
     CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
     const CSSProperty& property_class =
         CSSProperty::Get(resolveCSSPropertyID(property_id));
@@ -2187,7 +2187,7 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
     return Response::Error("Elements is pseudo");
 
   CSSPropertyID property = cssPropertyID(property_name);
-  if (!property)
+  if (!isValidCSSPropertyID(property))
     return Response::Error("Invalid property name");
 
   Document* owner_document = element->ownerDocument();

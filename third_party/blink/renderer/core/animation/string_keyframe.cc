@@ -83,7 +83,7 @@ PropertyHandleSet StringKeyframe::Properties() const {
     const CSSProperty& property = property_reference.Property();
     DCHECK(!property.IsShorthand())
         << "Web Animations: Encountered unexpanded shorthand CSS property ("
-        << property.PropertyID() << ").";
+        << static_cast<int>(property.PropertyID()) << ").";
     if (property.IDEquals(CSSPropertyVariable)) {
       properties.insert(PropertyHandle(
           To<CSSCustomPropertyDeclaration>(property_reference.Value())
