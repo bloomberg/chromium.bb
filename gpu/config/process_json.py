@@ -9,6 +9,7 @@ import json
 import os
 import platform
 import sys
+import zlib
 from optparse import OptionParser
 from subprocess import call
 
@@ -378,7 +379,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   pixel_shader_version = None
   in_process_gpu = False
   gl_reset_notification_strategy = None
-  direct_rendering = True
+  direct_rendering_version = ''
   gpu_count = None
   hardware_overlay = None
   test_group = 0
@@ -451,9 +452,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       in_process_gpu = True
     elif key == 'gl_reset_notification_strategy':
       gl_reset_notification_strategy = entry[key]
-    elif key == 'direct_rendering':
-      assert not entry[key]
-      direct_rendering = False
+    elif key == 'direct_rendering_version':
+      direct_rendering_version = entry[key]
     elif key == 'gpu_count':
       gpu_count = entry[key]
     elif key == 'hardware_overlay':
@@ -502,13 +502,13 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
                         data_file, data_helper_file)
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
-      gl_reset_notification_strategy != None or (not direct_rendering) or
-      gpu_count != None or hardware_overlay != None or test_group != 0):
+      gl_reset_notification_strategy != None or direct_rendering_version != None
+      or gpu_count != None or hardware_overlay != None or test_group != 0):
     write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
-                          gl_reset_notification_strategy, direct_rendering,
-                          gpu_count, hardware_overlay, test_group, data_file,
-                          data_helper_file)
+                          gl_reset_notification_strategy,
+                          direct_rendering_version, gpu_count, hardware_overlay,
+                          test_group, data_file, data_helper_file)
   else:
     data_file.write('nullptr,  // more conditions\n')
 
@@ -549,11 +549,18 @@ def write_gpu_series_list(entry_id, is_exception, exception_id, gpu_series_list,
 
 def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
-                          gl_reset_notification_strategy, direct_rendering,
-                          gpu_count, hardware_overlay, test_group, data_file,
-                          data_helper_file):
+                          gl_reset_notification_strategy,
+                          direct_rendering_version, gpu_count, hardware_overlay,
+                          test_group, data_file, data_helper_file):
   # write more data
-  var_name = 'kMoreForEntry' + str(entry_id)
+
+  # Generate a unique name for jumbo build which concatenates multiple
+  # translation units into one to speed compilation.
+  basename = os.path.basename(data_helper_file.name)
+  # & 0xffffffff converts to unsigned to keep consistent across Python versions
+  # and platforms as per https://docs.python.org/3/library/zlib.html
+  suffix = '_%s' % (zlib.crc32(basename) & 0xffffffff)
+  var_name = 'kMoreForEntry' + str(entry_id) + suffix
   if is_exception:
     var_name += 'Exception' + str(exception_id)
   data_helper_file.write('const GpuControlList::More %s = {\n' % var_name)
@@ -565,7 +572,8 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
     gl_reset_notification_strategy = '0'
   data_helper_file.write('%s,  // gl_reset_notification_strategy\n' %
                          gl_reset_notification_strategy)
-  write_boolean_value(direct_rendering, 'direct_rendering', data_helper_file)
+  write_version(direct_rendering_version, 'direct_rendering_version',
+                data_helper_file)
   write_version(gpu_count, 'gpu_count', data_helper_file)
   write_supported_or_not(hardware_overlay, 'hardware_overlay', data_helper_file)
   write_integer_value(test_group, 'test_group', data_helper_file)

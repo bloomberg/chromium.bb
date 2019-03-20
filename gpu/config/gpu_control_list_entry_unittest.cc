@@ -661,9 +661,17 @@ TEST_F(GpuControlListEntryTest, NVidiaNumberingScheme) {
 TEST_F(GpuControlListEntryTest, DirectRendering) {
   const Entry& entry = GetEntry(kGpuControlListEntryTest_DirectRendering);
   GPUInfo gpu_info;
-  gpu_info.direct_rendering = true;
+  // No info does not match.
+  gpu_info.direct_rendering_version = "";
   EXPECT_FALSE(entry.Contains(kOsLinux, "7.0", gpu_info));
-  gpu_info.direct_rendering = false;
+
+  // Indirect rendering does not match.
+  gpu_info.direct_rendering_version = "1";
+  EXPECT_FALSE(entry.Contains(kOsLinux, "7.0", gpu_info));
+
+  gpu_info.direct_rendering_version = "2";
+  EXPECT_TRUE(entry.Contains(kOsLinux, "7.0", gpu_info));
+  gpu_info.direct_rendering_version = "2.3";
   EXPECT_TRUE(entry.Contains(kOsLinux, "7.0", gpu_info));
 }
 

@@ -17,9 +17,11 @@
 
 namespace gl {
 class GLContext;
-struct GLContextAttribs;
 class GLShareGroup;
 class GLSurface;
+
+struct GLContextAttribs;
+struct GLVersionInfo;
 }
 
 namespace ui {
@@ -58,6 +60,7 @@ class OZONE_BASE_EXPORT GLOzone {
   // Returns information about the GL window system binding implementation (eg.
   // EGL, GLX, WGL). Returns true if the information was retrieved successfully.
   virtual bool GetGLWindowSystemBindingInfo(
+      const gl::GLVersionInfo& gl_info,
       gl::GLWindowSystemBindingInfo* info) = 0;
 
   // Creates a GL context that is compatible with the given surface.

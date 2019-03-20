@@ -20,6 +20,7 @@
 #include "gpu/config/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_LINUX)
@@ -399,14 +400,17 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
   gl_.Initialize(options);
   gl_.MakeCurrent();
 
-  bool result =
-      gl::init::GetGLWindowSystemBindingInfo(&window_system_binding_info_);
+  gl_extensions_ =
+      gfx::MakeExtensionSet(gl::GetGLExtensionsFromCurrentContext());
+  gl::GLVersionInfo gl_version_info(
+      reinterpret_cast<const char*>(glGetString(GL_VERSION)),
+      reinterpret_cast<const char*>(glGetString(GL_RENDERER)), gl_extensions_);
+  bool result = gl::init::GetGLWindowSystemBindingInfo(
+      gl_version_info, &window_system_binding_info_);
   DCHECK(result);
 
   egl_extensions_ =
       gfx::MakeExtensionSet(window_system_binding_info_.extensions);
-  gl_extensions_ =
-      gfx::MakeExtensionSet(gl::GetGLExtensionsFromCurrentContext());
 
   return true;
 }

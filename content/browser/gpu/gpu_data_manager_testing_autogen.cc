@@ -41,7 +41,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            nullptr,                                // more conditions
+            &kMoreForEntry1_572251052,              // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -71,7 +71,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            nullptr,                                // more conditions
+            &kMoreForEntry2_572251052,              // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -101,7 +101,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            nullptr,                                // more conditions
+            &kMoreForEntry3_572251052,              // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -131,7 +131,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            nullptr,                                // more conditions
+            &kMoreForEntry4_572251052,              // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -161,7 +161,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            nullptr,                                // more conditions
+            &kMoreForEntry5_572251052,              // more data
         },
         base::size(kExceptionsForEntry5),  // exceptions count
         kExceptionsForEntry5,              // exceptions
@@ -191,7 +191,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                // machine model info
             0,                                      // gpu_series size
             nullptr,                                // gpu_series
-            nullptr,                                // more conditions
+            &kMoreForEntry6_572251052,              // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
@@ -221,7 +221,7 @@ const GpuControlList::Entry kGpuDataManagerTestingEntries[] = {
             nullptr,                                  // machine model info
             0,                                        // gpu_series size
             nullptr,                                  // gpu_series
-            nullptr,                                  // more conditions
+            &kMoreForEntry7_572251052,                // more data
         },
         0,        // exceptions count
         nullptr,  // exceptions
