@@ -4,6 +4,9 @@
 
 #include "ui/views/controls/scroll_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
@@ -192,10 +195,9 @@ class ScrollViewTest : public ViewsTestBase {
 
   View* InstallContents() {
     const gfx::Rect default_outer_bounds(0, 0, 100, 100);
-    View* contents = new View;
-    scroll_view_->SetContents(contents);
+    scroll_view_->SetContents(std::make_unique<View>());
     scroll_view_->SetBoundsRect(default_outer_bounds);
-    return contents;
+    return scroll_view_->contents();
   }
 
  protected:
@@ -247,7 +249,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   }
 
   // Adds a ScrollView with the given |contents_view| and does layout.
-  ScrollView* AddScrollViewWithContents(View* contents,
+  ScrollView* AddScrollViewWithContents(std::unique_ptr<View> contents,
                                         bool commit_layers = true) {
 #if defined(OS_MACOSX)
     scroller_style_.reset(
@@ -258,7 +260,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
     widget_ = CreateTopLevelFramelessPlatformWidget();
 
     ScrollView* scroll_view = new ScrollView();
-    scroll_view->SetContents(contents);
+    scroll_view->SetContents(std::move(contents));
 
     widget_->SetBounds(default_bounds);
     widget_->Show();
@@ -280,9 +282,9 @@ class WidgetScrollViewTest : public test::WidgetTest,
   // Adds a ScrollView with a contents view of the given |size| and does layout.
   ScrollView* AddScrollViewWithContentSize(const gfx::Size& contents_size,
                                            bool commit_layers = true) {
-    View* contents = new View;
+    auto contents = std::make_unique<View>();
     contents->SetSize(contents_size);
-    return AddScrollViewWithContents(contents, commit_layers);
+    return AddScrollViewWithContents(std::move(contents), commit_layers);
   }
 
   // Wait for a commit to be observed on the compositor.
@@ -428,8 +430,7 @@ TEST_F(ScrollViewTest, BoundedViewportSizedToFit) {
 // contents whose height always matches the height of the viewport.
 TEST_F(ScrollViewTest, VerticalScrollbarDoesNotAppearUnnecessarily) {
   const gfx::Rect default_outer_bounds(0, 0, 100, 100);
-  View* contents = new VerticalResizingView;
-  scroll_view_->SetContents(contents);
+  scroll_view_->SetContents(std::make_unique<VerticalResizingView>());
   scroll_view_->SetBoundsRect(default_outer_bounds);
   scroll_view_->Layout();
   EXPECT_FALSE(scroll_view_->vertical_scroll_bar()->visible());
@@ -544,8 +545,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
 
 // Assertions around adding a header.
 TEST_F(ScrollViewTest, Header) {
-  CustomView* header = new CustomView;
-  scroll_view_->SetHeader(header);
+  auto* header = scroll_view_->SetHeader(std::make_unique<CustomView>());
   View* header_parent = header->parent();
   View* contents = InstallContents();
 
@@ -585,8 +585,7 @@ TEST_F(ScrollViewTest, Header) {
 
 // Verifies the scrollbars are added as necessary when a header is present.
 TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
-  CustomView* header = new CustomView;
-  scroll_view_->SetHeader(header);
+  auto* header = scroll_view_->SetHeader(std::make_unique<CustomView>());
   View* contents = InstallContents();
 
   header->SetPreferredSize(gfx::Size(10, 20));
@@ -657,12 +656,11 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
 // Verifies the header scrolls horizontally with the content.
 TEST_F(ScrollViewTest, HeaderScrollsWithContent) {
   ScrollViewTestApi test_api(scroll_view_.get());
-  CustomView* contents = new CustomView;
-  scroll_view_->SetContents(contents);
+  auto contents = std::make_unique<CustomView>();
   contents->SetPreferredSize(gfx::Size(500, 500));
+  scroll_view_->SetContents(std::move(contents));
 
-  CustomView* header = new CustomView;
-  scroll_view_->SetHeader(header);
+  auto* header = scroll_view_->SetHeader(std::make_unique<CustomView>());
   header->SetPreferredSize(gfx::Size(500, 20));
 
   scroll_view_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
@@ -713,9 +711,9 @@ TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
 // Verifies ScrollRectToVisible() on the child works.
 TEST_F(ScrollViewTest, ScrollRectToVisible) {
   ScrollViewTestApi test_api(scroll_view_.get());
-  CustomView* contents = new CustomView;
-  scroll_view_->SetContents(contents);
+  auto contents = std::make_unique<CustomView>();
   contents->SetPreferredSize(gfx::Size(500, 1000));
+  auto* contents_ptr = scroll_view_->SetContents(std::move(contents));
 
   scroll_view_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   scroll_view_->Layout();
@@ -723,7 +721,7 @@ TEST_F(ScrollViewTest, ScrollRectToVisible) {
 
   // Scroll to y=405 height=10, this should make the y position of the content
   // at (405 + 10) - viewport_height (scroll region bottom aligned).
-  contents->ScrollRectToVisible(gfx::Rect(0, 405, 10, 10));
+  contents_ptr->ScrollRectToVisible(gfx::Rect(0, 405, 10, 10));
   const int viewport_height = test_api.contents_viewport()->height();
 
   // Expect there to be a horizontal scrollbar, making the viewport shorter.
@@ -733,20 +731,20 @@ TEST_F(ScrollViewTest, ScrollRectToVisible) {
   EXPECT_EQ(415 - viewport_height, offset.y());
 
   // Scroll to the current y-location and 10x10; should do nothing.
-  contents->ScrollRectToVisible(gfx::Rect(0, offset.y(), 10, 10));
+  contents_ptr->ScrollRectToVisible(gfx::Rect(0, offset.y(), 10, 10));
   EXPECT_EQ(415 - viewport_height, test_api.CurrentOffset().y());
 }
 
 // Verifies that child scrolls into view when it's focused.
 TEST_F(ScrollViewTest, ScrollChildToVisibleOnFocus) {
   ScrollViewTestApi test_api(scroll_view_.get());
-  CustomView* contents = new CustomView;
-  scroll_view_->SetContents(contents);
+  auto contents = std::make_unique<CustomView>();
   contents->SetPreferredSize(gfx::Size(500, 1000));
+  auto* contents_ptr = scroll_view_->SetContents(std::move(contents));
   FixedView* child = new FixedView;
   child->SetPreferredSize(gfx::Size(10, 10));
   child->SetPosition(gfx::Point(0, 405));
-  contents->AddChildView(child);
+  contents_ptr->AddChildView(child);
 
   scroll_view_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   scroll_view_->Layout();
@@ -771,8 +769,8 @@ TEST_F(ScrollViewTest, ClipHeightToNormalContentHeight) {
   scroll_view_->ClipHeightTo(kMinHeight, kMaxHeight);
 
   const int kNormalContentHeight = 75;
-  scroll_view_->SetContents(
-      new views::StaticSizedView(gfx::Size(kWidth, kNormalContentHeight)));
+  scroll_view_->SetContents(std::make_unique<views::StaticSizedView>(
+      gfx::Size(kWidth, kNormalContentHeight)));
 
   EXPECT_EQ(gfx::Size(kWidth, kNormalContentHeight),
             scroll_view_->GetPreferredSize());
@@ -792,8 +790,8 @@ TEST_F(ScrollViewTest, ClipHeightToShortContentHeight) {
 
   const int kShortContentHeight = 10;
   View* contents =
-      new views::StaticSizedView(gfx::Size(kWidth, kShortContentHeight));
-  scroll_view_->SetContents(contents);
+      scroll_view_->SetContents(std::make_unique<views::StaticSizedView>(
+          gfx::Size(kWidth, kShortContentHeight)));
 
   EXPECT_EQ(gfx::Size(kWidth, kMinHeight), scroll_view_->GetPreferredSize());
 
@@ -816,8 +814,8 @@ TEST_F(ScrollViewTest, ClipHeightToTallContentHeight) {
   scroll_view_->ClipHeightTo(kMinHeight, kMaxHeight);
 
   const int kTallContentHeight = 1000;
-  scroll_view_->SetContents(
-      new views::StaticSizedView(gfx::Size(kWidth, kTallContentHeight)));
+  scroll_view_->SetContents(std::make_unique<views::StaticSizedView>(
+      gfx::Size(kWidth, kTallContentHeight)));
 
   EXPECT_EQ(gfx::Size(kWidth, kMaxHeight), scroll_view_->GetPreferredSize());
 
@@ -836,7 +834,8 @@ TEST_F(ScrollViewTest, ClipHeightToScrollbarUsesWidth) {
   scroll_view_->ClipHeightTo(kMinHeight, kMaxHeight);
 
   // Create a view that will be much taller than it is wide.
-  scroll_view_->SetContents(new views::ProportionallySizedView(1000));
+  scroll_view_->SetContents(
+      std::make_unique<views::ProportionallySizedView>(1000));
 
   // Without any width, it will default to 0,0 but be overridden by min height.
   scroll_view_->SizeToPreferredSize();
@@ -1118,9 +1117,9 @@ TEST_F(ScrollViewTest, ConstrainScrollToBounds) {
 TEST_F(ScrollViewTest, ContentScrollNotResetOnLayout) {
   ScrollViewTestApi test_api(scroll_view_.get());
 
-  CustomView* contents = new CustomView;
+  auto* contents = scroll_view_->SetContents(std::make_unique<CustomView>());
+
   contents->SetPreferredSize(gfx::Size(300, 300));
-  scroll_view_->SetContents(contents);
   scroll_view_->ClipHeightTo(0, 150);
   scroll_view_->SizeToPreferredSize();
   // ScrollView preferred width matches that of |contents|, with the height
@@ -1154,9 +1153,9 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
   ScrollViewTestApi test_api(scroll_view_.get());
 
   // Set up with vertical scrollbar.
-  FixedView* contents = new FixedView;
+  auto contents = std::make_unique<FixedView>();
   contents->SetPreferredSize(gfx::Size(kWidth, kMaxHeight * 5));
-  scroll_view_->SetContents(contents);
+  scroll_view_->SetContents(std::move(contents));
   scroll_view_->ClipHeightTo(0, kMaxHeight);
 
   // Make sure the size is set such that no horizontal scrollbar gets shown.
@@ -1219,9 +1218,8 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
   ScrollViewTestApi test_api(scroll_view_.get());
 
   // Set up with horizontal scrollbar.
-  FixedView* contents = new FixedView;
+  auto* contents = scroll_view_->SetContents(std::make_unique<FixedView>());
   contents->SetPreferredSize(gfx::Size(kWidth * 5, kHeight));
-  scroll_view_->SetContents(contents);
 
   // Make sure the size is set such that no vertical scrollbar gets shown.
   scroll_view_->SetSize(gfx::Size(
@@ -1284,9 +1282,9 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   ScrollViewTestApi test_api(scroll_view_.get());
 
   // Set up with both horizontal and vertical scrollbars.
-  FixedView* contents = new FixedView;
+  auto contents = std::make_unique<FixedView>();
   contents->SetPreferredSize(gfx::Size(kWidth * 5, kHeight * 5));
-  scroll_view_->SetContents(contents);
+  scroll_view_->SetContents(std::move(contents));
 
   // Make sure the size is set such that both scrollbars are shown.
   scroll_view_->SetSize(gfx::Size(kWidth, kHeight));
@@ -1410,18 +1408,18 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   ScrollViewTestApi test_api(scroll_view_.get());
 
   // Set up with vertical scrollbar and a header.
-  FixedView* contents = new FixedView;
-  CustomView* header = new CustomView;
+  auto contents = std::make_unique<FixedView>();
+  auto header = std::make_unique<CustomView>();
   contents->SetPreferredSize(gfx::Size(kWidth, kMaxHeight * 5));
-  scroll_view_->SetContents(contents);
   header->SetPreferredSize(gfx::Size(10, 20));
-  scroll_view_->SetHeader(header);
-  scroll_view_->ClipHeightTo(0, kMaxHeight + header->height());
+  scroll_view_->SetContents(std::move(contents));
+  auto* header_ptr = scroll_view_->SetHeader(std::move(header));
+  scroll_view_->ClipHeightTo(0, kMaxHeight + header_ptr->height());
 
   // Make sure the size is set such that no horizontal scrollbar gets shown.
   scroll_view_->SetSize(
       gfx::Size(kWidth + test_api.GetBaseScrollBar(VERTICAL)->GetThickness(),
-                kMaxHeight + header->height()));
+                kMaxHeight + header_ptr->height()));
 
   // Make sure the initial origin is 0,0
   EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
@@ -1508,33 +1506,35 @@ TEST_F(WidgetScrollViewTest, ScrollTrackScrolling) {
 // Test that LocatedEvents are transformed correctly when scrolling.
 TEST_F(WidgetScrollViewTest, EventLocation) {
   // Set up with both scrollers.
-  CustomView* contents = new CustomView;
+  auto contents = std::make_unique<CustomView>();
+  auto* contents_ptr = contents.get();
   contents->SetPreferredSize(gfx::Size(kDefaultHeight * 5, kDefaultHeight * 5));
-  AddScrollViewWithContents(contents);
+  AddScrollViewWithContents(std::move(contents));
 
   const gfx::Point location_in_widget(10, 10);
 
   // Click without scrolling.
   TestClickAt(location_in_widget);
-  EXPECT_EQ(location_in_widget, contents->last_location());
+  EXPECT_EQ(location_in_widget, contents_ptr->last_location());
 
   // Scroll down a page.
-  contents->ScrollRectToVisible(
+  contents_ptr->ScrollRectToVisible(
       gfx::Rect(0, kDefaultHeight, 1, kDefaultHeight));
   TestClickAt(location_in_widget);
-  EXPECT_EQ(gfx::Point(10, 10 + kDefaultHeight), contents->last_location());
+  EXPECT_EQ(gfx::Point(10, 10 + kDefaultHeight), contents_ptr->last_location());
 
   // Scroll right a page (and back up).
-  contents->ScrollRectToVisible(gfx::Rect(kDefaultWidth, 0, kDefaultWidth, 1));
+  contents_ptr->ScrollRectToVisible(
+      gfx::Rect(kDefaultWidth, 0, kDefaultWidth, 1));
   TestClickAt(location_in_widget);
-  EXPECT_EQ(gfx::Point(10 + kDefaultWidth, 10), contents->last_location());
+  EXPECT_EQ(gfx::Point(10 + kDefaultWidth, 10), contents_ptr->last_location());
 
   // Scroll both directions.
-  contents->ScrollRectToVisible(
+  contents_ptr->ScrollRectToVisible(
       gfx::Rect(kDefaultWidth, kDefaultHeight, kDefaultWidth, kDefaultHeight));
   TestClickAt(location_in_widget);
   EXPECT_EQ(gfx::Point(10 + kDefaultWidth, 10 + kDefaultHeight),
-            contents->last_location());
+            contents_ptr->last_location());
 }
 
 // Ensure behavior of ScrollRectToVisible() is consistent when scrolling with

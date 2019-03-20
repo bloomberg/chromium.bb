@@ -107,11 +107,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             views::ScrollView::CreateScrollViewWithBorder();
         base::string16 screen_title_text = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN);
-        list_views_.push_back(new DesktopMediaListView(
+        auto list_view = std::make_unique<DesktopMediaListView>(
             this, std::move(source_list), kGenericScreenStyle,
-            kSingleScreenStyle, screen_title_text));
+            kSingleScreenStyle, screen_title_text);
+        list_views_.push_back(
+            screen_scroll_view->SetContents(std::move(list_view)));
 
-        screen_scroll_view->SetContents(list_views_.back());
         screen_scroll_view->ClipHeightTo(
             kGenericScreenStyle.item_size.height(),
             kGenericScreenStyle.item_size.height() * 2);
@@ -138,10 +139,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             views::ScrollView::CreateScrollViewWithBorder();
         base::string16 window_title_text = l10n_util::GetStringUTF16(
             IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW);
+        auto list_view = std::make_unique<DesktopMediaListView>(
+            this, std::move(source_list), kWindowStyle, kWindowStyle,
+            window_title_text);
         list_views_.push_back(
-            new DesktopMediaListView(this, std::move(source_list), kWindowStyle,
-                                     kWindowStyle, window_title_text));
-        window_scroll_view->SetContents(list_views_.back());
+            window_scroll_view->SetContents(std::move(list_view)));
+
         window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                          kWindowStyle.item_size.height() * 2);
         window_scroll_view->set_hide_horizontal_scrollbar(true);
@@ -167,11 +170,11 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             views::ScrollView::CreateScrollViewWithBorder();
         base::string16 tab_title_text =
             l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB);
+        auto list_view = std::make_unique<DesktopMediaListView>(
+            this, std::move(source_list), kTabStyle, kTabStyle, tab_title_text);
         list_views_.push_back(
-            new DesktopMediaListView(this, std::move(source_list), kTabStyle,
-                                     kTabStyle, tab_title_text));
+            tab_scroll_view->SetContents(std::move(list_view)));
 
-        tab_scroll_view->SetContents(list_views_.back());
         tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height() * 10,
                                       kTabStyle.item_size.height() * 10);
         tab_scroll_view->set_hide_horizontal_scrollbar(true);

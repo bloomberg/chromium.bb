@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -115,10 +116,11 @@ class ProfileChooserView : public ProfileMenuViewBase,
   void FocusFirstProfileButton();
 
   // Creates the profile chooser view.
-  views::View* CreateProfileChooserView(AvatarMenu* avatar_menu);
+  std::unique_ptr<views::View> CreateProfileChooserView(
+      AvatarMenu* avatar_menu);
 
   // Creates the incognito window count view.
-  views::View* CreateIncognitoWindowCountView();
+  std::unique_ptr<views::View> CreateIncognitoWindowCountView();
 
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts

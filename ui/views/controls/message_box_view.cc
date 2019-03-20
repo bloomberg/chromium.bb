@@ -242,7 +242,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set->AddPaddingColumn(0, horizontal_insets.right());
   }
 
-  views::View* message_contents = new views::View();
+  auto message_contents = std::make_unique<views::View>();
   // We explicitly set insets on the message contents instead of the scroll view
   // so that the scroll view borders are not capped by dialog insets.
   message_contents->SetBorder(CreateEmptyBorder(horizontal_insets));
@@ -254,7 +254,7 @@ void MessageBoxView::ResetLayoutManager() {
   scroll_view->ClipHeightTo(0, provider->GetDistanceMetric(
                                    DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
 
-  scroll_view->SetContents(message_contents);
+  scroll_view->SetContents(std::move(message_contents));
   layout->StartRow(0, kMessageViewColumnSetId);
   layout->AddView(scroll_view);
 

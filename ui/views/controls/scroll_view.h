@@ -5,7 +5,9 @@
 #ifndef UI_VIEWS_CONTROLS_SCROLL_VIEW_H_
 #define UI_VIEWS_CONTROLS_SCROLL_VIEW_H_
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -56,12 +58,24 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Set the contents. Any previous contents will be deleted. The contents
   // is the view that needs to scroll.
-  void SetContents(View* a_view);
+  template <typename T>
+  T* SetContents(std::unique_ptr<T> a_view) {
+    T* content_view = a_view.get();
+    SetContentsImpl(std::move(a_view));
+    return content_view;
+  }
+  void SetContents(std::nullptr_t);
   const View* contents() const { return contents_; }
   View* contents() { return contents_; }
 
   // Sets the header, deleting the previous header.
-  void SetHeader(View* header);
+  template <typename T>
+  T* SetHeader(std::unique_ptr<T> a_header) {
+    T* header_view = a_header.get();
+    SetHeaderImpl(std::move(a_header));
+    return header_view;
+  }
+  void SetHeader(std::nullptr_t);
 
   // The background color can be configured in two distinct ways:
   // . By way of SetBackgroundThemeColorId(). This is the default and when
@@ -146,9 +160,15 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // otherwise it doesn't.
   void UpdateViewportLayerForClipping();
 
-  // Used internally by SetHeader() and SetContents() to reset the view.  Sets
-  // |member| to |new_view|. If |new_view| is non-null it is added to |parent|.
-  void SetHeaderOrContents(View* parent, View* new_view, View** member);
+  void SetContentsImpl(std::unique_ptr<View> a_view);
+  void SetHeaderImpl(std::unique_ptr<View> a_header);
+
+  // Used internally by SetHeaderImpl() and SetContentsImpl() to reset the view.
+  // Sets |member| to |new_view|. If |new_view| is non-null it is added to
+  // |parent|.
+  void SetHeaderOrContents(View* parent,
+                           std::unique_ptr<View> new_view,
+                           View** member);
 
   // Scrolls the minimum amount necessary to make the specified rectangle
   // visible, in the coordinates of the contents view. The specified rectangle

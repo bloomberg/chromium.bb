@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -43,7 +44,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   ~ProfileMenuViewBase() override;
 
   void ShowMenu();
-  void SetContentsView(views::View* view, int width_override);
+  void SetContentsView(std::unique_ptr<views::View> view, int width_override);
 
   Browser* browser() const { return browser_; }
 

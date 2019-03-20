@@ -80,9 +80,8 @@ void ScrollViewExample::CreateExampleView(View* container) {
   big_square_ = new LabelButton(this, ASCIIToUTF16("Big Square"));
   small_square_ = new LabelButton(this, ASCIIToUTF16("Small Square"));
   scroll_to_ = new LabelButton(this, ASCIIToUTF16("Scroll to"));
-  scrollable_ = new ScrollableView();
   scroll_view_ = new ScrollView();
-  scroll_view_->SetContents(scrollable_);
+  scrollable_ = scroll_view_->SetContents(std::make_unique<ScrollableView>());
   scrollable_->SetBounds(0, 0, 1000, 100);
   scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 

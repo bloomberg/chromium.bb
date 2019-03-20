@@ -231,7 +231,7 @@ void IntentPickerBubbleView::Init() {
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   // Creates a view to hold the views for each app.
-  views::View* scrollable_view = new views::View();
+  auto scrollable_view = std::make_unique<views::View>();
   scrollable_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
@@ -256,7 +256,7 @@ void IntentPickerBubbleView::Init() {
 
   scroll_view_ = new views::ScrollView();
   scroll_view_->SetBackgroundColor(SK_ColorWHITE);
-  scroll_view_->SetContents(scrollable_view);
+  scroll_view_->SetContents(std::move(scrollable_view));
   // This part gives the scroll a fixed width and height. The height depends on
   // how many app candidates we got and how many we actually want to show.
   // The added 0.5 on the else block allow us to let the user know there are

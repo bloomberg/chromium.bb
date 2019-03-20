@@ -186,7 +186,7 @@ std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
     std::unique_ptr<TableView> table) {
   auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
   auto* table_ptr = table.get();
-  scroll_view->SetContents(table.release());
+  scroll_view->SetContents(std::move(table));
   table_ptr->CreateHeaderIfNecessary(scroll_view.get());
   return scroll_view;
 }
@@ -918,8 +918,7 @@ void TableView::CreateHeaderIfNecessary(ScrollView* scroll_view) {
   if (header_ || (columns_.size() == 1 && columns_[0].title.empty()))
     return;
 
-  header_ = new TableHeader(this);
-  scroll_view->SetHeader(header_);
+  header_ = scroll_view->SetHeader(std::make_unique<TableHeader>(this));
   UpdateVirtualAccessibilityChildren();
 }
 

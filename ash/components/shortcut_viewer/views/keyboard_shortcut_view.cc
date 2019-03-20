@@ -5,6 +5,8 @@
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
@@ -87,11 +89,11 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   illustration_view->AddChildView(text);
 }
 
-views::ScrollView* CreateScrollView(views::View* content_view) {
+views::ScrollView* CreateScrollView(std::unique_ptr<views::View> content_view) {
   views::ScrollView* const scroller = new views::ScrollView();
   scroller->set_draw_overflow_indicator(false);
   scroller->ClipHeightTo(0, 0);
-  scroller->SetContents(content_view);
+  scroller->SetContents(std::move(content_view));
   return scroller;
 }
 
@@ -353,23 +355,25 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
     if (current_category != category) {
       current_category = category;
       ++tab_index;
-      views::View* content_view = nullptr;
+      std::unique_ptr<views::View> content_view;
       // Delay constructing a KeyboardShortcutItemListView until it is needed.
       if (initial_category.value_or(category) == category) {
-        item_list_view = new KeyboardShortcutItemListView();
-        content_view = item_list_view;
+        auto item_view = std::make_unique<KeyboardShortcutItemListView>();
+        item_list_view = item_view.get();
+        content_view = std::move(item_view);
       } else {
-        content_view = new views::View();
+        content_view = std::make_unique<views::View>();
       }
 
       // Create new tabs or update the existing tabs' contents.
       if (already_has_tabs) {
         auto* scroll_view =
             static_cast<views::ScrollView*>(tab_contents->child_at(tab_index));
-        scroll_view->SetContents(content_view);
+        scroll_view->SetContents(std::move(content_view));
       } else {
-        categories_tabbed_pane_->AddTab(GetStringForCategory(current_category),
-                                        CreateScrollView(content_view));
+        categories_tabbed_pane_->AddTab(
+            GetStringForCategory(current_category),
+            CreateScrollView(std::move(content_view)));
       }
     }
 
@@ -487,7 +491,7 @@ void KeyboardShortcutView::ShowSearchResults(
     found_items_list_view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kTopPadding, kHorizontalPadding, 0, kHorizontalPadding)));
     search_container_content_view =
-        CreateScrollView(found_items_list_view.release());
+        CreateScrollView(std::move(found_items_list_view));
   }
   replacement_strings.emplace_back(search_query);
   search_box_view_->SetAccessibleValue(l10n_util::GetStringFUTF16(

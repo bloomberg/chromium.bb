@@ -5,6 +5,7 @@
 #include "ash/login/ui/scrollable_users_list_view.h"
 
 #include <limits>
+#include <memory>
 
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
@@ -324,13 +325,13 @@ ScrollableUsersListView::ScrollableUsersListView(
   //
   // |user_view_host_| cannot be set as |contents()| directly because it needs
   // to be vertically centered when non-scrollable.
-  auto* ensure_min_height = new EnsureMinHeightView();
+  auto ensure_min_height = std::make_unique<EnsureMinHeightView>();
   ensure_min_height
       ->SetLayoutManager(
           std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical))
       ->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   ensure_min_height->AddChildView(user_view_host_);
-  SetContents(ensure_min_height);
+  SetContents(std::move(ensure_min_height));
   SetBackgroundColor(SK_ColorTRANSPARENT);
   set_draw_overflow_indicator(false);
 
