@@ -85,7 +85,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
     target_frame = &anchor.GetDocument().GetFrame()->LocalFrameRoot();
 
   allow_initial_empty_anchor_ = !target_frame->IsMainFrame();
-  auto delegate = ValidationMessageOverlayDelegate::Create(
+  auto delegate = std::make_unique<ValidationMessageOverlayDelegate>(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
   overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));

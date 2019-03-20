@@ -52,7 +52,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
   Member<LocalFrameView> anchor_view_;
 };
 
-inline ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
+ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
     Page& page,
     const Element& anchor,
     const String& message,
@@ -65,17 +65,6 @@ inline ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
       sub_message_(sub_message),
       message_dir_(message_dir),
       sub_message_dir_(sub_message_dir) {}
-
-std::unique_ptr<ValidationMessageOverlayDelegate>
-ValidationMessageOverlayDelegate::Create(Page& page,
-                                         const Element& anchor,
-                                         const String& message,
-                                         TextDirection message_dir,
-                                         const String& sub_message,
-                                         TextDirection sub_message_dir) {
-  return base::WrapUnique(new ValidationMessageOverlayDelegate(
-      page, anchor, message, message_dir, sub_message, sub_message_dir));
-}
 
 ValidationMessageOverlayDelegate::~ValidationMessageOverlayDelegate() {
   if (page_)

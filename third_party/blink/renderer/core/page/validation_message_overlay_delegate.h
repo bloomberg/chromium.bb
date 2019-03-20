@@ -25,13 +25,12 @@ class Page;
 // Ownership: A FrameOverlay instance owns a ValidationMessageOverlayDelegate.
 class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
  public:
-  static std::unique_ptr<ValidationMessageOverlayDelegate> Create(
-      Page&,
-      const Element& anchor,
-      const String& message,
-      TextDirection message_dir,
-      const String& sub_message,
-      TextDirection sub_message_dir);
+  ValidationMessageOverlayDelegate(Page&,
+                                   const Element& anchor,
+                                   const String& message,
+                                   TextDirection message_dir,
+                                   const String& sub_message,
+                                   TextDirection sub_message_dir);
   ~ValidationMessageOverlayDelegate() override;
 
   void PaintFrameOverlay(const FrameOverlay&,
@@ -41,12 +40,6 @@ class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
   bool IsHiding() const;
 
  private:
-  ValidationMessageOverlayDelegate(Page&,
-                                   const Element& anchor,
-                                   const String& message,
-                                   TextDirection message_dir,
-                                   const String& sub_message,
-                                   TextDirection sub_message_dir);
   LocalFrameView& FrameView() const;
   void UpdateFrameViewState(const FrameOverlay&, const IntSize& view_size);
   void EnsurePage(const FrameOverlay&, const IntSize& view_size);
