@@ -10,7 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -18,9 +20,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import org.junit.After;
@@ -33,12 +35,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -57,7 +59,6 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabListMediatorUnitTest {
-    private static final int MOCK_FAVICON_SIZE = 10;
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
     private static final String TAB3_TITLE = "Tab3";
@@ -75,19 +76,15 @@ public class TabListMediatorUnitTest {
     @Mock
     TabModel mTabModel;
     @Mock
-    Context mContext;
-    @Mock
-    Resources mResources;
-    @Mock
-    FaviconHelper mFaviconHelper;
-    @Mock
-    Profile mProfile;
+    TabListFaviconProvider mTabListFaviconProvider;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
     ArgumentCaptor<FaviconHelper.FaviconImageCallback> mFaviconCallbackCaptor;
     @Captor
     ArgumentCaptor<TabObserver> mTabObserverCaptor;
+    @Captor
+    ArgumentCaptor<Callback<Drawable>> mCallbackCaptor;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -108,12 +105,6 @@ public class TabListMediatorUnitTest {
         tabModelList.add(mTabModel);
 
         doNothing().when(mTabContentManager).getTabThumbnailWithCallback(any(), any());
-        doReturn(mResources).when(mContext).getResources();
-        doReturn(MOCK_FAVICON_SIZE).when(mResources).getDimensionPixelSize(anyInt());
-        doReturn(true)
-                .when(mFaviconHelper)
-                .getLocalFaviconImageForURL(
-                        any(), any(), anyInt(), mFaviconCallbackCaptor.capture());
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
         doReturn(tabModelList).when(mTabModelSelector).getModels();
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
@@ -126,10 +117,13 @@ public class TabListMediatorUnitTest {
         doNothing().when(mTab1).addObserver(mTabObserverCaptor.capture());
         doReturn(0).when(mTabModel).index();
         doReturn(2).when(mTabModel).getCount();
+        doNothing()
+                .when(mTabListFaviconProvider)
+                .getFaviconForUrlAsync(anyString(), anyBoolean(), mCallbackCaptor.capture());
 
         mModel = new TabListModel();
-        mMediator = new TabListMediator(mProfile, mModel, mContext, mTabModelSelector,
-                mTabContentManager, mFaviconHelper, getClass().getSimpleName());
+        mMediator = new TabListMediator(mModel, mTabModelSelector, mTabContentManager,
+                mTabListFaviconProvider, getClass().getSimpleName());
     }
 
     @After
@@ -257,8 +251,8 @@ public class TabListMediatorUnitTest {
             tabs.add(mTabModel.getTabAt(i));
         }
         mMediator.resetWithListOfTabs(tabs);
-        for (FaviconHelper.FaviconImageCallback callback : mFaviconCallbackCaptor.getAllValues()) {
-            callback.onFaviconAvailable(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), null);
+        for (Callback<Drawable> callback : mCallbackCaptor.getAllValues()) {
+            callback.onResult(new ColorDrawable(Color.RED));
         }
 
         assertThat(mModel.size(), equalTo(2));
@@ -269,8 +263,8 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB1_TITLE));
         assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
 
-        assertThat(mModel.get(0).get(TabProperties.FAVICON), instanceOf(Bitmap.class));
-        assertThat(mModel.get(1).get(TabProperties.FAVICON), instanceOf(Bitmap.class));
+        assertThat(mModel.get(0).get(TabProperties.FAVICON), instanceOf(Drawable.class));
+        assertThat(mModel.get(1).get(TabProperties.FAVICON), instanceOf(Drawable.class));
 
         assertThat(mModel.get(0).get(TabProperties.IS_SELECTED), equalTo(true));
         assertThat(mModel.get(1).get(TabProperties.IS_SELECTED), equalTo(false));
