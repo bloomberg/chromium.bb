@@ -51,6 +51,10 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 @property(nonatomic, assign) CGPoint originalCenter;
 // Delegate to handle this InfobarVC actions.
 @property(nonatomic, weak) id<InfobarBannerDelegate> delegate;
+// YES if the user is interacting with the view via a touch gesture.
+@property(nonatomic, assign) BOOL touchInProgress;
+// YES if the view should be dismissed after any touch gesture has ended.
+@property(nonatomic, assign) BOOL shouldDismissAfterTouchesEnded;
 
 @end
 
@@ -181,6 +185,15 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   [self.view addGestureRecognizer:panGestureRecognizer];
 }
 
+#pragma mark - Public Methods
+
+- (void)dismissWhenInteractionIsFinished {
+  if (!self.touchInProgress) {
+    [self.delegate dismissInfobarBanner:self];
+  }
+  self.shouldDismissAfterTouchesEnded = YES;
+}
+
 #pragma mark - Private Methods
 
 - (void)buttonTapped:(id)sender {
@@ -193,6 +206,7 @@ const CGFloat kChangeInPositionForTransition = 100.0;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     self.originalCenter = self.view.center;
+    self.touchInProgress = YES;
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
     self.view.center =
         CGPointMake(self.view.center.x, self.view.center.y + translation.y);
@@ -201,6 +215,8 @@ const CGFloat kChangeInPositionForTransition = 100.0;
     if (self.view.center.y - self.originalCenter.y >
         kChangeInPositionForTransition) {
       [self.delegate presentInfobarModalFromBanner];
+      // Since the modal has now been presented prevent any external dismissal.
+      self.shouldDismissAfterTouchesEnded = NO;
       return;
     }
   }
@@ -208,8 +224,10 @@ const CGFloat kChangeInPositionForTransition = 100.0;
   if (gesture.state == UIGestureRecognizerStateEnded ||
       gesture.state == UIGestureRecognizerStateCancelled) {
     // If there's more than a 1px translation in the negative Y axis when the
-    // gesture ended dismiss the banner.
-    if (self.view.center.y - self.originalCenter.y < 0) {
+    // gesture ended or |self.shouldDismissAfterInteraction| is YES, dismiss the
+    // banner.
+    if ((self.view.center.y - self.originalCenter.y < 0) ||
+        self.shouldDismissAfterTouchesEnded) {
       [self.delegate dismissInfobarBanner:self];
       return;
     }

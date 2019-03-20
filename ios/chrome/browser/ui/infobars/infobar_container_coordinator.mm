@@ -24,6 +24,12 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// The duration in seconds that the InfobarCoordinator banner will be presented
+// for.
+const double kBannerPresentationDurationInSeconds = 6.0;
+}  // namespace
+
 @interface InfobarContainerCoordinator () <
     InfobarContainerConsumer,
     SigninPresenter>
@@ -151,6 +157,14 @@
   [infobarCoordinator presentInfobarBannerFrom:self.baseViewController];
   self.infobarViewController = [infobarCoordinator bannerViewController];
   [self.childCoordinators addObject:infobarCoordinator];
+
+  // Dismissed the presented InfobarCoordinator banner after
+  // kBannerPresentationDuration seconds.
+  dispatch_time_t popTime = dispatch_time(
+      DISPATCH_TIME_NOW, kBannerPresentationDurationInSeconds * NSEC_PER_SEC);
+  dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+    [infobarCoordinator dismissInfobarBannerIfPresented];
+  });
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {

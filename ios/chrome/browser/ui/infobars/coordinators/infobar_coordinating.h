@@ -41,6 +41,10 @@
 // baseViewController will be set on init.
 - (void)presentInfobarModalFrom:(UIViewController*)baseViewController;
 
+// Dismisses the InfobarBanner. NO-OP if the banner has
+// already been dismissed or the InfobarModal is being displayed.
+- (void)dismissInfobarBannerIfPresented;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_COORDINATING_H_
