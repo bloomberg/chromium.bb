@@ -2307,13 +2307,13 @@ class ScrollbarTrackMarginsTest : public ScrollbarsTest {
 
     ASSERT_TRUE(div_scrollable->HorizontalScrollbar());
     LayoutScrollbar* horizontal_scrollbar =
-        ToLayoutScrollbar(div_scrollable->HorizontalScrollbar());
+        To<LayoutScrollbar>(div_scrollable->HorizontalScrollbar());
     horizontal_track_ = horizontal_scrollbar->GetPart(kTrackBGPart);
     ASSERT_TRUE(horizontal_track_);
 
     ASSERT_TRUE(div_scrollable->VerticalScrollbar());
     LayoutScrollbar* vertical_scrollbar =
-        ToLayoutScrollbar(div_scrollable->VerticalScrollbar());
+        To<LayoutScrollbar>(div_scrollable->VerticalScrollbar());
     vertical_track_ = vertical_scrollbar->GetPart(kTrackBGPart);
     ASSERT_TRUE(vertical_track_);
   }
