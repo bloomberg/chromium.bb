@@ -40,9 +40,6 @@ class ASH_EXPORT ShelfControlButton : public ShelfButton {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
-  // Calculates the bounds of the control button based on the shelf alignment.
-  gfx::Rect CalculateButtonBounds() const;
-
   Shelf* shelf_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfControlButton);

@@ -188,19 +188,6 @@ const char* AppListButton::GetClassName() const {
   return kViewClassName;
 }
 
-std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
-    const {
-  const int app_list_button_radius = ShelfConstants::control_border_radius();
-  gfx::Point center = GetCenterPoint();
-  gfx::Rect bounds(center.x() - app_list_button_radius,
-                   center.y() - app_list_button_radius,
-                   2 * app_list_button_radius, 2 * app_list_button_radius);
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
 void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::PointF circle_center(GetCenterPoint());
 
