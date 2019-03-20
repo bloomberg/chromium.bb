@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/invisible_dom/invisible_dom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -144,9 +145,10 @@ bool ShouldIgnoreContents(const Node& node) {
          IsHTMLIFrameElement(element) || IsHTMLImageElement(element) ||
          IsHTMLLegendElement(element) || IsHTMLMeterElement(element) ||
          IsHTMLObjectElement(element) || IsHTMLProgressElement(element) ||
-         IsHTMLSelectElement(element) || IsHTMLStyleElement(element) ||
-         IsHTMLScriptElement(element) || IsHTMLVideoElement(element) ||
-         IsHTMLAudioElement(element) ||
+         (IsHTMLSelectElement(element) &&
+          !ToHTMLSelectElement(element).IsMultiple()) ||
+         IsHTMLStyleElement(element) || IsHTMLScriptElement(element) ||
+         IsHTMLVideoElement(element) || IsHTMLAudioElement(element) ||
          (element.GetDisplayLockContext() &&
           !element.GetDisplayLockContext()->IsActivatable());
 }
