@@ -1141,7 +1141,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
   EXPECT_FALSE(google_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Navigate to third page on same site.
-  const GURL url3("http://news.google.com");
+  const GURL url3("http://google.com/foo");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url3);
   NavigationEntry* entry3 = controller().GetLastCommittedEntry();
   SiteInstance* instance3 = contents()->GetSiteInstance();
@@ -1155,20 +1155,24 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
             NavigationEntryImpl::FromNavigationEntry(entry3)->site_instance());
 
   // Go back within the site.
-  controller().GoBack();
+  auto back_navigation1 =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation1->ReadyToCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(entry2, controller().GetPendingEntry());
 
   // Before that commits, go back again.
-  controller().GoBack();
+  auto back_navigation2 =
+      NavigationSimulatorImpl::CreateHistoryNavigation(-1, contents());
+  back_navigation2->set_drop_swap_out_ack(true);
+  back_navigation2->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(contents()->GetPendingMainFrame());
   EXPECT_EQ(entry1, controller().GetPendingEntry());
   webui_rfh = contents()->GetPendingMainFrame();
 
   // DidNavigate from the second back.
-  contents()->TestDidNavigate(webui_rfh, entry1->GetUniqueID(), false, url1,
-                              ui::PAGE_TRANSITION_TYPED);
+  back_navigation2->Commit();
 
   // That should have landed us on the first entry.
   EXPECT_EQ(entry1, controller().GetLastCommittedEntry());

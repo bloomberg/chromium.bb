@@ -601,7 +601,7 @@ void NavigationSimulatorImpl::Commit() {
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
-  if (previous_rfh != render_frame_host_) {
+  if (previous_rfh != render_frame_host_ && !drop_swap_out_ack_) {
     previous_rfh->OnMessageReceived(
         FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
   }
@@ -724,7 +724,7 @@ void NavigationSimulatorImpl::CommitErrorPage() {
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
-  if (previous_rfh != render_frame_host_) {
+  if (previous_rfh != render_frame_host_ && !drop_swap_out_ack_) {
     previous_rfh->OnMessageReceived(
         FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
   }

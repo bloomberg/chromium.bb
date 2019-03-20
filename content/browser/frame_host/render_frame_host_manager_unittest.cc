@@ -592,7 +592,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   std::vector<FaviconURL> icons;
 
   // Navigate our first tab to a chrome url and then to the destination.
-  NavigateActiveAndCommit(kChromeURL);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeURL);
   TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
 
   // Send an update favicon message and make sure it works.
@@ -608,7 +608,10 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   ntp_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to a cross-site URL (don't swap out to keep |ntp_rfh| alive).
-  NavigateActiveAndCommit(kDestUrl, true /* dont_swap_out */);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kDestUrl, contents());
+  navigation->set_drop_swap_out_ack(true);
+  navigation->Commit();
   TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
   ASSERT_TRUE(dest_rfh);
   EXPECT_NE(ntp_rfh, dest_rfh);
@@ -641,37 +644,35 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   std::vector<FaviconURL> icons;
 
   // Navigate our first tab to a chrome url and then to the destination.
-  NavigateActiveAndCommit(kChromeURL);
-  TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeURL);
+  TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
 
   // Send an update favicon message and make sure it works.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(rfh1->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(rfh1->GetRoutingID(), icons)));
+    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
+        FrameHostMsg_UpdateFaviconURL(ntp_rfh->GetRoutingID(), icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
 
-  // Create one more frame in the same SiteInstance where |rfh1| exists so that
-  // it doesn't get deleted on navigation to another site.
-  rfh1->GetSiteInstance()->IncrementActiveFrameCount();
+  // Create one more frame in the same SiteInstance where |ntp_rfh| exists so
+  // that it doesn't get deleted on navigation to another site.
+  ntp_rfh->GetSiteInstance()->IncrementActiveFrameCount();
 
   // Navigate to a cross-site URL and commit the new page.
-  controller().LoadURL(
-      kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  contents()->GetMainFrame()->PrepareForCommit();
-  TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
-  contents()->TestDidNavigate(rfh2, entry_id, true, kDestUrl,
-                              ui::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(rfh1->is_active());
-  EXPECT_TRUE(rfh2->is_active());
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kDestUrl, contents());
+  navigation->set_drop_swap_out_ack(true);
+  navigation->Commit();
+  TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
+  EXPECT_FALSE(ntp_rfh->is_active());
+  EXPECT_TRUE(dest_rfh->is_active());
 
   // The new RVH should be able to update its favicons.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(rfh2->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(rfh2->GetRoutingID(), icons)));
+    EXPECT_TRUE(dest_rfh->OnMessageReceived(
+        FrameHostMsg_UpdateFaviconURL(dest_rfh->GetRoutingID(), icons)));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -679,8 +680,8 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   // be ignored.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(rfh1->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(rfh1->GetRoutingID(), icons)));
+    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
+        FrameHostMsg_UpdateFaviconURL(ntp_rfh->GetRoutingID(), icons)));
     EXPECT_FALSE(observer.favicon_received());
   }
 }
@@ -1182,26 +1183,19 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   // Now go back, but suppose the SwapOut_ACK isn't received.  This shouldn't
   // happen, but we have seen it when going back quickly across many entries
   // (http://crbug.com/93427).
-  contents()->GetController().GoBack();
-  EXPECT_TRUE(rfh2->is_waiting_for_beforeunload_ack());
-  contents()->GetMainFrame()->PrepareForCommit();
+  auto back_navigation1 =
+      NavigationSimulatorImpl::CreateHistoryNavigation(-1, contents());
+  back_navigation1->ReadyToCommit();
   EXPECT_FALSE(rfh2->is_waiting_for_beforeunload_ack());
 
   // The back navigation commits.
-  NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
-      entry1->GetUniqueID(), false, entry1->GetURL(),
-      entry1->GetTransitionType());
+  back_navigation1->set_drop_swap_out_ack(true);
+  back_navigation1->Commit();
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
   EXPECT_FALSE(rfh2->is_active());
 
   // We should be able to navigate forward.
-  contents()->GetController().GoForward();
-  contents()->GetMainFrame()->PrepareForCommit();
-  NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
-      entry2->GetUniqueID(), false, entry2->GetURL(),
-      entry2->GetTransitionType());
+  NavigationSimulator::GoForward(contents());
   EXPECT_TRUE(main_test_rfh()->is_active());
 }
 
@@ -1697,9 +1691,8 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
 
   // Navigate to new site, simulating onbeforeunload approval.
   auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(rfh1->is_active());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
@@ -1711,8 +1704,8 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_TRUE(rfh1->is_active());
 
   // The new page commits.
-  contents()->TestDidNavigate(rfh2, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation->set_drop_swap_out_ack(true);
+  navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == nullptr);
@@ -1745,16 +1738,15 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
 
   // Navigate to new site, simulating onbeforeunload approval.
   auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(rfh1->is_active());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
-  contents()->TestDidNavigate(rfh2, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation->set_drop_swap_out_ack(true);
+  navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == nullptr);
@@ -1790,16 +1782,15 @@ TEST_F(RenderFrameHostManagerTest,
 
   // Navigate to new site, simulating onbeforeunload approval.
   auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(rfh1->is_active());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
-  contents()->TestDidNavigate(rfh2, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation->set_drop_swap_out_ack(true);
+  navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == nullptr);
@@ -3151,13 +3142,10 @@ TEST_F(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
 
   // Navigate cross-site but don't simulate the swap out ACK. The initial RFH
   // should be pending delete.
-  RenderFrameHostManager* manager =
-      main_test_rfh()->frame_tree_node()->render_manager();
   auto navigation_to_kUrl2 =
-      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
-  navigation_to_kUrl2->ReadyToCommit();
-  static_cast<TestRenderFrameHost*>(manager->speculative_frame_host())
-      ->SimulateNavigationCommit(kUrl2);
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
+  navigation_to_kUrl2->set_drop_swap_out_ack(true);
+  navigation_to_kUrl2->Commit();
   EXPECT_NE(initial_rfh, main_test_rfh());
   ASSERT_FALSE(delete_observer.deleted());
   EXPECT_FALSE(initial_rfh->is_active());
