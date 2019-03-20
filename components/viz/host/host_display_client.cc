@@ -34,9 +34,6 @@ mojom::DisplayClientPtr HostDisplayClient::GetBoundPtr(
   return ptr;
 }
 
-void HostDisplayClient::DidSwapAfterSnapshotRequestReceived(
-    const std::vector<ui::LatencyInfo>& latency_info) {}
-
 #if defined(OS_MACOSX)
 void HostDisplayClient::OnDisplayReceivedCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {

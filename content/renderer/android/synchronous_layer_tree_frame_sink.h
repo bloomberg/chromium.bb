@@ -175,8 +175,6 @@ class SynchronousLayerTreeFrameSink
     void DisplayDidReceiveCALayerParams(
         const gfx::CALayerParams& ca_layer_params) override {}
     void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
-    void DidSwapAfterSnapshotRequestReceived(
-        const std::vector<ui::LatencyInfo>& latency_info) override {}
   };
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
