@@ -253,7 +253,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
       MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
       document->GetTaskRunner(blink::TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document),
-      frame.Console());
+      *document);
   init.frame_scheduler = frame.GetFrameScheduler();
   return MakeGarbageCollected<ResourceFetcher>(init);
 }
