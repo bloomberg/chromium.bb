@@ -219,7 +219,12 @@ DownloadTargetDeterminer::Result
     return CONTINUE;
   }
 
-  if (!virtual_path_.empty() && HasPromptedForPath() && !is_forced_path) {
+  bool no_prompt_needed = HasPromptedForPath();
+#if defined(OS_ANDROID)
+  // If |virtual_path_| is content URI, there is no need to prompt the user.
+  no_prompt_needed |= virtual_path_.IsContentUri();
+#endif
+  if (!virtual_path_.empty() && no_prompt_needed && !is_forced_path) {
     // The download is being resumed and the user has already been prompted for
     // a path. Assume that it's okay to overwrite the file if there's a conflict
     // and reuse the selection.
@@ -805,6 +810,16 @@ DownloadTargetDeterminer::Result
   DCHECK(!local_path_.MatchesExtension(kCrdownloadSuffix));
 
   next_state_ = STATE_NONE;
+
+#if defined(OS_ANDROID)
+  // If the local path is a content URI, the download should be from resumption
+  // and we can just use the current path.
+  if (local_path_.IsContentUri()) {
+    DCHECK(is_resumption_);
+    intermediate_path_ = local_path_;
+    return COMPLETE;
+  }
+#endif
 
   // Note that the intermediate filename is always uniquified (i.e. if a file by
   // the same name exists, it is never overwritten). Therefore the code below
