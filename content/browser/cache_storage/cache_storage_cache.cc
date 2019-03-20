@@ -46,7 +46,7 @@
 #include "content/public/common/referrer_type_converters.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
@@ -270,7 +270,10 @@ void ReadMetadata(disk_cache::Entry* entry, MetadataCallback callback) {
       base::MakeRefCounted<net::IOBufferWithSize>(
           entry->GetDataSize(CacheStorageCache::INDEX_HEADERS));
 
-  net::CompletionCallback read_header_callback =
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |callback| is not
+  // copyable.
+  net::CompletionRepeatingCallback read_header_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           ReadMetadataDidReadMetadata, entry, std::move(callback), buffer));
 
@@ -994,7 +997,11 @@ void CacheStorageCache::QueryCache(blink::mojom::FetchAPIRequestPtr request,
     // There is no need to scan the entire backend, just open the exact
     // URL.
     disk_cache::Entry** entry_ptr = &query_cache_context->enumerated_entry;
-    net::CompletionCallback open_entry_callback =
+
+    // Create a callback that is copyable, even though it can only be called
+    // once. BindRepeating() cannot be used directly because
+    // |query_cache_context| is not copyable.
+    net::CompletionRepeatingCallback open_entry_callback =
         base::AdaptCallbackForRepeating(base::BindOnce(
             &CacheStorageCache::QueryCacheDidOpenFastPath,
             weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
@@ -1048,7 +1055,11 @@ void CacheStorageCache::QueryCacheOpenNextEntry(
   disk_cache::Backend::Iterator& iterator =
       *query_cache_context->backend_iterator;
   disk_cache::Entry** enumerated_entry = &query_cache_context->enumerated_entry;
-  net::CompletionCallback open_entry_callback =
+
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |query_cache_context| is
+  // not copyable.
+  net::CompletionRepeatingCallback open_entry_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::QueryCacheFilterEntry,
           weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
@@ -1378,11 +1389,16 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
   std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
       new disk_cache::Entry*());
   disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
-  net::CompletionCallback open_entry_callback = base::AdaptCallbackForRepeating(
-      base::BindOnce(&CacheStorageCache::WriteSideDataDidOpenEntry,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     expected_response_time, trace_id, buffer, buf_len,
-                     std::move(scoped_entry_ptr)));
+
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |callback| and
+  // |scoped_entry_ptr| are not copyable.
+  net::CompletionRepeatingCallback open_entry_callback =
+      base::AdaptCallbackForRepeating(
+          base::BindOnce(&CacheStorageCache::WriteSideDataDidOpenEntry,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         expected_response_time, trace_id, buffer, buf_len,
+                         std::move(scoped_entry_ptr)));
 
   // Use LOWEST priority here as writing side data is less important than
   // loading resources on the page.
@@ -1444,7 +1460,10 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
   if (ShouldPadResourceSize(response.get()))
     side_data_size_before_write = entry->GetDataSize(INDEX_SIDE_DATA);
 
-  net::CompletionCallback write_side_data_callback =
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |callback|, |entry| and
+  // |response| are not copyable.
+  net::CompletionRepeatingCallback write_side_data_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::WriteSideDataDidWrite,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback), std::move(entry),
@@ -1581,7 +1600,10 @@ void CacheStorageCache::PutDidDeleteEntry(
   const blink::mojom::FetchAPIRequest& request_ = *(put_context->request);
   disk_cache::Backend* backend_ptr = backend_.get();
 
-  net::CompletionCallback create_entry_callback =
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |scoped_entry_ptr| and
+  // |put_context| are not copyable.
+  net::CompletionRepeatingCallback create_entry_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::PutDidCreateEntry, weak_ptr_factory_.GetWeakPtr(),
           std::move(scoped_entry_ptr), std::move(put_context)));
@@ -1654,7 +1676,10 @@ void CacheStorageCache::PutDidCreateEntry(
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
   disk_cache::Entry* temp_entry_ptr = put_context->cache_entry.get();
 
-  net::CompletionCallback write_headers_callback =
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |put_context| is not
+  // copyable.
+  net::CompletionRepeatingCallback write_headers_callback =
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::PutDidWriteHeaders,
                          weak_ptr_factory_.GetWeakPtr(), std::move(put_context),
@@ -1778,7 +1803,10 @@ void CacheStorageCache::PutDidWriteBlobToCache(
 
 void CacheStorageCache::CalculateCacheSizePadding(
     SizePaddingCallback got_sizes_callback) {
-  net::Int64CompletionCallback got_size_callback =
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |got_sizes_callback| is not
+  // copyable.
+  net::Int64CompletionRepeatingCallback got_size_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::CalculateCacheSizePaddingGotSize,
           weak_ptr_factory_.GetWeakPtr(), std::move(got_sizes_callback)));
@@ -1826,7 +1854,7 @@ void CacheStorageCache::PaddingDidQueryCache(
 }
 
 void CacheStorageCache::CalculateCacheSize(
-    const net::Int64CompletionCallback& callback) {
+    const net::Int64CompletionRepeatingCallback& callback) {
   int64_t rv = backend_->CalculateSizeOfAllEntries(callback);
   if (rv != net::ERR_IO_PENDING)
     callback.Run(rv);
@@ -2100,7 +2128,10 @@ void CacheStorageCache::CreateBackend(ErrorCallback callback) {
   // Temporary pointer so that backend_ptr can be Pass()'d in Bind below.
   ScopedBackendPtr* backend = backend_ptr.get();
 
-  net::CompletionCallback create_cache_callback =
+  // Create a callback that is copyable, even though it can only be called once.
+  // BindRepeating() cannot be used directly because |callback| and
+  // |backend_ptr| are not copyable.
+  net::CompletionRepeatingCallback create_cache_callback =
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::CreateBackendDidCreate,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
