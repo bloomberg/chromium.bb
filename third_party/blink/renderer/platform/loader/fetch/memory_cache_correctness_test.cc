@@ -73,8 +73,6 @@ class MemoryCacheCorrectnessTest : public testing::Test {
   MockResource* ResourceFromResourceRequest(ResourceRequest request) {
     if (request.Url().IsNull())
       request.SetURL(KURL(kResourceURL));
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kOmit);
     MockResource* resource = MockResource::Create(request);
     ResourceResponse response(KURL{kResourceURL});
     response.SetMimeType("text/html");
@@ -419,7 +417,6 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
 
   ResourceRequest request(redirect_url);
   request.SetRequestorOrigin(GetSecurityOrigin());
-  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   MockResource* first_resource = MockResource::Create(request);
 
   ResourceResponse stale301_response(redirect_url);
