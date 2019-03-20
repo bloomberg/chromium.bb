@@ -1370,6 +1370,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into feature mode.
@@ -1431,6 +1432,7 @@ IN_PROC_BROWSER_TEST_P(
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
 
   // Now start actually configuring Sync.
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   auto setup_handle = GetSyncService(0)->GetSetupInProgressHandle();
 
   // Adding a primary account triggers a restart of the Sync engine, so it

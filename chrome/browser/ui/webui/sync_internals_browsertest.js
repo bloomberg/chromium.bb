@@ -248,7 +248,8 @@ TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
 // life), so it doesn't make it to sync-internals.
 TEST_F('SyncInternalsWebUITest', 'SignedOut', function() {
   expectTrue(this.hasInDetails(true, 'Transport State', 'Disabled'));
-  expectTrue(this.hasInDetails(true, 'Disable Reasons', 'Not signed in'));
+  expectTrue(
+      this.hasInDetails(true, 'Disable Reasons', 'Not signed in, User choice'));
   expectTrue(this.hasInDetails(true, 'Username', ''));
 });
 
