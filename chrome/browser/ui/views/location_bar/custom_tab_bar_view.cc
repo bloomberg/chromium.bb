@@ -25,6 +25,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -86,7 +87,8 @@ class CustomTabBarTitleOriginView : public views::View {
     title_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
                                     views::style::TextStyle::STYLE_PRIMARY);
     location_label_ = new views::Label(
-        base::string16(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
+        base::string16(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY,
+        gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
 
     title_label_->SetBackgroundColor(background_color);
     title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
