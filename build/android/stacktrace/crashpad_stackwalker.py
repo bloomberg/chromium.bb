@@ -74,8 +74,9 @@ def _ExtractLibraryNamesFromDump(build_path, dump_path):
   default_library_name = 'libmonochrome.so'
   dumper_path = os.path.join(build_path, 'minidump_dump')
   if not os.access(dumper_path, os.X_OK):
-    logging.warning('Cannot extract library name from dump, default to: %s',
-                    default_library_name)
+    logging.warning(
+        'Cannot extract library name from dump because %s is not found, '
+        'default to: %s', dumper_path, default_library_name)
     return [default_library_name]
   p = subprocess.Popen([dumper_path, dump_path],
                        stdout=subprocess.PIPE,
