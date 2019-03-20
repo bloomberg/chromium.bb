@@ -2568,7 +2568,11 @@ class PydepsChecker(object):
     file_to_pydeps_map = None
     for f in self._input_api.AffectedFiles(include_deletes=True):
       local_path = f.LocalPath()
-      if local_path  == 'DEPS':
+      # Changes to DEPS can lead to .pydeps changes if any .py files are in
+      # subrepositories. We can't figure out which files change, so re-check
+      # all files.
+      # Changes to print_python_deps.py affect all .pydeps.
+      if local_path == 'DEPS' or local_path.endswith('print_python_deps.py'):
         return self._pydeps_files
       elif local_path.endswith('.pydeps'):
         if local_path in self._pydeps_files:
