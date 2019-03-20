@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -515,9 +516,13 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
     // Try a lookup with the window app id.
   }
 
-  if (!window_app_id || base::StartsWith(*window_app_id, kArcWindowAppIdPrefix,
-                                         base::CompareCase::SENSITIVE))
+  // TODO(timloh): Crostini shouldn't need to know about Arc and PluginVm.
+  if (!window_app_id ||
+      base::StartsWith(*window_app_id, kArcWindowAppIdPrefix,
+                       base::CompareCase::SENSITIVE) ||
+      plugin_vm::IsPluginVmExoApplicationId(*window_app_id)) {
     return std::string();
+  }
 
   // Wayland apps won't be prefixed with org.chromium.termina.
   if (!base::StartsWith(*window_app_id, kCrostiniWindowAppIdPrefix,

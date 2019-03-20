@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -116,6 +117,16 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
          /*searchable=*/true,
          /*show_in_launcher=*/true, InternalAppName::kDiscover,
          /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER});
+  }
+
+  if (get_all || plugin_vm::IsPluginVmAllowedForProfile(profile)) {
+    internal_app_list->push_back(
+        {plugin_vm::kPluginVmAppId, IDS_PLUGIN_VM_APP_NAME,
+         IDR_LOGO_PLUGIN_VM_DEFAULT_192,
+         /*recommendable=*/true,
+         /*searchable=*/true,
+         /*show_in_launcher=*/true, InternalAppName::kPluginVm,
+         /*searchable_string_resource_id=*/0});
   }
   return *internal_app_list;
 }
@@ -283,11 +294,15 @@ void OpenInternalApp(const std::string& app_id,
           base::BindOnce(&OnArcFeaturesRead, profile, event_flags));
     }
   } else if (app_id == kInternalAppIdDiscover) {
-#if defined(OS_CHROMEOS)
     base::RecordAction(base::UserMetricsAction("ShowDiscover"));
     chromeos::DiscoverWindowManager::GetInstance()
         ->ShowChromeDiscoverPageForProfile(profile);
-#endif
+  } else if (app_id == plugin_vm::kPluginVmAppId) {
+    if (plugin_vm::IsPluginVmConfigured(profile)) {
+      // TODO(http://crbug.com/904853): Start PluginVm.
+    } else {
+      plugin_vm::ShowPluginVmLauncherView(profile);
+    }
   }
 }
 

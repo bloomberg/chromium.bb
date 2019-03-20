@@ -14,7 +14,7 @@
 
 namespace plugin_vm {
 
-bool IsPluginVmAllowedForProfile(Profile* profile) {
+bool IsPluginVmAllowedForProfile(const Profile* profile) {
   // Check that the profile is eligible.
   if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
       profile->IsOffTheRecord() ||
@@ -60,6 +60,11 @@ bool IsPluginVmConfigured(Profile* profile) {
     return false;
   }
   return true;
+}
+
+// TODO(timloh): Implement this (crbug.com/940319).
+bool IsPluginVmExoApplicationId(const std::string& app_id) {
+  return false;
 }
 
 std::string GetPluginVmLicenseKey() {

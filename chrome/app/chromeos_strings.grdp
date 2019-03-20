@@ -3829,8 +3829,11 @@
     Password (optional)
   </message>
 
-  <!-- Strings for PluginVm launcher -->
+  <!-- Strings for PluginVm -->
   <!-- TODO(okalitova, timloh): Remove translatable flag after strings are finalized. -->
+  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the PluginVm app." translateable="false">
+    Plugin VM
+  </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE" desc="Title of the PluginVm launcher, a dialog for launching PluginVm." translateable="false">
     Finishing <ph name="APP_NAME">PluginVm</ph> environment setting...
   </message>
