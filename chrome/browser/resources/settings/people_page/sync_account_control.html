@@ -139,10 +139,6 @@
       :host([showing-promo]) #promo-description {
         @apply --promo-description;
       }
-
-      :host([showing-promo]) #promo-separator {
-        @apply --promo-separator;
-      }
     </style>
     <div id="banner" hidden="[[syncStatus.signedIn]]"></div>
     <div class$="settings-box first
@@ -155,8 +151,6 @@
         </div>
         <div class="secondary">[[subLabel_]]</div>
       </div>
-      <div id="promo-separator" class="separator"
-          hidden="[[shouldShowAvatarRow_]]"></div>
       <paper-button class="action-button" on-click="onSigninTap_"
           disabled="[[syncStatus.setupInProgress]]" id="sign-in"
           hidden="[[shouldShowAvatarRow_]]">
