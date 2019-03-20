@@ -5,7 +5,7 @@
         below and verify that a drag caret appears inside the frame.
     </p>
     <iframe id="subframe" style="border: 1px solid black;"
-        src="data:text/html,<body contenteditable><span id='target'>There</span> should be a caret here --> <br>See it?</body>"></iframe>
+        srcdoc="<body contenteditable><span id='target'>There</span> should be a caret here --> <br>See it?</body>"></iframe>
     <script>
         function dragAndDrop()
         {
