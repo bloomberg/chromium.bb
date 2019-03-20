@@ -515,14 +515,22 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
     // take care syncing any new data.
     InitPrefAndAssociate(syncer::SyncData(), name, &changes);
   } else {
-    // We are already syncing this preference, just update it's sync node.
+    // We are already syncing this preference, just update or delete its sync
+    // node.
     syncer::SyncData sync_data;
     if (!CreatePrefSyncData(name, *preference->GetValue(), &sync_data)) {
       LOG(ERROR) << "Failed to update preference.";
       return;
     }
-    changes.push_back(syncer::SyncChange(
-        FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
+    if (pref_accessor_->GetPreferenceState(type_, name).persisted_value) {
+      // If the pref was updated, update it.
+      changes.push_back(syncer::SyncChange(
+          FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
+    } else {
+      // Otherwise, the pref must have been cleared and hence delete it.
+      changes.push_back(syncer::SyncChange(
+          FROM_HERE, syncer::SyncChange::ACTION_DELETE, sync_data));
+    }
   }
 
   syncer::SyncError error =
