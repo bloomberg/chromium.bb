@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_auth_policy_client.h"
 #include "chromeos/dbus/fake_media_analytics_client.h"
 
 namespace chromeos {

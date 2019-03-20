@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_AUTH_POLICY_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_AUTH_POLICY_CLIENT_H_
+#ifndef CHROMEOS_DBUS_AUTH_POLICY_FAKE_AUTH_POLICY_CLIENT_H_
+#define CHROMEOS_DBUS_AUTH_POLICY_FAKE_AUTH_POLICY_CLIENT_H_
 
 #include <set>
 #include <string>
@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
-#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -177,4 +177,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeAuthPolicyClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_AUTH_POLICY_CLIENT_H_
+#endif  // CHROMEOS_DBUS_AUTH_POLICY_FAKE_AUTH_POLICY_CLIENT_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_auth_policy_client.h"
+#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -102,7 +102,7 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   int service_is_available_called_num_ = 0;
 
  private:
-  FakeAuthPolicyClient* auth_policy_client_ptr_;  // not owned.
+  FakeAuthPolicyClient* auth_policy_client_ptr_;          // not owned.
   FakeSessionManagerClient* session_manager_client_ptr_;  // not owned.
   base::MessageLoop loop_;
 
