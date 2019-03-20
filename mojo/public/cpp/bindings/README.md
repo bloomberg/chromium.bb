@@ -657,7 +657,7 @@ Similarly to [structs](#Structs), tagged unions generate an identically named,
 representative C++ class which is typically wrapped in a `mojo::StructPtr<T>`.
 
 Unlike structs, all generated union fields are private and must be retrieved and
-manipulated using accessors. A field `foo` is accessible by `foo()` and
+manipulated using accessors. A field `foo` is accessible by `get_foo()` and
 settable by `set_foo()`. There is also a boolean `is_foo()` for each field which
 indicates whether the union is currently taking on the value of field `foo` in
 exclusion to all other union fields.
