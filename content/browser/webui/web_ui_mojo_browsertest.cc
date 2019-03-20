@@ -64,7 +64,7 @@ bool GetResource(const std::string& id,
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   std::string contents;
-  if (base::EndsWith(id, ".mojom.js", base::CompareCase::SENSITIVE)) {
+  if (base::EndsWith(id, ".mojom-lite.js", base::CompareCase::SENSITIVE)) {
     CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents))
         << id;
   } else {
@@ -300,7 +300,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
 // it from the browser to the page and back.
 IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   if (!IsGeneratedResourceAvailable(
-          "content/test/data/web_ui_test_mojo_bindings.mojom.js"))
+          "content/test/data/web_ui_test_mojo_bindings.mojom-lite.js"))
     return;
 
   g_got_message = false;

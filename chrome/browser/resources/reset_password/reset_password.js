@@ -8,13 +8,11 @@
  */
 (function() {
 
-/** @type {mojom.ResetPasswordHandler} */
+/** @type {mojom.ResetPasswordHandlerProxy} */
 let uiHandler;
 
 function initialize() {
-  uiHandler = new mojom.ResetPasswordHandlerPtr;
-  Mojo.bindInterface(
-      mojom.ResetPasswordHandler.name, mojo.makeRequest(uiHandler).handle);
+  uiHandler = mojom.ResetPasswordHandler.getProxy();
 
   /** @type {?HTMLElement} */
   const resetPasswordButton = $('reset-password-button');
