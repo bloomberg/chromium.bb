@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_sync/sync_auth_manager.h"
+#include "components/sync/driver/sync_auth_manager.h"
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
@@ -737,4 +737,4 @@ TEST_F(SyncAuthManagerTest, OnlyUsesFirstCookieAccount) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace syncer

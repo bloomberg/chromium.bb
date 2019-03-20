@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/sync_auth_manager.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -31,6 +30,7 @@
 #include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/driver/sync_auth_manager.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/driver/sync_util.h"
@@ -142,7 +142,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
     : sync_client_(std::move(init_params.sync_client)),
       sync_prefs_(sync_client_->GetPrefService()),
       identity_manager_(init_params.identity_manager),
-      auth_manager_(std::make_unique<SyncAuthManager>(
+      auth_manager_(std::make_unique<syncer::SyncAuthManager>(
           identity_manager_,
           base::BindRepeating(&ProfileSyncService::AccountStateChanged,
                               base::Unretained(this)),
