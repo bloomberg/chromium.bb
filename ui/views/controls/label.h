@@ -189,6 +189,9 @@ class VIEWS_EXPORT Label : public View,
   // Get the text as displayed to the user, respecting the obscured flag.
   base::string16 GetDisplayTextForTesting();
 
+  // Get the text direction, as displayed to the user.
+  base::i18n::TextDirection GetTextDirectionForTesting();
+
   // Returns true if the label can be made selectable. For example, links do not
   // support text selection.
   // Subclasses should override this function in case they want to selectively
