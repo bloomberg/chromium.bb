@@ -94,6 +94,9 @@ interface PageHandler {
   // Feed.
   ClearCachedDataAndRefreshFeed();
 
+  // Trigger a refresh of the Feed.
+  RefreshFeed();
+
   // Get the last known content with metadata.
   GetCurrentContent() => (array<Suggestion> suggestions);
 

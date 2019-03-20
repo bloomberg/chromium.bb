@@ -17,6 +17,8 @@ GURL GetFeedFetchUrlForDebugging();
 
 std::string GetFeedProcessScopeDumpForDebugging();
 
+void TriggerRefreshForDebugging();
+
 }  // namespace feed
 
 #endif  // CHROME_BROWSER_ANDROID_FEED_FEED_DEBUGGING_BRIDGE_H_

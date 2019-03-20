@@ -108,6 +108,16 @@ function toDateString(time) {
 }
 
 /**
+ * Update last fetch properties and current content following a Feed refresh.
+ */
+function updateAfterRefresh() {
+  // TODO(crbug.com/939907): Listen for Feed update events rather than waiting
+  // an arbitrary period of time.
+  setTimeout(updatePageWithLastFetchProperties, 1000);
+  setTimeout(updatePageWithCurrentContent, 1000);
+}
+
+/**
  * Hook up buttons to event listeners.
  */
 function setupEventListeners() {
@@ -118,14 +128,12 @@ function setupEventListeners() {
 
   $('clear-cached-data').addEventListener('click', function() {
     pageHandler.clearCachedDataAndRefreshFeed();
+    updateAfterRefresh();
+  });
 
-    // TODO(chouinard): Investigate whether the Feed library's
-    // AppLifecycleListener.onClearAll methods could accept a callback to notify
-    // when cache clear and Feed refresh operations are complete. If not,
-    // consider adding backend->frontend mojo communication to listen for
-    // updates, rather than waiting an arbitrary period of time.
-    setTimeout(updatePageWithLastFetchProperties, 1000);
-    setTimeout(updatePageWithCurrentContent, 1000);
+  $('refresh-feed').addEventListener('click', function() {
+    pageHandler.refreshFeed();
+    updateAfterRefresh();
   });
 
   $('dump-feed-process-scope').addEventListener('click', function() {

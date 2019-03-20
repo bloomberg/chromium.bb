@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.feed;
 
+import com.google.android.libraries.feed.api.requestmanager.RequestManager;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.common.logging.Dumper;
+import com.google.android.libraries.feed.host.logging.RequestReason;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -37,5 +39,19 @@ public class FeedDebuggingBridge {
         } catch (IOException e) {
             return "Unable to dump FeedProcessScope";
         }
+    }
+
+    @CalledByNative
+    static void triggerRefresh() {
+        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+
+        // Do nothing if Feed is disabled.
+        if (feedProcessScope == null) return;
+
+        RequestManager requestManager = feedProcessScope.getRequestManager();
+
+        // Trigger a refresh with the default consumer, so notification goes to the
+        // FeedSchedulerHost and last fetch status and time will be updated.
+        requestManager.triggerRefresh(RequestReason.HOST_REQUESTED);
     }
 }
