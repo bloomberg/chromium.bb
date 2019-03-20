@@ -91,10 +91,8 @@ namespace {
 class UnderlyingSliceTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingSliceTypesChecker> Create(
-      const SliceTypes& underlying_types) {
-    return base::WrapUnique(new UnderlyingSliceTypesChecker(underlying_types));
-  }
+  explicit UnderlyingSliceTypesChecker(const SliceTypes& underlying_types)
+      : underlying_types_(underlying_types) {}
 
   static SliceTypes GetUnderlyingSliceTypes(
       const InterpolationValue& underlying) {
@@ -104,9 +102,6 @@ class UnderlyingSliceTypesChecker
   }
 
  private:
-  UnderlyingSliceTypesChecker(const SliceTypes& underlying_types)
-      : underlying_types_(underlying_types) {}
-
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return underlying_types_ == GetUnderlyingSliceTypes(underlying);
@@ -162,7 +157,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertNeutral(
   SliceTypes underlying_types =
       UnderlyingSliceTypesChecker::GetUnderlyingSliceTypes(underlying);
   conversion_checkers.push_back(
-      UnderlyingSliceTypesChecker::Create(underlying_types));
+      std::make_unique<UnderlyingSliceTypesChecker>(underlying_types));
   LengthBox zero_box(
       underlying_types.is_number[kSideTop] ? Length::Fixed(0)
                                            : Length::Percent(0),

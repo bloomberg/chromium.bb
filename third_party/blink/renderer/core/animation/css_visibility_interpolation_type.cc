@@ -54,17 +54,13 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSVisibilityNonInterpolableValue);
 class UnderlyingVisibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~UnderlyingVisibilityChecker() final = default;
-
-  static std::unique_ptr<UnderlyingVisibilityChecker> Create(
-      EVisibility visibility) {
-    return base::WrapUnique(new UnderlyingVisibilityChecker(visibility));
-  }
-
- private:
-  UnderlyingVisibilityChecker(EVisibility visibility)
+  explicit UnderlyingVisibilityChecker(EVisibility visibility)
       : visibility_(visibility) {}
 
+  ~UnderlyingVisibilityChecker() final = default;
+
+
+ private:
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     double underlying_fraction =
@@ -81,15 +77,10 @@ class UnderlyingVisibilityChecker
 class InheritedVisibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedVisibilityChecker> Create(
-      EVisibility visibility) {
-    return base::WrapUnique(new InheritedVisibilityChecker(visibility));
-  }
-
- private:
-  InheritedVisibilityChecker(EVisibility visibility)
+  explicit InheritedVisibilityChecker(EVisibility visibility)
       : visibility_(visibility) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return visibility_ == state.ParentStyle()->Visibility();
@@ -114,7 +105,7 @@ InterpolationValue CSSVisibilityInterpolationType::MaybeConvertNeutral(
       ToCSSVisibilityNonInterpolableValue(*underlying.non_interpolable_value)
           .Visibility(underlying_fraction);
   conversion_checkers.push_back(
-      UnderlyingVisibilityChecker::Create(underlying_visibility));
+      std::make_unique<UnderlyingVisibilityChecker>(underlying_visibility));
   return CreateVisibilityValue(underlying_visibility);
 }
 
@@ -131,7 +122,7 @@ InterpolationValue CSSVisibilityInterpolationType::MaybeConvertInherit(
     return nullptr;
   EVisibility inherited_visibility = state.ParentStyle()->Visibility();
   conversion_checkers.push_back(
-      InheritedVisibilityChecker::Create(inherited_visibility));
+      std::make_unique<InheritedVisibilityChecker>(inherited_visibility));
   return CreateVisibilityValue(inherited_visibility);
 }
 

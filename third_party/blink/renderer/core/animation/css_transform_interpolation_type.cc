@@ -136,10 +136,8 @@ InterpolationValue ConvertTransform(const TransformOperations& transform) {
 class InheritedTransformChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedTransformChecker> Create(
-      const TransformOperations& inherited_transform) {
-    return base::WrapUnique(new InheritedTransformChecker(inherited_transform));
-  }
+  InheritedTransformChecker(const TransformOperations& inherited_transform)
+      : inherited_transform_(inherited_transform) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
@@ -147,9 +145,6 @@ class InheritedTransformChecker
   }
 
  private:
-  InheritedTransformChecker(const TransformOperations& inherited_transform)
-      : inherited_transform_(inherited_transform) {}
-
   const TransformOperations inherited_transform_;
 };
 
@@ -173,7 +168,7 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertInherit(
   const TransformOperations& inherited_transform =
       state.ParentStyle()->Transform();
   conversion_checkers.push_back(
-      InheritedTransformChecker::Create(inherited_transform));
+      std::make_unique<InheritedTransformChecker>(inherited_transform));
   return ConvertTransform(inherited_transform);
 }
 

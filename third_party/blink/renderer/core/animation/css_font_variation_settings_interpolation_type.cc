@@ -73,18 +73,13 @@ class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
 class InheritedFontVariationSettingsChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedFontVariationSettingsChecker() final = default;
-
-  static std::unique_ptr<InheritedFontVariationSettingsChecker> Create(
-      const FontVariationSettings* settings) {
-    return base::WrapUnique(
-        new InheritedFontVariationSettingsChecker(settings));
-  }
-
- private:
-  InheritedFontVariationSettingsChecker(const FontVariationSettings* settings)
+  explicit InheritedFontVariationSettingsChecker(
+      const FontVariationSettings* settings)
       : settings_(settings) {}
 
+  ~InheritedFontVariationSettingsChecker() final = default;
+
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return DataEquivalent(
@@ -137,7 +132,7 @@ CSSFontVariationSettingsInterpolationType::MaybeConvertInherit(
   const FontVariationSettings* inherited =
       state.ParentStyle()->GetFontDescription().VariationSettings();
   conversion_checkers.push_back(
-      InheritedFontVariationSettingsChecker::Create(inherited));
+      std::make_unique<InheritedFontVariationSettingsChecker>(inherited));
   return ConvertFontVariationSettings(inherited);
 }
 

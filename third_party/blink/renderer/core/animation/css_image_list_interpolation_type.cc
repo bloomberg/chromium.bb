@@ -21,17 +21,11 @@ namespace blink {
 class UnderlyingImageListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
+  explicit UnderlyingImageListChecker(const InterpolationValue& underlying)
+      : underlying_(underlying.Clone()) {}
   ~UnderlyingImageListChecker() final = default;
 
-  static std::unique_ptr<UnderlyingImageListChecker> Create(
-      const InterpolationValue& underlying) {
-    return base::WrapUnique(new UnderlyingImageListChecker(underlying));
-  }
-
  private:
-  UnderlyingImageListChecker(const InterpolationValue& underlying)
-      : underlying_(underlying.Clone()) {}
-
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return ListInterpolationFunctions::EqualValues(
@@ -45,7 +39,8 @@ class UnderlyingImageListChecker
 InterpolationValue CSSImageListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  conversion_checkers.push_back(UnderlyingImageListChecker::Create(underlying));
+  conversion_checkers.push_back(
+      std::make_unique<UnderlyingImageListChecker>(underlying));
   return underlying.Clone();
 }
 
