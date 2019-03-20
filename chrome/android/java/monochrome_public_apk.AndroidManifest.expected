@@ -1462,9 +1462,6 @@
         android:name="org.chromium.chrome.browser.browseractions.BrowserActionsService"/>
     <service
         android:exported="false"
-        android:name="org.chromium.chrome.browser.browserservices.ClearDataService"/>
-    <service
-        android:exported="false"
         android:name="org.chromium.chrome.browser.crash.ChromeMinidumpUploadJobService"
         android:permission="android.permission.BIND_JOB_SERVICE"/>
     <service

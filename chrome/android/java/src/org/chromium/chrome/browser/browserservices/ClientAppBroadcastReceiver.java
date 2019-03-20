@@ -69,7 +69,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
 
     /** Constructor with default dependencies for Android. */
     public ClientAppBroadcastReceiver() {
-        this(new DialogClearDataStrategy(), new ClientAppDataRegister(),
+        this(new ClearDataStrategy(), new ClientAppDataRegister(),
                 ChromeApplication.getComponent().resolvePreferenceManager());
     }
 
@@ -117,32 +117,8 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    interface ClearDataStrategy {
-        void execute(Context context, ClientAppDataRegister register, int uid, boolean uninstalled);
-    }
-
-    static class NotificationClearDataStrategy implements ClearDataStrategy {
-        private final ClearDataNotificationPublisher mNotificationPublisher;
-
-        NotificationClearDataStrategy(ClearDataNotificationPublisher notificationPublisher) {
-            mNotificationPublisher = notificationPublisher;
-        }
-
-        @Override
-        public void execute(Context context, ClientAppDataRegister register,
-                int uid, boolean uninstalled) {
-            String appName = register.getAppNameForRegisteredUid(uid);
-            Set<String> domains = register.getDomainsForRegisteredUid(uid);
-
-            for (String domain : domains) {
-                mNotificationPublisher.showClearDataNotification(context, appName, domain,
-                        uninstalled);
-            }
-        }
-    }
-
-    static class DialogClearDataStrategy implements ClearDataStrategy {
-        @Override
+    /** Implemented as a class partially for historic reasons, partially to help testing. */
+    static class ClearDataStrategy {
         public void execute(Context context, ClientAppDataRegister register, int uid,
                 boolean uninstalled) {
             // Retrieving domains and origins ahead of time, because the register is about to be
