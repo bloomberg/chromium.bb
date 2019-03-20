@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/base/win/atl_module.h"
@@ -17,11 +18,6 @@
 namespace content {
 
 namespace {
-
-std::string BstrToUTF8(BSTR bstr) {
-  base::string16 str16(bstr, SysStringLen(bstr));
-  return base::UTF16ToUTF8(str16);
-}
 
 }  // namespace
 

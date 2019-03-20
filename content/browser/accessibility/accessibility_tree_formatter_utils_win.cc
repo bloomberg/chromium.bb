@@ -4,10 +4,8 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 
-// must be before <UIAutomation.h>
 #include <oleacc.h>
-
-#include <UIAutomation.h>
+#include <uiautomation.h>
 
 #include <map>
 #include <string>
@@ -36,6 +34,24 @@ base::string16 GetNameForPlatformConstant(
   }
   return L"";
 }
+
+struct HwndWithProcId {
+  HwndWithProcId(const base::ProcessId id) : pid(id), hwnd(nullptr) {}
+  const base::ProcessId pid;
+  HWND hwnd;
+};
+
+BOOL CALLBACK EnumWindowsProcPid(HWND hwnd, LPARAM lParam) {
+  DWORD process_id;
+  GetWindowThreadProcessId(hwnd, &process_id);
+  HwndWithProcId* hwnd_with_proc_id = (HwndWithProcId*)lParam;
+  if (process_id == static_cast<DWORD>(hwnd_with_proc_id->pid)) {
+    hwnd_with_proc_id->hwnd = hwnd;
+    return FALSE;
+  }
+  return TRUE;
+}
+
 }  // namespace
 
 #define QUOTE(X) \
@@ -651,5 +667,20 @@ CONTENT_EXPORT base::string16 UiaLiveSettingToString(int32_t identifier) {
       QUOTE(LiveSetting::Off), QUOTE(LiveSetting::Polite),
       QUOTE(LiveSetting::Assertive)};
   return GetNameForPlatformConstant(id_table, base::size(id_table), identifier);
+}
+
+CONTENT_EXPORT std::string BstrToUTF8(BSTR bstr) {
+  base::string16 str16(bstr, SysStringLen(bstr));
+  return base::UTF16ToUTF8(str16);
+}
+
+CONTENT_EXPORT std::string UiaIdentifierToStringUTF8(int32_t id) {
+  return base::UTF16ToUTF8(UiaIdentifierToString(id));
+}
+
+CONTENT_EXPORT HWND GetHwndForProcess(base::ProcessId pid) {
+  HwndWithProcId hwnd_with_proc_id(pid);
+  EnumWindows(&EnumWindowsProcPid, (LPARAM)&hwnd_with_proc_id);
+  return hwnd_with_proc_id.hwnd;
 }
 }  // namespace content

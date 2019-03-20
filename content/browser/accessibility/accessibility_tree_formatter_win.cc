@@ -35,33 +35,6 @@
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/hwnd_util.h"
 
-namespace {
-
-struct HwndWithProcId {
-  HwndWithProcId(const base::ProcessId id) : pid(id), hwnd(nullptr) {}
-  const base::ProcessId pid;
-  HWND hwnd;
-};
-
-BOOL CALLBACK EnumWindowsProcPid(HWND hwnd, LPARAM lParam) {
-  DWORD process_id;
-  GetWindowThreadProcessId(hwnd, &process_id);
-  HwndWithProcId* hwnd_with_proc_id = (HwndWithProcId*)lParam;
-  if (process_id == static_cast<DWORD>(hwnd_with_proc_id->pid)) {
-    hwnd_with_proc_id->hwnd = hwnd;
-    return FALSE;
-  }
-  return TRUE;
-}
-
-HWND GetHwndForProcess(base::ProcessId pid) {
-  HwndWithProcId hwnd_with_proc_id(pid);
-  EnumWindows(&EnumWindowsProcPid, (LPARAM)&hwnd_with_proc_id);
-  return hwnd_with_proc_id.hwnd;
-}
-
-}  // namespace
-
 namespace content {
 
 class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
