@@ -10,7 +10,7 @@ source_set("public") {
     "//net",
     "//net/dns:dns_client",
     "//net/dns:host_resolver",
-    "//net/dns:host_resolver_impl",
+    "//net/dns:host_resolver_manager",
   ]
 
   sources = [
