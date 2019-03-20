@@ -26,17 +26,17 @@ struct RUNTIME_FUNCTION {
 using PRUNTIME_FUNCTION = RUNTIME_FUNCTION*;
 #endif  // !defined(_WIN64)
 
-#if defined(ARCH_CPU_64_BITS)
 inline ULONG64 ContextPC(CONTEXT* context) {
 #if defined(ARCH_CPU_X86_64)
   return context->Rip;
+#elif defined(ARCH_CPU_X86)
+  return context->Eip;
 #elif defined(ARCH_CPU_ARM64)
   return context->Pc;
 #else
-#error Unsupported Windows 64-bit Arch
+#error Unsupported Windows Arch
 #endif
 }
-#endif
 
 // Instances of this class are expected to be created and destroyed for each
 // stack unwinding. This class is not used while the target thread is suspended,
