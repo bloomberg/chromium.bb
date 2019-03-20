@@ -903,6 +903,15 @@ void ChromeClientImpl::RequestDecode(LocalFrame* frame,
   web_frame->LocalRootFrameWidget()->RequestDecode(image, std::move(callback));
 }
 
+void ChromeClientImpl::FallbackCursorModeLockCursor(LocalFrame* frame,
+                                                    bool left,
+                                                    bool right,
+                                                    bool up,
+                                                    bool down) {}
+
+void ChromeClientImpl::FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                                             bool visible) {}
+
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
     cc::EventListenerClass event_class,

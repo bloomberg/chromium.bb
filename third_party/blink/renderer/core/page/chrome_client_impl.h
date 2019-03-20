@@ -250,6 +250,15 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // WebWidget is closed.
   void SetClosed() { closed_ = true; }
 
+  void FallbackCursorModeLockCursor(LocalFrame* frame,
+                                    bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override;
+
+  void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                             bool visible) override;
+
  private:
   bool IsChromeClientImpl() const override { return true; }
 

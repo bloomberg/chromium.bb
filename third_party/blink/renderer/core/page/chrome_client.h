@@ -384,6 +384,15 @@ class CORE_EXPORT ChromeClient
     std::move(callback).Run(false);
   }
 
+  virtual void FallbackCursorModeLockCursor(LocalFrame* frame,
+                                            bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down) = 0;
+
+  virtual void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                                     bool visible) = 0;
+
   virtual void Trace(blink::Visitor*);
 
  protected:

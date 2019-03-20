@@ -178,7 +178,13 @@ EventHandler::EventHandler(LocalFrame& frame)
                                                *selection_controller_)),
       active_interval_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
                              this,
-                             &EventHandler::ActiveIntervalTimerFired) {}
+                             &EventHandler::ActiveIntervalTimerFired) {
+  if (RuntimeEnabledFeatures::FallbackCursorModeEnabled() &&
+      frame.IsLocalRoot()) {
+    fallback_cursor_event_manager_ =
+        MakeGarbageCollected<FallbackCursorEventManager>(frame);
+  }
+}
 
 void EventHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
@@ -196,6 +202,7 @@ void EventHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(keyboard_event_manager_);
   visitor->Trace(pointer_event_manager_);
   visitor->Trace(gesture_manager_);
+  visitor->Trace(fallback_cursor_event_manager_);
   visitor->Trace(last_deferred_tap_element_);
 }
 
@@ -650,6 +657,12 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
       mev.InnerNode());
 
+  if (RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
+    frame_->LocalFrameRoot()
+        .GetEventHandler()
+        .fallback_cursor_event_manager_->HandleMousePressEvent(mouse_event);
+  }
+
   LocalFrame* subframe = event_handling_util::GetTargetSubframe(mev);
   if (subframe) {
     WebInputEventResult result = PassMousePressEventToSubframe(mev, subframe);
@@ -772,6 +785,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     result.SetToShadowHostIfInRestrictedShadowRoot();
     frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
   }
+
   return event_result;
 }
 
@@ -800,6 +814,12 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
   hovered_node_result.SetToShadowHostIfInRestrictedShadowRoot();
   page->GetChromeClient().MouseDidMoveOverElement(*frame_, location,
                                                   hovered_node_result);
+
+  if (RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
+    frame_->LocalFrameRoot()
+        .GetEventHandler()
+        .fallback_cursor_event_manager_->HandleMouseMoveEvent(event);
+  }
 
   return result;
 }

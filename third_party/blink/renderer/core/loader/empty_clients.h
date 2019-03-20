@@ -221,6 +221,15 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
   void NotifyPopupOpeningObservers() const override {}
 
+  void FallbackCursorModeLockCursor(LocalFrame* frame,
+                                    bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override {}
+
+  void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
+                                             bool visible) override {}
+
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
