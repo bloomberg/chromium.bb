@@ -4,82 +4,36 @@
 
 package org.chromium.chrome.browser.usage_stats;
 
-import org.chromium.base.Promise;
-import org.chromium.base.Promise.Function;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class that tracks which sites are currently suspended.
  */
 public class SuspensionTracker {
-    private UsageStatsBridge mBridge;
-    private Promise<List<String>> mRootPromise;
-    private Promise<Void> mWritePromise;
+    private Set<String> mSuspendedWebsites;
 
-    public SuspensionTracker(UsageStatsBridge bridge) {
-        mBridge = bridge;
-        mRootPromise = new Promise<>();
-        mBridge.getAllSuspensions((result) -> { mRootPromise.fulfill(result); });
-        mWritePromise = Promise.fulfilled(null);
+    public SuspensionTracker() {
+        mSuspendedWebsites = new HashSet<String>();
     }
 
-    /**
-     * Sets the status of <c>fqdns</c> to match <c>suspended</c>.
-     * The returned promise will be fulfilled once persistence succeeds, and rejected if persistence
-     * fails.
-     */
-    public Promise<Void> setWebsitesSuspended(List<String> fqdns, boolean suspended) {
-        Promise<Void> newWritePromise = new Promise<>();
-        mWritePromise.then((dummyResult) -> {
-            mRootPromise.then((result) -> {
-                // We copy result so that the mutation isn't reflected in result until persistence
-                // succeeds.
-                List<String> resultCopy = new ArrayList<>(result);
-                if (suspended) {
-                    resultCopy.addAll(fqdns);
-                } else {
-                    resultCopy.removeAll(fqdns);
-                }
-
-                mBridge.setSuspensions(
-                        resultCopy.toArray(new String[resultCopy.size()]), (didSucceed) -> {
-                            if (didSucceed) {
-                                if (suspended) {
-                                    result.addAll(fqdns);
-                                } else {
-                                    result.removeAll(fqdns);
-                                }
-
-                                newWritePromise.fulfill(null);
-                            } else {
-                                newWritePromise.reject();
-                            }
-                        });
-                // We need to add a dummy exception handler so that Promise doesn't complain when we
-                // call variants of then() that don't take a single callback. These variants set an
-                // exception handler on the returned promise, so they expect there to be one on the
-                // root promise.
-            }, (e) -> {});
-        });
-
-        mWritePromise = newWritePromise;
-        return newWritePromise;
+    public void setWebsitesSuspended(List<String> fqdns, boolean suspended) {
+        if (suspended) {
+            mSuspendedWebsites.addAll(fqdns);
+        } else {
+            mSuspendedWebsites.removeAll(fqdns);
+        }
     }
 
-    public Promise<List<String>> getAllSuspendedWebsites() {
-        return mRootPromise.then(
-                (Function<List<String>, List<String>>) (result) -> { return result; });
+    public List<String> getAllSuspendedWebsites() {
+        List<String> result = new ArrayList<>();
+        result.addAll(mSuspendedWebsites);
+        return result;
     }
 
     public boolean isWebsiteSuspended(String fqdn) {
-        // We special case isWebsiteSuspended to return a value immediately because its only
-        // consumer(PageViewOsberver) only cares about immediate results.
-        if (mRootPromise.isFulfilled()) {
-            return mRootPromise.getResult().contains(fqdn);
-        }
-
-        return false;
+        return mSuspendedWebsites.contains(fqdn);
     }
 }

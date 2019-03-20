@@ -148,19 +148,18 @@ public class PageViewObserver {
     }
 
     private void reportToPlatformIfDomainIsTracked(String reportMethodName, String fqdn) {
-        mTokenTracker.getTokenForFqdn(fqdn).then((token) -> {
-            if (token == null) return;
+        String token = mTokenTracker.getTokenForFqdn(fqdn);
+        if (token == null) return;
 
-            try {
-                UsageStatsManager instance =
-                        (UsageStatsManager) mActivity.getSystemService(Context.USAGE_STATS_SERVICE);
-                Method reportMethod = UsageStatsManager.class.getDeclaredMethod(
-                        reportMethodName, Activity.class, String.class);
+        try {
+            UsageStatsManager instance =
+                    (UsageStatsManager) mActivity.getSystemService(Context.USAGE_STATS_SERVICE);
+            Method reportMethod = UsageStatsManager.class.getDeclaredMethod(
+                    reportMethodName, Activity.class, String.class);
 
-                reportMethod.invoke(instance, mActivity, token);
-            } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-                Log.e(TAG, "Failed to report to platform API", e);
-            }
-        });
+            reportMethod.invoke(instance, mActivity, token);
+        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            Log.e(TAG, "Failed to report to platform API", e);
+        }
     }
 }

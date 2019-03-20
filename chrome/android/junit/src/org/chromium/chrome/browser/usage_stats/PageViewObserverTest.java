@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.usage_stats;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -25,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -75,7 +73,6 @@ public final class PageViewObserverTest {
         doReturn(null).when(mTab).getUrl();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
-        doReturn(Promise.fulfilled("1")).when(mTokenTracker).getTokenForFqdn(anyString());
     }
 
     @Test
