@@ -715,8 +715,8 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
         anti_aliasing_mode_ = gpu::kAntialiasingModeMSAAImplicitResolve;
       } else if (extensions_util_->SupportsExtension(
                      "GL_CHROMIUM_screen_space_antialiasing") &&
-                 !ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-                     gpu::DISABLE_FRAMEBUFFER_CMAA)) {
+                 ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+                     gpu::USE_FRAMEBUFFER_CMAA)) {
         anti_aliasing_mode_ = gpu::kAntialiasingModeScreenSpaceAntialiasing;
       }
     } else {
