@@ -256,7 +256,7 @@ bool PNGImageDecoder::ImageIsHighBitDepth() {
 bool PNGImageDecoder::SetSize(unsigned width, unsigned height) {
   DCHECK(!IsDecodedSizeAvailable());
   // Protect against large PNGs. See http://bugzil.la/251381 for more details.
-  const unsigned long kMaxPNGSize = 1000000UL;
+  const uint32_t kMaxPNGSize = 1000000;
   return (width <= kMaxPNGSize) && (height <= kMaxPNGSize) &&
          ImageDecoder::SetSize(width, height);
 }

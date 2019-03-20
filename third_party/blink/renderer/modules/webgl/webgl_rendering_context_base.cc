@@ -2432,7 +2432,7 @@ void WebGLRenderingContextBase::deleteTexture(WebGLTexture* texture) {
   // If the deleted was bound to the the current maximum index, trace backwards
   // to find the new max texture index.
   if (one_plus_max_non_default_texture_unit_ ==
-      static_cast<unsigned long>(max_bound_texture_index + 1)) {
+      static_cast<wtf_size_t>(max_bound_texture_index + 1)) {
     FindNewMaxNonDefaultTextureUnit();
   }
 }

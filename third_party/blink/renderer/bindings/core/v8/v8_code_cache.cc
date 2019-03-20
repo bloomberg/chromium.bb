@@ -55,8 +55,8 @@ bool IsResourceHotForCaching(const SingleCachedMetadataHandler* cache_handler,
   if (!cached_metadata)
     return false;
   double time_stamp;
-  const int size = sizeof(time_stamp);
-  DCHECK_EQ(cached_metadata->size(), static_cast<unsigned long>(size));
+  const uint32_t size = sizeof(time_stamp);
+  DCHECK_EQ(cached_metadata->size(), size);
   memcpy(&time_stamp, cached_metadata->Data(), size);
   return (WTF::CurrentTime() - time_stamp) < hot_seconds;
 }

@@ -179,12 +179,12 @@ TEST(MathExtrasText, clampToUnsignedLongLongDouble) {
             clampTo<uint64_t>(-overflow_ull));
 }
 
-TEST(MathExtrasTest, clampToUnsignedUnsignedLong) {
-  if (sizeof(unsigned long) == sizeof(unsigned))
+TEST(MathExtrasTest, clampToUnsignedUint32) {
+  if (sizeof(uint32_t) == sizeof(unsigned))
     return;
 
-  unsigned long max_unsigned = std::numeric_limits<unsigned>::max();
-  unsigned long overflow_unsigned = max_unsigned + 1;
+  uint32_t max_unsigned = std::numeric_limits<unsigned>::max();
+  uint32_t overflow_unsigned = max_unsigned + 1;
 
   EXPECT_GT(overflow_unsigned, max_unsigned);
 
@@ -194,7 +194,7 @@ TEST(MathExtrasTest, clampToUnsignedUnsignedLong) {
   EXPECT_EQ(0u, clampTo<unsigned>(-1));
 }
 
-TEST(MathExtrasTest, clampToUnsignedUnsignedLongLong) {
+TEST(MathExtrasTest, clampToUnsignedUint64) {
   uint64_t max_unsigned = std::numeric_limits<unsigned>::max();
   uint64_t overflow_unsigned = max_unsigned + 1;
 
