@@ -18,6 +18,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -269,10 +270,12 @@ class TableViewTest : public ViewsTestBase {
     columns[1].title = base::ASCIIToUTF16("Title Column 1");
     columns[1].id = 1;
     columns[1].sortable = true;
-    table_ = new TableView(model_.get(), columns, TEXT_ONLY, false);
-    View* parent = table_->CreateParentIfNecessary();
-    parent->SetBounds(0, 0, 10000, 10000);
-    parent->Layout();
+    auto table =
+        std::make_unique<TableView>(model_.get(), columns, TEXT_ONLY, false);
+    table_ = table.get();
+    auto scroll_view = TableView::CreateScrollViewWithTable(std::move(table));
+    scroll_view->SetBounds(0, 0, 10000, 10000);
+    scroll_view->Layout();
     helper_ = std::make_unique<TableViewTestHelper>(table_);
 
     widget_ = std::make_unique<Widget>();
@@ -281,7 +284,7 @@ class TableViewTest : public ViewsTestBase {
     params.bounds = gfx::Rect(0, 0, 650, 650);
     params.delegate = GetWidgetDelegate(widget_.get());
     widget_->Init(params);
-    widget_->GetContentsView()->AddChildView(parent);
+    widget_->GetContentsView()->AddChildView(std::move(scroll_view));
     widget_->Show();
   }
 

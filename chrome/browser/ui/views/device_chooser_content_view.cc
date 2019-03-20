@@ -22,6 +22,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/throbber.h"
@@ -127,16 +128,17 @@ DeviceChooserContentView::DeviceChooserContentView(
   chooser_controller_->set_view(this);
   std::vector<ui::TableColumn> table_columns;
   table_columns.push_back(ui::TableColumn());
-  table_view_ = new views::TableView(
+  auto table_view = std::make_unique<views::TableView>(
       this, table_columns,
       chooser_controller_->ShouldShowIconBeforeText() ? views::ICON_AND_TEXT
                                                       : views::TEXT_ONLY,
       !chooser_controller_->AllowMultipleSelection() /* single_selection */);
-  table_view_->set_select_on_remove(false);
-  table_view_->set_observer(table_view_observer);
+  table_view_ = table_view.get();
+  table_view->set_select_on_remove(false);
+  table_view->set_observer(table_view_observer);
 
-  table_parent_ = table_view_->CreateParentIfNecessary();
-  AddChildView(table_parent_);
+  table_parent_ = AddChildView(
+      views::TableView::CreateScrollViewWithTable(std::move(table_view)));
 
   no_options_help_ = new views::Label(chooser_controller_->GetNoOptionsText());
   no_options_help_->SetMultiLine(true);

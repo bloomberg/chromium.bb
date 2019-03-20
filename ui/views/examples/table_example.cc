@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/grid_layout.h"
 
 using base::ASCIIToUTF16;
@@ -63,9 +64,9 @@ void TableExample::CreateExampleView(View* container) {
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
   columns.back().alignment = ui::TableColumn::RIGHT;
-  table_ = new TableView(this, columns, ICON_AND_TEXT, true);
-  table_->SetGrouper(this);
-  table_->set_observer(this);
+  auto table = std::make_unique<TableView>(this, columns, ICON_AND_TEXT, true);
+  table->SetGrouper(this);
+  table->set_observer(this);
   icon1_.allocN32Pixels(16, 16);
   SkCanvas canvas1(icon1_);
   canvas1.drawColor(SK_ColorRED);
@@ -78,7 +79,9 @@ void TableExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, 0);
-  layout->AddView(table_->CreateParentIfNecessary());
+  table_ = table.get();
+  layout->AddView(
+      TableView::CreateScrollViewWithTable(std::move(table)).release());
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,

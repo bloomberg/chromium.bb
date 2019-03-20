@@ -44,6 +44,7 @@ namespace views {
 class AXVirtualView;
 class FocusRing;
 struct GroupRange;
+class ScrollView;
 class TableGrouper;
 class TableHeader;
 class TableViewObserver;
@@ -113,15 +114,16 @@ class VIEWS_EXPORT TableView
             bool single_selection);
   ~TableView() override;
 
+  // Returns a new ScrollView that contains the given |table|.
+  static std::unique_ptr<ScrollView> CreateScrollViewWithTable(
+      std::unique_ptr<TableView> table);
+
   // Assigns a new model to the table view, detaching the old one if present.
   // If |model| is NULL, the table view cannot be used after this call. This
   // should be called in the containing view's destructor to avoid destruction
   // issues when the model needs to be deleted before the table.
   void SetModel(ui::TableModel* model);
   ui::TableModel* model() const { return model_; }
-
-  // Returns a new ScrollView that contains the receiver.
-  View* CreateParentIfNecessary();
 
   // Sets the TableGrouper. TableView does not own |grouper| (common use case is
   // to have TableModel implement TableGrouper).
@@ -277,7 +279,7 @@ class VIEWS_EXPORT TableView
                                gfx::Rect* bounds) const;
 
   // Creates |header_| if necessary.
-  void CreateHeaderIfNecessary();
+  void CreateHeaderIfNecessary(ScrollView* scroll_view);
 
   // Updates the |x| and |width| of each of the columns in |visible_columns_|.
   void UpdateVisibleColumnSizes();

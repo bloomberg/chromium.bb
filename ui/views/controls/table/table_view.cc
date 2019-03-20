@@ -181,6 +181,16 @@ TableView::~TableView() {
     model_->SetObserver(nullptr);
 }
 
+// static
+std::unique_ptr<ScrollView> TableView::CreateScrollViewWithTable(
+    std::unique_ptr<TableView> table) {
+  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
+  auto* table_ptr = table.get();
+  scroll_view->SetContents(table.release());
+  table_ptr->CreateHeaderIfNecessary(scroll_view.get());
+  return scroll_view;
+}
+
 // TODO: this doesn't support arbitrarily changing the model, rename this to
 // ClearModel() or something.
 void TableView::SetModel(ui::TableModel* model) {
@@ -193,15 +203,6 @@ void TableView::SetModel(ui::TableModel* model) {
   selection_model_.Clear();
   if (model_)
     model_->SetObserver(this);
-}
-
-View* TableView::CreateParentIfNecessary() {
-  ScrollView* scroll_view = ScrollView::CreateScrollViewWithBorder();
-  scroll_view->SetContents(this);
-  CreateHeaderIfNecessary();
-  if (header_)
-    scroll_view->SetHeader(header_);
-  return scroll_view;
 }
 
 void TableView::SetGrouper(TableGrouper* grouper) {
@@ -911,13 +912,14 @@ void TableView::AdjustCellBoundsForText(int visible_column_index,
   bounds->set_width(std::max(0, bounds->right() - cell_margin - text_x));
 }
 
-void TableView::CreateHeaderIfNecessary() {
+void TableView::CreateHeaderIfNecessary(ScrollView* scroll_view) {
   // Only create a header if there is more than one column or the title of the
   // only column is not empty.
   if (header_ || (columns_.size() == 1 && columns_[0].title.empty()))
     return;
 
   header_ = new TableHeader(this);
+  scroll_view->SetHeader(header_);
   UpdateVirtualAccessibilityChildren();
 }
 
