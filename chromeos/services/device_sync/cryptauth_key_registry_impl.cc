@@ -33,6 +33,8 @@ void CryptAuthKeyRegistryImpl::Factory::SetFactoryForTesting(
   test_factory_ = test_factory;
 }
 
+CryptAuthKeyRegistryImpl::Factory::~Factory() = default;
+
 std::unique_ptr<CryptAuthKeyRegistry>
 CryptAuthKeyRegistryImpl::Factory::BuildInstance(PrefService* pref_service) {
   return base::WrapUnique(new CryptAuthKeyRegistryImpl(pref_service));
