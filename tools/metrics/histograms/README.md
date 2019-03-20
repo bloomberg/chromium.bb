@@ -78,11 +78,18 @@ something meaningful--as it is in this example--that is generally a good sign.
 However, the total count does not have to be meaningful for an enum histogram
 to still be the right choice.
 
+Enumerated histograms are also appropriate for counting events.  Use a simple
+boolean histogram.  It's okay if you only log to one bucket (say, `true`).
+It's usually best (though not necessary), if you have a comparison point in
+the same histogram.  For example, if you want to count pages opened from the
+history page, it might be a useful comparison to have the same histogram
+record the number of times the history page was opened.
+
 If few buckets will be emitted to, consider using a [sparse
 histogram](#When-To-Use-Sparse-Histograms).
 
 You may append to your enum if the possible states/actions grows.  However, you
-should not reorder, renumber, or otherwise reuse existing values. Definitions
+should not reorder, renumber, or otherwise reuse existing values.  Definitions
 for enums recorded in histograms should be prefixed by the following warning:
 ```c++
 // These values are persisted to logs. Entries should not be renumbered and
