@@ -5936,9 +5936,6 @@ crbug.com/926170 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCIceConnectionS
 # Sheriff 2019-01-18
 crbug.com/922970 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Failure Pass ]
 
-crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]
-crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Failure ]
-
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure Pass ]
 
 # Sheriff 2019-01-22
