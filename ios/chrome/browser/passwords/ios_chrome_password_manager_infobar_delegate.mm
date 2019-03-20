@@ -30,10 +30,9 @@ IOSChromePasswordManagerInfoBarDelegate::
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_sync_user_(is_sync_user) {}
 
-base::string16 IOSChromePasswordManagerInfoBarDelegate::GetDetailsMessageText()
+NSString* IOSChromePasswordManagerInfoBarDelegate::GetDetailsMessageText()
     const {
-  return is_sync_user_ ? l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER)
-                       : base::string16();
+  return is_sync_user_ ? l10n_util::GetNSString(IDS_SAVE_PASSWORD_FOOTER) : @"";
 }
 
 NSString* IOSChromePasswordManagerInfoBarDelegate::GetUserNameText() const {

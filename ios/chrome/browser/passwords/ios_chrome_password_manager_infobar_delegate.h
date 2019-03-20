@@ -26,7 +26,7 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Getter for the message displayed in addition to the title. If no message
   // was set, this returns an empty string.
-  base::string16 GetDetailsMessageText() const;
+  NSString* GetDetailsMessageText() const;
 
   // The Username being saved or updated by the Infobar.
   NSString* GetUserNameText() const;
