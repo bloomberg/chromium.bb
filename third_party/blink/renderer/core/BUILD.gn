@@ -1706,8 +1706,6 @@ fuzzer_test("text_resource_decoder_fuzzer") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
-    "clipboard/data_object_test.cc",
-    "clipboard/data_transfer_test.cc",
     "content_capture/content_capture_test.cc",
     "css/active_style_sheets_test.cc",
     "css/affected_by_pseudo_test.cc",
@@ -2245,6 +2243,7 @@ jumbo_source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/blink/renderer/core/accessibility:unit_tests",
     "//third_party/blink/renderer/core/animation:unit_tests",
+    "//third_party/blink/renderer/core/clipboard:unit_tests",
     "//third_party/blink/renderer/core/editing:unit_tests",
     "//third_party/blink/renderer/core/fileapi:unit_tests",
   ]
