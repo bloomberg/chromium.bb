@@ -280,16 +280,16 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   TouchAction inherited_effective_touch_action_ = TouchAction::kTouchActionAuto;
 
-  // Feature policy state inherited from an opener. It is always empty for child
-  // frames.
-  FeaturePolicy::FeatureState opener_feature_state_;
-
  private:
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;
   FrameLifecycle lifecycle_;
 
   NavigationRateLimiter navigation_rate_limiter_;
+
+  // Feature policy state inherited from an opener. It is always empty for child
+  // frames.
+  FeaturePolicy::FeatureState opener_feature_state_;
 
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;

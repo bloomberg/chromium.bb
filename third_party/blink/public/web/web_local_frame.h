@@ -101,7 +101,8 @@ class WebLocalFrame : public WebFrame {
   // frame pointer, the parent frame's children list will not contain the
   // provisional frame. Thus, a provisional frame is invisible to the rest of
   // Blink unless the navigation commits and the provisional frame is fully
-  // attached to the frame tree by calling Swap().
+  // attached to the frame tree by calling Swap(). It swaps with the
+  // |previous_web_frame|.
   //
   // Otherwise, if the load should not commit, call Detach() to discard the
   // frame.
@@ -109,7 +110,7 @@ class WebLocalFrame : public WebFrame {
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
       mojo::ScopedMessagePipeHandle,
-      WebRemoteFrame*,
+      WebFrame* previous_web_frame,
       WebSandboxFlags,
       ParsedFeaturePolicy);
 

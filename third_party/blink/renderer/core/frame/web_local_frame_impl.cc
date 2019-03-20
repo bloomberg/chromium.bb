@@ -1612,12 +1612,12 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
-    WebRemoteFrame* old_web_frame,
+    WebFrame* previous_frame,
     WebSandboxFlags flags,
     ParsedFeaturePolicy container_policy) {
   return WebLocalFrameImpl::CreateProvisional(
       client, interface_registry, std::move(document_interface_broker_handle),
-      old_web_frame, flags, container_policy);
+      previous_frame, flags, container_policy);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::Create(
@@ -1661,16 +1661,16 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     mojo::ScopedMessagePipeHandle document_interface_broker_handle,
-    WebRemoteFrame* old_web_frame,
+    WebFrame* previous_web_frame,
     WebSandboxFlags flags,
     ParsedFeaturePolicy container_policy) {
   DCHECK(client);
   WebLocalFrameImpl* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      old_web_frame, client, interface_registry,
+      previous_web_frame, client, interface_registry,
       std::move(document_interface_broker_handle));
-  Frame* old_frame = ToWebRemoteFrameImpl(old_web_frame)->GetFrame();
-  web_frame->SetParent(old_web_frame->Parent());
-  web_frame->SetOpener(old_web_frame->Opener());
+  Frame* previous_frame = ToCoreFrame(*previous_web_frame);
+  web_frame->SetParent(previous_web_frame->Parent());
+  web_frame->SetOpener(previous_web_frame->Opener());
   // Note: this *always* temporarily sets a frame owner, even for main frames!
   // When a core Frame is created with no owner, it attempts to set itself as
   // the main frame of the Page. However, this is a provisional frame, and may
@@ -1682,12 +1682,12 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // unscriptable. Once the provisional frame gets properly attached and is
   // observable, it will have the real FrameOwner, and any subsequent real
   // documents will correctly inherit sandbox flags from the owner.
-  web_frame->InitializeCoreFrame(*old_frame->GetPage(),
+  web_frame->InitializeCoreFrame(*previous_frame->GetPage(),
                                  DummyFrameOwner::Create(),
-                                 old_frame->Tree().GetName());
+                                 previous_frame->Tree().GetName());
 
   LocalFrame* new_frame = web_frame->GetFrame();
-  new_frame->SetOwner(old_frame->Owner());
+  new_frame->SetOwner(previous_frame->Owner());
   if (auto* remote_frame_owner =
           DynamicTo<RemoteFrameOwner>(new_frame->Owner())) {
     remote_frame_owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
@@ -1699,7 +1699,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     new_frame->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
     // If there is an opener (even disowned), the opener policies must be
     // inherited the same way as sandbox flag.
-    new_frame->SetOpenerFeatureState(old_frame->OpenerFeatureState());
+    new_frame->SetOpenerFeatureState(previous_frame->OpenerFeatureState());
   }
 
   return web_frame;
@@ -1739,11 +1739,11 @@ WebLocalFrameImpl::WebLocalFrameImpl(
 }
 
 WebLocalFrameImpl::WebLocalFrameImpl(
-    WebRemoteFrame* old_web_frame,
+    WebFrame* previous_web_frame,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     mojo::ScopedMessagePipeHandle document_interface_broker_handle)
-    : WebLocalFrameImpl(old_web_frame->InShadowTree()
+    : WebLocalFrameImpl(previous_web_frame->InShadowTree()
                             ? WebTreeScopeType::kShadow
                             : WebTreeScopeType::kDocument,
                         client,
