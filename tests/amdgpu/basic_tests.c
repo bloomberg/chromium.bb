@@ -2177,6 +2177,7 @@ static void amdgpu_memset_dispatch_test(amdgpu_device_handle device_handle,
 					&bo_cmd, (void **)&ptr_cmd,
 					&mc_address_cmd, &va_cmd);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_cmd, 0, bo_cmd_size);
 
 	r = amdgpu_bo_alloc_and_map(device_handle, bo_shader_size, 4096,
 					AMDGPU_GEM_DOMAIN_VRAM, 0,
@@ -2227,7 +2228,7 @@ static void amdgpu_memset_dispatch_test(amdgpu_device_handle device_handle,
 	ptr_cmd[i++] = 1;
 
 	while (i & 7)
-		ptr_cmd[i++] =  0xffff1000; /* type3 nop packet */
+		ptr_cmd[i++] = 0xffff1000; /* type3 nop packet */
 
 	resources[0] = bo_dst;
 	resources[1] = bo_shader;
@@ -2283,9 +2284,9 @@ static void amdgpu_memset_dispatch_test(amdgpu_device_handle device_handle,
 	CU_ASSERT_EQUAL(r, 0);
 }
 
-void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
-				 uint32_t ip_type,
-				 uint32_t ring)
+static void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
+					uint32_t ip_type,
+					uint32_t ring)
 {
 	amdgpu_context_handle context_handle;
 	amdgpu_bo_handle bo_src, bo_dst, bo_shader, bo_cmd, resources[4];
@@ -2313,6 +2314,7 @@ void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
 				    &bo_cmd, (void **)&ptr_cmd,
 				    &mc_address_cmd, &va_cmd);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_cmd, 0, bo_cmd_size);
 
 	r = amdgpu_bo_alloc_and_map(device_handle, bo_shader_size, 4096,
 					AMDGPU_GEM_DOMAIN_VRAM, 0,
@@ -2371,7 +2373,7 @@ void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
 	ptr_cmd[i++] = 1;
 
 	while (i & 7)
-		ptr_cmd[i++] =  0xffff1000; /* type3 nop packet */
+		ptr_cmd[i++] = 0xffff1000; /* type3 nop packet */
 
 	resources[0] = bo_shader;
 	resources[1] = bo_src;
@@ -2799,7 +2801,8 @@ void amdgpu_memset_draw(amdgpu_device_handle device_handle,
 					AMDGPU_GEM_DOMAIN_GTT, 0,
 					&bo_cmd, (void **)&ptr_cmd,
 					&mc_address_cmd, &va_cmd);
-        CU_ASSERT_EQUAL(r, 0);
+	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_cmd, 0, bo_cmd_size);
 
 	r = amdgpu_bo_alloc_and_map(device_handle, bo_dst_size, 4096,
 					AMDGPU_GEM_DOMAIN_VRAM, 0,
@@ -2828,7 +2831,7 @@ void amdgpu_memset_draw(amdgpu_device_handle device_handle,
 	i += amdgpu_draw_draw(ptr_cmd + i);
 
 	while (i & 7)
-		ptr_cmd[i++] =  0xffff1000; /* type3 nop packet */
+		ptr_cmd[i++] = 0xffff1000; /* type3 nop packet */
 
 	resources[0] = bo_dst;
 	resources[1] = bo_shader_ps;
@@ -2952,6 +2955,7 @@ static void amdgpu_memcpy_draw(amdgpu_device_handle device_handle,
 				    &bo_cmd, (void **)&ptr_cmd,
 				    &mc_address_cmd, &va_cmd);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_cmd, 0, bo_cmd_size);
 
 	r = amdgpu_bo_alloc_and_map(device_handle, bo_size, 4096,
 					AMDGPU_GEM_DOMAIN_VRAM, 0,
@@ -2999,7 +3003,7 @@ static void amdgpu_memcpy_draw(amdgpu_device_handle device_handle,
 	i += amdgpu_draw_draw(ptr_cmd + i);
 
 	while (i & 7)
-		ptr_cmd[i++] =  0xffff1000; /* type3 nop packet */
+		ptr_cmd[i++] = 0xffff1000; /* type3 nop packet */
 
 	resources[0] = bo_dst;
 	resources[1] = bo_src;
