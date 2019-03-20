@@ -12,8 +12,8 @@ group.testf("clear", GPUTest, async (t) => {
 
   const colorAttachment = t.device.createTexture({
     size: { width: 1, height: 1, depth: 1 },
-    format: "rgba8uint",
-    usage: 1 | 2,
+    format: "rgba8unorm",
+    usage: 1 | 16,
   });
   const colorAttachmentView = colorAttachment.createDefaultView();
 
