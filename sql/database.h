@@ -59,10 +59,6 @@ class DatabaseTestPeer;
 //
 // Instances of this class are thread-unsafe and DCHECK that they are accessed
 // on the same sequence.
-//
-// TODO(pwnall): This should be renamed to Database. Class instances are
-// typically named "db_" / "db", and the class' equivalents in other systems
-// used by Chrome are named LevelDB::DB and blink::IDBDatabase.
 class COMPONENT_EXPORT(SQL) Database {
  private:
   class StatementRef;  // Forward declaration, see real one below.
