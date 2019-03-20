@@ -300,9 +300,11 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
       return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kBootstrap);
 
     case BrowserTaskType::kNavigation:
-      // Note we currently ignore the priority for navigation tasks.
+    case BrowserTaskType::kPreconnect:
+      // Note we currently ignore the priority for navigation and preconnection
+      // tasks.
       return browser_ui_thread_scheduler_->GetTaskRunner(
-          QueueType::kNavigation);
+          QueueType::kNavigationAndPreconnection);
 
     case BrowserTaskType::kDefault:
       // Defer to traits.priority() below.

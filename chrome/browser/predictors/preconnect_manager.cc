@@ -174,8 +174,10 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
   if (!network_context) {
     // Cannot invoke the callback right away because it would cause the
     // use-after-free after returning from this function.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(std::move(callback), false));
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect},
+        base::BindOnce(std::move(callback), false));
     return nullptr;
   }
 

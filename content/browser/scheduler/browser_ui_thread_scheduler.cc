@@ -35,9 +35,9 @@ void BrowserUIThreadScheduler::PostFeatureListSetup() {
     task_queues_[QueueType::kBootstrap]->SetQueuePriority(
         base::sequence_manager::TaskQueue::kHighestPriority);
 
-    // Navigation tasks are also important during startup so prioritize them
-    // too.
-    task_queues_[QueueType::kNavigation]->SetQueuePriority(
+    // Navigation and preconnection tasks are also important during startup so
+    // prioritize them too.
+    task_queues_[QueueType::kNavigationAndPreconnection]->SetQueuePriority(
         base::sequence_manager::TaskQueue::kHighPriority);
   }
 }

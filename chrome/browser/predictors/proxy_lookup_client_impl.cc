@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -19,8 +22,12 @@ ProxyLookupClientImpl::ProxyLookupClientImpl(
     ProxyLookupCallback callback,
     network::mojom::NetworkContext* network_context)
     : binding_(this), callback_(std::move(callback)) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::mojom::ProxyLookupClientPtr proxy_lookup_client_ptr;
-  binding_.Bind(mojo::MakeRequest(&proxy_lookup_client_ptr));
+  binding_.Bind(
+      mojo::MakeRequest(&proxy_lookup_client_ptr),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect}));
   network_context->LookUpProxyForURL(url, std::move(proxy_lookup_client_ptr));
   binding_.set_connection_error_handler(
       base::BindOnce(&ProxyLookupClientImpl::OnProxyLookupComplete,
