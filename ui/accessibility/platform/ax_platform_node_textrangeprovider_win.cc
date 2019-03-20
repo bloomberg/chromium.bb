@@ -56,7 +56,20 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
     ITextRangeProvider* other,
     BOOL* result) {
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(&other_provider) != S_OK) {
+    return UIA_E_INVALIDOPERATION;
+  }
+
+  *result = FALSE;
+  if (*start_ == *(other_provider->start_) &&
+      *end_ == *(other_provider->end_)) {
+    *result = TRUE;
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
