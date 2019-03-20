@@ -244,8 +244,6 @@ class TestRecipeReplayer {
   void CleanupSiteData();
   bool StartWebPageReplayServer(const base::FilePath& capture_file_path);
   bool StopWebPageReplayServer();
-  bool InstallWebPageReplayServerRootCert();
-  bool RemoveWebPageReplayServerRootCert();
   bool RunWebPageReplayCmdAndWaitForExit(
       const std::string& cmd,
       const std::vector<std::string>& args,
