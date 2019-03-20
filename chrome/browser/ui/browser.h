@@ -937,6 +937,8 @@ class Browser : public TabStripModelObserver,
   // BrowserWindow if necessary.
   void UpdateBookmarkBarState(BookmarkBarStateChangeReason reason);
 
+  bool ShouldShowBookmarkBar() const;
+
   bool ShouldHideUIForFullscreen() const;
 
   // Indicates if we have called BrowserList::NotifyBrowserCloseStarted for the

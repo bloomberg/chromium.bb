@@ -2607,18 +2607,8 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 }
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
-  BookmarkBar::State state;
-  // The bookmark bar is always hidden for Guest Sessions and in fullscreen
-  // mode, unless on the new tab page.
-  if (profile_->IsGuestSession()) {
-    state = BookmarkBar::HIDDEN;
-  } else if (browser_defaults::bookmarks_enabled &&
-      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar) &&
-      !ShouldHideUIForFullscreen()) {
-    state = BookmarkBar::SHOW;
-  } else {
-    state = BookmarkBar::HIDDEN;
-  }
+  BookmarkBar::State state =
+      ShouldShowBookmarkBar() ? BookmarkBar::SHOW : BookmarkBar::HIDDEN;
 
   if (state == bookmark_bar_state_)
     return;
@@ -2639,6 +2629,24 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   window_->BookmarkBarStateChanged(should_animate ?
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+}
+
+bool Browser::ShouldShowBookmarkBar() const {
+  if (profile_->IsGuestSession())
+    return false;
+
+  if (browser_defaults::bookmarks_enabled &&
+      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar) &&
+      !ShouldHideUIForFullscreen())
+    return true;
+
+  WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
+  if (!web_contents)
+    return false;
+
+  BookmarkTabHelper* bookmark_tab_helper =
+      BookmarkTabHelper::FromWebContents(web_contents);
+  return bookmark_tab_helper && bookmark_tab_helper->ShouldShowBookmarkBar();
 }
 
 bool Browser::ShouldHideUIForFullscreen() const {
