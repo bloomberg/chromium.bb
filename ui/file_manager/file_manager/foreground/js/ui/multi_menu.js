@@ -188,6 +188,7 @@ cr.define('cr.ui', () => {
         this.positionSubMenu_(item, subMenu);
         subMenu.show();
         subMenu.parentMenuItem = item;
+        this.moveSelectionToSubMenu_(subMenu);
       }
     },
 
@@ -234,6 +235,7 @@ cr.define('cr.ui', () => {
       this.menu.selectedItem = null;
       this.currentMenu = subMenu;
       subMenu.selectedIndex = 0;
+      subMenu.focusSelectedItem();
     },
 
     /**
@@ -245,6 +247,7 @@ cr.define('cr.ui', () => {
       subMenu.selectedItem = null;
       this.currentMenu = this.menu;
       this.menu.selectedItem = subMenu.parentMenuItem;
+      this.menu.focusSelectedItem();
     },
 
     /**
@@ -569,6 +572,10 @@ cr.define('cr.ui', () => {
         case 'ArrowUp':
           if (!this.respondToArrowKeys) {
             break;
+          }
+          // Hide any showing sub-menu if we're moving in the parent
+          if (this.currentMenu === this.menu) {
+            this.hideSubMenu_();
           }
         case 'Enter':
         case ' ':
