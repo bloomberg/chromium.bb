@@ -2350,6 +2350,10 @@ class ComputedStyle : public ComputedStyleBase,
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
 
+  ColorScheme GetColorScheme() const {
+    return DarkColorScheme() ? ColorScheme::kDark : ColorScheme::kLight;
+  }
+
  private:
   void SetVisitedLinkBackgroundColor(const StyleColor& v) {
     SetVisitedLinkBackgroundColorInternal(v);

@@ -66,7 +66,6 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
-#include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -1513,9 +1512,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // associated Web App Manifest, it will return false.
   bool IsInWebAppScope() const;
 
-  ColorScheme GetColorScheme() const { return color_scheme_; }
-  void SetColorScheme(ColorScheme);
-
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(
       AXID ax_id,
       WebComputedAXTree* tree);
@@ -1755,7 +1751,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TextLinkColors text_link_colors_;
   const Member<VisitedLinkState> visited_link_state_;
-  ColorScheme color_scheme_ = ColorScheme::kLight;
 
   bool visually_ordered_;
 

@@ -478,6 +478,9 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
 
 void HTMLMetaElement::ProcessSupportedColorSchemes(
     const AtomicString& content) {
+  if (!RuntimeEnabledFeatures::MetaSupportedColorSchemesEnabled())
+    return;
+
   SpaceSplitString supported_schemes_strings(content.LowerASCII());
   size_t count = supported_schemes_strings.size();
   ColorSchemeSet supported_schemes;

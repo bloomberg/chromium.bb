@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -112,7 +113,7 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
                                           const CSSValue& value,
                                           bool for_visited_link) {
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, state.Style()->GetColor(), state.GetDocument().GetColorScheme(),
+      value, state.Style()->GetColor(), state.Style()->GetColorScheme(),
       for_visited_link);
 }
 
@@ -1346,7 +1347,7 @@ StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,
       identifier_value->GetValueID() == CSSValueCurrentcolor)
     return StyleColor::CurrentColor();
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), state.GetDocument().GetColorScheme(), for_visited_link);
+      value, Color(), state.Style()->GetColorScheme(), for_visited_link);
 }
 
 StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
@@ -1360,7 +1361,7 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
       return StyleAutoColor::AutoColor();
   }
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, Color(), state.GetDocument().GetColorScheme(), for_visited_link);
+      value, Color(), state.Style()->GetColorScheme(), for_visited_link);
 }
 
 SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
@@ -1636,6 +1637,7 @@ scoped_refptr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
 
 static const CSSValue& ComputeRegisteredPropertyValue(
     const Document& document,
+    const StyleResolverState* state,
     const CSSToLengthConversionData& css_to_length_conversion_data,
     const CSSValue& value) {
   // TODO(timloh): Images values can also contain lengths.
@@ -1644,7 +1646,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
         CSSFunctionValue::Create(function_value->FunctionType());
     for (const CSSValue* inner_value : To<CSSValueList>(value)) {
       new_function->Append(ComputeRegisteredPropertyValue(
-          document, css_to_length_conversion_data, *inner_value));
+          document, state, css_to_length_conversion_data, *inner_value));
     }
     return *new_function;
   }
@@ -1653,7 +1655,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     CSSValueList* new_list = CSSValueList::CreateWithSeparatorFrom(*old_list);
     for (const CSSValue* inner_value : *old_list) {
       new_list->Append(ComputeRegisteredPropertyValue(
-          document, css_to_length_conversion_data, *inner_value));
+          document, state, css_to_length_conversion_data, *inner_value));
     }
     return *new_list;
   }
@@ -1709,8 +1711,10 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     if (value_id == CSSValueCurrentcolor)
       return value;
     if (StyleColor::IsColorKeyword(value_id)) {
+      ColorScheme scheme =
+          state ? state->Style()->GetColorScheme() : ColorScheme::kLight;
       Color color = document.GetTextLinkColors().ColorFromCSSValue(
-          value, Color(), document.GetColorScheme(), false);
+          value, Color(), scheme, false);
       return *CSSColorValue::Create(color.Rgb());
     }
   }
@@ -1721,15 +1725,15 @@ static const CSSValue& ComputeRegisteredPropertyValue(
 const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
     const Document& document,
     const CSSValue& value) {
-  return ComputeRegisteredPropertyValue(document, CSSToLengthConversionData(),
-                                        value);
+  return ComputeRegisteredPropertyValue(document, nullptr /* state */,
+                                        CSSToLengthConversionData(), value);
 }
 
 const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyValue(
     const StyleResolverState& state,
     const CSSValue& value) {
   return ComputeRegisteredPropertyValue(
-      state.GetDocument(), state.CssToLengthConversionData(), value);
+      state.GetDocument(), &state, state.CssToLengthConversionData(), value);
 }
 
 // Registered properties need to substitute as absolute values. This means

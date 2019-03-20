@@ -74,5 +74,23 @@ TEST_F(ApplyDarkModeCheckTest, BackgroundColorNotDefinedAlwaysFiltered) {
                                               GetLayoutView()));
 }
 
+TEST_F(ApplyDarkModeCheckTest, SupportedColorSchemesDark) {
+  RuntimeEnabledFeatures::SetMetaSupportedColorSchemesEnabled(true);
+  GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  ColorSchemeSet schemes;
+  schemes.Set(ColorScheme::kDark);
+  GetDocument().GetStyleEngine().SetSupportedColorSchemes(schemes);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Opting out of forced darkening when dark is among the supported color
+  // schemes for the page.
+  EXPECT_FALSE(ShouldApplyDarkModeFilterToPage(
+      DarkModePagePolicy::kFilterByBackground, GetLayoutView()));
+  EXPECT_FALSE(ShouldApplyDarkModeFilterToPage(DarkModePagePolicy::kFilterAll,
+                                               GetLayoutView()));
+}
+
 }  // namespace
 }  // namespace blink
