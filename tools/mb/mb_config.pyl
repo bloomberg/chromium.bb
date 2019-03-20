@@ -1911,7 +1911,7 @@
     },
 
     'cfi': {
-      'gn_args': 'is_cfi=true use_cfi_icall=true',
+      'gn_args': 'is_cfi=true',
     },
 
     'cfi_full': {
