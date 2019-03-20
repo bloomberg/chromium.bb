@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -126,33 +128,33 @@ NewPasswordFormManager::NewPasswordFormManager(
     FormFetcher* form_fetcher,
     std::unique_ptr<FormSaver> form_saver,
     scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder)
-    : client_(client),
-      driver_(driver),
-      observed_form_(observed_form),
-      metrics_recorder_(metrics_recorder),
-      owned_form_fetcher_(
-          form_fetcher ? nullptr
-                       : std::make_unique<FormFetcherImpl>(
-                             PasswordStore::FormDigest(observed_form),
-                             client_,
-                             true /* should_migrate_http_passwords */,
-                             true /* should_query_suppressed_https_forms */)),
-      form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
-      form_saver_(std::move(form_saver)),
-      // TODO(https://crbug.com/831123): set correctly
-      // |is_possible_change_password_form| in |votes_uploader_| constructor
-      votes_uploader_(client, false /* is_possible_change_password_form */),
-      weak_ptr_factory_(this) {
-  if (!metrics_recorder_) {
-    metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        client_->IsMainFrameSecure(), client_->GetUkmSourceId());
-  }
+    : NewPasswordFormManager(client,
+                             form_fetcher,
+                             std::move(form_saver),
+                             metrics_recorder,
+                             PasswordStore::FormDigest(observed_form)) {
+  driver_ = driver;
+  observed_form_ = observed_form;
   metrics_recorder_->RecordFormSignature(CalculateFormSignature(observed_form));
-
-  if (owned_form_fetcher_)
-    owned_form_fetcher_->Fetch();
   form_fetcher_->AddConsumer(this);
 }
+
+NewPasswordFormManager::NewPasswordFormManager(
+    PasswordManagerClient* client,
+    const PasswordForm& http_auth_observed_form,
+    FormFetcher* form_fetcher,
+    std::unique_ptr<FormSaver> form_saver)
+    : NewPasswordFormManager(
+          client,
+          form_fetcher,
+          std::move(form_saver),
+          nullptr /* metrics_recorder */,
+          PasswordStore::FormDigest(http_auth_observed_form)) {
+  observed_http_auth_digest_ =
+      PasswordStore::FormDigest(http_auth_observed_form);
+  form_fetcher_->AddConsumer(this);
+}
+
 NewPasswordFormManager::~NewPasswordFormManager() = default;
 
 bool NewPasswordFormManager::DoesManage(
@@ -191,6 +193,8 @@ bool NewPasswordFormManager::DoesManageAccordingToRendererId(
 bool NewPasswordFormManager::IsEqualToSubmittedForm(
     const autofill::FormData& form) const {
   if (!is_submitted_)
+    return false;
+  if (IsHttpAuth())
     return false;
   if (form.action == submitted_form_.action)
     return true;
@@ -544,10 +548,14 @@ void NewPasswordFormManager::ProcessMatches(
     size_t filtered_count) {
   received_stored_credentials_time_ = TimeTicks::Now();
   std::vector<const PasswordForm*> matches;
+  PasswordForm::Scheme observed_form_scheme =
+      observed_http_auth_digest_ ? observed_http_auth_digest_->scheme
+                                 : PasswordForm::SCHEME_HTML;
   std::copy_if(non_federated.begin(), non_federated.end(),
-               std::back_inserter(matches), [](const PasswordForm* form) {
+               std::back_inserter(matches),
+               [observed_form_scheme](const PasswordForm* form) {
                  return !form->blacklisted_by_user &&
-                        form->scheme == PasswordForm::SCHEME_HTML;
+                        form->scheme == observed_form_scheme;
                });
 
   password_manager_util::FindBestMatches(matches, &best_matches_,
@@ -564,7 +572,11 @@ void NewPasswordFormManager::ProcessMatches(
 
   autofills_left_ = kMaxTimesAutofill;
 
-  if (parser_.predictions() || !wait_for_server_predictions_for_filling_) {
+  if (IsHttpAuth()) {
+    // No server prediction for http auth, so no need to wait.
+    FillHttpAuth();
+  } else if (parser_.predictions() ||
+             !wait_for_server_predictions_for_filling_) {
     ReportTimeBetweenStoreAndServerUMA();
     Fill();
   } else if (!waiting_for_server_predictions_) {
@@ -600,6 +612,25 @@ bool NewPasswordFormManager::ProvisionallySave(
 
   CreatePendingCredentials();
   return true;
+}
+
+bool NewPasswordFormManager::ProvisionallySaveHttpAuthFormIfIsManaged(
+    const PasswordForm& submitted_form) {
+  if (!IsHttpAuth())
+    return false;
+  if (!(*observed_http_auth_digest_ ==
+        PasswordStore::FormDigest(submitted_form)))
+    return false;
+
+  parsed_submitted_form_.reset(new PasswordForm(submitted_form));
+  is_submitted_ = true;
+
+  CreatePendingCredentials();
+  return true;
+}
+
+bool NewPasswordFormManager::IsHttpAuth() const {
+  return !!observed_http_auth_digest_;
 }
 
 void NewPasswordFormManager::ProcessServerPredictions(
@@ -681,6 +712,36 @@ void NewPasswordFormManager::FillForm(const FormData& observed_form) {
 
   if (!waiting_for_server_predictions_)
     Fill();
+}
+
+NewPasswordFormManager::NewPasswordFormManager(
+    PasswordManagerClient* client,
+    FormFetcher* form_fetcher,
+    std::unique_ptr<FormSaver> form_saver,
+    scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
+    const PasswordStore::FormDigest& form_digest)
+    : client_(client),
+      metrics_recorder_(metrics_recorder),
+      owned_form_fetcher_(
+          form_fetcher ? nullptr
+                       : std::make_unique<FormFetcherImpl>(
+                             form_digest,
+                             client_,
+                             true /* should_migrate_http_passwords */,
+                             true /* should_query_suppressed_https_forms */)),
+      form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
+      form_saver_(std::move(form_saver)),
+      // TODO(https://crbug.com/831123): set correctly
+      // |is_possible_change_password_form| in |votes_uploader_| constructor
+      votes_uploader_(client, false /* is_possible_change_password_form */),
+      weak_ptr_factory_(this) {
+  if (!metrics_recorder_) {
+    metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        client_->IsMainFrameSecure(), client_->GetUkmSourceId());
+  }
+
+  if (owned_form_fetcher_)
+    owned_form_fetcher_->Fetch();
 }
 
 void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
@@ -970,6 +1031,10 @@ const PasswordForm* NewPasswordFormManager::FindBestSavedMatch(
 void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
     const PasswordForm& submitted_password_form,
     const base::string16& password_element) {
+  if (IsHttpAuth()) {
+    pending_credentials_ = submitted_password_form;
+    return;
+  }
   // TODO(https://crbug.com/831123): Replace parsing of the observed form with
   // usage of already parsed submitted form.
   std::unique_ptr<PasswordForm> parsed_observed_form =
@@ -1029,6 +1094,14 @@ void NewPasswordFormManager::ProcessUpdate() {
     votes_uploader_.UploadFirstLoginVotes(best_matches_, pending_credentials_,
                                           *parsed_submitted_form_);
   }
+}
+
+void NewPasswordFormManager::FillHttpAuth() {
+  DCHECK(IsHttpAuth());
+  if (!preferred_match_)
+    return;
+
+  client_->AutofillHttpAuth(best_matches_, *preferred_match_);
 }
 
 std::vector<PasswordForm>

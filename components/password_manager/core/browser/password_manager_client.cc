@@ -36,6 +36,10 @@ void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>* federated_matches) const {
 }
 
+void PasswordManagerClient::AutofillHttpAuth(
+    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const autofill::PasswordForm& preferred_match) const {}
+
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
 }

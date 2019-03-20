@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -176,6 +177,13 @@ class PasswordManagerClient {
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       const;
+
+  // Sends username/password from |preferred_match| for filling in the http auth
+  // prompt.
+  virtual void AutofillHttpAuth(
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          best_matches,
+      const autofill::PasswordForm& preferred_match) const;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
