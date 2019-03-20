@@ -11,6 +11,11 @@
 
 namespace viz {
 
+// static
+FrameDeadline FrameDeadline::MakeZero() {
+  return FrameDeadline(base::TimeTicks(), 0, base::TimeDelta(), false);
+}
+
 base::TimeTicks FrameDeadline::ToWallTime(
     base::Optional<uint32_t> default_deadline_in_frames) const {
   uint32_t deadline_in_frames = deadline_in_frames_;

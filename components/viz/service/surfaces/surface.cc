@@ -72,15 +72,6 @@ void Surface::SetDependencyDeadline(
   deadline_ = std::move(deadline);
 }
 
-void Surface::InheritActivationDeadlineFrom(Surface* surface) {
-  TRACE_EVENT1("viz", "Surface::InheritActivationDeadlineFrom", "FrameSinkId",
-               surface_id().frame_sink_id().ToString());
-  DCHECK(deadline_);
-  DCHECK(surface->deadline_);
-
-  deadline_->InheritFrom(*surface->deadline_);
-}
-
 void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
   previous_frame_surface_id_ = surface->surface_id();
@@ -224,8 +215,6 @@ bool Surface::QueueFrame(
     uint64_t frame_index,
     base::ScopedClosureRunner frame_rejected_callback,
     PresentedCallback presented_callback) {
-  late_activation_dependencies_.clear();
-
   if (frame.size_in_pixels() != surface_info_.size_in_pixels() ||
       frame.device_scale_factor() != surface_info_.device_scale_factor()) {
     TRACE_EVENT_INSTANT0("viz", "Surface invariants violation",
@@ -382,7 +371,6 @@ void Surface::ActivatePendingFrameForDeadline(
 
   // If a frame is being activated because of a deadline, then clear its set
   // of blockers.
-  late_activation_dependencies_ = std::move(activation_dependencies_);
   activation_dependencies_.clear();
   frame_sink_id_dependencies_.clear();
   ActivatePendingFrame(duration);
@@ -453,8 +441,11 @@ void Surface::RecomputeActiveReferencedSurfaces() {
     SurfaceAllocationGroup* end_allocation_group =
         surface_manager_->GetOrCreateAllocationGroupForSurfaceId(
             surface_range.end());
-    if (end_allocation_group)
+    if (end_allocation_group) {
       new_referenced_allocation_groups.push_back(end_allocation_group);
+      end_allocation_group->UpdateLastReferencedSurfaceAndMaybeActivate(
+          surface_range.end());
+    }
     // Only reference the allocation group for the start of SurfaceRange if the
     // current referenced surface is a part of it.
     if (surface_range.HasDifferentEmbedTokens() &&
@@ -463,8 +454,11 @@ void Surface::RecomputeActiveReferencedSurfaces() {
       SurfaceAllocationGroup* start_allocation_group =
           surface_manager_->GetOrCreateAllocationGroupForSurfaceId(
               *surface_range.start());
-      if (start_allocation_group)
+      if (start_allocation_group) {
         new_referenced_allocation_groups.push_back(start_allocation_group);
+        start_allocation_group->UpdateLastReferencedSurfaceAndMaybeActivate(
+            *surface_range.start());
+      }
     }
   }
   UpdateReferencedAllocationGroups(std::move(new_referenced_allocation_groups));
@@ -534,6 +528,17 @@ void Surface::ActivateFrame(FrameData frame_data,
 
 FrameDeadline Surface::ResolveFrameDeadline(
     const CompositorFrame& current_frame) {
+  // If there is an embedder of this surface that has already activated, that
+  // means the embedder doesn't wish to block on this surface, i.e. either it
+  // had a zero deadline or its deadline has already passed. If we don't have an
+  // active frame already, active this frame immediately so we have something to
+  // show.
+  if (!HasActiveFrame() &&
+      allocation_group_->GetLastReferencedSurfaceId().IsSameOrNewerThan(
+          surface_id())) {
+    return FrameDeadline::MakeZero();
+  }
+
   const base::Optional<uint32_t>& default_deadline =
       surface_manager_->activation_deadline_in_frames();
   const FrameDeadline& deadline = current_frame.metadata.deadline;
@@ -805,6 +810,14 @@ void Surface::OnWillBeDrawn() {
   }
   surface_manager_->SurfaceWillBeDrawn(this);
   MarkAsDrawn();
+}
+
+void Surface::ActivatePendingFrameForInheritedDeadline() {
+  DCHECK(HasPendingFrame());
+  // Deadline inheritance implies that this surface was blocking the embedder,
+  // so there shouldn't be an active frame.
+  DCHECK(!HasActiveFrame());
+  ActivatePendingFrameForDeadline(base::nullopt);
 }
 
 }  // namespace viz

@@ -51,19 +51,6 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   void OnFrameSinkInvalidated(const FrameSinkId& frame_sink_id);
 
  private:
-  // If |surface| has a dependent embedder frame, then it inherits the parent's
-  // deadline and propagates that deadline to children.
-  void UpdateSurfaceDeadline(Surface* surface);
-
-  // Activates this |surface| and its entire dependency tree.
-  void ActivateLateSurfaceSubtree(Surface* surface);
-
-  // Indicates whether |surface| is late. A surface is late if it hasn't had its
-  // first activation before a embedder is forced to activate its own
-  // CompositorFrame. A surface may no longer be considered late if the set
-  // of activation dependencies for dependent surfaces change.
-  bool IsSurfaceLate(Surface* surface);
-
   // Informs all Surfaces with pending frames blocked on the provided
   // |surface_id| that there is now an active frame available in Surface
   // corresponding to |surface_id|.
@@ -80,10 +67,6 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyTracker {
   // are blocked on a parent arriving to embed them.
   std::unordered_map<FrameSinkId, base::flat_set<SurfaceId>, FrameSinkIdHash>
       surfaces_blocked_on_parent_by_frame_sink_id_;
-
-  // The set of SurfaceIds corresponding to Surfaces that have active
-  // CompositorFrames with missing dependencies.
-  base::flat_set<SurfaceId> surfaces_with_missing_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDependencyTracker);
 };

@@ -106,13 +106,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return deadline_->deadline_for_testing();
   }
 
-  // Inherits the same deadline as the one specified by |surface|. A deadline
-  // may be set further out in order to avoid doing unnecessary work while a
-  // parent surface is blocked on dependencies. A deadline may be shortened
-  // in order to minimize guttering (by unblocking children blocked on their
-  // grandchildren sooner).
-  void InheritActivationDeadlineFrom(Surface* surface);
-
   void SetPreviousFrameSurface(Surface* surface);
 
   // Increments the reference count on resources specified by |resources|.
@@ -194,13 +187,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return activation_dependencies_;
   }
 
-  // Returns the set of activation dependencies that have been ignored because
-  // the last CompositorFrame was activated due to a deadline. Late
-  // dependencies activate immediately when they arrive.
-  const base::flat_set<SurfaceId>& late_activation_dependencies() const {
-    return late_activation_dependencies_;
-  }
-
   bool HasActiveFrame() const { return active_frame_data_.has_value(); }
   bool HasPendingFrame() const { return pending_frame_data_.has_value(); }
   bool HasUndrawnActiveFrame() const {
@@ -230,6 +216,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Called when this surface is embedded by another Surface's CompositorFrame.
   void OnSurfaceDependencyAdded();
+
+  // Called when the embedder of this surface has been activated and therefore
+  // this surface should activate too by deadline inheritance.
+  void ActivatePendingFrameForInheritedDeadline();
 
  private:
   struct SequenceNumbers {
@@ -324,7 +314,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   const bool block_activation_on_parent_;
 
   base::flat_set<SurfaceId> activation_dependencies_;
-  base::flat_set<SurfaceId> late_activation_dependencies_;
 
   // A map from FrameSinkIds of SurfaceIds that this surface depends on for
   // activation to the latest local_id associated with the given FrameSinkId
