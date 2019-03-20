@@ -58,6 +58,9 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
 
 bool ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,
                                      const LayoutObject& root_layout_object) {
+  if (root_layout_object.StyleRef().DarkColorScheme())
+    return false;
+
   switch (policy) {
     case DarkModePagePolicy::kFilterAll:
       return true;

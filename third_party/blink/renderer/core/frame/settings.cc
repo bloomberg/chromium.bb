@@ -114,6 +114,7 @@ void Settings::SetForceDarkModeEnabled(bool enabled) {
   } else {
     SetDarkMode(DarkMode::kOff);
   }
+  Invalidate(SettingsDelegate::kColorSchemeChange);
 }
 
 }  // namespace blink

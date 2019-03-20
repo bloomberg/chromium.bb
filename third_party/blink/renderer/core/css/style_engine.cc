@@ -1780,6 +1780,43 @@ void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
     layout_tree_rebuild_root_.Update(ancestor, dirty_node);
 }
 
+void StyleEngine::UpdateColorScheme() {
+  auto* settings = GetDocument().GetSettings();
+  DCHECK(settings);
+  PreferredColorScheme old_preferred_scheme = preferred_color_scheme_;
+  ColorScheme old_color_scheme = color_scheme_;
+
+  preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  color_scheme_ = ColorScheme::kLight;
+
+  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
+    if (supported_color_schemes_.Contains(ColorScheme::kDark)) {
+      color_scheme_ = ColorScheme::kDark;
+    } else if (settings->ForceDarkModeEnabled()) {
+      // Make sure we don't match (prefers-color-scheme: dark) when forced
+      // darkening is enabled.
+      preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
+    }
+  }
+
+  if (color_scheme_ != old_color_scheme) {
+    PlatformColorsChanged();
+    if (LocalFrameView* view = GetDocument().View()) {
+      if (color_scheme_ == ColorScheme::kDark) {
+        view->SetBaseBackgroundColor(color_scheme_ == ColorScheme::kDark
+                                         ? Color::kBlack
+                                         : Color::kWhite);
+      }
+    }
+  }
+  if (preferred_color_scheme_ != old_preferred_scheme)
+    MediaQueryAffectingValueChanged();
+}
+
+void StyleEngine::ColorSchemeChanged() {
+  UpdateColorScheme();
+}
+
 void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(injected_user_style_sheets_);

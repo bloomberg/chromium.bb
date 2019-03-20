@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 #include "base/auto_reset.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
@@ -133,6 +134,7 @@ class CORE_EXPORT StyleEngine final
   void MediaQueriesChangedInScope(TreeScope&);
   void WatchedSelectorsChanged();
   void InitialStyleChanged();
+  void ColorSchemeChanged();
   void InitialViewportChanged();
   void ViewportRulesChanged();
   void HtmlImportAddedOrRemoved();
@@ -348,10 +350,15 @@ class CORE_EXPORT StyleEngine final
 
   void SetSupportedColorSchemes(const ColorSchemeSet& supported_color_schemes) {
     supported_color_schemes_ = supported_color_schemes;
+    UpdateColorScheme();
   }
   const ColorSchemeSet& GetSupportedColorSchemes() const {
     return supported_color_schemes_;
   }
+  PreferredColorScheme GetPreferredColorScheme() const {
+    return preferred_color_scheme_;
+  }
+  ColorScheme GetColorScheme() const { return color_scheme_; }
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -445,6 +452,8 @@ class CORE_EXPORT StyleEngine final
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
 
+  void UpdateColorScheme();
+
   Member<Document> document_;
   bool is_master_;
 
@@ -533,6 +542,15 @@ class CORE_EXPORT StyleEngine final
   // tag. E.g. <meta name="supported-color-schemes" content="light dark">. The
   // supported schemes are used to opt-out of forced darkening.
   ColorSchemeSet supported_color_schemes_;
+
+  // The preferred color scheme is set in settings, but may be overridden by the
+  // ForceDarkMode setting where the preferred_color_scheme_ will be set no
+  // kNoPreference to avoid dark styling to be applied before auto darkening.
+  PreferredColorScheme preferred_color_scheme_;
+
+  // The resolved color scheme to use based on the supported color schemes, the
+  // preferred color scheme, and the ForceDarkMode setting.
+  ColorScheme color_scheme_ = ColorScheme::kLight;
 
   friend class StyleEngineTest;
 };

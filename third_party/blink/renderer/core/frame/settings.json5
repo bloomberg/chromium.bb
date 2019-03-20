@@ -1007,7 +1007,7 @@
     {
       name: "preferredColorScheme",
       initial: "PreferredColorScheme::kNoPreference",
-      invalidate: "MediaQuery",
+      invalidate: "ColorScheme",
       type: "PreferredColorScheme",
     },
 
