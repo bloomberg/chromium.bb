@@ -53,6 +53,7 @@ class RunLoop;
 
 namespace net {
 
+struct CommonConnectJobParams;
 class NetLog;
 
 const NetworkChangeNotifier::NetworkHandle kDefaultNetworkForTests = 1;
@@ -1194,9 +1195,10 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
     DISALLOW_COPY_AND_ASSIGN(MockConnectJob);
   };
 
-  MockTransportClientSocketPool(int max_sockets,
-                                int max_sockets_per_group,
-                                ClientSocketFactory* socket_factory);
+  MockTransportClientSocketPool(
+      int max_sockets,
+      int max_sockets_per_group,
+      const CommonConnectJobParams* common_connect_job_params);
 
   ~MockTransportClientSocketPool() override;
 

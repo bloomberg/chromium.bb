@@ -48,6 +48,7 @@
 #include "net/quic/quic_stream_factory_peer.h"
 #include "net/quic/quic_test_packet_maker.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
@@ -396,14 +397,16 @@ ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
                                    false /* privacy_mode */);
 }
 
-template <typename ParentPool>
-class CapturePreconnectsSocketPool : public ParentPool {
+class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
  public:
-  CapturePreconnectsSocketPool(HostResolver* host_resolver,
-                               CertVerifier* cert_verifier,
-                               TransportSecurityState* transport_security_state,
-                               CTVerifier* cert_transparency_verifier,
-                               CTPolicyEnforcer* ct_policy_enforcer);
+  explicit CapturePreconnectsTransportSocketPool(
+      const CommonConnectJobParams* common_connect_job_params)
+      : TransportClientSocketPool(0,
+                                  0,
+                                  base::TimeDelta(),
+                                  common_connect_job_params,
+                                  nullptr /* ssl_config_service */),
+        last_num_streams_(-1) {}
 
   int last_num_streams() const { return last_num_streams_; }
   const ClientSocketPool::GroupId& last_group_id() const {
@@ -472,36 +475,6 @@ class CapturePreconnectsSocketPool : public ParentPool {
   ClientSocketPool::GroupId last_group_id_;
 };
 
-typedef CapturePreconnectsSocketPool<TransportClientSocketPool>
-    CapturePreconnectsTransportSocketPool;
-
-template <typename ParentPool>
-CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
-    HostResolver* host_resolver,
-    CertVerifier*,
-    TransportSecurityState*,
-    CTVerifier*,
-    CTPolicyEnforcer*)
-    : ParentPool(0,
-                 0,
-                 base::TimeDelta(),
-                 nullptr /* socket_factory */,
-                 host_resolver,
-                 nullptr /* proxy_delegate */,
-                 nullptr /* http_user_agent_settings */,
-                 nullptr /* cert_verifier */,
-                 nullptr /* channel_id_server */,
-                 nullptr /* transport_security_state */,
-                 nullptr /* cert_transparency_verifier */,
-                 nullptr /* ct_policy_enforcer */,
-                 nullptr /* ssl_client_session_cache */,
-                 nullptr /* ssl_client_session_cache_privacy_mode */,
-                 nullptr /* ssl_config_service */,
-                 nullptr /* socket_performance_watcher_factory */,
-                 nullptr /* network_quality_estimator */,
-                 nullptr /* netlog */),
-      last_num_streams_(-1) {}
-
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
@@ -511,14 +484,12 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
     std::unique_ptr<HttpNetworkSession> session(
         SpdySessionDependencies::SpdyCreateSession(&session_deps));
     HttpNetworkSessionPeer peer(session.get());
+    CommonConnectJobParams common_connect_job_params =
+        session->CreateCommonConnectJobParams();
     std::unique_ptr<CapturePreconnectsTransportSocketPool>
         owned_transport_conn_pool =
             std::make_unique<CapturePreconnectsTransportSocketPool>(
-                session_deps.host_resolver.get(),
-                session_deps.cert_verifier.get(),
-                session_deps.transport_security_state.get(),
-                session_deps.cert_transparency_verifier.get(),
-                session_deps.ct_policy_enforcer.get());
+                &common_connect_job_params);
     CapturePreconnectsTransportSocketPool* transport_conn_pool =
         owned_transport_conn_pool.get();
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
@@ -540,12 +511,10 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
     HttpNetworkSessionPeer peer(session.get());
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
+    CommonConnectJobParams common_connect_job_params =
+        session->CreateCommonConnectJobParams();
     CapturePreconnectsTransportSocketPool* http_proxy_pool =
-        new CapturePreconnectsTransportSocketPool(
-            session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-            session_deps.transport_security_state.get(),
-            session_deps.cert_transparency_verifier.get(),
-            session_deps.ct_policy_enforcer.get());
+        new CapturePreconnectsTransportSocketPool(&common_connect_job_params);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
@@ -565,12 +534,10 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
     HttpNetworkSessionPeer peer(session.get());
     ProxyServer proxy_server(ProxyServer::SCHEME_SOCKS4,
                              HostPortPair("socks_proxy", 1080));
+    CommonConnectJobParams common_connect_job_params =
+        session->CreateCommonConnectJobParams();
     CapturePreconnectsTransportSocketPool* socks_proxy_pool =
-        new CapturePreconnectsTransportSocketPool(
-            session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-            session_deps.transport_security_state.get(),
-            session_deps.cert_transparency_verifier.get(),
-            session_deps.ct_policy_enforcer.get());
+        new CapturePreconnectsTransportSocketPool(&common_connect_job_params);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(socks_proxy_pool));
@@ -596,14 +563,12 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
                        SpdySessionKey::IsProxySession::kFalse, SocketTag());
     ignore_result(CreateFakeSpdySession(session->spdy_session_pool(), key));
 
+    CommonConnectJobParams common_connect_job_params =
+        session->CreateCommonConnectJobParams();
     std::unique_ptr<CapturePreconnectsTransportSocketPool>
         owned_transport_conn_pool =
             std::make_unique<CapturePreconnectsTransportSocketPool>(
-                session_deps.host_resolver.get(),
-                session_deps.cert_verifier.get(),
-                session_deps.transport_security_state.get(),
-                session_deps.cert_transparency_verifier.get(),
-                session_deps.ct_policy_enforcer.get());
+                &common_connect_job_params);
     CapturePreconnectsTransportSocketPool* transport_conn_pool =
         owned_transport_conn_pool.get();
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
@@ -629,14 +594,12 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
   HttpNetworkSessionPeer peer(session.get());
+  CommonConnectJobParams common_connect_job_params =
+      session->CreateCommonConnectJobParams();
   std::unique_ptr<CapturePreconnectsTransportSocketPool>
       owned_transport_conn_pool =
           std::make_unique<CapturePreconnectsTransportSocketPool>(
-              session_deps.host_resolver.get(),
-              session_deps.cert_verifier.get(),
-              session_deps.transport_security_state.get(),
-              session_deps.cert_transparency_verifier.get(),
-              session_deps.ct_policy_enforcer.get());
+              &common_connect_job_params);
   CapturePreconnectsTransportSocketPool* transport_conn_pool =
       owned_transport_conn_pool.get();
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
@@ -1187,12 +1150,10 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     HttpNetworkSessionPeer peer(session.get());
     ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
                              HostPortPair("http_proxy", 80));
+    CommonConnectJobParams common_connect_job_params =
+        session->CreateCommonConnectJobParams();
     CapturePreconnectsTransportSocketPool* http_proxy_pool =
-        new CapturePreconnectsTransportSocketPool(
-            session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-            session_deps.transport_security_state.get(),
-            session_deps.cert_transparency_verifier.get(),
-            session_deps.ct_policy_enforcer.get());
+        new CapturePreconnectsTransportSocketPool(&common_connect_job_params);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPool(proxy_server,
                                      base::WrapUnique(http_proxy_pool));
@@ -1239,13 +1200,11 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
 
       for (int preconnect_request = 0; preconnect_request < 2;
            ++preconnect_request) {
+        CommonConnectJobParams common_connect_job_params =
+            session->CreateCommonConnectJobParams();
         CapturePreconnectsTransportSocketPool* http_proxy_pool =
             new CapturePreconnectsTransportSocketPool(
-                session_deps.host_resolver.get(),
-                session_deps.cert_verifier.get(),
-                session_deps.transport_security_state.get(),
-                session_deps.cert_transparency_verifier.get(),
-                session_deps.ct_policy_enforcer.get());
+                &common_connect_job_params);
 
         auto mock_pool_manager =
             std::make_unique<MockClientSocketPoolManager>();
@@ -1322,12 +1281,10 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
   ProxyServer proxy_server(ProxyServer::SCHEME_HTTPS,
                            HostPortPair("myproxy.org", 443));
 
+  CommonConnectJobParams common_connect_job_params =
+      session->CreateCommonConnectJobParams();
   CapturePreconnectsTransportSocketPool* http_proxy_pool =
-      new CapturePreconnectsTransportSocketPool(
-          session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-          session_deps.transport_security_state.get(),
-          session_deps.cert_transparency_verifier.get(),
-          session_deps.ct_policy_enforcer.get());
+      new CapturePreconnectsTransportSocketPool(&common_connect_job_params);
 
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPool(proxy_server,

@@ -21,6 +21,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_connect_job.h"
 
@@ -30,65 +31,20 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
-    ClientSocketFactory* client_socket_factory,
-    HostResolver* host_resolver,
-    ProxyDelegate* proxy_delegate,
-    const HttpUserAgentSettings* http_user_agent_settings,
-    CertVerifier* cert_verifier,
-    ChannelIDService* channel_id_service,
-    TransportSecurityState* transport_security_state,
-    CTVerifier* cert_transparency_verifier,
-    CTPolicyEnforcer* ct_policy_enforcer,
-    SSLClientSessionCache* ssl_client_session_cache,
-    SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
-    SSLConfigService* ssl_config_service,
-    NetworkQualityEstimator* network_quality_estimator,
-    WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
-    NetLog* net_log)
-    : TransportClientSocketPool(
-          max_sockets,
-          max_sockets_per_group,
-          unused_idle_socket_timeout,
-          client_socket_factory,
-          host_resolver,
-          proxy_delegate,
-          http_user_agent_settings,
-          cert_verifier,
-          channel_id_service,
-          transport_security_state,
-          cert_transparency_verifier,
-          ct_policy_enforcer,
-          ssl_client_session_cache,
-          ssl_client_session_cache_privacy_mode,
-          ssl_config_service,
-          nullptr /* socket_performance_watcher_factory */,
-          network_quality_estimator,
-          net_log),
-      common_connect_job_params_(
-          client_socket_factory,
-          host_resolver,
-          proxy_delegate,
-          http_user_agent_settings,
-          SSLClientSocketContext(cert_verifier,
-                                 channel_id_service,
-                                 transport_security_state,
-                                 cert_transparency_verifier,
-                                 ct_policy_enforcer,
-                                 ssl_client_session_cache),
-          SSLClientSocketContext(cert_verifier,
-                                 channel_id_service,
-                                 transport_security_state,
-                                 cert_transparency_verifier,
-                                 ct_policy_enforcer,
-                                 ssl_client_session_cache_privacy_mode),
-          nullptr /* SocketPerformanceWatcherFactory */,
-          network_quality_estimator,
-          net_log,
-          websocket_endpoint_lock_manager),
+    const CommonConnectJobParams* common_connect_job_params,
+    SSLConfigService* ssl_config_service)
+    : TransportClientSocketPool(max_sockets,
+                                max_sockets_per_group,
+                                unused_idle_socket_timeout,
+                                common_connect_job_params,
+                                ssl_config_service),
+      common_connect_job_params_(common_connect_job_params),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
       flushing_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(common_connect_job_params_->websocket_endpoint_lock_manager);
+}
 
 WebSocketTransportClientSocketPool::~WebSocketTransportClientSocketPool() {
   // Clean up any pending connect jobs.
@@ -160,7 +116,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   // pool types on top of a standard TransportClientSocketPool.
   std::unique_ptr<ConnectJob> connect_job =
       casted_params->create_connect_job_callback().Run(
-          priority, SocketTag(), &common_connect_job_params_,
+          priority, SocketTag(), common_connect_job_params_,
           connect_job_delegate.get());
 
   int result = connect_job_delegate->Connect(std::move(connect_job));

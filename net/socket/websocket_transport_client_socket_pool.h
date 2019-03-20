@@ -31,14 +31,8 @@ class DictionaryValue;
 
 namespace net {
 
-class ClientSocketFactory;
-class HostResolver;
-class HttpUserAgentSettings;
-class NetLog;
-class NetworkQualityEstimator;
-class ProxyDelegate;
+struct CommonConnectJobParams;
 class SSLConfigService;
-class WebSocketEndpointLockManager;
 class WebSocketTransportConnectJob;
 
 class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
@@ -48,21 +42,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       int max_sockets,
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
-      ClientSocketFactory* client_socket_factory,
-      HostResolver* host_resolver,
-      ProxyDelegate* proxy_delegate,
-      const HttpUserAgentSettings* http_user_agent_settings,
-      CertVerifier* cert_verifier,
-      ChannelIDService* channel_id_service,
-      TransportSecurityState* transport_security_state,
-      CTVerifier* cert_transparency_verifier,
-      CTPolicyEnforcer* ct_policy_enforcer,
-      SSLClientSessionCache* ssl_client_session_cache,
-      SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
-      SSLConfigService* ssl_config_service,
-      NetworkQualityEstimator* network_quality_estimator,
-      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
-      NetLog* net_log);
+      const CommonConnectJobParams* common_connect_job_params,
+      SSLConfigService* ssl_config_service);
 
   ~WebSocketTransportClientSocketPool() override;
 
@@ -205,7 +186,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   void ActivateStalledRequest();
   bool DeleteStalledRequest(ClientSocketHandle* handle);
 
-  const CommonConnectJobParams common_connect_job_params_;
+  const CommonConnectJobParams* const common_connect_job_params_;
   std::set<const ClientSocketHandle*> pending_callbacks_;
   PendingConnectsMap pending_connects_;
   StalledRequestQueue stalled_request_queue_;

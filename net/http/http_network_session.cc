@@ -41,26 +41,13 @@ namespace net {
 
 namespace {
 
-std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
-    HttpNetworkSession::SocketPoolType pool_type,
+SSLClientSocketContext CreateClientSocketContext(
     const HttpNetworkSession::Context& context,
-    SSLClientSessionCache* ssl_client_session_cache,
-    SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
-    WebSocketEndpointLockManager* websocket_endpoint_lock_manager) {
-  // TODO(yutak): Differentiate WebSocket pool manager and allow more
-  // simultaneous connections for WebSockets.
-  return std::make_unique<ClientSocketPoolManagerImpl>(
-      context.net_log,
-      context.client_socket_factory ? context.client_socket_factory
-                                    : ClientSocketFactory::GetDefaultFactory(),
-      context.socket_performance_watcher_factory,
-      context.network_quality_estimator, context.host_resolver,
+    SSLClientSessionCache* ssl_client_session_cache) {
+  return SSLClientSocketContext(
       context.cert_verifier, context.channel_id_service,
       context.transport_security_state, context.cert_transparency_verifier,
-      context.ct_policy_enforcer, ssl_client_session_cache,
-      ssl_client_session_cache_privacy_mode, context.ssl_config_service,
-      websocket_endpoint_lock_manager, context.proxy_delegate,
-      context.http_user_agent_settings, pool_type);
+      context.ct_policy_enforcer, ssl_client_session_cache);
 }
 
 }  // unnamed namespace
@@ -267,18 +254,18 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   DCHECK(ssl_config_service_);
   CHECK(http_server_properties_);
 
-  normal_socket_pool_manager_ = CreateSocketPoolManager(
-      NORMAL_SOCKET_POOL, context, &ssl_client_session_cache_,
-      &ssl_client_session_cache_privacy_mode_,
-      &websocket_endpoint_lock_manager_);
-  websocket_socket_pool_manager_ = CreateSocketPoolManager(
-      WEBSOCKET_SOCKET_POOL, context, &ssl_client_session_cache_,
-      &ssl_client_session_cache_privacy_mode_,
-      &websocket_endpoint_lock_manager_);
+  normal_socket_pool_manager_ = std::make_unique<ClientSocketPoolManagerImpl>(
+      CreateCommonConnectJobParams(false /* for_websockets */),
+      CreateCommonConnectJobParams(true /* for_websockets */),
+      context_.ssl_config_service, NORMAL_SOCKET_POOL);
+  websocket_socket_pool_manager_ =
+      std::make_unique<ClientSocketPoolManagerImpl>(
+          CreateCommonConnectJobParams(false /* for_websockets */),
+          CreateCommonConnectJobParams(true /* for_websockets */),
+          context_.ssl_config_service, WEBSOCKET_SOCKET_POOL);
 
-  if (params_.enable_http2) {
+  if (params_.enable_http2)
     next_protos_.push_back(kProtoHTTP2);
-  }
 
   next_protos_.push_back(kProtoHTTP11);
 
@@ -496,6 +483,23 @@ void HttpNetworkSession::DisableQuic() {
 void HttpNetworkSession::ClearSSLSessionCache() {
   ssl_client_session_cache_.Flush();
   ssl_client_session_cache_privacy_mode_.Flush();
+}
+
+CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
+    bool for_websockets) {
+  // Use null websocket_endpoint_lock_manager, which is only set for WebSockets,
+  // and only when not using a proxy.
+  return CommonConnectJobParams(
+      context_.client_socket_factory ? context_.client_socket_factory
+                                     : ClientSocketFactory::GetDefaultFactory(),
+      context_.host_resolver, context_.proxy_delegate,
+      context_.http_user_agent_settings,
+      CreateClientSocketContext(context_, &ssl_client_session_cache_),
+      CreateClientSocketContext(context_,
+                                &ssl_client_session_cache_privacy_mode_),
+      context_.socket_performance_watcher_factory,
+      context_.network_quality_estimator, context_.net_log,
+      for_websockets ? &websocket_endpoint_lock_manager_ : nullptr);
 }
 
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(

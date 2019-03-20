@@ -23,9 +23,11 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
@@ -58,22 +60,29 @@ class WebSocketClientSocketHandleAdapterTest
   WebSocketClientSocketHandleAdapterTest()
       : host_port_pair_("www.example.org", 443),
         socket_pool_manager_(std::make_unique<ClientSocketPoolManagerImpl>(
-            net_log_.net_log(),
-            &socket_factory_,
-            nullptr,
-            nullptr,
-            &host_resolver,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr,
-            &websocket_endpoint_lock_manager_,
-            nullptr,
-            nullptr,
+            CommonConnectJobParams(
+                &socket_factory_,
+                &host_resolver,
+                nullptr /* proxy_delegate */,
+                nullptr /* http_user_agent_settings */,
+                SSLClientSocketContext(),
+                SSLClientSocketContext(),
+                nullptr /* socket_performance_watcher_factory */,
+                nullptr /* network_quality_estimator */,
+                net_log_.net_log(),
+                nullptr /* websocket_endpoint_lock_manager */),
+            CommonConnectJobParams(
+                &socket_factory_,
+                &host_resolver,
+                nullptr /* proxy_delegate */,
+                nullptr /* http_user_agent_settings */,
+                SSLClientSocketContext(),
+                SSLClientSocketContext(),
+                nullptr /* socket_performance_watcher_factory */,
+                nullptr /* network_quality_estimator */,
+                net_log_.net_log(),
+                &websocket_endpoint_lock_manager_),
+            nullptr /* ssl_config_service */,
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         transport_params_(base::MakeRefCounted<TransportSocketParams>(
             host_port_pair_,
