@@ -59,6 +59,10 @@ int64_t NodeBase::GetPropertyOrDefault(
   return default_value;
 }
 
+bool NodeBase::NodeInGraph(const NodeBase* other_node) const {
+  return graph_->GetNodeByID(other_node->id()) == other_node;
+}
+
 void NodeBase::OnEventReceived(resource_coordinator::mojom::Event event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())

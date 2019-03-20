@@ -26,54 +26,38 @@ FrameNodeImpl::FrameNodeImpl(const resource_coordinator::CoordinationUnitID& id,
 
 FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (parent_frame_node_)
-    parent_frame_node_->RemoveChildFrame(this);
-  if (page_node_)
-    page_node_->RemoveFrameImpl(this);
-  if (process_node_)
-    process_node_->RemoveFrame(this);
-  for (auto* child_frame : child_frame_nodes_)
-    child_frame->RemoveParentFrame(this);
 }
 
-void FrameNodeImpl::SetProcess(
-    const resource_coordinator::CoordinationUnitID& cu_id) {
+void FrameNodeImpl::SetProcess(ProcessNodeImpl* process_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ProcessNodeImpl* process_node = ProcessNodeImpl::GetNodeByID(graph_, cu_id);
-  if (!process_node)
-    return;
+  DCHECK(NodeInGraph(process_node));
   DCHECK(!process_node_);
   process_node_ = process_node;
   process_node->AddFrame(this);
 }
 
-void FrameNodeImpl::AddChildFrame(
-    const resource_coordinator::CoordinationUnitID& cu_id) {
+void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(cu_id != id());
-  FrameNodeImpl* frame_node = FrameNodeImpl::GetNodeByID(graph_, cu_id);
-  if (!frame_node)
-    return;
-  if (HasFrameNodeInAncestors(frame_node) ||
-      frame_node->HasFrameNodeInDescendants(this)) {
-    DCHECK(false) << "Cyclic reference in frame coordination units detected!";
-    return;
-  }
-  if (AddChildFrameImpl(frame_node)) {
-    frame_node->AddParentFrame(this);
-  }
+  DCHECK(child_frame_node);
+  DCHECK_NE(this, child_frame_node);
+  DCHECK(NodeInGraph(child_frame_node));
+  DCHECK(!HasFrameNodeInAncestors(child_frame_node) &&
+         !child_frame_node->HasFrameNodeInDescendants(this));
+
+  bool inserted = child_frame_nodes_.insert(child_frame_node).second;
+  DCHECK(inserted);
+  child_frame_node->AddParentFrame(this);
 }
 
-void FrameNodeImpl::RemoveChildFrame(
-    const resource_coordinator::CoordinationUnitID& cu_id) {
+void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(cu_id != id());
-  FrameNodeImpl* frame_node = FrameNodeImpl::GetNodeByID(graph_, cu_id);
-  if (!frame_node)
-    return;
-  if (RemoveChildFrame(frame_node)) {
-    frame_node->RemoveParentFrame(this);
-  }
+  DCHECK(child_frame_node);
+  DCHECK_NE(this, child_frame_node);
+  DCHECK(NodeInGraph(child_frame_node));
+
+  size_t removed = child_frame_nodes_.erase(child_frame_node);
+  DCHECK_EQ(1u, removed);
+  child_frame_node->RemoveParentFrame(this);
 }
 
 void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
@@ -193,6 +177,20 @@ void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
   }
 }
 
+void FrameNodeImpl::BeforeDestroyed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NodeBase::BeforeDestroyed();
+
+  if (parent_frame_node_)
+    parent_frame_node_->RemoveChildFrame(this);
+  if (page_node_)
+    page_node_->RemoveFrame(this);
+  if (process_node_)
+    process_node_->RemoveFrame(this);
+  for (auto* child_frame : child_frame_nodes_)
+    child_frame->RemoveParentFrame(this);
+}
+
 void FrameNodeImpl::OnEventReceived(resource_coordinator::mojom::Event event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
@@ -229,25 +227,14 @@ bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const {
 
 void FrameNodeImpl::AddParentFrame(FrameNodeImpl* parent_frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(nullptr, parent_frame_node_);
   parent_frame_node_ = parent_frame_node;
-}
-
-bool FrameNodeImpl::AddChildFrameImpl(FrameNodeImpl* child_frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return child_frame_nodes_.count(child_frame_node)
-             ? false
-             : child_frame_nodes_.insert(child_frame_node).second;
 }
 
 void FrameNodeImpl::RemoveParentFrame(FrameNodeImpl* parent_frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(parent_frame_node_ == parent_frame_node);
   parent_frame_node_ = nullptr;
-}
-
-bool FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return child_frame_nodes_.erase(child_frame_node) > 0;
 }
 
 void FrameNodeImpl::AddPageNode(PageNodeImpl* page_node) {

@@ -30,9 +30,9 @@ struct MockSinglePageInSingleProcessGraph {
   explicit MockSinglePageInSingleProcessGraph(Graph* graph);
   ~MockSinglePageInSingleProcessGraph();
   TestNodeWrapper<SystemNodeImpl> system;
-  TestNodeWrapper<FrameNodeImpl> frame;
   TestNodeWrapper<ProcessNodeImpl> process;
   TestNodeWrapper<PageNodeImpl> page;
+  TestNodeWrapper<FrameNodeImpl> frame;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -52,8 +52,8 @@ struct MockMultiplePagesInSingleProcessGraph
     : public MockSinglePageInSingleProcessGraph {
   explicit MockMultiplePagesInSingleProcessGraph(Graph* graph);
   ~MockMultiplePagesInSingleProcessGraph();
-  TestNodeWrapper<FrameNodeImpl> other_frame;
   TestNodeWrapper<PageNodeImpl> other_page;
+  TestNodeWrapper<FrameNodeImpl> other_frame;
 };
 
 // The following coordination unit graph topology is created to emulate a
