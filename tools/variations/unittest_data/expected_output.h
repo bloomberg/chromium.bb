@@ -23,6 +23,7 @@ struct FieldTrialTestingExperiment {
   const char* const name;
   const Study::Platform * platforms;
   const size_t platforms_size;
+  const Study::OptionalBool is_low_end_device;
   const FieldTrialTestingExperimentParams * params;
   const size_t params_size;
   const char* const * enable_features;
