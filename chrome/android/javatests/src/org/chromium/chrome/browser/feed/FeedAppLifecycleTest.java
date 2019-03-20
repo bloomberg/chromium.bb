@@ -33,6 +33,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -50,6 +51,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -129,6 +131,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/944061.
     public void testNtpOpeningTriggersInitializeOnlyOnce() throws InterruptedException {
         // We open to about:blank initially so we shouldn't have called initialize() yet.
         verify(mAppLifecycleListener, times(0)).initialize();
@@ -259,6 +262,7 @@ public class FeedAppLifecycleTest {
     @Test
     @SmallTest
     @Feature({"InterestFeedContentSuggestions"})
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/944061.
     public void testMultiWindowDoesNotCauseMultipleInitialize() throws InterruptedException {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         verify(mAppLifecycleListener, times(1)).initialize();

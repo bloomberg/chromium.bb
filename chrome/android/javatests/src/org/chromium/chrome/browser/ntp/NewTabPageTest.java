@@ -332,6 +332,9 @@ public class NewTabPageTest {
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/593007")
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testSearchFromFakebox(boolean interestFeedEnabled) throws InterruptedException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         TouchCommon.singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
@@ -393,6 +396,9 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testOpenMostVisitedItemInIncognitoTab(boolean interestFeedEnabled)
             throws InterruptedException, ExecutionException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule,
                 mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, true,
@@ -407,6 +413,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testRemoveMostVisitedItem(boolean interestFeedEnabled) throws ExecutionException {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         SiteSuggestion testSite = mSiteSuggestions.get(0);
         View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
@@ -454,6 +463,9 @@ public class NewTabPageTest {
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testUrlFocusAnimationsEnabledOnFailedLoad(boolean interestFeedEnabled)
             throws Exception {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         // TODO(jbudorick): switch this to EmbeddedTestServer.
         TestWebServer webServer = TestWebServer.start();
         try {
