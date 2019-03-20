@@ -82,6 +82,9 @@ function FileBrowserBackgroundImpl() {
   /** @type {!Crostini} */
   this.crostini = new CrostiniImpl();
 
+  /** @type {!MountMetrics} */
+  this.mountMetrics = new MountMetrics();
+
   /**
    * String assets.
    * @type {Object<string>}
