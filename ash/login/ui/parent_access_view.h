@@ -47,6 +47,10 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
     ~TestApi();
 
     LoginButton* back_button() const;
+    views::Label* title_label() const;
+    views::Label* description_label() const;
+    views::View* access_code_view() const;
+    views::LabelButton* help_button() const;
     ArrowButtonView* submit_button() const;
     LoginPinView* pin_keyboard_view() const;
 
@@ -82,6 +86,7 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   void RequestFocus() override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

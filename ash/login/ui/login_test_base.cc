@@ -141,6 +141,17 @@ void LoginTestBase::AddPublicAccountUsers(size_t num_public_accounts) {
   DataDispatcher()->NotifyUsers(users_);
 }
 
+void LoginTestBase::AddChildUsers(size_t num_users) {
+  for (size_t i = 0; i < num_users; i++) {
+    std::string email =
+        base::StrCat({"user", std::to_string(users_.size()), "@domain.com"});
+    users_.push_back(CreateChildUser(email));
+  }
+
+  // Notify any listeners that the user count has changed.
+  DataDispatcher()->NotifyUsers(users_);
+}
+
 LoginDataDispatcher* LoginTestBase::DataDispatcher() {
   return LockScreen::HasInstance() ? LockScreen::Get()->data_dispatcher()
                                    : &data_dispatcher_;

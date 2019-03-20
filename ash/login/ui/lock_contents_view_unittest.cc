@@ -1879,6 +1879,46 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
+// Tests parent access dialog showing and hiding.
+TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  AddChildUsers(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  LoginBigUserView* primary_view =
+      LockContentsView::TestApi(contents).primary_big_view();
+  LoginAuthUserView::TestApi auth_user =
+      LoginAuthUserView::TestApi(primary_view->auth_user());
+
+  EXPECT_TRUE(primary_view->auth_user());
+  EXPECT_FALSE(primary_view->parent_access());
+  EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
+                  .textfield()
+                  ->HasFocus());
+
+  DataDispatcher()->SetShowParentAccessDialog(true);
+
+  EXPECT_TRUE(primary_view->auth_user());
+  EXPECT_TRUE(primary_view->parent_access());
+  EXPECT_FALSE(LoginPasswordView::TestApi(auth_user.password_view())
+                   .textfield()
+                   ->HasFocus());
+  EXPECT_TRUE(HasFocusInAnyChildView(
+      ParentAccessView::TestApi(primary_view->parent_access())
+          .access_code_view()));
+
+  DataDispatcher()->SetShowParentAccessDialog(false);
+
+  EXPECT_TRUE(primary_view->auth_user());
+  EXPECT_FALSE(primary_view->parent_access());
+  EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
+                  .textfield()
+                  ->HasFocus());
+}
+
 using LockContentsViewPowerManagerUnitTest = LockContentsViewUnitTest;
 
 // Ensures that a PowerManagerClient::Observer is added on LockScreen::Show()

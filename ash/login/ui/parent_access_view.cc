@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -45,6 +46,9 @@ namespace ash {
 namespace {
 
 constexpr const char kParentAccessViewClassName[] = "ParentAccessView";
+
+// Identifier of parent access input views group used for focus traversal.
+constexpr int kParentAccessInputGroup = 1;
 
 // Number of digits displayed in access code input.
 constexpr int kParentAccessCodePinLength = 6;
@@ -86,6 +90,35 @@ bool IsTabletMode() {
       ->IsTabletModeWindowManagerEnabled();
 }
 
+// Accessible input field. Customizes field description and focus behavior.
+class AccessibleInputField : public views::Textfield {
+ public:
+  AccessibleInputField() = default;
+  ~AccessibleInputField() override = default;
+
+  void set_accessible_description(const base::string16& description) {
+    accessible_description_ = description;
+  }
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kLabelText;
+    node_data->SetDescription(accessible_description_);
+    node_data->SetValue(text());
+  }
+
+  bool IsGroupFocusTraversable() const override { return false; }
+
+  View* GetSelectedViewForGroup(int group) override {
+    return parent() ? parent()->GetSelectedViewForGroup(group) : nullptr;
+  }
+
+ private:
+  base::string16 accessible_description_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibleInputField);
+};
+
 }  // namespace
 
 // Digital access code input view for variable length of input codes.
@@ -110,12 +143,12 @@ class ParentAccessView::AccessCodeInput : public views::View,
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(),
         kAccessCodeBetweenInputFieldsGapDp));
-
+    SetGroup(kParentAccessInputGroup);
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
     for (int i = 0; i < length; ++i) {
-      auto* field = new views::Textfield();
+      auto* field = new AccessibleInputField();
       field->set_controller(this);
       field->SetPreferredSize(gfx::Size(kAccessCodeInputFieldWidthDp,
                                         kAccessCodeInputFieldHeightDp));
@@ -128,7 +161,11 @@ class ParentAccessView::AccessCodeInput : public views::View,
           gfx::Font::Weight::NORMAL));
       field->SetBorder(views::CreateSolidSidedBorder(
           0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, kTextColor));
-
+      field->SetGroup(kParentAccessInputGroup);
+      if (i < length - 1) {
+        field->set_accessible_description(l10n_util::GetStringUTF16(
+            IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT));
+      }
       input_fields_.push_back(field);
       AddChildView(field);
     }
@@ -182,6 +219,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
   }
 
   // views::View:
+  bool IsGroupFocusTraversable() const override { return false; }
+
+  View* GetSelectedViewForGroup(int group) override { return ActiveField(); }
+
   void RequestFocus() override { ActiveField()->RequestFocus(); }
 
   // views::TextfieldController:
@@ -190,10 +231,13 @@ class ParentAccessView::AccessCodeInput : public views::View,
     if (key_event.type() != ui::ET_KEY_PRESSED)
       return false;
 
-    const ui::KeyboardCode key_code = key_event.key_code();
     // AccessCodeInput class responds to limited subset of key press events.
     // All key pressed events not handled below are ignored.
-    if (key_code >= ui::VKEY_0 && key_code <= ui::VKEY_9) {
+    const ui::KeyboardCode key_code = key_event.key_code();
+    if (key_code == ui::VKEY_TAB || key_code == ui::VKEY_BACKTAB) {
+      // Allow using tab for keyboard navigation.
+      return false;
+    } else if (key_code >= ui::VKEY_0 && key_code <= ui::VKEY_9) {
       InsertDigit(key_code - ui::VKEY_0);
     } else if (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_NUMPAD9) {
       InsertDigit(key_code - ui::VKEY_NUMPAD0);
@@ -298,6 +342,23 @@ ParentAccessView::TestApi::~TestApi() = default;
 LoginButton* ParentAccessView::TestApi::back_button() const {
   return view_->back_button_;
 }
+
+views::Label* ParentAccessView::TestApi::title_label() const {
+  return view_->title_label_;
+}
+
+views::Label* ParentAccessView::TestApi::description_label() const {
+  return view_->description_label_;
+}
+
+views::View* ParentAccessView::TestApi::access_code_view() const {
+  return view_->access_code_view_;
+}
+
+views::LabelButton* ParentAccessView::TestApi::help_button() const {
+  return view_->help_button_;
+}
+
 ArrowButtonView* ParentAccessView::TestApi::submit_button() const {
   return view_->submit_button_;
 }
@@ -358,6 +419,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
                                   views::ImageButton::ALIGN_MIDDLE);
   back_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME));
+  back_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+
   header->AddChildView(back_button_);
 
   // Main view icon.
@@ -413,6 +476,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
                                               base::Unretained(this)),
                           base::BindRepeating(&ParentAccessView::SubmitCode,
                                               base::Unretained(this)));
+  access_code_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
   AddChildView(access_code_view_);
 
   add_spacer(kAccessCodeToPinKeyboardDistanceDp);
@@ -452,6 +516,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   help_button_->SetTextColor(views::Button::STATE_NORMAL, kTextColor);
   help_button_->SetTextColor(views::Button::STATE_HOVERED, kTextColor);
   help_button_->SetTextColor(views::Button::STATE_PRESSED, kTextColor);
+  help_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
+
   footer->AddChildView(help_button_);
 
   auto* horizontal_spacer = new NonAccessibleView();
@@ -465,6 +531,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   submit_button_->SetEnabled(false);
   submit_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
+  submit_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   footer->AddChildView(submit_button_);
 
   add_spacer(kSubmitButtonBottomMarginDp);
@@ -589,6 +656,13 @@ void ParentAccessView::OnInputChange(bool complete) {
     UpdateState(State::kNormal);
 
   submit_button_->SetEnabled(complete);
+}
+
+void ParentAccessView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::View::GetAccessibleNodeData(node_data);
+  node_data->role = ax::mojom::Role::kDialog;
+  node_data->SetName(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME));
 }
 
 }  // namespace ash

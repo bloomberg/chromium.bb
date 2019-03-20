@@ -93,7 +93,7 @@ void LoginBigUserView::ShowParentAccessView() {
       parent_access_callbacks_);
   RemoveChildView(auth_user_);
   AddChildView(parent_access_);
-  parent_access_->RequestFocus();
+  RequestFocus();
 }
 
 void LoginBigUserView::HideParentAccessView() {
@@ -109,6 +109,7 @@ void LoginBigUserView::HideParentAccessView() {
   delete parent_access_;
   parent_access_ = nullptr;
   AddChildView(auth_user_);
+  RequestFocus();
 }
 
 const mojom::LoginUserInfoPtr& LoginBigUserView::GetCurrentUser() const {
