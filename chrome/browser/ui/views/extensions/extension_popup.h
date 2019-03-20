@@ -41,10 +41,12 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   };
 
   // The min/max height of popups.
-  static const int kMinWidth;
-  static const int kMinHeight;
-  static const int kMaxWidth;
-  static const int kMaxHeight;
+  // The minimum is just a little larger than the size of the button itself.
+  // The maximum is an arbitrary number and should be smaller than most screens.
+  static constexpr int kMinWidth = 25;
+  static constexpr int kMinHeight = 25;
+  static constexpr int kMaxWidth = 800;
+  static constexpr int kMaxHeight = 600;
 
   // Creates and shows a popup with the given |host| positioned adjacent to
   // |anchor_view|.
@@ -63,28 +65,28 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
 
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
-  // views::BubbleDialogDelegateView overrides.
+  // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
   int GetDialogButtons() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   bool ShouldHaveRoundCorners() const override;
 
-  // ExtensionViewViews::Container overrides.
+  // ExtensionViewViews::Container:
   void OnExtensionSizeChanged(ExtensionViewViews* view) override;
 
-  // content::NotificationObserver overrides.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // TabStripModelObserver overrides.
+  // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
-  // content::DevToolsAgentHostObserver overrides.
+  // content::DevToolsAgentHostObserver:
   void DevToolsAgentHostAttached(
       content::DevToolsAgentHost* agent_host) override;
   void DevToolsAgentHostDetached(
