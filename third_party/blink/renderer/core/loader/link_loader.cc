@@ -51,7 +51,7 @@
 
 namespace blink {
 
-class NetworkHintsInterface;
+class WebPrescientNetworking;
 
 namespace {
 
@@ -169,10 +169,8 @@ Resource* LinkLoader::GetResourceForTesting() {
   return finish_observer_ ? finish_observer_->GetResource() : nullptr;
 }
 
-bool LinkLoader::LoadLink(
-    const LinkLoadParameters& params,
-    Document& document,
-    const NetworkHintsInterface& network_hints_interface) {
+bool LinkLoader::LoadLink(const LinkLoadParameters& params,
+                          Document& document) {
   // If any loading process is in progress, abort it.
   Abort();
 
@@ -180,11 +178,9 @@ bool LinkLoader::LoadLink(
     return false;
 
   PreloadHelper::DnsPrefetchIfNeeded(params, &document, document.GetFrame(),
-                                     network_hints_interface,
                                      PreloadHelper::kLinkCalledFromMarkup);
 
   PreloadHelper::PreconnectIfNeeded(params, &document, document.GetFrame(),
-                                    network_hints_interface,
                                     PreloadHelper::kLinkCalledFromMarkup);
 
   Resource* resource = PreloadHelper::PreloadIfNeeded(

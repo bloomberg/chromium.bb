@@ -41,7 +41,6 @@
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -80,7 +79,6 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
@@ -504,8 +502,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   PreloadHelper::LoadLinksFromHeader(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
       *GetFrame(), &frame_or_imported_document_->GetDocument(),
-      NetworkHintsInterfaceImpl(), resource_loading_policy,
-      PreloadHelper::kLoadAll, nullptr);
+      resource_loading_policy, PreloadHelper::kLoadAll, nullptr);
 
   DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
             request.GetFrameType());

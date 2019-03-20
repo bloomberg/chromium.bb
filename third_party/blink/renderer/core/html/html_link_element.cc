@@ -27,6 +27,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
-#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -162,8 +162,7 @@ bool HTMLLinkElement::IsLinkCreatedByParser() {
 }
 
 bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
-  return link_loader_->LoadLink(params, GetDocument(),
-                                NetworkHintsInterfaceImpl());
+  return link_loader_->LoadLink(params, GetDocument());
 }
 
 void HTMLLinkElement::LoadStylesheet(const LinkLoadParameters& params,
