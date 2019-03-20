@@ -256,6 +256,16 @@ class NativeStackSamplerMac : public NativeStackSampler {
                          ProfileBuilder* profile_builder) override;
 
  private:
+  // Suspends the thread with |thread_handle|, copies its stack, register
+  // context, and current metadata and resumes the thread. Returns true on
+  // success.
+  static bool CopyStack(mach_port_t thread_port,
+                        const void* base_address,
+                        StackBuffer* stack_buffer,
+                        ProfileBuilder* profile_builder,
+                        x86_thread_state64_t* thread_state,
+                        uintptr_t* stack_top);
+
   // Walks the stack represented by |thread_state|, calling back to the
   // provided lambda for each frame.
   std::vector<Frame> WalkStack(const x86_thread_state64_t& thread_state,
@@ -306,47 +316,59 @@ NativeStackSamplerMac::~NativeStackSamplerMac() {}
 void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
                                               ProfileBuilder* profile_builder) {
   x86_thread_state64_t thread_state;
+  uintptr_t stack_top;
 
-  // Copy the stack.
-
-  uintptr_t new_stack_top = 0;
-  {
-    // IMPORTANT NOTE: Do not do ANYTHING in this in this scope that might
-    // allocate memory, including indirectly via use of DCHECK/CHECK or other
-    // logging statements. Otherwise this code can deadlock on heap locks in the
-    // default heap acquired by the target thread before it was suspended.
-    ScopedSuspendThread suspend_thread(thread_port_);
-    if (!suspend_thread.was_successful())
-      return;
-
-    if (!GetThreadState(thread_port_, &thread_state))
-      return;
-
-    auto stack_top = reinterpret_cast<uintptr_t>(thread_stack_base_address_);
-    uintptr_t stack_bottom = thread_state.__rsp;
-    if (stack_bottom >= stack_top)
-      return;
-
-    uintptr_t stack_size = stack_top - stack_bottom;
-    if (stack_size > stack_buffer->size())
-      return;
-
-    profile_builder->RecordMetadata();
-
-    CopyStackAndRewritePointers(
-        reinterpret_cast<uintptr_t*>(stack_buffer->buffer()),
-        reinterpret_cast<uintptr_t*>(stack_bottom),
-        reinterpret_cast<uintptr_t*>(stack_top), &thread_state);
-
-    new_stack_top =
-        reinterpret_cast<uintptr_t>(stack_buffer->buffer()) + stack_size;
-  }  // ScopedSuspendThread
+  bool success =
+      CopyStack(thread_port_, thread_stack_base_address_, stack_buffer,
+                profile_builder, &thread_state, &stack_top);
+  if (!success)
+    return;
 
   if (test_delegate_)
     test_delegate_->OnPreStackWalk();
 
   // Walk the stack and record it.
-  profile_builder->OnSampleCompleted(WalkStack(thread_state, new_stack_top));
+  profile_builder->OnSampleCompleted(WalkStack(thread_state, stack_top));
+}
+
+// static
+bool NativeStackSamplerMac::CopyStack(mach_port_t thread_port,
+                                      const void* base_address,
+                                      StackBuffer* stack_buffer,
+                                      ProfileBuilder* profile_builder,
+                                      x86_thread_state64_t* thread_state,
+                                      uintptr_t* stack_top) {
+  // IMPORTANT NOTE: Do not do ANYTHING in this in this scope that might
+  // allocate memory, including indirectly via use of DCHECK/CHECK or other
+  // logging statements. Otherwise this code can deadlock on heap locks acquired
+  // by the target thread before it was suspended.
+
+  ScopedSuspendThread suspend_thread(thread_port);
+  if (!suspend_thread.was_successful())
+    return false;
+
+  if (!GetThreadState(thread_port, thread_state))
+    return false;
+
+  auto top = reinterpret_cast<uintptr_t>(base_address);
+  uintptr_t bottom = thread_state->__rsp;
+  if (bottom >= top)
+    return false;
+
+  uintptr_t stack_size = top - bottom;
+  if (stack_size > stack_buffer->size())
+    return false;
+
+  profile_builder->RecordMetadata();
+
+  CopyStackAndRewritePointers(
+      reinterpret_cast<uintptr_t*>(stack_buffer->buffer()),
+      reinterpret_cast<uintptr_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
+      thread_state);
+
+  *stack_top = reinterpret_cast<uintptr_t>(stack_buffer->buffer()) + stack_size;
+
+  return true;
 }
 
 std::vector<Frame> NativeStackSamplerMac::WalkStack(
