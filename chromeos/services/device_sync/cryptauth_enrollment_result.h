@@ -97,7 +97,11 @@ class CryptAuthEnrollmentResult {
     // requesting it to re-enroll or re-sync.
     kErrorGcmRegistrationFailed,
     // Could not retrieve ClientAppMetadata from ClientAppMetadataProvider.
-    kErrorClientAppMetadataFetchFailed
+    kErrorClientAppMetadataFetchFailed,
+    // The enrollment manager timed out waiting for GCM registration.
+    kErrorTimeoutWaitingForGcmRegistration,
+    // The enrollment manager timed out waiting for ClientAppMetadata.
+    kErrorTimeoutWaitingForClientAppMetadata
   };
 
   CryptAuthEnrollmentResult(

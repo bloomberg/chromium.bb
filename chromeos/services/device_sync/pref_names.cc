@@ -30,6 +30,13 @@ const char kCryptAuthDeviceSyncReason[] = "cryptauth.device_sync.reason";
 const char kCryptAuthDeviceSyncUnlockKeys[] =
     "cryptauth.device_sync.unlock_keys";
 
+// The CryptAuth v2 Enrollment invocation reason to use when retrying a failed
+// enrollment attempt. This should be one of the enum values of
+// cryptauth2::ClientMetadata::InvocationReason in
+// chromeos/services/device_sync/proto/cryptauth_common.proto.
+const char kCryptAuthEnrollmentFailureRecoveryInvocationReason[] =
+    "cryptauth.enrollment.failure_recovery_invocation_reason";
+
 // Whether the system is scheduling enrollments more aggressively to recover
 // from the previous enrollment failure.
 const char kCryptAuthEnrollmentIsRecoveringFromFailure[] =

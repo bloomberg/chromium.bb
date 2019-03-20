@@ -145,6 +145,12 @@ std::ostream& operator<<(
       stream << "[Error: Could not retrieve ClientAppMetadata from "
              << "ClientAppMetadataProvider]";
       break;
+    case ResultCode::kErrorTimeoutWaitingForGcmRegistration:
+      stream << "[Error: Timeout waiting for GCM registration]";
+      break;
+    case ResultCode::kErrorTimeoutWaitingForClientAppMetadata:
+      stream << "[Error: Timeout waiting for ClientAppMetadata]";
+      break;
   }
 
   return stream;

@@ -47,6 +47,9 @@ class CryptAuthEnrollmentManager {
   // enrollment is already in progress, this function does nothing.
   // |invocation_reason| specifies the reason that the enrollment was triggered,
   // which is upload to the server.
+  // TODO(nohle): Change cryptauth::InvocationReason to
+  // cryptauthv2::ClientMetadata::InvocationReason when CryptAuth v1 is
+  // obsolete.
   virtual void ForceEnrollmentNow(
       cryptauth::InvocationReason invocation_reason) = 0;
 
