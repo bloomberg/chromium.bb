@@ -48,6 +48,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
       GetDisplayUnitInfoListCallback callback) override {}
   void SetDisplayProperties(const std::string& id,
                             ash::mojom::DisplayConfigPropertiesPtr properties,
+                            ash::mojom::DisplayConfigSource source,
                             SetDisplayPropertiesCallback callback) override {
     if (properties->set_primary) {
       int64_t display_id;

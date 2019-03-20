@@ -130,7 +130,7 @@ class CrosDisplayConfigTest : public AshTestBase {
     mojom::DisplayConfigResult result;
     base::RunLoop run_loop;
     cros_display_config_->SetDisplayProperties(
-        id, std::move(properties),
+        id, std::move(properties), mojom::DisplayConfigSource::kUser,
         base::BindOnce(&SetResult, &result, run_loop.QuitClosure()));
     run_loop.Run();
     return result;

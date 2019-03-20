@@ -632,8 +632,10 @@ TEST_F(DisplayPrefsTest, PreventStore) {
   display::ManagedDisplayMode old_mode(gfx::Size(400, 300));
   display::ManagedDisplayMode new_mode(gfx::Size(500, 400));
   EXPECT_TRUE(shell->resolution_notification_controller()
-                  ->PrepareNotificationAndSetDisplayMode(id, old_mode, new_mode,
-                                                         base::OnceClosure()));
+                  ->PrepareNotificationAndSetDisplayMode(
+                      id, old_mode, new_mode,
+                      ash::mojom::DisplayConfigSource::kUser,
+                      base::OnceClosure()));
   UpdateDisplay("500x400#500x400|400x300|300x200");
 
   const base::DictionaryValue* properties =

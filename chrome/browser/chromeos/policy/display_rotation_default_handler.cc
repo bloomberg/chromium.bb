@@ -68,7 +68,8 @@ void DisplayRotationDefaultHandler::ApplyChanges(
     config_properties->rotation =
         ash::mojom::DisplayRotation::New(display_rotation_default_);
     cros_display_config->SetDisplayProperties(
-        display_unit_info->id, std::move(config_properties), base::DoNothing());
+        display_unit_info->id, std::move(config_properties),
+        ash::mojom::DisplayConfigSource::kPolicy, base::DoNothing());
   }
 }
 
