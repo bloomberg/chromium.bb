@@ -1290,10 +1290,14 @@ void SigninScreenHandler::HandleAccountPickerReady() {
       base::BindOnce(&SigninScreenHandler::OnWallpaperBlurChanged,
                      weak_factory_.GetWeakPtr()));
 
-  // This updates post-OOBE shelf UI. Changes the color of shelf buttons and
-  // displays additional buttons that should only be shown in the login screen.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::LOGIN_PRIMARY);
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  if (session_manager->session_state() == session_manager::SessionState::OOBE) {
+    // This updates post-OOBE shelf UI. Changes the color of shelf buttons and
+    // displays additional buttons that should only be shown in the login screen
+    session_manager->SetSessionState(
+        session_manager::SessionState::LOGIN_PRIMARY);
+  }
 
   if (delegate_)
     delegate_->OnSigninScreenReady();

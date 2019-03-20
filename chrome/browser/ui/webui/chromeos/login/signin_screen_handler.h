@@ -347,6 +347,12 @@ class SigninScreenHandler
   void HandleToggleKioskEnableScreen();
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
+
+  // TODO(crbug.com/943720): Change to views account-picker screen in post-OOBE
+  // flow.
+  // WebUI account-picker screen is shown:
+  // * After OOBE enrollment when policy contains device local accounts.
+  // * On multiple sign-in account selection.
   void HandleAccountPickerReady();
   void HandleSignOutUser();
   void HandleOpenInternetDetailDialog();
