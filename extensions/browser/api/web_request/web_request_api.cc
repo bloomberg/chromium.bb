@@ -1584,10 +1584,11 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
         listener->id.extension_id, crosses_incognito));
 
     EventRouter::DispatchEventToSender(
-        listener->ipc_sender.get(), browser_context, listener->id.extension_id,
+        listener->ipc_sender.get(), browser_context,
+        listener->id.render_process_id, listener->id.extension_id,
         listener->histogram_value, listener->id.sub_event_name,
-        std::move(args_filtered), EventRouter::USER_GESTURE_UNKNOWN,
-        EventFilteringInfo());
+        blink::mojom::kInvalidServiceWorkerVersionId, std::move(args_filtered),
+        EventRouter::USER_GESTURE_UNKNOWN, EventFilteringInfo());
   }
 }
 
@@ -1597,12 +1598,12 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64_t request_id,
-    int embedder_process_id,
+    int render_process_id,
     int web_view_instance_id,
     EventResponse* response) {
   Listeners& listeners = listeners_[browser_context][event_name];
   EventListener::ID id(browser_context, extension_id, sub_event_name,
-                       embedder_process_id, web_view_instance_id);
+                       render_process_id, web_view_instance_id);
   EventListener* listener = FindEventListenerInContainer(id, listeners);
 
   // This might happen, for example, if the extension has been unloaded.
@@ -1623,7 +1624,7 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     const std::string& sub_event_name,
     const RequestFilter& filter,
     int extra_info_spec,
-    int embedder_process_id,
+    int render_process_id,
     int web_view_instance_id,
     base::WeakPtr<IPC::Sender> ipc_sender) {
   if (!IsWebRequestEvent(event_name))
@@ -1633,7 +1634,7 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     return false;
 
   EventListener::ID id(browser_context, extension_id, sub_event_name,
-                       embedder_process_id, web_view_instance_id);
+                       render_process_id, web_view_instance_id);
   if (FindEventListener(id) != nullptr) {
     // This is likely an abuse of the API by a malicious extension.
     return false;
@@ -1698,7 +1699,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
 
     // There are two places that call this method: RemoveWebViewEventListeners
     // and OnListenerRemoved. The latter can't use operator== because it doesn't
-    // have the embedder_process_id. This shouldn't be a problem, because
+    // have the render_process_id. This shouldn't be a problem, because
     // OnListenerRemoved is only called for web_view_instance_id == 0.
     bool matches =
         strict ? listener->id == id : listener->id.LooselyMatches(id);
@@ -1725,7 +1726,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
 
 void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     void* browser_context,
-    int embedder_process_id,
+    int render_process_id,
     int web_view_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1739,7 +1740,7 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     std::vector<EventListener::ID> listeners_to_delete;
     const Listeners& listeners = event_iter.second;
     for (const auto& listener : listeners) {
-      if (listener->id.embedder_process_id == embedder_process_id &&
+      if (listener->id.render_process_id == render_process_id &&
           listener->id.web_view_instance_id == web_view_instance_id) {
         listeners_to_delete.push_back(listener->id);
       }
@@ -1860,7 +1861,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       // If this is a PlzNavigate request, then we can skip this check. IDs will
       // be -1 and the request is trusted.
       if (!request->is_browser_side_navigation &&
-          (listener->id.embedder_process_id !=
+          (listener->id.render_process_id !=
            request->web_view_embedder_process_id)) {
         continue;
       }
@@ -1872,7 +1873,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     // Filter requests from other extensions / apps. This does not work for
     // content scripts, or extension pages in non-extension processes.
     if (is_request_from_extension &&
-        listener->id.embedder_process_id != request->render_process_id) {
+        listener->id.render_process_id != request->render_process_id) {
       continue;
     }
 
@@ -2540,8 +2541,9 @@ WebRequestInternalAddEventListenerFunction::Run() {
   int web_view_instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &web_view_instance_id));
 
+  // TODO(dbertoni): We should just use source_process_id() here.
   base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender = ipc_sender_weak();
-  int embedder_process_id = ipc_sender ? ipc_sender->render_process_id() : 0;
+  int render_process_id = ipc_sender ? ipc_sender->render_process_id() : 0;
 
   const Extension* extension =
       extension_info_map()->extensions().GetByID(extension_id_safe());
@@ -2585,7 +2587,7 @@ WebRequestInternalAddEventListenerFunction::Run() {
       ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
           profile_id(), extension_id_safe(), extension_name,
           GetEventHistogramValue(event_name), event_name, sub_event_name,
-          filter, extra_info_spec, embedder_process_id, web_view_instance_id,
+          filter, extra_info_spec, render_process_id, web_view_instance_id,
           ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
@@ -2598,12 +2600,12 @@ void WebRequestInternalEventHandledFunction::OnError(
     const std::string& event_name,
     const std::string& sub_event_name,
     uint64_t request_id,
-    int embedder_process_id,
+    int render_process_id,
     int web_view_instance_id,
     std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(), extension_id_safe(), event_name, sub_event_name, request_id,
-      embedder_process_id, web_view_instance_id, response.release());
+      render_process_id, web_view_instance_id, response.release());
 }
 
 ExtensionFunction::ResponseAction
@@ -2623,7 +2625,7 @@ WebRequestInternalEventHandledFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &web_view_instance_id));
 
   base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender = ipc_sender_weak();
-  int embedder_process_id = ipc_sender ? ipc_sender->render_process_id() : 0;
+  int render_process_id = ipc_sender ? ipc_sender->render_process_id() : 0;
 
   std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
   if (HasOptionalArgument(4)) {
@@ -2645,7 +2647,7 @@ WebRequestInternalEventHandledFunction::Run() {
          value->HasKey(keys::kAuthCredentialsKey) ||
          value->HasKey("requestHeaders") ||
          value->HasKey("responseHeaders"))) {
-      OnError(event_name, sub_event_name, request_id, embedder_process_id,
+      OnError(event_name, sub_event_name, request_id, render_process_id,
               web_view_instance_id, std::move(response));
       return RespondNow(Error(keys::kInvalidPublicSessionBlockingResponse));
     }
@@ -2653,7 +2655,7 @@ WebRequestInternalEventHandledFunction::Run() {
     if (value->HasKey("cancel")) {
       // Don't allow cancel mixed with other keys.
       if (value->size() != 1) {
-        OnError(event_name, sub_event_name, request_id, embedder_process_id,
+        OnError(event_name, sub_event_name, request_id, render_process_id,
                 web_view_instance_id, std::move(response));
         return RespondNow(Error(keys::kInvalidBlockingResponse));
       }
@@ -2669,7 +2671,7 @@ WebRequestInternalEventHandledFunction::Run() {
                                                    &new_url_str));
       response->new_url = GURL(new_url_str);
       if (!response->new_url.is_valid()) {
-        OnError(event_name, sub_event_name, request_id, embedder_process_id,
+        OnError(event_name, sub_event_name, request_id, render_process_id,
                 web_view_instance_id, std::move(response));
         return RespondNow(Error(keys::kInvalidRedirectUrl, new_url_str));
       }
@@ -2680,7 +2682,7 @@ WebRequestInternalEventHandledFunction::Run() {
     if (has_request_headers || has_response_headers) {
       if (has_request_headers && has_response_headers) {
         // Allow only one of the keys, not both.
-        OnError(event_name, sub_event_name, request_id, embedder_process_id,
+        OnError(event_name, sub_event_name, request_id, render_process_id,
                 web_view_instance_id, std::move(response));
         return RespondNow(Error(keys::kInvalidHeaderKeyCombination));
       }
@@ -2707,17 +2709,17 @@ WebRequestInternalEventHandledFunction::Run() {
         if (!FromHeaderDictionary(header_value, &name, &value)) {
           std::string serialized_header;
           base::JSONWriter::Write(*header_value, &serialized_header);
-          OnError(event_name, sub_event_name, request_id, embedder_process_id,
+          OnError(event_name, sub_event_name, request_id, render_process_id,
                   web_view_instance_id, std::move(response));
           return RespondNow(Error(keys::kInvalidHeader, serialized_header));
         }
         if (!net::HttpUtil::IsValidHeaderName(name)) {
-          OnError(event_name, sub_event_name, request_id, embedder_process_id,
+          OnError(event_name, sub_event_name, request_id, render_process_id,
                   web_view_instance_id, std::move(response));
           return RespondNow(Error(keys::kInvalidHeaderName));
         }
         if (!net::HttpUtil::IsValidHeaderValue(value)) {
-          OnError(event_name, sub_event_name, request_id, embedder_process_id,
+          OnError(event_name, sub_event_name, request_id, render_process_id,
                   web_view_instance_id, std::move(response));
           return RespondNow(Error(keys::kInvalidHeaderValue, name));
         }
@@ -2749,7 +2751,7 @@ WebRequestInternalEventHandledFunction::Run() {
 
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile_id(), extension_id_safe(), event_name, sub_event_name, request_id,
-      embedder_process_id, web_view_instance_id, response.release());
+      render_process_id, web_view_instance_id, response.release());
 
   return RespondNow(NoArguments());
 }
@@ -2790,12 +2792,12 @@ ExtensionWebRequestEventRouter::EventListener::ID::ID(
     void* browser_context,
     const std::string& extension_id,
     const std::string& sub_event_name,
-    int embedder_process_id,
+    int render_process_id,
     int web_view_instance_id)
     : browser_context(browser_context),
       extension_id(extension_id),
       sub_event_name(sub_event_name),
-      embedder_process_id(embedder_process_id),
+      render_process_id(render_process_id),
       web_view_instance_id(web_view_instance_id) {}
 
 bool ExtensionWebRequestEventRouter::EventListener::ID::LooselyMatches(
@@ -2818,7 +2820,7 @@ bool ExtensionWebRequestEventRouter::EventListener::ID::operator==(
   return extension_id == that.extension_id &&
          sub_event_name == that.sub_event_name &&
          web_view_instance_id == that.web_view_instance_id &&
-         embedder_process_id == that.embedder_process_id &&
+         render_process_id == that.render_process_id &&
          browser_context == that.browser_context;
 }
 

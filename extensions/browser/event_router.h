@@ -105,9 +105,11 @@ class EventRouter : public KeyedService,
   // methods BroadcastEvent or DispatchEventToExtension.
   static void DispatchEventToSender(IPC::Sender* ipc_sender,
                                     void* browser_context_id,
+                                    int render_process_id,
                                     const std::string& extension_id,
                                     events::HistogramValue histogram_value,
                                     const std::string& event_name,
+                                    int64_t service_worker_version_id,
                                     std::unique_ptr<base::ListValue> event_args,
                                     UserGestureState user_gesture,
                                     const EventFilteringInfo& info);
@@ -338,15 +340,19 @@ class EventRouter : public KeyedService,
   // Track the dispatched events that have not yet sent an ACK from the
   // renderer.
   void IncrementInFlightEvents(content::BrowserContext* context,
+                               content::RenderProcessHost* process,
                                const Extension* extension,
                                int event_id,
-                               const std::string& event_name);
+                               const std::string& event_name,
+                               int64_t service_worker_version_id);
 
   // static
   static void DoDispatchEventToSenderBookkeepingOnUI(
       void* browser_context_id,
+      int render_process_id,
       const std::string& extension_id,
       int event_id,
+      int64_t service_worker_version_id,
       events::HistogramValue histogram_value,
       const std::string& event_name);
 

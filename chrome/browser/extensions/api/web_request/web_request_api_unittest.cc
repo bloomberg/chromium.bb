@@ -113,7 +113,7 @@ static void EventHandledOnIOThread(
     ExtensionWebRequestEventRouter::EventResponse* response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile, extension_id, event_name, sub_event_name, request_id,
-      0 /* embedder_process_id */, 0 /* web_view_instance_id */, response);
+      0 /* render_process_id */, 0 /* web_view_instance_id */, response);
 }
 
 // Returns whether |warnings| contains an extension for |extension_id|.
@@ -982,7 +982,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   EXPECT_EQ(i, ipc_sender_.sent_end());
 }
 
-// Tests that |embedder_process_id| is not relevant for adding and removing
+// Tests that |render_process_id| is not relevant for adding and removing
 // listeners with |web_view_instance_id| = 0.
 TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   std::string ext_id("abcdefghijklmnopabcdefghijklmnop");
@@ -998,12 +998,10 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   // Add two non-webview listeners.
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 1 /* embedder_process_id */, 0,
-      ipc_sender_factory.GetWeakPtr());
+      filter, 0, 1 /* render_process_id */, 0, ipc_sender_factory.GetWeakPtr());
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
-      filter, 0, 2 /* embedder_process_id */, 0,
-      ipc_sender_factory.GetWeakPtr());
+      filter, 0, 2 /* render_process_id */, 0, ipc_sender_factory.GetWeakPtr());
   EXPECT_EQ(
       2u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
@@ -1070,7 +1068,7 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   response->cancel = true;
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       &profile_, extension_id, kEventName, kEventName + "/1",
-      request->identifier(), 0 /* embedder_process_id */,
+      request->identifier(), 0 /* render_process_id */,
       0 /* web_view_instance_id */, response);
   {
     base::RunLoop run_loop;

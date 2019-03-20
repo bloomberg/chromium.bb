@@ -447,7 +447,7 @@ class ExtensionWebRequestEventRouter {
                       const std::string& event_name,
                       const std::string& sub_event_name,
                       uint64_t request_id,
-                      int embedder_process_id,
+                      int render_process_id,
                       int web_view_instance_id,
                       EventResponse* response);
 
@@ -463,15 +463,14 @@ class ExtensionWebRequestEventRouter {
                         const std::string& sub_event_name,
                         const RequestFilter& filter,
                         int extra_info_spec,
-                        int embedder_process_id,
+                        int render_process_id,
                         int web_view_instance_id,
                         base::WeakPtr<IPC::Sender> ipc_sender);
 
   // Removes the listeners for a given <webview>.
-  void RemoveWebViewEventListeners(
-      void* browser_context,
-      int embedder_process_id,
-      int web_view_instance_id);
+  void RemoveWebViewEventListeners(void* browser_context,
+                                   int render_process_id,
+                                   int web_view_instance_id);
 
   // Called when an incognito browser_context is created or destroyed.
   void OnOTRBrowserContextCreated(void* original_browser_context,
@@ -520,17 +519,17 @@ class ExtensionWebRequestEventRouter {
     // associated with WebViews and those that are not. The ones associated with
     // WebViews are always identified by all five properties. The other ones
     // will always have web_view_instance_id = 0. Unfortunately, the
-    // callbacks/interfaces for these ones don't specify embedder_process_id.
+    // callbacks/interfaces for these ones don't specify render_process_id.
     // This is why we need the LooselyMatches method, and the need for a
     // |strict| argument on RemoveEventListener.
     struct ID {
       ID(void* browser_context,
          const std::string& extension_id,
          const std::string& sub_event_name,
-         int embedder_process_id,
+         int render_process_id,
          int web_view_instance_id);
 
-      // If web_view_instance_id is 0, then ignore embedder_process_id.
+      // If web_view_instance_id is 0, then ignore render_process_id.
       // TODO(rdevlin.cronin): In a more sane world, LooselyMatches wouldn't be
       // necessary.
       bool LooselyMatches(const ID& that) const;
@@ -539,7 +538,8 @@ class ExtensionWebRequestEventRouter {
       void* browser_context;
       std::string extension_id;
       std::string sub_event_name;
-      int embedder_process_id;
+      // In the case of a webview, this is the process ID of the embedder.
+      int render_process_id;
       int web_view_instance_id;
     };
 
@@ -800,7 +800,7 @@ class WebRequestInternalEventHandledFunction
       const std::string& event_name,
       const std::string& sub_event_name,
       uint64_t request_id,
-      int embedder_process_id,
+      int render_process_id,
       int web_view_instance_id,
       std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response);
 
