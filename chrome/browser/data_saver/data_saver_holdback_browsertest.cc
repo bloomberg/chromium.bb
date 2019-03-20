@@ -5,10 +5,11 @@
 #include <string>
 
 #include "base/metrics/field_trial_param_associator.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -29,9 +30,11 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
   }
 
   void EnableDataSaver(bool enabled) {
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
-    content::RunAllPendingInMessageLoop();
+    data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                browser()->profile());
+    data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
   }
 
   void VerifySaveDataHeader(const std::string& expected_header_value) {
