@@ -21,7 +21,9 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "ui/aura/window.h"
 #include "ui/wm/core/window_animations.h"
+#include "ui/wm/public/activation_client.h"
 #endif
 
 // static
@@ -39,6 +41,12 @@ void ExtensionPopup::ShowPopup(
   wm::SetWindowVisibilityAnimationType(
       native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   wm::SetWindowVisibilityAnimationVerticalPosition(native_view, -3.0f);
+
+  // This is removed in ExtensionPopup::OnWidgetDestroying(), which is
+  // guaranteed to be called before the Widget goes away.  It's not safe to use
+  // a ScopedObserver for this, since the activation client may be deleted
+  // without a call back to this class.
+  wm::GetActivationClient(native_view->GetRootWindow())->AddObserver(popup);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_POPUP_AURA);
 #endif
@@ -75,17 +83,51 @@ void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
   BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
 
-  if (active && observe_next_widget_activation_) {
-    observe_next_widget_activation_ = false;
-    views::Widget* const my_widget = GetWidget();
-    if (widget != my_widget)
-      my_widget->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+  // The widget is shown asynchronously and may take a long time to appear, so
+  // only close if it's actually been shown.
+  if (GetWidget()->IsVisible()) {
+    // Extension popups need to open child windows sometimes (e.g. for JS
+    // alerts), which take activation; so ExtensionPopup can't close on
+    // deactivation.  Instead, close when the parent widget is activated; this
+    // leaves the popup open when e.g. a non-Chrome window is activated, which
+    // doesn't feel very menu-like, but is better than any alternative.  See
+    // https://crbug.com/941994 for more discussion.
+    if (widget == anchor_widget() && active)
+      CloseUnlessUnderInspection();
   }
 }
 
 bool ExtensionPopup::ShouldHaveRoundCorners() const {
   return false;
 }
+
+#if defined(USE_AURA)
+void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
+  BubbleDialogDelegateView::OnWidgetDestroying(widget);
+
+  if (widget == GetWidget()) {
+    auto* activation_client =
+        wm::GetActivationClient(widget->GetNativeWindow()->GetRootWindow());
+    // If the popup was being inspected with devtools and the browser window
+    // was closed, then the root window and activation client are already
+    // destroyed.
+    if (activation_client)
+      activation_client->RemoveObserver(this);
+  }
+}
+
+void ExtensionPopup::OnWindowActivated(
+    wm::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  // Close on anchor window activation (i.e. user clicked the browser window).
+  // DesktopNativeWidgetAura does not trigger the expected browser widget
+  // [de]activation events when activating widgets in its own root window.
+  // This additional check handles those cases. See https://crbug.com/320889 .
+  if (gained_active == anchor_widget()->GetNativeWindow())
+    CloseUnlessUnderInspection();
+}
+#endif  // defined(USE_AURA)
 
 void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {
   SizeToContents();
@@ -119,15 +161,13 @@ void ExtensionPopup::OnTabStripModelChanged(
 void ExtensionPopup::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
   if (host()->host_contents() == agent_host->GetWebContents())
-    UpdateShowAction(SHOW_AND_INSPECT);
+    show_action_ = SHOW_AND_INSPECT;
 }
 
 void ExtensionPopup::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  if (host()->host_contents() == agent_host->GetWebContents()) {
-    UpdateShowAction(SHOW);
-    observe_next_widget_activation_ = true;
-  }
+  if (host()->host_contents() == agent_host->GetWebContents())
+    show_action_ = SHOW;
 }
 
 ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
@@ -137,12 +177,15 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
     : BubbleDialogDelegateView(anchor_view,
                                arrow,
                                views::BubbleBorder::SMALL_SHADOW),
-      host_(host) {
+      host_(host),
+      show_action_(show_action) {
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(GetExtensionView());
   GetExtensionView()->set_container(this);
-  UpdateShowAction(show_action);
+
+  // See comments in OnWidgetActivationChanged().
+  set_close_on_deactivate(false);
 
   // Listen for the containing view calling window.close();
   registrar_.Add(
@@ -163,11 +206,6 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   }
 }
 
-void ExtensionPopup::UpdateShowAction(ShowAction show_action) {
-  show_action_ = show_action;
-  set_close_on_deactivate(show_action == SHOW);
-}
-
 void ExtensionPopup::ShowBubble() {
   GetWidget()->Show();
 
@@ -178,6 +216,11 @@ void ExtensionPopup::ShowBubble() {
     DevToolsWindow::OpenDevToolsWindow(
         host()->host_contents(), DevToolsToggleAction::ShowConsolePanel());
   }
+}
+
+void ExtensionPopup::CloseUnlessUnderInspection() {
+  if (show_action_ != SHOW_AND_INSPECT)
+    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 
 ExtensionViewViews* ExtensionPopup::GetExtensionView() {

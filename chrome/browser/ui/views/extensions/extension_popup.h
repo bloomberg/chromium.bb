@@ -18,6 +18,10 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "url/gurl.h"
 
+#if defined(USE_AURA)
+#include "ui/wm/public/activation_change_observer.h"
+#endif
+
 class ExtensionViewViews;
 
 namespace content {
@@ -30,6 +34,9 @@ class ExtensionViewHost;
 
 // The bubble used for hosting a browser-action popup provided by an extension.
 class ExtensionPopup : public views::BubbleDialogDelegateView,
+#if defined(USE_AURA)
+                       public wm::ActivationChangeObserver,
+#endif
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver,
                        public TabStripModelObserver,
@@ -71,6 +78,14 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   int GetDialogButtons() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
   bool ShouldHaveRoundCorners() const override;
+#if defined(USE_AURA)
+  void OnWidgetDestroying(views::Widget* widget) override;
+
+  // wm::ActivationChangeObserver:
+  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+#endif
 
   // ExtensionViewViews::Container:
   void OnExtensionSizeChanged(ExtensionViewViews* view) override;
@@ -98,10 +113,11 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
                  views::BubbleBorder::Arrow arrow,
                  ShowAction show_action);
 
-  // Changes internal state to follow the supplied |show_action|.
-  void UpdateShowAction(ShowAction show_action);
   // Shows the bubble, focuses its content, and registers listeners.
   void ShowBubble();
+
+  // Closes the bubble if the devtools window is not attached.
+  void CloseUnlessUnderInspection();
 
   ExtensionViewViews* GetExtensionView();
 
@@ -109,12 +125,6 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   std::unique_ptr<extensions::ExtensionViewHost> host_;
 
   ShowAction show_action_;
-
-  // When dev tools closes, we should close the popup iff activation isn't going
-  // back to it.  There's no way to know which widget will be activated when dev
-  // tools closes, so this flag is set instead, which causes
-  // OnWidgetActivationChanged() to optionally close the current widget.
-  bool observe_next_widget_activation_ = false;
 
   content::NotificationRegistrar registrar_;
   ScopedObserver<TabStripModel, TabStripModelObserver> observer_{this};
