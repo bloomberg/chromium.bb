@@ -1,0 +1,8 @@
+Tests loading and navigation events when submitting a form in an onload handler.
+FrameStartedLoading
+FrameScheduledNavigation
+FrameStoppedLoading
+FrameStartedLoading
+FrameClearedScheduledNavigation
+FrameStoppedLoading
+

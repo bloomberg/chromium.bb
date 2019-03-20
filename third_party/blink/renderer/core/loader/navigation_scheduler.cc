@@ -379,8 +379,6 @@ void NavigationScheduler::NavigateTask() {
   }
 
   ScheduledNavigation* redirect(redirect_.Release());
-  probe::FrameRequestedNavigation(frame_, redirect->Url(),
-                                  redirect->GetReason());
   redirect->Fire(frame_);
   probe::FrameClearedScheduledNavigation(frame_);
 }

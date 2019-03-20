@@ -184,9 +184,6 @@ class CORE_EXPORT InspectorPageAgent final
   void FrameDetachedFromParent(LocalFrame*);
   void FrameStartedLoading(LocalFrame*);
   void FrameStoppedLoading(LocalFrame*);
-  void FrameRequestedNavigation(LocalFrame*,
-                                const KURL&,
-                                ClientNavigationReason);
   void FrameScheduledNavigation(LocalFrame*,
                                 const KURL&,
                                 double delay,
