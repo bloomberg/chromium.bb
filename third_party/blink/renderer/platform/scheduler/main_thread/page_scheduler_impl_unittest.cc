@@ -1602,7 +1602,7 @@ TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut) {
   EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
               testing::UnorderedElementsAre());
 
-  frame_scheduler_->OnStartedUsingFeature(
+  auto feature_handle1 = frame_scheduler_->RegisterFeature(
       SchedulingPolicy::Feature::kWebSocket,
       {SchedulingPolicy::DisableBackForwardCache()});
 
@@ -1610,7 +1610,7 @@ TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut) {
       page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
 
-  frame_scheduler_->OnStartedUsingFeature(
+  auto feature_handle2 = frame_scheduler_->RegisterFeature(
       SchedulingPolicy::Feature::kWebRTC,
       {SchedulingPolicy::DisableBackForwardCache()});
 
@@ -1619,17 +1619,73 @@ TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut) {
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket,
                                     SchedulingPolicy::Feature::kWebRTC));
 
-  frame_scheduler_->OnStoppedUsingFeature(
-      SchedulingPolicy::Feature::kWebSocket,
-      {SchedulingPolicy::DisableBackForwardCache()});
+  feature_handle1.reset();
 
   EXPECT_THAT(
       page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
 
-  frame_scheduler_->OnStoppedUsingFeature(
-      SchedulingPolicy::Feature::kWebRTC,
+  feature_handle2.reset();
+
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
+}
+
+TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut_FrameDeleted) {
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
+
+  auto feature_handle = frame_scheduler_->RegisterFeature(
+      SchedulingPolicy::Feature::kWebSocket,
       {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
+
+  frame_scheduler_.reset();
+
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
+}
+
+TEST_F(PageSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre());
+
+  auto feature_handle = frame_scheduler_->RegisterFeature(
+      SchedulingPolicy::Feature::kWebSocket,
+      {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
+
+  frame_scheduler_->RegisterStickyFeature(
+      SchedulingPolicy::Feature::kStickyFeatureForTesting,
+      {SchedulingPolicy::DisableBackForwardCache()});
+
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kWebSocket,
+                  SchedulingPolicy::Feature::kStickyFeatureForTesting));
+
+  // Same document navigations don't affect anything.
+  frame_scheduler_->DidCommitProvisionalLoad(
+      false, FrameScheduler::NavigationType::kSameDocument);
+  EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+              testing::UnorderedElementsAre(
+                  SchedulingPolicy::Feature::kWebSocket,
+                  SchedulingPolicy::Feature::kStickyFeatureForTesting));
+
+  // Regular navigations reset sticky features.
+  frame_scheduler_->DidCommitProvisionalLoad(
+      false, FrameScheduler::NavigationType::kOther);
+  EXPECT_THAT(
+      page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
+
+  feature_handle.reset();
 
   EXPECT_THAT(page_scheduler_->GetActiveFeaturesOptingOutFromBackForwardCache(),
               testing::UnorderedElementsAre());

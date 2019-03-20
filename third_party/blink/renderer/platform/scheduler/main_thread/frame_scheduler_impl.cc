@@ -607,12 +607,28 @@ void FrameSchedulerImpl::DidCommitProvisionalLoad(
   main_thread_scheduler_->DidCommitProvisionalLoad(
       is_web_history_inert_commit, navigation_type == NavigationType::kReload,
       is_main_frame);
+  if (navigation_type != NavigationType::kSameDocument)
+    ResetForNavigation();
 }
 
 WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
     const WTF::String& name,
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
   return WebScopedVirtualTimePauser(main_thread_scheduler_, duration, name);
+}
+
+void FrameSchedulerImpl::ResetForNavigation() {
+  // Reset "sticky" features when the frame navigates.
+  for (auto it = back_forward_cache_opt_out_counts_.begin();
+       it != back_forward_cache_opt_out_counts_.end();) {
+    if (SchedulingPolicy::IsFeatureSticky(it->first)) {
+      it = back_forward_cache_opt_out_counts_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  opted_out_from_back_forward_cache_ =
+      !back_forward_cache_opt_out_counts_.empty();
 }
 
 void FrameSchedulerImpl::OnStartedUsingFeature(

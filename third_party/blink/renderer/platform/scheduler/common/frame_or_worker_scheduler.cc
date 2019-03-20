@@ -51,7 +51,15 @@ FrameOrWorkerScheduler::~FrameOrWorkerScheduler() {
 FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
 FrameOrWorkerScheduler::RegisterFeature(SchedulingPolicy::Feature feature,
                                         SchedulingPolicy policy) {
+  DCHECK(!SchedulingPolicy::IsFeatureSticky(feature));
   return SchedulingAffectingFeatureHandle(feature, policy, GetWeakPtr());
+}
+
+void FrameOrWorkerScheduler::RegisterStickyFeature(
+    SchedulingPolicy::Feature feature,
+    SchedulingPolicy policy) {
+  DCHECK(SchedulingPolicy::IsFeatureSticky(feature));
+  OnStartedUsingFeature(feature, policy);
 }
 
 std::unique_ptr<FrameOrWorkerScheduler::LifecycleObserverHandle>
