@@ -14,8 +14,8 @@
 namespace views {
 // static
 const char MenuButton::kViewClassName[] = "MenuButton";
-const int MenuButton::kMenuMarkerPaddingLeft = 3;
-const int MenuButton::kMenuMarkerPaddingRight = -1;
+constexpr int MenuButton::kMenuMarkerPaddingLeft = 3;
+constexpr int MenuButton::kMenuMarkerPaddingRight = -1;
 
 MenuButton::MenuButton(const base::string16& text,
                        MenuButtonListener* menu_button_listener,

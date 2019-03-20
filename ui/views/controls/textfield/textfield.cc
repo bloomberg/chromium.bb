@@ -88,14 +88,14 @@ namespace views {
 namespace {
 
 #if defined(OS_MACOSX)
-const gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
-const gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
-const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
+constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
+constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
+constexpr gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
     gfx::SELECTION_CARET;
 #else
-const gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_RETAIN;
-const gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_RETAIN;
-const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
+constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_RETAIN;
+constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_RETAIN;
+constexpr gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
     gfx::SELECTION_RETAIN;
 #endif
 
@@ -1231,7 +1231,7 @@ void Textfield::WriteDragDataForView(View* sender,
                         GetWidget()->GetCompositor()->is_pixel_canvas())
           .context(),
       label.size()));
-  const gfx::Vector2d kOffset(-15, 0);
+  constexpr gfx::Vector2d kOffset(-15, 0);
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
   data->provider().SetDragImage(image, kOffset);
   if (controller_)

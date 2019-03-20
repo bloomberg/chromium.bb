@@ -42,16 +42,16 @@ using ui::TreeModelNode;
 namespace views {
 
 // Insets around the view.
-static const int kHorizontalInset = 2;
+static constexpr int kHorizontalInset = 2;
 // Padding before/after the image.
-static const int kImagePadding = 4;
+static constexpr int kImagePadding = 4;
 // Size of the arrow region.
-static const int kArrowRegionSize = 12;
+static constexpr int kArrowRegionSize = 12;
 // Padding around the text (on each side).
-static const int kTextVerticalPadding = 3;
-static const int kTextHorizontalPadding = 2;
+static constexpr int kTextVerticalPadding = 3;
+static constexpr int kTextHorizontalPadding = 2;
 // How much children are indented from their parent.
-static const int kIndent = 20;
+static constexpr int kIndent = 20;
 
 // static
 const char TreeView::kViewClassName[] = "TreeView";

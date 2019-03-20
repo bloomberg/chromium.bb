@@ -222,7 +222,7 @@ BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 }
 
 // The thickness of an auto-hide taskbar in pixels.
-const int kAutoHideTaskbarThicknessPx = 2;
+constexpr int kAutoHideTaskbarThicknessPx = 2;
 
 bool IsTopLevelWindow(HWND window) {
   long style = ::GetWindowLong(window, GWL_STYLE);
@@ -273,14 +273,14 @@ HitTest GetWindowResizeHitTest(UINT param) {
   }
 }
 
-const int kTouchDownContextResetTimeout = 500;
+constexpr int kTouchDownContextResetTimeout = 500;
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
 // cases. This causes us grief as we don't want to process touch and mouse
 // messages concurrently. Hack as per msdn is to check if the time difference
 // between the touch/pen message and the mouse move is within 500 ms and at the
 // same location as the cursor.
-const int kSynthesizedMouseMessagesTimeDifference = 500;
+constexpr int kSynthesizedMouseMessagesTimeDifference = 500;
 
 }  // namespace
 

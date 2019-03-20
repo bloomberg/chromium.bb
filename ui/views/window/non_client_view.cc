@@ -28,8 +28,8 @@ const char NonClientView::kViewClassName[] =
 // because the RootView message dispatch sends messages to items higher in the
 // z-order first and we always want the client view to have first crack at
 // handling mouse messages.
-static const int kFrameViewIndex = 0;
-static const int kClientViewIndex = 1;
+static constexpr int kFrameViewIndex = 0;
+static constexpr int kClientViewIndex = 1;
 // The overlay view is always on top (index == child_count() - 1).
 
 ////////////////////////////////////////////////////////////////////////////////

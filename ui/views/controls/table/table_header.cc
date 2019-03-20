@@ -48,8 +48,8 @@ const char TableHeader::kViewClassName[] = "TableHeader";
 // static
 const int TableHeader::kHorizontalPadding = 7;
 // static
-const int TableHeader::kSortIndicatorWidth = kSortIndicatorSize +
-    TableHeader::kHorizontalPadding * 2;
+const int TableHeader::kSortIndicatorWidth =
+    kSortIndicatorSize + TableHeader::kHorizontalPadding * 2;
 
 using Columns = std::vector<TableView::VisibleColumn>;
 

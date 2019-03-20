@@ -26,7 +26,7 @@ namespace {
 
 // In DP, the amount to round the corners of the progress bar (both bg and
 // fg, aka slice).
-const int kCornerRadius = 3;
+constexpr int kCornerRadius = 3;
 
 // Adds a rectangle to the path. The corners will be rounded if there is room.
 void AddPossiblyRoundRectToPath(const gfx::Rect& rectangle,

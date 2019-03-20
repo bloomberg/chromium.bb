@@ -20,8 +20,8 @@ namespace views {
 // Default button size if no image is set. This is ignored if there is an image,
 // and exists for historical reasons (any number of clients could depend on this
 // behaviour).
-static const int kDefaultWidth = 16;
-static const int kDefaultHeight = 14;
+static constexpr int kDefaultWidth = 16;
+static constexpr int kDefaultHeight = 14;
 
 const char ImageButton::kViewClassName[] = "ImageButton";
 

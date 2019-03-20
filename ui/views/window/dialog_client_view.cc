@@ -30,7 +30,7 @@ namespace {
 
 // The group used by the buttons.  This name is chosen voluntarily big not to
 // conflict with other groups that could be in the dialog content.
-const int kButtonGroup = 6666;
+constexpr int kButtonGroup = 6666;
 
 // Returns true if the given view should be shown (i.e. exists and is
 // visible).

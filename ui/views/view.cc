@@ -68,18 +68,18 @@ namespace views {
 namespace {
 
 #if defined(OS_WIN)
-const bool kContextMenuOnMousePress = false;
+constexpr bool kContextMenuOnMousePress = false;
 #else
-const bool kContextMenuOnMousePress = true;
+constexpr bool kContextMenuOnMousePress = true;
 #endif
 
 // Default horizontal drag threshold in pixels.
 // Same as what gtk uses.
-const int kDefaultHorizontalDragThreshold = 8;
+constexpr int kDefaultHorizontalDragThreshold = 8;
 
 // Default vertical drag threshold in pixels.
 // Same as what gtk uses.
-const int kDefaultVerticalDragThreshold = 8;
+constexpr int kDefaultVerticalDragThreshold = 8;
 
 // Returns the top view in |view|'s hierarchy.
 const View* GetHierarchyRoot(const View* view) {

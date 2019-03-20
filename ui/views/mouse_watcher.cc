@@ -22,7 +22,7 @@ namespace views {
 
 // Amount of time between when the mouse moves outside the Host's zone and when
 // the listener is notified.
-const int kNotifyListenerTimeMs = 300;
+constexpr int kNotifyListenerTimeMs = 300;
 
 class MouseWatcher::Observer : public ui::EventObserver {
  public:

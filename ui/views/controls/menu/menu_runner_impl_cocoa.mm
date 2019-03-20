@@ -20,8 +20,8 @@ namespace views {
 namespace internal {
 namespace {
 
-const CGFloat kNativeCheckmarkWidth = 18;
-const CGFloat kNativeMenuItemHeight = 18;
+constexpr CGFloat kNativeCheckmarkWidth = 18;
+constexpr CGFloat kNativeMenuItemHeight = 18;
 
 // Returns the first item in |menu_controller|'s menu that will be checked.
 NSMenuItem* FirstCheckedItem(MenuControllerCocoa* menu_controller) {

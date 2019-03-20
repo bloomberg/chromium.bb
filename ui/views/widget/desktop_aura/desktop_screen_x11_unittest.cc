@@ -54,8 +54,8 @@ class TestDesktopNativeWidgetAura : public views::DesktopNativeWidgetAura {
 
 namespace views {
 
-const int64_t kFirstDisplay = 5321829;
-const int64_t kSecondDisplay = 928310;
+constexpr int64_t kFirstDisplay = 5321829;
+constexpr int64_t kSecondDisplay = 928310;
 
 class DesktopScreenX11Test : public views::ViewsTestBase,
                              public display::DisplayObserver {

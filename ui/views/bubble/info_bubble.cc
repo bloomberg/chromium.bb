@@ -21,7 +21,7 @@ namespace views {
 namespace {
 
 // The visible width of bubble borders (differs from the actual width) in px.
-const int kBubbleBorderVisibleWidth = 1;
+constexpr int kBubbleBorderVisibleWidth = 1;
 
 }  // namespace
 

@@ -32,13 +32,13 @@
 
 namespace {
 
-const int kHueBarWidth = 20;
-const int kSaturationValueSize = 200;
-const int kMarginWidth = 5;
-const int kSaturationValueIndicatorSize = 6;
-const int kHueIndicatorSize = 5;
-const int kBorderWidth = 1;
-const int kTextfieldLengthInChars = 14;
+constexpr int kHueBarWidth = 20;
+constexpr int kSaturationValueSize = 200;
+constexpr int kMarginWidth = 5;
+constexpr int kSaturationValueIndicatorSize = 6;
+constexpr int kHueIndicatorSize = 5;
+constexpr int kBorderWidth = 1;
+constexpr int kTextfieldLengthInChars = 14;
 
 base::string16 GetColorText(SkColor color) {
   return base::ASCIIToUTF16(base::StringPrintf("#%02x%02x%02x",

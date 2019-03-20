@@ -22,7 +22,7 @@ namespace views {
 
 namespace {
 
-const int64_t kTimeBeforeClearingMS = 1000;
+constexpr int64_t kTimeBeforeClearingMS = 1000;
 
 }  // namespace
 

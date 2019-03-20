@@ -25,7 +25,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-const int kSlideValueChangeDurationMs = 150;
+constexpr int kSlideValueChangeDurationMs = 150;
 
 // The image chunks.
 enum BorderElements {
@@ -41,8 +41,8 @@ namespace views {
 namespace {
 
 // Color of slider at the active and the disabled state, respectively.
-const SkColor kActiveColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
-const SkColor kDisabledColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
+constexpr SkColor kActiveColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
+constexpr SkColor kDisabledColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
 constexpr uint8_t kHighlightColorAlpha = 0x4D;
 
 // The thickness of the slider.
@@ -207,8 +207,8 @@ const char* Slider::GetClassName() const {
 }
 
 gfx::Size Slider::CalculatePreferredSize() const {
-  const int kSizeMajor = 200;
-  const int kSizeMinor = 40;
+  constexpr int kSizeMajor = 200;
+  constexpr int kSizeMinor = 40;
 
   return gfx::Size(std::max(width(), kSizeMajor), kSizeMinor);
 }
@@ -273,17 +273,17 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
       is_active_ ? kActiveColor : kDisabledColor;
 
   // Extra space used to hide slider ends behind the thumb.
-  const int extra_padding = 1;
+  constexpr int kExtraPadding = 1;
 
   cc::PaintFlags slider_flags;
   slider_flags.setAntiAlias(true);
   slider_flags.setColor(current_thumb_color);
   canvas->DrawRoundRect(
-      gfx::Rect(content.x(), y, full + extra_padding, kLineThickness),
+      gfx::Rect(content.x(), y, full + kExtraPadding, kLineThickness),
       kSliderRoundedRadius, slider_flags);
   slider_flags.setColor(kDisabledColor);
-  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius - extra_padding, y,
-                                  empty + extra_padding, kLineThickness),
+  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius - kExtraPadding, y,
+                                  empty + kExtraPadding, kLineThickness),
                         kSliderRoundedRadius, slider_flags);
 
   gfx::Point thumb_center(x, content.height() / 2);

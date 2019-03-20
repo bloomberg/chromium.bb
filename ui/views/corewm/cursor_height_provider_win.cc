@@ -20,11 +20,11 @@ using HeightStorage = std::map<HCURSOR, int>;
 
 const uint32_t kBitsPeruint32 = sizeof(uint32_t) * 8;
 // All bits are 1 for transparent portion of monochromatic mask.
-const uint32_t kTransparentMask = 0xffffffff;
+constexpr uint32_t kTransparentMask = 0xffffffff;
 // This is height of default pointer arrow in Windows 7.
-const int kDefaultHeight = 20;
+constexpr int kDefaultHeight = 20;
 // Masks are monochromatic.
-const size_t kNumberOfColors = 2;
+constexpr size_t kNumberOfColors = 2;
 const size_t KHeaderAndPalette =
       sizeof(BITMAPINFOHEADER) + kNumberOfColors * sizeof(RGBQUAD);
 

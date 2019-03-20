@@ -25,7 +25,7 @@
 namespace button_drag_utils {
 
 // Maximum width of the link drag image in pixels.
-static const int kLinkDragImageMaxWidth = 150;
+static constexpr int kLinkDragImageMaxWidth = 150;
 
 void SetURLAndDragImage(const GURL& url,
                         const base::string16& title,
