@@ -32,13 +32,11 @@
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -679,7 +677,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   std::string html = "<html lang='fr'><body>";
   NSUInteger targetSize = 1024 * 1024;  // More than 1 MB of page content.
   while (html.length() < targetSize) {
+    html.append("<p>");
     html.append(kFrenchText);
+    html.append("</p>");
   }
   html.append("</body></html>");
 
@@ -689,22 +689,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       web::test::HttpServer::MakeUrl("http://languageDetectionLargePage");
   responses[URL] = html;
   web::test::SetUpSimpleHttpServer(responses);
-
-  if (@available(iOS 12, *)) {
-    // TODO(crbug.com/874452) iOS12 has a bug where long pages take forever to
-    // load. Use a 20 second timeout here.
-    chrome_test_util::LoadUrl(URL);
-    web::WebState* webState = chrome_test_util::GetCurrentWebState();
-    GREYAssert(WaitUntilConditionOrTimeout(20,
-                                           ^{
-                                             return !webState->IsLoading();
-                                           }),
-               @"Failed to load large page on iOS 12.");
-    if (webState->ContentIsHTML())
-      web::WaitUntilWindowIdInjected(webState);
-  } else {
-    [ChromeEarlGrey loadURL:URL];
-  }
+  [ChromeEarlGrey loadURL:URL];
 
   // Check that language has been detected.
   translate::LanguageDetectionDetails expectedLanguageDetails;
