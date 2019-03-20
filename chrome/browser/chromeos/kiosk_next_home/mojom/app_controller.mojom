@@ -4,10 +4,37 @@
 
 module chromeos.kiosk_next_home.mojom;
 
+import "chrome/services/app_service/public/mojom/types.mojom";
+
+// Represents an app on Chrome OS. This struct has all the information
+// necessary to display the app in the Kiosk Next Home app list/grid, including
+// readiness, thumbnail image, display name, etc.
+struct App {
+  // Stable and unique identifier for this app.
+  string app_id;
+
+  // The type of this app (e.g. ARC, Crostini, extension, etc).
+  apps.mojom.AppType type;
+
+  // Name used when displaying the app in an app list or grid.
+  string display_name;
+
+  // The current state of readiness for this app.
+  // It can tell if the app is suspended, uninstalled, etc.
+  apps.mojom.Readiness readiness;
+};
+
 // Interface for managing Chrome OS apps from the Kiosk Next Home.
 interface AppController {
-  // TODO(ltenorio): Add methods for listing installed apps and their
-  // information, like app_id.
+  // Returns all the local apps installed on this Chrome OS device.
+  // It reads from all the app sources, including ARC++ (Android),
+  // Crostini (Linux), extensions and PWAs.
+  // Note that as soon as this method returns, some of the apps might have
+  // changed. To always get the most updated information, attach an app
+  // observer through the AddObserver method.
+  GetApps() => (array<App> apps);
+
+  // TODO(ltenorio): Add a way to attach app observers.
 
   // Launches the app with the given app_id.
   LaunchApp(string app_id);
