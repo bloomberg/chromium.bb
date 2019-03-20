@@ -82,8 +82,8 @@ class BASE_EXPORT RunLoop {
   //             are present.
   // WARNING #2: This may return too early! For example, if used to run until an
   //             incoming event has occurred but that event depends on a task in
-  //             a different queue -- e.g. a system event.
-  // Per the warnings below, this tends to lead to flaky tests; prefer
+  //             a different queue -- e.g. another TaskRunner or a system event.
+  // Per the warnings above, this tends to lead to flaky tests; prefer
   // QuitClosure()+Run() when at all possible.
   void RunUntilIdle();
 

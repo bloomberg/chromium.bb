@@ -162,6 +162,20 @@ class ScopedTaskEnvironment {
 
   // Runs tasks until both the (Thread|Sequenced)TaskRunnerHandle and the
   // TaskScheduler's non-delayed queues are empty.
+  // While RunUntilIdle() is quite practical and sometimes even necessary -- for
+  // example, to flush all tasks bound to Unretained() state before destroying
+  // test members -- it should be used with caution per the following warnings:
+  //
+  // WARNING #1: This may run long (flakily timeout) and even never return! Do
+  //             not use this when repeating tasks such as animated web pages
+  //             are present.
+  // WARNING #2: This may return too early! For example, if used to run until an
+  //             incoming event has occurred but that event depends on a task in
+  //             a different queue -- e.g. a standalone base::Thread or a system
+  //             event.
+  //
+  // As such, prefer RunLoop::Run() with an explicit RunLoop::QuitClosure() when
+  // possible.
   void RunUntilIdle();
 
   // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
