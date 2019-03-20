@@ -1080,6 +1080,7 @@
 #define TRACE_EVENT_FLAG_HAS_PROCESS_ID (static_cast<unsigned int>(1 << 11))
 #define TRACE_EVENT_FLAG_HAS_LOCAL_ID (static_cast<unsigned int>(1 << 12))
 #define TRACE_EVENT_FLAG_HAS_GLOBAL_ID (static_cast<unsigned int>(1 << 13))
+#define TRACE_EVENT_FLAG_DISALLOW_POSTTASK (static_cast<unsigned int>(1 << 14))
 
 #define TRACE_EVENT_FLAG_SCOPE_MASK                          \
   (static_cast<unsigned int>(TRACE_EVENT_FLAG_SCOPE_OFFSET | \
