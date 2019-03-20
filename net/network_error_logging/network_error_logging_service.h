@@ -268,6 +268,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingService);
 };
 
+// Persistent storage for NEL policies.
 class NET_EXPORT NetworkErrorLoggingService::PersistentNELStore {
  public:
   using NELPoliciesLoadedCallback =
