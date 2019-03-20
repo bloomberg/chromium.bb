@@ -1027,6 +1027,7 @@ def main(argv):
   all_group_deps = deps.All('group')
   all_library_deps = deps.All('java_library')
   all_resources_deps = deps.All('android_resources')
+  all_classpath_library_deps = classpath_deps.All('java_library')
 
   # Initialize some common config.
   # Any value that needs to be queryable by dependents must go within deps_info.
@@ -1189,7 +1190,7 @@ def main(argv):
       if srcjar:
         owned_resource_srcjars.add(srcjar)
 
-    for c in all_library_deps:
+    for c in itertools.chain(all_library_deps, all_classpath_library_deps):
       if c['requires_android']:
         owned_resource_dirs.difference_update(c['owned_resources_dirs'])
         owned_resource_zips.difference_update(c['owned_resources_zips'])
