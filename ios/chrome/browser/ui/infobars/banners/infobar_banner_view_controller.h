@@ -33,6 +33,13 @@
 // The button text displayed by this InfobarBanner.
 @property(nonatomic, copy) NSString* buttonText;
 
+// - If no interaction is occuring, the InfobarBanner will be dismissed.
+// - If there's some interaction occuring the InfobarBanner will be dismissed
+// once this interaction ends.
+// - If the InfobarBanner was dismissed or is now presenting an InfobarModal
+// because of the last interaction. This method will NO-OP.
+- (void)dismissWhenInteractionIsFinished;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_BANNERS_INFOBAR_BANNER_VIEW_CONTROLLER_H_

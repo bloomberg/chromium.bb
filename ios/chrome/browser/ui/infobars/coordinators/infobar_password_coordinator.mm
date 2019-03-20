@@ -116,6 +116,12 @@
                                  completion:nil];
 }
 
+- (void)dismissInfobarBannerIfPresented {
+  if (!self.modalTransitionDriver) {
+    [self.bannerViewController dismissWhenInteractionIsFinished];
+  }
+}
+
 #pragma mark - InfobarBannerDelegate
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
