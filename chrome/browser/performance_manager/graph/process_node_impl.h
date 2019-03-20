@@ -80,6 +80,8 @@ class ProcessNodeImpl
       resource_coordinator::mojom::LifecycleState old_state);
 
  private:
+  void BeforeDestroyed() override;
+
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
   void OnPropertyChanged(

@@ -19,13 +19,6 @@ ProcessNodeImpl::ProcessNodeImpl(
 
 ProcessNodeImpl::~ProcessNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Make as if we're transitioning to the null PID before we die to clear this
-  // instance from the PID map.
-  if (process_id_ != base::kNullProcessId)
-    graph()->BeforeProcessPidChange(this, base::kNullProcessId);
-
-  for (auto* child_frame : frame_nodes_)
-    child_frame->RemoveProcessNode(this);
 }
 
 void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
@@ -126,6 +119,19 @@ void ProcessNodeImpl::OnFrameLifecycleStateChanged(
   else if (frame_node->lifecycle_state() ==
            resource_coordinator::mojom::LifecycleState::kFrozen)
     IncrementNumFrozenFrames();
+}
+
+void ProcessNodeImpl::BeforeDestroyed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NodeBase::BeforeDestroyed();
+
+  // Make as if we're transitioning to the null PID before we die to clear this
+  // instance from the PID map.
+  if (process_id_ != base::kNullProcessId)
+    graph()->BeforeProcessPidChange(this, base::kNullProcessId);
+
+  for (auto* child_frame : frame_nodes_)
+    child_frame->RemoveProcessNode(this);
 }
 
 void ProcessNodeImpl::OnEventReceived(

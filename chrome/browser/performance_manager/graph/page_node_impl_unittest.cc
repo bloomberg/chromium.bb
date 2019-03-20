@@ -43,9 +43,9 @@ TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto frame2_node = CreateNode<FrameNodeImpl>();
   auto frame3_node = CreateNode<FrameNodeImpl>();
 
-  page_node->AddFrame(frame1_node->id());
-  page_node->AddFrame(frame2_node->id());
-  page_node->AddFrame(frame3_node->id());
+  page_node->AddFrame(frame1_node.get());
+  page_node->AddFrame(frame2_node.get());
+  page_node->AddFrame(frame3_node.get());
   EXPECT_EQ(3u, page_node->GetFrameNodes().size());
 }
 
@@ -54,9 +54,9 @@ TEST_F(PageNodeImplTest, AddReduplicativeFrame) {
   auto frame1_node = CreateNode<FrameNodeImpl>();
   auto frame2_node = CreateNode<FrameNodeImpl>();
 
-  page_node->AddFrame(frame1_node->id());
-  page_node->AddFrame(frame2_node->id());
-  page_node->AddFrame(frame1_node->id());
+  page_node->AddFrame(frame1_node.get());
+  page_node->AddFrame(frame2_node.get());
+  page_node->AddFrame(frame1_node.get());
   EXPECT_EQ(2u, page_node->GetFrameNodes().size());
 }
 
@@ -68,14 +68,14 @@ TEST_F(PageNodeImplTest, RemoveFrame) {
   EXPECT_EQ(0u, page_node->GetFrameNodes().size());
   EXPECT_FALSE(frame_node->GetPageNode());
 
-  page_node->AddFrame(frame_node->id());
+  page_node->AddFrame(frame_node.get());
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(1u, page_node->GetFrameNodes().size());
   EXPECT_EQ(1u, page_node->GetFrameNodes().count(frame_node.get()));
   EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
 
-  page_node->RemoveFrame(frame_node->id());
+  page_node->RemoveFrame(frame_node.get());
 
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(0u, page_node->GetFrameNodes().size());
@@ -302,7 +302,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 
   // Add a frame and expect the values to be invalidated. Reaggregate and
   // ensure the appropriate value results.
-  page->AddFrame(f0->id());
+  page->AddFrame(f0.get());
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
@@ -310,7 +310,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 
   // Do it again. This time the raw values should be the same as the
   // aggregated values above.
-  page->AddFrame(f1->id());
+  page->AddFrame(f1.get());
   EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
@@ -322,6 +322,9 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(f0_policy_aggregated, page.get());
+
+  f0.reset();
+  page.reset();
 }
 
 }  // namespace
@@ -433,9 +436,9 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
   TestNodeWrapper<FrameNodeImpl> f1 =
       TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  page->AddFrame(f0->id());
+  page->AddFrame(f0.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
-  page->AddFrame(f1->id());
+  page->AddFrame(f1.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
 
   // Set the policies on the first frame. This should be observed by the page

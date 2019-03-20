@@ -19,32 +19,38 @@ namespace performance_manager {
 MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
     Graph* graph)
     : system(TestNodeWrapper<SystemNodeImpl>::Create(graph)),
-      frame(TestNodeWrapper<FrameNodeImpl>::Create(graph)),
       process(TestNodeWrapper<ProcessNodeImpl>::Create(graph)),
-      page(TestNodeWrapper<PageNodeImpl>::Create(graph)) {
+      page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
+      frame(TestNodeWrapper<FrameNodeImpl>::Create(graph)) {
   frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
-  page->AddFrame(frame->id());
-  frame->SetProcess(process->id());
+  page->AddFrame(frame.get());
+  frame->SetProcess(process.get());
   process->SetPID(1);
 }
 
-MockSinglePageInSingleProcessGraph::~MockSinglePageInSingleProcessGraph() =
-    default;
+MockSinglePageInSingleProcessGraph::~MockSinglePageInSingleProcessGraph() {
+  // Make sure frame nodes are torn down before pages.
+  frame.reset();
+  page.reset();
+}
 
 MockMultiplePagesInSingleProcessGraph::MockMultiplePagesInSingleProcessGraph(
     Graph* graph)
     : MockSinglePageInSingleProcessGraph(graph),
-      other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph)),
-      other_page(TestNodeWrapper<PageNodeImpl>::Create(graph)) {
+      other_page(TestNodeWrapper<PageNodeImpl>::Create(graph)),
+      other_frame(TestNodeWrapper<FrameNodeImpl>::Create(graph)) {
   other_frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
-  other_page->AddFrame(other_frame->id());
-  other_frame->SetProcess(process->id());
+  other_page->AddFrame(other_frame.get());
+  other_frame->SetProcess(process.get());
 }
 
 MockMultiplePagesInSingleProcessGraph::
-    ~MockMultiplePagesInSingleProcessGraph() = default;
+    ~MockMultiplePagesInSingleProcessGraph() {
+  other_frame.reset();
+  other_page.reset();
+}
 
 MockSinglePageWithMultipleProcessesGraph::
     MockSinglePageWithMultipleProcessesGraph(Graph* graph)
@@ -53,9 +59,9 @@ MockSinglePageWithMultipleProcessesGraph::
       other_process(TestNodeWrapper<ProcessNodeImpl>::Create(graph)) {
   child_frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
-  frame->AddChildFrame(child_frame->id());
-  page->AddFrame(child_frame->id());
-  child_frame->SetProcess(other_process->id());
+  frame->AddChildFrame(child_frame.get());
+  page->AddFrame(child_frame.get());
+  child_frame->SetProcess(other_process.get());
   other_process->SetPID(2);
 }
 
@@ -69,9 +75,9 @@ MockMultiplePagesWithMultipleProcessesGraph::
       other_process(TestNodeWrapper<ProcessNodeImpl>::Create(graph)) {
   child_frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
-  other_frame->AddChildFrame(child_frame->id());
-  other_page->AddFrame(child_frame->id());
-  child_frame->SetProcess(other_process->id());
+  other_frame->AddChildFrame(child_frame.get());
+  other_page->AddFrame(child_frame.get());
+  child_frame->SetProcess(other_process.get());
   other_process->SetPID(2);
 }
 
