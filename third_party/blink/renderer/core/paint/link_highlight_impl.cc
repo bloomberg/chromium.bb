@@ -337,8 +337,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   constexpr auto kFadeDuration = TimeDelta::FromMilliseconds(100);
   constexpr auto kMinPreFadeDuration = TimeDelta::FromMilliseconds(100);
 
-  std::unique_ptr<CompositorFloatAnimationCurve> curve =
-      CompositorFloatAnimationCurve::Create();
+  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
 
   const auto& timing_function = *CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE);

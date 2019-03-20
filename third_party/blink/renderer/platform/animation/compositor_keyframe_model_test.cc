@@ -10,8 +10,7 @@
 namespace blink {
 
 TEST(WebCompositorAnimationTest, DefaultSettings) {
-  std::unique_ptr<CompositorAnimationCurve> curve =
-      CompositorFloatAnimationCurve::Create();
+  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       CompositorKeyframeModel::Create(
           *curve, compositor_target_property::OPACITY, 1, 0);
@@ -25,8 +24,7 @@ TEST(WebCompositorAnimationTest, DefaultSettings) {
 }
 
 TEST(WebCompositorAnimationTest, ModifiedSettings) {
-  std::unique_ptr<CompositorFloatAnimationCurve> curve =
-      CompositorFloatAnimationCurve::Create();
+  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
   std::unique_ptr<CompositorKeyframeModel> keyframe_model =
       CompositorKeyframeModel::Create(
           *curve, compositor_target_property::OPACITY, 1, 0);

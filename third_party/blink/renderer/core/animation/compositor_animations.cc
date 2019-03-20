@@ -659,8 +659,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     switch (property.GetCSSProperty().PropertyID()) {
       case CSSPropertyOpacity: {
         target_property = compositor_target_property::OPACITY;
-        std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
-            CompositorFloatAnimationCurve::Create();
+        auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
         AddKeyframesToCurve(*float_curve, values);
         float_curve->SetTimingFunction(*timing.timing_function);
         float_curve->SetScaledDuration(scale);
@@ -670,8 +669,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
       case CSSPropertyFilter:
       case CSSPropertyBackdropFilter: {
         target_property = compositor_target_property::FILTER;
-        std::unique_ptr<CompositorFilterAnimationCurve> filter_curve =
-            CompositorFilterAnimationCurve::Create();
+        auto filter_curve = std::make_unique<CompositorFilterAnimationCurve>();
         AddKeyframesToCurve(*filter_curve, values);
         filter_curve->SetTimingFunction(*timing.timing_function);
         filter_curve->SetScaledDuration(scale);
@@ -683,8 +681,8 @@ void CompositorAnimations::GetAnimationOnCompositor(
       case CSSPropertyTranslate:
       case CSSPropertyTransform: {
         target_property = compositor_target_property::TRANSFORM;
-        std::unique_ptr<CompositorTransformAnimationCurve> transform_curve =
-            CompositorTransformAnimationCurve::Create();
+        auto transform_curve =
+            std::make_unique<CompositorTransformAnimationCurve>();
         AddKeyframesToCurve(*transform_curve, values);
         transform_curve->SetTimingFunction(*timing.timing_function);
         transform_curve->SetScaledDuration(scale);
@@ -695,8 +693,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
         target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
         // TODO(kevers): Extend support to non-float types.
-        std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
-            CompositorFloatAnimationCurve::Create();
+        auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
         AddKeyframesToCurve(*float_curve, values);
         float_curve->SetTimingFunction(*timing.timing_function);
         float_curve->SetScaledDuration(scale);

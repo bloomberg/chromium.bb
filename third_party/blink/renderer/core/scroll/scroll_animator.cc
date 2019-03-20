@@ -292,7 +292,7 @@ bool ScrollAnimator::SendAnimationToCompositor() {
 
 void ScrollAnimator::CreateAnimationCurve() {
   DCHECK(!animation_curve_);
-  animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
+  animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
       CompositorOffsetFromBlinkOffset(target_offset_),
       last_granularity_ == kScrollByPixel
           ? CompositorScrollOffsetAnimationCurve::kScrollDurationInverseDelta
@@ -420,7 +420,7 @@ void ScrollAnimator::NotifyAnimationTakeover(
   ScrollOffset target_value(scroll_offset_animation_curve->target_value().x(),
                             scroll_offset_animation_curve->target_value().y());
   if (WillAnimateToOffset(target_value)) {
-    animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
+    animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
         scroll_offset_animation_curve);
     start_time_ = animation_start_time;
   }

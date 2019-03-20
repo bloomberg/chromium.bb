@@ -54,7 +54,7 @@ void ProgrammaticScrollAnimator::AnimateToOffset(const ScrollOffset& offset,
   start_time_ = 0.0;
   target_offset_ = offset;
   is_sequenced_scroll_ = is_sequenced_scroll;
-  animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
+  animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
       CompositorOffsetFromBlinkOffset(target_offset_),
       CompositorScrollOffsetAnimationCurve::kScrollDurationDeltaBased);
 
