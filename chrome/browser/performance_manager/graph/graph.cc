@@ -23,13 +23,9 @@ class UkmEntryBuilder;
 
 namespace performance_manager {
 
-Graph::Graph() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+Graph::Graph() = default;
 
 Graph::~Graph() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // Because the graph has ownership of the CUs, and because the process CUs
   // unregister on destruction, there is reentrancy to this class on
   // destruction. The order of operations here is optimized to minimize the work
@@ -46,13 +42,11 @@ Graph::~Graph() {
 }
 
 void Graph::RegisterObserver(std::unique_ptr<GraphObserver> observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer->set_node_graph(this);
   observers_.push_back(std::move(observer));
 }
 
 void Graph::OnNodeAdded(NodeBase* node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_) {
     if (observer->ShouldObserve(node)) {
       node->AddObserver(observer.get());
@@ -62,12 +56,10 @@ void Graph::OnNodeAdded(NodeBase* node) {
 }
 
 void Graph::OnBeforeNodeRemoved(NodeBase* node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   node->BeforeDestroyed();
 }
 
 SystemNodeImpl* Graph::FindOrCreateSystemNode() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!system_node_) {
     // Create the singleton SystemCU instance. Ownership is taken by the graph.
     resource_coordinator::CoordinationUnitID id(
@@ -82,7 +74,6 @@ SystemNodeImpl* Graph::FindOrCreateSystemNode() {
 
 NodeBase* Graph::GetNodeByID(
     const resource_coordinator::CoordinationUnitID cu_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto& it = nodes_.find(cu_id);
   if (it == nodes_.end())
     return nullptr;
@@ -90,7 +81,6 @@ NodeBase* Graph::GetNodeByID(
 }
 
 ProcessNodeImpl* Graph::GetProcessNodeByPid(base::ProcessId pid) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = processes_by_pid_.find(pid);
   if (it == processes_by_pid_.end())
     return nullptr;
@@ -112,7 +102,6 @@ std::vector<PageNodeImpl*> Graph::GetAllPageNodes() {
 
 size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
                                                  const void* key) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!node && !key)
     return node_attached_data_map_.size();
 
@@ -129,14 +118,12 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
 }
 
 void Graph::AddNewNode(NodeBase* new_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = nodes_.emplace(new_node->id(), new_node);
   DCHECK(it.second);  // Inserted successfully
   OnNodeAdded(new_node);
 }
 
 void Graph::RemoveNode(NodeBase* node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnBeforeNodeRemoved(node);
 
   // Remove any node attached data affiliated with this node.
@@ -153,7 +140,6 @@ void Graph::RemoveNode(NodeBase* node) {
 
 void Graph::BeforeProcessPidChange(ProcessNodeImpl* process,
                                    base::ProcessId new_pid) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // On Windows, PIDs are aggressively reused, and because not all process
   // creation/death notifications are synchronized, it's possible for more than
   // one CU to have the same PID. To handle this, the second and subsequent
@@ -170,7 +156,6 @@ void Graph::BeforeProcessPidChange(ProcessNodeImpl* process,
 
 template <typename CUType>
 std::vector<CUType*> Graph::GetAllNodesOfType() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto type = CUType::Type();
   std::vector<CUType*> ret;
   for (const auto& el : nodes_) {

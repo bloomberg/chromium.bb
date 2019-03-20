@@ -33,7 +33,7 @@ class NodeBase {
   NodeBase(const resource_coordinator::CoordinationUnitID& id, Graph* graph);
   virtual ~NodeBase();
 
-  virtual void BeforeDestroyed();
+  void BeforeDestroyed();
   void AddObserver(GraphObserver* observer);
   void RemoveObserver(GraphObserver* observer);
   bool GetProperty(
@@ -61,9 +61,6 @@ class NodeBase {
   }
 
  protected:
-  // Returns true if |other_node| is in the same graph.
-  bool NodeInGraph(const NodeBase* other_node) const;
-
   // Helper function for setting a property, and notifying observers if the
   // value has changed.
   template <typename NodeType,

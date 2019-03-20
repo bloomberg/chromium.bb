@@ -43,8 +43,8 @@ TEST_F(FrameNodeImplTest, AddChildFrameBasic) {
   auto frame2_node = CreateNode<FrameNodeImpl>();
   auto frame3_node = CreateNode<FrameNodeImpl>();
 
-  frame1_node->AddChildFrame(frame2_node.get());
-  frame1_node->AddChildFrame(frame3_node.get());
+  frame1_node->AddChildFrame(frame2_node->id());
+  frame1_node->AddChildFrame(frame3_node->id());
   EXPECT_EQ(nullptr, frame1_node->GetParentFrameNode());
   EXPECT_EQ(2u, frame1_node->child_frame_nodes_for_testing().size());
   EXPECT_EQ(frame1_node.get(), frame2_node->GetParentFrameNode());
@@ -58,14 +58,14 @@ TEST_F(FrameNodeImplDeathTest, AddChildFrameOnCyclicReference) {
   auto frame2_node = CreateNode<FrameNodeImpl>();
   auto frame3_node = CreateNode<FrameNodeImpl>();
 
-  frame1_node->AddChildFrame(frame2_node.get());
-  frame2_node->AddChildFrame(frame3_node.get());
+  frame1_node->AddChildFrame(frame2_node->id());
+  frame2_node->AddChildFrame(frame3_node->id());
 // |frame3_node| can't add |frame1_node| because |frame1_node| is an ancestor of
 // |frame3_node|, and this will hit a DCHECK because of cyclic reference.
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH_IF_SUPPORTED(frame3_node->AddChildFrame(frame1_node.get()), "");
+  EXPECT_DEATH_IF_SUPPORTED(frame3_node->AddChildFrame(frame1_node->id()), "");
 #else
-  frame3_node->AddChildFrame(frame1_node.get());
+  frame3_node->AddChildFrame(frame1_node->id());
 #endif  // !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
   EXPECT_EQ(1u, frame1_node->child_frame_nodes_for_testing().count(
@@ -88,7 +88,7 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   EXPECT_EQ(0u, child_frame_node->child_frame_nodes_for_testing().size());
   EXPECT_TRUE(!child_frame_node->GetParentFrameNode());
 
-  parent_frame_node->AddChildFrame(child_frame_node.get());
+  parent_frame_node->AddChildFrame(child_frame_node->id());
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(1u, parent_frame_node->child_frame_nodes_for_testing().size());
@@ -96,7 +96,7 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   EXPECT_EQ(0u, child_frame_node->child_frame_nodes_for_testing().size());
   EXPECT_EQ(parent_frame_node.get(), child_frame_node->GetParentFrameNode());
 
-  parent_frame_node->RemoveChildFrame(child_frame_node.get());
+  parent_frame_node->RemoveChildFrame(child_frame_node->id());
 
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(0u, parent_frame_node->child_frame_nodes_for_testing().size());
