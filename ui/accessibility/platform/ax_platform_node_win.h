@@ -922,6 +922,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   bool IsUIAControl() const;
 
+  base::Optional<LONG> ComputeUIALandmarkType() const;
+
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 

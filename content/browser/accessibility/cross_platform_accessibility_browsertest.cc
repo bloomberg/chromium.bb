@@ -12,7 +12,10 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/browser_accessibility.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -67,6 +70,12 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   void TearDownOnMainThread() override;
 
  protected:
+  BrowserAccessibilityManager* GetManager() {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    return web_contents->GetRootBrowserAccessibilityManager();
+  }
+
   std::string GetAttr(const ui::AXNode* node,
                       const ax::mojom::StringAttribute attr);
   int GetIntAttr(const ui::AXNode* node, const ax::mojom::IntAttribute attr);
@@ -455,6 +464,82 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   EXPECT_EQ(-1, GetIntAttr(header4, ax::mojom::IntAttribute::kSortDirection));
   EXPECT_EQ(-1, GetIntAttr(header5, ax::mojom::IntAttribute::kSortDirection));
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       LocalizedLandmarkType) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<!doctype html>"
+      "<header aria-label='header'></header>"
+      "<aside aria-label='aside'></aside>"
+      "<footer aria-label='footer'></footer>"
+      "<form aria-label='form'></form>"
+      "<main aria-label='main'></main>"
+      "<nav aria-label='nav'></nav>"
+      "<section></section>"
+      "<section aria-label='section'></section>"
+      "<div role='banner' aria-label='banner'></div>"
+      "<div role='complementary' aria-label='complementary'></div>"
+      "<div role='contentinfo' aria-label='contentinfo'></div>"
+      "<div role='form' aria-label='role_form'></div>"
+      "<div role='main' aria-label='role_main'></div>"
+      "<div role='navigation' aria-label='role_nav'></div>"
+      "<div role='region'></div>"
+      "<div role='region' aria-label='region'></div>"
+      "<div role='search' aria-label='search'></div>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_NE(nullptr, root);
+  ASSERT_EQ(17u, root->PlatformChildCount());
+
+  auto TestLocalizedLandmarkType =
+      [root](int child_index, ax::mojom::Role expected_role,
+             const std::string& expected_name,
+             const base::string16& expected_localized_landmark_type = {}) {
+        BrowserAccessibility* node = root->PlatformGetChild(child_index);
+        ASSERT_NE(nullptr, node);
+
+        EXPECT_EQ(expected_role, node->GetRole());
+        EXPECT_EQ(expected_name,
+                  node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+        EXPECT_EQ(expected_localized_landmark_type,
+                  node->GetLocalizedStringForLandmarkType());
+      };
+
+  // For testing purposes, assume we get en-US localized strings.
+  TestLocalizedLandmarkType(0, ax::mojom::Role::kBanner, "header",
+                            base::ASCIIToUTF16("banner"));
+  TestLocalizedLandmarkType(1, ax::mojom::Role::kComplementary, "aside",
+                            base::ASCIIToUTF16("complementary"));
+  TestLocalizedLandmarkType(2, ax::mojom::Role::kFooter, "footer",
+                            base::ASCIIToUTF16("content info"));
+  TestLocalizedLandmarkType(3, ax::mojom::Role::kForm, "form");
+  TestLocalizedLandmarkType(4, ax::mojom::Role::kMain, "main");
+  TestLocalizedLandmarkType(5, ax::mojom::Role::kNavigation, "nav");
+  TestLocalizedLandmarkType(6, ax::mojom::Role::kRegion, "");
+  TestLocalizedLandmarkType(7, ax::mojom::Role::kRegion, "section",
+                            base::ASCIIToUTF16("region"));
+
+  TestLocalizedLandmarkType(8, ax::mojom::Role::kBanner, "banner",
+                            base::ASCIIToUTF16("banner"));
+  TestLocalizedLandmarkType(9, ax::mojom::Role::kComplementary, "complementary",
+                            base::ASCIIToUTF16("complementary"));
+  TestLocalizedLandmarkType(10, ax::mojom::Role::kContentInfo, "contentinfo",
+                            base::ASCIIToUTF16("content info"));
+  TestLocalizedLandmarkType(11, ax::mojom::Role::kForm, "role_form");
+  TestLocalizedLandmarkType(12, ax::mojom::Role::kMain, "role_main");
+  TestLocalizedLandmarkType(13, ax::mojom::Role::kNavigation, "role_nav");
+  TestLocalizedLandmarkType(14, ax::mojom::Role::kRegion, "");
+  TestLocalizedLandmarkType(15, ax::mojom::Role::kRegion, "region",
+                            base::ASCIIToUTF16("region"));
+  TestLocalizedLandmarkType(16, ax::mojom::Role::kSearch, "search");
 }
 
 }  // namespace content

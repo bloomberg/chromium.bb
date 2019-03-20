@@ -1354,6 +1354,31 @@ BrowserAccessibility::GetLocalizedRoleDescriptionForUnlabeledImage() const {
       IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION);
 }
 
+base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
+  const ContentClient* content_client = content::GetContentClient();
+  const ui::AXNodeData& data = GetData();
+
+  switch (data.role) {
+    case ax::mojom::Role::kBanner:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_BANNER);
+
+    case ax::mojom::Role::kComplementary:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_COMPLEMENTARY);
+
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_INFO);
+
+    case ax::mojom::Role::kRegion:
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return content_client->GetLocalizedString(IDS_AX_ROLE_REGION);
+      FALLTHROUGH;
+
+    default:
+      return {};
+  }
+}
+
 bool BrowserAccessibility::ShouldIgnoreHoveredStateForTesting() {
   BrowserAccessibilityStateImpl* accessibility_state =
       BrowserAccessibilityStateImpl::GetInstance();

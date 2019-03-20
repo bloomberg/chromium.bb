@@ -2047,6 +2047,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       // TODO(accessibility) https://github.com/w3c/html-aam/issues/141
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kFooter:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kDate:
       return ATK_ROLE_DATE_EDITOR;
@@ -2355,8 +2356,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kFigcaption:
       return ATK_ROLE_CAPTION;
-    case ax::mojom::Role::kFooter:
-      return ATK_ROLE_FOOTER;
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kPresentational:
