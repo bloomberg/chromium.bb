@@ -69,14 +69,19 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
 
     /**
      * Any of the concrete class can override and define a relationship that links a {@link Tab} to
-     * a list of related {@link Tab}s. By default, this returns an empty unmodifiable list. Note
-     * that the meaning of related can vary depending on the filter being applied.
+     * a list of related {@link Tab}s. By default, this returns an unmodifiable list that only
+     * contains the {@link Tab} with the given id. Note that the meaning of related can vary
+     * depending on the filter being applied.
      * @param tabId Id of the {@link Tab} try to relate with.
      * @return An unmodifiable list of {@link Tab} that relate with the given tab id.
      */
     @NonNull
     public List<Tab> getRelatedTabList(int tabId) {
-        return sEmptyRelatedTabList;
+        Tab tab = TabModelUtils.getTabById(getTabModel(), tabId);
+        if (tab == null) return sEmptyRelatedTabList;
+        List<Tab> relatedTab = new ArrayList<>();
+        relatedTab.add(tab);
+        return Collections.unmodifiableList(relatedTab);
     }
 
     /**
