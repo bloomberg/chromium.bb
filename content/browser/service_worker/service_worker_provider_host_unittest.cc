@@ -441,7 +441,6 @@ class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
 
   void SetController(
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      const std::vector<blink::mojom::WebFeature>& used_features,
       bool should_notify_controllerchange) override {
     was_set_controller_called_ = true;
   }

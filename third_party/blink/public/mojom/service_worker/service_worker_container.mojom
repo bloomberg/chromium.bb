@@ -133,12 +133,9 @@ interface ServiceWorkerContainer {
   // Corresponds to setting ServiceWorkerContainer#controller.
   // If |controller_info| is invalid (its |object_info| is null), then
   // ServiceWorkerContainer#controller is cleared.
-  // If |controller_info| is valid, |used_features| is the set of
-  // features the controller has used, for UseCounter purposes.
   // If |should_notify_controllerchange| is true, dispatch a 'controllerchange'
   // event.
   SetController(ControllerServiceWorkerInfo controller_info,
-                array<WebFeature> used_features,
                 bool should_notify_controllerchange);
 
   // Corresponds to Client#postMessage().

@@ -194,7 +194,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Implementation of blink::mojom::ServiceWorkerContainer.
   void SetController(
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      const std::vector<blink::mojom::WebFeature>& used_features,
       bool should_notify_controllerchange) override;
   void PostMessageToClient(blink::mojom::ServiceWorkerObjectInfoPtr source,
                            blink::TransferableMessage message) override;

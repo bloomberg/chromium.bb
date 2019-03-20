@@ -828,7 +828,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   if (!controller_) {
     container_->SetController(std::move(controller_info),
-                              {} /* used_features */, notify_controllerchange);
+                              notify_controllerchange);
     return;
   }
 
@@ -850,12 +850,10 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
         object_host->CreateCompleteObjectInfoToSend();
 
   // Populate used features for UseCounter purposes.
-  std::vector<blink::mojom::WebFeature> used_features;
   for (const blink::mojom::WebFeature feature : controller_->used_features())
-    used_features.push_back(feature);
+    controller_info->used_features.push_back(feature);
 
-
-  container_->SetController(std::move(controller_info), used_features,
+  container_->SetController(std::move(controller_info),
                             notify_controllerchange);
 }
 
