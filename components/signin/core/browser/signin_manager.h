@@ -109,8 +109,6 @@ class SigninManager : public SigninManagerBase,
   void FinalizeInitBeforeLoadingRefreshTokens(
       PrefService* local_state) override;
 
-  void Shutdown() override;
-
   // Signs a user in. SigninManager assumes that |username| can be used to look
   // up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);

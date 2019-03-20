@@ -31,7 +31,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
@@ -43,7 +42,7 @@ class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
-class SigninManagerBase : public KeyedService {
+class SigninManagerBase {
  public:
   class Observer {
    public:
@@ -82,7 +81,7 @@ class SigninManagerBase : public KeyedService {
  public:
 #endif
 
-  ~SigninManagerBase() override;
+  virtual ~SigninManagerBase();
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);

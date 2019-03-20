@@ -70,7 +70,6 @@ IdentityManager::IdentityManager(
 
 IdentityManager::~IdentityManager() {
   signin_manager_->ClearObserver();
-  signin_manager_->Shutdown();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   account_tracker_service_->RemoveObserver(this);
