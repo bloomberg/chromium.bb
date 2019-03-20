@@ -21,6 +21,7 @@ class AccessibilityBrowserTest : public ContentBrowserTest {
 
  protected:
   gfx::NativeViewAccessible GetRendererAccessible();
+  void ExecuteScript(const base::string16& script);
   void LoadInitialAccessibilityTreeFromHtml(
       const std::string& html,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
@@ -28,6 +29,7 @@ class AccessibilityBrowserTest : public ContentBrowserTest {
   void LoadInputField();
   void LoadTextareaField();
   void LoadSampleParagraph(ui::AXMode accessibility_mode = ui::kAXModeComplete);
+  void LoadSampleParagraphInScrollableEditable();
 
   static std::string InputContentsString();
   static std::string TextAreaContentsString();

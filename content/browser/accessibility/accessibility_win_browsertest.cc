@@ -61,7 +61,6 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
  protected:
   class AccessibleChecker;
   base::string16 PrintAXTree() const;
-  void ExecuteScript(const std::wstring& script);
   void SetUpInputField(Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpScrollableInputField(
       Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
@@ -84,8 +83,7 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
       Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
   void SetUpSampleParagraphInScrollableEditable(
-      Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
-      ui::AXMode accessibility_mode = ui::kAXModeComplete);
+      Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text);
   BrowserAccessibility* FindNode(ax::mojom::Role role,
                                  const std::string& name_or_value);
   BrowserAccessibilityManager* GetManager();
@@ -138,11 +136,6 @@ base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
           ->GetRoot(),
       &str);
   return str;
-}
-
-void AccessibilityWinBrowserTest::ExecuteScript(const std::wstring& script) {
-  shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      script, base::NullCallback());
 }
 
 // Loads a page with  an input text field and places sample text in it. Also,
@@ -362,33 +355,9 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphInScrollableDocument(
   SetUpSampleParagraphHelper(accessible_text);
 }
 
-// Loads a page with a content editable whose text overflows its height.
-// Places the caret at the beginning of the editable's last line but doesn't
-// scroll the editable.
 void AccessibilityWinBrowserTest::SetUpSampleParagraphInScrollableEditable(
-    Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
-    ui::AXMode accessibility_mode) {
-  LoadInitialAccessibilityTreeFromHtml(
-      R"HTML(<p contenteditable="true"
-          style="height: 30px; overflow: scroll;">
-          hello<br><br><br>hello
-      </p>)HTML",
-      accessibility_mode);
-
-  AccessibilityNotificationWaiter selection_waiter(
-      shell()->web_contents(), ui::kAXModeComplete,
-      ax::mojom::Event::kTextSelectionChanged);
-  ExecuteScript(
-      L"let selection=document.getSelection();"
-      L"let range=document.createRange();"
-      L"let editable=document.querySelector('p[contenteditable=\"true\"]');"
-      L"editable.focus();"
-      L"range.setStart(editable.lastChild, 0);"
-      L"range.setEnd(editable.lastChild, 0);"
-      L"selection.removeAllRanges();"
-      L"selection.addRange(range);");
-  selection_waiter.WaitForNotification();
-
+    Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text) {
+  LoadSampleParagraphInScrollableEditable();
   SetUpSampleParagraphHelper(accessible_text);
 }
 

@@ -49,6 +49,7 @@ class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
   AtkText* SetUpInputField();
   AtkText* SetUpTextareaField();
   AtkText* SetUpSampleParagraph();
+  AtkText* SetUpSampleParagraphInScrollableEditable();
 
   AtkText* GetAtkTextForChild(AtkRole expected_role);
 
@@ -91,9 +92,27 @@ AtkText* AccessibilityAuraLinuxBrowserTest::SetUpTextareaField() {
   return GetAtkTextForChild(ATK_ROLE_ENTRY);
 }
 
-// Loads a page with  a paragraph of sample text.
+// Loads a page with a paragraph of sample text.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraph() {
   LoadSampleParagraph();
+
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  int number_of_children = atk_object_get_n_accessible_children(document);
+  EXPECT_LT(0, number_of_children);
+
+  // The input field is always the last child.
+  AtkObject* input = atk_object_ref_accessible_child(document, 0);
+  EXPECT_EQ(ATK_ROLE_PARAGRAPH, atk_object_get_role(input));
+
+  EXPECT_TRUE(ATK_IS_TEXT(input));
+  return ATK_TEXT(input);
+}
+
+AtkText*
+AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraphInScrollableEditable() {
+  LoadSampleParagraphInScrollableEditable();
 
   AtkObject* document = GetRendererAccessible();
   EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
@@ -210,6 +229,237 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
         atk_text, i, ATK_TEXT_BOUNDARY_LINE_START, newline_offset + 1,
         n_characters,
         "cooperation between intelligent rational decision-makers.\"");
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestCharacterExtentsWithInvalidArguments) {
+  AtkText* atk_text = SetUpSampleParagraph();
+
+  int invalid_offset = -3;
+  int x = -1, y = -1;
+  int width = -1, height = -1;
+
+  atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
+                                 &height, ATK_XY_SCREEN);
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+
+  atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
+                                 &height, ATK_XY_PARENT);
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+
+  atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
+                                 &height, ATK_XY_WINDOW);
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+
+  int n_characters = atk_text_get_character_count(atk_text);
+  ASSERT_LT(0, n_characters);
+
+  atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
+                                 &height, ATK_XY_SCREEN);
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+
+  atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
+                                 &height, ATK_XY_PARENT);
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+
+  atk_text_get_character_extents(atk_text, invalid_offset, &x, &y, &width,
+                                 &height, ATK_XY_WINDOW);
+  EXPECT_EQ(0, x);
+  EXPECT_EQ(0, y);
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+}
+
+AtkCoordType kCoordinateTypes[] = {
+    ATK_XY_SCREEN,
+    ATK_XY_WINDOW,
+    ATK_XY_PARENT,
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestCharacterExtentsInEditable) {
+  AtkText* atk_text = SetUpSampleParagraph();
+
+  constexpr int newline_offset = 46;
+  int n_characters = atk_text_get_character_count(atk_text);
+  ASSERT_EQ(105, n_characters);
+
+  int x, y, width, height;
+  int previous_x, previous_y, previous_height;
+  for (AtkCoordType coordinate_type : kCoordinateTypes) {
+    atk_text_get_character_extents(atk_text, 0, &x, &y, &width, &height,
+                                   coordinate_type);
+    EXPECT_LT(0, x) << "at offset 0";
+    EXPECT_LT(0, y) << "at offset 0";
+    EXPECT_LT(1, width) << "at offset 0";
+    EXPECT_LT(1, height) << "at offset 0";
+
+    gfx::Rect combined_extents(x, y, width, height);
+    for (int offset = 1; offset < newline_offset; ++offset) {
+      testing::Message message;
+      message << "While checking at offset " << offset;
+      SCOPED_TRACE(message);
+
+      previous_x = x;
+      previous_y = y;
+      previous_height = height;
+
+      atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                     coordinate_type);
+      EXPECT_LT(previous_x, x);
+      EXPECT_EQ(previous_y, y);
+      EXPECT_LT(1, width);
+      EXPECT_EQ(previous_height, height);
+
+      combined_extents.Union(gfx::Rect(x, y, width, height));
+      atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                     coordinate_type);
+
+      AtkTextRectangle atk_rect;
+      atk_text_get_range_extents(atk_text, 0, offset + 1, coordinate_type,
+                                 &atk_rect);
+      EXPECT_EQ(combined_extents.x(), atk_rect.x);
+      EXPECT_EQ(combined_extents.y(), atk_rect.y);
+      EXPECT_EQ(combined_extents.width(), atk_rect.width);
+      EXPECT_EQ(combined_extents.height(), atk_rect.height);
+    }
+
+    {
+      testing::Message message;
+      message << "While checking at offset " << newline_offset + 1;
+      SCOPED_TRACE(message);
+
+      atk_text_get_character_extents(atk_text, newline_offset + 1, &x, &y,
+                                     &width, &height, coordinate_type);
+      EXPECT_LE(0, x);
+      EXPECT_GT(previous_x, x);
+      EXPECT_LT(previous_y, y);
+      EXPECT_LT(1, width);
+      EXPECT_EQ(previous_height, height);
+    }
+
+    combined_extents = gfx::Rect(x, y, width, height);
+    for (int offset = newline_offset + 2; offset < n_characters; ++offset) {
+      testing::Message message;
+      message << "While checking at offset " << offset;
+      SCOPED_TRACE(message);
+
+      previous_x = x;
+      previous_y = y;
+      previous_height = height;
+
+      atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                     coordinate_type);
+      EXPECT_LT(previous_x, x);
+      EXPECT_EQ(previous_y, y);
+      EXPECT_LT(1, width);
+      EXPECT_EQ(previous_height, height);
+
+      combined_extents.Union(gfx::Rect(x, y, width, height));
+      atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                     coordinate_type);
+
+      AtkTextRectangle atk_rect;
+      atk_text_get_range_extents(atk_text, newline_offset + 1, offset + 1,
+                                 coordinate_type, &atk_rect);
+      EXPECT_EQ(combined_extents.x(), atk_rect.x);
+      EXPECT_EQ(combined_extents.y(), atk_rect.y);
+      EXPECT_EQ(combined_extents.width(), atk_rect.width);
+      EXPECT_EQ(combined_extents.height(), atk_rect.height);
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestCharacterExtentsInScrollableEditable) {
+  // By construction, only the first line of the content editable is visible.
+  AtkText* atk_text = SetUpSampleParagraphInScrollableEditable();
+
+  constexpr int first_line_end = 5;
+  constexpr int last_line_start = 8;
+
+  int n_characters = atk_text_get_character_count(atk_text);
+  ASSERT_EQ(13, n_characters);
+
+  int x, y, width, height;
+  int previous_x, previous_y, previous_height;
+  for (AtkCoordType coordinate_type : kCoordinateTypes) {
+    // Test that non offscreen characters have increasing x coordinates and a
+    // height that is greater than 1px.
+    {
+      testing::Message message;
+      message << "While checking at offset 0";
+      SCOPED_TRACE(message);
+
+      atk_text_get_character_extents(atk_text, 0, &x, &y, &width, &height,
+                                     coordinate_type);
+      EXPECT_LT(0, x);
+      EXPECT_LT(0, y);
+      EXPECT_LT(1, width);
+      EXPECT_LT(1, height);
+    }
+
+    for (int offset = 1; offset < first_line_end; ++offset) {
+      testing::Message message;
+      message << "While checking at offset " << offset;
+      SCOPED_TRACE(message);
+
+      previous_x = x;
+      previous_y = y;
+      previous_height = height;
+
+      atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                     coordinate_type);
+      EXPECT_LT(previous_x, x);
+      EXPECT_EQ(previous_y, y);
+      EXPECT_LT(1, width);
+      EXPECT_EQ(previous_height, height);
+    }
+
+    {
+      testing::Message message;
+      message << "While checking at offset " << last_line_start;
+      SCOPED_TRACE(message);
+
+      atk_text_get_character_extents(atk_text, last_line_start, &x, &y, &width,
+                                     &height, coordinate_type);
+      EXPECT_LT(0, x);
+      EXPECT_LT(previous_y, y);
+      EXPECT_LT(1, width);
+      EXPECT_EQ(previous_height, height);
+    }
+
+    for (int offset = last_line_start + 1; offset < n_characters; ++offset) {
+      testing::Message message;
+      message << "While checking at offset " << offset;
+      SCOPED_TRACE(message);
+
+      previous_x = x;
+      previous_y = y;
+
+      atk_text_get_character_extents(atk_text, offset, &x, &y, &width, &height,
+                                     coordinate_type);
+      EXPECT_LT(previous_x, x);
+      EXPECT_EQ(previous_y, y);
+      EXPECT_LT(1, width);
+      EXPECT_EQ(previous_height, height);
+    }
   }
 }
 
