@@ -65,20 +65,8 @@ crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 # available in child/sibling frames.  This assumption doesn't hold with User
 # Activation v2 (UAv2).
 crbug.com/906791 external/wpt/fullscreen/api/element-ready-check-allowed-cross-origin-manual.sub.html [ Timeout ]
-crbug.com/860713 bluetooth/characteristic/notifications/notification-after-disconnection.html [ Failure ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Timeout ]
-crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-iframe.https.html [ Failure Timeout ]
 crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure Timeout ]
-crbug.com/860713 external/wpt/bluetooth/server/disconnect/detach-gc.https.html [ Failure Timeout ]
-crbug.com/860713 external/wpt/bluetooth/server/disconnect/gc-detach.https.html [ Failure Timeout ]
-crbug.com/860713 external/wpt/bluetooth/server/getPrimaryService/gen-discovery-complete-no-permission-absent-service.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/server/getPrimaryService/gen-discovery-complete-service-not-found.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/server/getPrimaryService/two-iframes-from-same-origin.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/server/getPrimaryServices/gen-discovery-complete-no-permission-absent-service-with-uuid.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/server/getPrimaryServices/gen-discovery-complete-service-not-found-with-uuid.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/service/getCharacteristic/gen-reconnect-during.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect-during-with-uuid.https.html [ Failure ]
-crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect-during.https.html [ Failure ]
 
 # The following tests passes only with User Activation v2 (UAv2) disabled.
 crbug.com/908841 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout ]
@@ -176,12 +164,10 @@ crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pas
 crbug.com/678482 virtual/binary-for-devtools/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 virtual/outofblink-cors/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 virtual/feature-policy-for-sandbox/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
-crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
 crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
 crbug.com/822372 http/tests/printing/cross-site-frame-scrolled.html [ Crash ]
 crbug.com/822372 http/tests/printing/cross-site-frame.html [ Crash ]
@@ -1976,7 +1962,6 @@ crbug.com/771233 [ Win10 ] http/tests/devtools/audits2/ [ Skip ]
 crbug.com/771233 [ Win10 ] virtual/binary-for-devtools/http/tests/devtools/audits2/ [ Skip ]
 
 crbug.com/923269 virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
-crbug.com/923269 fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -2902,9 +2887,6 @@ crbug.com/808834 [ Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Fai
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
-# Sheriff 2019-03-07
-crbug.com/939406 external/wpt/html/browsers/windows/embedded-opener-remove-frame.html [ Failure ]
-
 # Sheriff 2019-03-08
 crbug.com/940050 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Failure Timeout ]
 
@@ -3346,10 +3328,6 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integ
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout Failure ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout Failure ]
 
-crbug.com/906959 external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
-crbug.com/906959 external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
-crbug.com/906959 external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
-crbug.com/906959 external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
@@ -3382,10 +3360,6 @@ crbug.com/906959 external/wpt/referrer-policy/unset-referrer-policy/http-rp/same
 crbug.com/906959 external/wpt/referrer-policy/unset-referrer-policy/http-rp/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
-crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
 crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 virtual/omt-worker-fetch/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
@@ -3930,7 +3904,6 @@ crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopen
 crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/626703 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout Crash ]
 crbug.com/626703 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html [ Timeout Crash ]
-crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-04.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/relevant-mutations.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Failure ]
@@ -4281,7 +4254,6 @@ crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-creden
 # Off-the-main-thread service worker script fetch.
 # This fails because CORS check?: Error message is like:
 # Access to XMLHttpRequest at 'foobar://abcd' (redirected from 'http://web-platform.test:8001/xhr/resources/redirect.py?location=foobar://abcd&code=301') from origin 'http://web-platform.test:8001' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
-crbug.com/924043 virtual/omt-worker-fetch/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
 # Following tests are crashing because module script fetcher for service worker
 # doesn't set CSP correctly.
 crbug.com/937757 external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Crash ]
@@ -4379,12 +4351,6 @@ crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failu
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-options/broken-origin.html [ Failure ]
-
-# These tests used to pass because javascript urls would commit synchronously.
-# Now they need PostMessageTimer to not be cancelled when a javascript: url
-# replaces the existing document.
-crbug.com/914587 external/wpt/webmessaging/with-ports/018.html [ Timeout ]
-crbug.com/914587 external/wpt/webmessaging/without-ports/018.html [ Timeout ]
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
@@ -5187,7 +5153,6 @@ crbug.com/833655 [ Linux ] virtual/video-surface-layer/media/controls/closed-cap
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Win ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
-crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Failure ]
 
 # Sheriff 2018-04-23
 crbug.com/833331 [ Win10 ] inspector-protocol/page/pageNavigateToFragment.js [ Pass Failure ]
@@ -5968,10 +5933,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # WebXR feature policy feature name in Chrome doesn't match spec.
 crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Failure ]
 
-# This test requires FeaturePolicyForSandbox flag.
-crbug.com/791017 external/wpt/feature-policy/feature-policy-for-sandbox/feature-propagation-to-auxiliary-context.html [ Failure ]
-crbug.com/791017 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-for-sandbox/feature-propagation-to-auxiliary-context.html [ Failure ]
-
 # Sheriff 2019-01-25
 crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
 
@@ -6050,7 +6011,6 @@ crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-fixed-invalid.html [ Failure Pass ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric-invalid.html [ Failure Pass ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-symbolic-invalid.html [ Failure Pass ]
-crbug.com/935690 virtual/video-surface-layer/media/video-played-ranges-1.html [ Failure ]
 
 # Sheriff 2019-02-26
 crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [ Failure Pass ]
@@ -6109,7 +6069,7 @@ crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-pa
 crbug.com/937811 [ Win Release ] virtual/binary-for-devtools/http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
 crbug.com/937811 [ Win Release ] virtual/binary-for-devtools/http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
-crbug.com/935689 [ Linux Debug ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
+crbug.com/935689 [ Mac Linux Debug ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
 crbug.com/937858 [ Debug ] external/wpt/ambient-light/AmbientLightSensor.https.html [ Pass Failure ]
 crbug.com/937902 [ Linux Debug ] virtual/disable-blink-gen-property-trees/compositing/overflow/overflow-scroll-with-local-background.html [ Pass Failure ]
 crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.js [ Pass Timeout ]
