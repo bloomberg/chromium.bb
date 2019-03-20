@@ -23,10 +23,14 @@ import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -333,6 +337,46 @@ public class ModalDialogViewTest {
         onView(withId(R.id.button_bar)).check(matches(not(isDisplayed())));
         onView(withId(R.id.positive_button)).check(matches(not(isDisplayed())));
         onView(withId(R.id.negative_button)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ModalDialog"})
+    public void testTouchFilter() {
+        PropertyModel model = createModel(
+                mModelBuilder
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mResources, R.string.ok)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, mResources,
+                                R.string.cancel)
+                        .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true));
+        onView(withId(R.id.positive_button)).check(matches(touchFilterEnabled()));
+        onView(withId(R.id.negative_button)).check(matches(touchFilterEnabled()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ModalDialog"})
+    public void testTouchFilterDisabled() {
+        PropertyModel model = createModel(
+                mModelBuilder
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mResources, R.string.ok)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, mResources,
+                                R.string.cancel));
+        onView(withId(R.id.positive_button)).check(matches(not(touchFilterEnabled())));
+        onView(withId(R.id.negative_button)).check(matches(not(touchFilterEnabled())));
+    }
+
+    private static Matcher<View> touchFilterEnabled() {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Touch filtering enabled");
+            }
+            @Override
+            public boolean matchesSafely(View view) {
+                return view.getFilterTouchesWhenObscured();
+            }
+        };
     }
 
     private PropertyModel createModel(PropertyModel.Builder modelBuilder) {

@@ -10,6 +10,7 @@ import android.view.View;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.ReadableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
@@ -96,6 +97,13 @@ public class ModalDialogProperties {
     public static final WritableBooleanPropertyKey CANCEL_ON_TOUCH_OUTSIDE =
             new WritableBooleanPropertyKey();
 
+    /**
+     * Whether button touch events should be filtered when buttons are obscured by another visible
+     * window.
+     */
+    public static final ReadableBooleanPropertyKey FILTER_TOUCH_FOR_SECURITY =
+            new ReadableBooleanPropertyKey();
+
     /** Whether the title is scrollable with the message. */
     public static final WritableBooleanPropertyKey TITLE_SCROLLABLE =
             new WritableBooleanPropertyKey();
@@ -103,5 +111,5 @@ public class ModalDialogProperties {
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {CONTROLLER, CONTENT_DESCRIPTION,
             TITLE, TITLE_ICON, MESSAGE, CUSTOM_VIEW, POSITIVE_BUTTON_TEXT, POSITIVE_BUTTON_DISABLED,
             NEGATIVE_BUTTON_TEXT, NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE,
-            TITLE_SCROLLABLE};
+            FILTER_TOUCH_FOR_SECURITY, TITLE_SCROLLABLE};
 }
