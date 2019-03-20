@@ -52,6 +52,10 @@ constexpr base::FilePath::CharType kAndroidDownloadDir[] =
 constexpr base::FilePath::CharType kAndroidMyFilesDir[] =
     FILE_PATH_LITERAL("/storage/MyFiles");
 
+// The path for Downloads under MyFiles inside ARC container.
+constexpr base::FilePath::CharType kAndroidMyFilesDownloadsDir[] =
+    FILE_PATH_LITERAL("/storage/MyFiles/Downloads/");
+
 // The removable media path in ChromeOS. This is the actual directory to be
 // watched.
 constexpr base::FilePath::CharType kCrosRemovableMediaDir[] =
@@ -479,7 +483,19 @@ void ArcFileSystemWatcherService::OnFileSystemChanged(
       arc_bridge_service_->file_system(), RequestMediaScan);
   if (!instance)
     return;
-  instance->RequestMediaScan(paths);
+
+  std::vector<std::string> filtered_paths;
+  for (const std::string& path : paths) {
+    if (base::StartsWith(path, kAndroidMyFilesDownloadsDir,
+                         base::CompareCase::SENSITIVE)) {
+      // Exclude files under /storage/MyFiles/Downloads/ because they are also
+      // indexed as files under /storage/emulated/0/Download/
+      continue;
+    }
+    filtered_paths.push_back(path);
+  }
+
+  instance->RequestMediaScan(filtered_paths);
 }
 
 }  // namespace arc
