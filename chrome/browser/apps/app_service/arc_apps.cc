@@ -31,6 +31,28 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
 
+// TODO(crbug.com/826982): investigate re-using the ArcAppIcon class directly.
+// This may or may not be difficult: see
+// (https://chromium-review.googlesource.com/c/chromium/src/+/1482350/7#message-b45fa253ea01b523e8389b30d74ce805b0e05f77)
+// and
+// (https://chromium-review.googlesource.com/c/chromium/src/+/1482350/7#message-52080b7d348d7806c818aa395392ff1385d1784e).
+
+// TODO(crbug.com/826982): consider that, per khmel@, "App icon can be
+// overwritten (setTaskDescription) or by assigning the icon for the app
+// window. In this case some consumers (Shelf for example) switch to
+// overwritten icon... IIRC this applies to shelf items and ArcAppWindow icon".
+
+// TODO(crbug.com/826982): consider that, per khmel@, "We may change the way
+// how we handle icons in ARC++ container. That means view of the icon can be
+// changed. We support invalidation of icon scales way, similar to the case
+// above... We have methods to notify about new icon arrival. IIRC ArcAppIcon
+// already handles this".
+
+// TODO(crbug.com/826982): consider that, per khmel@, "Functionality to detect
+// icons cannot be decoded correctly and issue request to refresh the icon
+// scale from ARC++ container... The logic here is wider. We request new copy
+// of icon in this case".
+
 namespace {
 
 // ArcApps::LoadIcon (via ArcApps::LoadIconFromVM) runs a series of callbacks,
@@ -81,6 +103,11 @@ void LoadIcon0(apps::mojom::IconCompression icon_compression,
                std::string icon_resource_id,
                apps::mojom::Publisher::LoadIconCallback callback,
                apps::ArcApps::AppConnectionHolder* app_connection_holder) {
+  // TODO(crbug.com/826982): consider that, per khmel@, "Regardless the number
+  // of request for the same icon scale it should be only one and only one
+  // request to ARC++ container to extract the real data. This logic is
+  // isolated inside ArcAppListPrefs and I don't think that anybody else should
+  // call mojom RequestAppIcon".
   if (icon_resource_id.empty()) {
     auto* app_instance =
         ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder, RequestAppIcon);
