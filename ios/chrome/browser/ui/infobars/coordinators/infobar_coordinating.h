@@ -8,6 +8,9 @@
 @class InfobarBannerTransitionDriver;
 @class InfobarModalTransitionDriver;
 @protocol InfobarBadgeUIDelegate;
+namespace ios {
+class ChromeBrowserState;
+}
 
 // InfobarCoordinating defines common methods for all Infobar Coordinators.
 @protocol InfobarCoordinating
@@ -27,6 +30,9 @@
 
 // Handles any followup actions to Infobar UI events.
 @property(nonatomic, weak) id<InfobarBadgeUIDelegate> badgeDelegate;
+
+// The ChromeBrowserState owned by the Coordinator.
+@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
 // The Coordinator's BannerViewController, can be nil.
 - (UIViewController*)bannerViewController;
