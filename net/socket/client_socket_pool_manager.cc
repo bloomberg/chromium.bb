@@ -67,31 +67,36 @@ static_assert(base::size(g_max_sockets_per_proxy_server) ==
 
 // The meat of the implementation for the InitSocketHandleForHttpRequest,
 // InitSocketHandleForRawConnect and PreconnectSocketsForHttpRequest methods.
+//
+// DO NOT ADD ANY ARGUMENTS TO THIS METHOD.
+//
+// TODO(https://crbug.com/921369) In order to resolve longstanding issues
+// related to pooling distinguishable sockets together, reduce the arguments to
+// just those that are used to populate |connection_group|, and those used to
+// locate the socket pool to use.
 scoped_refptr<TransportClientSocketPool::SocketParams>
 CreateSocketParamsAndGetGroupId(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
+    // This argument should be removed.
     int request_load_flags,
-    HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
+    // This argument should be removed.
     quic::QuicTransportVersion quic_version,
+    // This argument should be removed.
     const SSLConfig& ssl_config_for_origin,
+    // This argument should be removed.
     const SSLConfig& ssl_config_for_proxy,
+    // This argument should be removed.
     bool force_tunnel,
     PrivacyMode privacy_mode,
+    // TODO(https://crbug.com/912727):  This argument should be removed.
     const OnHostResolutionCallback& resolution_callback,
     ClientSocketPool::GroupId* connection_group) {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
   scoped_refptr<SOCKSSocketParams> socks_params;
 
   const bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
-  HostPortPair origin_host_port = endpoint;
-
-  if (!using_ssl && session->params().testing_fixed_http_port != 0) {
-    origin_host_port.set_port(session->params().testing_fixed_http_port);
-  } else if (using_ssl && session->params().testing_fixed_https_port != 0) {
-    origin_host_port.set_port(session->params().testing_fixed_https_port);
-  }
 
   // LOAD_BYPASS_CACHE should bypass the host cache as well as the HTTP cache.
   // Other cache-related load flags should not have this effect.
@@ -99,7 +104,7 @@ CreateSocketParamsAndGetGroupId(
 
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
-  DCHECK(!origin_host_port.IsEmpty());
+  DCHECK(!endpoint.IsEmpty());
   ClientSocketPool::SocketType socket_type =
       ClientSocketPool::SocketType::kHttp;
 
@@ -118,7 +123,7 @@ CreateSocketParamsAndGetGroupId(
   }
 
   *connection_group = ClientSocketPool::GroupId(
-      origin_host_port, socket_type, privacy_mode == PRIVACY_MODE_ENABLED);
+      endpoint, socket_type, privacy_mode == PRIVACY_MODE_ENABLED);
 
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
@@ -144,16 +149,14 @@ CreateSocketParamsAndGetGroupId(
       }
 
       http_proxy_params = new HttpProxySocketParams(
-          proxy_tcp_params, ssl_params, quic_version, origin_host_port,
-          session->http_auth_cache(), session->http_auth_handler_factory(),
-          session->spdy_session_pool(), session->quic_stream_factory(),
+          proxy_tcp_params, ssl_params, quic_version, endpoint,
           proxy_server.is_trusted_proxy(), force_tunnel || using_ssl,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     } else {
       DCHECK(proxy_info.is_socks());
       socks_params = new SOCKSSocketParams(
           proxy_tcp_params, proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5,
-          origin_host_port,
+          endpoint,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     }
   }
@@ -163,11 +166,11 @@ CreateSocketParamsAndGetGroupId(
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_info.is_direct()) {
       ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
-          origin_host_port, disable_resolver_cache, resolution_callback);
+          endpoint, disable_resolver_cache, resolution_callback);
     }
     scoped_refptr<SSLSocketParams> ssl_params =
         base::MakeRefCounted<SSLSocketParams>(
-            ssl_tcp_params, socks_params, http_proxy_params, origin_host_port,
+            ssl_tcp_params, socks_params, http_proxy_params, endpoint,
             ssl_config_for_origin, privacy_mode);
     return TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
         std::move(ssl_params));
@@ -185,7 +188,7 @@ CreateSocketParamsAndGetGroupId(
 
   DCHECK(proxy_info.is_direct());
   scoped_refptr<TransportSocketParams> tcp_params = new TransportSocketParams(
-      origin_host_port, disable_resolver_cache, resolution_callback);
+      endpoint, disable_resolver_cache, resolution_callback);
   return TransportClientSocketPool::SocketParams::
       CreateFromTransportSocketParams(std::move(tcp_params));
 }
@@ -210,10 +213,19 @@ int InitSocketPoolHelper(
     const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
+  bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
+  HostPortPair origin_host_port = endpoint;
+
+  if (!using_ssl && session->params().testing_fixed_http_port != 0) {
+    origin_host_port.set_port(session->params().testing_fixed_http_port);
+  } else if (using_ssl && session->params().testing_fixed_https_port != 0) {
+    origin_host_port.set_port(session->params().testing_fixed_https_port);
+  }
+
   ClientSocketPool::GroupId connection_group;
   scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
       CreateSocketParamsAndGetGroupId(
-          group_type, endpoint, request_load_flags, session, proxy_info,
+          group_type, origin_host_port, request_load_flags, proxy_info,
           quic_version, ssl_config_for_origin, ssl_config_for_proxy,
           force_tunnel, privacy_mode, resolution_callback, &connection_group);
 

@@ -27,7 +27,9 @@ namespace net {
 class ClientSocketFactory;
 class ClientSocketHandle;
 class HostResolver;
+class HttpAuthCache;
 class HttpAuthController;
+class HttpAuthHandlerFactory;
 class HttpResponseInfo;
 class HttpUserAgentSettings;
 class NetLog;
@@ -36,6 +38,8 @@ class ProxyDelegate;
 class SocketPerformanceWatcherFactory;
 class StreamSocket;
 class WebSocketEndpointLockManager;
+class QuicStreamFactory;
+class SpdySessionPool;
 
 // Immutable socket parameters intended for shared use by all ConnectJob types.
 // Excludes priority because it can be modified over the lifetime of a
@@ -46,6 +50,10 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   CommonConnectJobParams(
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
+      HttpAuthCache* http_auth_cache,
+      HttpAuthHandlerFactory* http_auth_handler_factory,
+      SpdySessionPool* spdy_session_pool,
+      QuicStreamFactory* quic_stream_factory,
       ProxyDelegate* proxy_delegate,
       const HttpUserAgentSettings* http_user_agent_settings,
       const SSLClientSocketContext& ssl_client_socket_context,
@@ -61,6 +69,10 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
 
   ClientSocketFactory* client_socket_factory;
   HostResolver* host_resolver;
+  HttpAuthCache* http_auth_cache;
+  HttpAuthHandlerFactory* http_auth_handler_factory;
+  SpdySessionPool* spdy_session_pool;
+  QuicStreamFactory* quic_stream_factory;
   ProxyDelegate* proxy_delegate;
   const HttpUserAgentSettings* http_user_agent_settings;
   SSLClientSocketContext ssl_client_socket_context;

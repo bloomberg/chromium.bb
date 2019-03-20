@@ -64,6 +64,10 @@ class MockClientSocketHandleFactory {
       : common_connect_job_params_(
             socket_factory_maker_.factory(),
             nullptr /* host_resolver */,
+            nullptr /* http_auth_cache */,
+            nullptr /* http_auth_handler_factory */,
+            nullptr /* spdy_session_pool */,
+            nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
             SSLClientSocketContext(),

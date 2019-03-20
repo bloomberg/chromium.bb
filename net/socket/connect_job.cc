@@ -20,6 +20,10 @@ namespace net {
 CommonConnectJobParams::CommonConnectJobParams(
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
+    HttpAuthCache* http_auth_cache,
+    HttpAuthHandlerFactory* http_auth_handler_factory,
+    SpdySessionPool* spdy_session_pool,
+    QuicStreamFactory* quic_stream_factory,
     ProxyDelegate* proxy_delegate,
     const HttpUserAgentSettings* http_user_agent_settings,
     const SSLClientSocketContext& ssl_client_socket_context,
@@ -30,6 +34,10 @@ CommonConnectJobParams::CommonConnectJobParams(
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
+      http_auth_cache(http_auth_cache),
+      http_auth_handler_factory(http_auth_handler_factory),
+      spdy_session_pool(spdy_session_pool),
+      quic_stream_factory(quic_stream_factory),
       proxy_delegate(proxy_delegate),
       http_user_agent_settings(http_user_agent_settings),
       ssl_client_socket_context(ssl_client_socket_context),

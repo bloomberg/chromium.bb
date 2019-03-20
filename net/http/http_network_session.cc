@@ -492,7 +492,9 @@ CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
   return CommonConnectJobParams(
       context_.client_socket_factory ? context_.client_socket_factory
                                      : ClientSocketFactory::GetDefaultFactory(),
-      context_.host_resolver, context_.proxy_delegate,
+      context_.host_resolver, &http_auth_cache_,
+      context_.http_auth_handler_factory, &spdy_session_pool_,
+      &quic_stream_factory_, context_.proxy_delegate,
       context_.http_user_agent_settings,
       CreateClientSocketContext(context_, &ssl_client_session_cache_),
       CreateClientSocketContext(context_,

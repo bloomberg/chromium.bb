@@ -134,21 +134,13 @@ HttpProxySocketParams::HttpProxySocketParams(
     const scoped_refptr<SSLSocketParams>& ssl_params,
     quic::QuicTransportVersion quic_version,
     const HostPortPair& endpoint,
-    HttpAuthCache* http_auth_cache,
-    HttpAuthHandlerFactory* http_auth_handler_factory,
-    SpdySessionPool* spdy_session_pool,
-    QuicStreamFactory* quic_stream_factory,
     bool is_trusted_proxy,
     bool tunnel,
     const NetworkTrafficAnnotationTag traffic_annotation)
     : transport_params_(transport_params),
       ssl_params_(ssl_params),
       quic_version_(quic_version),
-      spdy_session_pool_(spdy_session_pool),
-      quic_stream_factory_(quic_stream_factory),
       endpoint_(endpoint),
-      http_auth_cache_(tunnel ? http_auth_cache : nullptr),
-      http_auth_handler_factory_(tunnel ? http_auth_handler_factory : nullptr),
       is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
       traffic_annotation_(traffic_annotation) {
@@ -194,8 +186,8 @@ HttpProxyConnectJob::HttpProxyConnectJob(
                     HttpAuth::AUTH_PROXY,
                     GURL((params_->ssl_params() ? "https://" : "http://") +
                          GetDestination().ToString()),
-                    params_->http_auth_cache(),
-                    params_->http_auth_handler_factory(),
+                    common_connect_job_params->http_auth_cache,
+                    common_connect_job_params->http_auth_handler_factory,
                     host_resolver())
               : nullptr),
       weak_ptr_factory_(this) {}
@@ -489,7 +481,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
         params_->ssl_params()->GetDirectConnectionParams()->destination(),
         ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
         SpdySessionKey::IsProxySession::kTrue, socket_tag());
-    if (params_->spdy_session_pool()->FindAvailableSession(
+    if (common_connect_job_params()->spdy_session_pool->FindAvailableSession(
             key, /* enable_ip_based_pooling = */ true,
             /* is_websocket = */ false, net_log())) {
       using_spdy_ = true;
@@ -611,7 +603,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
       SpdySessionKey::IsProxySession::kTrue, socket_tag());
   base::WeakPtr<SpdySession> spdy_session =
-      params_->spdy_session_pool()->FindAvailableSession(
+      common_connect_job_params()->spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
           /* is_websocket = */ false, net_log());
   // It's possible that a session to the proxy has recently been created
@@ -619,10 +611,11 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
     nested_connect_job_.reset();
   } else {
     // Create a session direct to the proxy itself
-    spdy_session =
-        params_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-            key, params_->is_trusted_proxy(), nested_connect_job_->PassSocket(),
-            nested_connect_job_->connect_timing(), net_log());
+    spdy_session = common_connect_job_params()
+                       ->spdy_session_pool->CreateAvailableSessionFromSocket(
+                           key, params_->is_trusted_proxy(),
+                           nested_connect_job_->PassSocket(),
+                           nested_connect_job_->connect_timing(), net_log());
     DCHECK(spdy_session);
     nested_connect_job_.reset();
   }
@@ -664,8 +657,8 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
   next_state_ = STATE_QUIC_PROXY_CREATE_STREAM;
   const HostPortPair& proxy_server =
       ssl_params->GetDirectConnectionParams()->destination();
-  quic_stream_request_ =
-      std::make_unique<QuicStreamRequest>(params_->quic_stream_factory());
+  quic_stream_request_ = std::make_unique<QuicStreamRequest>(
+      common_connect_job_params()->quic_stream_factory);
   return quic_stream_request_->Request(
       proxy_server, params_->quic_version(), ssl_params->privacy_mode(),
       kH2QuicTunnelPriority, socket_tag(),

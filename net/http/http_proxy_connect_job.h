@@ -24,14 +24,11 @@
 
 namespace net {
 
-class HttpAuthCache;
 class HttpAuthController;
-class HttpAuthHandlerFactory;
 class HttpResponseInfo;
 class NetworkQualityEstimator;
 class SocketTag;
 class ProxyClientSocket;
-class SpdySessionPool;
 class SpdyStreamRequest;
 class SSLSocketParams;
 class TransportSocketParams;
@@ -50,10 +47,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
       const scoped_refptr<SSLSocketParams>& ssl_params,
       quic::QuicTransportVersion quic_version,
       const HostPortPair& endpoint,
-      HttpAuthCache* http_auth_cache,
-      HttpAuthHandlerFactory* http_auth_handler_factory,
-      SpdySessionPool* spdy_session_pool,
-      QuicStreamFactory* quic_stream_factory,
       bool is_trusted_proxy,
       bool tunnel,
       const NetworkTrafficAnnotationTag traffic_annotation);
@@ -66,14 +59,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   }
   quic::QuicTransportVersion quic_version() const { return quic_version_; }
   const HostPortPair& endpoint() const { return endpoint_; }
-  HttpAuthCache* http_auth_cache() const { return http_auth_cache_; }
-  HttpAuthHandlerFactory* http_auth_handler_factory() const {
-    return http_auth_handler_factory_;
-  }
-  SpdySessionPool* spdy_session_pool() { return spdy_session_pool_; }
-  QuicStreamFactory* quic_stream_factory() const {
-    return quic_stream_factory_;
-  }
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
   bool tunnel() const { return tunnel_; }
   const NetworkTrafficAnnotationTag traffic_annotation() const {
@@ -87,11 +72,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
   quic::QuicTransportVersion quic_version_;
-  SpdySessionPool* spdy_session_pool_;
-  QuicStreamFactory* quic_stream_factory_;
   const HostPortPair endpoint_;
-  HttpAuthCache* const http_auth_cache_;
-  HttpAuthHandlerFactory* const http_auth_handler_factory_;
   const bool is_trusted_proxy_;
   const bool tunnel_;
   const NetworkTrafficAnnotationTag traffic_annotation_;

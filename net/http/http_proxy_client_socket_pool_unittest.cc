@@ -71,38 +71,31 @@ class HttpProxyClientSocketPoolTest
     : public ::testing::TestWithParam<HttpProxyType>,
       public WithScopedTaskEnvironment {
  protected:
-  HttpProxyClientSocketPoolTest()
-      : common_connect_job_params_(
-            &socket_factory_,
-            session_deps_.host_resolver.get(),
-            nullptr /* proxy_delegate */,
-            nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(
-                session_deps_.cert_verifier.get(),
-                session_deps_.channel_id_service.get(),
-                session_deps_.transport_security_state.get(),
-                session_deps_.cert_transparency_verifier.get(),
-                session_deps_.ct_policy_enforcer.get(),
-                nullptr /* ssl_client_session_cache */),
-            SSLClientSocketContext(
-                session_deps_.cert_verifier.get(),
-                session_deps_.channel_id_service.get(),
-                session_deps_.transport_security_state.get(),
-                session_deps_.cert_transparency_verifier.get(),
-                session_deps_.ct_policy_enforcer.get(),
-                nullptr /* ssl_client_session_cache_privacy_mode */),
-            nullptr /* socket_performance_watcher_factory */,
-            &estimator_,
-            nullptr /* net_log */,
-            nullptr /* websocket_lock_endpoint_manager */),
-        pool_(std::make_unique<TransportClientSocketPool>(
-            kMaxSockets,
-            kMaxSocketsPerGroup,
-            kUnusedIdleSocketTimeout,
-            &common_connect_job_params_,
-            session_deps_.ssl_config_service.get())) {
+  HttpProxyClientSocketPoolTest() {
     session_deps_.host_resolver->set_synchronous_mode(true);
     session_ = CreateNetworkSession();
+    common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
+        &socket_factory_, session_deps_.host_resolver.get(),
+        session_->http_auth_cache(),
+        session_deps_.http_auth_handler_factory.get(),
+        session_->spdy_session_pool(), session_->quic_stream_factory(),
+        nullptr /* proxy_delegate */, nullptr /* http_user_agent_settings */,
+        SSLClientSocketContext(session_deps_.cert_verifier.get(),
+                               session_deps_.channel_id_service.get(),
+                               session_deps_.transport_security_state.get(),
+                               session_deps_.cert_transparency_verifier.get(),
+                               session_deps_.ct_policy_enforcer.get(),
+                               nullptr /* ssl_client_session_cache */),
+        SSLClientSocketContext(
+            session_deps_.cert_verifier.get(),
+            session_deps_.channel_id_service.get(),
+            session_deps_.transport_security_state.get(),
+            session_deps_.cert_transparency_verifier.get(),
+            session_deps_.ct_policy_enforcer.get(),
+            nullptr /* ssl_client_session_cache_privacy_mode */),
+        nullptr /* socket_performance_watcher_factory */, &estimator_,
+        nullptr /* net_log */, nullptr /* websocket_lock_endpoint_manager */);
+    InitPoolWithProxyDelegate(nullptr);
   }
 
   ~HttpProxyClientSocketPoolTest() override = default;
@@ -110,7 +103,8 @@ class HttpProxyClientSocketPoolTest
   void InitPoolWithProxyDelegate(ProxyDelegate* proxy_delegate) {
     pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-        &common_connect_job_params_, session_deps_.ssl_config_service.get());
+        common_connect_job_params_.get(),
+        session_deps_.ssl_config_service.get());
   }
 
   void AddAuthToCache() {
@@ -153,9 +147,6 @@ class HttpProxyClientSocketPoolTest
                 CreateHttpProxyParams(), CreateHttpsProxyParams(),
                 quic::QUIC_VERSION_UNSUPPORTED,
                 HostPortPair("www.google.com", 443),
-                session_->http_auth_cache(),
-                session_->http_auth_handler_factory(),
-                session_->spdy_session_pool(), session_->quic_stream_factory(),
                 /*is_trusted_proxy=*/false, /*tunnel=*/true,
                 TRAFFIC_ANNOTATION_FOR_TESTS));
   }
@@ -207,7 +198,7 @@ class HttpProxyClientSocketPoolTest
 
   std::unique_ptr<HttpNetworkSession> session_;
 
-  const CommonConnectJobParams common_connect_job_params_;
+  std::unique_ptr<CommonConnectJobParams> common_connect_job_params_;
 
   base::HistogramTester histogram_tester_;
 
