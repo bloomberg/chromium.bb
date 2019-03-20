@@ -44,6 +44,7 @@ arm_internal_release_boards = frozenset([
     'kevin64',
     'kukui',
     'lasilla-ground',
+    'littlejoe',
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
@@ -62,6 +63,7 @@ arm_internal_release_boards = frozenset([
     'veyron_rialto',
     'veyron_speedy',
     'veyron_tiger',
+    'viking',
     'whirlwind',
     'wooten',
 ])
@@ -222,6 +224,11 @@ loonix_boards = frozenset([
     'wooten',
 ])
 
+wshwos_boards = frozenset([
+    'littlejoe',
+    'viking',
+])
+
 moblab_boards = frozenset([
     'fizz-moblab',
     'guado_moblab',
@@ -249,10 +256,10 @@ toolchains_from_source = frozenset([
 ])
 
 noimagetest_boards = (lakitu_boards | loonix_boards | termina_boards
-                      | scribe_boards)
+                      | scribe_boards | wshwos_boards)
 
 nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
-                   | termina_boards | beaglebone_boards)
+                   | termina_boards | beaglebone_boards | wshwos_boards)
 
 norootfs_verification_boards = frozenset([
 ])
