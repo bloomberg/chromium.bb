@@ -40,8 +40,8 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
      */
     public SelectableItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
+        mIconColorList = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_inverse);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mSelectedLevel = getResources().getInteger(R.integer.list_item_level_selected);
         mCheckDrawable = AnimatedVectorDrawableCompat.create(
