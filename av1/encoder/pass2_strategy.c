@@ -1008,7 +1008,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                 AOMMAX(MIN_FWD_KF_INTERVAL, rc->min_gf_interval)) &&
                (rc->frames_to_key != i)) {
       // if possible, merge the last two gf groups
-      if (rc->frames_to_key <= get_max_gf_length(oxcf->gf_max_pyr_height)) {
+      if (rc->frames_to_key <= active_max_gf_interval) {
         rc->baseline_gf_interval = rc->frames_to_key;
         // if merging the last two gf groups creates a group that is too long,
         // split them and force the last gf group to be the MIN_FWD_KF_INTERVAL
