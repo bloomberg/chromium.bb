@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
+
 #define UIA_VALIDATE_TEXTRANGEPROVIDER_CALL()                        \
   if (!owner() || !owner()->GetDelegate() || !start_->GetAnchor() || \
       !end_->GetAnchor())                                            \
@@ -172,7 +174,17 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
     IRawElementProviderSimple** element) {
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
+  owner()
+      ->GetDelegate()
+      ->GetFromNodeID(common_ancestor->anchor_id())
+      ->GetNativeViewAccessible()
+      ->QueryInterface(IID_PPV_ARGS(element));
+
+  DCHECK(*element);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetText(int max_count,

@@ -646,4 +646,73 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNodePosition::SetTreeForTesting(nullptr);
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderGetEnclosingElement) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids.push_back(2);
+  root_data.child_ids.push_back(3);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+
+  Init(update);
+
+  // Test GetEnclosingElement for first child text node.
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  ComPtr<IRawElementProviderSimple> enclosing_element;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+
+  EXPECT_EQ(text_node_raw.Get(), enclosing_element.Get());
+
+  // Test GetEnclosingElement for second child text node.
+  text_node = root_node->children()[1];
+
+  text_node_raw = QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+
+  EXPECT_EQ(text_node_raw.Get(), enclosing_element.Get());
+}
+
 }  // namespace ui
