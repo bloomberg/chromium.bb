@@ -37,9 +37,6 @@
 @end
 
 @implementation ManualFillCardItem
-@synthesize contentDelegate = _contentDelegate;
-@synthesize navigationDelegate = _navigationDelegate;
-@synthesize card = _card;
 
 - (instancetype)initWithCreditCard:(ManualFillCreditCard*)card
                    contentDelegate:
@@ -210,11 +207,11 @@
   self.cardIcon.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:self.cardIcon];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.cardLabel, self.cardIcon ], self.contentView,
-      kButtonHorizontalMargin, AppendConstraintsHorizontalExtraSpaceLeft);
+      staticConstraints, @[ self.cardIcon, self.cardLabel ], self.contentView,
+      kButtonHorizontalMargin);
   [NSLayoutConstraint activateConstraints:@[
-    [self.cardIcon.bottomAnchor
-        constraintEqualToAnchor:self.cardLabel.firstBaselineAnchor]
+    [self.cardIcon.centerYAnchor
+        constraintEqualToAnchor:self.cardLabel.centerYAnchor]
   ]];
 
   self.cardNumberButton =

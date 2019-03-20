@@ -27,12 +27,10 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 // Options for |AppendHorizontalConstraintsForViews|.
 typedef NS_OPTIONS(NSUInteger, AppendConstraints) {
   AppendConstraintsNone = 0,
-  // Add to options to give remaining space in the line to leftmost item.
-  AppendConstraintsHorizontalExtraSpaceLeft = 1 << 0,
   // Add an equal constraint to the baselines.
-  AppendConstraintsHorizontalSyncBaselines = 1 << 1,
+  AppendConstraintsHorizontalSyncBaselines = 1 << 0,
   // The views can be constraint smaller than the guide.
-  AppendConstraintsHorizontalEqualOrSmallerThanGuide = 1 << 2,
+  AppendConstraintsHorizontalEqualOrSmallerThanGuide = 1 << 1,
 };
 
 }  // namespace
