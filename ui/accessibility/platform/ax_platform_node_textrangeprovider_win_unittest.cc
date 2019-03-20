@@ -185,7 +185,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderClone) {
   text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.SetName("some text");
-  root_data.child_ids.push_back(2);
+  root_data.child_ids = {2};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -223,10 +223,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderClone) {
   ComPtr<AXPlatformNodeTextRangeProviderWin> clone_range;
 
   text_range_provider->QueryInterface(IID_PPV_ARGS(&original_range));
-  text_range_provider->QueryInterface(IID_PPV_ARGS(&clone_range));
+  text_range_provider_clone->QueryInterface(IID_PPV_ARGS(&clone_range));
 
-  EXPECT_EQ(GetStart(original_range.Get()), GetStart(clone_range.Get()));
-  EXPECT_EQ(GetEnd(original_range.Get()), GetEnd(clone_range.Get()));
+  EXPECT_EQ(*GetStart(original_range.Get()), *GetStart(clone_range.Get()));
+  EXPECT_EQ(*GetEnd(original_range.Get()), *GetEnd(clone_range.Get()));
   EXPECT_EQ(GetOwner(original_range.Get()), GetOwner(clone_range.Get()));
 
   // Clear original text range provider.
@@ -255,8 +255,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids.push_back(2);
-  root_data.child_ids.push_back(3);
+  root_data.child_ids = {2, 3};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -392,6 +391,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_HRESULT_SUCCEEDED(
         document_provider->get_DocumentRange(&text_range_provider));
 
+    ComPtr<ITextRangeProvider> text_range_provider_clone;
+    EXPECT_UIA_ELEMENTNOTAVAILABLE(
+        text_range_provider->Clone(&text_range_provider_clone));
+
     BOOL compare_result;
     EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->Compare(
         text_range_provider.Get(), &compare_result));
@@ -400,6 +403,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
     EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->CompareEndpoints(
         TextPatternRangeEndpoint_Start, text_range_provider.Get(),
         TextPatternRangeEndpoint_Start, &compare_endpoints_result));
+
+    EXPECT_UIA_ELEMENTNOTAVAILABLE(text_range_provider->MoveEndpointByRange(
+        TextPatternRangeEndpoint_Start, text_range_provider.Get(),
+        TextPatternRangeEndpoint_Start));
   }
 
   // Test for when this provider is valid, but the other provider is not an
@@ -447,6 +454,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
         TextPatternRangeEndpoint_Start, other_provider_different_type.Get(),
         TextPatternRangeEndpoint_Start, &compare_endpoints_result));
 
+    EXPECT_UIA_INVALIDOPERATION(this_provider->MoveEndpointByRange(
+        TextPatternRangeEndpoint_Start, other_provider_different_type.Get(),
+        TextPatternRangeEndpoint_Start));
+
     AXNodePosition::SetTreeForTesting(nullptr);
   }
 }
@@ -465,8 +476,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids.push_back(2);
-  root_data.child_ids.push_back(3);
+  root_data.child_ids = {2, 3};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -560,8 +570,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderCompare) {
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids.push_back(2);
-  root_data.child_ids.push_back(3);
+  root_data.child_ids = {2, 3};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -644,7 +653,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelection) {
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids.push_back(2);
+  root_data.child_ids = {2};
 
   Init(root_data, text_data);
 
@@ -685,8 +694,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids.push_back(2);
-  root_data.child_ids.push_back(3);
+  root_data.child_ids = {2, 3};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -759,8 +767,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids.push_back(2);
-  root_data.child_ids.push_back(3);
+  root_data.child_ids = {2, 3};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -811,6 +818,239 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       text_range_provider->GetEnclosingElement(&enclosing_element));
 
   EXPECT_EQ(text_node_raw.Get(), enclosing_element.Get());
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderMoveEndpointByRange) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids = {2, 3};
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* text_node = root_node->children()[0];
+  AXNode* more_text_node = root_node->children()[1];
+
+  // Text range for the document, which contains text "some textmore text".
+  ComPtr<IRawElementProviderSimple> root_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
+  ComPtr<ITextProvider> document_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node_raw->GetPatternProvider(UIA_TextPatternId, &document_provider));
+  ComPtr<ITextRangeProvider> document_text_range_provider;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> document_text_range;
+
+  // Text range related to "some text".
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+  ComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range;
+
+  // Text range related to "more text".
+  ComPtr<IRawElementProviderSimple> more_text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(more_text_node);
+  ComPtr<ITextProvider> more_text_provider;
+  EXPECT_HRESULT_SUCCEEDED(more_text_node_raw->GetPatternProvider(
+      UIA_TextPatternId, &more_text_provider));
+  ComPtr<ITextRangeProvider> more_text_range_provider;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> more_text_range;
+
+  // Move the start of document text range "some textmore text" to the end of
+  // itself.
+  // The start of document text range "some textmore text" is at the end of
+  // itself.
+  //
+  // Before:
+  // |s                e|
+  // "some textmore text"
+  // After:
+  //                  |s
+  //                   e|
+  // "some textmore text"
+
+  // Get the textRangeProvider for the document, which contains text
+  // "some textmore text".
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->MoveEndpointByRange(
+      TextPatternRangeEndpoint_Start, document_text_range_provider.Get(),
+      TextPatternRangeEndpoint_End));
+
+  document_text_range_provider->QueryInterface(
+      IID_PPV_ARGS(&document_text_range));
+  EXPECT_EQ(*GetStart(document_text_range.Get()),
+            *GetEnd(document_text_range.Get()));
+
+  // Move the end of document text range "some textmore text" to the start of
+  // itself.
+  // The end of document text range "some textmore text" is at the start of
+  // itself.
+  //
+  // Before:
+  // |s                e|
+  // "some textmore text"
+  // After:
+  // |s
+  //  e|
+  // "some textmore text"
+
+  // Get the textRangeProvider for the document, which contains text
+  // "some textmore text".
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->MoveEndpointByRange(
+      TextPatternRangeEndpoint_Start, document_text_range_provider.Get(),
+      TextPatternRangeEndpoint_End));
+
+  document_text_range_provider->QueryInterface(
+      IID_PPV_ARGS(&document_text_range));
+  EXPECT_EQ(*GetStart(document_text_range.Get()),
+            *GetEnd(document_text_range.Get()));
+
+  // Move the start of document text range "some textmore text" to the start
+  // of text range "more text". The start of document text range "some
+  // textmore text" is at the start of text range "more text". The end of
+  // document range does not change.
+  //
+  // Before:
+  // |s                e|
+  // "some textmore text"
+  // After:
+  //          |s       e|
+  // "some textmore text"
+
+  // Get the textRangeProvider for the document, which contains text
+  // "some textmore text".
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_text_range_provider));
+  // Get the textRangeProvider for more_text_node which contains "more text".
+  EXPECT_HRESULT_SUCCEEDED(
+      more_text_provider->get_DocumentRange(&more_text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->MoveEndpointByRange(
+      TextPatternRangeEndpoint_Start, more_text_range_provider.Get(),
+      TextPatternRangeEndpoint_Start));
+
+  document_text_range_provider->QueryInterface(
+      IID_PPV_ARGS(&document_text_range));
+  more_text_range_provider->QueryInterface(IID_PPV_ARGS(&more_text_range));
+  EXPECT_EQ(*GetStart(document_text_range.Get()),
+            *GetStart(more_text_range.Get()));
+
+  // Move the end of document text range "some textmore text" to the end of
+  // text range "some text".
+  // The end of document text range "some textmore text" is at the end of text
+  // range "some text". The start of document range does not change.
+  //
+  // Before:
+  // |s                e|
+  // "some textmore text"
+  // After:
+  // |s       e|
+  // "some textmore text"
+
+  // Get the textRangeProvider for the document, which contains text
+  // "some textmore text".
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_text_range_provider));
+  // Get the textRangeProvider for text_node which contains "some text".
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(document_text_range_provider->MoveEndpointByRange(
+      TextPatternRangeEndpoint_End, text_range_provider.Get(),
+      TextPatternRangeEndpoint_End));
+
+  document_text_range_provider->QueryInterface(
+      IID_PPV_ARGS(&document_text_range));
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range));
+  EXPECT_EQ(*GetEnd(document_text_range.Get()), *GetEnd(text_range.Get()));
+
+  // Move the end of text range "more text" to the start of
+  // text range "some text". Since the order of the endpoints being moved
+  // (those of "more text") have to be ensured, both endpoints of "more text"
+  // is at the start of "some text".
+  //
+  // Before:
+  //          |s       e|
+  // "some textmore text"
+  // After:
+  //  e|
+  // |s
+  // "some textmore text"
+
+  // Get the textRangeProvider for text_node which contains "some text".
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+  // Get the textRangeProvider for more_text_node which contains "more text".
+  EXPECT_HRESULT_SUCCEEDED(
+      more_text_provider->get_DocumentRange(&more_text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(more_text_range_provider->MoveEndpointByRange(
+      TextPatternRangeEndpoint_End, text_range_provider.Get(),
+      TextPatternRangeEndpoint_Start));
+
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range));
+  more_text_range_provider->QueryInterface(IID_PPV_ARGS(&more_text_range));
+  EXPECT_EQ(*GetEnd(more_text_range.Get()), *GetStart(text_range.Get()));
+  EXPECT_EQ(*GetStart(more_text_range.Get()), *GetStart(text_range.Get()));
+
+  // Move the start of text range "some text" to the end of text range
+  // "more text". Since the order of the endpoints being moved (those
+  // of "some text") have to be ensured, both endpoints of "some text" is at
+  // the end of "more text".
+  //
+  // Before:
+  // |s       e|
+  // "some textmore text"
+  // After:
+  //                  |s
+  //                   e|
+  // "some textmore text"
+
+  // Get the textRangeProvider for text_node which contains "some text".
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+  // Get the textRangeProvider for more_text_node which contains "more text".
+  EXPECT_HRESULT_SUCCEEDED(
+      more_text_provider->get_DocumentRange(&more_text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByRange(
+      TextPatternRangeEndpoint_Start, more_text_range_provider.Get(),
+      TextPatternRangeEndpoint_End));
+
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range));
+  more_text_range_provider->QueryInterface(IID_PPV_ARGS(&more_text_range));
+  EXPECT_EQ(*GetStart(text_range.Get()), *GetEnd(more_text_range.Get()));
+  EXPECT_EQ(*GetEnd(text_range.Get()), *GetEnd(more_text_range.Get()));
 }
 
 }  // namespace ui
