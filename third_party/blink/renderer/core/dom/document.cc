@@ -6735,8 +6735,13 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
     return;
   }
 
-  if (!frame_)
+  if (!frame_) {
+    if (imports_controller_) {
+      imports_controller_->Master()->GetFrame()->Console().AddMessage(
+          console_message);
+    }
     return;
+  }
 
   if (console_message->Location()->IsUnknown()) {
     // TODO(dgozman): capture correct location at call places instead.

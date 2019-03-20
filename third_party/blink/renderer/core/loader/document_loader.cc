@@ -626,7 +626,7 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
     ArchiveResource* main_resource = nullptr;
     if (!frame_->IsMainFrame()) {
       // Only the top-frame can load MHTML.
-      frame_->Console().AddConsoleMessage(ConsoleMessage::Create(
+      frame_->Console().AddMessage(ConsoleMessage::Create(
           kJSMessageSource, mojom::ConsoleMessageLevel::kError,
           "Attempted to load a multipart archive into an subframe: " +
               url_.GetString()));
@@ -636,7 +636,7 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
       if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
         archive_.Clear();
         // Log if attempting to load an invalid archive resource.
-        frame_->Console().AddConsoleMessage(ConsoleMessage::Create(
+        frame_->Console().AddMessage(ConsoleMessage::Create(
             kJSMessageSource, mojom::ConsoleMessageLevel::kError,
             "Malformed multipart archive: " + url_.GetString()));
       } else {
