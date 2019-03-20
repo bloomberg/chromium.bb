@@ -15,6 +15,7 @@ class Profile;
 
 namespace apps {
 class AppServiceProxy;
+class AppUpdate;
 }
 
 namespace chromeos {
@@ -32,9 +33,15 @@ class AppControllerImpl : public mojom::AppController {
   void BindRequest(mojom::AppControllerRequest request);
 
   // mojom::AppController:
+  void GetApps(mojom::AppController::GetAppsCallback callback) override;
   void LaunchApp(const std::string& app_id) override;
 
  private:
+  // Creates a new Kiosk Next App from a delta app update coming from
+  // AppServiceProxy.
+  chromeos::kiosk_next_home::mojom::AppPtr CreateAppPtr(
+      const apps::AppUpdate& update);
+
   mojo::BindingSet<mojom::AppController> bindings_;
   apps::AppServiceProxy* app_service_proxy_;
 
