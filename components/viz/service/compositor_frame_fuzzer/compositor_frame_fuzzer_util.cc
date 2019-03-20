@@ -19,9 +19,9 @@ namespace viz {
 namespace {
 
 // Hard limit on number of bytes of memory to allocate (e.g. for referenced
-// bitmaps) in association with a single CompositorFrame. Currently 1 GiB;
+// bitmaps) in association with a single CompositorFrame. Currently 0.5 GiB;
 // reduce this if bots are running out of memory.
-constexpr uint64_t kMaxMappedMemory = 1 << 30;
+constexpr uint64_t kMaxMappedMemory = 1 << 29;
 
 // Handles inf / NaN by setting to 0.
 double MakeNormal(double x) {
