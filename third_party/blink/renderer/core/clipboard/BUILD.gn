@@ -36,3 +36,10 @@ blink_core_sources("clipboard") {
     "//ui/gfx/codec",
   ]
 }
+
+blink_core_tests("unit_tests") {
+  sources = [
+    "data_object_test.cc",
+    "data_transfer_test.cc",
+  ]
+}
