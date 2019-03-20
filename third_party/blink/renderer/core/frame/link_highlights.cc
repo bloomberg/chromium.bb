@@ -97,7 +97,7 @@ void LinkHighlights::LayerTreeViewInitialized(
     cc::AnimationHost& animation_host) {
   animation_host_ = &animation_host;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
-    timeline_ = CompositorAnimationTimeline::Create();
+    timeline_ = std::make_unique<CompositorAnimationTimeline>();
     animation_host_->AddAnimationTimeline(timeline_->GetAnimationTimeline());
   }
 }

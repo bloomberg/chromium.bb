@@ -738,8 +738,7 @@ void ScrollingCoordinator::LayerTreeViewInitialized(
   if (!Platform::Current()->IsThreadedAnimationEnabled())
     return;
 
-  std::unique_ptr<CompositorAnimationTimeline> timeline =
-      CompositorAnimationTimeline::Create();
+  auto timeline = std::make_unique<CompositorAnimationTimeline>();
   if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
     view->GetScrollingContext()->SetAnimationHost(&animation_host);
     view->GetScrollingContext()->SetAnimationTimeline(std::move(timeline));
