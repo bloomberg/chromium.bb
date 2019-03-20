@@ -62,6 +62,10 @@ class Tooltip;
 namespace ui {
 class CursorLoader;
 class InputMethod;
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+class RubberbandOutline;
+#endif
 }  // close namespace ui
 
 struct WidgetHostMsg_SelectionBounds_Params;
@@ -171,6 +175,12 @@ class RenderWebView final : public WebView
 
     // Observe Windows 'session changes':
     std::unique_ptr<views::WindowsSessionChangeObserver> d_windowsSessionChangeObserver;
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+    // State related to rubber band selection:
+    bool d_enableAltDragRubberBanding = false;
+    std::unique_ptr<ui::RubberbandOutline> d_rubberbandOutline;
+#endif
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -421,6 +431,12 @@ class RenderWebView final : public WebView
         const base::string16& tooltip_text,
         blink::WebTextDirection text_direction_hint);
 
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+    // Rubber band selection:
+    void OnHideRubberbandRect();
+    void OnSetRubberbandRect(const gfx::Rect& rect);
+#endif
+
     // PRIVATE FUNCTIONS:
     explicit RenderWebView(ProfileImpl              *profile,
                            int                       routingId,
@@ -463,6 +479,10 @@ class RenderWebView final : public WebView
     void updateTooltip();
     void onSessionChange(WPARAM status_code);
     void forceRedrawWindow(int attempts);
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+    void updateAltDragRubberBanding();
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
