@@ -106,10 +106,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
 
   WebRemoteFrameClient* Client() const { return client_; }
 
-  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
-    return opener_feature_state_;
-  }
-
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
   void Trace(blink::Visitor*);
@@ -131,10 +127,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // TODO(dcheng): Inline this field directly rather than going through Member.
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
-
-  // Feature policy state inherited from an opener. It is always empty for child
-  // frames.
-  FeaturePolicy::FeatureState opener_feature_state_;
 
   ParsedFeaturePolicy feature_policy_header_;
 

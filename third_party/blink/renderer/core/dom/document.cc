@@ -6233,8 +6233,8 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
   // For a main frame, get inherited feature policy from the opener if any.
   const FeaturePolicy::FeatureState* opener_feature_state = nullptr;
   if (frame_ && frame_->IsMainFrame() &&
-      !frame_->Client()->GetOpenerFeatureState().empty()) {
-    opener_feature_state = &frame_->Client()->GetOpenerFeatureState();
+      !frame_->OpenerFeatureState().empty()) {
+    opener_feature_state = &frame_->OpenerFeatureState();
   }
 
   InitializeFeaturePolicy(declared_policy, GetOwnerContainerPolicy(),

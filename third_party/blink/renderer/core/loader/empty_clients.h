@@ -411,8 +411,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   Frame* FindFrame(const AtomicString& name) const override;
 
-  const FeaturePolicy::FeatureState& GetOpenerFeatureState() const override;
-
  protected:
   // Not owned
   WebTextCheckClient* text_check_client_;
