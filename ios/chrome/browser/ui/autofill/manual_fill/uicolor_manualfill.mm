@@ -24,6 +24,14 @@
   return color;
 }
 
++ (UIColor*)cr_manualFillHighlightedChipColor {
+  static UIColor* color = [UIColor colorWithRed:196.0 / 255.0
+                                          green:203.0 / 255.0
+                                           blue:207.0 / 255.0
+                                          alpha:1.0];
+  return color;
+}
+
 + (UIColor*)cr_manualFillChipDarkTextColor {
   static UIColor* color = [UIColor colorWithRed:55.0 / 255.0
                                           green:55.0 / 255.0

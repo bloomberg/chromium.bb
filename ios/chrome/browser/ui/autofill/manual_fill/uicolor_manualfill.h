@@ -18,6 +18,10 @@
 // Color for the manual fill chips.
 @property(class, nonatomic, readonly) UIColor* cr_manualFillChipColor;
 
+// Color for the highlighted manual fill chips.
+@property(class, nonatomic, readonly)
+    UIColor* cr_manualFillHighlightedChipColor;
+
 // Color for the line separators in manual fill (0.66, 0.66, 0.66 RGB).
 @property(class, nonatomic, readonly) UIColor* cr_manualFillSeparatorColor;
 

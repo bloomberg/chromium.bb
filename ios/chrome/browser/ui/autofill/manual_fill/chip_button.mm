@@ -58,8 +58,9 @@ static const CGFloat kChipVerticalMargin = 4;
 
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
-  CGFloat alpha = highlighted ? 0.2 : 1.0;
-  self.backgroundView.alpha = alpha;
+  self.backgroundView.backgroundColor =
+      highlighted ? UIColor.cr_manualFillHighlightedChipColor
+                  : UIColor.cr_manualFillChipColor;
 }
 
 #pragma mark - Private
