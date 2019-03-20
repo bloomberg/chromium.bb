@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offlinepages.SavePageResult;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
@@ -243,24 +245,20 @@ public class OfflinePageUtilsTest {
         int tabId = mActivityTestRule.getActivity().getActivityTab().getId();
 
         // Act.  This needs to be called from the UI thread.
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                OfflinePageTabObserver offlineObserver = new OfflinePageTabObserver(
-                        mActivityTestRule.getActivity().getTabModelSelector(),
-                        mActivityTestRule.getActivity().getSnackbarManager(),
-                        mockSnackbarController);
-                OfflinePageTabObserver.setObserverForTesting(
-                        mActivityTestRule.getActivity(), offlineObserver);
-                OfflinePageUtils.showOfflineSnackbarIfNecessary(
-                        mActivityTestRule.getActivity().getActivityTab());
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            OfflinePageTabObserver offlineObserver = new OfflinePageTabObserver(
+                    mActivityTestRule.getActivity().getTabModelSelector(),
+                    mActivityTestRule.getActivity().getSnackbarManager(), mockSnackbarController);
+            OfflinePageTabObserver.setObserverForTesting(
+                    mActivityTestRule.getActivity(), offlineObserver);
+            OfflinePageUtils.showOfflineSnackbarIfNecessary(
+                    mActivityTestRule.getActivity().getActivityTab());
 
-                // Pretend that we went online, this should cause the snackbar to show.
-                // This call will set the isConnected call to return true.
-                NetworkChangeNotifier.forceConnectivityState(true);
-                // This call will make an event get sent with connection type CONNECTION_WIFI.
-                NetworkChangeNotifier.fakeNetworkConnected(0, ConnectionType.CONNECTION_WIFI);
-            }
+            // Pretend that we went online, this should cause the snackbar to show.
+            // This call will set the isConnected call to return true.
+            NetworkChangeNotifier.forceConnectivityState(true);
+            // This call will make an event get sent with connection type CONNECTION_WIFI.
+            NetworkChangeNotifier.fakeNetworkConnected(0, ConnectionType.CONNECTION_WIFI);
         });
 
         // Wait for the snackbar to be dismissed before we check its values.  The snackbar is on a

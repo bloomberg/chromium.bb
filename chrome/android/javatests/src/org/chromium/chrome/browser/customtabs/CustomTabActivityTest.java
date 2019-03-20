@@ -724,7 +724,7 @@ public class CustomTabActivityTest {
         getActivity().getIntentDataProvider().setPendingIntentOnFinishedForTesting(onFinished);
 
         openAppMenuAndAssertMenuShown();
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             MenuItem item = getActivity().getAppMenuPropertiesDelegate().getMenuItemForTitle(
                     TEST_MENU_TITLE);
             Assert.assertNotNull(item);
@@ -774,7 +774,7 @@ public class CustomTabActivityTest {
                 InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
         final String menuItemTitle = getActivity().getString(R.string.menu_open_in_product_default);
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             MenuItem item = getActivity().getAppMenuHandler().getAppMenu().getMenu().findItem(
                     R.id.open_in_browser_id);
             Assert.assertNotNull(item);
@@ -2275,7 +2275,7 @@ public class CustomTabActivityTest {
         };
         ApplicationStatus.registerStateListenerForAllActivities(listener);
 
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             cctActivity.getActivityTab().getTabWebContentsDelegateAndroid().openNewTab(
                     "about:blank", null, null, WindowOpenDisposition.OFF_THE_RECORD, false);
         });

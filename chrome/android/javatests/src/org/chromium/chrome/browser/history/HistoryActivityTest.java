@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -59,6 +60,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.base.PageTransition;
@@ -214,13 +216,10 @@ public class HistoryActivityTest {
 
         int callCount = mTestObserver.onChangedCallback.getCallCount();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(
-                        mHistoryManager.getToolbarForTests().getMenu().performIdentifierAction(
-                                R.id.selection_mode_delete_menu_id, 0));
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            Assert.assertTrue(
+                    mHistoryManager.getToolbarForTests().getMenu().performIdentifierAction(
+                            R.id.selection_mode_delete_menu_id, 0));
         });
 
         // Check that all items were removed. The onChangedCallback should be called three times -
@@ -300,13 +299,10 @@ public class HistoryActivityTest {
         toggleItemSelection(2);
         toggleItemSelection(3);
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(
-                        mHistoryManager.getToolbarForTests().getMenu().performIdentifierAction(
-                                R.id.selection_mode_open_in_incognito, 0));
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            Assert.assertTrue(
+                    mHistoryManager.getToolbarForTests().getMenu().performIdentifierAction(
+                            R.id.selection_mode_open_in_incognito, 0));
         });
 
         intended(
@@ -633,12 +629,7 @@ public class HistoryActivityTest {
     private void toggleItemSelection(int position) throws Exception {
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
         final SelectableItemView<HistoryItem> itemView = getItemView(position);
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                itemView.performLongClick();
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { itemView.performLongClick(); });
         mTestObserver.onSelectionCallback.waitForCallback(callCount, 1);
     }
 

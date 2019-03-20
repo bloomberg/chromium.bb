@@ -13,10 +13,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Tests sharing URLs in reader mode (DOM distiller)
@@ -31,16 +32,13 @@ public class ShareUrlTest {
 
     private void assertCorrectUrl(final String originalUrl, final String sharedUrl)
             throws Throwable {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ShareParams params =
-                        new ShareParams.Builder(new Activity(), "", sharedUrl).setText("").build();
-                Intent intent = ShareHelper.getShareLinkIntent(params);
-                Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
-                String url = intent.getStringExtra(Intent.EXTRA_TEXT);
-                Assert.assertEquals(originalUrl, url);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            ShareParams params =
+                    new ShareParams.Builder(new Activity(), "", sharedUrl).setText("").build();
+            Intent intent = ShareHelper.getShareLinkIntent(params);
+            Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
+            String url = intent.getStringExtra(Intent.EXTRA_TEXT);
+            Assert.assertEquals(originalUrl, url);
         });
     }
 

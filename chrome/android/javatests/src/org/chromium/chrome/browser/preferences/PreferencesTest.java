@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListene
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.UiUtils;
@@ -414,22 +416,14 @@ public class PreferencesTest {
 
     private static void userSetTextScale(final AccessibilityPreferences accessibilityPref,
             final SeekBarPreference textScalePref, final float textScale) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                accessibilityPref.onPreferenceChange(textScalePref, textScale);
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { accessibilityPref.onPreferenceChange(textScalePref, textScale); });
     }
 
     private static void userSetForceEnableZoom(final AccessibilityPreferences accessibilityPref,
             final SeekBarLinkedCheckBoxPreference forceEnableZoomPref, final boolean enabled) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled);
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
     }
 
     private static Preference waitForPreference(final PreferenceFragment prefFragment,

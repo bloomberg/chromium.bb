@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -30,6 +31,7 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.offlinepages.PrefetchBackgroundTaskRescheduleType;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
@@ -95,12 +97,8 @@ public class PrefetchBackgroundTaskTest {
         }
 
         public void setTaskRescheduling(int rescheduleType) {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    setTaskReschedulingForTesting(rescheduleType);
-                }
-            });
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                    () -> { setTaskReschedulingForTesting(rescheduleType); });
         }
 
         public void waitForTaskFinished() throws Exception {
@@ -121,19 +119,16 @@ public class PrefetchBackgroundTaskTest {
         @Override
         public boolean schedule(final Context context, final TaskInfo taskInfo) {
             mAddCount++;
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    TestPrefetchBackgroundTask task = new TestPrefetchBackgroundTask(taskInfo);
-                    mTasks.put(taskInfo.getTaskId(), task);
-                    task.startTask(context, new TaskFinishedCallback() {
-                        @Override
-                        public void taskFinished(boolean needsReschedule) {
-                            removeTask(taskInfo.getTaskId());
-                        }
-                    });
-                    mStartSemaphore.release();
-                }
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                TestPrefetchBackgroundTask task = new TestPrefetchBackgroundTask(taskInfo);
+                mTasks.put(taskInfo.getTaskId(), task);
+                task.startTask(context, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        removeTask(taskInfo.getTaskId());
+                    }
+                });
+                mStartSemaphore.release();
             });
             return true;
         }

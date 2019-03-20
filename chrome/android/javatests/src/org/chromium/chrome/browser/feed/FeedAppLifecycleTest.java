@@ -30,6 +30,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -48,6 +49,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -308,12 +310,9 @@ public class FeedAppLifecycleTest {
     private void signalActivityState(final Activity activity,
             final @ActivityState int activityState) throws InterruptedException, TimeoutException {
         final CallbackHelper waitForStateChangeHelper = new CallbackHelper();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationStatus.onStateChangeForTesting(activity, activityState);
-                waitForStateChangeHelper.notifyCalled();
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            ApplicationStatus.onStateChangeForTesting(activity, activityState);
+            waitForStateChangeHelper.notifyCalled();
         });
 
         waitForStateChangeHelper.waitForCallback(0);

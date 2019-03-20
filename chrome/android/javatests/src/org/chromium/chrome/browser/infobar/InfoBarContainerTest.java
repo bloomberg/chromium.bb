@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -32,6 +33,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -107,13 +109,10 @@ public class InfoBarContainerTest {
         int previousCount = infoBars.size();
 
         final TestListener testListener = new TestListener();
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
-                        testListener, InfoBarIdentifier.TEST_INFOBAR, 0, MESSAGE_TEXT, null, null,
-                        null, expires);
-            }
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            SimpleConfirmInfoBarBuilder.create(mActivityTestRule.getActivity().getActivityTab(),
+                    testListener, InfoBarIdentifier.TEST_INFOBAR, 0, MESSAGE_TEXT, null, null, null,
+                    expires);
         });
         mListener.addInfoBarAnimationFinished("InfoBar not added.");
 
