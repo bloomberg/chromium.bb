@@ -2057,6 +2057,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_enable_skylab_hwtest = frozenset([
+      'atlas',
       'auron_paine',
       'auron_yuna',
       'bob',
@@ -2069,6 +2070,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',
       'eve',
       'gale',
+      'grunt',
       'quawks',
       'hana',
       'kevin',
@@ -2084,6 +2086,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'reef',
       'scarlet',
       'sentry',
+      'tidus',
+      'veyron_mighty',
   ])
 
   _paladin_separate_unittest_phase = frozenset([
@@ -2092,6 +2096,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_enable_skylab_partial_boards = {
       'coral': ['astronaut'],
+      'grunt': ['barla'],
       'octopus': ['orbatrix'],
       'scarlet': ['dru'],
   }
