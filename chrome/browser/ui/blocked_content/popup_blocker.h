@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_H_
 
 #include "base/optional.h"
-#include "third_party/blink/public/web/window_features.mojom.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 

@@ -9,7 +9,7 @@ import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/ws/public/mojom/ime/ime.mojom";
-import "third_party/blink/public/web/selection_menu_behavior.mojom";
+import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
