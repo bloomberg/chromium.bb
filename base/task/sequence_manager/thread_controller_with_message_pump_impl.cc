@@ -332,10 +332,6 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
     work_id_provider_->IncrementWorkId();
     TRACE_TASK_EXECUTION("ThreadController::Task", *task);
-    // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
-    // to determine long tasks.
-    // See https://crbug.com/681863 and https://crbug.com/874982
-    TRACE_EVENT0("devtools.timeline", "RunTask");
     task_annotator_.RunTask("ThreadController::Task", &*task);
     *ran_task = true;
 
