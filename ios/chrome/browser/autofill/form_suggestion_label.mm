@@ -32,9 +32,6 @@ NSString* const kFormSuggestionLabelAccessibilityIdentifier =
 
 namespace {
 
-// The button corner radius.
-const CGFloat kCornerRadius = 2.0f;
-
 // Font size of button titles.
 const CGFloat kIpadFontSize = 15.0f;
 const CGFloat kIphoneFontSize = 14.0f;
@@ -44,7 +41,7 @@ const CGFloat kMainLabelAlpha = 0.87f;
 const CGFloat kDescriptionLabelAlpha = 0.55f;
 
 // The horizontal space between the edge of the background and the text.
-const CGFloat kBorderWidth = 8.0f;
+const CGFloat kBorderWidth = 14.0f;
 // The space between items in the label.
 const CGFloat kSpacing = 4.0f;
 
@@ -125,7 +122,6 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
     if (userInteractionEnabled_) {
       [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
     }
-    [[self layer] setCornerRadius:kCornerRadius];
 
     [self setClipsToBounds:YES];
     [self setUserInteractionEnabled:YES];
@@ -142,6 +138,11 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
   }
 
   return self;
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  self.layer.cornerRadius = self.bounds.size.height / 2.0;
 }
 
 #pragma mark -
