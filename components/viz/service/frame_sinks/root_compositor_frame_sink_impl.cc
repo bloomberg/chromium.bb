@@ -294,11 +294,6 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 #endif
 }
 
-void RootCompositorFrameSinkImpl::DidSwapAfterSnapshotRequestReceived(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  display_client_->DidSwapAfterSnapshotRequestReceived(latency_info);
-}
-
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}
 
 BeginFrameSource* RootCompositorFrameSinkImpl::begin_frame_source() {
