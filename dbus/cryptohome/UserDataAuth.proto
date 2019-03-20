@@ -315,14 +315,14 @@ message MigrateKeyReply {
 // TODO(b/126307305): For the messages, below, we'll need to add the documentations
 // for them.
 
-message MigrateToDircryptoRequest {
+message StartMigrateToDircryptoRequest {
   cryptohome.AccountIdentifier account_id = 1;
   // If true, only a few paths (specified in cryptohomed) that are necessary for
   // a working profile will be migrated. Most user data will be wiped.
   bool minimal_migration = 2;
 }
 
-message MigrateToDircryptoReply {
+message StartMigrateToDircryptoReply {
   CryptohomeErrorCode error = 1;
 }
 
