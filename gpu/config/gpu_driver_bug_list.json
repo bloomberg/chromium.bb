@@ -1612,23 +1612,19 @@
       "id": 172,
       "description": "Use GL_INTEL_framebuffer_CMAA on ChromeOS",
       "cr_bugs": [535198],
-      "exceptions" : [
-        {
-          "os": {
-            "type" : "chromeos"
-          },
-          "vendor_id": "0x8086",
-          "driver_vendor": "Mesa",
-          "gl_vendor": "Intel.*",
-          "gl_type": "gles",
-          "gl_version": {
-            "op": ">=",
-            "value": "3.1"
-          }
-        }
-      ],
+      "os": {
+        "type" : "chromeos"
+      },
+      "vendor_id": "0x8086",
+      "driver_vendor": "Mesa",
+      "gl_vendor": "Intel.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.1"
+      },
       "features": [
-        "disable_framebuffer_cmaa"
+        "use_framebuffer_cmaa"
       ]
     },
     {
