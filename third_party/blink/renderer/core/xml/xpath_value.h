@@ -75,8 +75,7 @@ class CORE_EXPORT Value {
   enum Type { kNodeSetValue, kBooleanValue, kNumberValue, kStringValue };
 
   Value(unsigned value) : type_(kNumberValue), bool_(false), number_(value) {}
-  Value(unsigned long value)
-      : type_(kNumberValue), bool_(false), number_(value) {}
+  Value(uint64_t value) : type_(kNumberValue), bool_(false), number_(value) {}
   Value(double value) : type_(kNumberValue), bool_(false), number_(value) {}
 
   Value(const char* value)

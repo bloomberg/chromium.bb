@@ -1647,7 +1647,7 @@ bool XMLDocumentParser::AppendFragmentSource(const String& chunk) {
   // the chunk has been processed.
   long bytes_processed = xmlByteConsumed(Context());
   if (bytes_processed == -1 ||
-      static_cast<unsigned long>(bytes_processed) != chunk_as_utf8.length()) {
+      static_cast<wtf_size_t>(bytes_processed) != chunk_as_utf8.length()) {
     // FIXME: I don't believe we can hit this case without also having seen
     // an error or a null byte. If we hit this DCHECK, we've found a test
     // case which demonstrates the need for this code.
