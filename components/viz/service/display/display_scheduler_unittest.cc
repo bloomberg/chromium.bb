@@ -687,7 +687,8 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   AdvanceTimeAndBeginFrameForTest({sid2});
   base::TimeTicks expected_deadline =
       scheduler_.LastUsedBeginFrameArgs().deadline -
-      BeginFrameArgs::DefaultEstimatedParentDrawTime();
+      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(
+          scheduler_.LastUsedBeginFrameArgs().interval);
   EXPECT_EQ(expected_deadline,
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   // Still waiting for surface 2. Once it updates, deadline should trigger
