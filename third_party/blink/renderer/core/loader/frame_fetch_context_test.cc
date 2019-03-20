@@ -264,8 +264,6 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
       bool keepalive = false) {
     const KURL input_url("http://example.com/");
     ResourceRequest resource_request(input_url);
-    resource_request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kOmit);
     resource_request.SetKeepalive(keepalive);
     resource_request.SetRequestorOrigin(document->Fetcher()
                                             ->GetProperties()
@@ -1110,8 +1108,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        LoadResourceFromMemoryCache) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(resource_request);
   EXPECT_CALL(
       *client,
@@ -1134,8 +1130,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kOmit);
   ResourceResponse response(url);
   response.SetHasMajorCertificateErrors(true);
   Resource* resource = MockResource::Create(resource_request);
@@ -1269,7 +1263,6 @@ TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
 
 TEST_F(FrameFetchContextTest, DispatchDidReceiveResponseWhenDetached) {
   ResourceRequest request(KURL("https://www.example.com/"));
-  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
   Resource* resource = MockResource::Create(request);
   ResourceResponse response;
 
@@ -1356,7 +1349,6 @@ TEST_F(FrameFetchContextTest, AllowImageWhenDetached) {
 TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   const KURL url("https://www.example.com/");
   ResourceRequest request(url);
-  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   ClientHintsPreferences client_hints_preferences;
   client_hints_preferences.SetShouldSendForTesting(

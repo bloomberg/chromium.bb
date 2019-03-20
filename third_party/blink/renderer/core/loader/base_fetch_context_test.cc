@@ -273,8 +273,6 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
   resource_request.SetRequestorOrigin(GetSecurityOrigin());
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kOmit);
 
   ResourceLoaderOptions options;
 

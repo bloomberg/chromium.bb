@@ -89,11 +89,7 @@ class MemoryCacheTest : public testing::Test {
     }
     static FakeResource* Create(const KURL& url, ResourceType type) {
       ResourceRequest request(url);
-      request.SetFetchCredentialsMode(
-          network::mojom::FetchCredentialsMode::kOmit);
-
       ResourceLoaderOptions options;
-
       return MakeGarbageCollected<FakeResource>(request, type, options);
     }
 
