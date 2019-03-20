@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant.header;
 
-import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
@@ -24,15 +23,15 @@ class AssistantHeaderViewBinder
      * A wrapper class that holds the different views of the header.
      */
     static class ViewHolder {
+        final AnimatedPoodle mPoodle;
         final TextView mStatusMessage;
         final AnimatedProgressBar mProgressBar;
         final View mFeedbackButton;
 
-        public ViewHolder(Context context, View headerView) {
+        public ViewHolder(View headerView, AnimatedPoodle poodle) {
+            mPoodle = poodle;
             mStatusMessage = headerView.findViewById(R.id.status_message);
-            mProgressBar = new AnimatedProgressBar(headerView.findViewById(R.id.progress_bar),
-                    context.getResources().getColor(R.color.modern_blue_600),
-                    context.getResources().getColor(R.color.modern_blue_600_alpha_38_opaque));
+            mProgressBar = new AnimatedProgressBar(headerView.findViewById(R.id.progress_bar));
             mFeedbackButton = headerView.findViewById(R.id.feedback_button);
         }
     }
@@ -54,12 +53,8 @@ class AssistantHeaderViewBinder
             } else {
                 view.mProgressBar.hide();
             }
-        } else if (AssistantHeaderModel.PROGRESS_PULSING == propertyKey) {
-            if (model.get(AssistantHeaderModel.PROGRESS_PULSING)) {
-                view.mProgressBar.enablePulsing();
-            } else {
-                view.mProgressBar.disablePulsing();
-            }
+        } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {
+            view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
         } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
             Runnable listener = model.get(AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK);
             view.mFeedbackButton.setOnClickListener(unusedView -> listener.run());

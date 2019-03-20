@@ -163,21 +163,21 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
     case AutofillAssistantState::STARTING:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
-      SetProgressPulsingEnabled(false);
+      SetSpinPoodle(true);
       SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::RUNNING:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
-      SetProgressPulsingEnabled(false);
+      SetSpinPoodle(true);
       SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
       SetOverlayState(OverlayState::HIDDEN);
       AllowShowingSoftKeyboard(true);
-      SetProgressPulsingEnabled(true);
+      SetSpinPoodle(false);
 
       // user interaction is needed.
       ExpandBottomSheet();
@@ -186,7 +186,7 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
     case AutofillAssistantState::PROMPT:
       SetOverlayState(OverlayState::PARTIAL);
       AllowShowingSoftKeyboard(true);
-      SetProgressPulsingEnabled(true);
+      SetSpinPoodle(false);
 
       SetAllowSwipingSheet(ui_delegate_->GetPaymentRequestOptions() == nullptr);
       // user interaction is needed.
@@ -196,14 +196,14 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
     case AutofillAssistantState::MODAL_DIALOG:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(true);
-      SetProgressPulsingEnabled(false);
+      SetSpinPoodle(true);
       SetAllowSwipingSheet(true);
       return;
 
     case AutofillAssistantState::STOPPED:
       SetOverlayState(OverlayState::HIDDEN);
       AllowShowingSoftKeyboard(true);
-      SetProgressPulsingEnabled(false);
+      SetSpinPoodle(false);
       SetAllowSwipingSheet(true);
 
       // make sure user sees the error message.
@@ -249,9 +249,9 @@ void UiControllerAndroid::ExpandBottomSheet() {
                                                        java_object_);
 }
 
-void UiControllerAndroid::SetProgressPulsingEnabled(bool enabled) {
-  Java_AssistantHeaderModel_setProgressPulsingEnabled(
-      AttachCurrentThread(), GetHeaderModel(), enabled);
+void UiControllerAndroid::SetSpinPoodle(bool enabled) {
+  Java_AssistantHeaderModel_setSpinPoodle(AttachCurrentThread(),
+                                          GetHeaderModel(), enabled);
 }
 
 void UiControllerAndroid::SetAllowSwipingSheet(bool allow) {
