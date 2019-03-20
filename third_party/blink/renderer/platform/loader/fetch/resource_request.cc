@@ -114,7 +114,6 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetDownloadToBlob(DownloadToBlob());
   request->SetUseStreamOnResponse(UseStreamOnResponse());
   request->SetRequestContext(GetRequestContext());
-  request->SetFrameType(GetFrameType());
   request->SetShouldResetAppCache(ShouldResetAppCache());
   request->SetFetchRequestMode(GetFetchRequestMode());
   request->SetFetchCredentialsMode(GetFetchCredentialsMode());

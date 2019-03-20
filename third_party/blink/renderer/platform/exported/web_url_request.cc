@@ -239,11 +239,6 @@ void WebURLRequest::SetRequestContext(
   resource_request_->SetRequestContext(request_context);
 }
 
-void WebURLRequest::SetFrameType(
-    network::mojom::RequestContextFrameType frame_type) {
-  resource_request_->SetFrameType(frame_type);
-}
-
 int WebURLRequest::RequestorID() const {
   return resource_request_->RequestorID();
 }

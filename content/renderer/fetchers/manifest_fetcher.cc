@@ -39,7 +39,6 @@ void ManifestFetcher::Start(blink::WebLocalFrame* frame,
       network::mojom::FetchRequestMode::kCors,
       use_credentials ? network::mojom::FetchCredentialsMode::kInclude
                       : network::mojom::FetchCredentialsMode::kOmit,
-      network::mojom::RequestContextFrameType::kNone,
       base::Bind(&ManifestFetcher::OnLoadComplete, base::Unretained(this)));
 }
 

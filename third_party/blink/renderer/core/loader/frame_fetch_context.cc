@@ -682,6 +682,8 @@ bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
 }
 
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            resource_request.GetFrameType());
   if (GetResourceFetcherProperties().IsDetached())
     return;
 
@@ -689,7 +691,8 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   // request.
   GetFrame()->Loader().RecordLatestRequiredCSP();
   GetFrame()->Loader().ModifyRequestForCSP(
-      resource_request, &frame_or_imported_document_->GetDocument());
+      resource_request, &frame_or_imported_document_->GetDocument(),
+      network::mojom::RequestContextFrameType::kNone);
 }
 
 void FrameFetchContext::AddClientHintsIfNecessary(

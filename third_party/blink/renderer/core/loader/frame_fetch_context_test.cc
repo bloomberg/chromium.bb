@@ -316,6 +316,13 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
             KURL("https://secureorigin.test/image.png"))) {}
 
  protected:
+  void ModifyRequestForCSP(ResourceRequest& resource_request,
+                           network::mojom::RequestContextFrameType frame_type) {
+    document->GetFrame()->Loader().RecordLatestRequiredCSP();
+    document->GetFrame()->Loader().ModifyRequestForCSP(
+        resource_request, document.Get(), frame_type);
+  }
+
   void ExpectUpgrade(const char* input, const char* expected) {
     ExpectUpgrade(input, mojom::RequestContextType::SCRIPT,
                   network::mojom::RequestContextFrameType::kNone, expected);
@@ -330,9 +337,8 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(request_context);
-    resource_request.SetFrameType(frame_type);
 
-    GetFetchContext()->ModifyRequestForCSP(resource_request);
+    ModifyRequestForCSP(resource_request, frame_type);
 
     EXPECT_EQ(expected_url.GetString(), resource_request.Url().GetString());
     EXPECT_EQ(expected_url.Protocol(), resource_request.Url().Protocol());
@@ -350,9 +356,8 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
-    resource_request.SetFrameType(frame_type);
 
-    GetFetchContext()->ModifyRequestForCSP(resource_request);
+    ModifyRequestForCSP(resource_request, frame_type);
 
     EXPECT_EQ(
         should_prefer ? String("1") : String(),
@@ -374,11 +379,10 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL main_frame_url(main_frame);
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
-    resource_request.SetFrameType(
-        network::mojom::RequestContextFrameType::kNone);
 
     document->SetSecurityOrigin(SecurityOrigin::Create(KURL(main_frame_url)));
-    GetFetchContext()->ModifyRequestForCSP(resource_request);
+    ModifyRequestForCSP(resource_request,
+                        network::mojom::RequestContextFrameType::kNone);
 
     EXPECT_EQ(expected_value, resource_request.IsAutomaticUpgrade());
   }
@@ -390,9 +394,8 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL input_url(input);
     ResourceRequest resource_request(input_url);
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
-    resource_request.SetFrameType(frame_type);
 
-    GetFetchContext()->ModifyRequestForCSP(resource_request);
+    ModifyRequestForCSP(resource_request, frame_type);
 
     EXPECT_EQ(expected_required_csp,
               resource_request.HttpHeaderField(http_names::kSecRequiredCSP));

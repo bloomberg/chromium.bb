@@ -289,10 +289,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   network::mojom::RequestContextFrameType GetFrameType() const {
+    // TODO(dgozman): remove this getter.
+    DCHECK_EQ(network::mojom::RequestContextFrameType::kNone, frame_type_);
     return frame_type_;
-  }
-  void SetFrameType(network::mojom::RequestContextFrameType frame_type) {
-    frame_type_ = frame_type;
   }
 
   network::mojom::FetchRequestMode GetFetchRequestMode() const {

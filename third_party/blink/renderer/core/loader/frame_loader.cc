@@ -861,8 +861,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                             DownloadCrossOriginRedirects::kFollow);
       return;  // Navigation/download will be handled by the client.
     } else if (should_navigate_target_frame) {
-      resource_request.SetFrameType(
-          network::mojom::RequestContextFrameType::kAuxiliary);
+      request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
       CreateWindowForRequest(request, *frame_);
       return;  // Navigation will be handled by the new frame/window.
     }
@@ -899,9 +898,9 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent);
   resource_request.SetRequestContext(
       DetermineRequestContextFromNavigationType(navigation_type));
-  resource_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
+  request.SetFrameType(frame_->IsMainFrame()
+                           ? network::mojom::RequestContextFrameType::kTopLevel
+                           : network::mojom::RequestContextFrameType::kNested);
 
   mojom::blink::NavigationInitiatorPtr navigation_initiator;
   WebContentSecurityPolicyList initiator_csp;
@@ -939,7 +938,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // (i.e. javascript urls). Please see https://crbug.com/701749.
 
   // Report-only CSP headers are checked in browser.
-  ModifyRequestForCSP(resource_request, origin_document);
+  ModifyRequestForCSP(resource_request, origin_document,
+                      request.GetFrameType());
 
   DCHECK(Client()->HasWebView());
   // Check for non-escaped new lines in the url.
@@ -961,8 +961,9 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   Client()->BeginNavigation(
-      resource_request, origin_document, nullptr /* document_loader */,
-      navigation_type, policy, has_transient_activation, frame_load_type,
+      resource_request, request.GetFrameType(), origin_document,
+      nullptr /* document_loader */, navigation_type, policy,
+      has_transient_activation, frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.TriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),
@@ -1661,8 +1662,10 @@ SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
   return flags;
 }
 
-void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
-                                      Document* origin_document) const {
+void FrameLoader::ModifyRequestForCSP(
+    ResourceRequest& resource_request,
+    Document* origin_document,
+    network::mojom::RequestContextFrameType frame_type) const {
   if (!RequiredCSP().IsEmpty()) {
     DCHECK(
         ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
@@ -1673,8 +1676,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#feature-detect
-  if (resource_request.GetFrameType() !=
-      network::mojom::RequestContextFrameType::kNone) {
+  if (frame_type != network::mojom::RequestContextFrameType::kNone) {
     // Early return if the request has already been upgraded.
     if (!resource_request.HttpHeaderField(http_names::kUpgradeInsecureRequests)
              .IsNull()) {
@@ -1685,12 +1687,14 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
                                         "1");
   }
 
-  UpgradeInsecureRequest(resource_request, origin_document);
+  UpgradeInsecureRequest(resource_request, origin_document, frame_type);
 }
 
 // static
-void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
-                                         ExecutionContext* origin_context) {
+void FrameLoader::UpgradeInsecureRequest(
+    ResourceRequest& resource_request,
+    ExecutionContext* origin_context,
+    network::mojom::RequestContextFrameType frame_type) {
   // We always upgrade requests that meet any of the following criteria:
   //  1. Are for subresources.
   //  2. Are for nested frames.
@@ -1730,10 +1734,8 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
   }
 
   // Nested frames are always upgraded on the browser process.
-  if (resource_request.GetFrameType() ==
-      network::mojom::RequestContextFrameType::kNested) {
+  if (frame_type == network::mojom::RequestContextFrameType::kNested)
     return;
-  }
 
   // We set the UpgradeIfInsecure flag even if the current request wasn't
   // upgraded (due to already being HTTPS), since we still need to upgrade
@@ -1747,8 +1749,7 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
     return;
   }
 
-  if (resource_request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kNone ||
+  if (frame_type == network::mojom::RequestContextFrameType::kNone ||
       resource_request.GetRequestContext() == mojom::RequestContextType::FORM ||
       (!url.Host().IsNull() && origin_context->GetSecurityContext()
                                    .InsecureNavigationsToUpgrade()

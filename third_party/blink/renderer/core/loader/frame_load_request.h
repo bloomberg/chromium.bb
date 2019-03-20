@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -53,6 +54,13 @@ struct CORE_EXPORT FrameLoadRequest {
                    ContentSecurityPolicyDisposition);
 
   Document* OriginDocument() const { return origin_document_.Get(); }
+
+  network::mojom::RequestContextFrameType GetFrameType() const {
+    return frame_type_;
+  }
+  void SetFrameType(network::mojom::RequestContextFrameType frame_type) {
+    frame_type_ = frame_type;
+  }
 
   ResourceRequest& GetResourceRequest() { return resource_request_; }
   const ResourceRequest& GetResourceRequest() const {
@@ -148,6 +156,8 @@ struct CORE_EXPORT FrameLoadRequest {
   scoped_refptr<base::RefCountedData<mojom::blink::BlobURLTokenPtr>>
       blob_url_token_;
   base::TimeTicks input_start_time_;
+  network::mojom::RequestContextFrameType frame_type_ =
+      network::mojom::RequestContextFrameType::kNone;
 };
 
 }  // namespace blink

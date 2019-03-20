@@ -508,6 +508,7 @@ void LocalFrameClientImpl::DispatchDidChangeThemeColor() {
 
 void LocalFrameClientImpl::BeginNavigation(
     const ResourceRequest& request,
+    network::mojom::RequestContextFrameType frame_type,
     Document* origin_document,
     DocumentLoader* document_loader,
     WebNavigationType type,
@@ -529,6 +530,7 @@ void LocalFrameClientImpl::BeginNavigation(
 
   auto navigation_info = std::make_unique<WebNavigationInfo>();
   navigation_info->url_request = WrappedResourceRequest(request);
+  navigation_info->frame_type = frame_type;
   navigation_info->navigation_type = type;
   navigation_info->navigation_policy = static_cast<WebNavigationPolicy>(policy);
   navigation_info->has_transient_user_activation = has_transient_activation;

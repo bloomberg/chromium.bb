@@ -315,7 +315,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
                                  bool& created) {
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(request.GetFrameType(),
             network::mojom::RequestContextFrameType::kAuxiliary);
   probe::WindowOpen(opener_frame.GetDocument(),
                     request.GetResourceRequest().Url(), request.FrameName(),
@@ -404,7 +404,7 @@ DOMWindow* CreateWindow(const String& url_string,
                                  ResourceRequest(completed_url), frame_name);
   frame_request.SetShouldSetOpener(window_features.noopener ? kNeverSetOpener
                                                             : kMaybeSetOpener);
-  frame_request.GetResourceRequest().SetFrameType(
+  frame_request.SetFrameType(
       network::mojom::RequestContextFrameType::kAuxiliary);
 
   // Normally, FrameLoader would take care of setting the referrer for a

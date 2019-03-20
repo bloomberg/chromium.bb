@@ -183,8 +183,6 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT network::mojom::RequestContextFrameType GetFrameType()
       const;
-  BLINK_PLATFORM_EXPORT void SetFrameType(
-      network::mojom::RequestContextFrameType);
 
   BLINK_PLATFORM_EXPORT network::mojom::ReferrerPolicy GetReferrerPolicy()
       const;
