@@ -591,13 +591,13 @@ TEST_F(FileManagerPathUtilTest, ExtractMountNameFileSystemNameFullPath) {
       storage::ExternalMountPoints::GetSystemInstance();
   std::string downloads_mount_name = GetDownloadsMountPointName(profile_.get());
   base::FilePath downloads = GetDownloadsFolderForProfile(profile_.get());
-  EXPECT_TRUE(mount_points->RegisterFileSystem(
-      downloads_mount_name, storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), downloads));
+  mount_points->RegisterFileSystem(downloads_mount_name,
+                                   storage::kFileSystemTypeNativeLocal,
+                                   storage::FileSystemMountOption(), downloads);
   base::FilePath removable = base::FilePath(kRemovableMediaPath);
-  EXPECT_TRUE(mount_points->RegisterFileSystem(
+  mount_points->RegisterFileSystem(
       chromeos::kSystemMountNameRemovable, storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath)));
+      storage::FileSystemMountOption(), base::FilePath(kRemovableMediaPath));
   std::string relative_path_1 = "foo";
   std::string relative_path_2 = "foo/bar";
   std::string mount_name;
@@ -632,12 +632,9 @@ TEST_F(FileManagerPathUtilTest, ExtractMountNameFileSystemNameFullPath) {
       removable, &mount_name, &file_system_name, &full_path));
 
   // <removable>/foo/
-  // TODO(crbug.com/942371): Extra debugging to detect what is causing flakes.
-  base::FilePath absolute_path = removable.Append(relative_path_1);
-  base::FilePath virtual_path;
-  EXPECT_TRUE(mount_points->GetVirtualPath(absolute_path, &virtual_path));
   EXPECT_TRUE(ExtractMountNameFileSystemNameFullPath(
-      absolute_path, &mount_name, &file_system_name, &full_path));
+      removable.Append(relative_path_1), &mount_name, &file_system_name,
+      &full_path));
   EXPECT_EQ(mount_name, "removable/foo");
   EXPECT_EQ(file_system_name, "foo");
   EXPECT_EQ(full_path, "/");
