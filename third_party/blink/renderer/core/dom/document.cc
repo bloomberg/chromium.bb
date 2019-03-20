@@ -7723,9 +7723,9 @@ void Document::ReportFeaturePolicyViolation(
   FeaturePolicyViolationReportBody* body =
       MakeGarbageCollected<FeaturePolicyViolationReportBody>(
           feature_name, "Feature policy violation",
-          (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
-                                                                   : "enforce"),
-          SourceLocation::Capture());
+          (disposition == mojom::FeaturePolicyDisposition::kReport
+               ? "report"
+               : "enforce"));
   Report* report = MakeGarbageCollected<Report>("feature-policy-violation",
                                                 Url().GetString(), body);
   ReportingContext::From(this)->QueueReport(report);
