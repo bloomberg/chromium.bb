@@ -5,6 +5,7 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -123,7 +124,7 @@ class DialogClientViewTest : public test::WidgetTest,
   // Sets the extra view padding.
   void SetExtraViewPadding(int padding) {
     DCHECK(!extra_view_padding_);
-    extra_view_padding_.reset(new int(padding));
+    extra_view_padding_ = std::make_unique<int>(padding);
     DialogModelChanged();
   }
 

@@ -118,7 +118,7 @@ void ResizeAreaTest::ProcessGesture(ui::EventType type,
 void ResizeAreaTest::SetUp() {
   views::ViewsTestBase::SetUp();
 
-  delegate_.reset(new TestResizeAreaDelegate);
+  delegate_ = std::make_unique<TestResizeAreaDelegate>();
   resize_area_ = new ResizeArea(delegate_.get());
 
   gfx::Size size(10, 10);

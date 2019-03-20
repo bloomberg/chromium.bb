@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/combobox/combobox.h"
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
@@ -198,14 +199,14 @@ class ComboboxTest : public ViewsTestBase {
   }
 
   void InitCombobox(const std::set<int>* separators) {
-    model_.reset(new TestComboboxModel());
+    model_ = std::make_unique<TestComboboxModel>();
 
     if (separators)
       model_->SetSeparators(*separators);
 
     ASSERT_FALSE(combobox_);
     combobox_ = new TestCombobox(model_.get());
-    test_api_.reset(new ComboboxTestApi(combobox_));
+    test_api_ = std::make_unique<ComboboxTestApi>(combobox_);
     test_api_->InstallTestMenuRunner(&menu_show_count_);
     combobox_->set_id(1);
 
@@ -329,7 +330,7 @@ TEST_F(ComboboxTest, KeyTestMac) {
 // Check that if a combobox is disabled before it has a native wrapper, then the
 // native wrapper inherits the disabled state when it gets created.
 TEST_F(ComboboxTest, DisabilityTest) {
-  model_.reset(new TestComboboxModel());
+  model_ = std::make_unique<TestComboboxModel>();
 
   ASSERT_FALSE(combobox_);
   combobox_ = new TestCombobox(model_.get());

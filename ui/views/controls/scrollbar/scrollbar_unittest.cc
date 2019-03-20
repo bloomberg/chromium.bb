@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
@@ -51,7 +53,7 @@ class ScrollBarViewsTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    controller_.reset(new TestScrollBarController());
+    controller_ = std::make_unique<TestScrollBarController>();
 
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);

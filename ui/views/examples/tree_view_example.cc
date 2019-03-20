@@ -4,6 +4,8 @@
 
 #include "ui/views/examples/tree_view_example.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -155,11 +157,12 @@ void TreeViewExample::ShowContextMenuForViewImpl(
     View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  context_menu_model_.reset(new ui::SimpleMenuModel(this));
+  context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
   context_menu_model_->AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
   context_menu_model_->AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
   context_menu_model_->AddItem(ID_ADD, ASCIIToUTF16("Add"));
-  context_menu_runner_.reset(new MenuRunner(context_menu_model_.get(), 0));
+  context_menu_runner_ =
+      std::make_unique<MenuRunner>(context_menu_model_.get(), 0);
   context_menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
                                   MENU_ANCHOR_TOPLEFT, source_type);

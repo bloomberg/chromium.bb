@@ -438,9 +438,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
       enable_child_window_dpi_message_func(hwnd(), TRUE);
   }
 
-  prop_window_target_.reset(new ui::ViewProp(hwnd(),
-                            ui::WindowEventTarget::kWin32InputEventTarget,
-                            static_cast<ui::WindowEventTarget*>(this)));
+  prop_window_target_ = std::make_unique<ui::ViewProp>(
+      hwnd(), ui::WindowEventTarget::kWin32InputEventTarget,
+      static_cast<ui::WindowEventTarget*>(this));
   DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
   delegate_->GetHWNDMessageDelegateInputMethod()->AddObserver(this);
 

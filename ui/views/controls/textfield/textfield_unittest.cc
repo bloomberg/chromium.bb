@@ -464,7 +464,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     container->AddChildView(textfield_);
     textfield_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
-    test_api_.reset(new TextfieldTestApi(textfield_));
+    test_api_ = std::make_unique<TextfieldTestApi>(textfield_);
 
     for (int i = 1; i < count; i++) {
       Textfield* textfield = new Textfield();
@@ -3363,7 +3363,7 @@ TEST_F(TextfieldTest, TextfieldInitialization) {
 
   new_textfield->SetBoundsRect(params.bounds);
   new_textfield->set_id(1);
-  test_api_.reset(new TextfieldTestApi(new_textfield));
+  test_api_ = std::make_unique<TextfieldTestApi>(new_textfield);
   widget->Show();
   EXPECT_FALSE(new_textfield->HasFocus());
   EXPECT_FALSE(test_api_->IsCursorVisible());

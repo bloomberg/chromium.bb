@@ -974,7 +974,7 @@ bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,
 
 void DesktopWindowTreeHostWin::HandleMenuLoop(bool in_menu_loop) {
   if (in_menu_loop) {
-    tooltip_disabler_.reset(new wm::ScopedTooltipDisabler(window()));
+    tooltip_disabler_ = std::make_unique<wm::ScopedTooltipDisabler>(window());
   } else {
     tooltip_disabler_.reset();
   }

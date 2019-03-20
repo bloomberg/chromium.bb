@@ -146,7 +146,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
         std::make_unique<views::WebView::ScopedWebContentsCreatorForTesting>(
             creator);
     set_views_delegate(base::WrapUnique(new views::TestViewsDelegate));
-    browser_context_.reset(new content::TestBrowserContext);
+    browser_context_ = std::make_unique<content::TestBrowserContext>();
     WidgetTest::SetUp();
     // Set the test content browser client to avoid pulling in needless
     // dependencies from content.

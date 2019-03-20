@@ -46,7 +46,7 @@ class StyledLabelTest : public ViewsTestBase, public StyledLabelListener {
   StyledLabel* styled() { return styled_.get(); }
 
   void InitStyledLabel(const std::string& ascii_text) {
-    styled_.reset(new StyledLabel(ASCIIToUTF16(ascii_text), this));
+    styled_ = std::make_unique<StyledLabel>(ASCIIToUTF16(ascii_text), this);
     styled_->set_owned_by_client();
   }
 

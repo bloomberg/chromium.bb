@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -75,7 +77,8 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    test_cursor_client_.reset(new aura::test::TestCursorClient(GetContext()));
+    test_cursor_client_ =
+        std::make_unique<aura::test::TestCursorClient>(GetContext());
   }
 
   void TearDown() override {
@@ -103,7 +106,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_widget_->Show();
 
     textfield_->RequestFocus();
-    textfield_test_api_.reset(new TextfieldTestApi(textfield_));
+    textfield_test_api_ = std::make_unique<TextfieldTestApi>(textfield_);
   }
 
   void CreateWidget() {

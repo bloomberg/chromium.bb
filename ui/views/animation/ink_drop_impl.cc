@@ -380,7 +380,7 @@ void InkDropImpl::HideHighlightOnRippleHiddenState::AnimationEnded(
 
 void InkDropImpl::HideHighlightOnRippleHiddenState::
     StartHighlightAfterRippleTimer() {
-  highlight_after_ripple_timer_.reset(new base::OneShotTimer);
+  highlight_after_ripple_timer_ = std::make_unique<base::OneShotTimer>();
   highlight_after_ripple_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kHoverFadeInAfterRippleDelayMs),

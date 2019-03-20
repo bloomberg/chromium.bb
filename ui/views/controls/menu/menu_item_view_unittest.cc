@@ -274,16 +274,16 @@ class MenuItemViewPaintUnitTest : public ViewsTestBase {
   // ViewsTestBase implementation.
   void SetUp() override {
     ViewsTestBase::SetUp();
-    menu_delegate_.reset(new test::TestMenuDelegate);
+    menu_delegate_ = std::make_unique<test::TestMenuDelegate>();
     menu_item_view_ = new MenuItemView(menu_delegate_.get());
 
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_->Init(params);
     widget_->Show();
 
-    menu_runner_.reset(new MenuRunner(menu_item_view_, 0));
+    menu_runner_ = std::make_unique<MenuRunner>(menu_item_view_, 0);
   }
 
   void TearDown() override {

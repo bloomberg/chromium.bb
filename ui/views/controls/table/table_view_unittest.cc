@@ -262,7 +262,7 @@ class TableViewTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
-    model_.reset(new TestTableModel2);
+    model_ = std::make_unique<TestTableModel2>();
     std::vector<ui::TableColumn> columns(2);
     columns[0].title = base::ASCIIToUTF16("Title Column 0");
     columns[0].sortable = true;
@@ -273,7 +273,7 @@ class TableViewTest : public ViewsTestBase {
     View* parent = table_->CreateParentIfNecessary();
     parent->SetBounds(0, 0, 10000, 10000);
     parent->Layout();
-    helper_.reset(new TableViewTestHelper(table_));
+    helper_ = std::make_unique<TableViewTestHelper>(table_);
 
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);

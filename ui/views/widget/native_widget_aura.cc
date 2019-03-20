@@ -243,9 +243,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
           : ws::mojom::EventTargetingPolicy::NONE);
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
-    tooltip_manager_.reset(new views::TooltipManagerAura(GetWidget()));
+    tooltip_manager_ = std::make_unique<views::TooltipManagerAura>(GetWidget());
 
-  drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
+  drop_helper_ = std::make_unique<DropHelper>(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
       params.type != Widget::InitParams::TYPE_POPUP) {
     aura::client::SetDragDropDelegate(window_, this);
@@ -258,8 +258,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   wm::SetActivationDelegate(window_, this);
 
-  window_reorderer_.reset(new WindowReorderer(window_,
-      GetWidget()->GetRootView()));
+  window_reorderer_ =
+      std::make_unique<WindowReorderer>(window_, GetWidget()->GetRootView());
 }
 
 void NativeWidgetAura::OnWidgetInitDone() {}
