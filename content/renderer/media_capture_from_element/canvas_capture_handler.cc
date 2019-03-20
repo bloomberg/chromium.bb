@@ -33,6 +33,18 @@ using media::VideoFrame;
 
 namespace content {
 
+namespace {
+
+// Return the gfx::ColorSpace that the pixels resulting from calling
+// ConvertToYUVFrame on |image| will be in.
+gfx::ColorSpace GetImageYUVColorSpace(sk_sp<SkImage> image) {
+  // TODO: Determine the ColorSpace::MatrixID and ColorSpace::RangeID that the
+  // calls to libyuv are assuming.
+  return gfx::ColorSpace();
+}
+
+}  // namespace
+
 // Implementation VideoCapturerSource that is owned by
 // MediaStreamVideoCapturerSource and delegates the Start/Stop calls to
 // CanvasCaptureHandler.
@@ -176,7 +188,7 @@ void CanvasCaptureHandler::SendNewFrame(
                                 static_cast<const uint8_t*>(pixmap.addr(0, 0)),
                                 gfx::Size(pixmap.width(), pixmap.height()),
                                 pixmap.rowBytes(), pixmap.colorType()),
-              timestamp, image->refColorSpace());
+              timestamp, GetImageYUVColorSpace(image));
     return;
   }
 
@@ -269,7 +281,7 @@ void CanvasCaptureHandler::ReadARGBPixelsSync(sk_sp<SkImage> image) {
           is_opaque, false /* flip */,
           temp_argb_frame->visible_data(VideoFrame::kARGBPlane), image_size,
           temp_argb_frame->stride(VideoFrame::kARGBPlane), kN32_SkColorType),
-      timestamp, image->refColorSpace());
+      timestamp, GetImageYUVColorSpace(image));
 }
 
 void CanvasCaptureHandler::ReadARGBPixelsAsync(
@@ -361,7 +373,7 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
   }
   // Let |image| fall out of scope after we are done reading.
   const bool is_opaque = image->isOpaque();
-  const auto color_space = image->refColorSpace();
+  const auto color_space = GetImageYUVColorSpace(image);
   image = nullptr;
 
   SendFrame(
@@ -383,7 +395,7 @@ void CanvasCaptureHandler::OnYUVPixelsReadAsync(
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     return;
   }
-  SendFrame(yuv_frame, this_frame_ticks, image->refColorSpace());
+  SendFrame(yuv_frame, this_frame_ticks, GetImageYUVColorSpace(image));
 }
 
 scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
@@ -447,7 +459,7 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
 
 void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
                                      base::TimeTicks this_frame_ticks,
-                                     sk_sp<SkColorSpace> color_space) {
+                                     const gfx::ColorSpace& color_space) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   // If this function is called asynchronously, |delegate_| might have been
@@ -458,8 +470,8 @@ void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
   if (!first_frame_ticks_)
     first_frame_ticks_ = this_frame_ticks;
   video_frame->set_timestamp(this_frame_ticks - *first_frame_ticks_);
-  if (color_space)
-    video_frame->set_color_space(gfx::ColorSpace(*color_space));
+  if (color_space.IsValid())
+    video_frame->set_color_space(color_space);
 
   last_frame_ = video_frame;
   io_task_runner_->PostTask(

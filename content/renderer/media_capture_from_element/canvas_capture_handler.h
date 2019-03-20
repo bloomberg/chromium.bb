@@ -101,7 +101,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
       SkColorType source_color_type);
   void SendFrame(scoped_refptr<media::VideoFrame> video_frame,
                  base::TimeTicks this_frame_ticks,
-                 sk_sp<SkColorSpace> color_space);
+                 const gfx::ColorSpace& color_space);
 
   void AddVideoCapturerSourceToVideoTrack(
       std::unique_ptr<media::VideoCapturerSource> source,

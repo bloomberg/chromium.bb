@@ -120,7 +120,6 @@ class CanvasCaptureHandlerTest
           video_frame->visible_data(media::VideoFrame::kAPlane);
       EXPECT_EQ(kTestAlphaValue, a_plane[0]);
     }
-    EXPECT_TRUE(video_frame->ColorSpace().IsValid());
   }
 
   blink::WebMediaStreamTrack track_;
