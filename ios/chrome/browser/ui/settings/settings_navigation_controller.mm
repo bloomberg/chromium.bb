@@ -313,12 +313,12 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 #pragma mark - Private
 
-// Creates an autoreleased "X" button that closes the settings when tapped.
+// Creates an autoreleased "Cancel" button that closes the settings when tapped.
 - (UIBarButtonItem*)closeButton {
-  UIBarButtonItem* closeButton =
-      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon closeIcon]
-                                          target:self
-                                          action:@selector(closeSettings)];
+  UIBarButtonItem* closeButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                           target:self
+                           action:@selector(closeSettings)];
   closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_CLOSE);
   return closeButton;
 }
