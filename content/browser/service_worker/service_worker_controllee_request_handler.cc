@@ -12,11 +12,10 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
-#include "content/browser/service_worker/service_worker_url_job_wrapper.h"
-#include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
@@ -26,11 +25,9 @@
 #include "content/public/common/content_client.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
-#include "ui/base/page_transition_types.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "components/offline_pages/core/request_header/offline_page_header.h"
@@ -39,22 +36,6 @@
 namespace content {
 
 namespace {
-
-bool MaybeForwardToServiceWorker(ServiceWorkerURLJobWrapper* job,
-                                 const ServiceWorkerVersion* version) {
-  DCHECK(job);
-  DCHECK(version);
-  DCHECK_NE(version->fetch_handler_existence(),
-            ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
-  if (version->fetch_handler_existence() ==
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
-    job->ForwardToServiceWorker();
-    return true;
-  }
-
-  job->FallbackToNetworkOrRenderer();
-  return false;
-}
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 // A web page, regardless of whether the service worker is used or not, could
@@ -198,7 +179,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
+  loader_wrapper_ = std::make_unique<ServiceWorkerNavigationLoaderWrapper>(
       std::make_unique<ServiceWorkerNavigationLoader>(
           std::move(callback), std::move(fallback_callback), this,
           tentative_resource_request, provider_host_,
@@ -209,7 +190,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   PrepareForMainResource(tentative_resource_request.url,
                          tentative_resource_request.site_for_cookies);
 
-  if (url_job_->ShouldFallbackToNetwork()) {
+  if (loader()->ShouldFallbackToNetwork()) {
     // The job already fell back to network. Clear the job now.
     ClearJob();
     return;
@@ -220,10 +201,8 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 
 base::Optional<SubresourceLoaderParams>
 ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-
   // We didn't create URLLoader for this request.
-  if (!url_job_)
+  if (!loader())
     return base::nullopt;
 
   // DidLookupRegistrationForMainResource() for the request didn't find
@@ -266,7 +245,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url,
     const GURL& site_for_cookies) {
-  DCHECK(IsJobAlive());
+  DCHECK(loader());
   DCHECK(context_);
   DCHECK(provider_host_);
   TRACE_EVENT_ASYNC_BEGIN1(
@@ -299,11 +278,11 @@ void ServiceWorkerControlleeRequestHandler::
         blink::ServiceWorkerStatusCode status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
   // The job may have been destroyed before this was invoked.
-  if (!IsJobAlive())
+  if (!loader())
     return;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -313,7 +292,7 @@ void ServiceWorkerControlleeRequestHandler::
   DCHECK(registration);
 
   if (!provider_host_) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -323,7 +302,7 @@ void ServiceWorkerControlleeRequestHandler::
   provider_host_->AddMatchingRegistration(registration.get());
 
   if (!context_) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -334,7 +313,7 @@ void ServiceWorkerControlleeRequestHandler::
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->scope(), provider_host_->site_for_cookies(),
           resource_context_, provider_host_->web_contents_getter())) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -345,7 +324,7 @@ void ServiceWorkerControlleeRequestHandler::
   if (!provider_host_->IsContextSecureForServiceWorker()) {
     // TODO(falken): Figure out a way to surface in the page's DevTools
     // console that the service worker was blocked for security.
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -376,7 +355,7 @@ void ServiceWorkerControlleeRequestHandler::
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();
   if (!active_version) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -413,8 +392,8 @@ void ServiceWorkerControlleeRequestHandler::
         std::unique_ptr<ScopedDisallowSetControllerRegistration>
             disallow_controller) {
   // The job may have been destroyed before this was invoked. In that
-  // case, |url_job_| can't be used, so return.
-  if (!IsJobAlive()) {
+  // case, |loader()| can't be used, so return.
+  if (!loader()) {
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -423,7 +402,7 @@ void ServiceWorkerControlleeRequestHandler::
   }
 
   if (!provider_host_) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -450,7 +429,7 @@ void ServiceWorkerControlleeRequestHandler::
     //      retries.
     //   3) If the provider host does not have an active version, just fail the
     //      load.
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
@@ -474,18 +453,23 @@ void ServiceWorkerControlleeRequestHandler::
       active_version->site_for_uma(), stripped_url_,
       resource_type_ == RESOURCE_TYPE_MAIN_FRAME);
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-      IsResourceTypeFrame(resource_type_)) {
+  if (IsResourceTypeFrame(resource_type_))
     provider_host_->AddServiceWorkerToUpdate(active_version);
-  }
-  bool is_forwarded =
-      MaybeForwardToServiceWorker(url_job_.get(), active_version.get());
+
+  bool should_forward = active_version->fetch_handler_existence() ==
+                        ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
+  if (should_forward)
+    loader()->ForwardToServiceWorker();
+  else
+    loader()->FallbackToNetwork();
+
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
       "Info",
-      (is_forwarded) ? "Forwarded to the ServiceWorker"
-                     : "Skipped the ServiceWorker which has no fetch handler");
+      (should_forward)
+          ? "Forwarded to the ServiceWorker"
+          : "Skipped the ServiceWorker which has no fetch handler");
 }
 
 void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
@@ -498,11 +482,11 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
   DCHECK(force_update_started_);
 
   // The job may have been destroyed before this was invoked.
-  if (!IsJobAlive())
+  if (!loader())
     return;
 
   if (!context_) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     return;
   }
   if (status != blink::ServiceWorkerStatusCode::kOk ||
@@ -533,11 +517,11 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
     std::unique_ptr<ScopedDisallowSetControllerRegistration>
         disallow_controller) {
   // The job may have been destroyed before this was invoked.
-  if (!IsJobAlive())
+  if (!loader())
     return;
 
   if (!context_) {
-    url_job_->FallbackToNetwork();
+    loader()->FallbackToNetwork();
     return;
   }
   if (version->status() == ServiceWorkerVersion::ACTIVATED ||
@@ -597,15 +581,11 @@ void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {
 void ServiceWorkerControlleeRequestHandler::ClearJob() {
   // Invalidate weak pointers to cancel RegisterStatusChangeCallback().
   // Otherwise we may end up calling ForwardToServiceWorer()
-  // or FallbackToNetwork() twice on the same |url_job_|.
+  // or FallbackToNetwork() twice on the same |loader()|.
   // TODO(bashi): Consider not to reuse this handler when restarting the
   // request after S13nServiceWorker is shipped.
   weak_factory_.InvalidateWeakPtrs();
-  url_job_.reset();
-}
-
-bool ServiceWorkerControlleeRequestHandler::IsJobAlive() const {
-  return url_job_ && url_job_->IsAlive();
+  loader_wrapper_.reset();
 }
 
 }  // namespace content

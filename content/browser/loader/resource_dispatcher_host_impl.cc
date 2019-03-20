@@ -821,7 +821,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     if (blob_context) {
       // Get BlobHandles to request_body to prevent blobs and any attached
       // shareable files from being freed until upload completion. These data
-      // will be used in UploadDataStream and ServiceWorkerURLRequestJob.
+      // will be used in UploadDataStream.
       if (!GetBodyBlobDataHandles(request_data.request_body.get(),
                                   resource_context, &blob_handles)) {
         AbortRequestBeforeItStarts(requester_info->filter(), request_id,

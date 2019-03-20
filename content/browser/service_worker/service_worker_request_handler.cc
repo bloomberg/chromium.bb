@@ -15,7 +15,6 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/child_process_host.h"
