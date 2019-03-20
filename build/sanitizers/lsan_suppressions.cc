@@ -75,9 +75,6 @@ char kLSanDefaultSuppressions[] =
     "leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_"
     "Test\n"
 
-    // http://crbug.com/322671
-    "leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread\n"
-
     // http://crbug.com/355641
     "leak:TrayAccessibilityTest\n"
 
