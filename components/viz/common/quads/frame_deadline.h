@@ -24,6 +24,8 @@ namespace viz {
 //    start time + deadline in frames * frame interval
 class VIZ_COMMON_EXPORT FrameDeadline {
  public:
+  static FrameDeadline MakeZero();
+
   FrameDeadline() = default;
   FrameDeadline(base::TimeTicks frame_start_time,
                 uint32_t deadline_in_frames,

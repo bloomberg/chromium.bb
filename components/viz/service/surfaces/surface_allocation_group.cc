@@ -50,6 +50,24 @@ void SurfaceAllocationGroup::UnregisterActiveEmbedder(Surface* surface) {
   MaybeMarkForDestruction();
 }
 
+void SurfaceAllocationGroup::UpdateLastReferencedSurfaceAndMaybeActivate(
+    const SurfaceId& surface_id) {
+  DCHECK_EQ(submitter_, surface_id.frame_sink_id());
+  DCHECK_EQ(embed_token_, surface_id.local_surface_id().embed_token());
+  if (last_referenced_surface_id_.is_valid() &&
+      last_referenced_surface_id_.IsSameOrNewerThan(surface_id)) {
+    return;
+  }
+  last_referenced_surface_id_ = surface_id;
+  auto it = FindLatestSurfaceUpTo(surface_id);
+  if (it != surfaces_.end() && !(*it)->HasActiveFrame())
+    (*it)->ActivatePendingFrameForInheritedDeadline();
+}
+
+const SurfaceId& SurfaceAllocationGroup::GetLastReferencedSurfaceId() {
+  return last_referenced_surface_id_;
+}
+
 Surface* SurfaceAllocationGroup::FindLatestActiveSurfaceInRange(
     const SurfaceRange& range) const {
   // If the embed token of the end of the SurfaceRange matches that of this
@@ -57,10 +75,10 @@ Surface* SurfaceAllocationGroup::FindLatestActiveSurfaceInRange(
   // end, then check that it's not older than start.
   if (range.end().local_surface_id().embed_token() == embed_token_) {
     DCHECK_EQ(submitter_, range.end().frame_sink_id());
-    Surface* result = FindOlderOrEqual(range.end());
-    if (result &&
-        (!range.start() || !range.start()->IsNewerThan(result->surface_id()))) {
-      return result;
+    auto it = FindLatestActiveSurfaceUpTo(range.end());
+    if (it != surfaces_.end() &&
+        (!range.start() || !range.start()->IsNewerThan((*it)->surface_id()))) {
+      return *it;
     } else {
       return nullptr;
     }
@@ -94,22 +112,23 @@ void SurfaceAllocationGroup::OnFirstSurfaceActivation(Surface* surface) {
     embedder->OnChildActivatedForActiveFrame(surface->surface_id());
 }
 
-Surface* SurfaceAllocationGroup::FindOlderOrEqual(
+std::vector<Surface*>::const_iterator
+SurfaceAllocationGroup::FindLatestSurfaceUpTo(
     const SurfaceId& surface_id) const {
   DCHECK_EQ(submitter_, surface_id.frame_sink_id());
   DCHECK_EQ(embed_token_, surface_id.local_surface_id().embed_token());
 
   // Return early if there are no surfaces in this group.
   if (surfaces_.empty())
-    return nullptr;
+    return surfaces_.end();
 
   // If even the first surface is newer than |surface_id|, we can't find a
   // surface that is older than or equal to |surface_id|.
   if (surfaces_[0]->surface_id().IsNewerThan(surface_id))
-    return nullptr;
+    return surfaces_.end();
 
-  // Perform a binary search the find the latest active surface that is older
-  // than or equal to |surface_id|.
+  // Perform a binary search the find the latest surface that is older than or
+  // equal to |surface_id|.
   int begin = 0;
   int end = surfaces_.size();
   while (end - begin > 1) {
@@ -120,17 +139,27 @@ Surface* SurfaceAllocationGroup::FindOlderOrEqual(
       begin = avg;
   }
 
-  // We have found the latest surface. Now keep iterating back until we find an
-  // active surface. Normally, there is only one pending surface at a time, so
-  // this shouldn't take more than two iterations.
-  for (; begin >= 0; --begin) {
-    if (surfaces_[begin]->HasActiveFrame())
-      return surfaces_[begin];
+  return surfaces_.begin() + begin;
+}
+
+std::vector<Surface*>::const_iterator
+SurfaceAllocationGroup::FindLatestActiveSurfaceUpTo(
+    const SurfaceId& surface_id) const {
+  // Start from the last older or equal surface and keep iterating back until we
+  // find an active surface. Normally, there is only one pending surface at a
+  // time this shouldn't take more than two iterations.
+  auto it = FindLatestSurfaceUpTo(surface_id);
+
+  if (it == surfaces_.end())
+    return surfaces_.end();
+
+  for (; it >= surfaces_.begin(); --it) {
+    if ((*it)->HasActiveFrame())
+      return it;
   }
 
-  // No active surface was found, so return null.
-  DCHECK_EQ(-1, begin);
-  return nullptr;
+  // No active surface was found.
+  return surfaces_.end();
 }
 
 void SurfaceAllocationGroup::MaybeMarkForDestruction() {

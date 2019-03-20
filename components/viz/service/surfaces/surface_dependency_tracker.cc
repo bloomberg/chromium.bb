@@ -32,11 +32,6 @@ void SurfaceDependencyTracker::TrackEmbedding(Surface* surface) {
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
-  if (IsSurfaceLate(surface)) {
-    ActivateLateSurfaceSubtree(surface);
-    return;
-  }
-
   // Activation dependencies that aren't currently known to the surface manager
   // or do not have an active CompositorFrame block this frame.
   for (const SurfaceId& surface_id : surface->activation_dependencies()) {
@@ -46,8 +41,6 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
           surface->surface_id());
     }
   }
-
-  UpdateSurfaceDeadline(surface);
 }
 
 bool SurfaceDependencyTracker::HasSurfaceBlockedOn(
@@ -58,10 +51,6 @@ bool SurfaceDependencyTracker::HasSurfaceBlockedOn(
 }
 
 void SurfaceDependencyTracker::OnSurfaceActivated(Surface* surface) {
-  if (!surface->late_activation_dependencies().empty())
-    surfaces_with_missing_dependencies_.insert(surface->surface_id());
-  else
-    surfaces_with_missing_dependencies_.erase(surface->surface_id());
   NotifySurfaceIdAvailable(surface->surface_id());
   // We treat an activation (by deadline) as being the equivalent of a parent
   // embedding the surface.
@@ -133,8 +122,6 @@ void SurfaceDependencyTracker::OnSurfaceDependenciesChanged(
 }
 
 void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
-  surfaces_with_missing_dependencies_.erase(surface->surface_id());
-
   base::flat_set<FrameSinkId> removed_dependencies;
   for (const SurfaceId& surface_id : surface->activation_dependencies())
     removed_dependencies.insert(surface_id.frame_sink_id());
@@ -153,63 +140,6 @@ void SurfaceDependencyTracker::OnFrameSinkInvalidated(
   // thus unblock all dependencies to any future surfaces.
   NotifySurfaceIdAvailable(SurfaceId::MaxSequenceId(frame_sink_id));
   OnSurfaceDependencyAdded(SurfaceId::MaxSequenceId(frame_sink_id));
-}
-
-void SurfaceDependencyTracker::ActivateLateSurfaceSubtree(Surface* surface) {
-  DCHECK(surface->HasPendingFrame());
-
-  base::flat_set<SurfaceId> late_dependencies(
-      surface->activation_dependencies());
-  for (const SurfaceId& surface_id : late_dependencies) {
-    Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
-    if (dependency && dependency->HasPendingFrame())
-      ActivateLateSurfaceSubtree(dependency);
-  }
-
-  surface->ActivatePendingFrameForDeadline(base::nullopt);
-}
-
-void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
-  DCHECK(surface->HasPendingFrame());
-
-  // Inherit the deadline from the first parent blocked on this surface.
-  auto it = blocked_surfaces_from_dependency_.find(
-      surface->surface_id().frame_sink_id());
-  if (it != blocked_surfaces_from_dependency_.end()) {
-    const base::flat_set<SurfaceId>& dependent_parent_ids = it->second;
-    for (const SurfaceId& parent_id : dependent_parent_ids) {
-      Surface* parent = surface_manager_->GetSurfaceForId(parent_id);
-      if (parent && parent->has_deadline() &&
-          parent->activation_dependencies().count(surface->surface_id())) {
-        surface->InheritActivationDeadlineFrom(parent);
-        break;
-      }
-    }
-  }
-
-  DCHECK(!surface_manager_->activation_deadline_in_frames() ||
-         surface->has_deadline());
-
-  // Recursively propagate the newly set deadline to children.
-  base::flat_set<SurfaceId> activation_dependencies(
-      surface->activation_dependencies());
-  for (const SurfaceId& surface_id : activation_dependencies) {
-    Surface* dependency = surface_manager_->GetSurfaceForId(surface_id);
-    if (dependency && dependency->HasPendingFrame())
-      UpdateSurfaceDeadline(dependency);
-  }
-}
-
-bool SurfaceDependencyTracker::IsSurfaceLate(Surface* surface) {
-  for (const SurfaceId& surface_id : surfaces_with_missing_dependencies_) {
-    Surface* activated_surface = surface_manager_->GetSurfaceForId(surface_id);
-    DCHECK(activated_surface->HasActiveFrame());
-    if (activated_surface->late_activation_dependencies().count(
-            surface->surface_id())) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void SurfaceDependencyTracker::NotifySurfaceIdAvailable(

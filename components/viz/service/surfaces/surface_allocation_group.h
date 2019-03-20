@@ -59,6 +59,15 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // surface in this allocation group.
   void UnregisterActiveEmbedder(Surface* surface);
 
+  // Called by an active embedder when its CompositorFrame references a surface
+  // in this allocation group. |surface_id| or the last surface prior to it will
+  // be forcefully activated due to deadline inheritance.
+  void UpdateLastReferencedSurfaceAndMaybeActivate(const SurfaceId& surface_id);
+
+  // Returns the last SurfaceId in this allocation group that was ever
+  // referenced.
+  const SurfaceId& GetLastReferencedSurfaceId();
+
   // Returns the latest active surface in the given range that is a part of this
   // allocation group. The embed token of at least one end of the range must
   // match the embed token of this group.
@@ -74,9 +83,16 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   }
 
  private:
-  // Helper method for FindLatestActiveSurfaceInRange. Returns the latest active
-  // surface whose SurfaceId is older than or equal to |surface_id|.
-  Surface* FindOlderOrEqual(const SurfaceId& surface_id) const;
+  // Returns an iterator to the latest surface in |surfaces_| whose SurfaceId is
+  // older than or equal to |surface_id|. The returned surface may not be active
+  // yet.
+  std::vector<Surface*>::const_iterator FindLatestSurfaceUpTo(
+      const SurfaceId& surface_id) const;
+
+  // Returns an iterator to the latest active surface in |surfaces_| whose
+  // SurfaceId is older than or equal to |surface_id|.
+  std::vector<Surface*>::const_iterator FindLatestActiveSurfaceUpTo(
+      const SurfaceId& surface_id) const;
 
   // Notifies SurfaceManager if this allocation group is ready for destruction
   // (see IsReadyToDestroy() for the requirements).
@@ -103,6 +119,10 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // We keep a pointer to SurfaceManager so we can signal when this object is
   // ready to be destroyed.
   SurfaceManager* const surface_manager_;
+
+  // The last SurfaceId of this allocation group that was ever referenced by an
+  // active embedder.
+  SurfaceId last_referenced_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceAllocationGroup);
 };
