@@ -29,6 +29,7 @@ namespace chromeos {
 
 namespace device_sync {
 
+class ClientAppMetadataProvider;
 class DeviceSyncBase;
 class GcmDeviceInfoProvider;
 
@@ -40,6 +41,7 @@ class DeviceSyncService : public service_manager::Service {
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
+      ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       service_manager::mojom::ServiceRequest request);
   ~DeviceSyncService() override;
@@ -56,6 +58,7 @@ class DeviceSyncService : public service_manager::Service {
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   const GcmDeviceInfoProvider* gcm_device_info_provider_;
+  ClientAppMetadataProvider* client_app_metadata_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<DeviceSyncBase> device_sync_;
