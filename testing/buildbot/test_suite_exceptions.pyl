@@ -89,6 +89,12 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      # chromium.fyi
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 21,
+        },
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -1017,6 +1023,12 @@
   },
   'non_single_process_mash_browser_tests': {
     'modifications': {
+      # chromium.fyi
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -1372,6 +1384,12 @@
   },
   'viz_browser_tests': {
     'modifications': {
+      # chromium.fyi
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
