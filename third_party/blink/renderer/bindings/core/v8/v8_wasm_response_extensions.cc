@@ -187,8 +187,7 @@ class ExceptionToAbortStreamingScope {
   DISALLOW_COPY_AND_ASSIGN(ExceptionToAbortStreamingScope);
 };
 
-SingleCachedMetadataHandler* GetCachedMetadataHandler(ScriptState* script_state,
-                                                      const KURL& url) {
+RawResource* GetRawResource(ScriptState* script_state, const KURL& url) {
   if (!RuntimeEnabledFeatures::WasmCodeCacheEnabled())
     return nullptr;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -205,8 +204,7 @@ SingleCachedMetadataHandler* GetCachedMetadataHandler(ScriptState* script_state,
 
   // Wasm modules should be fetched as raw resources.
   DCHECK_EQ(ResourceType::kRaw, resource->GetType());
-  RawResource* raw_resource = ToRawResource(resource);
-  return raw_resource->ScriptCacheHandler();
+  return ToRawResource(resource);
 }
 
 class WasmStreamingClient : public v8::WasmStreaming::Client {
@@ -217,7 +215,6 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
                       v8::Local<v8::Context> context)
       : response_url_(response_url),
         response_time_(response_time),
-        isolate_(isolate),
         context_(isolate, context) {
     context_.SetWeak();
   }
@@ -246,32 +243,26 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
                          "v8.wasm.cachedModule", TRACE_EVENT_SCOPE_THREAD,
                          "producedCacheSize", serialized_module.size);
 
-    v8::HandleScope handle_scope(isolate_);
-    auto context = context_.Get(isolate_);
-    ScriptState* script_state = ScriptState::From(context);
-    SingleCachedMetadataHandler* cache_handler =
-        GetCachedMetadataHandler(script_state, response_url_);
-    if (cache_handler) {
-      cache_handler->SetCachedMetadata(
-          kWasmModuleTag,
-          reinterpret_cast<const uint8_t*>(serialized_module.buffer.get()),
-          serialized_module.size);
-      return;
-    }
-
     // The resources needed for caching have been GC'ed, but we should still
     // save the compiled module. Use the platform API directly.
-    Platform::Current()->CacheMetadata(
-        blink::mojom::CodeCacheType::kWebAssembly, response_url_,
-        response_time_,
+    scoped_refptr<CachedMetadata> cached_metadata = CachedMetadata::Create(
+        kWasmModuleTag,
         reinterpret_cast<const uint8_t*>(serialized_module.buffer.get()),
         serialized_module.size);
+
+    const Vector<uint8_t>& serialized_data = cached_metadata->SerializedData();
+    // Make sure the data could be copied.
+    if (serialized_data.size() < serialized_module.size)
+      return;
+
+    Platform::Current()->CacheMetadata(
+        blink::mojom::CodeCacheType::kWebAssembly, response_url_,
+        response_time_, serialized_data.data(), serialized_data.size());
   }
 
  private:
   KURL response_url_;
   base::Time response_time_;
-  v8::Isolate* isolate_;
   v8::Global<v8::Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(WasmStreamingClient);
@@ -338,28 +329,31 @@ void StreamFromResponseCallback(
   }
 
   KURL url(response->url());
-  SingleCachedMetadataHandler* cache_handler =
-      GetCachedMetadataHandler(script_state, url);
-  if (cache_handler) {
-    streaming->SetClient(std::make_shared<WasmStreamingClient>(
-        url, response->GetResponse()->ResponseTime(), args.GetIsolate(),
-        script_state->GetContext()));
-    scoped_refptr<CachedMetadata> cached_module =
-        cache_handler->GetCachedMetadata(kWasmModuleTag);
-    if (cached_module) {
-      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                           "v8.wasm.moduleCacheHit", TRACE_EVENT_SCOPE_THREAD,
-                           "url", url.GetString().Utf8(), "consumedCacheSize",
-                           cached_module->size());
-      bool is_valid = streaming->SetCompiledModuleBytes(
-          reinterpret_cast<const uint8_t*>(cached_module->Data()),
-          cached_module->size());
-      if (!is_valid) {
-        TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                             "v8.wasm.moduleCacheInvalid",
-                             TRACE_EVENT_SCOPE_THREAD);
-        cache_handler->ClearCachedMetadata(
-            CachedMetadataHandler::kSendToPlatform);
+  RawResource* raw_resource = GetRawResource(script_state, url);
+  if (raw_resource) {
+    SingleCachedMetadataHandler* cache_handler =
+        raw_resource->ScriptCacheHandler();
+    if (cache_handler) {
+      streaming->SetClient(std::make_shared<WasmStreamingClient>(
+          url, raw_resource->GetResponse().ResponseTime(), args.GetIsolate(),
+          script_state->GetContext()));
+      scoped_refptr<CachedMetadata> cached_module =
+          cache_handler->GetCachedMetadata(kWasmModuleTag);
+      if (cached_module) {
+        TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                             "v8.wasm.moduleCacheHit", TRACE_EVENT_SCOPE_THREAD,
+                             "url", url.GetString().Utf8(), "consumedCacheSize",
+                             cached_module->size());
+        bool is_valid = streaming->SetCompiledModuleBytes(
+            reinterpret_cast<const uint8_t*>(cached_module->Data()),
+            cached_module->size());
+        if (!is_valid) {
+          TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                               "v8.wasm.moduleCacheInvalid",
+                               TRACE_EVENT_SCOPE_THREAD);
+          cache_handler->ClearCachedMetadata(
+              CachedMetadataHandler::kSendToPlatform);
+        }
       }
     }
   }
