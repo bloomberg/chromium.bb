@@ -48,17 +48,11 @@ class ASH_EXPORT WindowMirrorView : public views::View,
   void Layout() override;
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
   void OnVisibleBoundsChanged() override;
-  void NativeViewHierarchyChanged() override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
 
  private:
   void InitLayerOwner();
-
-  // Ensures that the |target_| window is in the list of mirror windows that is
-  // set as a property on the |source_| window. This method triggers the
-  // OnWindowPropertyChanged() on WindowObservers.
-  void UpdateSourceWindowProperty();
 
   // Gets the root of the layer tree that was lifted from |source_| (and is now
   // a child of |this->layer()|).
@@ -68,7 +62,7 @@ class ASH_EXPORT WindowMirrorView : public views::View,
   // coordinate space.
   gfx::Rect GetClientAreaBounds() const;
 
-  void ForceVisibilityAndOcclusionForProxyWindow();
+  void ForceVisibilityAndOcclusion();
 
   // aura::EnvObserver:
   void OnWindowOcclusionTrackingResumed() override;
@@ -87,8 +81,6 @@ class ASH_EXPORT WindowMirrorView : public views::View,
   // InitLayerOwner().
   bool trilinear_filtering_on_init_;
 
-  // These are used when mirroring a window from a remote client (a proxy
-  // window from the window-service).
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedForceVisible>
       force_occlusion_tracker_visible_;
   std::unique_ptr<ws::ScopedForceVisible> force_proxy_window_visible_;

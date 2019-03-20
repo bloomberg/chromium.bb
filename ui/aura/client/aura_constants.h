@@ -107,11 +107,6 @@ AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMaximumSize;
 // A property key to store the minimum size of the window.
 AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;
 
-// A property key to store a list of windows showing a mirror of the window this
-// property is set on.
-AURA_EXPORT extern const WindowProperty<std::vector<Window*>*>* const
-    kMirrorWindowList;
-
 // The modal parent of a child modal window.
 AURA_EXPORT extern const WindowProperty<Window*>* const kChildModalParentKey;
 
