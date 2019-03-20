@@ -7,6 +7,13 @@ import("//ios/build/config.gni")
 source_set("common") {
   sources = [
     "crw_content_view.h",
+    "crw_web_view_content_view.h",
+    "crw_web_view_content_view.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/web/public:features",
   ]
 
   libs = [ "UIKit.framework" ]
