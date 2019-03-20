@@ -225,10 +225,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
     // Set first sync time before initialize to simulate a complete sync setup.
     syncer::SyncPrefs sync_prefs(prefs());
     sync_prefs.SetLastSyncedTime(base::Time::Now());
-    sync_prefs.SetFirstSetupComplete();
+    sync_prefs.SetSyncRequested(true);
     sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
                                          syncer::UserTypes(),
                                          syncer::UserSelectableTypes());
+    sync_prefs.SetFirstSetupComplete();
     service_->Initialize();
   }
 
@@ -344,6 +345,7 @@ TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   syncer::SyncPrefs sync_prefs(prefs());
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);
+  sync_prefs.SetSyncRequested(true);
   sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
                                        syncer::UserTypes(),
                                        syncer::UserSelectableTypes());

@@ -173,7 +173,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   sync_service()->Initialize();
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
@@ -185,6 +186,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // This tells the ProfileSyncService that setup is now in progress, which
   // causes it to try starting up the engine. We're not signed in yet though, so
   // that won't work.
+  sync_service()->GetUserSettings()->SetSyncRequested(true);
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
@@ -262,6 +264,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
 
 TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   SimulateTestUserSignin();
+  sync_prefs()->SetSyncRequested(true);
   sync_prefs()->SetFirstSetupComplete();
 
   CreateSyncService(ProfileSyncService::MANUAL_START);
@@ -387,9 +390,10 @@ TEST_F(ProfileSyncServiceStartupTest, StopSync) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, DisableSync) {
+  sync_prefs()->SetSyncRequested(true);
   sync_prefs()->SetFirstSetupComplete();
-  CreateSyncService(ProfileSyncService::MANUAL_START);
   SimulateTestUserSignin();
+  CreateSyncService(ProfileSyncService::MANUAL_START);
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   ON_CALL(*data_type_manager, state())
@@ -397,6 +401,7 @@ TEST_F(ProfileSyncServiceStartupTest, DisableSync) {
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   sync_service()->Initialize();
+  ASSERT_TRUE(sync_service()->IsSyncFeatureActive());
 
   // On StopAndClear(), the sync service will immediately start up again in
   // transport mode.
@@ -460,13 +465,15 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
-  // Service should not be started by Initialize() since it's managed.
+  // Sync is enabled by the user, but disabled by policy.
+  sync_prefs()->SetManagedForTest(true);
+  sync_prefs()->SetSyncRequested(true);
+  sync_prefs()->SetFirstSetupComplete();
+
   SimulateTestUserSignin();
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
-  // Disable sync through policy.
-  sync_prefs()->SetManagedForTest(true);
-
+  // Service should not be started by Initialize() since it's managed.
   EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _)).Times(0);
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
@@ -476,15 +483,20 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
+  // Sync starts out fully set up and enabled.
+  sync_prefs()->SetSyncRequested(true);
   sync_prefs()->SetFirstSetupComplete();
-  CreateSyncService(ProfileSyncService::MANUAL_START);
   SimulateTestUserSignin();
+  CreateSyncService(ProfileSyncService::MANUAL_START);
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
+
+  // Initialize() should be enough to kick off Sync startup (which is instant in
+  // this test).
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
@@ -528,12 +540,15 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
-  // Sync-the-feature is still considered off.
+  // Sync-the-feature is still considered off because disabling Sync through
+  // policy also reset the first-setup-complete flag.
+  EXPECT_FALSE(sync_service()->GetUserSettings()->IsFirstSetupComplete());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
   EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
+  sync_prefs()->SetSyncRequested(true);
   sync_prefs()->SetFirstSetupComplete();
   CreateSyncService(ProfileSyncService::MANUAL_START);
   SimulateTestUserSignin();
@@ -556,6 +571,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
+  sync_prefs()->SetSyncRequested(true);
   CreateSyncService(ProfileSyncService::MANUAL_START);
   SimulateTestUserSignin();
   FakeSyncEngine* fake_engine = SetUpFakeSyncEngine();
@@ -594,21 +610,28 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
                     syncer::ModelTypeSet(syncer::SESSIONS));
   sync_service()->Initialize();
 
-  // There is no signed-in user, but nothing else prevents Sync from starting.
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+  // There is no signed-in user, so also nobody has decided that Sync should be
+  // started.
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
+                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             sync_service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
 
-  // Sign in. Now Sync is ready to start, just waiting for a prod.
+  // Sign in. Now Sync-the-transport could start, but gets deferred by default.
+  // Sync-the-feature still doesn't start until the user says they want it.
   SimulateTestUserSignin();
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
+            sync_service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
 
   // Once we give the service a prod by initiating Sync setup, it'll start and
   // initialize the engine. Since this is the initial Sync start, this will not
   // be deferred.
   EXPECT_CALL(*sync_engine, Initialize(_));
+  sync_service()->GetUserSettings()->SetSyncRequested(true);
   auto setup_in_progress_handle = sync_service()->GetSetupInProgressHandle();
   EXPECT_EQ(syncer::SyncService::TransportState::INITIALIZING,
             sync_service()->GetTransportState());

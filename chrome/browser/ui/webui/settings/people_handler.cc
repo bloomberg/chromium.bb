@@ -621,7 +621,8 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
       sync_blocker_ = service->GetSetupInProgressHandle();
 
     // Mark Sync as requested by the user. It might already be requested, but
-    // it's not e.g. if Sync was reset via the dashboard. This also pokes the
+    // it's not if this is either the first time the user is setting up Sync, or
+    // Sync was set up but then was reset via the dashboard. This also pokes the
     // SyncService to start up immediately, i.e. bypass deferred startup.
     if (service)
       service->GetUserSettings()->SetSyncRequested(true);
@@ -669,7 +670,8 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
       !service->GetUserSettings()->IsSyncRequested()) {
     // SetSyncRequested(true) does two things:
     // 1) As the name says, it marks Sync as requested by the user (it might not
-    //    be requested yet if Sync was reset via the dashboard).
+    //    be requested yet because either this is the first time they're setting
+    //    it up, or Sync was reset via the dashboard).
     // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
     //    startup.
     // It's possible that both of these are already the case, i.e. the engine is
