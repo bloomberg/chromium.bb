@@ -1122,6 +1122,16 @@ void AutomationInternalCustomBindings::AddRoutes() {
                                            v8::NewStringType::kNormal)
                        .ToLocalChecked());
       });
+  RouteNodeIDFunction(
+      "GetHasPopup",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ax::mojom::HasPopup has_popup = node->data().GetHasPopup();
+        std::string has_popup_str = ui::ToString(has_popup);
+        result.Set(v8::String::NewFromUtf8(isolate, has_popup_str.c_str(),
+                                           v8::NewStringType::kNormal)
+                       .ToLocalChecked());
+      });
   RouteNodeIDPlusStringBoolFunction(
       "GetNextTextMatch",
       [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
