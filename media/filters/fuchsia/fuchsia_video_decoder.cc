@@ -108,15 +108,15 @@ class CodecBuffer {
       return false;
     }
 
-    size_ = *constraints.per_packet_buffer_bytes_recommended();
+    size_ = constraints.per_packet_buffer_bytes_recommended();
 
     if (constraints.has_is_physically_contiguous_required() &&
-        *constraints.is_physically_contiguous_required()) {
+        constraints.is_physically_contiguous_required()) {
       if (!constraints.has_very_temp_kludge_bti_handle()) {
         return false;
       }
-      vmo_ = CreateContiguousVmo(size_,
-                                 *constraints.very_temp_kludge_bti_handle());
+      vmo_ =
+          CreateContiguousVmo(size_, constraints.very_temp_kludge_bti_handle());
     } else {
       vmo_ = CreateVmo(size_);
     }
@@ -518,23 +518,23 @@ void FuchsiaVideoDecoder::OnFreeInputPacket(
     return;
   }
 
-  if (*free_input_packet.buffer_lifetime_ordinal() !=
+  if (free_input_packet.buffer_lifetime_ordinal() !=
       input_buffer_lifetime_ordinal_) {
     return;
   }
 
-  if (*free_input_packet.packet_index() >= input_buffers_.size()) {
+  if (free_input_packet.packet_index() >= input_buffers_.size()) {
     DLOG(ERROR) << "fuchsia.mediacodec sent OnFreeInputPacket() for an unknown "
                    "packet: buffer_lifetime_ordinal="
-                << *free_input_packet.buffer_lifetime_ordinal()
-                << " packet_index=" << *free_input_packet.packet_index();
+                << free_input_packet.buffer_lifetime_ordinal()
+                << " packet_index=" << free_input_packet.packet_index();
     OnError();
     return;
   }
 
   DCHECK_GT(num_used_input_buffers_, 0);
   num_used_input_buffers_--;
-  input_buffers_[*free_input_packet.packet_index()].OnDoneDecoding(
+  input_buffers_[free_input_packet.packet_index()].OnDoneDecoding(
       DecodeStatus::OK);
 
   // Try to pump input in case it was blocked.
@@ -550,21 +550,21 @@ void FuchsiaVideoDecoder::OnOutputConfig(
     return;
   }
 
-  if (*output_config.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
+  if (output_config.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
     return;
   }
 
-  auto& format = *output_config.mutable_format_details();
+  auto* format = output_config.mutable_format_details();
 
-  if (!format.has_domain() || !format.domain()->is_video() ||
-      !format.domain()->video().is_uncompressed()) {
+  if (!format->has_domain() || !format->domain().is_video() ||
+      !format->domain().video().is_uncompressed()) {
     DLOG(ERROR) << "Received OnOutputConfig() with invalid format.";
     OnError();
     return;
   }
 
   if (output_config.has_buffer_constraints_action_required() &&
-      *output_config.buffer_constraints_action_required()) {
+      output_config.buffer_constraints_action_required()) {
     if (!output_config.has_buffer_constraints()) {
       DLOG(ERROR) << "Received OnOutputConfig() which requires buffer "
                      "constraints action, but without buffer constraints.";
@@ -579,21 +579,21 @@ void FuchsiaVideoDecoder::OnOutputConfig(
     }
   }
 
-  output_format_ = std::move(format.mutable_domain()->video().uncompressed());
+  output_format_ = std::move(format->mutable_domain()->video().uncompressed());
 }
 
 void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
                                          bool error_detected_before,
                                          bool error_detected_during) {
   if (!output_packet.has_header() ||
-      !output_packet.header()->has_buffer_lifetime_ordinal() ||
-      !output_packet.header()->has_packet_index()) {
+      !output_packet.header().has_buffer_lifetime_ordinal() ||
+      !output_packet.header().has_packet_index()) {
     DLOG(ERROR) << "Received OnOutputPacket() with missing required fields.";
     OnError();
     return;
   }
 
-  if (*output_packet.header()->buffer_lifetime_ordinal() !=
+  if (output_packet.header().buffer_lifetime_ordinal() !=
       output_buffer_lifetime_ordinal_) {
     return;
   }
@@ -638,17 +638,16 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
   }
 
   if (!layout) {
-    codec_->RecycleOutputPacket(fidl::Clone(*output_packet.header()));
+    codec_->RecycleOutputPacket(fidl::Clone(output_packet.header()));
     return;
   }
 
   base::TimeDelta timestamp;
   if (output_packet.has_timestamp_ish()) {
-    timestamp =
-        base::TimeDelta::FromNanoseconds(*output_packet.timestamp_ish());
+    timestamp = base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish());
   }
 
-  auto packet_index = *output_packet.header()->packet_index();
+  auto packet_index = output_packet.header().packet_index();
   auto& buffer = output_buffers_[packet_index];
 
   DCHECK_LT(num_used_output_buffers_, static_cast<int>(output_buffers_.size()));
@@ -735,21 +734,21 @@ bool FuchsiaVideoDecoder::InitializeInputBuffers(
   input_buffer_lifetime_ordinal_ += 2;
 
   if (!constraints.has_default_settings() ||
-      !constraints.default_settings()->has_packet_count_for_server() ||
-      !constraints.default_settings()->has_packet_count_for_client()) {
+      !constraints.default_settings().has_packet_count_for_server() ||
+      !constraints.default_settings().has_packet_count_for_client()) {
     DLOG(ERROR)
         << "Received InitializeInputBuffers() with missing required fields.";
     OnError();
     return false;
   }
 
-  auto settings = fidl::Clone(*constraints.default_settings());
+  auto settings = fidl::Clone(constraints.default_settings());
   settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
   settings.set_packet_count_for_client(0);
   codec_->SetInputBufferSettings(fidl::Clone(settings));
 
   int total_buffers =
-      *settings.packet_count_for_server() + *settings.packet_count_for_client();
+      settings.packet_count_for_server() + settings.packet_count_for_client();
   std::vector<InputBuffer> new_buffers(total_buffers);
 
   for (int i = 0; i < total_buffers; ++i) {
@@ -810,7 +809,7 @@ void FuchsiaVideoDecoder::PumpInput() {
         input_buffer_lifetime_ordinal_);
     packet.mutable_header()->set_packet_index(input_buffer -
                                               input_buffers_.begin());
-    packet.set_buffer_index(*packet.header()->packet_index());
+    packet.set_buffer_index(packet.header().packet_index());
     packet.set_timestamp_ish(
         pending_decodes_.front().buffer().timestamp().InNanoseconds());
     packet.set_stream_lifetime_ordinal(stream_lifetime_ordinal_);
@@ -830,8 +829,8 @@ bool FuchsiaVideoDecoder::InitializeOutputBuffers(
     fuchsia::media::StreamBufferConstraints constraints) {
   if (!constraints.has_default_settings() ||
       !constraints.has_packet_count_for_client_max() ||
-      !constraints.default_settings()->has_packet_count_for_server() ||
-      !constraints.default_settings()->has_packet_count_for_client()) {
+      !constraints.default_settings().has_packet_count_for_server() ||
+      !constraints.default_settings().has_packet_count_for_client()) {
     DLOG(ERROR)
         << "Received InitializeOutputBuffers() with missing required fields.";
     OnError();
@@ -842,17 +841,17 @@ bool FuchsiaVideoDecoder::InitializeOutputBuffers(
   // 2 for each buffer generation.
   output_buffer_lifetime_ordinal_ += 2;
 
-  auto settings = fidl::Clone(*constraints.default_settings());
+  auto settings = fidl::Clone(constraints.default_settings());
   settings.set_buffer_lifetime_ordinal(output_buffer_lifetime_ordinal_);
 
-  max_used_output_buffers_ = std::min(
-      kMaxUsedOutputFrames, *constraints.packet_count_for_client_max());
+  max_used_output_buffers_ =
+      std::min(kMaxUsedOutputFrames, constraints.packet_count_for_client_max());
   settings.set_packet_count_for_client(max_used_output_buffers_);
 
   codec_->SetOutputBufferSettings(fidl::Clone(settings));
 
   int total_buffers =
-      *settings.packet_count_for_server() + *settings.packet_count_for_client();
+      settings.packet_count_for_server() + settings.packet_count_for_client();
   std::vector<scoped_refptr<OutputBuffer>> new_buffers(total_buffers);
 
   for (int i = 0; i < total_buffers; ++i) {

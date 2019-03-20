@@ -458,8 +458,8 @@ void FrameImpl::LoadUrl(std::string url, chromium::web::LoadUrlParams params) {
   content::NavigationController::LoadURLParams params_converted(validated_url);
   if (params.has_headers()) {
     std::vector<base::StringPiece> extra_headers;
-    extra_headers.reserve(params.headers()->size());
-    for (const auto& header : *params.headers()) {
+    extra_headers.reserve(params.headers().size());
+    for (const auto& header : params.headers()) {
       extra_headers.push_back(base::StringPiece(
           reinterpret_cast<const char*>(header.data()), header.size()));
     }
