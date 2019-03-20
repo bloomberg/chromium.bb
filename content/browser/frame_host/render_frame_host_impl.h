@@ -129,6 +129,7 @@ struct ResourceResponse;
 }  // namespace network
 
 namespace content {
+class AppCacheNavigationHandle;
 class AuthenticatorImpl;
 class FrameTree;
 class FrameTreeNode;
@@ -1742,6 +1743,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // NavigationRequest but before receiving DidCommitProvisionalLoad. This
   // NavigationRequest is for a cross-document navigation.
   std::unique_ptr<NavigationRequest> navigation_request_;
+
+  // Holds AppCacheNavigationHandle after navigation request has been committed,
+  // which keeps corresponding AppCacheHost alive while renderer asks for it.
+  // See AppCacheNavigationHandle comment for more details.
+  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
   // Holds the cross-document NavigationRequests that are waiting to commit,
   // indexed by IDs. These are navigations that have passed ReadyToCommit stage

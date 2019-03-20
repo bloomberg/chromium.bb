@@ -34,6 +34,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/browser_main_loop.h"
@@ -6281,6 +6282,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
        committed_request->GetMimeType() == "message/rfc822");
 
   accessibility_reset_count_ = 0;
+  appcache_handle_ =
+      committed_request->navigation_handle()->TakeAppCacheHandle();
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
                                               std::move(committed_request),
                                               is_same_document_navigation);
