@@ -7,12 +7,15 @@
 #include <algorithm>
 
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
+#include "third_party/blink/renderer/modules/media_controls/non_touch/elements/media_controls_non_touch_overlay_element.h"
 #include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
@@ -25,6 +28,12 @@ constexpr int kNumberOfSecondsToJumpForNonTouch = 10;
 
 // Amount of volume to change when press up/down arrow.
 constexpr double kVolumeToChangeForNonTouch = 0.05;
+
+// Amount of time that media controls are visible.
+constexpr WTF::TimeDelta kTimeToHideMediaControls =
+    TimeDelta::FromMilliseconds(3000);
+
+const char kTransparentCSSClass[] = "transparent";
 
 }  // namespace
 
@@ -41,7 +50,11 @@ MediaControlsNonTouchImpl::MediaControlsNonTouchImpl(
       MediaControls(media_element),
       media_event_listener_(
           MakeGarbageCollected<MediaControlsNonTouchMediaEventListener>(
-              media_element)) {
+              media_element)),
+      hide_media_controls_timer_(
+          media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
+          this,
+          &MediaControlsNonTouchImpl::HideMediaControlsTimerFired) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-non-touch"));
   media_event_listener_->AddObserver(this);
 }
@@ -51,6 +64,16 @@ MediaControlsNonTouchImpl* MediaControlsNonTouchImpl::Create(
     ShadowRoot& shadow_root) {
   MediaControlsNonTouchImpl* controls =
       MakeGarbageCollected<MediaControlsNonTouchImpl>(media_element);
+  MediaControlsNonTouchOverlayElement* overlay_element =
+      MakeGarbageCollected<MediaControlsNonTouchOverlayElement>(*controls);
+
+  controls->ParserAppendChild(overlay_element);
+
+  // Controls start hidden.
+  controls->MakeTransparent();
+
+  MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
+
   shadow_root.ParserAppendChild(controls);
   return controls;
 }
@@ -67,23 +90,55 @@ void MediaControlsNonTouchImpl::RemovedFrom(ContainerNode& insertion_point) {
   media_event_listener_->Detach();
 }
 
-void MediaControlsNonTouchImpl::MaybeShow() {
+void MediaControlsNonTouchImpl::MakeOpaque() {
   // show controls
+  classList().Remove(kTransparentCSSClass);
+
+  if (hide_media_controls_timer_.IsActive())
+    StopHideMediaControlsTimer();
+  StartHideMediaControlsTimer();
+}
+
+void MediaControlsNonTouchImpl::MakeTransparent() {
+  // hide controls
+  classList().Add(kTransparentCSSClass);
+}
+
+void MediaControlsNonTouchImpl::MaybeShow() {
+  RemoveInlineStyleProperty(CSSPropertyDisplay);
 }
 
 void MediaControlsNonTouchImpl::Hide() {
-  // hide controls
+  SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+}
+
+MediaControlsNonTouchMediaEventListener&
+MediaControlsNonTouchImpl::MediaEventListener() const {
+  return *media_event_listener_;
+}
+
+void MediaControlsNonTouchImpl::HideMediaControlsTimerFired(TimerBase*) {
+  MakeTransparent();
+}
+
+void MediaControlsNonTouchImpl::StartHideMediaControlsTimer() {
+  hide_media_controls_timer_.StartOneShot(kTimeToHideMediaControls, FROM_HERE);
+}
+
+void MediaControlsNonTouchImpl::StopHideMediaControlsTimer() {
+  hide_media_controls_timer_.Stop();
 }
 
 void MediaControlsNonTouchImpl::OnFocusIn() {
   if (MediaElement().ShouldShowControls())
-    MaybeShow();
+    MakeOpaque();
 }
 
 void MediaControlsNonTouchImpl::OnKeyDown(KeyboardEvent* event) {
   bool handled = true;
   switch (event->keyCode()) {
     case VKEY_RETURN:
+      MakeOpaque();
       MediaElement().TogglePlayState();
       break;
     case VKEY_LEFT:

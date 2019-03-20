@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
 #include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -57,6 +58,8 @@ class MODULES_EXPORT MediaControlsNonTouchImpl final
   void OnKeyDown(KeyboardEvent* event) override;
   void OnKeyUp(KeyboardEvent* event) override {}
 
+  MediaControlsNonTouchMediaEventListener& MediaEventListener() const;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -79,7 +82,14 @@ class MODULES_EXPORT MediaControlsNonTouchImpl final
   // Node
   bool IsMediaControls() const override { return true; }
 
+  void MakeOpaque();
+  void MakeTransparent();
+  void HideMediaControlsTimerFired(TimerBase*);
+  void StartHideMediaControlsTimer();
+  void StopHideMediaControlsTimer();
+
   Member<MediaControlsNonTouchMediaEventListener> media_event_listener_;
+  TaskRunnerTimer<MediaControlsNonTouchImpl> hide_media_controls_timer_;
 };
 
 }  // namespace blink

@@ -8,7 +8,9 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -96,6 +98,18 @@ class MediaControlsNonTouchImplTest : public PageTestBase {
     MediaElement().DurationChanged(duration, false /* requestSeek */);
   }
 
+  bool IsControlsVisible() {
+    return !MediaControls().classList().contains("transparent");
+  }
+
+  Element* GetControlByShadowPseudoId(const char* shadow_pseudo_id) {
+    for (Element& element : ElementTraversal::DescendantsOf(MediaControls())) {
+      if (element.ShadowPseudoId() == shadow_pseudo_id)
+        return &element;
+    }
+    return nullptr;
+  }
+
   void SetScreenOrientation(WebScreenOrientationType orientation_type) {
     chrome_client_->SetOrientation(orientation_type);
   }
@@ -127,6 +141,18 @@ class MediaControlsNonTouchImplTest : public PageTestBase {
  private:
   Persistent<MediaControlsNonTouchImpl> media_controls_;
   Persistent<MockChromeClientForNonTouchImpl> chrome_client_;
+};
+
+class MediaControlsNonTouchImplTestWithMockScheduler
+    : public MediaControlsNonTouchImplTest {
+ public:
+  MediaControlsNonTouchImplTestWithMockScheduler() { EnablePlatform(); }
+
+ protected:
+  void SetUp() override {
+    platform()->AdvanceClockSeconds(1);
+    MediaControlsNonTouchImplTest::SetUp();
+  }
 };
 
 TEST_F(MediaControlsNonTouchImplTest, PlayPause) {
@@ -184,6 +210,59 @@ TEST_F(MediaControlsNonTouchImplTest, ArrowInputEdgeCaseHandling) {
   MediaElement().setVolume(0.99);
   SimulateKeydownEvent(MediaElement(), VKEY_UP);
   ASSERT_EQ(MediaElement().volume(), 1);
+}
+
+TEST_F(MediaControlsNonTouchImplTest, PlayPauseIcon) {
+  MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
+
+  Element* play_button = GetControlByShadowPseudoId(
+      "-internal-media-controls-non-touch-play-button");
+  ASSERT_NE(nullptr, play_button);
+
+  MediaElement().pause();
+
+  MediaElement().Play();
+  test::RunPendingTasks();
+  ASSERT_TRUE(play_button->classList().contains("playing"));
+  ASSERT_FALSE(play_button->classList().contains("paused"));
+
+  MediaElement().pause();
+  test::RunPendingTasks();
+  ASSERT_TRUE(play_button->classList().contains("paused"));
+  ASSERT_FALSE(play_button->classList().contains("playing"));
+}
+
+TEST_F(MediaControlsNonTouchImplTestWithMockScheduler, ControlsShowAndHide) {
+  // Controls should starts hidden.
+  ASSERT_FALSE(IsControlsVisible());
+
+  // Controls should show when focus in.
+  MediaElement().SetFocused(true, WebFocusType::kWebFocusTypeNone);
+  MediaElement().DispatchEvent(*Event::Create(event_type_names::kFocusin));
+  ASSERT_TRUE(IsControlsVisible());
+
+  // Controls should hide after 3 seconds.
+  platform()->RunForPeriodSeconds(2.99);
+  ASSERT_TRUE(IsControlsVisible());
+  platform()->RunForPeriodSeconds(0.01);
+  ASSERT_FALSE(IsControlsVisible());
+
+  // Controls should show upon pressing return key.
+  SimulateKeydownEvent(MediaElement(), VKEY_RETURN);
+  ASSERT_TRUE(IsControlsVisible());
+
+  // Controls should not disappear after 2 seconds.
+  platform()->RunForPeriodSeconds(2);
+  ASSERT_TRUE(IsControlsVisible());
+
+  // Pressing return key again should reset hiding timer.
+  SimulateKeydownEvent(MediaElement(), VKEY_RETURN);
+  platform()->RunForPeriodSeconds(2);
+  ASSERT_TRUE(IsControlsVisible());
+
+  // Controls should hide 3 seconds after last key press.
+  platform()->RunForPeriodSeconds(1);
+  ASSERT_FALSE(IsControlsVisible());
 }
 
 }  // namespace

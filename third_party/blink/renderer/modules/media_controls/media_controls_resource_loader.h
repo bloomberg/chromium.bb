@@ -50,6 +50,7 @@ class MediaControlsResourceLoader
 
  private:
   String GetMediaControlsCSS() const;
+  String GetNonTouchMediaControlsCSS() const;
 
   String GetMediaControlsAndroidCSS() const;
 
