@@ -32,6 +32,10 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
+#if DCHECK_IS_ON()
+#include "base/task/task_scheduler/scheduler_lock_impl.h"
+#endif
+
 using TraceLog = base::trace_event::TraceLog;
 using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
@@ -373,6 +377,16 @@ void TraceEventDataSource::OnAddTraceEvent(
       thread_local_event_sink = nullptr;
     }
   }
+
+#if DCHECK_IS_ON()
+  // Trace events emitted by the task queue itself can happen while the task
+  // queue is locked, posting to it reentrantly would deadlock so these events
+  // need to be flagged so we can avoid PostTasks while they're being emitted.
+  // TODO(oysteine): Avoid PostTasks for events with this flag set.
+  if (!(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK)) {
+    base::internal::SchedulerLockImpl::AssertNoLockHeldOnCurrentThread();
+  }
+#endif
 
   if (!thread_local_event_sink) {
     thread_local_event_sink =
