@@ -111,6 +111,10 @@ void FeedInternalsPageHandler::ClearCachedDataAndRefreshFeed() {
   feed::FeedLifecycleBridge::ClearCachedData();
 }
 
+void FeedInternalsPageHandler::RefreshFeed() {
+  feed::TriggerRefreshForDebugging();
+}
+
 void FeedInternalsPageHandler::GetCurrentContent(
     GetCurrentContentCallback callback) {
   if (!IsFeedAllowed()) {
@@ -142,6 +146,7 @@ void FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone(
 
   std::move(callback).Run(std::move(suggestions));
 }
+
 void FeedInternalsPageHandler::GetFeedProcessScopeDump(
     GetFeedProcessScopeDumpCallback callback) {
   std::move(callback).Run(feed::GetFeedProcessScopeDumpForDebugging());

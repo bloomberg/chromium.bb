@@ -24,4 +24,9 @@ std::string GetFeedProcessScopeDumpForDebugging() {
   return ConvertJavaStringToUTF8(env, j_string);
 }
 
+void TriggerRefreshForDebugging() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedDebuggingBridge_triggerRefresh(env);
+}
+
 }  // namespace feed

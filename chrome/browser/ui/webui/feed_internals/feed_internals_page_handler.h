@@ -39,6 +39,7 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void ClearUserClassifierProperties() override;
   void GetLastFetchProperties(GetLastFetchPropertiesCallback) override;
   void ClearCachedDataAndRefreshFeed() override;
+  void RefreshFeed() override;
   void GetCurrentContent(GetCurrentContentCallback) override;
   void GetFeedProcessScopeDump(GetFeedProcessScopeDumpCallback) override;
 
