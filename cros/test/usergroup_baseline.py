@@ -144,7 +144,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                        'u2f', 'shill'}),
     GroupEntry(group='ipsec', gid=212, users={'shill'}),
     GroupEntry(group='debugfs-access', gid=605, users={'arc-camera', 'shill'}),
-    GroupEntry(group='arc-camera', gid=603, users={'chronos'}),
+    GroupEntry(group='arc-camera', gid=603, users={'chronos', 'crosvm'}),
     GroupEntry(group='daemon-store', gid=400, users={'biod', 'chaps',
                                                      'crosvm', 'shill'}),
     GroupEntry(group='logs-access', gid=401, users={'debugd-logs'}),
