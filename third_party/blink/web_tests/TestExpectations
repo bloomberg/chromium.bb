@@ -6136,7 +6136,3 @@ crbug.com/938592 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure T
 # Trooper 2019-03-19
 crbug.com/836242 [ Mac ] external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Pass Failure ]
 
-# Sheriff 2019-03-20
-crbug.com/943907 [ Mac10.10 Mac10.11 ] fast/forms/validation-bubble-appearance-escape.html [ Pass Failure ]
-crbug.com/943907 [ Mac10.10 Mac10.11 ] fast/forms/validation-bubble-device-emulation-change.html [ Pass Failure ]
-crbug.com/943907 [ Mac10.10 Mac10.11 ] fast/forms/validation-bubble-device-emulation.html [ Pass Failure ]
