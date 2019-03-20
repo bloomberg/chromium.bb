@@ -74,6 +74,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // for tests to know the save is complete.
   using SaveCallback =
       base::RepeatingCallback<void(ukm::SourceId source_id,
+                                   learning::FeatureValue origin,
                                    bool is_top_frame,
                                    mojom::PredictionFeatures features,
                                    mojom::PredictionTargets targets,
@@ -118,6 +119,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
 
   // Initiate saving of the provided record. See GetSaveCallback().
   void SavePerfRecord(ukm::SourceId source_id,
+                      learning::FeatureValue origin,
                       bool is_top_frame,
                       mojom::PredictionFeatures features,
                       mojom::PredictionTargets targets,

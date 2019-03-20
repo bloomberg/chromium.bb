@@ -156,6 +156,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
+#include "media/learning/common/value.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
@@ -4076,6 +4077,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           // This callback is only executed when Create() is called, during
           // which the lifetime of the |delegate_| is guaranteed.
           base::Unretained(delegate_)),
+      base::BindRepeating(
+          [](RenderFrameHostImpl* frame) {
+            return ::media::learning::FeatureValue(
+                frame->GetLastCommittedOrigin().host());
+          },
+          // Same as above.
+          base::Unretained(this)),
       std::move(save_stats_cb)));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

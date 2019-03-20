@@ -203,9 +203,9 @@ class VideoDecodePerfHistoryTest : public testing::Test {
     const ukm::SourceId source_id = test_recorder_->GetNewSourceID();
     test_recorder_->UpdateSourceURL(source_id, origin.GetURL());
 
-    perf_history_->GetSaveCallback().Run(source_id, is_top_frame, features,
-                                         targets, player_id,
-                                         std::move(save_done_cb));
+    perf_history_->GetSaveCallback().Run(
+        source_id, learning::FeatureValue(kOrigin.host()), is_top_frame,
+        features, targets, player_id, std::move(save_done_cb));
   }
 
  protected:

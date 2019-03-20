@@ -79,6 +79,8 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
   if (feature_factory) {
     dropped_frame_task.name = kDroppedFrameRatioEnhancedTreeTaskName;
     dropped_frame_task.feature_descriptions.push_back(
+        {"origin", ::media::learning::LearningTask::Ordering::kUnordered});
+    dropped_frame_task.feature_descriptions.push_back(
         FeatureLibrary::NetworkType());
     dropped_frame_task.feature_descriptions.push_back(
         FeatureLibrary::BatteryPower());
@@ -95,6 +97,7 @@ LearningHelper::~LearningHelper() = default;
 
 void LearningHelper::AppendStats(
     const VideoDecodeStatsDB::VideoDescKey& video_key,
+    learning::FeatureValue origin,
     const VideoDecodeStatsDB::DecodeStatsEntry& new_stats) {
   // If no frames were recorded, then do nothing.
   if (new_stats.frames_decoded == 0)
@@ -130,8 +133,10 @@ void LearningHelper::AppendStats(
   // Add this example to all tasks.
   AddExample(base_table_controller_.get(), example);
   AddExample(base_tree_controller_.get(), example);
-  if (enhanced_tree_controller_)
+  if (enhanced_tree_controller_) {
+    example.features.push_back(origin);
     AddExample(enhanced_tree_controller_.get(), example);
+  }
 }
 
 void LearningHelper::AddExample(LearningTaskController* controller,

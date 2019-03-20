@@ -336,6 +336,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     mojom::MediaMetricsProviderPtr provider;
     MediaMetricsProvider::Create(
         false, base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
+        base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
 
     // Initialize provider since none of the tests below actually go through the
