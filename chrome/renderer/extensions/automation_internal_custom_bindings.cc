@@ -1481,16 +1481,12 @@ void AutomationInternalCustomBindings::GetState(
     top_tree_wrapper = walker;
     GetParent(walker->tree()->root(), &walker);
   }
-  AutomationAXTreeWrapper* focused_tree_wrapper = nullptr;
-  ui::AXNode* focused_node = nullptr;
-  const bool focused =
-      (GetFocusInternal(top_tree_wrapper, &focused_tree_wrapper,
-                        &focused_node) &&
-       focused_tree_wrapper == tree_wrapper && focused_node == node) ||
-      tree_wrapper->tree()->data().focus_id == node->id();
-  if (focused)
+
+  const bool focused = tree_wrapper->IsInFocusChain(node->id());
+  if (focused) {
     state.Set(api::automation::ToString(api::automation::STATE_TYPE_FOCUSED),
               true);
+  }
 
   bool offscreen = false;
   ComputeGlobalNodeBounds(tree_wrapper, node, gfx::RectF(), &offscreen);
