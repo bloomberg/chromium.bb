@@ -27,7 +27,7 @@ const GpuControlList::Conditions kExceptionsForEntry4[1] = {
         nullptr,                                // machine model info
         0,                                      // gpu_series size
         nullptr,                                // gpu_series
-        nullptr,                                // more conditions
+        &kMoreForEntry4_1440601243Exception0,   // more data
     },
 };
 
@@ -46,7 +46,7 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
         nullptr,                                // machine model info
         0,                                      // gpu_series size
         nullptr,                                // gpu_series
-        nullptr,                                // more conditions
+        &kMoreForEntry5_1440601243Exception0,   // more data
     },
 };
 
@@ -65,7 +65,7 @@ const GpuControlList::Conditions kExceptionsForEntry22[1] = {
         nullptr,                                           // machine model info
         0,                                                 // gpu_series size
         nullptr,                                           // gpu_series
-        nullptr,                                           // more conditions
+        &kMoreForEntry22_1440601243Exception0,             // more data
     },
 };
 
@@ -84,7 +84,7 @@ const GpuControlList::Conditions kExceptionsForEntry28[1] = {
         &kMachineModelInfoForEntry28Exception0,  // machine model info
         0,                                       // gpu_series size
         nullptr,                                 // gpu_series
-        nullptr,                                 // more conditions
+        &kMoreForEntry28_1440601243Exception0,   // more data
     },
 };
 
@@ -103,7 +103,7 @@ const GpuControlList::Conditions kExceptionsForEntry30[1] = {
         &kMachineModelInfoForEntry30Exception0,  // machine model info
         0,                                       // gpu_series size
         nullptr,                                 // gpu_series
-        nullptr,                                 // more conditions
+        &kMoreForEntry30_1440601243Exception0,   // more data
     },
 };
 
@@ -120,10 +120,10 @@ const GpuControlList::Conditions kExceptionsForEntry45[2] = {
         GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
         &kDriverInfoForGpuControlTestingEntry45Exception0,  // driver info
         nullptr,                                            // GL strings
-        nullptr,  // machine model info
-        0,        // gpu_series size
-        nullptr,  // gpu_series
-        nullptr,  // more conditions
+        nullptr,                                // machine model info
+        0,                                      // gpu_series size
+        nullptr,                                // gpu_series
+        &kMoreForEntry45_1440601243Exception0,  // more data
     },
     {
         GpuControlList::kOsAny,  // os_type
@@ -137,10 +137,10 @@ const GpuControlList::Conditions kExceptionsForEntry45[2] = {
         GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
         &kDriverInfoForGpuControlTestingEntry45Exception1,  // driver info
         nullptr,                                            // GL strings
-        nullptr,  // machine model info
-        0,        // gpu_series size
-        nullptr,  // gpu_series
-        nullptr,  // more conditions
+        nullptr,                                // machine model info
+        0,                                      // gpu_series size
+        nullptr,                                // gpu_series
+        &kMoreForEntry45_1440601243Exception1,  // more data
     },
 };
 
@@ -159,7 +159,7 @@ const GpuControlList::Conditions kExceptionsForEntry52[1] = {
         nullptr,                                           // machine model info
         0,                                                 // gpu_series size
         nullptr,                                           // gpu_series
-        nullptr,                                           // more conditions
+        &kMoreForEntry52_1440601243Exception0,             // more data
     },
 };
 
@@ -178,7 +178,7 @@ const GpuControlList::Conditions kExceptionsForEntry66[1] = {
         nullptr,                                     // machine model info
         base::size(kGpuSeriesForEntry66Exception0),  // gpu_series size
         kGpuSeriesForEntry66Exception0,              // gpu_series
-        nullptr,                                     // more conditions
+        &kMoreForEntry66_1440601243Exception0,       // more data
     },
 };
 

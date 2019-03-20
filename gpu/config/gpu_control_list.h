@@ -153,7 +153,7 @@ class GPU_EXPORT GpuControlList {
     Version pixel_shader_version;
     bool in_process_gpu;
     uint32_t gl_reset_notification_strategy;
-    bool direct_rendering;
+    Version direct_rendering_version;
     Version gpu_count;
     SupportedOrNot hardware_overlay;
 
