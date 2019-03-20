@@ -48,6 +48,11 @@ size_t ThumbnailImage::GetStorageSize() const {
   return image_representation_.bitmap()->computeByteSize();
 }
 
+bool ThumbnailImage::BackedBySameObjectAs(const ThumbnailImage& other) const {
+  return image_representation_.BackedBySameObjectAs(
+      other.image_representation_);
+}
+
 // static
 ThumbnailImage ThumbnailImage::FromSkBitmap(SkBitmap bitmap) {
   ThumbnailImage result;

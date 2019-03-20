@@ -48,6 +48,10 @@ class ThumbnailImage {
   // Returns the size (in bytes) required to store the internal representation.
   size_t GetStorageSize() const;
 
+  // Does an address comparison on the refcounted backing store of this object.
+  // May return false even if the backing stores contain equivalent image data.
+  bool BackedBySameObjectAs(const ThumbnailImage& other) const;
+
   // Encodes thumbnail data as ThumbnailRepresentation. May involve an expensive
   // operation. Prefer FromSkBitmapAsync() instead.
   static ThumbnailImage FromSkBitmap(SkBitmap bitmap);
