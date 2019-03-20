@@ -249,9 +249,9 @@ void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
     const FeaturePolicy::FeatureState& opener_feature_state) {
   feature_policy_header_ = parsed_header;
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    DCHECK(opener_feature_state.empty() || GetFrame()->IsMainFrame());
-    if (opener_feature_state_.empty()) {
-      opener_feature_state_ = opener_feature_state;
+    DCHECK(opener_feature_state.empty() || frame_->IsMainFrame());
+    if (frame_->OpenerFeatureState().empty()) {
+      frame_->SetOpenerFeatureState(opener_feature_state);
     }
   }
   ApplyReplicatedFeaturePolicyHeader();
@@ -267,9 +267,11 @@ void WebRemoteFrameImpl::ApplyReplicatedFeaturePolicyHeader() {
   ParsedFeaturePolicy container_policy;
   if (GetFrame()->Owner())
     container_policy = GetFrame()->Owner()->ContainerPolicy();
+  const FeaturePolicy::FeatureState& opener_feature_state =
+      frame_->OpenerFeatureState();
   GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(
       feature_policy_header_, container_policy, parent_feature_policy,
-      opener_feature_state_.empty() ? nullptr : &opener_feature_state_);
+      opener_feature_state.empty() ? nullptr : &opener_feature_state);
 }
 
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(

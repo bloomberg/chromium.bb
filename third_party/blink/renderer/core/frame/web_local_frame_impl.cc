@@ -1646,11 +1646,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
       WebTreeScopeType::kDocument, client, interface_registry,
       std::move(document_interface_broker_handle));
   frame->SetOpener(opener);
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
-    frame->opener_feature_state_ = opener_feature_state;
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(page, nullptr, name);
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
+    frame->GetFrame()->SetOpenerFeatureState(opener_feature_state);
   // Can't force sandbox flags until there's a core frame.
   frame->GetFrame()->Loader().ForceSandboxFlags(
       static_cast<SandboxFlags>(sandbox_flags));
@@ -1699,8 +1699,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     new_frame->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
     // If there is an opener (even disowned), the opener policies must be
     // inherited the same way as sandbox flag.
-    web_frame->opener_feature_state_ =
-        ToWebRemoteFrameImpl(old_web_frame)->OpenerFeatureState();
+    new_frame->SetOpenerFeatureState(old_frame->OpenerFeatureState());
   }
 
   return web_frame;
