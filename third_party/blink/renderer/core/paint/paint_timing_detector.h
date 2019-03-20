@@ -14,7 +14,6 @@ namespace blink {
 
 class LayoutObject;
 class LocalFrameView;
-class PaintLayer;
 class LayoutRect;
 class TextPaintTimingDetector;
 class ImagePaintTimingDetector;
@@ -56,9 +55,10 @@ class CORE_EXPORT PaintTimingDetector
   bool NeedToNotifyInputOrScroll();
   void NotifyScroll(ScrollType scroll_type);
   void DidChangePerformanceTiming();
-  uint64_t CalculateVisualSize(const LayoutRect& invalidated_rect,
-                               const PaintLayer& painting_layer) const;
-  uint64_t CalculateVisualSize(const LayoutRect& invalidated_rect,
+
+  // |visual_rect| should be an object's bounding rect in the space of
+  // PropertyTreeState.
+  uint64_t CalculateVisualSize(const LayoutRect& visual_rect,
                                const PropertyTreeState&) const;
   void Dispose();
 

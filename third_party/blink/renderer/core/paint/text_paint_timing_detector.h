@@ -5,6 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINT_TIMING_DETECTOR_H_
 
+#include <memory>
+#include <queue>
+#include <set>
+
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -20,6 +24,9 @@ class PropertyTreeState;
 
 class TextRecord : public base::SupportsWeakPtr<TextRecord> {
  public:
+  TextRecord(DOMNodeId new_node_id, uint64_t new_first_size)
+      : node_id(new_node_id), first_size(new_first_size) {}
+
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
   // This is treated as unset.
@@ -27,14 +34,67 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
 #ifndef NDEBUG
   String text = "";
 #endif
+  DISALLOW_COPY_AND_ASSIGN(TextRecord);
+};
+
+class TextRecordsManager {
+  using TextRecordSetComparator = bool (*)(const base::WeakPtr<TextRecord>&,
+                                           const base::WeakPtr<TextRecord>&);
+  using TextRecordSet =
+      std::set<base::WeakPtr<TextRecord>, TextRecordSetComparator>;
+  friend class TextPaintTimingDetectorTest;
+
+ public:
+  TextRecordsManager();
+  TextRecord* FindLargestPaintCandidate();
+
+  bool AreAllVisibleNodesDetached() const;
+  void SetNodeDetachedIfNeeded(const DOMNodeId&);
+  void MarkNodeReattachedIfNeeded(const DOMNodeId&);
+
+  void RecordInvisibleNode(const DOMNodeId&);
+  void RecordVisibleNode(const DOMNodeId&,
+                         const uint64_t& visual_size,
+                         const LayoutObject&);
+  bool NeedMeausuringPaintTime() const {
+    return !texts_queued_for_paint_time_.empty();
+  }
+  void QueueToMeasurePaintTime(const DOMNodeId&);
+  void AssignPaintTimeToQueuedNodes(const base::TimeTicks&);
+
+  bool HasTooManyNodes() const;
+  bool HasRecorded(const DOMNodeId&) const;
+
+  size_t CountVisibleNodes() const { return visible_node_map.size(); }
+  size_t CountInvisibleNodes() const { return invisible_node_ids_.size(); }
+
+  bool IsKnownVisibleNode(const DOMNodeId& node_id) const {
+    return visible_node_map.Contains(node_id);
+  }
+
+ private:
+  // This is used to cache the largest text paint result for better efficiency.
+  // The result will be invalidated whenever any change is done to the variables
+  // used in |FindLargestPaintCandidate|.
+  bool is_result_invalidated_ = false;
+  HashMap<DOMNodeId, std::unique_ptr<TextRecord>> visible_node_map;
+  HashSet<DOMNodeId> invisible_node_ids_;
+  HashSet<DOMNodeId> detached_ids_;
+  // This is used to order the nodes in |visible_node_map| so that we can find
+  // the largest node efficiently. Note that the entries in |size_ordered_set_|
+  // and |visible_node_map| should always be added/deleted together.
+  TextRecordSet size_ordered_set_;
+  std::queue<DOMNodeId> texts_queued_for_paint_time_;
+  TextRecord* cached_largest_paint_candidate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextRecordsManager);
 };
 
 // TextPaintTimingDetector contains Largest Text Paint.
 //
 // Largest Text Paint timing measures when the largest text element gets painted
 // within viewport. Specifically, it:
-// 1. Tracks all texts' first invalidation, recording their visual size, paint
-// time.
+// 1. Tracks all texts' first paints, recording their visual size, paint time.
 // 2. Every 1 second after the first text pre-paint, the algorithm starts an
 // analysis. In the analysis:
 // 2.1 Largest Text Paint finds the text with the  largest first visual size,
@@ -50,19 +110,15 @@ class CORE_EXPORT TextPaintTimingDetector final
   using ReportTimeCallback =
       WTF::CrossThreadFunction<void(WebLayerTreeView::SwapResult,
                                     base::TimeTicks)>;
-  using TextRecordSetComparator = bool (*)(const base::WeakPtr<TextRecord>&,
-                                           const base::WeakPtr<TextRecord>&);
-  using TextRecordSet =
-      std::set<base::WeakPtr<TextRecord>, TextRecordSetComparator>;
   friend class TextPaintTimingDetectorTest;
 
  public:
   TextPaintTimingDetector(LocalFrameView* frame_view);
   void RecordText(const LayoutObject& object, const PropertyTreeState&);
-  TextRecord* FindLargestPaintCandidate();
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void Dispose() { timer_.Stop(); }
+  TextRecord* FindLargestPaintCandidate();
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
   void StopRecordEntries();
@@ -80,23 +136,22 @@ class CORE_EXPORT TextPaintTimingDetector final
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
   void OnLargestTextDetected(const TextRecord&);
-  TextRecord* FindCandidate(const TextRecordSet& ordered_set);
 
-  HashMap<DOMNodeId, std::unique_ptr<TextRecord>> id_record_map_;
-  HashSet<DOMNodeId> size_zero_node_ids_;
-  HashSet<DOMNodeId> detached_ids_;
-  TextRecordSet size_ordered_set_;
-  std::queue<DOMNodeId> texts_to_record_swap_time_;
+  TextRecordsManager records_manager_;
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;
   unsigned largest_text_candidate_index_max_ = 0;
   bool is_recording_ = true;
 
+  bool has_records_changed_ = true;
+
   base::TimeTicks largest_text_paint_;
   uint64_t largest_text_paint_size_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextPaintTimingDetector);
 };
 }  // namespace blink
 

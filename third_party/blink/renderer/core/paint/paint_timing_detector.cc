@@ -111,10 +111,9 @@ void PaintTimingDetector::NotifyTextPaint(
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
   if (!object.GetNode())
     return;
-  text_paint_timing_detector_->NotifyNodeRemoved(
-      DOMNodeIds::IdForNode(object.GetNode()));
-  image_paint_timing_detector_->NotifyNodeRemoved(
-      DOMNodeIds::IdForNode(object.GetNode()));
+  DOMNodeId node_id = DOMNodeIds::IdForNode(object.GetNode());
+  text_paint_timing_detector_->NotifyNodeRemoved(node_id);
+  image_paint_timing_detector_->NotifyNodeRemoved(node_id);
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
@@ -150,30 +149,23 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
 }
 
 uint64_t PaintTimingDetector::CalculateVisualSize(
-    const LayoutRect& invalidated_rect,
-    const PaintLayer& painting_layer) const {
-  return CalculateVisualSize(invalidated_rect, painting_layer.GetLayoutObject()
-                                                   .FirstFragment()
-                                                   .LocalBorderBoxProperties());
-}
-
-uint64_t PaintTimingDetector::CalculateVisualSize(
-    const LayoutRect& invalidated_rect,
+    const LayoutRect& visual_rect,
     const PropertyTreeState& current_paint_chunk_properties) const {
   // This case should be dealt with outside the function.
-  DCHECK(!invalidated_rect.IsEmpty());
+  DCHECK(!visual_rect.IsEmpty());
 
   // As Layout objects live in different transform spaces, the object's rect
   // should be projected to the viewport's transform space.
-  FloatClipRect visual_rect = FloatClipRect(FloatRect(invalidated_rect));
-  GeometryMapper::LocalToAncestorVisualRect(
-      current_paint_chunk_properties, PropertyTreeState::Root(), visual_rect);
-  FloatRect& visual_rect_float = visual_rect.Rect();
+  FloatClipRect float_clip_visual_rect = FloatClipRect(FloatRect(visual_rect));
+  GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,
+                                            PropertyTreeState::Root(),
+                                            float_clip_visual_rect);
+  FloatRect& float_visual_rect = float_clip_visual_rect.Rect();
   if (frame_view_->GetFrame().LocalFrameRoot().IsMainFrame())
-    return visual_rect_float.Size().Area();
+    return float_visual_rect.Size().Area();
   // OOPIF. The final rect lives in the iframe's root frame space. We need to
   // project it to the top frame space.
-  LayoutRect layout_visual_rect(visual_rect_float);
+  LayoutRect layout_visual_rect(float_visual_rect);
   frame_view_->GetFrame()
       .LocalFrameRoot()
       .View()

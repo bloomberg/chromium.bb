@@ -40,16 +40,16 @@ class TextPaintTimingDetectorTest
   unsigned CountVisibleTexts() {
     return GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
-               .id_record_map_.size() -
+               .records_manager_.visible_node_map.size() -
            GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
-               .detached_ids_.size();
+               .records_manager_.detached_ids_.size();
   }
 
   unsigned CountDetachedTexts() {
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        .detached_ids_.size();
+        .records_manager_.detached_ids_.size();
   }
 
   void InvokeCallback() {
@@ -70,7 +70,7 @@ class TextPaintTimingDetectorTest
     UpdateAllLifecyclePhasesForTest();
     TextPaintTimingDetector& detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
-    if (!detector.texts_to_record_swap_time_.empty()) {
+    if (!detector.records_manager_.texts_queued_for_paint_time_.empty()) {
       detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
                               CurrentTimeTicks());
     }
@@ -79,7 +79,7 @@ class TextPaintTimingDetectorTest
   size_t CountPendingSwapTime(LocalFrameView& frame_view) {
     TextPaintTimingDetector& detector =
         frame_view.GetPaintTimingDetector().GetTextPaintTimingDetector();
-    return detector.texts_to_record_swap_time_.size();
+    return detector.records_manager_.texts_queued_for_paint_time_.size();
   }
 
   void ChildFrameSwapTimeCallBack() {
@@ -120,7 +120,15 @@ class TextPaintTimingDetectorTest
   }
 
   TextRecord* TextRecordOfLargestTextPaint() {
-    return GetPaintTimingDetector()
+    return GetFrameView()
+        .GetPaintTimingDetector()
+        .GetTextPaintTimingDetector()
+        .FindLargestPaintCandidate();
+  }
+
+  TextRecord* ChildFrameTextRecordOfLargestTextPaint() {
+    return GetChildFrameView()
+        .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
         .FindLargestPaintCandidate();
   }
@@ -251,9 +259,7 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
   SetFontSize(long_text, 100);
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  TextRecord* record = GetPaintTimingDetector()
-                           .GetTextPaintTimingDetector()
-                           .FindLargestPaintCandidate();
+  TextRecord* record = TextRecordOfLargestTextPaint();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(long_text));
   TimeTicks firing_time = record->first_paint_time;
   EXPECT_GE(firing_time, time1);
@@ -272,9 +278,7 @@ TEST_F(TextPaintTimingDetectorTest,
     <div class='out'>text outside of viewport</div>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_FALSE(GetPaintTimingDetector()
-                   .GetTextPaintTimingDetector()
-                   .FindLargestPaintCandidate());
+  EXPECT_FALSE(TextRecordOfLargestTextPaint());
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_IgnoreRemovedText) {
@@ -487,10 +491,7 @@ TEST_F(TextPaintTimingDetectorTest, Iframe) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 1u);
   ChildFrameSwapTimeCallBack();
-  TextRecord* text = GetChildFrameView()
-                         .GetPaintTimingDetector()
-                         .GetTextPaintTimingDetector()
-                         .FindLargestPaintCandidate();
+  TextRecord* text = ChildFrameTextRecordOfLargestTextPaint();
   EXPECT_TRUE(text);
 }
 
