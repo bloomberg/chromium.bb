@@ -184,6 +184,9 @@ void ArCoreDevice::OnRequestArModuleResult(int render_process_id,
                                            int render_frame_id,
                                            bool has_user_activation,
                                            bool success) {
+  DVLOG(3) << __func__ << ": has_user_activation=" << has_user_activation
+           << ", success=" << success;
+
   if (!success) {
     CallDeferredRequestSessionCallbacks(/*success=*/false);
     return;
@@ -276,23 +279,27 @@ void ArCoreDevice::CallDeferredRequestSessionCallbacks(bool success) {
     // The call may request another session, which should be handled right here
     // in this loop as well.
 
-    auto callback =
-        base::BindOnce(&ArCoreDevice::OnCreateSessionCallback, GetWeakPtr());
+    if (!success) {
+      std::move(deferred_callback).Run(nullptr, nullptr);
+      continue;
+    }
 
-    PostTaskToGlThread(
-        base::BindOnce(&ArCoreGl::CreateSession,
-                       arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-                       display_info_->Clone(), std::move(deferred_callback),
-                       CreateMainThreadCallback(std::move(callback))));
+    auto callback = base::BindOnce(&ArCoreDevice::OnCreateSessionCallback,
+                                   GetWeakPtr(), std::move(deferred_callback));
+
+    PostTaskToGlThread(base::BindOnce(
+        &ArCoreGl::CreateSession,
+        arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(), display_info_->Clone(),
+        CreateMainThreadCallback(std::move(callback))));
   }
   deferred_request_session_callbacks_.clear();
 }
 
 void ArCoreDevice::OnCreateSessionCallback(
+    mojom::XRRuntime::RequestSessionCallback deferred_callback,
     mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
     mojom::VRDisplayInfoPtr display_info,
-    mojom::XRSessionControllerPtrInfo session_controller_info,
-    mojom::XRRuntime::RequestSessionCallback deferred_callback) {
+    mojom::XRSessionControllerPtrInfo session_controller_info) {
   DCHECK(IsOnMainThread());
 
   mojom::XRSessionPtr session = mojom::XRSession::New();
