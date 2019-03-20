@@ -510,6 +510,7 @@
     },
     {
       name: "FastFlatTreeTraversal",
+      status: "stable",
     },
     {
       name: "FastMobileScrolling",
