@@ -171,7 +171,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
     case FilterOperation::SATURATE:
     case FilterOperation::SEPIA:
       result.interpolable_value = std::make_unique<InterpolableNumber>(
-          ToBasicColorMatrixFilterOperation(filter).Amount());
+          To<BasicColorMatrixFilterOperation>(filter).Amount());
       break;
 
     case FilterOperation::BRIGHTNESS:
@@ -179,7 +179,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
       result.interpolable_value = std::make_unique<InterpolableNumber>(
-          ToBasicComponentTransferFilterOperation(filter).Amount());
+          To<BasicComponentTransferFilterOperation>(filter).Amount());
       break;
 
     case FilterOperation::BLUR:

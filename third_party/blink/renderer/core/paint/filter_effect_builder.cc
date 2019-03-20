@@ -159,14 +159,14 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       }
       case FilterOperation::GRAYSCALE: {
         Vector<float> input_parameters = GrayscaleMatrix(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount());
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
         effect = FEColorMatrix::Create(parent_filter, FECOLORMATRIX_TYPE_MATRIX,
                                        input_parameters);
         break;
       }
       case FilterOperation::SEPIA: {
         Vector<float> input_parameters = SepiaMatrix(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount());
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
         effect = FEColorMatrix::Create(parent_filter, FECOLORMATRIX_TYPE_MATRIX,
                                        input_parameters);
         break;
@@ -174,7 +174,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       case FilterOperation::SATURATE: {
         Vector<float> input_parameters;
         input_parameters.push_back(clampTo<float>(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount()));
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = FEColorMatrix::Create(
             parent_filter, FECOLORMATRIX_TYPE_SATURATE, input_parameters);
         break;
@@ -182,14 +182,14 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
       case FilterOperation::HUE_ROTATE: {
         Vector<float> input_parameters;
         input_parameters.push_back(clampTo<float>(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount()));
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = FEColorMatrix::Create(
             parent_filter, FECOLORMATRIX_TYPE_HUEROTATE, input_parameters);
         break;
       }
       case FilterOperation::INVERT: {
         BasicComponentTransferFilterOperation* component_transfer_operation =
-            ToBasicComponentTransferFilterOperation(filter_operation);
+            To<BasicComponentTransferFilterOperation>(filter_operation);
         ComponentTransferFunction transfer_function;
         transfer_function.type = FECOMPONENTTRANSFER_TYPE_TABLE;
         Vector<float> transfer_parameters;
@@ -211,7 +211,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         Vector<float> transfer_parameters;
         transfer_parameters.push_back(0);
         transfer_parameters.push_back(clampTo<float>(
-            ToBasicComponentTransferFilterOperation(filter_operation)
+            To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount()));
         transfer_function.table_values = transfer_parameters;
 
@@ -225,7 +225,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         ComponentTransferFunction transfer_function;
         transfer_function.type = FECOMPONENTTRANSFER_TYPE_LINEAR;
         transfer_function.slope = clampTo<float>(
-            ToBasicComponentTransferFilterOperation(filter_operation)
+            To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount());
         transfer_function.intercept = 0;
 
@@ -239,7 +239,7 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         ComponentTransferFunction transfer_function;
         transfer_function.type = FECOMPONENTTRANSFER_TYPE_LINEAR;
         float amount = clampTo<float>(
-            ToBasicComponentTransferFilterOperation(filter_operation)
+            To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount());
         transfer_function.slope = amount;
         transfer_function.intercept = -0.5 * amount + 0.5;
@@ -325,7 +325,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       case FilterOperation::SEPIA:
       case FilterOperation::SATURATE:
       case FilterOperation::HUE_ROTATE: {
-        float amount = ToBasicColorMatrixFilterOperation(*op).Amount();
+        float amount = To<BasicColorMatrixFilterOperation>(*op).Amount();
         switch (op->GetType()) {
           case FilterOperation::GRAYSCALE:
             filters.AppendGrayscaleFilter(amount);
@@ -348,7 +348,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       case FilterOperation::OPACITY:
       case FilterOperation::BRIGHTNESS:
       case FilterOperation::CONTRAST: {
-        float amount = ToBasicComponentTransferFilterOperation(*op).Amount();
+        float amount = To<BasicComponentTransferFilterOperation>(*op).Amount();
         switch (op->GetType()) {
           case FilterOperation::INVERT:
             filters.AppendInvertFilter(amount);

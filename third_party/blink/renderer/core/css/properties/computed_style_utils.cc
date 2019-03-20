@@ -1965,49 +1965,53 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::GRAYSCALE:
         filter_value = CSSFunctionValue::Create(CSSValueGrayscale);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SEPIA:
         filter_value = CSSFunctionValue::Create(CSSValueSepia);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SATURATE:
         filter_value = CSSFunctionValue::Create(CSSValueSaturate);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::HUE_ROTATE:
         filter_value = CSSFunctionValue::Create(CSSValueHueRotate);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicColorMatrixFilterOperation(filter_operation)->Amount(),
+            To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kDegrees));
         break;
       case FilterOperation::INVERT:
         filter_value = CSSFunctionValue::Create(CSSValueInvert);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            To<BasicComponentTransferFilterOperation>(filter_operation)
+                ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::OPACITY:
         filter_value = CSSFunctionValue::Create(CSSValueOpacity);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            To<BasicComponentTransferFilterOperation>(filter_operation)
+                ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::BRIGHTNESS:
         filter_value = CSSFunctionValue::Create(CSSValueBrightness);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            To<BasicComponentTransferFilterOperation>(filter_operation)
+                ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::CONTRAST:
         filter_value = CSSFunctionValue::Create(CSSValueContrast);
         filter_value->Append(*CSSPrimitiveValue::Create(
-            ToBasicComponentTransferFilterOperation(filter_operation)->Amount(),
+            To<BasicComponentTransferFilterOperation>(filter_operation)
+                ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::BLUR:

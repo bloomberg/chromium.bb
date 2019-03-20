@@ -84,7 +84,7 @@ FilterOperation* BasicColorMatrixFilterOperation::Blend(
   double from_amount;
   if (from) {
     SECURITY_DCHECK(from->IsSameType(*this));
-    from_amount = ToBasicColorMatrixFilterOperation(from)->Amount();
+    from_amount = To<BasicColorMatrixFilterOperation>(from)->Amount();
   } else {
     switch (type_) {
       case GRAYSCALE:
@@ -124,7 +124,7 @@ FilterOperation* BasicComponentTransferFilterOperation::Blend(
   double from_amount;
   if (from) {
     SECURITY_DCHECK(from->IsSameType(*this));
-    from_amount = ToBasicComponentTransferFilterOperation(from)->Amount();
+    from_amount = To<BasicComponentTransferFilterOperation>(from)->Amount();
   } else {
     switch (type_) {
       case OPACITY:
