@@ -19,9 +19,6 @@ namespace {
 // The number of pixels in the color gradient that fades to transparent.
 const int kGradientWidth = 6;
 
-// The default color of the focus ring.
-const SkColor kDefaultFocusRingColor = SkColorSetARGB(255, 247, 152, 58);
-
 int sign(int x) {
   return ((x > 0) ? 1 : (x == 0) ? 0 : -1);
 }
@@ -103,13 +100,12 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 
-void AccessibilityFocusRingLayer::EnableDoubleFocusRing(
-    SkColor secondary_color) {
+void AccessibilityFocusRingLayer::SetAppearance(mojom::FocusRingType type,
+                                                SkColor color,
+                                                SkColor secondary_color) {
+  SetColor(color);
+  type_ = type;
   secondary_color_ = secondary_color;
-}
-
-void AccessibilityFocusRingLayer::DisableDoubleFocusRing() {
-  secondary_color_.reset();
 }
 
 void AccessibilityFocusRingLayer::OnPaintLayer(
@@ -121,17 +117,24 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(2);
 
-  if (secondary_color_)
-    DrawDoubleFocusRing(recorder, flags);
-  else
-    DrawFocusRing(recorder, flags);
+  switch (type_) {
+    case mojom::FocusRingType::GLOW:
+      DrawGlowFocusRing(recorder, flags);
+      break;
+    case mojom::FocusRingType::SOLID:
+      DrawSolidFocusRing(recorder, flags);
+      break;
+    case mojom::FocusRingType::DASHED:
+      NOTREACHED();
+  }
 }
 
-void AccessibilityFocusRingLayer::DrawDoubleFocusRing(
+void AccessibilityFocusRingLayer::DrawSolidFocusRing(
     ui::PaintRecorder& recorder,
     cc::PaintFlags& flags) {
-  SkColor base_color =
-      has_custom_color() ? custom_color() : kDefaultFocusRingColor;
+  if (!has_custom_color())
+    NOTREACHED();
+  SkColor base_color = custom_color();
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
@@ -139,15 +142,16 @@ void AccessibilityFocusRingLayer::DrawDoubleFocusRing(
   path = MakePath(ring_, 0, offset);
   recorder.canvas()->DrawPath(path, flags);
 
-  flags.setColor(*(secondary_color_));
+  flags.setColor(secondary_color_);
   path = MakePath(ring_, 2, offset);
   recorder.canvas()->DrawPath(path, flags);
 }
 
-void AccessibilityFocusRingLayer::DrawFocusRing(ui::PaintRecorder& recorder,
-                                                cc::PaintFlags& flags) {
-  SkColor base_color =
-      has_custom_color() ? custom_color() : kDefaultFocusRingColor;
+void AccessibilityFocusRingLayer::DrawGlowFocusRing(ui::PaintRecorder& recorder,
+                                                    cc::PaintFlags& flags) {
+  if (!has_custom_color())
+    NOTREACHED();
+  SkColor base_color = custom_color();
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
