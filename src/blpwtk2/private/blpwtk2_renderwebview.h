@@ -40,14 +40,20 @@
 #include <content/common/text_input_state.h>
 #include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
+#include <third_party/blink/public/web/web_text_direction.h>
 #include <ui/base/cursor/cursor_loader.h>
 #include <ui/base/ime/input_method_delegate.h>
 #include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
+#include <ui/views/corewm/tooltip_win.h>
 
 namespace content {
 class InputRouterImpl;
 }  // close namespace content
+
+namespace corewm {
+class Tooltip;
+}  // close namespace wm
 
 namespace ui {
 class CursorLoader;
@@ -147,6 +153,17 @@ class RenderWebView final : public WebView
 
     // State related to drag-and-drop:
     scoped_refptr<DragDrop> d_dragDrop;
+
+    // State related to displaying native tooltips:
+    base::string16 d_tooltipText, d_lastTooltipText, d_tooltipTextAtMousePress;
+    std::unique_ptr<views::corewm::Tooltip> d_tooltip;
+
+    base::OneShotTimer d_tooltipDeferTimer;
+        // Timer for requesting delayed updates of the tooltip.
+
+    base::OneShotTimer d_tooltipShownTimer;
+        // Timer to timeout the life of an on-screen tooltip. We hide the tooltip
+        // when this timer fires.
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -392,6 +409,11 @@ class RenderWebView final : public WebView
         int routing_id, const gfx::Rect initial_rect);
     void OnClose();
 
+    // Native tooltips:
+    void OnSetTooltipText(
+        const base::string16& tooltip_text,
+        blink::WebTextDirection text_direction_hint);
+
     // PRIVATE FUNCTIONS:
     explicit RenderWebView(ProfileImpl              *profile,
                            int                       routingId,
@@ -429,6 +451,9 @@ class RenderWebView final : public WebView
         const SkBitmap& bitmap,
         const gfx::Vector2d& bitmap_offset_in_dip,
         const content::DragEventSourceInfo& event_info);
+    void showTooltip();
+    void hideTooltip();
+    void updateTooltip();
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
