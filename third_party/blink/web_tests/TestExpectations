@@ -395,6 +395,9 @@ crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html 
 crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
 # Occasionally timeout, but the test coverage is still good
 crbug.com/919789 paint/invalidation/window-resize/ [ Timeout Pass ]
+# Extra raster invalidation on start/end of animation.
+crbug.com/942681 paint/invalidation/animation/opacity-animation.html [ Failure ]
+crbug.com/942681 paint/invalidation/animation/transform-animation.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 

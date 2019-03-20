@@ -743,6 +743,15 @@ static bool NeedsClipPathClip(const LayoutObject& object) {
   return object.FirstFragment().ClipPathPath();
 }
 
+static CompositingReasons CompositingReasonsForEffectProperty() {
+  // TODO(crbug.com/900241): See the comment in compositing_reasons.h about
+  // the bug for the reason of this.
+  return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+                 RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+             ? CompositingReason::kDirectReasonsForEffectProperty
+             : CompositingReason::kActiveOpacityAnimation;
+}
+
 static bool NeedsEffect(const LayoutObject& object,
                         CompositingReasons direct_compositing_reasons) {
   const ComputedStyle& style = object.StyleRef();
@@ -805,8 +814,7 @@ static bool NeedsEffect(const LayoutObject& object,
   if (style.Opacity() != 1.0f || style.HasWillChangeOpacityHint())
     return true;
 
-  if (direct_compositing_reasons &
-      CompositingReason::kDirectReasonsForEffectProperty)
+  if (direct_compositing_reasons & CompositingReasonsForEffectProperty())
     return true;
 
   if (object.StyleRef().HasMask())
@@ -1033,10 +1041,18 @@ static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
   return page->GetLinkHighlights().NeedsHighlightEffect(object);
 }
 
+static CompositingReasons CompositingReasonsForFilterProperty() {
+  // TODO(crbug.com/900241): See the comment in compositing_reasons.h about
+  // the bug for the reason of this.
+  return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+                 RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+             ? CompositingReason::kDirectReasonsForFilterProperty
+             : CompositingReason::kActiveFilterAnimation;
+}
+
 static bool NeedsFilter(const LayoutObject& object,
                         CompositingReasons direct_compositing_reasons) {
-  if (direct_compositing_reasons &
-      CompositingReason::kDirectReasonsForFilterProperty)
+  if (direct_compositing_reasons & CompositingReasonsForFilterProperty())
     return true;
 
   if (!object.IsBoxModelObject() || !ToLayoutBoxModelObject(object).Layer())
