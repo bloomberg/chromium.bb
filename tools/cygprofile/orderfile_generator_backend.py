@@ -552,7 +552,7 @@ class OrderfileGenerator(object):
       device = self._SetDevice()
       self._profiler = profile_android_startup.AndroidProfileTool(
           output_directory, host_profile_dir, use_wpr, urls, simulate_user,
-          device=device)
+          device, debug=self._options.streamline_for_debugging)
       if options.pregenerated_profiles:
         self._profiler.SetPregeneratedProfiles(
             glob.glob(options.pregenerated_profiles))
@@ -972,6 +972,12 @@ def CreateArgumentParser():
                             'orderfiles (both patched and unpatched) from '
                             'their normal location in the tree to the cloud '
                             'storage. DANGEROUS! USE WITH CARE!'))
+  parser.add_argument('--streamline-for-debugging', action='store_true',
+                      help=('Streamline where possible the run for faster '
+                            'iteration while debugging. The orderfile '
+                            'generated will be valid and nontrivial, but '
+                            'may not be based on a representative profile '
+                            'or other such considerations. Use with caution.'))
   parser.add_argument('--commit-hashes', action='store_true',
                       help=('Commit any orderfile hash files in the current '
                             'checkout; performs no other action'))
