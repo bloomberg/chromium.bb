@@ -355,6 +355,12 @@ public class CompositorView
         }
     }
 
+    @CalledByNative
+    private void notifyWillUseSurfaceControl() {
+        mAlwaysTranslucent = true;
+        mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
+    }
+
     /**
      * Converts the layout into compositor layers. This is to be called on every frame the layout
      * is changing.
