@@ -1140,6 +1140,8 @@ test("content_browsertests") {
 
   if (is_win) {
     sources += [
+      "../browser/accessibility/accessibility_browsertest.cc",
+      "../browser/accessibility/accessibility_browsertest.h",
       "../browser/accessibility/accessibility_win_browsertest.cc",
       "../browser/accessibility/ax_platform_node_win_browsertest.cc",
       "../browser/renderer_host/accessibility_tree_linkage_win_browsertest.cc",
@@ -1167,8 +1169,11 @@ test("content_browsertests") {
     ]
 
     if (use_atk) {
-      sources +=
-          [ "../browser/accessibility/accessibility_auralinux_browsertest.cc" ]
+      sources += [
+        "../browser/accessibility/accessibility_auralinux_browsertest.cc",
+        "../browser/accessibility/accessibility_browsertest.cc",
+        "../browser/accessibility/accessibility_browsertest.h",
+      ]
       configs += [ "//build/config/linux/atk" ]
     }
   }

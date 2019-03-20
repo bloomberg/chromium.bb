@@ -12,40 +12,24 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "content/browser/accessibility/accessibility_browsertest.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "net/base/escape.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace content {
 
-constexpr char kInputContents[] =
-    "Moz/5.0 (ST 6.x; WWW33) "
-    "WebKit  \"KHTML, like\".";
-constexpr char kTextareaContents[] =
-    "Moz/5.0 (ST 6.x; WWW33)\n"
-    "WebKit \n\"KHTML, like\".";
-constexpr int kContentsLength =
-    static_cast<int>((sizeof(kInputContents) - 1) / sizeof(char));
-
-class AccessibilityAuraLinuxBrowserTest : public ContentBrowserTest {
+class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
  public:
   AccessibilityAuraLinuxBrowserTest() = default;
   ~AccessibilityAuraLinuxBrowserTest() override = default;
 
  protected:
-  AtkObject* GetRendererAccessible() {
-    content::WebContents* web_contents = shell()->web_contents();
-    return web_contents->GetRenderWidgetHostView()->GetNativeViewAccessible();
-  }
-
   static bool HasObjectWithAtkRoleFrameInAncestry(AtkObject* object) {
     while (object) {
       if (atk_object_get_role(object) == ATK_ROLE_FRAME)
@@ -55,7 +39,6 @@ class AccessibilityAuraLinuxBrowserTest : public ContentBrowserTest {
     return false;
   }
 
-  void LoadInitialAccessibilityTreeFromHtml(const std::string& html);
   static void CheckTextAtOffset(AtkText* text_object,
                                 int offset,
                                 AtkTextBoundary boundary_type,
@@ -63,7 +46,6 @@ class AccessibilityAuraLinuxBrowserTest : public ContentBrowserTest {
                                 int expected_end_offset,
                                 const char* expected_text);
 
-  void ExecuteScript(const std::string& script);
   AtkText* SetUpInputField();
   AtkText* SetUpTextareaField();
   AtkText* SetUpSampleParagraph();
@@ -73,23 +55,6 @@ class AccessibilityAuraLinuxBrowserTest : public ContentBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityAuraLinuxBrowserTest);
 };
-
-void AccessibilityAuraLinuxBrowserTest::ExecuteScript(
-    const std::string& script) {
-  shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script), base::NullCallback());
-}
-
-void AccessibilityAuraLinuxBrowserTest::LoadInitialAccessibilityTreeFromHtml(
-    const std::string& html) {
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLoadComplete);
-  GURL html_data_url("data:text/html," +
-                     net::EscapeQueryParamValue(html, false));
-  NavigateToURL(shell(), html_data_url);
-  waiter.WaitForNotification();
-}
 
 AtkText* AccessibilityAuraLinuxBrowserTest::GetAtkTextForChild(
     AtkRole expected_role) {
@@ -115,50 +80,20 @@ AtkText* AccessibilityAuraLinuxBrowserTest::GetAtkTextForChild(
 
 // Loads a page with  an input text field and places sample text in it.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpInputField() {
-  LoadInitialAccessibilityTreeFromHtml(std::string(
-                                           R"HTML(<!DOCTYPE html>
-          <html>
-          <body>
-            <form>
-              <label for="textField">Browser name:</label>
-              <input type="text" id="textField" name="name" value=")HTML") +
-                                       net::EscapeForHTML(kInputContents) +
-                                       std::string(R"HTML(">
-            </form>
-          </body>
-          </html>)HTML"));
-
+  LoadInputField();
   return GetAtkTextForChild(ATK_ROLE_ENTRY);
 }
 
 // Loads a page with  a textarea text field and places sample text in it. Also,
 // places the caret before the last character.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpTextareaField() {
-  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(<!DOCTYPE html>
-      <html>
-      <body>
-                    <textarea rows="3" cols="60">)HTML") +
-                                       net::EscapeForHTML(kTextareaContents) +
-                                       std::string(R"HTML(</textarea>
-          </body>
-          </html>)HTML"));
-
+  LoadTextareaField();
   return GetAtkTextForChild(ATK_ROLE_ENTRY);
 }
 
 // Loads a page with  a paragraph of sample text.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraph() {
-  LoadInitialAccessibilityTreeFromHtml(
-      R"HTML(<!DOCTYPE html>
-      <html>
-      <body>
-          <p><b>Game theory</b> is "the study of
-              <a href="" title="Mathematical model">mathematical models</a>
-              of conflict and<br>cooperation between intelligent rational
-              decision-makers."
-          </p>
-      </body>
-      </html>)HTML");
+  LoadSampleParagraph();
 
   AtkObject* document = GetRendererAccessible();
   EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
@@ -231,7 +166,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
   // Single line text fields should return the whole text.
   CheckTextAtOffset(atk_text, 0, ATK_TEXT_BOUNDARY_LINE_START, 0,
-                    kContentsLength, kInputContents);
+                    InputContentsString().size(),
+                    InputContentsString().c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -247,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
   // Last line does not have a trailing newline.
   CheckTextAtOffset(atk_text, 32, ATK_TEXT_BOUNDARY_LINE_START, 32,
-                    kContentsLength, "\"KHTML, like\".");
+                    InputContentsString().size(), "\"KHTML, like\".");
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
