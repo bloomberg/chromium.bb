@@ -1791,7 +1791,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
   speculative_render_frame_host_ =
-      CreateRenderFrame(new_instance, delegate_->IsHidden(), nullptr);
+      CreateRenderFrame(new_instance, delegate_->IsHidden());
 
   // If RenderViewHost was created along with the speculative RenderFrameHost,
   // ensure that RenderViewCreated is fired for it.  It is important to do this
@@ -1808,17 +1808,8 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 
 std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance,
-    bool hidden,
-    int* view_routing_id_ptr) {
-  int32_t widget_routing_id = MSG_ROUTING_NONE;
-  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
-
+    bool hidden) {
   CHECK(instance);
-
-  std::unique_ptr<RenderFrameHostImpl> new_render_frame_host;
-  bool success = true;
-  if (view_routing_id_ptr)
-    *view_routing_id_ptr = MSG_ROUTING_NONE;
 
   // We are creating a pending or speculative RFH here. We should never create
   // it in the same SiteInstance as our current RFH.
@@ -1830,60 +1821,48 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   // TODO(ajwong): When RVH no longer owns a RWH, this logic should be
   // simplified as the decision to create a RWH will be centralized here.
   // https://crbug.com/545684
-  if (frame_tree_node_->parent() &&
-      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
-          instance) {
+  FrameTreeNode* parent = frame_tree_node_->parent();
+  int32_t widget_routing_id = MSG_ROUTING_NONE;
+  if (parent && parent->current_frame_host()->GetSiteInstance() != instance)
     widget_routing_id = instance->GetProcess()->GetNextRoutingID();
-  }
 
-  new_render_frame_host = CreateRenderFrameHost(
-      instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, widget_routing_id, hidden,
-      false);
-  RenderViewHostImpl* render_view_host =
-      new_render_frame_host->render_view_host();
+  std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
+      CreateRenderFrameHost(instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                            widget_routing_id, hidden, false);
+  DCHECK_EQ(new_render_frame_host->GetSiteInstance(), instance);
 
   // Prevent the process from exiting while we're trying to navigate in it.
   new_render_frame_host->GetProcess()->AddPendingView();
 
+  RenderViewHostImpl* render_view_host =
+      new_render_frame_host->render_view_host();
   if (frame_tree_node_->IsMainFrame()) {
-    success = InitRenderView(render_view_host, proxy);
+    if (!InitRenderView(render_view_host, GetRenderFrameProxyHost(instance)))
+      return nullptr;
 
     // If we are reusing the RenderViewHost and it doesn't already have a
     // RenderWidgetHostView, we need to create one if this is the main frame.
     if (!render_view_host->GetWidget()->GetView())
       delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
+
+    // Don't show the main frame's view until we get a DidNavigate from it.
+    // Only the RenderViewHost for the top-level RenderFrameHost has a
+    // RenderWidgetHostView; RenderWidgetHosts for out-of-process iframes
+    // will be created later and hidden.
+    if (render_view_host->GetWidget()->GetView())
+      render_view_host->GetWidget()->GetView()->Hide();
   } else {
     DCHECK(render_view_host->IsRenderViewLive());
   }
 
-  if (success) {
-    if (frame_tree_node_->IsMainFrame()) {
-      // Don't show the main frame's view until we get a DidNavigate from it.
-      // Only the RenderViewHost for the top-level RenderFrameHost has a
-      // RenderWidgetHostView; RenderWidgetHosts for out-of-process iframes
-      // will be created later and hidden.
-      if (render_view_host->GetWidget()->GetView())
-        render_view_host->GetWidget()->GetView()->Hide();
-    }
-    // RenderViewHost for |instance| might exist prior to calling
-    // CreateRenderFrame. In such a case, InitRenderView will not create the
-    // RenderFrame in the renderer process and it needs to be done
-    // explicitly.
-    DCHECK(new_render_frame_host);
-    success = InitRenderFrame(new_render_frame_host.get());
-  }
+  // RenderViewHost for |instance| might exist prior to calling
+  // CreateRenderFrame. In such a case, InitRenderView will not create the
+  // RenderFrame in the renderer process and it needs to be done
+  // explicitly.
+  if (!InitRenderFrame(new_render_frame_host.get()))
+    return nullptr;
 
-  if (success) {
-    if (view_routing_id_ptr)
-      *view_routing_id_ptr = render_view_host->GetRoutingID();
-  }
-
-  // Return the new RenderFrameHost on successful creation.
-  if (success) {
-    DCHECK(new_render_frame_host->GetSiteInstance() == instance);
-    return new_render_frame_host;
-  }
-  return nullptr;
+  return new_render_frame_host;
 }
 
 int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
