@@ -19,8 +19,8 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.CountDownLatch;
@@ -46,7 +46,7 @@ public class AwContentsRenderTest {
     }
 
     void setBackgroundColorOnUiThread(final int c) {
-        ThreadUtils.runOnUiThreadBlocking(() -> mAwContents.setBackgroundColor(c));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.setBackgroundColor(c));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class AwContentsRenderTest {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testPictureListener() throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> mAwContents.enableOnNewPicture(true, true));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.enableOnNewPicture(true, true));
 
         int pictureCount = mContentsClient.getPictureListenerHelper().getCallCount();
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
@@ -122,10 +122,10 @@ public class AwContentsRenderTest {
         });
         Assert.assertTrue(latch.await(AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        final int width = ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mContainerView.getWidth());
-        final int height = ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mContainerView.getHeight());
+        final int width =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> mContainerView.getWidth());
+        final int height =
+                TestThreadUtils.runOnUiThreadBlockingNoException(() -> mContainerView.getHeight());
         visibleBitmap = GraphicsTestUtils.drawAwContentsOnUiThread(mAwContents, width, height);
 
         // Things that affect DOM page visibility:

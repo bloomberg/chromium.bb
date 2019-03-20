@@ -56,6 +56,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -348,8 +349,7 @@ public class SafeBrowsingTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                ()
-                        -> mWebContentsObserver =
+                () -> mWebContentsObserver =
                                    new TestAwWebContentsObserver(mContainerView.getWebContents(),
                                            mAwContents, mContentsClient) {});
     }
@@ -584,7 +584,7 @@ public class SafeBrowsingTest {
     private void verifyWhiteListRule(final String rule, boolean expected) throws Throwable {
         final WhitelistHelper helper = new WhitelistHelper();
         final int count = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ArrayList<String> s = new ArrayList<String>();
             s.add(rule);
             AwContentsStatics.setSafeBrowsingWhitelist(s, helper);
@@ -1083,7 +1083,7 @@ public class SafeBrowsingTest {
     }
 
     private String getSafeBrowsingLocaleOnUiThreadForTesting() throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(
+        return TestThreadUtils.runOnUiThreadBlocking(
                 () -> AwContents.getSafeBrowsingLocaleForTesting());
     }
 
@@ -1200,7 +1200,7 @@ public class SafeBrowsingTest {
                         .appendQueryParameter("hl", getSafeBrowsingLocaleOnUiThreadForTesting())
                         .fragment("safe-browsing-policies")
                         .build();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mPrivacyPolicyUrl = AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl(); });
         Assert.assertEquals(privacyPolicyUrl, this.mPrivacyPolicyUrl);
         Assert.assertNotNull(this.mPrivacyPolicyUrl);
@@ -1224,7 +1224,7 @@ public class SafeBrowsingTest {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return ThreadUtils.runOnUiThreadBlocking(() -> {
+                    return TestThreadUtils.runOnUiThreadBlocking(() -> {
                         int count_aw_contents = AwContents.getNativeInstanceCount();
                         return count_aw_contents == 0;
                     });

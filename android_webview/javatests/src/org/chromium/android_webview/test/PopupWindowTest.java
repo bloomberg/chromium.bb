@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.AwActivityTestRule.PopupInfo;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -26,6 +25,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.Locale;
@@ -260,10 +260,10 @@ public class PopupWindowTest {
 
         // Now long press on some texts and see if the text handles show up.
         DOMUtils.longPressNode(popupContents.getWebContents(), "plain_text");
-        SelectionPopupController controller = ThreadUtils.runOnUiThreadBlocking(
+        SelectionPopupController controller = TestThreadUtils.runOnUiThreadBlocking(
                 () -> SelectionPopupController.fromWebContents(popupContents.getWebContents()));
         assertWaitForSelectActionBarStatus(true, controller);
-        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(() -> controller.hasSelection()));
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlocking(() -> controller.hasSelection()));
 
         // Now hide the select action bar. This should hide the text handles and
         // clear the selection.
@@ -292,7 +292,7 @@ public class PopupWindowTest {
     }
 
     private void runPopupUserGestureTest(boolean hasOpener) throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mParentContents.getSettings().setJavaScriptEnabled(true);
             mParentContents.getSettings().setSupportMultipleWindows(true);
             mParentContents.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
