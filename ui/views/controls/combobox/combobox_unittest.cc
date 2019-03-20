@@ -123,7 +123,9 @@ class VectorComboboxModel : public ui::ComboboxModel {
   void set_default_index(int default_index) { default_index_ = default_index; }
 
   // ui::ComboboxModel:
-  int GetItemCount() const override { return (int)values_->size(); }
+  int GetItemCount() const override {
+    return static_cast<int>(values_->size());
+  }
   base::string16 GetItemAt(int index) override {
     return ASCIIToUTF16(values_->at(index));
   }
