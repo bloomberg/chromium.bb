@@ -61,11 +61,8 @@ void BindKioskNextHomeInterfaceBrokerRequest(
       static_cast<chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl*>(
           context->GetUserData(kKioskNextHomeInterfaceBrokerImplKey));
   if (!impl) {
-    auto* connector = content::BrowserContext::GetConnectorFor(context);
-    if (!connector)
-      return;
     auto new_impl = std::make_unique<
-        chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl>(connector);
+        chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl>(context);
     impl = new_impl.get();
     context->SetUserData(kKioskNextHomeInterfaceBrokerImplKey,
                          std::move(new_impl));

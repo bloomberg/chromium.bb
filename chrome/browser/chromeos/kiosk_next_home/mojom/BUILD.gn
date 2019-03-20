@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
+    "app_controller.mojom",
     "kiosk_next_home_interface_broker.mojom",
   ]
 
