@@ -1014,7 +1014,7 @@ TEST_F(VolumeManagerTest, OnRenameEvent_StartFailed) {
   volume_manager()->RemoveObserver(&observer);
 }
 
-TEST_F(VolumeManagerTest, DISABLED_OnRenameEvent_Completed) {
+TEST_F(VolumeManagerTest, OnRenameEvent_Completed) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
