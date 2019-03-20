@@ -59,6 +59,7 @@ namespace viz {
 class DirectContextProvider;
 class GLRendererCopier;
 class GpuServiceImpl;
+class SkiaOutputDevice;
 class TextureDeleter;
 class VulkanContextProvider;
 
@@ -160,7 +161,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   bool was_context_lost() { return context_state_->context_lost(); }
 
   class ScopedUseContextProvider;
-  class SurfaceWrapper;
 
   void SetCapabilitiesForTesting(
       const OutputSurface::Capabilities& capabilities) {
@@ -237,7 +237,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
 
-  std::unique_ptr<SurfaceWrapper> vulkan_surface_;
+  std::unique_ptr<SkiaOutputDevice> output_device_;
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.
