@@ -600,10 +600,6 @@ void WebRuntimeFeatures::EnableAutomationControlled(bool enable) {
   RuntimeEnabledFeatures::SetAutomationControlledEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableScheduledScriptStreaming(bool enable) {
-  RuntimeEnabledFeatures::SetScheduledScriptStreamingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableScriptStreamingOnPreload(bool enable) {
   RuntimeEnabledFeatures::SetScriptStreamingOnPreloadEnabled(enable);
 }
