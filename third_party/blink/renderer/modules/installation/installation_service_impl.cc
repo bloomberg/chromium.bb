@@ -21,8 +21,10 @@ InstallationServiceImpl::InstallationServiceImpl(LocalFrame& frame)
 void InstallationServiceImpl::Create(
     LocalFrame* frame,
     mojom::blink::InstallationServiceRequest request) {
+  // See https://bit.ly/2S0zRAS for task types.
   mojo::MakeStrongBinding(std::make_unique<InstallationServiceImpl>(*frame),
-                          std::move(request));
+                          std::move(request),
+                          frame->GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
 void InstallationServiceImpl::OnInstall() {
