@@ -680,7 +680,7 @@ void RenderWidgetHostImpl::InitForFrame() {
 }
 
 bool RenderWidgetHostImpl::ShouldShowStaleContentOnEviction() {
-  return delegate_->ShouldShowStaleContentOnEviction();
+  return delegate_ && delegate_->ShouldShowStaleContentOnEviction();
 }
 
 void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
