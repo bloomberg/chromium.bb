@@ -254,6 +254,7 @@ class VolumeManagerTest : public testing::Test {
     main_profile_.reset();
     disk_mount_manager_.reset();
     chromeos::PowerManagerClient::Shutdown();
+    thread_bundle_.RunUntilIdle();
   }
 
   Profile* profile() const { return main_profile_->profile(); }
@@ -726,8 +727,7 @@ TEST_F(VolumeManagerTest, OnFormatEvent_Completed) {
   volume_manager()->RemoveObserver(&observer);
 }
 
-// TODO(crbug.com/943570): test is flaky, disabled.
-TEST_F(VolumeManagerTest, DISABLED_OnFormatEvent_CompletedFailed) {
+TEST_F(VolumeManagerTest, OnFormatEvent_CompletedFailed) {
   LoggingObserver observer;
   volume_manager()->AddObserver(&observer);
 
