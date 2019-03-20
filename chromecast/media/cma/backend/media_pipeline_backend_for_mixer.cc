@@ -37,9 +37,13 @@ namespace media {
 
 MediaPipelineBackendForMixer::MediaPipelineBackendForMixer(
     const MediaPipelineDeviceParams& params)
-    : state_(kStateUninitialized), params_(params) {}
+    : state_(kStateUninitialized), params_(params), weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
 
-MediaPipelineBackendForMixer::~MediaPipelineBackendForMixer() {}
+MediaPipelineBackendForMixer::~MediaPipelineBackendForMixer() {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+}
 
 MediaPipelineBackendForMixer::AudioDecoder*
 MediaPipelineBackendForMixer::CreateAudioDecoder() {
@@ -262,7 +266,7 @@ void MediaPipelineBackendForMixer::VideoReadyToPlay() {
   GetTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&MediaPipelineBackendForMixer::OnVideoReadyToPlay,
-                     base::Unretained(this)));
+                     weak_this_));
 }
 
 void MediaPipelineBackendForMixer::OnVideoReadyToPlay() {
