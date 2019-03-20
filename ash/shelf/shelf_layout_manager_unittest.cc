@@ -2763,6 +2763,28 @@ TEST_F(ShelfLayoutManagerTest, A11yAlertOnWorkspaceState) {
             client.last_a11y_alert());
 }
 
+// Verifies the auto-hide shelf is hidden if there is only a single PIP window.
+TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Create a PIP window.
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  // Set always on top so it is put in the PIP container.
+  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->Show();
+  const wm::WMEvent pip_event(wm::WM_EVENT_PIP);
+  wm::GetWindowState(window)->OnWMEvent(&pip_event);
+  Shell::Get()->UpdateShelfVisibility();
+
+  // Expect the shelf to be hidden.
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
   ShelfLayoutManagerKeyboardTest() = default;

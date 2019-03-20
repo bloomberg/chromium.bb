@@ -1122,7 +1122,10 @@ bool ShelfLayoutManager::HasVisibleWindow() const {
       return true;
     }
   }
-  return false;
+  auto* pip_container = Shell::GetContainer(root, kShellWindowId_PipContainer);
+  // The PIP window is not activatable and is not in the MRU list, but count
+  // it as a visible window for shelf auto-hide purposes. See crbug.com/942991.
+  return !pip_container->children().empty();
 }
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
