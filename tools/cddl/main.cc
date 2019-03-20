@@ -103,7 +103,15 @@ int main(int argc, char** argv) {
   // Parse and validate all cmdline arguments.
   CommandLineArguments args = ParseCommandLineArguments(argc, argv);
   if (args.cddl_filename.empty()) {
-    std::cerr << "bad arguments" << std::endl;
+    std::cerr << "Usage: " << std::endl
+              << "cddl --header parsed.h --cc parsed.cc --gen-dir "
+                 "output/generated input.cddl"
+              << std::endl
+              << "All flags are required." << std::endl
+              << "Example: " << std::endl
+              << "./cddl --header osp_messages.h --cc osp_messages.cc "
+                 "--gen-dir gen/msgs ../../msgs/osp_messages.cddl"
+              << std::endl;
     return 1;
   }
 
