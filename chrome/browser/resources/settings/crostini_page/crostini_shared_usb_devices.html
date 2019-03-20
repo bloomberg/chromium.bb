@@ -33,7 +33,8 @@
         <div class="toggle-container settings-box">
           <div class="label">[[item.label]]</div>
           <cr-toggle class="toggle" checked="[[item.shared]]"
-            on-change="onDeviceSharedChange_"></cr-toggle>
+            on-change="onDeviceSharedChange_" 
+            aria-label$="[[item.label]]"></cr-toggle>
         </div>
       </div>
     </template>
