@@ -102,7 +102,7 @@ void CastRunner::GetConfigCallback(
 
   // Create a component based on the returned configuration, and pass it the
   // fields stashed in PendingComponent.
-  GURL cast_app_url(*app_config.web_url());
+  GURL cast_app_url(app_config.web_url());
   auto component = std::make_unique<CastComponent>(
       this, std::move(pending_component->startup_context),
       std::move(pending_component->controller_request),
