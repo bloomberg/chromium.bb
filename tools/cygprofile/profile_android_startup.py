@@ -191,7 +191,7 @@ class AndroidProfileTool(object):
       os.path.dirname(__file__), 'memory_top_10_mobile_000.wprgo')
 
   def __init__(self, output_directory, host_profile_dir, use_wpr, urls,
-               simulate_user, device):
+               simulate_user, device, debug=False):
     """Constructor.
 
     Args:
@@ -203,6 +203,7 @@ class AndroidProfileTool(object):
       simulate_user: (bool) Whether to simulate a user.
       device: (DeviceUtils) Android device selected to be used to
                             generate orderfile.
+      debug: (bool) Use simpler, non-representative debugging profile.
     """
     assert device, 'Expected a valid device'
     self._device = device
@@ -212,6 +213,7 @@ class AndroidProfileTool(object):
     self._use_wpr = use_wpr
     self._urls = urls
     self._simulate_user = simulate_user
+    self._debug = debug
     self._SetUpDevice()
     self._pregenerated_profiles = None
 
@@ -305,12 +307,16 @@ class AndroidProfileTool(object):
       logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
       return self._pregenerated_profiles
     logging.info('Running system health profile')
+    profile_benchmark = 'orderfile_generation.training'
+    if self._debug:
+      logging.info('Using reduced debugging profile')
+      profile_benchmark = 'orderfile_generation.debugging'
     self._SetUpDeviceFolders()
     self._RunCommand(['tools/perf/run_benchmark',
                       '--device={}'.format(self._device.serial),
                       '--browser=exact',
                       '--browser-executable={}'.format(apk),
-                      'orderfile_generation.training'])
+                      profile_benchmark])
     data = self._PullProfileData()
     self._DeleteDeviceData()
     return data
