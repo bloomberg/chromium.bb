@@ -864,7 +864,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .WithBrowser()
             .Offline()
             .EnableDriveFs(),
-        TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline()));
+        TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
+        TestCase("openFileDialogDefaultFilter").WithBrowser(),
+        TestCase("saveFileDialogDefaultFilter").WithBrowser()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
