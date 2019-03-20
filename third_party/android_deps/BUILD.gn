@@ -189,6 +189,34 @@ android_aar_prebuilt("androidx_test_monitor_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_rules_java") {
+  aar_path = "libs/androidx_test_rules/rules-1.1.0.aar"
+  info_path = "libs/androidx_test_rules/androidx_test_rules.info"
+  testonly = true
+  deps = [
+    ":androidx_test_runner_java",
+  ]
+  deps += [
+    "//third_party/android_tools:android_test_base_java",
+    "//third_party/android_tools:android_test_mock_java",
+    "//third_party/android_tools:android_test_runner_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_runner_java") {
+  aar_path = "libs/androidx_test_runner/runner-1.1.0.aar"
+  info_path = "libs/androidx_test_runner/androidx_test_runner.info"
+  testonly = true
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_test_monitor_java",
+    ":net_sf_kxml_kxml2_java",
+    "//third_party/junit:junit",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_appcompat_v7_java") {
   aar_path = "libs/com_android_support_appcompat_v7/appcompat-v7-27.0.0.aar"
   info_path = "libs/com_android_support_appcompat_v7/com_android_support_appcompat_v7.info"
@@ -915,6 +943,15 @@ java_prebuilt("javax_annotation_jsr250_api_java") {
   jar_path = "libs/javax_annotation_jsr250_api/jsr250-api-1.0.jar"
   output_name = "javax_annotation_jsr250_api"
   visibility = [ ":*" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("net_sf_kxml_kxml2_java") {
+  jar_path = "libs/net_sf_kxml_kxml2/kxml2-2.3.0.jar"
+  output_name = "net_sf_kxml_kxml2"
+  supports_android = true
+  visibility = [ ":*" ]
+  testonly = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
