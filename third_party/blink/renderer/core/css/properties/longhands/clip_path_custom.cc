@@ -35,7 +35,7 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
   if (ClipPathOperation* operation = style.ClipPath()) {
     if (operation->GetType() == ClipPathOperation::SHAPE) {
       return ValueForBasicShape(
-          style, ToShapeClipPathOperation(operation)->GetBasicShape());
+          style, To<ShapeClipPathOperation>(operation)->GetBasicShape());
     }
     if (operation->GetType() == ClipPathOperation::REFERENCE) {
       return cssvalue::CSSURIValue::Create(

@@ -2522,7 +2522,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(clip_path_operation);
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation* clip_path =
-        ToShapeClipPathOperation(clip_path_operation);
+        To<ShapeClipPathOperation>(clip_path_operation);
     return !clip_path->GetPath(reference_box).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
