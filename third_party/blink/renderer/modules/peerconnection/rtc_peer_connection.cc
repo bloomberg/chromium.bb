@@ -2457,8 +2457,9 @@ RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
   if (transport_locator != ice_transports_by_native_transport_.end()) {
     return transport_locator->value;
   }
-  RTCIceTransport* transport =
-      RTCIceTransport::Create(GetExecutionContext(), ice_transport);
+  // TODO(crbug.com/907849): Create a functional ICE transport object.
+  // This is a dummy.
+  RTCIceTransport* transport = RTCIceTransport::Create(GetExecutionContext());
   ice_transports_by_native_transport_.insert(ice_transport.get(), transport);
   return transport;
 }
