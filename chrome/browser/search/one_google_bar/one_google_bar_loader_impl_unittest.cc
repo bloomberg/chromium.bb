@@ -364,3 +364,22 @@ TEST_F(OneGoogleBarLoaderImplWithMirrorAccountConsistencyTest,
       last_request_headers().HasHeader(signin::kChromeConnectedHeader));
 #endif
 }
+
+TEST_F(OneGoogleBarLoaderImplTest, ParsesLanguageCode) {
+  SetUpResponseWithData(R"json({"update": { "language_code": "en-US", "ogb": {
+  "html": { "private_do_not_access_or_else_safe_html_wrapped_value": "" },
+  "page_hooks": {}
+  }}})json");
+
+  base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
+  one_google_bar_loader()->Load(callback.Get());
+
+  base::Optional<OneGoogleBarData> data;
+  base::RunLoop loop;
+  EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
+      .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
+  loop.Run();
+
+  ASSERT_TRUE(data.has_value());
+  EXPECT_THAT(data->language_code, Eq("en-US"));
+}

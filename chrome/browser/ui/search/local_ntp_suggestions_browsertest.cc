@@ -6,6 +6,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,17 +18,23 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using ::testing::Invoke;
 
 class MockSearchSuggestService : public SearchSuggestService {
  public:
-  explicit MockSearchSuggestService(Profile* profile)
-      : SearchSuggestService(profile, nullptr, nullptr) {}
+  MOCK_METHOD0(Refresh, void());
 
-  void Refresh() override {
+  void RefreshImpl() {
     SearchSuggestDataLoaded(SearchSuggestLoader::Status::OK,
                             search_suggest_data_);
   }
+
+  explicit MockSearchSuggestService(Profile* profile)
+      : SearchSuggestService(profile, nullptr, nullptr) {}
 
   void set_search_suggest_data(const SearchSuggestData& search_suggest_data) {
     search_suggest_data_ = search_suggest_data;
@@ -88,13 +96,22 @@ class LocalNTPSearchSuggestTest : public InProcessBrowserTest {
       subscription_;
 };
 
-IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest, SuggestionsInjectedIntoPage) {
+IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
+                       SuggestionsInjectedIntoPageEnUS) {
   EXPECT_EQ(base::nullopt, search_suggest_service()->search_suggest_data());
+
+  OneGoogleBarService* one_google_bar_service =
+      OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
+  one_google_bar_service->SetLanguageCodeForTesting("en-US");
 
   SearchSuggestData data;
   data.suggestions_html = "<div>suggestions</div>";
   data.end_of_body_script = "console.log('suggestions-done')";
   search_suggest_service()->set_search_suggest_data(data);
+
+  EXPECT_CALL(*search_suggest_service(), Refresh())
+      .WillOnce(Invoke(search_suggest_service(),
+                       &MockSearchSuggestService::RefreshImpl));
 
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
@@ -115,8 +132,44 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest, SuggestionsInjectedIntoPage) {
   EXPECT_EQ(1, search_suggest_service()->impression_count());
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest, NoSuggestionsjectedIntoPage) {
+IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
+                       SuggestionsNotInjectedIntoPageNonEnUS) {
   EXPECT_EQ(base::nullopt, search_suggest_service()->search_suggest_data());
+
+  OneGoogleBarService* one_google_bar_service =
+      OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
+  one_google_bar_service->SetLanguageCodeForTesting("en-UK");
+
+  SearchSuggestData data;
+  data.suggestions_html = "<div>suggestions</div>";
+  data.end_of_body_script = "console.log('suggestions-done')";
+  search_suggest_service()->set_search_suggest_data(data);
+
+  EXPECT_CALL(*search_suggest_service(), Refresh()).Times(0);
+
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
+                                                        /*delay=*/1000);
+  bool result;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('suggestions') === null", &result));
+  EXPECT_TRUE(result);
+  EXPECT_EQ(0, search_suggest_service()->impression_count());
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
+                       EmptySuggestionsNotInjectedIntoPage) {
+  EXPECT_EQ(base::nullopt, search_suggest_service()->search_suggest_data());
+
+  OneGoogleBarService* one_google_bar_service =
+      OneGoogleBarServiceFactory::GetForProfile(browser()->profile());
+  one_google_bar_service->SetLanguageCodeForTesting("en-US");
+
+  SearchSuggestData data;
+  EXPECT_CALL(*search_suggest_service(), Refresh())
+      .WillOnce(Invoke(search_suggest_service(),
+                       &MockSearchSuggestService::RefreshImpl));
 
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));

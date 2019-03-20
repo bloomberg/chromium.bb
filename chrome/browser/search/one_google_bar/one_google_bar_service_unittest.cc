@@ -247,3 +247,33 @@ TEST_F(OneGoogleBarServiceTest, DoesNotNotifyObserverOnSignInIfNoCachedData) {
 
   service()->RemoveObserver(&observer);
 }
+
+TEST_F(OneGoogleBarServiceTest, UpdatesLanguageCode) {
+  ASSERT_THAT(service()->one_google_bar_data(), Eq(base::nullopt));
+
+  // Request a refresh. That should arrive at the loader.
+  service()->Refresh();
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+
+  // Fulfill it.
+  OneGoogleBarData data;
+  data.language_code = "en-US";
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, data);
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
+  EXPECT_THAT(service()->language_code(), "en-US");
+
+  // Request another refresh.
+  service()->Refresh();
+  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+
+  // For now, the old data should still be there.
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(data));
+  EXPECT_THAT(service()->language_code(), "en-US");
+
+  // Fulfill the second request, the language code should now be updated.
+  OneGoogleBarData other_data;
+  other_data.language_code = "en-UK";
+  loader()->RespondToAllCallbacks(OneGoogleBarLoader::Status::OK, other_data);
+  EXPECT_THAT(service()->one_google_bar_data(), Eq(other_data));
+  EXPECT_THAT(service()->language_code(), "en-UK");
+}

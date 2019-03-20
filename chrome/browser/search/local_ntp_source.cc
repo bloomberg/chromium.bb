@@ -86,6 +86,9 @@ using search_provider_logos::LogoService;
 
 namespace {
 
+// Language code used to check features run in English in the US.
+const char kEnUSLanguageCode[] = "en-US";
+
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
 
@@ -841,10 +844,15 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
-    MaybeServeSearchSuggestions(callback);
+    // Currently Vasco search suggestions are only available for en-US
+    // users. If this restriction is expanded or removed in the future this
+    // check must be changed.
+    if (one_google_bar_service_->language_code() == kEnUSLanguageCode) {
+      MaybeServeSearchSuggestions(callback);
 
-    search_suggest_requests_.emplace_back(base::TimeTicks::Now());
-    search_suggest_service_->Refresh();
+      search_suggest_requests_.emplace_back(base::TimeTicks::Now());
+      search_suggest_service_->Refresh();
+    }
 
     return;
   }
