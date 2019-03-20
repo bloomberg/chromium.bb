@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/network_error_logging/persistent_reporting_and_nel_store.h"
 
 namespace base {
 class FilePath;
@@ -21,7 +22,7 @@ class SequencedTaskRunner;
 namespace net {
 
 class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNELStore
-    : public NetworkErrorLoggingService::PersistentNELStore {
+    : public PersistentReportingAndNELStore {
  public:
   SQLitePersistentReportingAndNELStore(
       const base::FilePath& path,

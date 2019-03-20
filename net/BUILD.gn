@@ -1797,6 +1797,7 @@ component("net") {
       sources += [
         "network_error_logging/network_error_logging_service.cc",
         "network_error_logging/network_error_logging_service.h",
+        "network_error_logging/persistent_reporting_and_nel_store.h",
         "reporting/reporting_browsing_data_remover.cc",
         "reporting/reporting_browsing_data_remover.h",
         "reporting/reporting_cache.cc",
