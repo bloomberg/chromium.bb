@@ -531,6 +531,7 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   std::string actual_locale =
       LoadLocalState(chrome_feature_list_creator_.get(), is_running_tests);
   chrome_feature_list_creator_->SetApplicationLocale(actual_locale);
+  chrome_feature_list_creator_->OverrideCachedUIStrings();
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
