@@ -61,7 +61,7 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSSizeNonInterpolableValue);
 
 static InterpolationValue ConvertKeyword(CSSValueID keyword) {
-  return InterpolationValue(InterpolableList::Create(0),
+  return InterpolationValue(std::make_unique<InterpolableList>(0),
                             CSSSizeNonInterpolableValue::Create(keyword));
 }
 

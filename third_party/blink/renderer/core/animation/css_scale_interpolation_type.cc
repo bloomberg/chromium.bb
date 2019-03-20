@@ -59,7 +59,7 @@ struct Scale {
 };
 
 std::unique_ptr<InterpolableValue> CreateScaleIdentity() {
-  std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
+  auto list = std::make_unique<InterpolableList>(3);
   for (wtf_size_t i = 0; i < 3; i++)
     list->Set(i, std::make_unique<InterpolableNumber>(1));
   return std::move(list);
@@ -132,11 +132,11 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSScaleNonInterpolableValue);
 
 InterpolationValue Scale::CreateInterpolationValue() const {
   if (is_none) {
-    return InterpolationValue(InterpolableList::Create(0),
+    return InterpolationValue(std::make_unique<InterpolableList>(0),
                               CSSScaleNonInterpolableValue::Create(*this));
   }
 
-  std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
+  auto list = std::make_unique<InterpolableList>(3);
   for (wtf_size_t i = 0; i < 3; i++)
     list->Set(i, std::make_unique<InterpolableNumber>(array[i]));
   return InterpolationValue(std::move(list),

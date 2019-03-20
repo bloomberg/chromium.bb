@@ -70,13 +70,11 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
     length++;
   }
 
-  std::unique_ptr<InterpolableList> path_args =
-      InterpolableList::Create(length);
+  auto path_args = std::make_unique<InterpolableList>(length);
   for (wtf_size_t i = 0; i < interpolable_path_segs.size(); i++)
     path_args->Set(i, std::move(interpolable_path_segs[i]));
 
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kPathComponentIndexCount);
+  auto result = std::make_unique<InterpolableList>(kPathComponentIndexCount);
   result->Set(kPathArgsIndex, std::move(path_args));
   result->Set(kPathNeutralIndex, std::make_unique<InterpolableNumber>(0));
 
@@ -129,8 +127,7 @@ InterpolationValue PathInterpolationFunctions::MaybeConvertNeutral(
     InterpolationType::ConversionCheckers& conversion_checkers) {
   conversion_checkers.push_back(
       UnderlyingPathSegTypesChecker::Create(underlying));
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kPathComponentIndexCount);
+  auto result = std::make_unique<InterpolableList>(kPathComponentIndexCount);
   result->Set(kPathArgsIndex, ToInterpolableList(*underlying.interpolable_value)
                                   .Get(kPathArgsIndex)
                                   ->CloneAndZero());

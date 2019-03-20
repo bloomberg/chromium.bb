@@ -22,8 +22,7 @@ enum RectComponentIndex : unsigned {
 InterpolationValue SVGRectInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kRectComponentIndexCount);
+  auto result = std::make_unique<InterpolableList>(kRectComponentIndexCount);
   for (wtf_size_t i = 0; i < kRectComponentIndexCount; i++)
     result->Set(i, std::make_unique<InterpolableNumber>(0));
   return InterpolationValue(std::move(result));
@@ -35,8 +34,7 @@ InterpolationValue SVGRectInterpolationType::MaybeConvertSVGValue(
     return nullptr;
 
   const SVGRect& rect = ToSVGRect(svg_value);
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kRectComponentIndexCount);
+  auto result = std::make_unique<InterpolableList>(kRectComponentIndexCount);
   result->Set(kRectX, std::make_unique<InterpolableNumber>(rect.X()));
   result->Set(kRectY, std::make_unique<InterpolableNumber>(rect.Y()));
   result->Set(kRectWidth, std::make_unique<InterpolableNumber>(rect.Width()));

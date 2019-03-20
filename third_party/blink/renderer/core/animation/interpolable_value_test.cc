@@ -71,12 +71,12 @@ TEST_F(AnimationInterpolableValueTest, InterpolateNumbers) {
 }
 
 TEST_F(AnimationInterpolableValueTest, SimpleList) {
-  std::unique_ptr<InterpolableList> list_a = InterpolableList::Create(3);
+  auto list_a = std::make_unique<InterpolableList>(3);
   list_a->Set(0, std::make_unique<InterpolableNumber>(0));
   list_a->Set(1, std::make_unique<InterpolableNumber>(42));
   list_a->Set(2, std::make_unique<InterpolableNumber>(20.5));
 
-  std::unique_ptr<InterpolableList> list_b = InterpolableList::Create(3);
+  auto list_b = std::make_unique<InterpolableList>(3);
   list_b->Set(0, std::make_unique<InterpolableNumber>(100));
   list_b->Set(1, std::make_unique<InterpolableNumber>(-200));
   list_b->Set(2, std::make_unique<InterpolableNumber>(300));
@@ -92,16 +92,16 @@ TEST_F(AnimationInterpolableValueTest, SimpleList) {
 }
 
 TEST_F(AnimationInterpolableValueTest, NestedList) {
-  std::unique_ptr<InterpolableList> list_a = InterpolableList::Create(3);
+  auto list_a = std::make_unique<InterpolableList>(3);
   list_a->Set(0, std::make_unique<InterpolableNumber>(0));
-  std::unique_ptr<InterpolableList> sub_list_a = InterpolableList::Create(1);
+  auto sub_list_a = std::make_unique<InterpolableList>(1);
   sub_list_a->Set(0, std::make_unique<InterpolableNumber>(100));
   list_a->Set(1, std::move(sub_list_a));
   list_a->Set(2, std::make_unique<InterpolableNumber>(0));
 
-  std::unique_ptr<InterpolableList> list_b = InterpolableList::Create(3);
+  auto list_b = std::make_unique<InterpolableList>(3);
   list_b->Set(0, std::make_unique<InterpolableNumber>(100));
-  std::unique_ptr<InterpolableList> sub_list_b = InterpolableList::Create(1);
+  auto sub_list_b = std::make_unique<InterpolableList>(1);
   sub_list_b->Set(0, std::make_unique<InterpolableNumber>(50));
   list_b->Set(1, std::move(sub_list_b));
   list_b->Set(2, std::make_unique<InterpolableNumber>(1));
@@ -134,11 +134,11 @@ TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers) {
 }
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddLists) {
-  std::unique_ptr<InterpolableList> base_list = InterpolableList::Create(3);
+  auto base_list = std::make_unique<InterpolableList>(3);
   base_list->Set(0, std::make_unique<InterpolableNumber>(5));
   base_list->Set(1, std::make_unique<InterpolableNumber>(10));
   base_list->Set(2, std::make_unique<InterpolableNumber>(15));
-  std::unique_ptr<InterpolableList> add_list = InterpolableList::Create(3);
+  auto add_list = std::make_unique<InterpolableList>(3);
   add_list->Set(0, std::make_unique<InterpolableNumber>(1));
   add_list->Set(1, std::make_unique<InterpolableNumber>(2));
   add_list->Set(2, std::make_unique<InterpolableNumber>(3));

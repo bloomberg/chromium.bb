@@ -16,8 +16,8 @@ namespace blink {
 
 std::unique_ptr<InterpolableValue>
 SVGLengthInterpolationType::NeutralInterpolableValue() {
-  std::unique_ptr<InterpolableList> list_of_values =
-      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
+  auto list_of_values = std::make_unique<InterpolableList>(
+      CSSPrimitiveValue::kLengthUnitTypeCount);
   for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
     list_of_values->Set(i, std::make_unique<InterpolableNumber>(0));
 
@@ -31,8 +31,8 @@ InterpolationValue SVGLengthInterpolationType::ConvertSVGLength(
   CSSLengthArray length_array;
   primitive_value.AccumulateLengthArray(length_array);
 
-  std::unique_ptr<InterpolableList> list_of_values =
-      InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
+  auto list_of_values = std::make_unique<InterpolableList>(
+      CSSPrimitiveValue::kLengthUnitTypeCount);
   for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i) {
     list_of_values->Set(
         i, std::make_unique<InterpolableNumber>(length_array.values[i]));

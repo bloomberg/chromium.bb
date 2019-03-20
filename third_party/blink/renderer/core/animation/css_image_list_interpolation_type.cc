@@ -118,8 +118,7 @@ InterpolationValue CSSImageListInterpolationType::MaybeConvertValue(
   const auto& value_list = temp_list ? *temp_list : To<CSSValueList>(value);
 
   const wtf_size_t length = value_list.length();
-  std::unique_ptr<InterpolableList> interpolable_list =
-      InterpolableList::Create(length);
+  auto interpolable_list = std::make_unique<InterpolableList>(length);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue component =

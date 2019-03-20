@@ -33,8 +33,7 @@ enum InterpolableColorIndex : unsigned {
 static std::unique_ptr<InterpolableValue> CreateInterpolableColorForIndex(
     InterpolableColorIndex index) {
   DCHECK_LT(index, kInterpolableColorIndexCount);
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kInterpolableColorIndexCount);
+  auto list = std::make_unique<InterpolableList>(kInterpolableColorIndexCount);
   for (unsigned i = 0; i < kInterpolableColorIndexCount; i++)
     list->Set(i, std::make_unique<InterpolableNumber>(i == index));
   return std::move(list);
@@ -42,8 +41,7 @@ static std::unique_ptr<InterpolableValue> CreateInterpolableColorForIndex(
 
 std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::CreateInterpolableColor(const Color& color) {
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kInterpolableColorIndexCount);
+  auto list = std::make_unique<InterpolableList>(kInterpolableColorIndexCount);
   list->Set(kRed,
             std::make_unique<InterpolableNumber>(color.Red() * color.Alpha()));
   list->Set(kGreen, std::make_unique<InterpolableNumber>(color.Green() *
@@ -240,8 +238,8 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertValue(
       MaybeCreateInterpolableColor(value);
   if (!interpolable_color)
     return nullptr;
-  std::unique_ptr<InterpolableList> color_pair =
-      InterpolableList::Create(kInterpolableColorPairIndexCount);
+  auto color_pair =
+      std::make_unique<InterpolableList>(kInterpolableColorPairIndexCount);
   color_pair->Set(kUnvisited, interpolable_color->Clone());
   color_pair->Set(kVisited, std::move(interpolable_color));
   return InterpolationValue(std::move(color_pair));
@@ -253,8 +251,8 @@ InterpolationValue CSSColorInterpolationType::ConvertStyleColorPair(
   if (unvisited_color.IsNull() || visited_color.IsNull()) {
     return nullptr;
   }
-  std::unique_ptr<InterpolableList> color_pair =
-      InterpolableList::Create(kInterpolableColorPairIndexCount);
+  auto color_pair =
+      std::make_unique<InterpolableList>(kInterpolableColorPairIndexCount);
   color_pair->Set(kUnvisited,
                   CreateInterpolableColor(unvisited_color.Access()));
   color_pair->Set(kVisited, CreateInterpolableColor(visited_color.Access()));

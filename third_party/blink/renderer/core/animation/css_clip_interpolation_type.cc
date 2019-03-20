@@ -148,14 +148,13 @@ static std::unique_ptr<InterpolableValue> ConvertClipComponent(
     const Length& length,
     double zoom) {
   if (length.IsAuto())
-    return InterpolableList::Create(0);
+    return std::make_unique<InterpolableList>(0);
   return LengthInterpolationFunctions::MaybeConvertLength(length, zoom)
       .interpolable_value;
 }
 
 static InterpolationValue CreateClipValue(const LengthBox& clip, double zoom) {
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kClipComponentIndexCount);
+  auto list = std::make_unique<InterpolableList>(kClipComponentIndexCount);
   list->Set(kClipTop, ConvertClipComponent(clip.Top(), zoom));
   list->Set(kClipRight, ConvertClipComponent(clip.Right(), zoom));
   list->Set(kClipBottom, ConvertClipComponent(clip.Bottom(), zoom));
@@ -206,7 +205,7 @@ static bool IsCSSAuto(const CSSValue& value) {
 static std::unique_ptr<InterpolableValue> ConvertClipComponent(
     const CSSValue& length) {
   if (IsCSSAuto(length))
-    return InterpolableList::Create(0);
+    return std::make_unique<InterpolableList>(0);
   return LengthInterpolationFunctions::MaybeConvertCSSValue(length)
       .interpolable_value;
 }
@@ -218,8 +217,7 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertValue(
   const auto* quad = DynamicTo<CSSQuadValue>(value);
   if (!quad)
     return nullptr;
-  std::unique_ptr<InterpolableList> list =
-      InterpolableList::Create(kClipComponentIndexCount);
+  auto list = std::make_unique<InterpolableList>(kClipComponentIndexCount);
   list->Set(kClipTop, ConvertClipComponent(*quad->Top()));
   list->Set(kClipRight, ConvertClipComponent(*quad->Right()));
   list->Set(kClipBottom, ConvertClipComponent(*quad->Bottom()));

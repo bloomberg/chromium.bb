@@ -19,7 +19,7 @@ namespace blink {
 namespace {
 
 InterpolationValue CreateNoneValue() {
-  return InterpolationValue(InterpolableList::Create(0));
+  return InterpolationValue(std::make_unique<InterpolableList>(0));
 }
 
 bool IsNoneValue(const InterpolationValue& value) {
@@ -58,8 +58,8 @@ enum TranslateComponentIndex : unsigned {
 };
 
 std::unique_ptr<InterpolableValue> CreateTranslateIdentity() {
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kTranslateComponentIndexCount);
+  auto result =
+      std::make_unique<InterpolableList>(kTranslateComponentIndexCount);
   result->Set(kTranslateX,
               LengthInterpolationFunctions::CreateNeutralInterpolableValue());
   result->Set(kTranslateY,
@@ -75,8 +75,8 @@ InterpolationValue ConvertTranslateOperation(
   if (!translate)
     return CreateNoneValue();
 
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kTranslateComponentIndexCount);
+  auto result =
+      std::make_unique<InterpolableList>(kTranslateComponentIndexCount);
   result->Set(kTranslateX, LengthInterpolationFunctions::MaybeConvertLength(
                                translate->X(), zoom)
                                .interpolable_value);
@@ -126,8 +126,8 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertValue(
   if (list.length() < 1 || list.length() > 3)
     return nullptr;
 
-  std::unique_ptr<InterpolableList> result =
-      InterpolableList::Create(kTranslateComponentIndexCount);
+  auto result =
+      std::make_unique<InterpolableList>(kTranslateComponentIndexCount);
   for (wtf_size_t i = 0; i < kTranslateComponentIndexCount; i++) {
     InterpolationValue component = nullptr;
     if (i < list.length()) {
