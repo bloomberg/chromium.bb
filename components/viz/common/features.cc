@@ -95,24 +95,26 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
 
 bool IsUsingSkiaRenderer() {
   // We require OOP-D everywhere but WebView.
+  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer);
 #if !defined(OS_ANDROID)
-  if (!IsVizDisplayCompositorEnabled()) {
+  if (enabled && !IsVizDisplayCompositorEnabled()) {
     DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";
     return false;
   }
 #endif  // !defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(kUseSkiaRenderer);
+  return enabled;
 }
 
 bool IsUsingSkiaRendererNonDDL() {
   // We require OOP-D everywhere but WebView.
+  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRendererNonDDL);
 #if !defined(OS_ANDROID)
-  if (!IsVizDisplayCompositorEnabled()) {
+  if (enabled && !IsVizDisplayCompositorEnabled()) {
     DLOG(ERROR) << "UseSkiaRendererNonDDL requires VizDisplayCompositor.";
     return false;
   }
 #endif  // !defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(kUseSkiaRendererNonDDL);
+  return enabled;
 }
 
 bool IsRecordingSkPicture() {
