@@ -71,10 +71,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // once https://crbug.com/458365 is resolved.
   static void SetSSLKeyLogger(std::unique_ptr<SSLKeyLogger> logger);
 
-  // ClearSessionCache clears the SSL session cache, used to resume SSL
-  // sessions.
-  static void ClearSessionCache();
-
  protected:
   void set_signed_cert_timestamps_received(
       bool signed_cert_timestamps_received) {
