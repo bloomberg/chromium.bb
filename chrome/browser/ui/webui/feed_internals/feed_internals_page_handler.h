@@ -50,6 +50,8 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
       GetCurrentContentCallback callback,
       std::vector<offline_pages::PrefetchSuggestion> suggestions);
 
+  bool IsFeedAllowed();
+
   // Services that provide the data and functionality.
   feed::FeedSchedulerHost* feed_scheduler_host_;
   feed::FeedOfflineHost* feed_offline_host_;

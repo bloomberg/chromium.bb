@@ -61,8 +61,7 @@ void FeedInternalsPageHandler::GetGeneralProperties(
       base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions);
   properties->is_feed_visible =
       pref_service_->GetBoolean(feed::prefs::kArticlesListVisible);
-  properties->is_feed_allowed =
-      pref_service_->GetBoolean(feed::prefs::kEnableSnippets);
+  properties->is_feed_allowed = IsFeedAllowed();
   properties->is_prefetching_enabled =
       offline_pages::prefetch_prefs::IsEnabled(pref_service_);
   properties->feed_fetch_url = feed::GetFeedFetchUrlForDebugging();
@@ -114,6 +113,12 @@ void FeedInternalsPageHandler::ClearCachedDataAndRefreshFeed() {
 
 void FeedInternalsPageHandler::GetCurrentContent(
     GetCurrentContentCallback callback) {
+  if (!IsFeedAllowed()) {
+    std::move(callback).Run(
+        std::vector<feed_internals::mojom::SuggestionPtr>());
+    return;
+  }
+
   feed_offline_host_->GetCurrentArticleSuggestions(base::BindOnce(
       &FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone,
       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -140,4 +145,8 @@ void FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone(
 void FeedInternalsPageHandler::GetFeedProcessScopeDump(
     GetFeedProcessScopeDumpCallback callback) {
   std::move(callback).Run(feed::GetFeedProcessScopeDumpForDebugging());
+}
+
+bool FeedInternalsPageHandler::IsFeedAllowed() {
+  return pref_service_->GetBoolean(feed::prefs::kEnableSnippets);
 }
