@@ -128,12 +128,12 @@ class CHROMECAST_EXPORT ExternalAudioPipelineShlib {
 
   // Adds an external media metadata observer.
   static void AddExternalMediaMetadataChangeObserver(
-      ExternalMediaMetadataChangeObserver* observer) __attribute__((__weak__));
+      ExternalMediaMetadataChangeObserver* observer);
 
   // Removes an external media volume observer. After this is called, the
   // implementation must not call any more methods on the observer.
   static void RemoveExternalMediaMetadataChangeObserver(
-      ExternalMediaMetadataChangeObserver* observer) __attribute__((__weak__));
+      ExternalMediaMetadataChangeObserver* observer);
 
   // Returns an instance of MixerOutputStream from the shared library.
   // Caller will take ownership of the returned pointer.
