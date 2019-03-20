@@ -22,8 +22,6 @@
     <style include="cr-icons shared-style paper-tabs-style">
       #activity-log-heading {
         @apply --cr-title-text;
-        display: flex;
-        flex-direction: row;
         flex-grow: 1;
       }
 
@@ -45,6 +43,25 @@
       paper-tabs {
         font-size: inherit;
         height: 40px;
+      }
+
+      .page-content {
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 0;
+      }
+
+      iron-pages {
+        flex: 1;
+        position: relative;
+      }
+
+      activity-log-history,
+      activity-log-stream {
+        bottom: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
       }
     </style>
     <div class="page-container" id="container">

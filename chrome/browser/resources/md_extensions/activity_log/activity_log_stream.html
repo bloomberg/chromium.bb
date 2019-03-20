@@ -10,13 +10,20 @@
   <template>
     <style include="shared-style paper-button-style">
       :host {
-        --activity-log-call-and-time-width: 596px;
+        --activity-log-call-and-time-width: 575px;
         --activity-type-width: 85px;
         --activity-time-width: 100px;
+
+        display: flex;
+        flex-direction: column;
       }
 
       .activity-table-headings {
-        max-width: var(--activity-log-call-and-time-width);
+        width: var(--activity-log-call-and-time-width);
+      }
+
+      #activity-stream-list {
+        overflow-y: auto;
       }
 
       #activity-type {
@@ -56,13 +63,14 @@
         $i18n{emptyStreamStarted}
       </span>
     </div>
+    <div class="activity-table-headings"
+        hidden$="[[isStreamEmpty_(activityStream_.length)]]">
+      <span id="activity-type">$i18n{activityLogTypeColumn}</span>
+      <span id="activity-key">$i18n{activityLogNameColumn}</span>
+      <span id="activity-time">$i18n{activityLogTimeColumn}</span>
+    </div>
     <div id="activity-stream-list"
         hidden$="[[isStreamEmpty_(activityStream_.length)]]">
-      <div class="activity-table-headings">
-        <span id="activity-type">$i18n{activityLogTypeColumn}</span>
-        <span id="activity-key">$i18n{activityLogNameColumn}</span>
-        <span id="activity-time">$i18n{activityLogTimeColumn}</span>
-      </div>
       <template is="dom-repeat" items="[[activityStream_]]">
         <activity-log-stream-item data="[[item]]"></activity-log-stream-item>
       </template>

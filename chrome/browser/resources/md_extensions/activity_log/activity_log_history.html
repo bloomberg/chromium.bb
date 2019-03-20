@@ -11,13 +11,20 @@
   <template>
     <style include="paper-button-style shared-style">
       :host {
-        --activity-log-call-and-count-width: 529px;
+        --activity-log-call-and-count-width: 514px;
         --activity-type-width: 85px;
         --activity-count-width: 100px;
+
+        display: flex;
+        flex-direction: column;
       }
 
       .activity-table-headings {
-        max-width: var(--activity-log-call-and-count-width);
+        width: var(--activity-log-call-and-count-width);
+      }
+
+      #activity-list {
+        overflow-y: auto;
       }
 
       #activity-type {
@@ -50,13 +57,14 @@
             pageState_, activityData_)]]">
       <span>$i18n{noActivities}</span>
     </div>
+    <div class="activity-table-headings"
+        hidden$="[[!shouldShowActivities_(pageState_, activityData_)]]">
+      <span id="activity-type">$i18n{activityLogTypeColumn}</span>
+      <span id="activity-key">$i18n{activityLogNameColumn}</span>
+      <span id="activity-count">$i18n{activityLogCountColumn}</span>
+    </div>
     <div id="activity-list"
         hidden$="[[!shouldShowActivities_(pageState_, activityData_)]]">
-      <div class="activity-table-headings">
-        <span id="activity-type">$i18n{activityLogTypeColumn}</span>
-        <span id="activity-key">$i18n{activityLogNameColumn}</span>
-        <span id="activity-count">$i18n{activityLogCountColumn}</span>
-      </div>
       <template is="dom-repeat" items="[[activityData_]]">
         <activity-log-history-item data="[[item]]">
         </activity-log-history-item>
