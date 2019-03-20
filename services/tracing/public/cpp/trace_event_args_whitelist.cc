@@ -33,6 +33,7 @@ const char* const kRendererHostAllowedArgs[] = {
     "class",           "line", "should_background", "has_pending_views",
     "bytes_allocated", nullptr};
 const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
+const char* const kTopLevelFlowAllowedArgs[] = {"task_queue_name", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -63,6 +64,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"ui", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
     {"ui", "QueryLinkedFontsFromRegistry", nullptr},
     {"ui", "UserEvent", nullptr},
+    {TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "SequenceManager::PostTask",
+     kTopLevelFlowAllowedArgs},
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {"chrome-bitness",
