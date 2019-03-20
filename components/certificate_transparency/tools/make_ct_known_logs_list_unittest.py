@@ -11,12 +11,12 @@ import make_ct_known_logs_list
 
 
 def b64e(x):
-    return base64.encodestring(x)
+    return base64.b64encode(x.encode())
 
 
 class FormattingTest(unittest.TestCase):
     def testSplitAndHexifyBinData(self):
-        bin_data = ''.join([chr(i) for i in range(32,60)])
+        bin_data = bytes(bytearray(range(32,60)))
         expected_encoded_array = [
                 ('"\\x20\\x21\\x22\\x23\\x24\\x25\\x26\\x27\\x28\\x29\\x2a'
                  '\\x2b\\x2c\\x2d\\x2e\\x2f\\x30"'),
@@ -27,7 +27,7 @@ class FormattingTest(unittest.TestCase):
                 expected_encoded_array)
 
         # This data should fit in exactly one line - 17 bytes.
-        short_bin_data = ''.join([chr(i) for i in range(32, 49)])
+        short_bin_data = bytes(bytearray(range(32,49)))
         expected_short_array = [
                 ('"\\x20\\x21\\x22\\x23\\x24\\x25\\x26\\x27\\x28\\x29\\x2a'
                  '\\x2b\\x2c\\x2d\\x2e\\x2f\\x30"')]
@@ -37,7 +37,7 @@ class FormattingTest(unittest.TestCase):
                 expected_short_array)
 
         # This data should fit exactly in two lines - 34 bytes.
-        two_line_data = ''.join([chr(i) for i in range(32, 66)])
+        two_line_data = bytes(bytearray(range(32,66)))
         expected_two_line_data_array = [
                 ('"\\x20\\x21\\x22\\x23\\x24\\x25\\x26\\x27\\x28\\x29\\x2a'
                  '\\x2b\\x2c\\x2d\\x2e\\x2f\\x30"'),
@@ -45,11 +45,11 @@ class FormattingTest(unittest.TestCase):
                  '\\x3c\\x3d\\x3e\\x3f\\x40\\x41"')]
         self.assertEqual(
                 make_ct_known_logs_list._split_and_hexify_binary_data(
-                        short_bin_data),
-                expected_short_array)
+                        two_line_data),
+                expected_two_line_data_array)
 
     def testGetLogIDsArray(self):
-        log_ids = ["def", "abc", "ghi"]
+        log_ids = [b"def", b"abc", b"ghi"]
         expected_log_ids_code = [
                 "// The list is sorted.\n",
                 "const char kTestIDs[][4] = {\n",
@@ -76,6 +76,11 @@ class FormattingTest(unittest.TestCase):
 
 
 class OperatorIDHandlingTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        if sys.version_info.major == 2:
+            self.assertCountEqual = self.assertItemsEqual
+
     def testFindingGoogleOperatorID(self):
         ops_list = {"operators": [
                 {"id": 0, "name": "First"},
@@ -103,9 +108,9 @@ class OperatorIDHandlingTest(unittest.TestCase):
         ]
         log_ids = make_ct_known_logs_list._get_log_ids_for_operator(logs, 1)
         self.assertEqual(2, len(log_ids))
-        self.assertItemsEqual(
-                [hashlib.sha256(t).digest() for t in ('a', 'd')],
-                log_ids)
+        self.assertCountEqual(
+            [hashlib.sha256(t).digest() for t in (b'a', b'd')],
+            log_ids)
 
 
 class DisqualifiedLogsHandlingTest(unittest.TestCase):
