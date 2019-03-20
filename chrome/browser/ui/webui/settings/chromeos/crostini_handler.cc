@@ -124,6 +124,7 @@ void CrostiniHandler::HandleRemoveCrostiniSharedPath(
 
   crostini::CrostiniSharePath::GetForProfile(profile_)->UnsharePath(
       crostini::kCrostiniDefaultVmName, base::FilePath(path),
+      /*unpersist=*/true,
       base::BindOnce(
           [](const std::string& path, bool result, std::string failure_reason) {
             if (!result) {

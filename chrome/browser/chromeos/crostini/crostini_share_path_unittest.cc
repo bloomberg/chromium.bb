@@ -664,7 +664,7 @@ TEST_F(CrostiniSharePathTest, UnsharePathSuccess) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini_share_path()->UnsharePath(
-      "vm-running", shared_path_,
+      "vm-running", shared_path_, true,
       base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
                      base::Unretained(this), shared_path_, Persist::NO,
                      SeneschalClientCalled::YES, "MyFiles/already-shared",
@@ -676,7 +676,7 @@ TEST_F(CrostiniSharePathTest, UnsharePathRoot) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   crostini_share_path()->UnsharePath(
-      "vm-running", root_,
+      "vm-running", root_, true,
       base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
                      base::Unretained(this), root_, Persist::NO,
                      SeneschalClientCalled::YES, "MyFiles", Success::YES, ""));
@@ -686,7 +686,7 @@ TEST_F(CrostiniSharePathTest, UnsharePathRoot) {
 TEST_F(CrostiniSharePathTest, UnsharePathVmNotRunning) {
   SetUpVolume();
   crostini_share_path()->UnsharePath(
-      "vm-not-running", shared_path_,
+      "vm-not-running", shared_path_, true,
       base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
                      base::Unretained(this), shared_path_, Persist::NO,
                      SeneschalClientCalled::NO, "", Success::YES,
@@ -698,7 +698,7 @@ TEST_F(CrostiniSharePathTest, UnsharePathInvalidPath) {
   SetUpVolume();
   base::FilePath invalid("invalid/path");
   crostini_share_path()->UnsharePath(
-      "vm-running", invalid,
+      "vm-running", invalid, true,
       base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
                      base::Unretained(this), invalid, Persist::NO,
                      SeneschalClientCalled::NO, "", Success::NO,

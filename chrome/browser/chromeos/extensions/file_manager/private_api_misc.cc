@@ -720,7 +720,7 @@ FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
   storage::FileSystemURL cracked =
       file_system_context->CrackURL(GURL(params->url));
   crostini::CrostiniSharePath::GetForProfile(profile)->UnsharePath(
-      crostini::kCrostiniDefaultVmName, cracked.path(),
+      crostini::kCrostiniDefaultVmName, cracked.path(), /*unpersist=*/true,
       base::BindOnce(
           &FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
               UnsharePathCallback,

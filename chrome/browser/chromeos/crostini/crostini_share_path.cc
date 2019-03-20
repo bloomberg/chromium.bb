@@ -340,16 +340,20 @@ void CrostiniSharePath::SharePaths(
 void CrostiniSharePath::UnsharePath(
     const std::string& vm_name,
     const base::FilePath& path,
+    bool unpersist,
     base::OnceCallback<void(bool, std::string)> callback) {
-  PrefService* pref_service = profile_->GetPrefs();
-  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
-  base::ListValue* shared_paths = update.Get();
-  if (!shared_paths->Remove(base::Value(path.value()), nullptr)) {
-    LOG(WARNING) << "Unshared path not in prefs: " << path.value();
+  if (unpersist) {
+    PrefService* pref_service = profile_->GetPrefs();
+    ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
+    base::ListValue* shared_paths = update.Get();
+    if (!shared_paths->Remove(base::Value(path.value()), nullptr)) {
+      LOG(WARNING) << "Unshared path not in prefs: " << path.value();
+    }
   }
+
   CallSeneschalUnsharePath(vm_name, path, std::move(callback));
   for (Observer& observer : observers_) {
-    observer.OnUnshare(path);
+    observer.OnUnshare(path, vm_name);
   }
 }
 
@@ -444,10 +448,11 @@ void CrostiniSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
   auto paths = GetPersistedSharedPaths();
   for (const auto& path : paths) {
     if (path == volume.mount_path() || volume.mount_path().IsParent(path)) {
-      CallSeneschalUnsharePath(
-          kCrostiniDefaultVmName, path,
-          base::BindOnce(mount_event_seneschal_callback_, "unshare-on-unmount",
-                         path, path));
+      // Unshare with unpersist=false since we still want the path
+      // to be persisted when volume is next mounted.
+      UnsharePath(kCrostiniDefaultVmName, path, /*unpersist=*/false,
+                  base::BindOnce(mount_event_seneschal_callback_,
+                                 "unshare-on-unmount", path, path));
     }
   }
 }

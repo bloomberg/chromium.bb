@@ -34,7 +34,8 @@ class CrostiniSharePath : public KeyedService,
                                    std::string failure_reason)>;
   class Observer {
    public:
-    virtual void OnUnshare(const base::FilePath& path) = 0;
+    virtual void OnUnshare(const base::FilePath& path,
+                           const std::string& vm_name) = 0;
   };
 
   static CrostiniSharePath* GetForProfile(Profile* profile);
@@ -60,10 +61,12 @@ class CrostiniSharePath : public KeyedService,
                   bool persist,
                   base::OnceCallback<void(bool, std::string)> callback);
 
-  // Unshare specified |path| with vm.
+  // Unshare specified |path| with |vm_name|.  If |unpersist| is set, the path
+  // is removed from prefs, and will not be shared at container startup.
   // Callback receives success bool and failure reason string.
   void UnsharePath(const std::string& vm_name,
                    const base::FilePath& path,
+                   bool unpersist,
                    base::OnceCallback<void(bool, std::string)> callback);
 
   // Returns true the first time it is called on this service.
