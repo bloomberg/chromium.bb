@@ -29,7 +29,7 @@
 }
 
 @property(nonatomic, strong)
-    OmniboxPopupLegacyViewController* popupViewController;
+    OmniboxPopupBaseViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
 @property(nonatomic, strong) ShortcutsCoordinator* shortcutsCoordinator;
 

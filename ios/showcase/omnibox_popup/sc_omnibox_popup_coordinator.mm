@@ -17,7 +17,7 @@
 @interface SCOmniboxPopupCoordinator () <Coordinator>
 
 @property(nonatomic, strong)
-    OmniboxPopupLegacyViewController* popupViewController;
+    OmniboxPopupBaseViewController* popupViewController;
 @property(nonatomic, strong)
     SCOmniboxPopupContainerViewController* containerViewController;
 @property(nonatomic, strong) SCOmniboxPopupMediator* mediator;

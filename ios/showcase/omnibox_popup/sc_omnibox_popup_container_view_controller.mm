@@ -4,7 +4,7 @@
 
 #import "ios/showcase/omnibox_popup/sc_omnibox_popup_container_view_controller.h"
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_base_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -15,7 +15,7 @@
 @implementation SCOmniboxPopupContainerViewController
 
 - (instancetype)initWithPopupViewController:
-    (OmniboxPopupLegacyViewController*)popupViewController {
+    (OmniboxPopupBaseViewController*)popupViewController {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _popupViewController = popupViewController;
