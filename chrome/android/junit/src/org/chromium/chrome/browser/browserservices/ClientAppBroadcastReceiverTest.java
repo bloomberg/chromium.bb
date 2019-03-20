@@ -43,7 +43,6 @@ import java.util.Set;
 public class ClientAppBroadcastReceiverTest {
     @Mock public Context mContext;
     @Mock public ClientAppDataRegister mDataRegister;
-    @Mock public ClearDataNotificationPublisher mNotificationManager;
     @Mock public ClientAppBroadcastReceiver.ClearDataStrategy mMockStrategy;
 
     private ClientAppBroadcastReceiver mReceiver;
@@ -97,36 +96,12 @@ public class ClientAppBroadcastReceiverTest {
         verify(mMockStrategy).execute(any(), any(), eq(id), eq(true));
     }
 
-    /** Tests we deal with multiple domains well. */
-    @Test
-    @Feature("TrustedWebActivities")
-    public void notificationStrategyShowsNotification_ForEachDomain() {
-        mReceiver = new ClientAppBroadcastReceiver(
-                new ClientAppBroadcastReceiver.NotificationClearDataStrategy(mNotificationManager),
-                mDataRegister, mock(ChromePreferenceManager.class));
-
-        int id = 45;
-        String appName = "App Name 2";
-        String domain1 = "example.com";
-        String domain2 = "example2.com";
-        Set<String> domains = new HashSet<>(Arrays.asList(domain1, domain2));
-
-        addToRegister(id, appName, domains);
-
-        mReceiver.onReceive(mContext, createMockIntent(id, Intent.ACTION_PACKAGE_FULLY_REMOVED));
-
-        verify(mNotificationManager).showClearDataNotification(
-                any(), eq(appName), eq(domain1), eq(true));
-        verify(mNotificationManager).showClearDataNotification(
-                any(), eq(appName), eq(domain2), eq(true));
-    }
-
     /** Tests we plumb the correct information to the {@link ClearDataDialogActivity}. */
     @Test
     @Feature("TrustedWebActivities")
     public void dialogStrategy_ValidIntent() {
         mReceiver = new ClientAppBroadcastReceiver(
-                new ClientAppBroadcastReceiver.DialogClearDataStrategy(), mDataRegister,
+                new ClientAppBroadcastReceiver.ClearDataStrategy(), mDataRegister,
                 mock(ChromePreferenceManager.class));
 
         int id = 67;
