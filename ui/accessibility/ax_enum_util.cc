@@ -1328,6 +1328,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "role";
     case ax::mojom::StringAttribute::kRoleDescription:
       return "roleDescription";
+    case ax::mojom::StringAttribute::kTooltip:
+      return "tooltip";
     case ax::mojom::StringAttribute::kUrl:
       return "url";
     case ax::mojom::StringAttribute::kValue:
@@ -1384,6 +1386,8 @@ ax::mojom::StringAttribute ParseStringAttribute(const char* string_attribute) {
     return ax::mojom::StringAttribute::kRole;
   if (0 == strcmp(string_attribute, "roleDescription"))
     return ax::mojom::StringAttribute::kRoleDescription;
+  if (0 == strcmp(string_attribute, "tooltip"))
+    return ax::mojom::StringAttribute::kTooltip;
   if (0 == strcmp(string_attribute, "url"))
     return ax::mojom::StringAttribute::kUrl;
   if (0 == strcmp(string_attribute, "value"))
@@ -2292,8 +2296,6 @@ const char* ToString(ax::mojom::DescriptionFrom description_from) {
       return "attribute";
     case ax::mojom::DescriptionFrom::kContents:
       return "contents";
-    case ax::mojom::DescriptionFrom::kPlaceholder:
-      return "placeholder";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
   }
@@ -2310,8 +2312,6 @@ ax::mojom::DescriptionFrom ParseDescriptionFrom(const char* description_from) {
     return ax::mojom::DescriptionFrom::kAttribute;
   if (0 == strcmp(description_from, "contents"))
     return ax::mojom::DescriptionFrom::kContents;
-  if (0 == strcmp(description_from, "placeholder"))
-    return ax::mojom::DescriptionFrom::kPlaceholder;
   if (0 == strcmp(description_from, "relatedElement"))
     return ax::mojom::DescriptionFrom::kRelatedElement;
   return ax::mojom::DescriptionFrom::kNone;

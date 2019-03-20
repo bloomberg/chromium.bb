@@ -3383,6 +3383,19 @@ String AXNodeObject::Placeholder(ax::mojom::NameFrom name_from) const {
   return String();
 }
 
+String AXNodeObject::Title(ax::mojom::NameFrom name_from) const {
+  if (name_from == ax::mojom::NameFrom::kTitle)
+    return String();
+
+  if (const auto* element = GetElement()) {
+    String title = element->title();
+    if (!title.IsEmpty())
+      return title;
+  }
+
+  return String();
+}
+
 String AXNodeObject::PlaceholderFromNativeAttribute() const {
   Node* node = GetNode();
   if (!node || !blink::IsTextControl(*node))

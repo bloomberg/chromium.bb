@@ -515,9 +515,7 @@ base::string16 BrowserAccessibilityAndroid::GetHint() const {
       strings.push_back(name);
   }
 
-  if (GetData().GetNameFrom() != ax::mojom::NameFrom::kPlaceholder &&
-      GetData().GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom) !=
-          static_cast<int32_t>(ax::mojom::DescriptionFrom::kPlaceholder)) {
+  if (GetData().GetNameFrom() != ax::mojom::NameFrom::kPlaceholder) {
     base::string16 placeholder =
         GetString16Attribute(ax::mojom::StringAttribute::kPlaceholder);
     if (!placeholder.empty())

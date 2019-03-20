@@ -1866,8 +1866,6 @@ std::string WebAXObjectProxy::DescriptionFrom() {
       return "attribute";
     case ax::mojom::DescriptionFrom::kContents:
       return "contents";
-    case ax::mojom::DescriptionFrom::kPlaceholder:
-      return "placeholder";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
   }
