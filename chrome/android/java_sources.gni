@@ -1619,6 +1619,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/upgrade/PackageReplacedBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/upgrade/UpgradeActivity.java",
   "java/src/org/chromium/chrome/browser/upgrade/UpgradeIntentService.java",
+  "java/src/org/chromium/chrome/browser/usage_stats/DigitalWellbeingClient.java",
   "java/src/org/chromium/chrome/browser/usage_stats/EventTracker.java",
   "java/src/org/chromium/chrome/browser/usage_stats/PageViewObserver.java",
   "java/src/org/chromium/chrome/browser/usage_stats/SuspendedTab.java",

@@ -9,6 +9,7 @@ import android.app.Activity;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -28,6 +29,8 @@ public class UsageStatsService {
     private SuspensionTracker mSuspensionTracker;
     private TokenTracker mTokenTracker;
     private UsageStatsBridge mBridge;
+
+    private DigitalWellbeingClient mClient;
     private boolean mOptInState;
 
     /** Get the global instance of UsageStatsService */
@@ -46,7 +49,9 @@ public class UsageStatsService {
         mEventTracker = new EventTracker(mBridge);
         mSuspensionTracker = new SuspensionTracker(mBridge);
         mTokenTracker = new TokenTracker(mBridge);
-        // TODO(pnoland): listen for preference changes so we can notify DW.
+
+        mOptInState = getOptInState();
+        mClient = AppHooks.get().createDigitalWellbeingClient();
     }
 
     /**
@@ -74,6 +79,11 @@ public class UsageStatsService {
         ThreadUtils.assertOnUiThread();
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
         prefServiceBridge.setBoolean(Pref.USAGE_STATS_ENABLED, state);
+
+        if (mOptInState == state) return;
+
+        mOptInState = state;
+        mClient.notifyOptInStateChange(mOptInState);
     }
 
     /** Query for all events that occurred in the half-open range [start, end) */

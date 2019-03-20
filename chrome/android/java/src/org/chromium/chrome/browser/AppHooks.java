@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
@@ -356,6 +357,13 @@ public abstract class AppHooks {
      */
     public DownloadCollectionBridge getDownloadCollectionBridge() {
         return DownloadCollectionBridge.getDownloadCollectionBridge();
+    }
+
+    /**
+     * @return A new {@link DigitalWellbeingClient} instance.
+     */
+    public DigitalWellbeingClient createDigitalWellbeingClient() {
+        return new DigitalWellbeingClient();
     }
 
     /**
