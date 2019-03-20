@@ -14,7 +14,7 @@ interface EventInjector {
   // Responds with false on bad |display_id| or bad |event|; true once the
   // event has completed processing.
   //
-  // If |event| is a LocatedEvent, then the coordinates must be in pixels, and
+  // If |event| is a LocatedEvent, then the coordinates must be in DIPs, and
   // relative to the origin of the display identified by |display_id|.
   InjectEvent(int64 display_id, ui.mojom.Event event) => (bool result);
 

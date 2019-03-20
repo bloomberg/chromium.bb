@@ -20,7 +20,7 @@ class WindowTreeHost;
 
 // Used to inject events into the system. In LOCAL mode, it directly injects
 // events into the WindowTreeHost, but in MUS mode, it injects events into the
-// window-server (over the mojom API).
+// window-service (over the mojom API).
 class AURA_EXPORT EventInjector {
  public:
   EventInjector();
@@ -29,7 +29,8 @@ class AURA_EXPORT EventInjector {
   // Inject |event| to |host|. |callback| is optional that gets invoked after
   // the event is processed by |host|. In LOCAL mode,  |callback| is invoked
   // synchronously. In MUS mode, it is invoked after a response is received
-  // from window-server (via mojo).
+  // from the window service (via mojo). If |event| is a LocatedEvent, then
+  // coordinates are relative to host and in DIPs.
   ui::EventDispatchDetails Inject(
       WindowTreeHost* host,
       ui::Event* event,
