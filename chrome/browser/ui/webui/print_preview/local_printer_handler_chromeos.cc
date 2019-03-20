@@ -240,6 +240,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     case chromeos::PrinterSetupResult::kInvalidPrinterUpdate:
     case chromeos::PrinterSetupResult::kDbusNoReply:
     case chromeos::PrinterSetupResult::kDbusTimeout:
+    case chromeos::PrinterSetupResult::kEditSuccess:
       LOG(ERROR) << "Unexpected error in printer setup. " << result;
       break;
     case chromeos::PrinterSetupResult::kMaxValue:

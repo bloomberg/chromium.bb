@@ -1436,6 +1436,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE" desc="The message shown when a new printer is set up successfully.">
       Added <ph name="PRINTER_NAME">$1<ex>printer</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE" desc="The message shown when a printer is updated successfully.">
+      Updated <ph name="PRINTER_NAME">$1<ex>printer</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY" desc="The no-printer-found message shown in the auto discovery dialog.">
       No printers nearby
     </message>

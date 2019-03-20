@@ -91,12 +91,13 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles the result of adding a printer which the user specified the
   // location of (i.e. a printer that was not 'discovered' automatically).
-  void OnAddedSpecifiedPrinter(const Printer& printer,
-                               PrinterSetupResult result);
+  void OnAddedOrEditedSpecifiedPrinter(const Printer& printer,
+                                       bool is_existing_printer,
+                                       PrinterSetupResult result);
 
   // Handles the result of failure to add a printer. |result_code| is used to
   // determine the reason for the failure.
-  void OnAddPrinterError(PrinterSetupResult result_code);
+  void OnAddOrEditPrinterError(PrinterSetupResult result_code);
 
   // Get a list of all manufacturers for which we have at least one model of
   // printer supported.  Takes one argument, the callback id for the result.
@@ -146,9 +147,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                                 PrinterSetupResult result_code);
 
   // Code common between the discovered and manual add printer code paths.
-  void OnAddedPrinterCommon(const Printer& printer,
-                            PrinterSetupResult result_code,
-                            bool is_automatic);
+  void OnAddedOrEditedPrinterCommon(const Printer& printer,
+                                    PrinterSetupResult result_code,
+                                    bool is_automatic);
 
   // CupsPrintersManager::Observer override:
   void OnPrintersChanged(CupsPrintersManager::PrinterClass printer_class,

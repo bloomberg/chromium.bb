@@ -337,7 +337,10 @@ std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {
       out << "fatal error";
       break;
     case kSuccess:
-      out << "success";
+      out << "add success";
+      break;
+    case kEditSuccess:
+      out << "edit success";
       break;
     case kPrinterUnreachable:
       out << "printer unreachable";
