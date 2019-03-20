@@ -3347,12 +3347,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Intervention_R12_12%_Threshold",
+                    "name": "Intervention_R9",
                     "params": {
                         "navigate_ads": "true",
                         "pause_renderer": "true",
-                        "purge_v8": "true",
-                        "renderer_pmf_threshold_percentage": "12"
+                        "renderer_workload_threshold_percentage": "16"
                     },
                     "enable_features": [
                         "OomIntervention"
