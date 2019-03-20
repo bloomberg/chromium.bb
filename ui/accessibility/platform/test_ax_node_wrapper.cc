@@ -33,6 +33,10 @@ std::unordered_map<AXTree*, AXNode*> g_focused_node_in_tree;
 // A global indicating the last node which ShowContextMenu was called from.
 AXNode* g_node_from_last_show_context_menu;
 
+// A global indicating the last node which accessibility perform action
+// default action was called from.
+AXNode* g_node_from_last_default_action;
+
 // A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their wrappers.
 class TestAXTreeObserver : public AXTreeObserver {
@@ -74,6 +78,11 @@ void TestAXNodeWrapper::SetGlobalCoordinateOffset(const gfx::Vector2d& offset) {
 // static
 const AXNode* TestAXNodeWrapper::GetNodeFromLastShowContextMenu() {
   return g_node_from_last_show_context_menu;
+}
+
+// static
+const AXNode* TestAXNodeWrapper::GetNodeFromLastDefaultAction() {
+  return g_node_from_last_default_action;
 }
 
 TestAXNodeWrapper::~TestAXNodeWrapper() {
@@ -376,6 +385,7 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
         ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                              !current_value);
       }
+      g_node_from_last_default_action = node_;
       return true;
 
     case ax::mojom::Action::kSetSelection:

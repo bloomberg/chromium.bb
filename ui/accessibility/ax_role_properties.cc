@@ -28,8 +28,17 @@ bool IsAlert(const ax::mojom::Role role) {
   }
 }
 
-bool IsClickable(const ax::mojom::Role role) {
-  switch (role) {
+bool IsClickable(const AXNodeData& data) {
+  // If it has a custom default action verb except for
+  // ax::mojom::DefaultActionVerb::kClickAncestor, it's definitely clickable.
+  // ax::mojom::DefaultActionVerb::kClickAncestor is used when an element with a
+  // click listener is present in its ancestry chain.
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb) &&
+      (data.GetDefaultActionVerb() !=
+       ax::mojom::DefaultActionVerb::kClickAncestor))
+    return true;
+
+  switch (data.role) {
     case ax::mojom::Role::kButton:
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kColorWell:
@@ -171,6 +180,15 @@ bool IsImage(const ax::mojom::Role role) {
     default:
       return false;
   }
+}
+
+bool IsInvokable(const AXNodeData& data) {
+  // A control is "invokable" if it initiates an action when activated but
+  // does not maintain any state. A control that maintains state when activated
+  // would be considered a toggle or expand-collapse element - these elements
+  // are "clickable" but not "invokable".
+  return IsClickable(data) && !SupportsExpandCollapse(data) &&
+         !SupportsToggle(data.role);
 }
 
 bool IsItemLike(const ax::mojom::Role role) {

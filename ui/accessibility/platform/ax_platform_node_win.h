@@ -248,6 +248,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IExpandCollapseProvider,
                         public IGridItemProvider,
                         public IGridProvider,
+                        public IInvokeProvider,
                         public IRangeValueProvider,
                         public IRawElementProviderFragment,
                         public IRawElementProviderSimple2,
@@ -262,6 +263,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IValueProvider,
                         public IWindowProvider,
                         public AXPlatformNodeBase {
+  using IDispatchImpl::Invoke;
+
  public:
   BEGIN_COM_MAP(AXPlatformNodeWin)
     // TODO(nektar): Change the following to COM_INTERFACE_ENTRY(IDispatch).
@@ -283,6 +286,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
+    COM_INTERFACE_ENTRY(IInvokeProvider)
     COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderFragment)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
@@ -499,6 +503,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_RowCount(int* result) override;
 
   IFACEMETHODIMP get_ColumnCount(int* result) override;
+
+  //
+  // IInvokeProvider methods.
+  //
+
+  IFACEMETHODIMP Invoke() override;
 
   //
   // IScrollItemProvider methods.

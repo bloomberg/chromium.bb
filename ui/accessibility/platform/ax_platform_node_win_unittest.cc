@@ -4444,8 +4444,14 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   checkbox.role = ax::mojom::Role::kCheckBox;
   root.child_ids.push_back(checkbox_id);
 
+  ui::AXNodeData link;
+  int32_t link_id = 8;
+  link.id = link_id;
+  link.role = ax::mojom::Role::kLink;
+  root.child_ids.push_back(link_id);
+
   Init(root, text_field_with_combo_box, table, table_cell, meter,
-       group_with_scroll, grid, checkbox);
+       group_with_scroll, grid, checkbox, link);
 
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_TextEditPatternId, UIA_TextPatternId}),
@@ -4479,6 +4485,10 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_TogglePatternId}),
             GetSupportedPatternsFromNodeId(checkbox_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_InvokePatternId}),
+            GetSupportedPatternsFromNodeId(link_id));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderExpandCollapsePattern) {
@@ -4599,7 +4609,73 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderExpandCollapsePattern) {
   EXPECT_NE(nullptr, expandcollapse_provider.Get());
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProvider_Action) {
+TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderInvokePattern) {
+  ui::AXNodeData root;
+  root.id = 0;
+
+  ui::AXNodeData link;
+  ui::AXNodeData generic_container;
+  ui::AXNodeData combo_box_grouping;
+  ui::AXNodeData check_box;
+
+  link.id = 1;
+  generic_container.id = 2;
+  combo_box_grouping.id = 3;
+  check_box.id = 4;
+
+  root.child_ids.push_back(1);
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+  root.child_ids.push_back(4);
+
+  // Role link is clickable and neither supports expand collapse nor supports
+  // toggle. It should support invoke pattern.
+  link.role = ax::mojom::Role::kLink;
+
+  // Role generic container is not clickable. It should not support invoke
+  // pattern.
+  generic_container.role = ax::mojom::Role::kGenericContainer;
+
+  // Role combo box grouping supports expand collapse. It should not support
+  // invoke pattern.
+  combo_box_grouping.role = ax::mojom::Role::kComboBoxGrouping;
+
+  // Role check box supports toggle. It should not support invoke pattern.
+  check_box.role = ax::mojom::Role::kCheckBox;
+
+  Init(root, link, generic_container, combo_box_grouping, check_box);
+
+  // Role link is clickable and neither supports expand collapse nor supports
+  // toggle. It should support invoke pattern.
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetIRawElementProviderSimpleFromChildIndex(0);
+  ComPtr<IInvokeProvider> invoke_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_InvokePatternId, &invoke_provider));
+  EXPECT_NE(nullptr, invoke_provider.Get());
+
+  // Role generic container is not clickable. It should not support invoke
+  // pattern.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(1);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_InvokePatternId, &invoke_provider));
+  EXPECT_EQ(nullptr, invoke_provider.Get());
+
+  // Role combo box grouping supports expand collapse. It should not support
+  // invoke pattern.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(2);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_InvokePatternId, &invoke_provider));
+  EXPECT_EQ(nullptr, invoke_provider.Get());
+
+  // Role check box supports toggle. It should not support invoke pattern.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(3);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_InvokePatternId, &invoke_provider));
+  EXPECT_EQ(nullptr, invoke_provider.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   ui::AXNodeData root;
   root.id = 0;
 
@@ -4692,6 +4768,47 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProvider_Action) {
   EXPECT_HRESULT_SUCCEEDED(
       expandcollapse_provider->get_ExpandCollapseState(&state));
   EXPECT_EQ(ExpandCollapseState_LeafNode, state);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIInvokeProviderInvoke) {
+  ui::AXNodeData root;
+  root.id = 0;
+
+  ui::AXNodeData button;
+  ui::AXNodeData button_disabled;
+
+  button.id = 1;
+  button_disabled.id = 2;
+
+  root.child_ids.push_back(1);
+  root.child_ids.push_back(2);
+
+  // generic button can be invoked.
+  button.role = ax::mojom::Role::kButton;
+
+  // disabled button, cannot be invoked.
+  button_disabled.role = ax::mojom::Role::kButton;
+  button_disabled.SetRestriction(ax::mojom::Restriction::kDisabled);
+
+  Init(root, button, button_disabled);
+  AXNode* button_node = GetRootNode()->children()[0];
+
+  // generic button can be invoked.
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetIRawElementProviderSimpleFromChildIndex(0);
+  ComPtr<IInvokeProvider> invoke_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_InvokePatternId, &invoke_provider));
+  EXPECT_NE(nullptr, invoke_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(invoke_provider->Invoke());
+  EXPECT_EQ(button_node, TestAXNodeWrapper::GetNodeFromLastDefaultAction());
+
+  // disabled button, cannot be invoked.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(1);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_InvokePatternId, &invoke_provider));
+  EXPECT_NE(nullptr, invoke_provider.Get());
+  EXPECT_UIA_ELEMENTNOTENABLED(invoke_provider->Invoke());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSupported) {
