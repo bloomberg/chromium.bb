@@ -1419,7 +1419,7 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
     if (needs_custom) {
       DCHECK(scrollbar->IsCustomScrollbar());
       // We have a custom scrollbar with a stale m_owner.
-      if (ToLayoutScrollbar(scrollbar)->StyleSource()->GetLayoutObject() !=
+      if (To<LayoutScrollbar>(scrollbar)->StyleSource()->GetLayoutObject() !=
           style_source) {
         return true;
       }
@@ -2749,7 +2749,7 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
   ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
       *scrollbar, PaintInvalidationReason::kScrollControl);
   if (scrollbar->IsCustomScrollbar()) {
-    ToLayoutScrollbar(scrollbar)
+    To<LayoutScrollbar>(scrollbar)
         ->InvalidateDisplayItemClientsOfScrollbarParts();
   }
 
