@@ -8,5 +8,7 @@ blink_modules_sources("manifest") {
   sources = [
     "image_resource_type_converters.cc",
     "image_resource_type_converters.h",
+    "manifest_uma_util.cc",
+    "manifest_uma_util.h",
   ]
 }
