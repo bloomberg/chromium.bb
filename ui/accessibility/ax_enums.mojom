@@ -470,9 +470,12 @@ enum StringAttribute {
   kName,
   kLiveRelevant,
   kLiveStatus,
+  // Only if not already exposed in kName (NameFrom::kPlaceholder)
   kPlaceholder,
   kRole,
   kRoleDescription,
+  // Only if not already exposed in kName (NameFrom::kTitle)
+  kTooltip,
   kUrl,
   kValue,
 };
@@ -842,7 +845,6 @@ enum DescriptionFrom {
   kUninitialized,
   kAttribute,
   kContents,
-  kPlaceholder,
   kRelatedElement,
 };
 

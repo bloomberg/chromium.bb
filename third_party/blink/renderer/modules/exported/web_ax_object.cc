@@ -973,6 +973,13 @@ WebString WebAXObject::Placeholder(ax::mojom::NameFrom name_from) const {
   return private_->Placeholder(name_from);
 }
 
+WebString WebAXObject::Title(ax::mojom::NameFrom name_from) const {
+  if (IsDetached())
+    return WebString();
+
+  return private_->Title(name_from);
+}
+
 bool WebAXObject::SupportsRangeValue() const {
   if (IsDetached())
     return false;

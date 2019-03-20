@@ -553,10 +553,15 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (!web_description.IsEmpty()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDescription,
                                   web_description.Utf8());
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom,
-                         static_cast<int32_t>(description_from));
+    dst->SetDescriptionFrom(description_from);
     AddIntListAttributeFromWebObjects(
         ax::mojom::IntListAttribute::kDescribedbyIds, description_objects, dst);
+  }
+
+  blink::WebString web_title = src.Title(name_from);
+  if (!web_title.IsEmpty()) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kTooltip,
+                                  web_title.Utf8());
   }
 
   if (src.ValueDescription().length()) {

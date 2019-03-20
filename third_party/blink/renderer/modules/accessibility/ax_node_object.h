@@ -172,6 +172,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
   String Placeholder(ax::mojom::NameFrom) const override;
+  String Title(ax::mojom::NameFrom) const override;
   bool NameFromLabelElement() const override;
 
   // Location

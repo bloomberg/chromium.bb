@@ -542,4 +542,66 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(16, ax::mojom::Role::kSearch, "search");
 }
 
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TooltipStringAttributeMutuallyExclusiveOfNameFromTitle) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<input type='text' title='title'>"
+      "<input type='text' title='title' aria-labelledby='inputlabel'>"
+      "<div id='inputlabel'>aria-labelledby</div>";
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+
+  const ui::AXTree& tree = GetAXTree();
+  const ui::AXNode* root = tree.root();
+  const ui::AXNode* input1 = root->ChildAtIndex(0);
+  const ui::AXNode* input2 = root->ChildAtIndex(1);
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kTitle),
+            GetIntAttr(input1, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("title",
+               GetAttr(input1, ax::mojom::StringAttribute::kName).c_str());
+  EXPECT_STREQ("",
+               GetAttr(input1, ax::mojom::StringAttribute::kTooltip).c_str());
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kRelatedElement),
+            GetIntAttr(input2, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("aria-labelledby",
+               GetAttr(input2, ax::mojom::StringAttribute::kName).c_str());
+  EXPECT_STREQ("title",
+               GetAttr(input2, ax::mojom::StringAttribute::kTooltip).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    CrossPlatformAccessibilityBrowserTest,
+    PlaceholderStringAttributeMutuallyExclusiveOfNameFromPlaceholder) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<input type='text' placeholder='placeholder'>"
+      "<input type='text' placeholder='placeholder' aria-label='label'>";
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+
+  const ui::AXTree& tree = GetAXTree();
+  const ui::AXNode* root = tree.root();
+  const ui::AXNode* group = root->ChildAtIndex(0);
+  const ui::AXNode* input1 = group->ChildAtIndex(0);
+  const ui::AXNode* input2 = group->ChildAtIndex(1);
+
+  using ax::mojom::StringAttribute;
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kPlaceholder),
+            GetIntAttr(input1, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("placeholder", GetAttr(input1, StringAttribute::kName).c_str());
+  EXPECT_STREQ("", GetAttr(input1, StringAttribute::kPlaceholder).c_str());
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::NameFrom::kAttribute),
+            GetIntAttr(input2, ax::mojom::IntAttribute::kNameFrom));
+  EXPECT_STREQ("label", GetAttr(input2, StringAttribute::kName).c_str());
+  EXPECT_STREQ("placeholder",
+               GetAttr(input2, StringAttribute::kPlaceholder).c_str());
+}
+
 }  // namespace content

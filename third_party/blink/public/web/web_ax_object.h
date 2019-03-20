@@ -203,6 +203,11 @@ class WebAXObject {
   // present and if it wasn't already exposed by one of the two functions above.
   BLINK_EXPORT WebString Placeholder(ax::mojom::NameFrom) const;
 
+  // Takes the result of nameFrom and retrieves the HTML Title of the object,
+  // if present and if it wasn't already exposed by |GetName| above.
+  // HTML Title is typically used as a tooltip.
+  BLINK_EXPORT WebString Title(ax::mojom::NameFrom) const;
+
   // The following selection functions get or set the global document
   // selection and can be called on any object in the tree.
   BLINK_EXPORT void Selection(WebAXObject& anchor_object,

@@ -1380,14 +1380,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
                                       ax::mojom::StringAttribute::kName);
   }
 
-  ax::mojom::DescriptionFrom descriptionFrom =
-      static_cast<ax::mojom::DescriptionFrom>(
-          owner_->GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom));
-  if (descriptionFrom == ax::mojom::DescriptionFrom::kPlaceholder) {
-    return NSStringForStringAttribute(owner_,
-                                      ax::mojom::StringAttribute::kDescription);
-  }
-
   return NSStringForStringAttribute(owner_,
                                     ax::mojom::StringAttribute::kPlaceholder);
 }

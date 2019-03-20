@@ -3242,4 +3242,5 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(VT_BOOL, result.type());
   EXPECT_EQ(VARIANT_FALSE, result.ptr()->boolVal);
 }
+
 }  // namespace content

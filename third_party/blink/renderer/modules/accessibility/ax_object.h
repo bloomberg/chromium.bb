@@ -628,6 +628,11 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // present and if it wasn't already exposed by one of the two functions above.
   virtual String Placeholder(ax::mojom::NameFrom) const { return String(); }
 
+  // Takes the result of nameFrom and retrieves the HTML Title of the object,
+  // if present and if it wasn't already exposed by |GetName| above.
+  // HTML Title is typically used as a tooltip.
+  virtual String Title(ax::mojom::NameFrom) const { return String(); }
+
   // Internal functions used by name and description, above.
   typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
   virtual String TextAlternative(bool recursive,

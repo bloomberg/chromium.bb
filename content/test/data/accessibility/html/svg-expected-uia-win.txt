@@ -1,0 +1,6 @@
+region
+++document IsKeyboardFocusable=true
+++++group
+++++++img Name='svg' HelpText='SVG Title Tag'
+++++++++group
+++++++++++description Name='Test'

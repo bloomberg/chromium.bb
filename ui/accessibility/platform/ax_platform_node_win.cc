@@ -3777,6 +3777,23 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
                                &result->bstrVal);
       break;
 
+    case UIA_HelpTextPropertyId:
+      if (HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kPlaceholder,
+                                 &V_BSTR(result));
+      } else if (data.GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
+                 data.GetNameFrom() == ax::mojom::NameFrom::kTitle) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+                                 &V_BSTR(result));
+      } else if (HasStringAttribute(ax::mojom::StringAttribute::kTooltip)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kTooltip,
+                                 &V_BSTR(result));
+      }
+      break;
+
     case UIA_IsContentElementPropertyId:
     case UIA_IsControlElementPropertyId:
       result->vt = VT_BOOL;
@@ -4008,7 +4025,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     // Covered by MSAA.
     case UIA_BoundingRectanglePropertyId:
-    case UIA_HelpTextPropertyId:
     case UIA_NativeWindowHandlePropertyId:
     case UIA_ProcessIdPropertyId:
       break;

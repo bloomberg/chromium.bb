@@ -3577,6 +3577,80 @@ TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LabeledByTest) {
   EXPECT_UIA_BSTR_EQ(referenced_element, UIA_NamePropertyId, L"Name");
 }
 
+TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_HelpText) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kNone;
+
+  // Test Placeholder StringAttribute is exposed
+  AXNodeData input1;
+  input1.id = 2;
+  input1.role = ax::mojom::Role::kTextField;
+  input1.SetName("name-from-title");
+  input1.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
+                         static_cast<int>(ax::mojom::NameFrom::kTitle));
+  input1.AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
+                            "placeholder");
+  root.child_ids.push_back(input1.id);
+
+  // Test NameFrom Title is exposed
+  AXNodeData input2;
+  input2.id = 3;
+  input2.role = ax::mojom::Role::kTextField;
+  input2.SetName("name-from-title");
+  input2.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
+                         static_cast<int>(ax::mojom::NameFrom::kTitle));
+  root.child_ids.push_back(input2.id);
+
+  // Test NameFrom Placeholder is exposed
+  AXNodeData input3;
+  input3.id = 4;
+  input3.role = ax::mojom::Role::kTextField;
+  input3.SetName("name-from-placeholder");
+  input3.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
+                         static_cast<int>(ax::mojom::NameFrom::kPlaceholder));
+  root.child_ids.push_back(input3.id);
+
+  // Test Title StringAttribute is exposed
+  AXNodeData input4;
+  input4.id = 5;
+  input4.role = ax::mojom::Role::kTextField;
+  input4.SetName("name-from-attribute");
+  input4.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
+                         static_cast<int>(ax::mojom::NameFrom::kAttribute));
+  input4.AddStringAttribute(ax::mojom::StringAttribute::kTooltip, "tooltip");
+  root.child_ids.push_back(input4.id);
+
+  // Test NameFrom (other), without explicit
+  // Title / Placeholder StringAttribute is not exposed
+  AXNodeData input5;
+  input5.id = 6;
+  input5.role = ax::mojom::Role::kTextField;
+  input5.SetName("name-from-attribute");
+  input5.AddIntAttribute(ax::mojom::IntAttribute::kNameFrom,
+                         static_cast<int>(ax::mojom::NameFrom::kAttribute));
+  root.child_ids.push_back(input5.id);
+
+  Init(root, input1, input2, input3, input4, input5);
+
+  auto* root_node = GetRootNode();
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         root_node->children()[0]),
+                     UIA_HelpTextPropertyId, L"placeholder");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         root_node->children()[1]),
+                     UIA_HelpTextPropertyId, L"name-from-title");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         root_node->children()[2]),
+                     UIA_HelpTextPropertyId, L"name-from-placeholder");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         root_node->children()[3]),
+                     UIA_HelpTextPropertyId, L"tooltip");
+  EXPECT_UIA_VALUE_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                          root_node->children()[4]),
+                      UIA_HelpTextPropertyId, ScopedVariant::kEmptyVariant);
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
   AXNodeData root_data;
   Init(root_data);
