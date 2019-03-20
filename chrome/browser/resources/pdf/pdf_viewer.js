@@ -1587,7 +1587,8 @@ class PluginController extends ContentController {
         this.viewer_.setIsSelecting(message.data.isSelecting);
         break;
       case 'getNamedDestinationReply':
-        this.paramsParser_.onNamedDestinationReceived(message.data.pageNumber);
+        this.viewer_.paramsParser_.onNamedDestinationReceived(
+            message.data.pageNumber);
         break;
       case 'formFocusChange':
         this.viewer_.setIsFormFieldFocused(message.data.focused);
