@@ -343,7 +343,7 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   scoped_refptr<NGPaintFragment>* current =
       NGPaintFragment::Find(&paint_fragment_, break_token);
   DCHECK(current);
-  bool has_old = current->get();
+  const NGPaintFragment* old = current->get();
   if (fragment) {
     *current = NGPaintFragment::Create(std::move(fragment), break_token,
                                        std::move(*current));
@@ -351,8 +351,11 @@ void LayoutNGMixin<Base>::SetPaintFragment(
     *current = nullptr;
   }
 
-  if (has_old) {
+  if (old && old != current->get()) {
     // Painting layer needs repaint when a DisplayItemClient is destroyed.
+    // TODO(kojii): We need this here for now, but this should be handled
+    // differently for better efficiency, in pre-paint tree walk to walk
+    // fragment tree, or before layout. crbug.com/941228
     ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
 }
