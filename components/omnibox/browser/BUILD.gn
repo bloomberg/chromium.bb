@@ -151,6 +151,7 @@ jumbo_static_library("browser") {
     "omnibox_navigation_observer.h",
     "omnibox_pedal.cc",
     "omnibox_pedal.h",
+    "omnibox_pedal_concepts.h",
     "omnibox_pedal_implementations.cc",
     "omnibox_pedal_implementations.h",
     "omnibox_pedal_provider.cc",
@@ -235,6 +236,7 @@ jumbo_static_library("browser") {
     "//sql",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
+    "//third_party/zlib/google:compression_utils",
     "//ui/base",
     "//ui/gfx",
   ]

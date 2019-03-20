@@ -16,16 +16,48 @@ class OmniboxPedalTest : public testing::Test {
   OmniboxPedalTest() {}
 };
 
-TEST_F(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly) {
-  const auto group = OmniboxPedal::SynonymGroup(true, {
-                                                          "hello",
-                                                          "hi",
-                                                      });
-  base::string16 text = base::ASCIIToUTF16("hello hi world");
-  const bool found = group.EraseFirstMatchIn(text);
-  EXPECT_TRUE(found);
-  // Only the first representative should be removed.
-  EXPECT_EQ(text, base::ASCIIToUTF16(" hi world"));
+TEST_F(OmniboxPedalTest, SynonymGroupRespectsSingle) {
+  {
+    // Test |single| = true:
+    // Only the last instance of first found representative should be removed.
+    auto group = OmniboxPedal::SynonymGroup(true, true);
+    group.AddSynonym(base::ASCIIToUTF16("hello"));
+    group.AddSynonym(base::ASCIIToUTF16("hi"));
+    base::string16 text = base::ASCIIToUTF16("hello hi world hello hi");
+    const bool found = group.EraseMatchesIn(text);
+    EXPECT_TRUE(found);
+    EXPECT_EQ(text, base::ASCIIToUTF16("  hi world hello hi"));
+  }
+  {
+    // Test |single| = false:
+    // All matches should be removed.
+    auto group = OmniboxPedal::SynonymGroup(true, false);
+    group.AddSynonym(base::ASCIIToUTF16("hello"));
+    group.AddSynonym(base::ASCIIToUTF16("hi"));
+    base::string16 text = base::ASCIIToUTF16("hello hi world hello hi");
+    const bool found = group.EraseMatchesIn(text);
+    EXPECT_TRUE(found);
+    EXPECT_EQ(text, base::ASCIIToUTF16("   world   "));
+  }
+}
+
+TEST_F(OmniboxPedalTest, SynonymGroupRespectsBoundariesAndWhitespace) {
+  auto group = OmniboxPedal::SynonymGroup(true, false);
+  group.AddSynonym(base::ASCIIToUTF16("aaa"));
+  group.AddSynonym(base::ASCIIToUTF16("bb"));
+  group.AddSynonym(base::ASCIIToUTF16("c"));
+  {
+    base::string16 text = base::ASCIIToUTF16("aaaa bbb cc aaabbc bbc cbb");
+    const bool found = group.EraseMatchesIn(text);
+    EXPECT_FALSE(found);
+    EXPECT_EQ(text, base::ASCIIToUTF16("aaaa bbb cc aaabbc bbc cbb"));
+  }
+  {
+    base::string16 text = base::ASCIIToUTF16("aaa bb c aaa bb c bb c c bb");
+    const bool found = group.EraseMatchesIn(text);
+    EXPECT_TRUE(found);
+    EXPECT_EQ(text, base::ASCIIToUTF16("           "));
+  }
 }
 
 TEST_F(OmniboxPedalTest, SynonymGroupsDriveConceptMatches) {
@@ -37,21 +69,16 @@ TEST_F(OmniboxPedalTest, SynonymGroupsDriveConceptMatches) {
       GURL(),
       {
           "test trigger phrase",
-      },
-      {
-          OmniboxPedal::SynonymGroup(false,
-                                     {
-                                         "optional",
-                                     }),
-          OmniboxPedal::SynonymGroup(true,
-                                     {
-                                         "required_a",
-                                     }),
-          OmniboxPedal::SynonymGroup(true,
-                                     {
-                                         "required_b",
-                                     }),
       });
+  OmniboxPedal::SynonymGroup optional(false, true);
+  optional.AddSynonym(base::ASCIIToUTF16("optional"));
+  OmniboxPedal::SynonymGroup required_a(true, true);
+  required_a.AddSynonym(base::ASCIIToUTF16("required_a"));
+  OmniboxPedal::SynonymGroup required_b(true, true);
+  required_b.AddSynonym(base::ASCIIToUTF16("required_b"));
+  test_pedal.AddSynonymGroup(optional);
+  test_pedal.AddSynonymGroup(required_a);
+  test_pedal.AddSynonymGroup(required_b);
   const auto is_concept_match = [&](const char* text) {
     return test_pedal.IsConceptMatch(base::ASCIIToUTF16(text));
   };

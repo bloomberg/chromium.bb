@@ -17,6 +17,7 @@
       <part file="neterror_resources.grdp" />
       <part file="ntp_tiles_resources.grdp" />
       <part file="offline_pages_resources.grdp" />
+      <part file="omnibox_resources.grdp" />
       <part file="password_manager_internals_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="safe_browsing_resources.grdp" />
