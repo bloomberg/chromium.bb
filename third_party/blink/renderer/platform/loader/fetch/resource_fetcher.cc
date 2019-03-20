@@ -396,6 +396,41 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
   return mojom::RequestContextType::SUBRESOURCE;
 }
 
+class ResourceFetcher::DetachableConsoleLogger final
+    : public GarbageCollectedFinalized<DetachableConsoleLogger>,
+      public ConsoleLogger {
+  USING_GARBAGE_COLLECTED_MIXIN(DetachableConsoleLogger);
+
+ public:
+  DetachableConsoleLogger(ConsoleLogger& logger) : logger_(logger) {}
+
+  void Detach() { logger_ = nullptr; }
+
+  // ConsoleLogger implementation.
+  void AddInfoMessage(Source source, const String& message) override {
+    if (logger_) {
+      logger_->AddInfoMessage(source, message);
+    }
+  }
+  void AddWarningMessage(Source source, const String& message) override {
+    if (logger_) {
+      logger_->AddWarningMessage(source, message);
+    }
+  }
+  void AddErrorMessage(Source source, const String& message) override {
+    if (logger_) {
+      logger_->AddErrorMessage(source, message);
+    }
+  }
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(logger_);
+    ConsoleLogger::Trace(visitor);
+  }
+
+ private:
+  Member<ConsoleLogger> logger_;
+};
+
 // A delegating ResourceFetcherProperties subclass which can be from the
 // original ResourceFetcherProperties.
 class ResourceFetcher::DetachableProperties final
@@ -479,12 +514,14 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           *MakeGarbageCollected<DetachableProperties>(*init.properties)),
       context_(init.context),
       task_runner_(init.task_runner),
-      console_logger_(init.console_logger),
+      console_logger_(
+          MakeGarbageCollected<DetachableConsoleLogger>(*init.console_logger)),
       loader_factory_(init.loader_factory),
       scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
           init.initial_throttling_policy,
           *properties_,
-          init.frame_scheduler)),
+          init.frame_scheduler,
+          *console_logger_)),
       archive_(init.archive),
       resource_timing_report_timer_(
           task_runner_,
@@ -494,7 +531,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       images_enabled_(true),
       allow_stale_resources_(false),
       image_fetched_(false) {
-  DCHECK(console_logger_);
   stale_while_revalidate_enabled_ =
       RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag();
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
@@ -1605,7 +1641,7 @@ void ResourceFetcher::ClearContext() {
     properties_->Detach();
   }
 
-  console_logger_ = MakeGarbageCollected<NullConsoleLogger>();
+  console_logger_->Detach();
   loader_factory_ = nullptr;
 
   // Make sure the only requests still going are keepalive requests.
@@ -1626,6 +1662,10 @@ void ResourceFetcher::ClearContext() {
                   WrapPersistent(this)),
         kKeepaliveLoadersTimeout);
   }
+}
+
+ConsoleLogger& ResourceFetcher::GetConsoleLogger() {
+  return *console_logger_;
 }
 
 int ResourceFetcher::BlockingRequestCount() const {

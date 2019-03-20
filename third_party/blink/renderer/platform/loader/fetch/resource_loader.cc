@@ -493,10 +493,6 @@ void ResourceLoader::Run() {
   StartWith(resource_->GetResourceRequest());
 }
 
-ConsoleLogger* ResourceLoader::GetConsoleLogger() {
-  return fetcher_->GetConsoleLogger();
-}
-
 void ResourceLoader::DidReceiveData(base::span<const char> data) {
   DidReceiveData(data.data(), data.size());
 }
@@ -1204,7 +1200,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     return;
   }
   if (error.CorsErrorStatus()) {
-    GetConsoleLogger()->AddErrorMessage(
+    fetcher_->GetConsoleLogger().AddErrorMessage(
         ConsoleLogger::Source::kScript,
         cors::GetErrorString(
             *error.CorsErrorStatus(), resource_->GetResourceRequest().Url(),
@@ -1422,7 +1418,7 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
   String mime_type = response.HttpContentType();
   if (request_context == mojom::RequestContextType::STYLE &&
       !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type)) {
-    GetConsoleLogger()->AddErrorMessage(
+    fetcher_->GetConsoleLogger().AddErrorMessage(
         ConsoleLogger::Source::kSecurity,
         "Refused to apply style from '" +
             response.CurrentRequestUrl().ElidedString() +

@@ -28,10 +28,6 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
   // Called when the request is granted to run.
   virtual void Run() = 0;
 
-  // Called to obtain a ConsoleLogger instance.
-  // TODO(yhirano): Remove this once https://crbug.com/855189 is fixed.
-  virtual ConsoleLogger* GetConsoleLogger() = 0;
-
   void Trace(blink::Visitor* visitor) override {}
 };
 
@@ -152,7 +148,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   ResourceLoadScheduler(ThrottlingPolicy initial_throttling_poilcy,
                         const ResourceFetcherProperties&,
-                        FrameScheduler*);
+                        FrameScheduler*,
+                        ConsoleLogger& console_logger);
   ~ResourceLoadScheduler() override;
 
   void Trace(blink::Visitor*);
@@ -341,6 +338,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Handle to throttling observer.
   std::unique_ptr<FrameScheduler::LifecycleObserverHandle>
       scheduler_observer_handle_;
+
+  const Member<ConsoleLogger> console_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadScheduler);
 };
