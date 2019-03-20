@@ -104,6 +104,13 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
                     uint32_t module_size,
                     uint32_t module_time_date_stamp);
 
+  // Forwards the module load event to the ModuleDatabase global instance via
+  // OnModuleLoad(). Provided for convenience.
+  static void HandleModuleLoadEvent(content::ProcessType process_type,
+                                    const base::FilePath& module_path,
+                                    uint32_t module_size,
+                                    uint32_t module_time_date_stamp);
+
   void OnModuleBlocked(const base::FilePath& module_path,
                        uint32_t module_size,
                        uint32_t module_time_date_stamp);
