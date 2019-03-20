@@ -29,8 +29,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
                Graph* graph);
   ~PageNodeImpl() override;
 
-  void AddFrame(FrameNodeImpl* frame_node);
-  void RemoveFrame(FrameNodeImpl* frame_node);
+  void AddFrame(const resource_coordinator::CoordinationUnitID& cu_id);
+  void RemoveFrame(const resource_coordinator::CoordinationUnitID& cu_id);
   void SetIsLoading(bool is_loading);
   void SetIsVisible(bool is_visible);
   void SetUKMSourceId(int64_t ukm_source_id);
@@ -125,8 +125,6 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
  private:
   friend class FrameNodeImpl;
 
-  void BeforeDestroyed() override;
-
   void set_page_almost_idle(bool page_almost_idle);
 
   // CoordinationUnitInterface implementation.
@@ -134,6 +132,9 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   void OnPropertyChanged(
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
+
+  bool AddFrameImpl(FrameNodeImpl* frame_node);
+  bool RemoveFrameImpl(FrameNodeImpl* frame_node);
 
   // This is called whenever |num_frozen_frames_| changes, or whenever
   // |frame_nodes_.size()| changes. It is used to synthesize the

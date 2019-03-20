@@ -234,7 +234,6 @@ TEST_F(NodeAttachedDataTest, NodeDeathDestroysData) {
 
   // Release the page node and expect the node attached data to have been
   // cleaned up.
-  mock_graph.frame.reset();
   mock_graph.page.reset();
   EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(0u,

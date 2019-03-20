@@ -43,9 +43,9 @@ class FrameNodeImpl
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void OnNonPersistentNotificationCreated() override;
 
-  void SetProcess(ProcessNodeImpl* process_node);
-  void AddChildFrame(FrameNodeImpl* frame_node);
-  void RemoveChildFrame(FrameNodeImpl* frame_node);
+  void SetProcess(const resource_coordinator::CoordinationUnitID& cu_id);
+  void AddChildFrame(const resource_coordinator::CoordinationUnitID& cu_id);
+  void RemoveChildFrame(const resource_coordinator::CoordinationUnitID& cu_id);
 
   FrameNodeImpl* GetParentFrameNode() const;
   PageNodeImpl* GetPageNode() const;
@@ -74,8 +74,6 @@ class FrameNodeImpl
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
-  void BeforeDestroyed() override;
-
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
   void OnPropertyChanged(
@@ -91,6 +89,7 @@ class FrameNodeImpl
   void AddParentFrame(FrameNodeImpl* parent_frame_node);
   bool AddChildFrameImpl(FrameNodeImpl* child_frame_node);
   void RemoveParentFrame(FrameNodeImpl* parent_frame_node);
+  bool RemoveChildFrame(FrameNodeImpl* child_frame_node);
   void AddPageNode(PageNodeImpl* page_node);
   void AddProcessNode(ProcessNodeImpl* process_node);
   void RemovePageNode(PageNodeImpl* page_node);

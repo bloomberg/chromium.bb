@@ -103,7 +103,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
     performance_manager_->task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&FrameNodeImpl::AddChildFrame,
-                       base::Unretained(parent_frame_node.get()), frame.get()));
+                       base::Unretained(parent_frame_node.get()), frame->id()));
   }
 
   RenderProcessUserData* user_data =
@@ -117,7 +117,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
     performance_manager_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&FrameNodeImpl::SetProcess,
                                   base::Unretained(frame.get()),
-                                  user_data->process_node()));
+                                  user_data->process_node()->id()));
   }
 
   frames_[render_frame_host] = std::move(frame);
@@ -163,7 +163,7 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
   // Make sure the hierarchical structure is constructed before sending signal
-  // to the performance manager.
+  // to Resource Coordinator.
   // TODO(siggi): Ideally this would be a DCHECK, but it seems it's possible
   //     to get a DidFinishNavigation notification for a deleted frame with
   //     the network service.
@@ -173,7 +173,7 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
     performance_manager_->task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&PageNodeImpl::AddFrame,
-                       base::Unretained(page_node_.get()), it->second.get()));
+                       base::Unretained(page_node_.get()), it->second->id()));
 
     if (navigation_handle->IsInMainFrame()) {
       OnMainFrameNavigation(navigation_handle->GetNavigationId());
