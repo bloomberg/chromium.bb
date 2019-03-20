@@ -146,23 +146,6 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
     OnDidGetEntryCallback() = default;
   };
 
-  class OnDidGetEntryV8Impl : public OnDidGetEntryCallback {
-   public:
-    static OnDidGetEntryV8Impl* Create(V8EntryCallback* callback) {
-      return callback ? MakeGarbageCollected<OnDidGetEntryV8Impl>(callback)
-                      : nullptr;
-    }
-
-    OnDidGetEntryV8Impl(V8EntryCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-    void Trace(blink::Visitor*) override;
-    void OnSuccess(Entry*) override;
-
-   private:
-    Member<V8PersistentCallbackInterface<V8EntryCallback>> callback_;
-  };
-
   using SuccessCallback = base::OnceCallback<void(Entry*)>;
   using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
 
@@ -262,12 +245,10 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
 
 class ResolveURICallbacks final : public FileSystemCallbacksBase {
  public:
-  using OnDidGetEntryCallback = EntryCallbacks::OnDidGetEntryCallback;
-  using OnDidGetEntryV8Impl = EntryCallbacks::OnDidGetEntryV8Impl;
+  using SuccessCallback = EntryCallbacks::SuccessCallback;
+  using ErrorCallback = EntryCallbacks::ErrorCallback;
 
-  ResolveURICallbacks(OnDidGetEntryCallback*,
-                      ErrorCallbackBase*,
-                      ExecutionContext*);
+  ResolveURICallbacks(SuccessCallback, ErrorCallback, ExecutionContext*);
 
   // Called when a filesystem URL is resolved.
   void DidResolveURL(const String& name,
@@ -280,7 +261,8 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  Persistent<OnDidGetEntryCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
 };
 
 class MetadataCallbacks final : public FileSystemCallbacksBase {
