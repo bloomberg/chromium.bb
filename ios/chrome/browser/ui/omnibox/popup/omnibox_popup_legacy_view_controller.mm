@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_base_view_controller+internal.h"
 
 #include <memory>
 
@@ -33,129 +34,26 @@ const int kRowCount = 12;
 const CGFloat kRowHeight = 48.0;
 const CGFloat kShortcutsRowHeight = 220;
 const CGFloat kAnswerRowHeight = 64.0;
-const CGFloat kTopAndBottomPadding = 8.0;
-UIColor* BackgroundColorTablet() {
-  return [UIColor whiteColor];
-}
-UIColor* BackgroundColorPhone() {
-  return [UIColor colorWithRed:(245 / 255.0)
-                         green:(245 / 255.0)
-                          blue:(246 / 255.0)
-                         alpha:1.0];
-}
-UIColor* BackgroundColorIncognito() {
-  return [UIColor colorWithRed:(50 / 255.0)
-                         green:(50 / 255.0)
-                          blue:(50 / 255.0)
-                         alpha:1.0];
-}
 }  // namespace
 
 @interface OmniboxPopupLegacyViewController () <
-    OmniboxPopupRowAccessibilityDelegate,
-    UITableViewDelegate,
-    UITableViewDataSource> {
-  // Alignment of omnibox text. Popup text should match this alignment.
-  NSTextAlignment _alignment;
-
-  NSArray<id<AutocompleteSuggestion>>* _currentResult;
-
+    OmniboxPopupRowAccessibilityDelegate> {
   // Array containing the OmniboxPopupRow objects displayed in the view.
   NSArray* _rows;
-
-  // The height of the keyboard. Used to determine the content inset for the
-  // scroll view.
-  CGFloat _keyboardHeight;
 }
-
-// Index path of currently highlighted row. The rows can be highlighted by
-// tapping and holding on them or by using arrow keys on a hardware keyboard.
-@property(nonatomic, strong) NSIndexPath* highlightedIndexPath;
-
-@property(nonatomic, strong) UITableView* tableView;
-
-// Flag that enables forwarding scroll events to the delegate. Disabled while
-// updating the cells to avoid defocusing the omnibox when the omnibox popup
-// changes size and table view issues a scroll event.
-@property(nonatomic, assign) BOOL forwardsScrollEvents;
-
-// The cell with shortcuts to display when no results are available (only if
-// this is enabled with |shortcutsEnabled|). Lazily instantiated.
-@property(nonatomic, strong) UITableViewCell* shortcutsCell;
-
-// Time the view appeared on screen. Used to record a metric of how long this
-// view controller was on screen.
-@property(nonatomic, assign) base::TimeTicks viewAppearanceTime;
 
 @end
 
 @implementation OmniboxPopupLegacyViewController
-@synthesize delegate = _delegate;
-@synthesize incognito = _incognito;
-@synthesize imageRetriever = _imageRetriever;
-@synthesize highlightedIndexPath = _highlightedIndexPath;
-@synthesize tableView = _tableView;
-@synthesize forwardsScrollEvents = _forwardsScrollEvents;
-#pragma mark -
-#pragma mark Initialization
-
-- (instancetype)init {
-  if (self = [super initWithNibName:nil bundle:nil]) {
-    _forwardsScrollEvents = YES;
-    if (IsIPadIdiom()) {
-      // The iPad keyboard can cover some of the rows of the scroll view. The
-      // scroll view's content inset may need to be updated when the keyboard is
-      // displayed.
-      NSNotificationCenter* defaultCenter =
-          [NSNotificationCenter defaultCenter];
-      [defaultCenter addObserver:self
-                        selector:@selector(keyboardDidShow:)
-                            name:UIKeyboardDidShowNotification
-                          object:nil];
-    }
-  }
-  return self;
-}
-
-- (void)dealloc {
-  self.tableView.delegate = nil;
-}
-
-- (void)loadView {
-  self.tableView =
-      [[SelfSizingTableView alloc] initWithFrame:CGRectZero
-                                           style:UITableViewStylePlain];
-  self.tableView.delegate = self;
-  self.tableView.dataSource = self;
-  self.view = self.tableView;
-}
-
-- (UIScrollView*)scrollView {
-  return (UIScrollView*)self.tableView;
-}
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-
-  self.tableView.insetsContentViewsToSafeArea = YES;
-
-  // Initialize the same size as the parent view, autoresize will correct this.
-  [self.view setFrame:CGRectZero];
-  if (_incognito) {
-    self.view.backgroundColor = BackgroundColorIncognito();
-  } else {
-    self.view.backgroundColor =
-        IsIPadIdiom() ? BackgroundColorTablet() : BackgroundColorPhone();
-  }
-
-  [self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
-                                  UIViewAutoresizingFlexibleHeight)];
 
   // Cache fonts needed for omnibox attributed string.
   NSMutableArray* rowsBuilder = [[NSMutableArray alloc] init];
   for (int i = 0; i < kRowCount; i++) {
     OmniboxPopupRow* row =
-        [[OmniboxPopupRow alloc] initWithIncognito:_incognito];
+        [[OmniboxPopupRow alloc] initWithIncognito:self.incognito];
     row.accessibilityIdentifier =
         [NSString stringWithFormat:@"omnibox suggestion %i", i];
     row.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -169,19 +67,6 @@ UIColor* BackgroundColorIncognito() {
     row.rowHeight = kRowHeight;
   }
   _rows = [rowsBuilder copy];
-
-  // Table configuration.
-  self.tableView.allowsMultipleSelectionDuringEditing = NO;
-  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  self.tableView.separatorInset = UIEdgeInsetsZero;
-  if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
-    [self.tableView setLayoutMargins:UIEdgeInsetsZero];
-  }
-  self.tableView.contentInsetAdjustmentBehavior =
-      UIScrollViewContentInsetAdjustmentNever;
-  [self.tableView setContentInset:UIEdgeInsetsMake(kTopAndBottomPadding, 0,
-                                                   kTopAndBottomPadding, 0)];
-  self.tableView.estimatedRowHeight = 0;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -194,15 +79,6 @@ UIColor* BackgroundColorIncognito() {
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self layoutRows];
-
-  ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
-      initWithStyle:self.incognito ? INCOGNITO : NORMAL];
-
-  if (IsRegularXRegularSizeClass(self)) {
-    self.view.backgroundColor = configuration.backgroundColor;
-  } else {
-    self.view.backgroundColor = [UIColor clearColor];
-  }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -215,80 +91,6 @@ UIColor* BackgroundColorIncognito() {
         [self layoutRows];
       }
                       completion:nil];
-}
-
-#pragma mark - View lifecycle
-
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-  self.viewAppearanceTime = base::TimeTicks::Now();
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-  UMA_HISTOGRAM_MEDIUM_TIMES("MobileOmnibox.PopupOpenDuration",
-                             base::TimeTicks::Now() - self.viewAppearanceTime);
-}
-
-#pragma mark - Properties accessors
-
-- (void)setIncognito:(BOOL)incognito {
-  DCHECK(!self.viewLoaded);
-  _incognito = incognito;
-}
-
-- (void)setShortcutsEnabled:(BOOL)shortcutsEnabled {
-  if (shortcutsEnabled == _shortcutsEnabled) {
-    return;
-  }
-
-  DCHECK(!shortcutsEnabled || self.shortcutsViewController);
-
-  _shortcutsEnabled = shortcutsEnabled;
-  [self.tableView reloadData];
-}
-
-- (UITableViewCell*)shortcutsCell {
-  if (_shortcutsCell) {
-    return _shortcutsCell;
-  }
-
-  DCHECK(self.shortcutsEnabled);
-  DCHECK(self.shortcutsViewController);
-
-  UITableViewCell* cell = [[UITableViewCell alloc] init];
-  _shortcutsCell = cell;
-  cell.backgroundColor = [UIColor clearColor];
-  [self.shortcutsViewController willMoveToParentViewController:self];
-  [self addChildViewController:self.shortcutsViewController];
-  [cell.contentView addSubview:self.shortcutsViewController.view];
-  self.shortcutsViewController.view.translatesAutoresizingMaskIntoConstraints =
-      NO;
-  AddSameConstraints(self.shortcutsViewController.view, cell.contentView);
-  [self.shortcutsViewController didMoveToParentViewController:self];
-  cell.accessibilityIdentifier = kShortcutsAccessibilityIdentifier;
-  return cell;
-}
-
-#pragma mark - AutocompleteResultConsumer
-
-- (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
-        withAnimation:(BOOL)animation {
-  self.forwardsScrollEvents = NO;
-  // Reset highlight state.
-  if (self.highlightedIndexPath) {
-    [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
-    self.highlightedIndexPath = nil;
-  }
-
-  _currentResult = result;
-  [self layoutRows];
-
-  size_t size = _currentResult.count;
-  if (animation && size > 0) {
-    [self fadeInRows];
-  }
-  self.forwardsScrollEvents = YES;
 }
 
 #pragma mark -
@@ -311,9 +113,10 @@ UIColor* BackgroundColorIncognito() {
   const CGFloat kAnswerImageLeftPadding = -1;
   const CGFloat kAnswerImageRightPadding = 4;
   const CGFloat kAnswerImageTopPadding = 2;
-  const BOOL alignmentRight = _alignment == NSTextAlignmentRight;
+  const BOOL alignmentRight = self.alignment == NSTextAlignmentRight;
 
-  BOOL LTRTextInRTLLayout = _alignment == NSTextAlignmentLeft && UseRTLLayout();
+  BOOL LTRTextInRTLLayout =
+      self.alignment == NSTextAlignmentLeft && UseRTLLayout();
 
   row.rowHeight = match.hasAnswer ? kAnswerRowHeight : kRowHeight;
 
@@ -356,7 +159,7 @@ UIColor* BackgroundColorIncognito() {
   // layout logic there.
   UILabel* detailTextLabel =
       match.hasAnswer ? row.detailAnswerLabel : row.detailTruncatingLabel;
-  [detailTextLabel setTextAlignment:_alignment];
+  [detailTextLabel setTextAlignment:self.alignment];
 
   // The width must be positive for CGContextRef to be valid.
   UIEdgeInsets safeAreaInsets = self.view.safeAreaInsets;
@@ -385,7 +188,7 @@ UIColor* BackgroundColorIncognito() {
   [detailTextLabel setNeedsDisplay];
 
   OmniboxPopupTruncatingLabel* textLabel = row.textTruncatingLabel;
-  [textLabel setTextAlignment:_alignment];
+  [textLabel setTextAlignment:self.alignment];
   LayoutRect textLabelLayout =
       LayoutRectMake(kTextCellLeadingPadding, CGRectGetWidth(rowBounds), 0,
                      labelWidth, kTextLabelHeight);
@@ -470,8 +273,17 @@ UIColor* BackgroundColorIncognito() {
   [textLabel setNeedsDisplay];
 }
 
+- (void)updateTableViewWithAnimation:(BOOL)animation {
+  [self layoutRows];
+
+  size_t size = self.currentResult.count;
+  if (animation && size > 0) {
+    [self fadeInRows];
+  }
+}
+
 - (void)layoutRows {
-  size_t size = _currentResult.count;
+  size_t size = self.currentResult.count;
 
   [self.tableView reloadData];
   [self.tableView beginUpdates];
@@ -479,7 +291,7 @@ UIColor* BackgroundColorIncognito() {
     OmniboxPopupRow* row = _rows[i];
 
     if (i < size) {
-      [self updateRow:row withMatch:_currentResult[i]];
+      [self updateRow:row withMatch:self.currentResult[i]];
       row.hidden = NO;
     } else {
       row.hidden = YES;
@@ -489,29 +301,6 @@ UIColor* BackgroundColorIncognito() {
 
   if (IsIPadIdiom())
     [self updateContentInsetForKeyboard];
-}
-
-- (void)keyboardDidShow:(NSNotification*)notification {
-  NSDictionary* keyboardInfo = [notification userInfo];
-  NSValue* keyboardFrameValue =
-      [keyboardInfo valueForKey:UIKeyboardFrameEndUserInfoKey];
-  _keyboardHeight = CurrentKeyboardHeight(keyboardFrameValue);
-  if (self.tableView.contentSize.height > 0)
-    [self updateContentInsetForKeyboard];
-}
-
-- (void)updateContentInsetForKeyboard {
-  CGRect absoluteRect =
-      [self.tableView convertRect:self.tableView.bounds
-                toCoordinateSpace:UIScreen.mainScreen.coordinateSpace];
-  CGFloat screenHeight = CurrentScreenHeight();
-  CGFloat bottomInset = screenHeight - self.tableView.contentSize.height -
-                        _keyboardHeight - absoluteRect.origin.y -
-                        kTopAndBottomPadding * 2;
-  bottomInset = MAX(kTopAndBottomPadding, -bottomInset);
-  self.tableView.contentInset =
-      UIEdgeInsetsMake(kTopAndBottomPadding, 0, bottomInset, 0);
-  self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
 }
 
 - (void)fadeInRows {
@@ -545,139 +334,20 @@ UIColor* BackgroundColorIncognito() {
   [CATransaction commit];
 }
 
-- (void)highlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-  [cell setHighlighted:YES animated:NO];
-}
-
-- (void)unhighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-  [cell setHighlighted:NO animated:NO];
-}
-
-#pragma mark -
-#pragma mark Action for append UIButton
-
-- (void)trailingButtonTapped:(id)sender {
-  NSUInteger row = [sender tag];
-  [self.delegate autocompleteResultConsumer:self
-                 didTapTrailingButtonForRow:row];
-}
-
 #pragma mark -
 #pragma mark UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  [super scrollViewDidScroll:scrollView];
+
   // TODO(crbug.com/733650): Default to the dragging check once it's been tested
   // on trunk.
   if (!scrollView.dragging)
     return;
 
-  // TODO(crbug.com/911534): The following call chain ultimately just dismisses
-  // the keyboard, but involves many layers of plumbing, and should be
-  // refactored.
-  if (self.forwardsScrollEvents)
-    [self.delegate autocompleteResultConsumerDidScroll:self];
-
   for (OmniboxPopupRow* row in _rows) {
     row.highlighted = NO;
   }
-}
-
-// Set text alignment for popup cells.
-- (void)setTextAlignment:(NSTextAlignment)alignment {
-  _alignment = alignment;
-}
-
-#pragma mark -
-#pragma mark OmniboxSuggestionCommands
-
-- (void)highlightNextSuggestion {
-  NSIndexPath* path = self.highlightedIndexPath;
-  if (path == nil) {
-    // When nothing is highlighted, pressing Up Arrow doesn't do anything.
-    return;
-  }
-
-  if (path.row == 0) {
-    // Can't move up from first row. Call the delegate again so that the inline
-    // autocomplete text is set again (in case the user exited the inline
-    // autocomplete).
-    [self.delegate autocompleteResultConsumer:self
-                              didHighlightRow:self.highlightedIndexPath.row];
-    return;
-  }
-
-  [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
-  self.highlightedIndexPath =
-      [NSIndexPath indexPathForRow:self.highlightedIndexPath.row - 1
-                         inSection:0];
-  [self highlightRowAtIndexPath:self.highlightedIndexPath];
-
-  [self.delegate autocompleteResultConsumer:self
-                            didHighlightRow:self.highlightedIndexPath.row];
-}
-
-- (void)highlightPreviousSuggestion {
-  if (!self.highlightedIndexPath) {
-    // Initialize the highlighted row to -1, so that pressing down when nothing
-    // is highlighted highlights the first row (at index 0).
-    self.highlightedIndexPath = [NSIndexPath indexPathForRow:-1 inSection:0];
-  }
-
-  NSIndexPath* path = self.highlightedIndexPath;
-
-  if (path.row == [self.tableView numberOfRowsInSection:0] - 1) {
-    // Can't go below last row. Call the delegate again so that the inline
-    // autocomplete text is set again (in case the user exited the inline
-    // autocomplete).
-    [self.delegate autocompleteResultConsumer:self
-                              didHighlightRow:self.highlightedIndexPath.row];
-    return;
-  }
-
-  // There is a row below, move highlight there.
-  [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
-  self.highlightedIndexPath =
-      [NSIndexPath indexPathForRow:self.highlightedIndexPath.row + 1
-                         inSection:0];
-  [self highlightRowAtIndexPath:self.highlightedIndexPath];
-
-  [self.delegate autocompleteResultConsumer:self
-                            didHighlightRow:self.highlightedIndexPath.row];
-}
-
-- (void)keyCommandReturn {
-  [self.tableView selectRowAtIndexPath:self.highlightedIndexPath
-                              animated:YES
-                        scrollPosition:UITableViewScrollPositionNone];
-}
-
-#pragma mark -
-#pragma mark Table view delegate
-
-- (BOOL)tableView:(UITableView*)tableView
-    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      _currentResult.count == 0) {
-    return NO;
-  }
-
-  return YES;
-}
-
-- (void)tableView:(UITableView*)tableView
-    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
-  NSUInteger row = indexPath.row;
-
-  // Crash reports tell us that |row| is sometimes indexed past the end of
-  // the results array. In those cases, just ignore the request and return
-  // early. See b/5813291.
-  if (row >= _currentResult.count)
-    return;
-  [self.delegate autocompleteResultConsumer:self didSelectRow:row];
 }
 
 #pragma mark -
@@ -686,26 +356,13 @@ UIColor* BackgroundColorIncognito() {
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.shortcutsEnabled && indexPath.row == 0 &&
-      _currentResult.count == 0) {
+      self.currentResult.count == 0) {
     return kShortcutsRowHeight;
   }
 
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
+  DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
   return ((OmniboxPopupRow*)(_rows[indexPath.row])).rowHeight;
-}
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
-  return 1;
-}
-
-- (NSInteger)tableView:(UITableView*)tableView
-    numberOfRowsInSection:(NSInteger)section {
-  DCHECK_EQ(0, section);
-  if (self.shortcutsEnabled && _currentResult.count == 0) {
-    return 1;
-  }
-  return _currentResult.count;
 }
 
 // Customize the appearance of table view cells.
@@ -714,44 +371,12 @@ UIColor* BackgroundColorIncognito() {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
 
   if (self.shortcutsEnabled && indexPath.row == 0 &&
-      _currentResult.count == 0) {
+      self.currentResult.count == 0) {
     return self.shortcutsCell;
   }
 
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
+  DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
   return _rows[indexPath.row];
-}
-
-- (BOOL)tableView:(UITableView*)tableView
-    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-
-  if (self.shortcutsEnabled && indexPath.row == 0 &&
-      _currentResult.count == 0) {
-    return NO;
-  }
-
-  // iOS doesn't check -numberOfRowsInSection before checking
-  // -canEditRowAtIndexPath in a reload call. If |indexPath.row| is too large,
-  // simple return |NO|.
-  if ((NSUInteger)indexPath.row >= _currentResult.count)
-    return NO;
-
-  return [_currentResult[indexPath.row] supportsDeletion];
-}
-
-- (void)tableView:(UITableView*)tableView
-    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
-     forRowAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
-  if (editingStyle == UITableViewCellEditingStyleDelete) {
-    // The delete button never disappears if you don't call this after a tap.
-    // It doesn't seem to be required anywhere else.
-    [_rows[indexPath.row] prepareForReuse];
-    [self.delegate autocompleteResultConsumer:self
-                      didSelectRowForDeletion:indexPath.row];
-  }
 }
 
 #pragma mark - private

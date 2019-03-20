@@ -4,6 +4,7 @@
 
 source_set("popup") {
   sources = [
+    "omnibox_popup_base_view_controller+internal.h",
     "omnibox_popup_base_view_controller.h",
     "omnibox_popup_base_view_controller.mm",
     "omnibox_popup_coordinator.h",

@@ -7,7 +7,7 @@
 
 #include <UIKit/UIKit.h>
 
-@class OmniboxPopupLegacyViewController;
+@class OmniboxPopupBaseViewController;
 
 // In the main app, the |OmniboxPopupViewController| view is contained inside
 // another view (see |OmniboxPopupPresenter|). This class mimics that for
@@ -15,10 +15,10 @@
 @interface SCOmniboxPopupContainerViewController : UIViewController
 
 @property(nonatomic, strong)
-    OmniboxPopupLegacyViewController* popupViewController;
+    OmniboxPopupBaseViewController* popupViewController;
 
 - (instancetype)initWithPopupViewController:
-    (OmniboxPopupLegacyViewController*)popupViewController
+    (OmniboxPopupBaseViewController*)popupViewController
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
