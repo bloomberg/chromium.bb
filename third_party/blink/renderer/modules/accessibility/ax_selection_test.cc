@@ -69,11 +69,11 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelection) {
   const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
   ASSERT_TRUE(ax_selection.IsValid());
 
-  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Base().IsTextPosition());
   EXPECT_EQ(ax_static_text_1, ax_selection.Base().ContainerObject());
   EXPECT_EQ(3, ax_selection.Base().TextOffset());
 
-  EXPECT_FALSE(ax_selection.Extent().IsTextPosition());
+  ASSERT_FALSE(ax_selection.Extent().IsTextPosition());
   EXPECT_EQ(ax_paragraph_2, ax_selection.Extent().ContainerObject());
   EXPECT_EQ(1, ax_selection.Extent().ChildIndex());
 
@@ -412,10 +412,10 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
   // The extended selection should start after the children of the paragraph
   // before the first aria-hidden element and end right before the paragraph
   // after the last aria-hidden element.
-  EXPECT_FALSE(ax_selection_extend.Base().IsTextPosition());
+  ASSERT_FALSE(ax_selection_extend.Base().IsTextPosition());
   EXPECT_EQ(ax_before, ax_selection_extend.Base().ContainerObject());
   EXPECT_EQ(1, ax_selection_extend.Base().ChildIndex());
-  EXPECT_FALSE(ax_selection_extend.Extent().IsTextPosition());
+  ASSERT_FALSE(ax_selection_extend.Extent().IsTextPosition());
   EXPECT_EQ(ax_main, ax_selection_extend.Extent().ContainerObject());
   EXPECT_EQ(ax_after->IndexInParent(),
             ax_selection_extend.Extent().ChildIndex());
@@ -566,10 +566,10 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextField) {
       AXSelection::FromCurrentSelection(ToTextControl(*input));
   ASSERT_TRUE(ax_selection.IsValid());
 
-  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Base().IsTextPosition());
   EXPECT_EQ(ax_input, ax_selection.Base().ContainerObject());
   EXPECT_EQ(0, ax_selection.Base().TextOffset());
-  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
   EXPECT_EQ(ax_input, ax_selection.Extent().ContainerObject());
   EXPECT_EQ(18, ax_selection.Extent().TextOffset());
 }
@@ -610,12 +610,180 @@ TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextarea) {
       AXSelection::FromCurrentSelection(ToTextControl(*textarea));
   ASSERT_TRUE(ax_selection.IsValid());
 
-  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Base().IsTextPosition());
   EXPECT_EQ(ax_textarea, ax_selection.Base().ContainerObject());
   EXPECT_EQ(0, ax_selection.Base().TextOffset());
-  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
   EXPECT_EQ(ax_textarea, ax_selection.Extent().ContainerObject());
   EXPECT_EQ(53, ax_selection.Extent().TextOffset());
+}
+
+TEST_F(AccessibilitySelectionTest,
+       FromCurrentSelectionInContentEditableWithSoftLineBreaks) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <div id="contenteditable" role="textbox" contenteditable
+          style="max-width: 5px; overflow-wrap: normal;">
+        Inside contenteditable field.
+      </div>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  // We want to select all the text in the content editable, but not the
+  // editable itself.
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      const contenteditable = document.querySelector('div[contenteditable]');
+      contenteditable.focus();
+      const firstLine = contenteditable.firstChild;
+      const lastLine = contenteditable.lastChild;
+      const range = document.createRange();
+      range.setStart(firstLine, 0);
+      range.setEnd(lastLine, lastLine.nodeValue.length);
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const AXObject* ax_contenteditable =
+      GetAXObjectByElementId("contenteditable");
+  ASSERT_NE(nullptr, ax_contenteditable);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_contenteditable->RoleValue());
+  const AXObject* ax_static_text = ax_contenteditable->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  // Guard against the structure of the accessibility tree unexpectedly
+  // changing, causing a hard to debug test failure.
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue())
+      << "A content editable with only text inside it should have static text "
+         "children.";
+  // Guard against both ComputedName().length() and selection extent offset
+  // returning 0.
+  ASSERT_LT(0u, ax_static_text->ComputedName().length());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  ASSERT_TRUE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_static_text, ax_selection.Base().ContainerObject());
+  EXPECT_EQ(0, ax_selection.Base().TextOffset());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_static_text, ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(ax_static_text->ComputedName().length(),
+            unsigned{ax_selection.Extent().TextOffset()});
+}
+
+TEST_F(AccessibilitySelectionTest,
+       FromCurrentSelectionInContentEditableSelectFirstSoftLineBreak) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  // There should be no white space between the opening tag of the content
+  // editable and the text inside it, otherwise selection offsets would be
+  // wrong.
+  SetBodyInnerHTML(R"HTML(
+      <div id="contenteditable" role="textbox" contenteditable
+          style="max-width: 5px; overflow-wrap: normal;">Line one.
+      </div>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      const contenteditable = document.querySelector('div[contenteditable]');
+      contenteditable.focus();
+      const text = contenteditable.firstChild;
+      const range = document.createRange();
+      range.setStart(text, 4);
+      range.setEnd(text, 4);
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      selection.modify('extend', 'forward', 'character');
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const AXObject* ax_contenteditable =
+      GetAXObjectByElementId("contenteditable");
+  ASSERT_NE(nullptr, ax_contenteditable);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_contenteditable->RoleValue());
+  const AXObject* ax_static_text = ax_contenteditable->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  // Guard against the structure of the accessibility tree unexpectedly
+  // changing, causing a hard to debug test failure.
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue())
+      << "A content editable with only text inside it should have static text "
+         "children.";
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  ASSERT_TRUE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_static_text, ax_selection.Base().ContainerObject());
+  EXPECT_EQ(4, ax_selection.Base().TextOffset());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_static_text, ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(5, ax_selection.Extent().TextOffset());
+}
+
+TEST_F(AccessibilitySelectionTest,
+       FromCurrentSelectionInContentEditableSelectFirstHardLineBreak) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  // There should be no white space between the opening tag of the content
+  // editable and the text inside it, otherwise selection offsets would be
+  // wrong.
+  SetBodyInnerHTML(R"HTML(
+      <div id="contenteditable" role="textbox" contenteditable
+          style="max-width: 5px; overflow-wrap: normal;">Inside<br>contenteditable.
+      </div>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      const contenteditable = document.querySelector('div[contenteditable]');
+      contenteditable.focus();
+      const firstLine = contenteditable.firstChild;
+      const range = document.createRange();
+      range.setStart(firstLine, 6);
+      range.setEnd(firstLine, 6);
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      selection.modify('extend', 'forward', 'character');
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const AXObject* ax_contenteditable =
+      GetAXObjectByElementId("contenteditable");
+  ASSERT_NE(nullptr, ax_contenteditable);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_contenteditable->RoleValue());
+  ASSERT_EQ(3, ax_contenteditable->ChildCount())
+      << "The content editable should have two lines with a line break between "
+         "them.";
+  const AXObject* ax_static_text_2 = ax_contenteditable->Children()[2];
+  ASSERT_NE(nullptr, ax_static_text_2);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text_2->RoleValue());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  ASSERT_FALSE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_contenteditable, ax_selection.Base().ContainerObject());
+  EXPECT_EQ(1, ax_selection.Base().ChildIndex());
+  ASSERT_TRUE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_static_text_2, ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(0, ax_selection.Extent().TextOffset());
 }
 
 TEST_F(AccessibilitySelectionTest, ClearCurrentSelectionInTextField) {
