@@ -1953,7 +1953,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        LanguageDetectionLangDetectionBasic) {
-  RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-detection-basic.html"));
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("basic.html"));
 }
 
 //
