@@ -47,6 +47,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::EXPANDED:
         event_name = "EXPANDED";
         break;
+      case AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
+        event_name = "IMAGE_ANNOTATION_CHANGED";
+        break;
       case AXEventGenerator::Event::INVALID_STATUS_CHANGED:
         event_name = "INVALID_STATUS_CHANGED";
         break;
@@ -878,7 +881,7 @@ TEST(AXEventGeneratorTest, ImageAnnotationChanged) {
   update.nodes[0].AddStringAttribute(
       ax::mojom::StringAttribute::kImageAnnotation, "Hello");
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("NAME_CHANGED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ("IMAGE_ANNOTATION_CHANGED on 1", DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, ImageAnnotationStatusChanged) {
@@ -894,7 +897,7 @@ TEST(AXEventGeneratorTest, ImageAnnotationStatusChanged) {
       ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
 
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("NAME_CHANGED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ("IMAGE_ANNOTATION_CHANGED on 1", DumpEvents(&event_generator));
 }
 
 }  // namespace ui

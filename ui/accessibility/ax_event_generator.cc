@@ -213,7 +213,7 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::StringAttribute::kImageAnnotation:
       // The image annotation is reported as part of the accessible name.
-      AddEvent(node, Event::NAME_CHANGED);
+      AddEvent(node, Event::IMAGE_ANNOTATION_CHANGED);
       break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
@@ -252,7 +252,7 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       // The image annotation is reported as part of the accessible name.
-      AddEvent(node, Event::NAME_CHANGED);
+      AddEvent(node, Event::IMAGE_ANNOTATION_CHANGED);
       break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
