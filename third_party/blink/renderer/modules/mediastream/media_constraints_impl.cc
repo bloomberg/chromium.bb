@@ -696,22 +696,6 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
     CopyStringConstraint(constraints_in->videoKind(), naked_treatment,
                          constraint_buffer.video_kind);
   }
-  if (constraints_in->hasDepthNear()) {
-    CopyDoubleConstraint(constraints_in->depthNear(), naked_treatment,
-                         constraint_buffer.depth_near);
-  }
-  if (constraints_in->hasDepthFar()) {
-    CopyDoubleConstraint(constraints_in->depthFar(), naked_treatment,
-                         constraint_buffer.depth_far);
-  }
-  if (constraints_in->hasFocalLengthX()) {
-    CopyDoubleConstraint(constraints_in->focalLengthX(), naked_treatment,
-                         constraint_buffer.focal_length_x);
-  }
-  if (constraints_in->hasFocalLengthY()) {
-    CopyDoubleConstraint(constraints_in->focalLengthY(), naked_treatment,
-                         constraint_buffer.focal_length_y);
-  }
 }
 
 WebMediaConstraints ConvertConstraintsToWeb(

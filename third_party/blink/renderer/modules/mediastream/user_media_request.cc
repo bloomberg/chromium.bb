@@ -255,22 +255,6 @@ void CountVideoConstraintUses(ExecutionContext* context,
                                     &WebMediaTrackConstraintSet::video_kind)) {
     counter.Count(WebFeature::kMediaStreamConstraintsVideoKind);
   }
-  if (RequestUsesNumericConstraint(constraints,
-                                   &WebMediaTrackConstraintSet::depth_near)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsDepthNear);
-  }
-  if (RequestUsesNumericConstraint(constraints,
-                                   &WebMediaTrackConstraintSet::depth_far)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsDepthFar);
-  }
-  if (RequestUsesNumericConstraint(
-          constraints, &WebMediaTrackConstraintSet::focal_length_x)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsFocalLengthX);
-  }
-  if (RequestUsesNumericConstraint(
-          constraints, &WebMediaTrackConstraintSet::focal_length_y)) {
-    counter.Count(WebFeature::kMediaStreamConstraintsFocalLengthY);
-  }
   if (RequestUsesDiscreteConstraint(
           constraints, &WebMediaTrackConstraintSet::media_stream_source)) {
     counter.Count(WebFeature::kMediaStreamConstraintsMediaStreamSourceVideo);

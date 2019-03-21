@@ -84,18 +84,16 @@ bool ConstraintSetHasImageCapture(
 bool ConstraintSetHasNonImageCapture(
     const MediaTrackConstraintSet* constraint_set) {
   return constraint_set->hasAspectRatio() ||
-         constraint_set->hasChannelCount() || constraint_set->hasDepthFar() ||
-         constraint_set->hasDepthNear() || constraint_set->hasDeviceId() ||
+         constraint_set->hasChannelCount() || constraint_set->hasDeviceId() ||
          constraint_set->hasEchoCancellation() ||
          constraint_set->hasNoiseSuppression() ||
          constraint_set->hasAutoGainControl() ||
          constraint_set->hasFacingMode() || constraint_set->hasResizeMode() ||
-         constraint_set->hasFocalLengthX() ||
-         constraint_set->hasFocalLengthY() || constraint_set->hasFrameRate() ||
-         constraint_set->hasGroupId() || constraint_set->hasHeight() ||
-         constraint_set->hasLatency() || constraint_set->hasSampleRate() ||
-         constraint_set->hasSampleSize() || constraint_set->hasVideoKind() ||
-         constraint_set->hasVolume() || constraint_set->hasWidth();
+         constraint_set->hasFrameRate() || constraint_set->hasGroupId() ||
+         constraint_set->hasHeight() || constraint_set->hasLatency() ||
+         constraint_set->hasSampleRate() || constraint_set->hasSampleSize() ||
+         constraint_set->hasVideoKind() || constraint_set->hasVolume() ||
+         constraint_set->hasWidth();
 }
 
 bool ConstraintSetHasImageAndNonImageCapture(
@@ -479,17 +477,6 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
       component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
     if (platform_settings.HasVideoKind())
       settings->setVideoKind(platform_settings.video_kind);
-  }
-  if (RuntimeEnabledFeatures::MediaCaptureDepthEnabled() &&
-      component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
-    if (platform_settings.HasDepthNear())
-      settings->setDepthNear(platform_settings.depth_near);
-    if (platform_settings.HasDepthFar())
-      settings->setDepthFar(platform_settings.depth_far);
-    if (platform_settings.HasFocalLengthX())
-      settings->setFocalLengthX(platform_settings.focal_length_x);
-    if (platform_settings.HasFocalLengthY())
-      settings->setFocalLengthY(platform_settings.focal_length_y);
   }
   settings->setDeviceId(platform_settings.device_id);
   if (!platform_settings.group_id.IsNull())

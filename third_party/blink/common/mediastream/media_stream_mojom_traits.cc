@@ -214,8 +214,6 @@ bool StructTraits<blink::mojom::MediaStreamDeviceDataView,
   if (!input.ReadInput(&out->input))
     return false;
   out->session_id = input.session_id();
-  if (!input.ReadCameraCalibration(&out->camera_calibration))
-    return false;
   if (!input.ReadDisplayMediaInfo(&out->display_media_info))
     return false;
   return true;

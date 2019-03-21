@@ -68,10 +68,6 @@ class WebMediaStreamTrack {
     bool HasLatency() const { return latency >= 0; }
     bool HasVolume() const { return volume >= 0; }
     bool HasVideoKind() const { return !video_kind.IsNull(); }
-    bool HasFocalLengthX() const { return focal_length_x >= 0.0; }
-    bool HasFocalLengthY() const { return focal_length_y >= 0.0; }
-    bool HasDepthNear() const { return depth_near >= 0.0; }
-    bool HasDepthFar() const { return depth_far >= 0.0; }
     // The variables are read from
     // MediaStreamTrack::GetSettings only.
     double frame_rate = -1.0;
@@ -94,10 +90,6 @@ class WebMediaStreamTrack {
 
     // Media Capture Depth Stream Extensions.
     WebString video_kind;
-    double focal_length_x = -1.0;
-    double focal_length_y = -1.0;
-    double depth_near = -1.0;
-    double depth_far = -1.0;
 
     // Screen Capture extensions
     base::Optional<DisplayCaptureSurfaceType> display_surface;

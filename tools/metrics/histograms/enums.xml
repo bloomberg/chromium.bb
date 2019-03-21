@@ -21590,10 +21590,10 @@ Called by update_net_error_codes.py.-->
   <int value="1936" label="MediaStreamConstraintsGroupIdAudio"/>
   <int value="1937" label="MediaStreamConstraintsGroupIdVideo"/>
   <int value="1938" label="MediaStreamConstraintsVideoKind"/>
-  <int value="1939" label="MediaStreamConstraintsDepthNear"/>
-  <int value="1940" label="MediaStreamConstraintsDepthFar"/>
-  <int value="1941" label="MediaStreamConstraintsFocalLengthX"/>
-  <int value="1942" label="MediaStreamConstraintsFocalLengthY"/>
+  <int value="1939" label="OBSOLETE_MediaStreamConstraintsDepthNear"/>
+  <int value="1940" label="OBSOLETE_MediaStreamConstraintsDepthFar"/>
+  <int value="1941" label="OBSOLETE_MediaStreamConstraintsFocalLengthX"/>
+  <int value="1942" label="OBSOLETE_MediaStreamConstraintsFocalLengthY"/>
   <int value="1943" label="MediaStreamConstraintsMediaStreamSourceAudio"/>
   <int value="1944" label="MediaStreamConstraintsMediaStreamSourceVideo"/>
   <int value="1945" label="MediaStreamConstraintsRenderToAssociatedSink"/>

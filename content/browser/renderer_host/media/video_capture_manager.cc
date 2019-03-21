@@ -860,14 +860,6 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
   return new_controller;
 }
 
-base::Optional<blink::CameraCalibration>
-VideoCaptureManager::GetCameraCalibration(const std::string& device_id) {
-  media::VideoCaptureDeviceInfo* info = GetDeviceInfoById(device_id);
-  if (!info)
-    return base::Optional<blink::CameraCalibration>();
-  return info->descriptor.camera_calibration;
-}
-
 #if defined(OS_ANDROID)
 void VideoCaptureManager::OnApplicationStateChange(
     base::android::ApplicationState state) {

@@ -2213,13 +2213,6 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
                          info.video_facing, info.group_id);
   }
 
-  if (stream_type != blink::MEDIA_DEVICE_VIDEO_CAPTURE)
-    return devices;
-
-  for (auto& device : devices) {
-    device.camera_calibration =
-        video_capture_manager()->GetCameraCalibration(device.id);
-  }
   return devices;
 }
 

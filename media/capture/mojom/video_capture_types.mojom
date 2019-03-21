@@ -281,13 +281,6 @@ struct VideoFrameInfo{
   PlaneStrides? strides;
 };
 
-struct VideoCaptureDeviceDescriptorCameraCalibration {
-  double focal_length_x;
-  double focal_length_y;
-  double depth_near;
-  double depth_far;
-};
-
 struct VideoCaptureDeviceDescriptor {
   string display_name;
   string device_id;
@@ -295,7 +288,6 @@ struct VideoCaptureDeviceDescriptor {
   VideoFacingMode facing_mode;
   VideoCaptureApi capture_api;
   VideoCaptureTransportType transport_type;
-  VideoCaptureDeviceDescriptorCameraCalibration? camera_calibration;
 };
 
 struct VideoCaptureDeviceInfo {

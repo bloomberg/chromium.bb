@@ -52,7 +52,6 @@ struct MediaStreamDevice {
   string name;
   media.mojom.AudioParameters input;
   int32 session_id;
-  media.mojom.VideoCaptureDeviceDescriptorCameraCalibration? camera_calibration;
   media.mojom.DisplayMediaInformation? display_media_info;
 };
 
