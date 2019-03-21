@@ -543,18 +543,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
 }
 
-// Even with the deflaking in WaitForAccessibilityTreeToContainNodeWithName,
-// this test is still flaky on Windows.
-// TODO(aboxhall, dmazzoni, meredithl): re-enable with better fix for above.
-#if defined(OS_WIN)
-#define MAYBE_AccessibilityEventsAriaSelectedChanged \
-  DISABLED_AccessibilityEventsAriaSelectedChanged
-#else
-#define MAYBE_AccessibilityEventsAriaSelectedChanged \
-  AccessibilityEventsAriaSelectedChanged
-#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsAriaSelectedChanged) {
+                       AccessibilityEventsAriaSelectedChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-selected-changed.html"));
 }
 

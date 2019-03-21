@@ -843,8 +843,6 @@ void WebAXObjectProxy::NotificationReceived(
                               notification_name.size())
           .ToLocalChecked(),
   };
-  // TODO(aboxhall): Can we force this to run in a new task, to avoid
-  // dirtying layout during post-layout hooks?
   frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, notification_callback_),
       context->Global(), base::size(argv), argv);
@@ -1962,6 +1960,7 @@ float WebAXObjectProxy::BoundsInContainerHeight() {
 }
 
 bool WebAXObjectProxy::HasNonIdentityTransform() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebAXObject container;
   blink::WebFloatRect bounds;

@@ -1,9 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <script src="../resources/testharness.js"></script>
-  <script src="../resources/testharnessreport.js"></script>
-  <script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="../resources/js-test.js"></script>
 <style>
 .container {
   padding: 100px;
@@ -27,24 +25,30 @@
     <button class="bigbutton">Three</button>
 </div>
 
+<div id="console"></div>
 <script>
 
-async_test_after_layout_and_paint((t) => {
+description("This test ensures that scrolling the window sends a notification.");
+window.jsTestIsAsync = true;
+
+if (window.testRunner && window.accessibilityController) {
+    testRunner.dumpAsText();
+
     var container = document.getElementById('container');
 
     accessibilityController.addNotificationListener(function (target, notification) {
         if (target.role == 'AXRole: AXGenericContainer') {
-            console.log('Got notification on container div');
-            assert_equals(container.scrollTop, 500);
-            t.done();
+            debug('Got notification on container div');
+            shouldBe("container.scrollTop", "500");
+            accessibilityController.removeNotificationListener();
+            finishJSTest();
         }
     });
 
     window.setTimeout(function() {
         container.scrollTop = 500;
     }, 0);
-}, "This test ensures that scrolling the window sends a notification.");
-
+}
 
 </script>
 

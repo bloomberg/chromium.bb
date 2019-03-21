@@ -298,15 +298,14 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
+  if (AXObjectCache* cache =
+          popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(&popup_client_->OwnerElement());
 
   DCHECK(frame->DomWindow());
   PagePopupSupplement::Install(*frame, *this, popup_client_);
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
-  if (AXObjectCache* cache = frame->GetDocument()->ExistingAXObjectCache()) {
-    cache->InitializePopup(frame->GetDocument());
-    cache->ChildrenChanged(&popup_client_->OwnerElement());
-  }
 
   page_->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_, nullptr);
 
@@ -558,9 +557,6 @@ void WebPagePopupImpl::ClosePopup() {
   }
 
   closing_ = true;
-
-  if (AXObjectCache* cache = MainFrame().GetDocument()->ExistingAXObjectCache())
-    cache->DisposePopup(MainFrame().GetDocument());
 
   {
     // This function can be called in EventDispatchForbiddenScope for the main
