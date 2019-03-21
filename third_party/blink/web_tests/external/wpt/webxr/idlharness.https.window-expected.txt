@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 216 tests; 202 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 216 tests; 203 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -176,7 +176,7 @@ PASS XRWebGLLayer interface: attribute antialias
 PASS XRWebGLLayer interface: attribute depth
 PASS XRWebGLLayer interface: attribute stencil
 PASS XRWebGLLayer interface: attribute alpha
-FAIL XRWebGLLayer interface: attribute ignoreDepthValues assert_true: The prototype object must have a property "ignoreDepthValues" expected true got false
+PASS XRWebGLLayer interface: attribute ignoreDepthValues
 PASS XRWebGLLayer interface: attribute framebuffer
 PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS XRWebGLLayer interface: attribute framebufferHeight
