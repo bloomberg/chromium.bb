@@ -57,6 +57,9 @@ class FormSaver {
   // password.
   virtual void RemovePresavedPassword() = 0;
 
+  // Removes |form| from the password store.
+  virtual void Remove(const autofill::PasswordForm& form) = 0;
+
   // Creates a new FormSaver with the same state as |*this|.
   virtual std::unique_ptr<FormSaver> Clone() = 0;
 

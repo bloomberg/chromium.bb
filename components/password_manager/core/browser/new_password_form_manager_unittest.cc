@@ -202,6 +202,7 @@ class MockFormSaver : public StubFormSaver {
   MOCK_METHOD1(PresaveGeneratedPassword,
                void(const autofill::PasswordForm& generated));
   MOCK_METHOD0(RemovePresavedPassword, void());
+  MOCK_METHOD1(Remove, void(const autofill::PasswordForm&));
 
   std::unique_ptr<FormSaver> Clone() override {
     return std::make_unique<MockFormSaver>();

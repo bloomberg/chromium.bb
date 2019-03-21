@@ -532,6 +532,14 @@ TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneSurvives) {
   clone->PresaveGeneratedPassword(generated);
 }
 
+// Check that Remove() method is relayed properly.
+TEST_F(FormSaverImplTest, Remove) {
+  PasswordForm form = CreatePending("nameofuser", "wordToP4a55");
+
+  EXPECT_CALL(*mock_store_, RemoveLogin(form));
+  form_saver_.Remove(form);
+}
+
 // Check that on saving the pending form |form_data| is sanitized.
 TEST_F(FormSaverImplTest, FormDataSanitized) {
   PasswordForm pending = CreatePending("nameofuser", "wordToP4a55");
