@@ -59,7 +59,7 @@ void StyleFetchedImage::Dispose() {
 bool StyleFetchedImage::IsEqual(const StyleImage& other) const {
   if (!other.IsImageResource())
     return false;
-  const auto& other_image = ToStyleFetchedImage(other);
+  const auto& other_image = To<StyleFetchedImage>(other);
   if (image_ != other_image.image_)
     return false;
   return url_ == other_image.url_;

@@ -1080,7 +1080,7 @@ void ComputedStyle::LoadDeferredImages(Document& document) const {
          background_layer; background_layer = background_layer->Next()) {
       if (StyleImage* image = background_layer->GetImage()) {
         if (image->IsImageResource() && image->IsLazyloadPossiblyDeferred())
-          ToStyleFetchedImage(image)->LoadDeferredImage(document);
+          To<StyleFetchedImage>(image)->LoadDeferredImage(document);
       }
     }
   }
