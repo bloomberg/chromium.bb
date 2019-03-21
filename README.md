@@ -177,7 +177,7 @@ patch, the mis-spelled words will be underlined in the specified colors.
 
 TODO: make this a CSS property instead of a DOM attribute.
 
-### feature/fileEnhancements (Shezan Baig; D40335184) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FfileEnhancements)\]
+### feature/dnd-bb-custom-data (Shezan Baig; D40335184) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FfileEnhancements)\]
 This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.
 
