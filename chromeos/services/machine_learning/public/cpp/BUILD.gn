@@ -16,6 +16,20 @@ source_set("cpp") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_service_connection.cc",
+    "fake_service_connection.h",
+  ]
+  deps = [
+    ":cpp",
+    "//base",
+    "//chromeos/services/machine_learning/public/mojom",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -23,6 +37,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":cpp",
+    ":test_support",
     "//base/test:test_support",
     "//chromeos/dbus:test_support",
     "//chromeos/services/machine_learning/public/mojom",
