@@ -12,6 +12,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
@@ -29,6 +31,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace chromeos {
@@ -341,14 +344,21 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
         std::make_unique<storage::FileSystemOperationContext>(
             context, MediaFileSystemBackend::MediaTaskRunner().get()));
   }
+  if (url.type() == storage::kFileSystemTypeNativeLocal ||
+      url.type() == storage::kFileSystemTypeRestrictedNativeLocal ||
+      url.type() == storage::kFileSystemTypeDriveFs) {
+    return storage::FileSystemOperation::Create(
+        url, context,
+        std::make_unique<storage::FileSystemOperationContext>(
+            context, base::CreateSequencedTaskRunnerWithTraits(
+                         {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+                         .get()));
+  }
 
-  DCHECK(url.type() == storage::kFileSystemTypeNativeLocal ||
-         url.type() == storage::kFileSystemTypeRestrictedNativeLocal ||
-         url.type() == storage::kFileSystemTypeDrive ||
+  DCHECK(url.type() == storage::kFileSystemTypeDrive ||
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeArcContent ||
-         url.type() == storage::kFileSystemTypeArcDocumentsProvider ||
-         url.type() == storage::kFileSystemTypeDriveFs);
+         url.type() == storage::kFileSystemTypeArcDocumentsProvider);
   return storage::FileSystemOperation::Create(
       url, context,
       std::make_unique<storage::FileSystemOperationContext>(context));
@@ -405,8 +415,11 @@ FileSystemBackend::CreateFileStreamReader(
     case storage::kFileSystemTypeRestrictedNativeLocal:
     case storage::kFileSystemTypeDriveFs:
       return std::unique_ptr<storage::FileStreamReader>(
-          storage::FileStreamReader::CreateForFileSystemFile(
-              context, url, offset, expected_modification_time));
+          storage::FileStreamReader::CreateForLocalFile(
+              base::CreateTaskRunnerWithTraits(
+                  {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+                  .get(),
+              url.path(), offset, expected_modification_time));
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->CreateFileStreamReader(
           url, offset, max_bytes_to_read, expected_modification_time, context);
@@ -441,8 +454,10 @@ FileSystemBackend::CreateFileStreamWriter(
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeDriveFs:
       return storage::FileStreamWriter::CreateForLocalFile(
-          context->default_file_task_runner(), url.path(), offset,
-          storage::FileStreamWriter::OPEN_EXISTING_FILE);
+          base::CreateTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+              .get(),
+          url.path(), offset, storage::FileStreamWriter::OPEN_EXISTING_FILE);
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->CreateFileStreamWriter(url, offset, context);
     // Read only file systems.
