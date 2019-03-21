@@ -154,8 +154,9 @@ TEST_F(MediaRouterViewsUITest, SetDialogHeader) {
   // Initially, the dialog header should simply say "Cast".
   EXPECT_CALL(observer, OnModelUpdated(_))
       .WillOnce([&](const CastDialogModel& model) {
-        EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE),
-                  model.dialog_header());
+        EXPECT_EQ(
+            l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE),
+            model.dialog_header());
       });
   ui_->AddObserver(&observer);
   // We temporarily remove the observer here because the implementation calls

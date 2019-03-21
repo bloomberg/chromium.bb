@@ -106,9 +106,8 @@ base::string16 CastDialogView::GetWindowTitle() const {
     case SourceType::kTab:
       return dialog_title_;
     case SourceType::kDesktop:
-      // |dialog_title_| may contain the presentation URL origin which is not
-      // relevant for the desktop source, so we use the default title string.
-      return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CAST_DIALOG_TITLE);
+      return l10n_util::GetStringUTF16(
+          IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE);
     case SourceType::kLocalFile:
       return l10n_util::GetStringFUTF16(IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE,
                                         local_file_name_.value());
