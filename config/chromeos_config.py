@@ -2088,6 +2088,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'sentry',
       'tidus',
       'veyron_mighty',
+      'veyron_minnie',
+      'winky',
+      'wizpig',
+      'wolf',
   ])
 
   _paladin_separate_unittest_phase = frozenset([
