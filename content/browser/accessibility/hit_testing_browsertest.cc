@@ -31,14 +31,11 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
       ax::mojom::Event event_to_fire) {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    FrameTree* frame_tree = web_contents->GetFrameTree();
     BrowserAccessibilityManager* manager =
         web_contents->GetRootBrowserAccessibilityManager();
 
     AccessibilityNotificationWaiter event_waiter(
         shell()->web_contents(), ui::kAXModeComplete, event_to_fire);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      event_waiter.ListenToAdditionalFrame(node->current_frame_host());
     ui::AXActionData action_data;
     action_data.action = ax::mojom::Action::kHitTest;
     action_data.target_point =
@@ -62,15 +59,9 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
   }
 
   BrowserAccessibility* TapAndWaitForResult(const gfx::Point& point) {
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-    FrameTree* frame_tree = web_contents->GetFrameTree();
-
     AccessibilityNotificationWaiter event_waiter(shell()->web_contents(),
                                                  ui::kAXModeComplete,
                                                  ax::mojom::Event::kClicked);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      event_waiter.ListenToAdditionalFrame(node->current_frame_host());
 
     SimulateTapAt(shell()->web_contents(), point);
     event_waiter.WaitForNotification();
@@ -86,7 +77,6 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
   BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& point) {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    FrameTree* frame_tree = web_contents->GetFrameTree();
     BrowserAccessibilityManager* manager =
         web_contents->GetRootBrowserAccessibilityManager();
     gfx::Point screen_point =
@@ -96,8 +86,6 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     // event received. Block until we receive it.
     AccessibilityNotificationWaiter hover_waiter(
         shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      hover_waiter.ListenToAdditionalFrame(node->current_frame_host());
     BrowserAccessibility* result = manager->CachingAsyncHitTest(screen_point);
     hover_waiter.WaitForNotification();
     return result;

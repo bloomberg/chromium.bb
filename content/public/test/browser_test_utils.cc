@@ -1917,14 +1917,6 @@ bool AccessibilityTreeContainsNodeWithName(BrowserAccessibility* node,
   return false;
 }
 
-bool ListenToGuestWebContents(
-    AccessibilityNotificationWaiter* accessibility_waiter,
-    WebContents* web_contents) {
-  accessibility_waiter->ListenToAdditionalFrame(
-      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame()));
-  return true;
-}
-
 void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                    const std::string& name) {
   WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
@@ -1933,24 +1925,10 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
       web_contents_impl->GetMainFrame());
   BrowserAccessibilityManager* main_frame_manager =
       main_frame->browser_accessibility_manager();
-  FrameTree* frame_tree = web_contents_impl->GetFrameTree();
   while (!main_frame_manager || !AccessibilityTreeContainsNodeWithName(
              main_frame_manager->GetRoot(), name)) {
     AccessibilityNotificationWaiter accessibility_waiter(
-        main_frame, ax::mojom::Event::kNone);
-    for (FrameTreeNode* node : frame_tree->Nodes()) {
-      accessibility_waiter.ListenToAdditionalFrame(
-          node->current_frame_host());
-    }
-
-    content::BrowserPluginGuestManager* guest_manager =
-        web_contents_impl->GetBrowserContext()->GetGuestManager();
-    if (guest_manager) {
-      guest_manager->ForEachGuest(web_contents_impl,
-                                  base::BindRepeating(&ListenToGuestWebContents,
-                                                      &accessibility_waiter));
-    }
-
+        web_contents, ui::AXMode(), ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
     main_frame_manager = main_frame->browser_accessibility_manager();
   }

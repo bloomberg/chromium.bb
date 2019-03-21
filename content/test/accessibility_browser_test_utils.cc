@@ -14,6 +14,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -28,7 +30,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
       generated_event_to_wait_for_(base::nullopt),
       loop_runner_(std::make_unique<base::RunLoop>()),
       weak_factory_(this) {
-  RenderFrameHostChanged(nullptr, web_contents->GetMainFrame());
+  ListenToAllFrames(web_contents);
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
@@ -40,19 +42,9 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
       generated_event_to_wait_for_(base::nullopt),
       loop_runner_(std::make_unique<base::RunLoop>()),
       weak_factory_(this) {
-  RenderFrameHostChanged(nullptr, web_contents->GetMainFrame());
+  ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
-}
-
-AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
-    RenderFrameHostImpl* frame_host,
-    ax::mojom::Event event_type)
-    : event_to_wait_for_(event_type),
-      generated_event_to_wait_for_(base::nullopt),
-      loop_runner_(std::make_unique<base::RunLoop>()),
-      weak_factory_(this) {
-  RenderFrameHostChanged(nullptr, frame_host);
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
@@ -64,24 +56,39 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
       generated_event_to_wait_for_(event_type),
       loop_runner_(std::make_unique<base::RunLoop>()),
       weak_factory_(this) {
-  RenderFrameHostChanged(nullptr, web_contents->GetMainFrame());
+  ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
 }
 
-AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
-    RenderFrameHostImpl* frame_host,
-    ui::AXEventGenerator::Event event_type)
-    : event_to_wait_for_(base::nullopt),
-      generated_event_to_wait_for_(event_type),
-      loop_runner_(std::make_unique<base::RunLoop>()),
-      weak_factory_(this) {
-  RenderFrameHostChanged(nullptr, frame_host);
-}
-
 AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {}
 
-void AccessibilityNotificationWaiter::ListenToAdditionalFrame(
+void AccessibilityNotificationWaiter::ListenToAllFrames(
+    WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  FrameTree* frame_tree = web_contents_impl->GetFrameTree();
+  for (FrameTreeNode* node : frame_tree->Nodes())
+    ListenToFrame(node->current_frame_host());
+
+  BrowserPluginGuestManager* guest_manager =
+      web_contents_impl->GetBrowserContext()->GetGuestManager();
+  if (guest_manager) {
+    guest_manager->ForEachGuest(
+        web_contents_impl,
+        base::BindRepeating(
+            &AccessibilityNotificationWaiter::ListenToGuestWebContents,
+            base::Unretained(this)));
+  }
+}
+
+bool AccessibilityNotificationWaiter::ListenToGuestWebContents(
+    WebContents* web_contents) {
+  ListenToAllFrames(web_contents);
+  return true;
+}
+
+void AccessibilityNotificationWaiter::ListenToFrame(
     RenderFrameHostImpl* frame_host) {
   if (event_to_wait_for_)
     BindOnAccessibilityEvent(frame_host);
@@ -99,7 +106,9 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
 
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
   static base::NoDestructor<ui::AXTree> empty_tree;
-  const ui::AXTree* tree = frame_host_->GetAXTreeForTesting();
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame());
+  const ui::AXTree* tree = main_frame->GetAXTreeForTesting();
   return tree ? *tree : *empty_tree;
 }
 
@@ -159,10 +168,7 @@ bool AccessibilityNotificationWaiter::IsAboutBlank() {
 void AccessibilityNotificationWaiter::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
-  if (frame_host_ != old_host)
-    return;
-  frame_host_ = static_cast<RenderFrameHostImpl*>(new_host);
-  ListenToAdditionalFrame(frame_host_);
+  ListenToFrame(static_cast<RenderFrameHostImpl*>(new_host));
 }
 
 }  // namespace content
