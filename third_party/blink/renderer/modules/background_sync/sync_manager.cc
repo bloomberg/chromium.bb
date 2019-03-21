@@ -82,9 +82,11 @@ void SyncManager::RegisterCallback(
       resolver->Resolve();
       // Let the service know that the registration promise is resolved so that
       // it can fire the event.
+
       GetBackgroundSyncServicePtr()->DidResolveRegistration(
-          registration_->RegistrationId(), options->tag,
-          mojom::blink::BackgroundSyncType::ONE_SHOT);
+          mojom::blink::BackgroundSyncRegistrationInfo::New(
+              registration_->RegistrationId(), options->tag,
+              mojom::blink::BackgroundSyncType::ONE_SHOT));
       break;
     case mojom::blink::BackgroundSyncError::NOT_FOUND:
       NOTREACHED();

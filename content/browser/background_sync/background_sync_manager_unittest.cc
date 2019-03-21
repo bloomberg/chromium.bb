@@ -275,8 +275,6 @@ class BackgroundSyncManagerTest
       int64_t sw_registration_id,
       blink::mojom::SyncRegistrationOptions options) {
     bool was_called = false;
-    const std::string tag = options.tag;
-    blink::mojom::BackgroundSyncType sync_type = GetBackgroundSyncType(options);
     background_sync_manager_->Register(
         sw_registration_id, std::move(options),
         base::BindOnce(
@@ -288,8 +286,9 @@ class BackgroundSyncManagerTest
     // Mock the client receiving the response and calling
     // DidResolveRegistration.
     if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
-      background_sync_manager_->DidResolveRegistration(sw_registration_id, tag,
-                                                       sync_type);
+      background_sync_manager_->DidResolveRegistration(
+          blink::mojom::BackgroundSyncRegistrationInfo::New(
+              sw_registration_id, options.tag, GetBackgroundSyncType(options)));
       base::RunLoop().RunUntilIdle();
     }
 
@@ -492,8 +491,9 @@ TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
   EXPECT_EQ(0, sync_events_called_);
 
   background_sync_manager_->DidResolveRegistration(
-      sw_registration_id_1_, sync_options_1_.tag,
-      GetBackgroundSyncType(sync_options_1_));
+      blink::mojom::BackgroundSyncRegistrationInfo::New(
+          sw_registration_id_1_, sync_options_1_.tag,
+          GetBackgroundSyncType(sync_options_1_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
 }
@@ -514,8 +514,9 @@ TEST_F(BackgroundSyncManagerTest, ResolveInvalidRegistration) {
 
   // Resolve a non-existing registration.
   background_sync_manager_->DidResolveRegistration(
-      sw_registration_id_1_, "unknown_tag",
-      GetBackgroundSyncType(sync_options_1_));
+      blink::mojom::BackgroundSyncRegistrationInfo::New(
+          sw_registration_id_1_, "unknown_tag",
+          GetBackgroundSyncType(sync_options_1_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, sync_events_called_);
 }

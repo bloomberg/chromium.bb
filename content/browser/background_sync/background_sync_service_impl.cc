@@ -75,16 +75,13 @@ void BackgroundSyncServiceImpl::Register(
 }
 
 void BackgroundSyncServiceImpl::DidResolveRegistration(
-    int64_t sw_registration_id,
-    const std::string& tag,
-    blink::mojom::BackgroundSyncType sync_type) {
+    blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
-  background_sync_manager->DidResolveRegistration(sw_registration_id, tag,
-                                                  sync_type);
+  background_sync_manager->DidResolveRegistration(std::move(registration_info));
 }
 
 void BackgroundSyncServiceImpl::GetRegistrations(
