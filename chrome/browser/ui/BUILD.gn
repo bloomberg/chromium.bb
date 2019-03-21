@@ -1062,6 +1062,8 @@ jumbo_split_static_library("ui") {
       "thumbnails/thumbnail_tab_helper.h",
       "thumbnails/thumbnail_utils.cc",
       "thumbnails/thumbnail_utils.h",
+      "thumbnails/thumbnail_web_contents_observer.cc",
+      "thumbnails/thumbnail_web_contents_observer.h",
       "toolbar/app_menu_icon_controller.cc",
       "toolbar/app_menu_icon_controller.h",
       "toolbar/app_menu_model.cc",
