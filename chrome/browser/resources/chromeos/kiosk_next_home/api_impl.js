@@ -44,11 +44,25 @@ class KioskNextHomeBridge {
         listener.onAppChanged(buildApp(installedApp.packageName));
       }
     });
+
+    window.addEventListener(
+        'online',
+        () => this.notifyNetworkStateChange(kioskNextHome.NetworkState.ONLINE));
+    window.addEventListener(
+        'offline',
+        () =>
+            this.notifyNetworkStateChange(kioskNextHome.NetworkState.OFFLINE));
   }
 
   /** @override */
   addListener(listener) {
     this.listeners_.push(listener);
+  }
+
+  /** @override */
+  getAccountId() {
+    return this.identityAccessorProxy_.getPrimaryAccountWhenAvailable().then(
+        account => account.accountInfo.gaia);
   }
 
   /** @override */
@@ -104,6 +118,23 @@ class KioskNextHomeBridge {
   uninstallApp(appId) {
     // TODO(brunoad): Implement this method.
     return Promise.reject('Not implemented.');
+  }
+
+  /** @override */
+  getNetworkState() {
+    return navigator.onLine ? kioskNextHome.NetworkState.ONLINE :
+                              kioskNextHome.NetworkState.OFFLINE;
+  }
+
+  /**
+   * Notifies listeners about changes in network connection state.
+   * @param {kioskNextHome.NetworkState} networkState Indicates current network
+   *     state.
+   */
+  notifyNetworkStateChange(networkState) {
+    for (const listener of this.listeners_) {
+      listener.onNetworkStateChanged(networkState);
+    }
   }
 }
 

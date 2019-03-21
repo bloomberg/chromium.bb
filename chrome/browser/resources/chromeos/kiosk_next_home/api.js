@@ -25,6 +25,13 @@ kioskNextHome.Bridge = class {
   addListener(listener) {}
 
   /**
+   * Gets the obfuscated account Gaia ID associated with the current user
+   * session.
+   * @return {!Promise<string>} Promise for the obfuscated account Gaia ID.
+   */
+  getAccountId() {}
+
+  /**
    * Returns an access token with the requested scopes.
    * @param {!Array<string>} scopes List of scopes to use when obtaining access
    *     token.
@@ -68,6 +75,12 @@ kioskNextHome.Bridge = class {
    *     failures.
    */
   uninstallApp(appId) {}
+
+  /**
+   * Returns current device network state.
+   * @return {kioskNextHome.NetworkState}
+   */
+  getNetworkState() {}
 };
 
 /**
@@ -121,6 +134,15 @@ kioskNextHome.App = class {
 };
 
 /**
+ * Current network state of the device.
+ * @enum {string}
+ */
+kioskNextHome.NetworkState = {
+  ONLINE: 'online',
+  OFFLINE: 'offline',
+};
+
+/**
  * Interface for a listener of system events, subscribed via
  * {!kioskNextHome.Bridge}.
  *
@@ -135,10 +157,11 @@ kioskNextHome.Listener = class {
   onAppChanged(app) {}
 
   /**
-   * Called when the network state changes between online and offline.
-   * @param {boolean} isOnline Whether device has Internet access.
+   * Called when the network state changes.
+   * @param {kioskNextHome.NetworkState} networkState Current network state of
+   *     the device.
    */
-  onOnlineStateChanged(isOnline) {}
+  onNetworkStateChanged(networkState) {}
 };
 
 /**
