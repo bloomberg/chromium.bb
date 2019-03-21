@@ -1701,7 +1701,7 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   std::unique_ptr<StyleNonInheritedVariables>& variables =
       MutableNonInheritedVariablesInternal();
   if (!variables)
-    variables = StyleNonInheritedVariables::Create();
+    variables = std::make_unique<StyleNonInheritedVariables>();
   return *variables;
 }
 

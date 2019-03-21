@@ -47,18 +47,12 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
 class UnderlyingCompatibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<UnderlyingCompatibilityChecker> Create(
-      scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value) {
-    return base::WrapUnique(new UnderlyingCompatibilityChecker(
-        std::move(underlying_non_interpolable_value)));
-  }
-
- private:
   UnderlyingCompatibilityChecker(
       scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value)
       : underlying_non_interpolable_value_(
             std::move(underlying_non_interpolable_value)) {}
 
+ private:
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return basic_shape_interpolation_functions::ShapesAreCompatible(
@@ -97,7 +91,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertNeutral(
       const_cast<NonInterpolableValue*>(
           underlying.non_interpolable_value.get());
   conversion_checkers.push_back(
-      UnderlyingCompatibilityChecker::Create(non_interpolable_value));
+      std::make_unique<UnderlyingCompatibilityChecker>(non_interpolable_value));
   return InterpolationValue(
       basic_shape_interpolation_functions::CreateNeutralValue(
           *underlying.non_interpolable_value),
