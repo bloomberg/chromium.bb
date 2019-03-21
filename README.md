@@ -79,7 +79,6 @@ selection is extended when dragging with the mouse to be more intuitive.
 *   [This link](repros/dragSelectionExtent2.html)
 *   [This link](repros/dragSelectionExtent3.html)
 
-### bugfix/emptycellcaret (Shezan Baig; upstream: [85385](https://bugs.webkit.org/show_bug.cgi?id=85385)) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Femptycellcaret)\]
 Open [this link](repros/emptycellcaret.html) in Chrome, and put the caret
 inside an empty table cell. The caret's `y-position` is outside the
 `table-cell`.
