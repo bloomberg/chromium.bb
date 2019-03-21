@@ -1208,6 +1208,12 @@ void RenderWidget::SetLayerTreeMutator(
   layer_tree_view_->layer_tree_host()->SetLayerTreeMutator(std::move(mutator));
 }
 
+void RenderWidget::SetPaintWorkletLayerPainterClient(
+    std::unique_ptr<cc::PaintWorkletLayerPainter> client) {
+  layer_tree_view_->layer_tree_host()->SetPaintWorkletLayerPainter(
+      std::move(client));
+}
+
 void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
 }

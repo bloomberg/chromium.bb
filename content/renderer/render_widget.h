@@ -378,6 +378,8 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void SetLayerTreeMutator(std::unique_ptr<cc::LayerTreeMutator>) override;
+  void SetPaintWorkletLayerPainterClient(
+      std::unique_ptr<cc::PaintWorkletLayerPainter>) override;
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
