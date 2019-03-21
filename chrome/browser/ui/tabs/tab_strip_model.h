@@ -401,7 +401,7 @@ class TabStripModel {
     CommandTogglePinned,
     CommandFocusMode,
     CommandToggleSiteMuted,
-    CommandSendToMyDevices,
+    CommandSendTabToSelf,
     CommandBookmarkAllTabs,
     CommandAddToNewGroup,
     CommandAddToExistingGroup,

@@ -375,9 +375,6 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="The name of the Save Page As command in the content area context menu">
             Save &amp;as...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES" desc="The name of the Send to my devices command in the content area context menu">
-            Send to my devices
-          </message>
           <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
             &amp;Print...
           </message>
@@ -598,9 +595,6 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="In Title Case: The name of the Save Page As command in the content area context menu">
             Save &amp;As...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES" desc="In Title Case: The name of the Send To My Devices command in the content area context menu">
-            Send To My Devices
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINT" desc="In Title Case: The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
             &amp;Print...
@@ -5825,9 +5819,6 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
-        <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="The label of the tab context menu item for share this tab to other devices.">
-          Send to my devices
-        </message>
         <message name="IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP" desc="The label of the tab context menu item for creating a new tab group and adding one or more tabs to it.">
           Add to new group
         </message>
@@ -5889,9 +5880,6 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_CXMENU_REMOVE_TAB_FROM_GROUP" desc="In Title Case: The label of the tab context menu item for removing one or more tabs from the groups that contain them.">
           Remove From Group
-        </message>
-        <message name="IDS_TAB_CXMENU_SEND_TO_MY_DEVICES" desc="In Title Case: The label of the tab context menu item for share this tab to other devices.">
-          Send To My Devices
         </message>
       </if>
 
@@ -6238,6 +6226,19 @@ the Bookmarks menu.">
           Use system title bar and borders
         </message>
       </if>
+
+      <!-- Self share item in different context menus. -->
+      <if expr="not use_titlecase">
+        <message name="IDS_CONTEXT_MENU_SEND_TAB_TO_SELF" desc="The label of item for share this tab to other devices in different context menus.">
+          Send to your devices
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_CONTEXT_MENU_SEND_TAB_TO_SELF" desc="In Title Case: The label of item for share this tab to other devices in different context menus.">
+          Send to Your Devices
+        </message>
+      </if>
+
 
       <!-- Collected cookies window -->
       <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
