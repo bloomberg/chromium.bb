@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view_controller+private.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 
 #import <MessageUI/MessageUI.h>
 
@@ -78,8 +78,8 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
-#import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
-#import "ios/chrome/browser/ui/browser_view_controller_helper.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -1749,13 +1749,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
   [self dismissPopups];
 
-  [coordinator animateAlongsideTransition:^(
-                   id<UIViewControllerTransitionCoordinatorContext> context) {
-    // Force updates of the toolbar updater as the toolbar height might
-    // change on rotation.
-    [_toolbarUIUpdater updateState];
-  }
-                               completion:nil];
+  [coordinator
+      animateAlongsideTransition:^(
+          id<UIViewControllerTransitionCoordinatorContext> context) {
+        // Force updates of the toolbar updater as the toolbar height might
+        // change on rotation.
+        [_toolbarUIUpdater updateState];
+      }
+                      completion:nil];
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
@@ -1824,8 +1825,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
       // Load view from Launch Screen and add it to window.
       NSBundle* mainBundle = base::mac::FrameworkBundle();
-      NSArray* topObjects =
-          [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
+      NSArray* topObjects = [mainBundle loadNibNamed:@"LaunchScreen"
+                                               owner:self
+                                             options:nil];
       UIViewController* launchScreenController =
           base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
       // |launchScreenView| is loaded as an autoreleased object, and is retained
@@ -2266,7 +2268,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   fakeStatusBarFrame.size.height = topInset;
   _fakeStatusBarView.frame = fakeStatusBarFrame;
 
-
   // Position the toolbar next, either at the top of the browser view or
   // directly under the tabstrip.
   if (initialLayout) {
@@ -2329,8 +2330,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     AddNamedGuidesToView(guideNames, self.view);
 
     // Configure the content area guide.
-    NamedGuide* contentAreaGuide =
-        [NamedGuide guideWithName:kContentAreaGuide view:self.view];
+    NamedGuide* contentAreaGuide = [NamedGuide guideWithName:kContentAreaGuide
+                                                        view:self.view];
 
     // Constrain top to bottom of top toolbar.
     UIView* primaryToolbarView =
@@ -2677,8 +2678,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (CGPointEqualToPoint(originPoint, CGPointZero)) {
     _lastTapPoint = CGPointZero;
   } else {
-    _lastTapPoint =
-        [self.view.window convertPoint:originPoint toView:self.view];
+    _lastTapPoint = [self.view.window convertPoint:originPoint
+                                            toView:self.view];
   }
   _lastTapTime = CACurrentMediaTime();
 }
@@ -2693,8 +2694,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)saveContentAreaTapLocation:(UIGestureRecognizer*)gestureRecognizer {
   UIView* view = gestureRecognizer.view;
   CGPoint viewCoordinate = [gestureRecognizer locationInView:view];
-  _lastTapPoint =
-      [[view superview] convertPoint:viewCoordinate toView:self.view];
+  _lastTapPoint = [[view superview] convertPoint:viewCoordinate
+                                          toView:self.view];
   _lastTapTime = CACurrentMediaTime();
 }
 
@@ -3243,22 +3244,21 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
       Record(ACTION_SAVE_IMAGE, isImage, isLink);
-        [weakSelf.imageSaver saveImageAtURL:imageUrl
-                                   referrer:referrer
-                                   webState:weakSelf.currentWebState];
+      [weakSelf.imageSaver saveImageAtURL:imageUrl
+                                 referrer:referrer
+                                 webState:weakSelf.currentWebState];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Copy Image.
-      title =
-          l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
-      action = ^{
-        Record(ACTION_COPY_IMAGE, isImage, isLink);
-        DCHECK(imageUrl.is_valid());
-        [weakSelf.imageCopier copyImageAtURL:imageUrl
-                                    referrer:referrer
-                                    webState:weakSelf.currentWebState];
-      };
-      [_contextMenuCoordinator addItemWithTitle:title action:action];
+    title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
+    action = ^{
+      Record(ACTION_COPY_IMAGE, isImage, isLink);
+      DCHECK(imageUrl.is_valid());
+      [weakSelf.imageCopier copyImageAtURL:imageUrl
+                                  referrer:referrer
+                                  webState:weakSelf.currentWebState];
+    };
+    [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Open Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
@@ -3298,12 +3298,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                       defaultURL->short_name());
       action = ^{
         Record(ACTION_SEARCH_BY_IMAGE, isImage, isLink);
-          ImageFetchTabHelper* image_fetcher =
-              ImageFetchTabHelper::FromWebState(self.currentWebState);
-          DCHECK(image_fetcher);
-          image_fetcher->GetImageData(imageUrl, referrer, ^(NSData* data) {
-            [weakSelf searchByImageData:data atURL:imageUrl];
-          });
+        ImageFetchTabHelper* image_fetcher =
+            ImageFetchTabHelper::FromWebState(self.currentWebState);
+        DCHECK(image_fetcher);
+        image_fetcher->GetImageData(imageUrl, referrer, ^(NSData* data) {
+          [weakSelf searchByImageData:data atURL:imageUrl];
+        });
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
     }
@@ -4526,8 +4526,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         self.primaryToolbarCoordinator.viewController;
     toolbarSnapshot =
         [toolbarViewController.view snapshotViewAfterScreenUpdates:NO];
-    toolbarSnapshot.frame =
-        [self.contentArea convertRect:toolbarSnapshot.frame fromView:self.view];
+    toolbarSnapshot.frame = [self.contentArea convertRect:toolbarSnapshot.frame
+                                                 fromView:self.view];
     [self.contentArea addSubview:toolbarSnapshot];
     newPage = [self viewForTab:tab];
     newPage.userInteractionEnabled = NO;

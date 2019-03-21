@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
