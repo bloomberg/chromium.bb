@@ -130,6 +130,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadHomeV2,
     &kDownloadHomeShowStorageInfo,
     &kDownloadRename,
+    &kDrawVerticallyEdgeToEdge,
     &kEphemeralTab,
     &kExploreSites,
     &kHandleMediaIntents,
@@ -349,6 +350,9 @@ const base::Feature kDontPrefetchLibraries{"DontPrefetchLibraries",
 
 const base::Feature kDelegateOverscrollSwipes{
     "DelegateOverscrollSwipes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDrawVerticallyEdgeToEdge{
+    "DrawVerticallyEdgeToEdge", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};

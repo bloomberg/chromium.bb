@@ -227,6 +227,7 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_OFFLINE_CONTENT_PROVIDER =
             "UseDownloadOfflineContentProvider";
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
+    public static final String DRAW_VERTICALLY_EDGE_TO_EDGE = "DrawVerticallyEdgeToEdge";
     public static final String EPHEMERAL_TAB = "EphemeralTab";
     public static final String EXPERIMENTAL_APP_BANNERS = "ExperimentalAppBanners";
     public static final String EXPERIMENTAL_UI = "ExperimentalUi";

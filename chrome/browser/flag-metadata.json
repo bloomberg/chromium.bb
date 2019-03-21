@@ -695,6 +695,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "draw-vertically-edge-to-edge",
+    "owners": [ "chrome-android-app@chromium.org" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "enable-accessibility-object-model",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 76
