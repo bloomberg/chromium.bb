@@ -55,6 +55,8 @@ class TabletModeWindowState : public wm::WindowState::State {
                    wm::WindowState::State* previous_state) override;
   void DetachState(wm::WindowState* window_state) override;
 
+  wm::WindowState::State* old_state() { return old_state_.get(); }
+
  private:
   friend class TabletModeControllerTestApi;
 
