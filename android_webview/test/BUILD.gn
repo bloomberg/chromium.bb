@@ -81,8 +81,6 @@ android_apk("webview_instrumentation_apk") {
       rebase_path("$root_gen_dir/CHROME_VERSION.json", root_build_dir)
   native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
-  enable_multidex = true
-
   command_line_flags_file = "android-webview-command-line"
 }
 
@@ -310,9 +308,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
 }
 
 test("android_webview_unittests") {
-  # Dependencies (e.g. Play services) make the binary reach the dex limit.
-  enable_multidex = true
-
   deps = [
     ":android_webview_unittests_assets",
     ":android_webview_unittests_java",
