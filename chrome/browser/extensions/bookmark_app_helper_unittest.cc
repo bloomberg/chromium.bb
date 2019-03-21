@@ -141,7 +141,10 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
                                 ForInstallableSite for_installable_site) {
     bool installable = for_installable_site == ForInstallableSite::kYes;
     InstallableData data = {
-        installable ? NO_ERROR_DETECTED : MANIFEST_DISPLAY_NOT_SUPPORTED,
+        installable
+            ? std::vector<InstallableStatusCode>()
+            : std::vector<
+                  InstallableStatusCode>{MANIFEST_DISPLAY_NOT_SUPPORTED},
         GURL(manifest_url),
         &manifest,
         GURL(kAppIconURL1),

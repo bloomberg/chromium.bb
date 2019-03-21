@@ -93,7 +93,10 @@ class InstallableManager
   using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
   struct EligiblityProperty {
-    InstallableStatusCode error = NO_ERROR_DETECTED;
+    EligiblityProperty();
+    ~EligiblityProperty();
+
+    std::vector<InstallableStatusCode> errors;
     bool fetched = false;
   };
 
@@ -105,7 +108,10 @@ class InstallableManager
   };
 
   struct ValidManifestProperty {
-    InstallableStatusCode error = NO_ERROR_DETECTED;
+    ValidManifestProperty();
+    ~ValidManifestProperty();
+
+    std::vector<InstallableStatusCode> errors;
     bool is_valid = false;
     bool fetched = false;
   };
@@ -144,9 +150,9 @@ class InstallableManager
   // Gets the purpose of the icon to use as a primary icon.
   IconPurpose GetPrimaryIconPurpose(const InstallableParams& params) const;
 
-  // Returns the error code associated with the resources requested in |params|,
-  // or NO_ERROR_DETECTED if there is no error.
-  InstallableStatusCode GetErrorCode(const InstallableParams& params);
+  // Returns a vector with all errors encountered for the resources requested in
+  // |params|, or an empty vector if there is no error.
+  std::vector<InstallableStatusCode> GetErrors(const InstallableParams& params);
 
   // Gets/sets parts of particular properties. Exposed for testing.
   InstallableStatusCode eligibility_error() const;
@@ -177,7 +183,8 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
-  void RunCallback(const InstallableTask& task, InstallableStatusCode error);
+  void RunCallback(const InstallableTask& task,
+                   std::vector<InstallableStatusCode> errors);
   void WorkOnTask();
 
   // Data retrieval methods.

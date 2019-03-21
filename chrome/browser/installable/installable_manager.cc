@@ -132,6 +132,14 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
 
 }  // namespace
 
+InstallableManager::EligiblityProperty::EligiblityProperty() = default;
+
+InstallableManager::EligiblityProperty::~EligiblityProperty() = default;
+
+InstallableManager::ValidManifestProperty::ValidManifestProperty() = default;
+
+InstallableManager::ValidManifestProperty::~ValidManifestProperty() = default;
+
 InstallableManager::IconProperty::IconProperty()
     : error(NO_ERROR_DETECTED), url(), icon(), fetched(false) {}
 
@@ -262,24 +270,30 @@ IconPurpose InstallableManager::GetPrimaryIconPurpose(
   return IconPurpose::ANY;
 }
 
-InstallableStatusCode InstallableManager::GetErrorCode(
+std::vector<InstallableStatusCode> InstallableManager::GetErrors(
     const InstallableParams& params) {
-  if (params.check_eligibility && eligibility_->error != NO_ERROR_DETECTED)
-    return eligibility_->error;
+  std::vector<InstallableStatusCode> errors;
+
+  if (params.check_eligibility && !eligibility_->errors.empty()) {
+    errors.insert(errors.end(), eligibility_->errors.begin(),
+                  eligibility_->errors.end());
+  }
 
   if (manifest_->error != NO_ERROR_DETECTED)
-    return manifest_->error;
+    errors.push_back(manifest_->error);
 
-  if (params.valid_manifest && valid_manifest_->error != NO_ERROR_DETECTED)
-    return valid_manifest_->error;
+  if (params.valid_manifest && !valid_manifest_->errors.empty()) {
+    errors.insert(errors.end(), valid_manifest_->errors.begin(),
+                  valid_manifest_->errors.end());
+  }
 
   if (params.has_worker && worker_->error != NO_ERROR_DETECTED)
-    return worker_->error;
+    errors.push_back(worker_->error);
 
   if (params.valid_primary_icon) {
     IconProperty& icon = icons_[GetPrimaryIconPurpose(params)];
     if (icon.error != NO_ERROR_DETECTED)
-      return icon.error;
+      errors.push_back(icon.error);
   }
 
   if (params.valid_badge_icon) {
@@ -289,14 +303,15 @@ InstallableStatusCode InstallableManager::GetErrorCode(
     // in the manifest. Ignore this case since we only want to fail the check if
     // there was a suitable badge icon specified and we couldn't fetch it.
     if (icon.error != NO_ERROR_DETECTED && icon.error != NO_ACCEPTABLE_ICON)
-      return icon.error;
+      errors.push_back(icon.error);
   }
 
-  return NO_ERROR_DETECTED;
+  return errors;
 }
 
 InstallableStatusCode InstallableManager::eligibility_error() const {
-  return eligibility_->error;
+  return eligibility_->errors.empty() ? NO_ERROR_DETECTED
+                                      : eligibility_->errors[0];
 }
 
 InstallableStatusCode InstallableManager::manifest_error() const {
@@ -304,12 +319,15 @@ InstallableStatusCode InstallableManager::manifest_error() const {
 }
 
 InstallableStatusCode InstallableManager::valid_manifest_error() const {
-  return valid_manifest_->error;
+  return valid_manifest_->errors.empty() ? NO_ERROR_DETECTED
+                                         : valid_manifest_->errors[0];
 }
 
 void InstallableManager::set_valid_manifest_error(
     InstallableStatusCode error_code) {
-  valid_manifest_->error = error_code;
+  valid_manifest_->errors.clear();
+  if (error_code != NO_ERROR_DETECTED)
+    valid_manifest_->errors.push_back(error_code);
 }
 
 InstallableStatusCode InstallableManager::worker_error() const {
@@ -387,8 +405,9 @@ void InstallableManager::SetManifestDependentTasksComplete() {
   SetIconFetched(IconPurpose::MASKABLE);
 }
 
-void InstallableManager::RunCallback(const InstallableTask& task,
-                                     InstallableStatusCode code) {
+void InstallableManager::RunCallback(
+    const InstallableTask& task,
+    std::vector<InstallableStatusCode> errors) {
   const InstallableParams& params = task.params;
   IconProperty null_icon;
   IconProperty* primary_icon = &null_icon;
@@ -404,15 +423,9 @@ void InstallableManager::RunCallback(const InstallableTask& task,
     badge_icon = &icons_[IconPurpose::BADGE];
 
   InstallableData data = {
-      code,
-      manifest_url(),
-      &manifest(),
-      primary_icon->url,
-      primary_icon->icon.get(),
-      has_maskable_primary_icon,
-      badge_icon->url,
-      badge_icon->icon.get(),
-      valid_manifest_->is_valid,
+      std::move(errors),   manifest_url(),           &manifest(),
+      primary_icon->url,   primary_icon->icon.get(), has_maskable_primary_icon,
+      badge_icon->url,     badge_icon->icon.get(),   valid_manifest_->is_valid,
       worker_->has_worker,
   };
 
@@ -423,11 +436,11 @@ void InstallableManager::WorkOnTask() {
   const InstallableTask& task = task_queue_.Current();
   const InstallableParams& params = task.params;
 
-  InstallableStatusCode code = GetErrorCode(params);
-  bool check_passed = (code == NO_ERROR_DETECTED);
-  if (!check_passed || IsComplete(params)) {
+  auto errors = GetErrors(params);
+  bool check_passed = errors.empty();
+  if ((!check_passed && !params.is_debug_mode) || IsComplete(params)) {
     ResolveMetrics(params, check_passed);
-    RunCallback(task, code);
+    RunCallback(task, std::move(errors));
 
     // Sites can always register a service worker after we finish checking, so
     // don't cache a missing service worker error to ensure we always check
@@ -472,11 +485,13 @@ void InstallableManager::CheckEligiblity() {
   content::WebContents* web_contents = GetWebContents();
   if (Profile::FromBrowserContext(web_contents->GetBrowserContext())
           ->IsOffTheRecord()) {
-    eligibility_->error = IN_INCOGNITO;
-  } else if (web_contents->GetMainFrame()->GetParent()) {
-    eligibility_->error = NOT_IN_MAIN_FRAME;
-  } else if (!IsContentSecure(web_contents)) {
-    eligibility_->error = NOT_FROM_SECURE_ORIGIN;
+    eligibility_->errors.push_back(IN_INCOGNITO);
+  }
+  if (web_contents->GetMainFrame()->GetParent()) {
+    eligibility_->errors.push_back(NOT_IN_MAIN_FRAME);
+  }
+  if (!IsContentSecure(web_contents)) {
+    eligibility_->errors.push_back(NOT_FROM_SECURE_ORIGIN);
   }
 
   eligibility_->fetched = true;
@@ -526,42 +541,50 @@ void InstallableManager::CheckManifestValid(
 bool InstallableManager::IsManifestValidForWebApp(
     const blink::Manifest& manifest,
     bool check_webapp_manifest_display) {
+  bool is_valid = true;
   if (manifest.IsEmpty()) {
-    valid_manifest_->error = MANIFEST_EMPTY;
+    valid_manifest_->errors.push_back(MANIFEST_EMPTY);
     return false;
   }
 
   if (!manifest.start_url.is_valid()) {
-    valid_manifest_->error = START_URL_NOT_VALID;
-    return false;
+    valid_manifest_->errors.push_back(START_URL_NOT_VALID);
+    is_valid = false;
   }
 
   if ((manifest.name.is_null() || manifest.name.string().empty()) &&
       (manifest.short_name.is_null() || manifest.short_name.string().empty())) {
-    valid_manifest_->error = MANIFEST_MISSING_NAME_OR_SHORT_NAME;
-    return false;
+    valid_manifest_->errors.push_back(MANIFEST_MISSING_NAME_OR_SHORT_NAME);
+    is_valid = false;
   }
 
   if (check_webapp_manifest_display &&
       manifest.display != blink::kWebDisplayModeStandalone &&
       manifest.display != blink::kWebDisplayModeFullscreen &&
       manifest.display != blink::kWebDisplayModeMinimalUi) {
-    valid_manifest_->error = MANIFEST_DISPLAY_NOT_SUPPORTED;
-    return false;
+    valid_manifest_->errors.push_back(MANIFEST_DISPLAY_NOT_SUPPORTED);
+    is_valid = false;
   }
 
   if (!DoesManifestContainRequiredIcon(manifest)) {
-    valid_manifest_->error = MANIFEST_MISSING_SUITABLE_ICON;
-    return false;
+    valid_manifest_->errors.push_back(MANIFEST_MISSING_SUITABLE_ICON);
+    is_valid = false;
   }
 
-  return true;
+  return is_valid;
 }
 
 void InstallableManager::CheckServiceWorker() {
   DCHECK(!worker_->fetched);
   DCHECK(!manifest().IsEmpty());
-  DCHECK(manifest().start_url.is_valid());
+
+  if (!manifest().start_url.is_valid()) {
+    worker_->has_worker = false;
+    worker_->error = NO_URL_FOR_SERVICE_WORKER;
+    worker_->fetched = true;
+    WorkOnTask();
+    return;
+  }
 
   // Check to see if there is a service worker for the manifest's start url.
   service_worker_context_->CheckHasServiceWorker(

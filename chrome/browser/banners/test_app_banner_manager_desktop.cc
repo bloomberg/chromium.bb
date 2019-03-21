@@ -50,13 +50,13 @@ void TestAppBannerManagerDesktop::OnDidGetManifest(
   // AppBannerManagerDesktop does not call |OnDidPerformInstallableCheck| to
   // complete the installability check in this case, instead it early exits
   // with failure.
-  if (result.error_code != NO_ERROR_DETECTED)
+  if (!result.errors.empty())
     SetInstallable(false);
 }
 void TestAppBannerManagerDesktop::OnDidPerformInstallableCheck(
     const InstallableData& result) {
   AppBannerManagerDesktop::OnDidPerformInstallableCheck(result);
-  SetInstallable(result.error_code == NO_ERROR_DETECTED);
+  SetInstallable(result.errors.empty());
 }
 
 void TestAppBannerManagerDesktop::SetInstallable(bool installable) {

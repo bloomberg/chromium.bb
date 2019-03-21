@@ -35,7 +35,7 @@ static const char kNoManifestMessage[] =
 static const char kManifestEmptyMessage[] =
     "the manifest could not be fetched, is empty, or could not be parsed";
 static const char kStartUrlNotValidMessage[] =
-    "the start URL in manifest is not valid";
+    "the manifest start URL is not valid";
 static const char kManifestMissingNameOrShortNameMessage[] =
     "one of manifest name or short name must be specified";
 static const char kManifestDisplayNotSupportedMessage[] =
@@ -63,10 +63,12 @@ static const char kIdsDoNotMatchMessage[] =
     "a Play Store app URL and Play Store ID were specified in the manifest, "
     "but they do not match";
 static const char kUrlNotSupportedForWebApkMessage[] =
-    "a URL in the web manifest contains a username, password, or port";
+    "a URL in the manifest contains a username, password, or port";
 static const char kInIncognitoMessage[] =
     "the page is loaded in an incognito window";
 static const char kNotOfflineCapable[] = "the page does not work offline";
+static const char kNoUrlForServiceWorker[] =
+    "could not check service worker for null start URL";
 }  // namespace
 
 void LogErrorToConsole(content::WebContents* web_contents,
@@ -164,6 +166,9 @@ void LogErrorToConsole(content::WebContents* web_contents,
       break;
     case NOT_OFFLINE_CAPABLE:
       message = kNotOfflineCapable;
+      break;
+    case NO_URL_FOR_SERVICE_WORKER:
+      message = kNoUrlForServiceWorker;
       break;
   }
 

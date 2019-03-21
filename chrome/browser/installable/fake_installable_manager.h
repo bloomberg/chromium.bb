@@ -29,6 +29,8 @@ class FakeInstallableManager : public InstallableManager {
   void GetData(const InstallableParams& params,
                const InstallableCallback& callback) override;
 
+  void RunCallback(const InstallableCallback& callback);
+
   // Create the manager and attach it to |web_contents|.
   static FakeInstallableManager* CreateForWebContents(
       content::WebContents* web_contents);
