@@ -919,7 +919,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   bool NeedsLayout() const {
-    return bitfields_.SelfNeedsLayout() ||
+    return bitfields_.SelfNeedsLayoutForStyle() ||
+           bitfields_.SelfNeedsLayoutForAvailableSpace() ||
            bitfields_.NormalChildNeedsLayout() ||
            bitfields_.PosChildNeedsLayout() ||
            bitfields_.NeedsSimplifiedNormalFlowLayout() ||
@@ -928,13 +929,23 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool NeedsPositionedMovementLayoutOnly() const {
     return bitfields_.NeedsPositionedMovementLayout() &&
-           !bitfields_.SelfNeedsLayout() &&
+           !bitfields_.SelfNeedsLayoutForStyle() &&
+           !bitfields_.SelfNeedsLayoutForAvailableSpace() &&
            !bitfields_.NormalChildNeedsLayout() &&
            !bitfields_.PosChildNeedsLayout() &&
            !bitfields_.NeedsSimplifiedNormalFlowLayout();
   }
 
-  bool SelfNeedsLayout() const { return bitfields_.SelfNeedsLayout(); }
+  bool SelfNeedsLayout() const {
+    return bitfields_.SelfNeedsLayoutForStyle() ||
+           bitfields_.SelfNeedsLayoutForAvailableSpace();
+  }
+  bool SelfNeedsLayoutForStyle() const {
+    return bitfields_.SelfNeedsLayoutForStyle();
+  }
+  bool SelfNeedsLayoutForAvailableSpace() const {
+    return bitfields_.SelfNeedsLayoutForAvailableSpace();
+  }
   bool NeedsPositionedMovementLayout() const {
     return bitfields_.NeedsPositionedMovementLayout();
   }
@@ -1846,6 +1857,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Called when the previous visual rect(s) is no longer valid.
   virtual void ClearPreviousVisualRects();
 
+  void SetSelfNeedsLayoutForAvailableSpace(bool b) {
+    bitfields_.SetSelfNeedsLayoutForAvailableSpace(b);
+  }
+
   PaintInvalidationReason FullPaintInvalidationReason() const {
     return full_paint_invalidation_reason_;
   }
@@ -2563,7 +2578,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // https://codereview.chromium.org/44673003 and subsequent relaxations
     // of the memory constraints on layout objects.
     LayoutObjectBitfields(Node* node)
-        : self_needs_layout_(false),
+        : self_needs_layout_for_style_(false),
+          self_needs_layout_for_available_space_(false),
           needs_positioned_movement_layout_(false),
           normal_child_needs_layout_(false),
           pos_child_needs_layout_(false),
@@ -2629,12 +2645,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
               static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
           previous_background_paint_location_(0) {}
 
-    // Self needs layout means that this layout object is marked for a full
-    // layout. This is the default layout but it is expensive as it recomputes
-    // everything. For CSS boxes, this includes the width (laying out the line
-    // boxes again), the margins (due to block collapsing margins), the
+    // Self needs layout for style means that this layout object is marked for a
+    // full layout. This is the default layout but it is expensive as it
+    // recomputes everything. For CSS boxes, this includes the width (laying out
+    // the line boxes again), the margins (due to block collapsing margins), the
     // positions, the height and the potential overflow.
-    ADD_BOOLEAN_BITFIELD(self_needs_layout_, SelfNeedsLayout);
+    ADD_BOOLEAN_BITFIELD(self_needs_layout_for_style_, SelfNeedsLayoutForStyle);
+
+    // Similar to SelfNeedsLayoutForStyle; however, this is set when the
+    // available space (~parent height or width) changes, or the override size
+    // has changed. In some cases this allows skipping layouts.
+    ADD_BOOLEAN_BITFIELD(self_needs_layout_for_available_space_,
+                         SelfNeedsLayoutForAvailableSpace);
 
     // A positioned movement layout is a specialized type of layout used on
     // positioned objects that only visually moved. This layout is used when
@@ -2968,7 +2990,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   LayoutObjectBitfields bitfields_;
 
-  void SetSelfNeedsLayout(bool b) { bitfields_.SetSelfNeedsLayout(b); }
+  void SetSelfNeedsLayoutForStyle(bool b) {
+    bitfields_.SetSelfNeedsLayoutForStyle(b);
+  }
   void SetNeedsPositionedMovementLayout(bool b) {
     bitfields_.SetNeedsPositionedMovementLayout(b);
   }
@@ -3031,8 +3055,9 @@ inline void LayoutObject::SetNeedsLayout(
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
-  bool already_needed_layout = bitfields_.SelfNeedsLayout();
-  SetSelfNeedsLayout(true);
+  bool already_needed_layout = bitfields_.SelfNeedsLayoutForStyle() ||
+                               bitfields_.SelfNeedsLayoutForAvailableSpace();
+  SetSelfNeedsLayoutForStyle(true);
   SetNeedsOverflowRecalc();
   MarkContainerNeedsCollectInlines();
   if (!already_needed_layout) {
@@ -3060,7 +3085,8 @@ inline void LayoutObject::ClearNeedsLayout() {
   SetShouldCheckForPaintInvalidation();
 
   // Clear needsLayout flags.
-  SetSelfNeedsLayout(false);
+  SetSelfNeedsLayoutForStyle(false);
+  SetSelfNeedsLayoutForAvailableSpace(false);
   SetPosChildNeedsLayout(false);
   SetNeedsSimplifiedNormalFlowLayout(false);
   SetNormalChildNeedsLayout(false);

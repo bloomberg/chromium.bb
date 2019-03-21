@@ -237,7 +237,10 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   if (break_token)
     return nullptr;
 
-  if (Base::NeedsLayout() && !NeedsRelativePositionedLayoutOnly())
+  if (Base::SelfNeedsLayoutForStyle() || Base::NormalChildNeedsLayout() ||
+      Base::PosChildNeedsLayout() || Base::NeedsSimplifiedNormalFlowLayout() ||
+      (Base::NeedsPositionedMovementLayout() &&
+       !NeedsRelativePositionedLayoutOnly()))
     return nullptr;
 
   const NGLayoutResult* cached_layout_result = Base::GetCachedLayoutResult();
@@ -288,10 +291,7 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // We can safely re-use this fragment if we are position relative, and only
   // our position constraints changed (left/top/etc). However we need to clear
   // the dirty layout bit.
-  if (NeedsRelativePositionedLayoutOnly())
-    Base::ClearNeedsLayout();
-  else
-    DCHECK(!Base::NeedsLayout());
+  Base::ClearNeedsLayout();
 
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:

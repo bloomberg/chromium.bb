@@ -660,6 +660,8 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
        ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
       (child.IsListMarker() && IsListItem() &&
        ToLayoutBlockFlow(this)->ContainsFloats())) {
+    // TODO(cbiesinger): Should be child.SetSelfNeedsLayoutForAvailableSpace,
+    // but that makes tests fail.
     child.SetChildNeedsLayout(kMarkOnlyThis);
   }
 }
