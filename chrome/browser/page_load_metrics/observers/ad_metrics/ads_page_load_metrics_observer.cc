@@ -647,8 +647,13 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
     FrameData::FrameVisibility visibility) {
   // If the page has an ad with the relevant visibility and non-zero bytes.
   bool page_has_relevant_ad = false;
+
+  // Get the relevant durations, set pre-interactive if the page never hit it.
   base::TimeDelta total_duration =
       GetDelegate()->GetVisibilityTracker().GetForegroundDuration();
+  if (time_interactive_.is_null()) {
+    pre_interactive_duration_ = total_duration;
+  }
   base::TimeDelta post_interactive_duration =
       total_duration - pre_interactive_duration_;
 

@@ -980,3 +980,48 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
 }
+
+TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
+  OverrideVisibilityTrackerWithMockClock();
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* non_ad_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it get reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Perform some updates on ad and non-ad frames.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+  OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Navigate away after 2 seconds.
+  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // Overall usage on page for 3 categories:
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.PercentUsage"),
+      100 * (500 + 500) / 2000 /*=50%*/, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.PercentUsage.PreInteractive"),
+      100 * (500 + 500) / 2000 /*=50%*/, 1);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.PercentUsage.PostInteractive"), 0);
+
+  // Make sure there are no activated numbers reported.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
+
+  // Usage for ad frame on page for 3 categories:
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated"),
+      100 * (500) / 2000 /*=25%*/, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram(
+          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PreInteractive"),
+      100 * (500) / 2000 /*=25%*/, 1);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram(
+          "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive"), 0);
+}
