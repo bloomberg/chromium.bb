@@ -86,7 +86,7 @@ enum class AttestationPromptResult {
   // kQueried indicates that the embedder was queried in order to determine
   // whether attestation information should be returned to the origin.
   kQueried = 0,
-  // kTimeout indicates that a timeout occured while awaiting the result of an
+  // kTimeout indicates that a timeout occurred while awaiting the result of an
   // attestation query.
   kTimeout = 1,
   // kAllowed indicates that the query to the embedder was resolved positively.
@@ -241,7 +241,7 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
 
   // At this point we diverge from the specification in order to avoid the
   // complexity of making a network request which isn't believed to be
-  // neccessary in practice. See also
+  // necessary in practice. See also
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1244959#c8
   if (net::registry_controlled_domains::SameDomainOrHost(
           appid_url, origin,
@@ -518,20 +518,14 @@ base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
 
 }  // namespace
 
-AuthenticatorCommon::AuthenticatorCommon(RenderFrameHost* render_frame_host)
-    : AuthenticatorCommon(render_frame_host,
-                        nullptr /* connector */,
-                        std::make_unique<base::OneShotTimer>()) {}
-
-AuthenticatorCommon::AuthenticatorCommon(RenderFrameHost* render_frame_host,
-                                     service_manager::Connector* connector,
-                                     std::unique_ptr<base::OneShotTimer> timer)
-    : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
-      render_frame_host_(render_frame_host),
+AuthenticatorCommon::AuthenticatorCommon(
+    RenderFrameHost* render_frame_host,
+    service_manager::Connector* connector,
+    std::unique_ptr<base::OneShotTimer> timer)
+    : render_frame_host_(render_frame_host),
       connector_(connector),
       transports_(GetTransportsEnabledByFlags()),
       timer_(std::move(timer)),
-      binding_(this),
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
@@ -541,17 +535,6 @@ AuthenticatorCommon::~AuthenticatorCommon() {
   // This call exists to assert that |render_frame_host_| outlives this object.
   // If this is violated, ASAN should notice.
   render_frame_host_->GetRoutingID();
-}
-
-void AuthenticatorCommon::Bind(blink::mojom::AuthenticatorRequest request) {
-  // If |render_frame_host_| is being unloaded then binding requests are
-  // rejected.
-  if (!render_frame_host_->IsCurrent()) {
-    return;
-  }
-
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
 }
 
 void AuthenticatorCommon::UpdateRequestDelegate() {
@@ -597,11 +580,11 @@ std::string AuthenticatorCommon::SerializeCollectedClientDataToJson(
 
 // mojom::Authenticator
 void AuthenticatorCommon::MakeCredential(
+    url::Origin caller_origin,
     blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
-    MakeCredentialCallback callback) {
+    blink::mojom::Authenticator::MakeCredentialCallback callback) {
   if (request_) {
-    if (OriginIsCryptoTokenExtension(
-            render_frame_host_->GetLastCommittedOrigin())) {
+    if (OriginIsCryptoTokenExtension(caller_origin)) {
       // Requests originating from cryptotoken will generally outlive any
       // navigation events on the tab of the request's sender. Evict pending
       // requests if cryptotoken sends a new one such that requests from before
@@ -626,12 +609,11 @@ void AuthenticatorCommon::MakeCredential(
 
   if (!IsFocused()) {
     InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::NOT_FOCUSED,
-                             nullptr, Focus::kDontCheck);
+                             blink::mojom::AuthenticatorStatus::NOT_FOCUSED);
     return;
   }
 
-  caller_origin_ = render_frame_host_->GetLastCommittedOrigin();
+  caller_origin_ = caller_origin;
   relying_party_id_ = options->relying_party->id;
 
   if (!HasValidEffectiveDomain(caller_origin_)) {
@@ -661,8 +643,7 @@ void AuthenticatorCommon::MakeCredential(
     // Disallow the creation of resident credentials.
     InvokeCallbackAndCleanup(
         std::move(callback),
-        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
-        nullptr, Focus::kDontCheck);
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
     return;
   }
 
@@ -756,11 +737,11 @@ void AuthenticatorCommon::MakeCredential(
 
 // mojom:Authenticator
 void AuthenticatorCommon::GetAssertion(
+    url::Origin caller_origin,
     blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
-    GetAssertionCallback callback) {
+    blink::mojom::Authenticator::GetAssertionCallback callback) {
   if (request_) {
-    if (OriginIsCryptoTokenExtension(
-            render_frame_host_->GetLastCommittedOrigin())) {
+    if (OriginIsCryptoTokenExtension(caller_origin)) {
       // Requests originating from cryptotoken will generally outlive any
       // navigation events on the tab of the request's sender. Evict pending
       // requests if cryptotoken sends a new one such that requests from before
@@ -783,12 +764,12 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
-  caller_origin_ = render_frame_host_->GetLastCommittedOrigin();
+  caller_origin_ = caller_origin;
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
-  if (OriginIsCryptoTokenExtension(caller_origin_)) {
+  if (OriginIsCryptoTokenExtension(caller_origin)) {
     request_delegate_->DisableUI();
 
     // As Cryptotoken validates the origin, accept the relying party id as the
@@ -828,8 +809,7 @@ void AuthenticatorCommon::GetAssertion(
     // Chrome currently does not support any resident keys.
     InvokeCallbackAndCleanup(
         std::move(callback),
-        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED,
-        nullptr);
+        blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);
     return;
   }
 
@@ -894,14 +874,15 @@ void AuthenticatorCommon::GetAssertion(
 }
 
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
-    IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
+    blink::mojom::Authenticator::
+        IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
   const bool result = IsUserVerifyingPlatformAuthenticatorAvailableImpl();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl() {
-  //  N.B. request_delegate_ may be nullptr at this point.
+  // N.B. request_delegate_ may be nullptr at this point.
   // All platform authenticators are disabled in incognito mode.
   // TODO(martinkr): Revisit incognito handling (crbug/908622).
   if (browser_context()->IsOffTheRecord())
@@ -923,23 +904,6 @@ bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl() {
 #else
   return false;
 #endif
-}
-
-void AuthenticatorCommon::DidFinishNavigation(
-    NavigationHandle* navigation_handle) {
-  // If the RenderFrameHost itself is navigated then this function will cause
-  // request state to be cleaned up. It's also possible for a navigation in the
-  // same frame to use a fresh RenderFrameHost. In this case,
-  // |render_frame_host_->IsCurrent()| will start returning false, causing all
-  // focus checks to fail if any Mojo requests are made in that state.
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument() ||
-      navigation_handle->GetRenderFrameHost() != render_frame_host_) {
-    return;
-  }
-
-  binding_.Close();
-  Cleanup();
 }
 
 // Callback to handle the async registration response from a U2fDevice.
@@ -1064,7 +1028,7 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
   awaiting_attestation_response_ = false;
   if (!request_) {
     // The request has already been cleaned up, probably because a navigation
-    // occured while the permissions prompt was pending.
+    // occurred while the permissions prompt was pending.
     return;
   }
 
@@ -1137,7 +1101,7 @@ void AuthenticatorCommon::OnSignResponse(
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialExcluded:
       // TODO(crbug/876109): This isn't strictly unreachable.
@@ -1146,7 +1110,7 @@ void AuthenticatorCommon::OnSignResponse(
     case device::FidoReturnCode::kUserConsentDenied:
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
@@ -1237,11 +1201,10 @@ void AuthenticatorCommon::FailWithErrorAndCleanup() {
          get_assertion_response_callback_);
   if (make_credential_response_callback_) {
     InvokeCallbackAndCleanup(std::move(make_credential_response_callback_),
-                             error_awaiting_user_acknowledgement_, nullptr,
-                             Focus::kDontCheck);
+                             error_awaiting_user_acknowledgement_);
   } else if (get_assertion_response_callback_) {
     InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
-                             error_awaiting_user_acknowledgement_, nullptr);
+                             error_awaiting_user_acknowledgement_);
   }
 }
 
@@ -1268,7 +1231,7 @@ void AuthenticatorCommon::Cancel() {
 }
 
 void AuthenticatorCommon::InvokeCallbackAndCleanup(
-    MakeCredentialCallback callback,
+    blink::mojom::Authenticator::MakeCredentialCallback callback,
     blink::mojom::AuthenticatorStatus status,
     blink::mojom::MakeCredentialAuthenticatorResponsePtr response,
     Focus check_focus) {
@@ -1283,7 +1246,7 @@ void AuthenticatorCommon::InvokeCallbackAndCleanup(
 }
 
 void AuthenticatorCommon::InvokeCallbackAndCleanup(
-    GetAssertionCallback callback,
+    blink::mojom::Authenticator::GetAssertionCallback callback,
     blink::mojom::AuthenticatorStatus status,
     blink::mojom::GetAssertionAuthenticatorResponsePtr response) {
   std::move(callback).Run(status, std::move(response));
