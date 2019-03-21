@@ -264,9 +264,11 @@ class NativeStackSamplerWin : public NativeStackSampler {
                          ProfileBuilder* profile_builder) override;
 
  private:
-  // Suspends the thread with |thread_handle|, copies its stack, register
-  // context, and current metadata and resumes the thread. Returns true on
-  // success.
+  // Suspends the thread with |thread_handle|, copies its stack base address,
+  // stack, and register context, and records the current metadata, then resumes
+  // the thread.  Returns true on success, and returns the copied state via the
+  // |base_address|, |stack_buffer|, |profile_builder|, and |thread_context|
+  // params.
   static bool CopyStack(HANDLE thread_handle,
                         const void* base_address,
                         StackBuffer* stack_buffer,
@@ -313,8 +315,7 @@ void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
                "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
-  CONTEXT thread_context = {0};
-  thread_context.ContextFlags = CONTEXT_FULL;
+  CONTEXT thread_context;
   bool success = CopyStack(thread_handle_.Get(), thread_stack_base_address_,
                            stack_buffer, profile_builder, &thread_context);
   if (!success)
@@ -342,6 +343,10 @@ bool NativeStackSamplerWin::CopyStack(HANDLE thread_handle,
                                       CONTEXT* thread_context) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "SuspendThread");
+
+  *thread_context = {0};
+  thread_context->ContextFlags = CONTEXT_FULL;
+
   {
     ScopedSuspendThread suspend_thread(thread_handle);
 
