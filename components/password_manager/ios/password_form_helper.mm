@@ -12,7 +12,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
@@ -175,8 +174,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
                            inFrame:(web::WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
   GURL pageURL = webState->GetLastCommittedURL();
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled() &&
-      pageURL.GetOrigin() != frame->GetSecurityOrigin()) {
+  if (pageURL.GetOrigin() != frame->GetSecurityOrigin()) {
     // Passwords is only supported on main frame and iframes with the same
     // origin.
     return;

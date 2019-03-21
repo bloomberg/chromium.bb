@@ -19,9 +19,6 @@ bool StorePendingItemInContext();
 // Used to always allow scaling of the web page, regardless of author intent.
 extern const base::Feature kIgnoresViewportScaleLimits;
 
-// Used to enable API to send messages directly to frames of a webpage.
-extern const base::Feature kWebFrameMessaging;
-
 // Used to enable the WKBackForwardList based navigation manager.
 extern const base::Feature kSlimNavigationManager;
 

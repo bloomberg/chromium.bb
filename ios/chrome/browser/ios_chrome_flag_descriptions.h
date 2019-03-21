@@ -350,10 +350,6 @@ extern const char kUseDdljsonApiDescription[];
 extern const char kWebClearBrowsingDataName[];
 extern const char kWebClearBrowsingDataDescription[];
 
-// Title and description for the flag to enable web frame messaging.
-extern const char kWebFrameMessagingName[];
-extern const char kWebFrameMessagingDescription[];
-
 // Title and description for the flag to store pending item in NavigationContext
 // after context is created.
 extern const char kStorePendingItemInContextName[];

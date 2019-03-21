@@ -2815,36 +2815,9 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (message->GetString("crwFrameId", &frameID)) {
     senderFrame = web::GetWebFrameWithId([self webState], frameID);
   }
-
-  if (base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
-    // Message must be associated with a current frame.
-    if (!senderFrame) {
-      return NO;
-    }
-  } else {
-    GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
-        scriptMessage.frameInfo.securityOrigin);
-    if (!scriptMessage.frameInfo.mainFrame &&
-        messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
-      // Messages from cross-origin iframes are not currently supported.
-      // |scriptMessage.frameInfo.securityOrigin| returns opener's origin for
-      // about:blank pages, so it is important to allow all messages coming from
-      // the main frame, even if messageFrameOrigin and _documentURL have
-      // different origins.
-      return NO;
-    }
-
-    std::string windowID;
-    // If windowID exists, it must match the ID from the main frame.
-    if (message->GetString("crwWindowId", &windowID)) {
-      if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
-        DLOG(WARNING)
-            << "Message from JS ignored due to non-matching windowID: "
-            << base::SysNSStringToUTF8([_windowIDJSManager windowID])
-            << " != " << windowID;
-        return NO;
-      }
-    }
+  // Message must be associated with a current frame.
+  if (!senderFrame) {
+    return NO;
   }
 
   base::DictionaryValue* command = nullptr;
