@@ -23,6 +23,7 @@ _BUILD_ANDROID_PATH = os.path.abspath(
 sys.path.append(_BUILD_ANDROID_PATH)
 import devil_chromium
 from devil.android import device_utils
+from devil.utils import timeout_retry
 
 
 def _CreateSymbolsDir(build_path, dynamic_library_names):
@@ -139,7 +140,12 @@ def main():
 
   device_crashpad_path = posixpath.join(args.chrome_cache_path, 'Crashpad',
                                         'pending')
-  crashpad_file = _ChooseLatestCrashpadDump(device, device_crashpad_path)
+
+  def CrashpadDumpExists():
+    return _ChooseLatestCrashpadDump(device, device_crashpad_path)
+
+  crashpad_file = timeout_retry.WaitFor(
+      CrashpadDumpExists, wait_period=1, max_tries=9)
   if not crashpad_file:
     logging.error('Could not locate a crashpad dump')
     return 1
