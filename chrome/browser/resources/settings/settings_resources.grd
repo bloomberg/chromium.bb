@@ -928,11 +928,11 @@
         <structure name="IDR_SETTINGS_CUPS_ADD_PRINTER_DIALOG_ELEMENTS_JS"
                    file="printing_page/cups_add_printer_dialog_elements.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_CUPS_ADD_PRINTER_DIALOG_UTIL_HTML"
-                   file="printing_page/cups_add_printer_dialog_util.html"
+        <structure name="IDR_SETTINGS_CUPS_PRINTER_DIALOG_UTIL_HTML"
+                   file="printing_page/cups_printer_dialog_util.html"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_CUPS_ADD_PRINTER_DIALOG_UTIL_JS"
-                   file="printing_page/cups_add_printer_dialog_util.js"
+        <structure name="IDR_SETTINGS_CUPS_PRINTER_DIALOG_UTIL_JS"
+                   file="printing_page/cups_printer_dialog_util.js"
                    type="chrome_html" />
       </if>
       <if expr="not chromeos">
