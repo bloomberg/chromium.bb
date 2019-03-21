@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.preference.Preference;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -20,7 +19,7 @@ import org.chromium.ui.UiUtils;
  * A preference that displays hint message to resolve sync error. Click of it navigates user to
  * appropriate place to resolve error.
  */
-public class SyncErrorCardPreference extends Preference {
+public class SyncErrorCardPreference extends ChromeBasePreference {
     /**
      * Constructor for inflating from XML.
      */

@@ -7,7 +7,6 @@ import android.content.Context;
 import android.preference.Preference;
 import android.util.AttributeSet;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.UiUtils;
 
@@ -28,8 +27,8 @@ public class SyncPreference extends Preference {
         setSummary(SyncPreferenceUtils.getSyncStatusSummary(getContext()));
 
         if (SyncPreferenceUtils.showSyncErrorIcon(getContext())) {
-            setIcon(ApiCompatibilityUtils.getDrawable(
-                    getContext().getResources(), R.drawable.sync_error));
+            setIcon(UiUtils.getTintedDrawable(
+                    getContext(), R.drawable.sync_error, R.color.default_red));
         } else {
             setIcon(UiUtils.getTintedDrawable(getContext(), R.drawable.permission_background_sync,
                     R.color.default_icon_color_blue));

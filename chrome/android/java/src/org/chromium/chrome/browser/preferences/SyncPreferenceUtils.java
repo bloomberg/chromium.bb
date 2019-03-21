@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
@@ -112,17 +111,19 @@ public class SyncPreferenceUtils {
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
             return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_green_40dp, R.color.modern_grey_700);
+                    context, R.drawable.ic_sync_green_40dp, R.color.default_icon_color);
         }
 
         if (profileSyncService.isEngineInitialized()
                 && (profileSyncService.hasUnrecoverableError()
                         || profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
                         || profileSyncService.isPassphraseRequiredForDecryption())) {
-            return AppCompatResources.getDrawable(context, R.drawable.ic_sync_error_40dp);
+            return UiUtils.getTintedDrawable(
+                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
         }
 
-        return AppCompatResources.getDrawable(context, R.drawable.ic_sync_green_40dp);
+        return UiUtils.getTintedDrawable(
+                context, R.drawable.ic_sync_green_40dp, R.color.default_green);
     }
 
     /**
