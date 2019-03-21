@@ -483,7 +483,7 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
   const AppListButton* app_list_button = GetAppListButton();
   if (app_list_button &&
       app_list_button->GetMirroredBounds().Contains(cursor_location)) {
-    return app_list_button->is_showing_app_list();
+    return app_list_button->IsShowingAppList();
   }
   return !visible_shelf_item_bounds_union_.Contains(cursor_location);
 }
@@ -492,7 +492,7 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   // If this is the app list button, only show the tooltip if the app list is
   // not already showing.
   if (view == GetAppListButton())
-    return !GetAppListButton()->is_showing_app_list();
+    return !GetAppListButton()->IsShowingAppList();
   if (view == overflow_button_)
     return true;
   // Don't show a tooltip for a view that's currently being dragged.
