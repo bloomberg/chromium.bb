@@ -30,7 +30,6 @@ class BrowserState;
 // - This class relies on the pre-injection of base.js in webView.
 // - This class will perform gesture recognition and JavaScript on every touch
 //   event on |webView| and can have performance impact.
-// TODO(crbug.com/228179): This class only triggers context menu on mainFrame.
 - (instancetype)initWithWebView:(WKWebView*)webView
                    browserState:(web::BrowserState*)browserState
              injectionEvaluator:(id<CRWJSInjectionEvaluator>)injectionEvaluator

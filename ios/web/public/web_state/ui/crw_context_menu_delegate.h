@@ -16,7 +16,6 @@
 // Called when the custom Context menu recognizer triggers on |webView| by a
 // long press gesture. The system context menu will be suppressed if this method
 // is implemented.
-// TODO(crbug.com/228179): This class only triggers context menu on mainFrame.
 - (void)webView:(WKWebView*)webView
     handleContextMenu:(const web::ContextMenuParams&)params;
 @end
