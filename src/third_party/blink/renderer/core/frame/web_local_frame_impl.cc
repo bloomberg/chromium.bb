@@ -517,6 +517,10 @@ static void CollectAllFrames(std::vector<const LocalFrame*>& list,
   }
 }
 
+// WebNavigationInfo ----------------------------------------------------------
+
+WebNavigationInfo::~WebNavigationInfo() {
+}
 
 // WebFrame -------------------------------------------------------------------
 
