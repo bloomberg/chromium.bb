@@ -527,7 +527,7 @@ public class MediaDrmBridge {
         assert !securityLevel.isEmpty();
 
         String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
-        Log.e(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
+        Log.i(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
         if (securityLevel.equals(currentSecurityLevel)) {
             // No need to set the same security level again. This is not just
             // a shortcut! Setting the same security level actually causes an
@@ -1113,7 +1113,7 @@ public class MediaDrmBridge {
             Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
             return "";
         }
-        return mMediaDrm.getPropertyString("securityLevel");
+        return mMediaDrm.getPropertyString(SECURITY_LEVEL);
     }
 
     private void startProvisioning() {
@@ -1317,7 +1317,7 @@ public class MediaDrmBridge {
         public void onEvent(
                 MediaDrm mediaDrm, byte[] drmSessionId, int event, int extra, byte[] data) {
             if (drmSessionId == null) {
-                Log.e(TAG, "EventListener: Null session.");
+                Log.e(TAG, "EventListener: No session for event %d.", event);
                 return;
             }
             SessionId sessionId = getSessionIdByDrmId(drmSessionId);
