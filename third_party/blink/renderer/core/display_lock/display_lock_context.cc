@@ -714,19 +714,6 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   }
 }
 
-void DisplayLockContext::NotifyWillDisconnect() {
-  if (!IsLocked() || !element_ || !element_->GetLayoutObject())
-    return;
-  // If we're locked while being disconnected, we need to layout the parent.
-  // The reason for this is that we might skip the layout if we're empty while
-  // locked, but it's important to update IsSelfCollapsingBlock property on
-  // the parent so that it's up to date. This property is updated during
-  // layout.
-  if (auto* parent = element_->GetLayoutObject()->Parent()) {
-    parent->SetNeedsLayout(layout_invalidation_reason::kDisplayLockCommitting);
-  }
-}
-
 void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_);
   DCHECK(ConnectedToView());
