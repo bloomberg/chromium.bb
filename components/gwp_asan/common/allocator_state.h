@@ -38,13 +38,15 @@ class GuardedPageAllocator;
 class AllocatorState {
  public:
   using MetadataIdx = uint8_t;
-  using SlotIdx = uint8_t;
+  using SlotIdx = uint16_t;
 
   // Maximum number of virtual memory slots (guard-page buffered pages) this
   // class can allocate.
-  static constexpr size_t kMaxSlots = 256;
+  static constexpr size_t kMaxSlots = 512;
   // Maximum number of concurrent allocations/metadata this class can allocate.
-  static constexpr size_t kMaxMetadata = 256;
+  static constexpr size_t kMaxMetadata = 255;
+  // Invalid metadata index.
+  static constexpr MetadataIdx kInvalidMetadataIdx = kMaxMetadata;
 
   // Maximum number of stack trace frames to collect.
   static constexpr size_t kMaxStackFrames = 60;
@@ -56,6 +58,8 @@ class AllocatorState {
                 "SlotIdx can hold all possible slot index values");
   static_assert(std::numeric_limits<MetadataIdx>::max() >= kMaxMetadata - 1,
                 "MetadataIdx can hold all possible metadata index values");
+  static_assert(kInvalidMetadataIdx >= kMaxMetadata,
+                "kInvalidMetadataIdx can not reference a real index");
 
   enum class ErrorType {
     kUseAfterFree = 0,
@@ -69,7 +73,10 @@ class AllocatorState {
   enum class GetMetadataReturnType {
     kUnrelatedCrash = 0,
     kGwpAsanCrash = 1,
-    kErrorBadSlot = 2,
+    kGwpAsanCrashWithMissingMetadata = 2,
+    kErrorBadSlot = 3,
+    kErrorBadMetadataIndex = 4,
+    kErrorOutdatedMetadataIndex = 5,
   };
 
   // Structure for storing data about a slot.
@@ -117,14 +124,18 @@ class AllocatorState {
   bool IsValid() const;
 
   // This method is meant to be called from the crash handler with a validated
-  // AllocatorState object read from the crashed process. This method checks if
-  // exception_address is an address in the GWP-ASan region, and writes the
-  // address of the SlotMetadata to the provided arguments if so.
+  // AllocatorState object read from the crashed process. Given the metadata
+  // array for the allocator and an exception address, this method determines
+  // if the exception is related to GWP-ASan or not and what the metadata for
+  // the relevant GWP-ASan allocation is if so.
   //
   // Returns an enum indicating an error, unrelated exception, or a GWP-ASan
-  // exception (with slot_address filled out.)
+  // exception with or without metadata. If metadata is available, the
+  // metadata_idx parameter stores the index of the relevant metadata in the
+  // given array.
   GetMetadataReturnType GetMetadataForAddress(uintptr_t exception_address,
-                                              uintptr_t* slot_address) const;
+                                              const SlotMetadata* metadata_arr,
+                                              MetadataIdx* metadata_idx) const;
 
   // Returns the likely error type given an exception address and whether its
   // previously been allocated and deallocated.
@@ -161,6 +172,10 @@ class AllocatorState {
   // If an invalid pointer has been free()d, this is the address of that invalid
   // pointer.
   uintptr_t free_invalid_address = 0;
+
+  // Maps a page index to a metadata index (or kInvalidMetadataIdx if no such
+  // mapping exists) in the metadata_addr array.
+  MetadataIdx slot_to_metadata_idx[kMaxSlots];
 
   DISALLOW_COPY_AND_ASSIGN(AllocatorState);
 };

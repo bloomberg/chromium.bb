@@ -15,6 +15,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 #include "components/gwp_asan/client/sampling_allocator_shims.h"
 
@@ -24,7 +25,16 @@ namespace internal {
 namespace {
 
 constexpr int kDefaultMaxAllocations = 7;
-constexpr int kDefaultTotalPages = 30;
+constexpr int kDefaultMaxMetadata = 30;
+
+#if defined(ARCH_CPU_64_BITS)
+constexpr int kDefaultTotalPages = 512;
+#else
+// Use much less virtual memory on 32-bit builds (where OOMing due to lack of
+// address space is a concern.)
+constexpr int kDefaultTotalPages = kDefaultMaxMetadata * 2;
+#endif
+
 constexpr int kDefaultAllocationSamplingFrequency = 1000;
 constexpr double kDefaultProcessSamplingProbability = 1.0;
 constexpr int kDefaultIncreasedMemoryMultiplier = 4;
@@ -34,6 +44,9 @@ const base::Feature kGwpAsan{"GwpAsanMalloc",
 
 const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
                                                    kDefaultMaxAllocations};
+
+const base::FeatureParam<int> kMaxMetadataParam{&kGwpAsan, "MaxMetadata",
+                                                kDefaultMaxMetadata};
 
 const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages",
                                                kDefaultTotalPages};
@@ -46,9 +59,9 @@ const base::FeatureParam<double> kProcessSamplingParam{
     &kGwpAsan, "ProcessSamplingProbability",
     kDefaultProcessSamplingProbability};
 
-// The multiplier to increase MaxAllocations/TotalPages in scenarios where we
-// want to perform additional testing (e.g. on canary/dev builds or in the
-// browser process.) The multiplier increase is cumulative when multiple
+// The multiplier to increase MaxAllocations/MaxMetadata/TotalPages in scenarios
+// where we want to perform additional testing (e.g. on canary/dev builds or in
+// the browser process.) The multiplier increase is cumulative when multiple
 // conditions apply.
 const base::FeatureParam<int> kIncreasedMemoryMultiplierParam{
     &kGwpAsan, "IncreasedMemoryMultiplier", kDefaultIncreasedMemoryMultiplier};
@@ -61,16 +74,27 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
                 "kMaxSlots out of range");
   constexpr int kMaxSlots = static_cast<int>(AllocatorState::kMaxSlots);
 
+  static_assert(AllocatorState::kMaxMetadata <= std::numeric_limits<int>::max(),
+                "kMaxMetadata out of range");
+  constexpr int kMaxMetadata = static_cast<int>(AllocatorState::kMaxMetadata);
+
   int total_pages = kTotalPagesParam.Get();
   if (total_pages < 1 || total_pages > kMaxSlots) {
     DLOG(ERROR) << "GWP-ASan TotalPages is out-of-range: " << total_pages;
     return false;
   }
 
+  int max_metadata = kMaxMetadataParam.Get();
+  if (max_metadata < 1 || max_metadata > std::min(total_pages, kMaxMetadata)) {
+    DLOG(ERROR) << "GWP-ASan MaxMetadata is out-of-range: " << max_metadata
+                << " with TotalPages = " << total_pages;
+    return false;
+  }
+
   int max_allocations = kMaxAllocationsParam.Get();
-  if (max_allocations < 1 || max_allocations > total_pages) {
+  if (max_allocations < 1 || max_allocations > max_metadata) {
     DLOG(ERROR) << "GWP-ASan MaxAllocations is out-of-range: "
-                << max_allocations << " with TotalPages = " << total_pages;
+                << max_allocations << " with MaxMetadata = " << max_metadata;
     return false;
   }
 
@@ -96,30 +120,35 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
     multiplier += kIncreasedMemoryMultiplierParam.Get();
 
   if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1 ||
-      multiplier.ValueOrDie() > kMaxSlots) {
+      multiplier.ValueOrDie() > kMaxMetadata) {
     DLOG(ERROR) << "GWP-ASan IncreaseMemoryMultiplier is out-of-range";
     return false;
   }
 
   base::CheckedNumeric<int> total_pages_mult = total_pages;
   total_pages_mult *= multiplier.ValueOrDie();
+  base::CheckedNumeric<int> max_metadata_mult = max_metadata;
+  max_metadata_mult *= multiplier;
   base::CheckedNumeric<int> max_allocations_mult = max_allocations;
   max_allocations_mult *= multiplier.ValueOrDie();
 
-  if (!total_pages_mult.IsValid() || !max_allocations_mult.IsValid()) {
+  if (!total_pages_mult.IsValid() || !max_metadata_mult.IsValid() ||
+      !max_allocations_mult.IsValid()) {
     DLOG(ERROR) << "GWP-ASan multiplier caused out-of-range multiply: "
                 << multiplier.ValueOrDie();
     return false;
   }
 
   total_pages = std::min<int>(total_pages_mult.ValueOrDie(), kMaxSlots);
+  max_metadata = std::min<int>(
+      {max_metadata_mult.ValueOrDie(), total_pages, kMaxMetadata});
   max_allocations =
-      std::min<int>(max_allocations_mult.ValueOrDie(), total_pages);
+      std::min<int>(max_allocations_mult.ValueOrDie(), max_metadata);
 
   if (base::RandDouble() >= process_sampling_probability)
     return false;
 
-  InstallAllocatorHooks(max_allocations, total_pages, total_pages,
+  InstallAllocatorHooks(max_allocations, max_metadata, total_pages,
                         alloc_sampling_freq);
   return true;
 }

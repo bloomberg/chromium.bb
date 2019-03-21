@@ -85,9 +85,14 @@ HandleException(const crashpad::ProcessSnapshot& snapshot) {
   if (result != GwpAsanCrashAnalysisResult::kGwpAsanCrash)
     return nullptr;
 
-  LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
-             << proto.allocation_address() << std::dec << " of type "
-             << ErrorToString(proto.error_type());
+  if (proto.missing_metadata()) {
+    LOG(ERROR) << "Detected GWP-ASan crash with missing metadata.";
+  } else {
+    LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
+               << proto.allocation_address() << std::dec << " of type "
+               << ErrorToString(proto.error_type());
+  }
+
   if (proto.has_free_invalid_address()) {
     LOG(ERROR) << "Invalid address passed to free() is " << std::hex
                << proto.free_invalid_address() << std::dec;

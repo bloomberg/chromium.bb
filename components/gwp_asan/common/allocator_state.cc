@@ -4,6 +4,8 @@
 
 #include "components/gwp_asan/common/allocator_state.h"
 
+#include <algorithm>
+
 #include "base/bits.h"
 #include "base/process/process_metrics.h"
 #include "base/threading/platform_thread.h"
@@ -22,7 +24,8 @@ AllocatorState::AllocatorState() {}
 
 AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     uintptr_t exception_address,
-    uintptr_t* slot_address) const {
+    const SlotMetadata* metadata_arr,
+    MetadataIdx* metadata_idx) const {
   CHECK(IsValid());
 
   if (!PointerIsMine(exception_address))
@@ -32,7 +35,17 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
   if (slot_idx >= total_pages)
     return GetMetadataReturnType::kErrorBadSlot;
 
-  *slot_address = metadata_addr + (slot_idx * sizeof(SlotMetadata));
+  size_t index = slot_to_metadata_idx[slot_idx];
+  if (index == kInvalidMetadataIdx)
+    return GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata;
+
+  if (index >= num_metadata)
+    return GetMetadataReturnType::kErrorBadMetadataIndex;
+
+  if (GetNearestSlot(metadata_arr[index].alloc_ptr) != slot_idx)
+    return GetMetadataReturnType::kErrorOutdatedMetadataIndex;
+
+  *metadata_idx = index;
   return GetMetadataReturnType::kGwpAsanCrash;
 }
 
@@ -41,6 +54,9 @@ bool AllocatorState::IsValid() const {
     return false;
 
   if (total_pages == 0 || total_pages > kMaxSlots)
+    return false;
+
+  if (num_metadata == 0 || num_metadata > std::min(kMaxMetadata, total_pages))
     return false;
 
   if (pages_base_addr % page_size != 0 || pages_end_addr % page_size != 0 ||
@@ -56,6 +72,12 @@ bool AllocatorState::IsValid() const {
 
   if (!metadata_addr)
     return false;
+
+  for (size_t i = 0; i < total_pages; i++) {
+    if (slot_to_metadata_idx[i] != kInvalidMetadataIdx &&
+        slot_to_metadata_idx[i] >= num_metadata)
+      return false;
+  }
 
   return true;
 }

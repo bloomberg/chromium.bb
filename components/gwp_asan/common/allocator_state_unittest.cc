@@ -13,6 +13,8 @@
 namespace gwp_asan {
 namespace internal {
 
+using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
+
 static constexpr size_t kMaxMetadata = AllocatorState::kMaxMetadata;
 static constexpr size_t kMaxSlots = AllocatorState::kMaxSlots;
 
@@ -37,6 +39,9 @@ class AllocatorStateTest : public testing::Test {
 
     // An invalid address, but it's never dereferenced in AllocatorState.
     state_.metadata_addr = 0x1234;
+
+    for (size_t i = 0; i < AllocatorState::kMaxSlots; i++)
+      state_.slot_to_metadata_idx[i] = AllocatorState::kInvalidMetadataIdx;
   }
 
   AllocatorState state_;
@@ -45,8 +50,21 @@ class AllocatorStateTest : public testing::Test {
 TEST_F(AllocatorStateTest, Valid) {
   InitializeState(base::GetPageSize(), 1, 1);
   EXPECT_TRUE(state_.IsValid());
+  InitializeState(base::GetPageSize(), 1, kMaxSlots);
+  EXPECT_TRUE(state_.IsValid());
   InitializeState(base::GetPageSize(), kMaxMetadata, kMaxSlots);
   EXPECT_TRUE(state_.IsValid());
+}
+
+TEST_F(AllocatorStateTest, InvalidNumMetadata) {
+  InitializeState(base::GetPageSize(), 0, kMaxSlots);
+  EXPECT_FALSE(state_.IsValid());
+
+  InitializeState(base::GetPageSize(), kMaxMetadata + 1, kMaxSlots);
+  EXPECT_FALSE(state_.IsValid());
+
+  InitializeState(base::GetPageSize(), 2, 1);
+  EXPECT_FALSE(state_.IsValid());
 }
 
 TEST_F(AllocatorStateTest, InvalidNumPages) {
@@ -89,7 +107,19 @@ TEST_F(AllocatorStateTest, InvalidAddresses) {
   EXPECT_FALSE(state_.IsValid());
   InitializeState(base::GetPageSize(), 1, 1, 0, 0, base::GetPageSize());
   EXPECT_FALSE(state_.IsValid());
-  InitializeState(base::GetPageSize(), 1, 0, 0, base::GetPageSize());
+}
+
+TEST_F(AllocatorStateTest, InvalidSlotToMetadataIdx) {
+  InitializeState(base::GetPageSize(), 1, kMaxSlots);
+
+  state_.slot_to_metadata_idx[0] = AllocatorState::kInvalidMetadataIdx;
+  EXPECT_TRUE(state_.IsValid());
+
+  state_.slot_to_metadata_idx[0] = 0;
+  EXPECT_TRUE(state_.IsValid());
+
+  // Out-of-bounds metadata index
+  state_.slot_to_metadata_idx[0] = 1;
   EXPECT_FALSE(state_.IsValid());
 }
 
@@ -124,6 +154,34 @@ TEST_F(AllocatorStateTest, GetErrorTypeFreeInvalidAddressEdgeCase) {
   state_.free_invalid_address = state_.first_page_addr;
   EXPECT_EQ(state_.GetErrorType(state_.first_page_addr, false, false),
             AllocatorState::ErrorType::kFreeInvalidAddress);
+}
+
+TEST_F(AllocatorStateTest, GetMetadataForAddress) {
+  InitializeState(base::GetPageSize(), 2, kMaxSlots);
+
+  AllocatorState::SlotMetadata md[2];
+  md[0].alloc_ptr = state_.first_page_addr;
+
+  AllocatorState::MetadataIdx idx;
+  EXPECT_EQ(state_.GetMetadataForAddress(state_.pages_base_addr - 1, md, &idx),
+            GetMetadataReturnType::kUnrelatedCrash);
+
+  state_.slot_to_metadata_idx[0] = AllocatorState::kInvalidMetadataIdx;
+  EXPECT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md, &idx),
+            GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
+
+  state_.slot_to_metadata_idx[0] = 0;
+  ASSERT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md, &idx),
+            GetMetadataReturnType::kGwpAsanCrash);
+  EXPECT_EQ(idx, 0);
+
+  // Metadata[0] is for slot 1, slot_to_metadata_idx[0] point to metadata 0.
+  md[0].alloc_ptr = state_.first_page_addr + state_.page_size * 2;
+  state_.slot_to_metadata_idx[0] = 0;
+  EXPECT_EQ(state_.GetMetadataForAddress(state_.first_page_addr, md, &idx),
+            GetMetadataReturnType::kErrorOutdatedMetadataIndex);
+
+  // It's impossible to trigger kErrorBad{Slot,Metadata}Indices.
 }
 
 }  // namespace internal

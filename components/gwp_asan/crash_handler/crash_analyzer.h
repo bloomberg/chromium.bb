@@ -49,8 +49,12 @@ class CrashAnalyzer {
     kErrorBadSlot = 8,
     // Failed to read the crashing process' memory of the SlotMetadata.
     kErrorFailedToReadSlotMetadata = 9,
+    // The allocator stored an invalid metadata index for a given slot.
+    kErrorBadMetadataIndex = 10,
+    // The computed metadata index was outdated.
+    kErrorOutdatedMetadataIndex = 11,
     // Number of values in this enumeration, required by UMA.
-    kMaxValue = kErrorFailedToReadSlotMetadata
+    kMaxValue = kErrorOutdatedMetadataIndex
   };
 
   // Given a ProcessSnapshot, determine if the exception is related to GWP-ASan.

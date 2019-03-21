@@ -31,8 +31,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   GuardedPageAllocator();
 
   // Configures this allocator to allocate up to max_alloced_pages pages at a
-  // time from a pool of total_pages pages, where:
-  //   1 <= max_alloced_pages <= num_metadata == total_pages <= kMaxSlots
+  // time, holding metadata for up to num_metadata allocations, from a pool of
+  // total_pages pages, where:
+  //   1 <= max_alloced_pages <= num_metadata <= kMaxMetadata
+  //   num_metadata <= total_pages <= kMaxSlots
   void Init(size_t max_alloced_pages, size_t num_metadata, size_t total_pages);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
@@ -113,6 +115,12 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
       lock_);
   // Stores the end index of the array.
   size_t free_slots_end_ GUARDED_BY(lock_) = 0;
+
+  // Fixed-size array used to store all free metadata indices.
+  AllocatorState::MetadataIdx
+      free_metadata_[AllocatorState::kMaxMetadata] GUARDED_BY(lock_);
+  // Stores the end of the array.
+  size_t free_metadata_end_ GUARDED_BY(lock_) = 0;
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
