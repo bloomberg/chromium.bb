@@ -1656,6 +1656,7 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
     const int work_area_offset = GetDisplayNearestView().work_area().y();
     OffsetYPositionOfAppList(shown ? work_area_offset : -work_area_offset);
   }
+  app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
 }
 
 bool AppListView::CloseKeyboardIfVisible() {
