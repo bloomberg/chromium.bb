@@ -100,6 +100,7 @@ test("blink_unittests") {
   ]
 
   if (is_android) {
+    enable_multidex = true
     deps += [
       "//base:base_java",
       "//content/public/android:content_java",
