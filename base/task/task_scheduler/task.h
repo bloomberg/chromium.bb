@@ -20,6 +20,7 @@ namespace internal {
 
 // A task is a unit of work inside the task scheduler. Support for tracing and
 // profiling inherited from PendingTask.
+// TODO(etiennep): This class is now equivalent to PendingTask, remove it.
 struct BASE_EXPORT Task : public PendingTask {
   Task();
 
@@ -36,18 +37,6 @@ struct BASE_EXPORT Task : public PendingTask {
   ~Task();
 
   Task& operator=(Task&& other);
-
-  // A reference to the SequencedTaskRunner or SingleThreadTaskRunner that
-  // posted this task, if any. Used to set ThreadTaskRunnerHandle and/or
-  // SequencedTaskRunnerHandle while the task is running.
-  // Note: this creates an ownership cycle
-  //   Sequence -> Task -> TaskRunner -> Sequence -> ...
-  // but that's okay as it's broken when the Task is popped from its Sequence
-  // after being executed which means this cycle forces the TaskRunner to stick
-  // around until all its tasks have been executed which is a requirement to
-  // support TaskRunnerHandles.
-  scoped_refptr<SequencedTaskRunner> sequenced_task_runner_ref;
-  scoped_refptr<SingleThreadTaskRunner> single_thread_task_runner_ref;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Task);

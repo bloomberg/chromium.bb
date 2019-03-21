@@ -21,7 +21,8 @@ namespace {
 
 class MockTaskSource : public TaskSource {
  public:
-  MockTaskSource(TaskTraits traits) : TaskSource(traits) {}
+  MockTaskSource(TaskTraits traits)
+      : TaskSource(traits, nullptr, TaskSourceExecutionMode::kParallel) {}
 
   MOCK_METHOD0(GetExecutionEnvironment, ExecutionEnvironment());
 
@@ -30,6 +31,8 @@ class MockTaskSource : public TaskSource {
   MOCK_CONST_METHOD0(GetSortKey, SequenceSortKey());
   MOCK_CONST_METHOD0(IsEmpty, bool());
   MOCK_METHOD0(Clear, void());
+
+  bool DidRunTask() override { return !IsEmpty(); }
 
  private:
   ~MockTaskSource() override = default;
