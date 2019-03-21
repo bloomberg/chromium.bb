@@ -122,16 +122,21 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
   RegisterDataReductionProxyFieldTrial();
 }
 
+bool DataReductionProxySettings::IsDataSaverEnabledByUser() const {
+  if (params::ShouldForceEnableDataReductionProxy())
+    return true;
+
+  if (spdy_proxy_auth_enabled_.GetPrefName().empty())
+    return false;
+  return spdy_proxy_auth_enabled_.GetValue();
+}
+
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       !params::IsEnabledWithNetworkService()) {
     return false;
   }
-
-  if (spdy_proxy_auth_enabled_.GetPrefName().empty())
-    return false;
-  return spdy_proxy_auth_enabled_.GetValue() ||
-         params::ShouldForceEnableDataReductionProxy();
+  return IsDataSaverEnabledByUser();
 }
 
 bool DataReductionProxySettings::CanUseDataReductionProxy(

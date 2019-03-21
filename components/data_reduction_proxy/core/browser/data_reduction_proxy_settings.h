@@ -98,6 +98,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
       const SyntheticFieldTrialRegistrationCallback&
           on_data_reduction_proxy_enabled);
 
+  // Returns true if DataSaver is enabled by checking only the prefs or forcing
+  // flag. Does not check any holdback experiments.
+  bool IsDataSaverEnabledByUser() const;
+
   // Returns true if the proxy is enabled.
   bool IsDataReductionProxyEnabled() const;
 

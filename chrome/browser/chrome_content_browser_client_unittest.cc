@@ -132,14 +132,6 @@ static void DidOpenURLForWindowTest(content::WebContents** target_contents,
   *target_contents = opened_contents;
 }
 
-TEST_F(ChromeContentBrowserClientWindowTest, IsDataSaverEnabled) {
-  ChromeContentBrowserClient client;
-  content::BrowserContext* context = browser()->profile();
-  EXPECT_FALSE(client.IsDataSaverEnabled(context));
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDataSaverEnabled, true);
-  EXPECT_TRUE(client.IsDataSaverEnabled(context));
-}
-
 // This test opens two URLs using ContentBrowserClient::OpenURL. It expects the
 // URLs to be opened in new tabs and activated, changing the active tabs after
 // each call and increasing the tab count by 2.
