@@ -12,6 +12,7 @@
 
 #include <IOKit/IOMessage.h>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/mac/scoped_ionotificationportref.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/macros.h"
@@ -95,7 +96,8 @@ class XboxDataFetcher : public GamepadDataFetcher,
   // The set of enumerated controllers that received an exclusive access error
   // on opening the device. The data fetcher is notified when these devices
   // become available so we can try opening them again.
-  std::set<std::unique_ptr<PendingController>> pending_controllers_;
+  std::set<std::unique_ptr<PendingController>, base::UniquePtrComparator>
+      pending_controllers_;
 
   bool listening_ = false;
 
