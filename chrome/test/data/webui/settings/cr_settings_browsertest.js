@@ -2442,3 +2442,30 @@ CrSettingsSiteFaviconTest.prototype = {
 TEST_F('CrSettingsSiteFaviconTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+
+/**
+ * Test fixture for the chrome://settings/accounts page
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAddUsersTest() {}
+
+CrSettingsAddUsersTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/accounts.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'add_users_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsAddUsersTest', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(OS_CHROMEOS)');
