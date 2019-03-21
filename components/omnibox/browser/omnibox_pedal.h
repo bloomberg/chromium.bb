@@ -6,7 +6,6 @@
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_H_
 
 #include <unordered_set>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
@@ -49,29 +48,20 @@ class OmniboxPedal {
     // part will also be covered by this group -- otherwise it would be left
     // intact and wrongly treated as uncovered by the checking algorithm.
     // See OmniboxPedal::IsConceptMatch for the logic that necessitates order.
-    SynonymGroup(bool required, bool match_once);
+    SynonymGroup(bool required, std::initializer_list<const char*> synonyms);
     SynonymGroup(const SynonymGroup& other);
     ~SynonymGroup();
 
-    // Removes one or more matching synonyms from given |remaining| string if
-    // any are found.  Returns true if checking may continue; false if no more
+    // Removes first matching synonym from given |remaining| string if any are
+    // found.  Returns true if checking may continue; false if no further
     // checking is required because what remains cannot be a concept match.
-    bool EraseMatchesIn(base::string16& remaining) const;
-
-    // TODO(orinj): Eliminate this.
-    void AddSynonym(const base::string16& synonym);
+    bool EraseFirstMatchIn(base::string16& remaining) const;
 
    protected:
     // If this is true, a synonym of the group must be present for triggering.
     // If false, then presence is simply allowed and does not inhibit triggering
     // (any text not covered by groups would stop trigger).
     bool required_;
-
-    // If this is true, then only the rightmost instance of first synonym found
-    // will be taken from text being checked, and additional instances will
-    // inhibit trigger because repetition actually changes meaning.  If false,
-    // then all instances of all synonyms are taken (repetition is meaningless).
-    bool match_once_;
 
     // The set of interchangeable alternative representations for this group:
     // when trying to clear browsing data, a user may think of 'erase', 'clear',
@@ -103,9 +93,11 @@ class OmniboxPedal {
     base::TimeTicks match_selection_timestamp_;
   };
 
-  OmniboxPedal(LabelStrings strings,
-               GURL url,
-               std::initializer_list<const char*> triggers);
+  OmniboxPedal(
+      LabelStrings strings,
+      GURL url,
+      std::initializer_list<const char*> triggers,
+      std::initializer_list<const OmniboxPedal::SynonymGroup> synonym_groups);
   virtual ~OmniboxPedal();
 
   // Provides read access to labels associated with this Pedal.
@@ -135,8 +127,6 @@ class OmniboxPedal {
   // presentation of this Pedal.  This is not intended for general use,
   // and only OmniboxPedalProvider should need to call this method.
   bool IsTriggerMatch(const base::string16& match_text) const;
-
-  void AddSynonymGroup(const SynonymGroup& group);
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
