@@ -52,13 +52,9 @@ void CheckProfile(int* profiles_count,
   ++*profiles_count;
 }
 
-#if !defined(OS_ANDROID) || \
-    BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && defined(OFFICIAL_BUILD)
-#define MAYBE_ProfileCollectionsScheduler ProfileCollectionsScheduler
-#else
-#define MAYBE_ProfileCollectionsScheduler DISABLED_ProfileCollectionsScheduler
-#endif
-TEST(HeapProfilerControllerTest, MAYBE_ProfileCollectionsScheduler) {
+// Sampling profiler is not capable of unwinding stack on Android under tests.
+#if !defined(OS_ANDROID)
+TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
@@ -83,3 +79,4 @@ TEST(HeapProfilerControllerTest, MAYBE_ProfileCollectionsScheduler) {
     task_runner->FastForwardBy(base::TimeDelta::FromHours(1));
   } while (profiles_collected < 2);
 }
+#endif
