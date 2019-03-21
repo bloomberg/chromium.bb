@@ -26,8 +26,7 @@ HammerdClient* g_instance = nullptr;
 
 class HammerdClientImpl : public HammerdClient {
  public:
-  explicit HammerdClientImpl(dbus::Bus* bus) { Init(bus); }
-
+  HammerdClientImpl() = default;
   ~HammerdClientImpl() override = default;
 
   // HammerdClient:
@@ -173,7 +172,7 @@ HammerdClient::~HammerdClient() {
 // static
 void HammerdClient::Initialize(dbus::Bus* bus) {
   CHECK(bus);
-  new HammerdClientImpl(bus);
+  (new HammerdClientImpl())->Init(bus);
 }
 
 // static

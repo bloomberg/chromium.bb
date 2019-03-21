@@ -36,10 +36,7 @@ void OnVoidResponse(VoidDBusMethodCallback callback, dbus::Response* response) {
 // The BiodClient implementation used in production.
 class BiodClientImpl : public BiodClient {
  public:
-  BiodClientImpl(dbus::Bus* bus) : bus_(bus), weak_ptr_factory_(this) {
-    Init();
-  }
-
+  BiodClientImpl() = default;
   ~BiodClientImpl() override = default;
 
   // BiodClient overrides:
@@ -210,7 +207,8 @@ class BiodClientImpl : public BiodClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void Init() {
+  void Init(dbus::Bus* bus) {
+    bus_ = bus;
     dbus::ObjectPath fpc_bio_path = dbus::ObjectPath(base::StringPrintf(
         "%s/%s", biod::kBiodServicePath, biod::kCrosFpBiometricsManagerName));
     biod_proxy_ = bus_->GetObjectProxy(biod::kBiodServiceName, fpc_bio_path);
@@ -406,7 +404,7 @@ class BiodClientImpl : public BiodClient {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BiodClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BiodClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BiodClientImpl);
 };
@@ -424,7 +422,7 @@ BiodClient::~BiodClient() {
 // static
 void BiodClient::Initialize(dbus::Bus* bus) {
   DCHECK(bus);
-  new BiodClientImpl(bus);
+  (new BiodClientImpl())->Init(bus);
 }
 
 // static
