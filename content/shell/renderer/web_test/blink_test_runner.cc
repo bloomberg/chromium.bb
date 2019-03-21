@@ -403,6 +403,9 @@ std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {
   setlocale(LC_ALL, locale.c_str());
+  // Number to string conversions require C locale, regardless of what
+  // all the other subsystems are set to.
+  setlocale(LC_NUMERIC, "C");
 }
 
 void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(

@@ -22,9 +22,11 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#include <locale.h>
 #include <stdarg.h>
 #include <algorithm>
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -312,6 +314,16 @@ String String::FoldCase() const {
 }
 
 String String::Format(const char* format, ...) {
+  // vsnprintf is locale sensitive when converting floats to strings
+  // and we need it to always use a decimal point. Double check that
+  // the locale is compatible, and also that it is the default "C"
+  // locale so that we aren't just lucky. Android's locales work
+  // differently so can't check the same way there.
+  DCHECK_EQ(strcmp(localeconv()->decimal_point, "."), 0);
+#if !defined(OS_ANDROID)
+  DCHECK_EQ(strcmp(setlocale(LC_NUMERIC, NULL), "C"), 0);
+#endif  // !OS_ANDROID
+
   va_list args;
 
   // TODO(esprehn): base uses 1024, maybe we should use a bigger size too.

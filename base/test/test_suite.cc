@@ -248,6 +248,8 @@ void TestSuite::PreInitialize() {
   // have the locale set. In the absence of such a call the "C" locale is the
   // default. In the gtk code (below) gtk_init() implicitly sets a locale.
   setlocale(LC_ALL, "");
+  // We still need number to string conversions to be locale insensitive.
+  setlocale(LC_NUMERIC, "C");
 #endif  // defined(OS_LINUX) && defined(USE_AURA)
 
   // On Android, AtExitManager is created in
