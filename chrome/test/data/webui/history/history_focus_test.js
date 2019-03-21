@@ -41,8 +41,6 @@ TEST_F('HistoryFocusTest', 'All', function() {
   suite('<history-toolbar>', function() {
     let app;
     let toolbar;
-    const TEST_HISTORY_RESULTS =
-        [createHistoryEntry('2016-03-15', 'https://google.com')];
 
     setup(function() {
       window.resultsRendered = false;
