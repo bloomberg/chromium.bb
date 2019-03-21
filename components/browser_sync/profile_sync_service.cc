@@ -798,6 +798,15 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 
   // Shut all data types down.
   ShutdownImpl(syncer::DISABLE_SYNC);
+
+  // This is the equivalent for Directory::DeleteDirectoryFiles(), guaranteed
+  // to be called, either directly in ShutdownImpl(), or later in
+  // SyncBackendHostCore::DoShutdown().
+  // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
+  // all preferences should be cleared via SyncPrefs::ClearPreferences(),
+  // which is done by some of the callers (but not all). Care must be taken
+  // however for scenarios like custom passphrase being set.
+  sync_prefs_.ClearDirectoryConsistencyPreferences();
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
@@ -1022,9 +1031,27 @@ void ProfileSyncService::OnActionableError(
       // restart.
       sync_disabled_by_admin_ = true;
       ShutdownImpl(syncer::DISABLE_SYNC);
+      // This is the equivalent for Directory::DeleteDirectoryFiles(),
+      // guaranteed to be called, either directly in ShutdownImpl(), or later in
+      // SyncBackendHostCore::DoShutdown().
+      // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
+      // does, all preferences should be cleared via
+      // SyncPrefs::ClearPreferences(), which is done by some of the callers
+      // (but not all). Care must be taken however for scenarios like custom
+      // passphrase being set.
+      sync_prefs_.ClearDirectoryConsistencyPreferences();
       break;
     case syncer::RESET_LOCAL_SYNC_DATA:
       ShutdownImpl(syncer::DISABLE_SYNC);
+      // This is the equivalent for Directory::DeleteDirectoryFiles(),
+      // guaranteed to be called, either directly in ShutdownImpl(), or later in
+      // SyncBackendHostCore::DoShutdown().
+      // TODO(crbug.com/923285): This doesn't seem to belong here, or if it
+      // does, all preferences should be cleared via
+      // SyncPrefs::ClearPreferences(), which is done by some of the callers
+      // (but not all). Care must be taken however for scenarios like custom
+      // passphrase being set.
+      sync_prefs_.ClearDirectoryConsistencyPreferences();
       startup_controller_->TryStart(IsSetupInProgress());
       break;
     case syncer::UNKNOWN_ACTION:
