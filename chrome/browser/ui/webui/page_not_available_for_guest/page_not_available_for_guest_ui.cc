@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,6 +38,7 @@ content::WebUIDataSource* CreateHTMLSource(Profile* profile,
   source->AddString("pageHeading", page_heading);
 
   source->SetDefaultResource(IDR_PAGE_NOT_AVAILABLE_FOR_GUEST_APP_HTML);
+  source->SetJsonPath("strings.js");
 
   return source;
 }
@@ -48,5 +50,7 @@ PageNotAvailableForGuestUI::PageNotAvailableForGuestUI(
     const std::string& host_name)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateHTMLSource(profile, host_name));
+  auto* source = CreateHTMLSource(profile, host_name);
+  DarkModeHandler::Initialize(web_ui, source);
+  content::WebUIDataSource::Add(profile, source);
 }
