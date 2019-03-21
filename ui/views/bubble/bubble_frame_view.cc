@@ -194,6 +194,16 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
       return HTCAPTION;
   }
 
+  // Convert to RRectF to accurately represent the rounded corners of the
+  // dialog and allow events to pass through the shadows.
+  gfx::RRectF round_contents_bounds(gfx::RectF(GetContentsBounds()),
+                                    bubble_border_->GetBorderCornerRadius());
+  if (bubble_border_->shadow() != BubbleBorder::NO_ASSETS)
+    round_contents_bounds.Outset(BubbleBorder::kBorderThicknessDip);
+  gfx::RectF rectf_point(point.x(), point.y(), 1, 1);
+  if (!round_contents_bounds.Contains(rectf_point))
+    return HTTRANSPARENT;
+
   return GetWidget()->client_view()->NonClientHitTest(point);
 }
 

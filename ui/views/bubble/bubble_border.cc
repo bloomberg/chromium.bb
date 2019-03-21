@@ -33,10 +33,6 @@ namespace {
 // key the cache.
 typedef std::tuple<int, SkColor> ShadowCacheKey;
 
-// The border is stroked at 1px, but for the purposes of reserving space we have
-// to deal in dip coordinates, so round up to 1dip.
-constexpr int kBorderThicknessDip = 1;
-
 // Utility functions for getting alignment points on the edge of a rectangle.
 gfx::Point CenterTop(const gfx::Rect& rect) {
   return gfx::Point(rect.CenterPoint().x(), rect.y());

@@ -78,6 +78,10 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 #endif
   };
 
+  // The border is stroked at 1px, but for the purposes of reserving space we
+  // have to deal in dip coordinates, so round up to 1dip.
+  static constexpr int kBorderThicknessDip = 1;
+
   // Specific to MD bubbles: size of shadow blur (outside the bubble) and
   // vertical offset, both in DIP.
   static constexpr int kShadowBlur = 6;
