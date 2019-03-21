@@ -19,12 +19,13 @@ void MockVideoCaptureDeviceClient::OnIncomingCapturedBuffer(
 void MockVideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
     Buffer buffer,
     const media::VideoCaptureFormat& format,
+    const gfx::ColorSpace& color_space,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     gfx::Rect visible_rect,
     const media::VideoFrameMetadata& additional_metadata) {
-  DoOnIncomingCapturedBufferExt(buffer, format, reference_time, timestamp,
-                                visible_rect, additional_metadata);
+  DoOnIncomingCapturedBufferExt(buffer, format, color_space, reference_time,
+                                timestamp, visible_rect, additional_metadata);
 }
 
 }  // namespace media

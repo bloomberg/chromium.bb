@@ -452,6 +452,9 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
           &VideoCaptureImpl::OnAllClientsFinishedConsumingFrame,
           weak_factory_.GetWeakPtr(), buffer_id, std::move(buffer_context)))));
 
+  if (info->color_space.has_value() && info->color_space->IsValid())
+    frame->set_color_space(info->color_space.value());
+
   frame->metadata()->MergeInternalValuesFrom(info->metadata);
 
   // TODO(qiangchen): Dive into the full code path to let frame metadata hold

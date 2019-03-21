@@ -175,12 +175,12 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
                           const media::VideoCaptureFormat& frame_format,
                           base::TimeTicks,
                           base::TimeDelta) { OnFrameCaptured(frame_format); }));
-    ON_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
-        .WillByDefault(
-            Invoke([this](media::VideoCaptureDevice::Client::Buffer&,
-                          const media::VideoCaptureFormat& frame_format,
-                          base::TimeTicks, base::TimeDelta, gfx::Rect,
-                          const media::VideoFrameMetadata&) {
+    ON_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _, _))
+        .WillByDefault(Invoke(
+            [this](media::VideoCaptureDevice::Client::Buffer&,
+                   const media::VideoCaptureFormat& frame_format,
+                   const gfx::ColorSpace&, base::TimeTicks, base::TimeDelta,
+                   gfx::Rect, const media::VideoFrameMetadata&) {
               OnFrameCaptured(frame_format);
             }));
     return result;
