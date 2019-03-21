@@ -6,13 +6,13 @@
 
 namespace apps_util {
 
-IncrementingIconKeyFactory::IncrementingIconKeyFactory() : u_key_(0) {}
+IncrementingIconKeyFactory::IncrementingIconKeyFactory() : last_timeline_(0) {}
 
 apps::mojom::IconKeyPtr IncrementingIconKeyFactory::MakeIconKey(
     apps::mojom::AppType app_type,
-    const std::string& s_key,
+    const std::string& app_id,
     uint32_t icon_effects) {
-  return apps::mojom::IconKey::New(app_type, ++u_key_, s_key,
+  return apps::mojom::IconKey::New(app_type, app_id, ++last_timeline_,
                                    apps::mojom::IconKey::kInvalidResourceId,
                                    icon_effects);
 }

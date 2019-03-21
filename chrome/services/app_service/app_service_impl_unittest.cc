@@ -37,7 +37,7 @@ class FakePublisher : public apps::mojom::Publisher {
     }
   }
 
-  std::string load_icon_s_key;
+  std::string load_icon_app_id;
 
  private:
   void Connect(apps::mojom::SubscriberPtr subscriber,
@@ -51,7 +51,7 @@ class FakePublisher : public apps::mojom::Publisher {
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override {
-    load_icon_s_key = icon_key->s_key;
+    load_icon_app_id = icon_key->app_id;
     std::move(callback).Run(apps::mojom::IconValue::New());
   }
 
@@ -193,10 +193,10 @@ TEST_F(AppServiceImplTest, PubSub) {
                            : apps::mojom::AppType::kUnknown;
 
     bool callback_ran = false;
-    pub0.load_icon_s_key = "-";
-    pub1.load_icon_s_key = "-";
-    pub2.load_icon_s_key = "-";
-    auto icon_key = apps::mojom::IconKey::New(app_type, 0, "o", 0, 0);
+    pub0.load_icon_app_id = "-";
+    pub1.load_icon_app_id = "-";
+    pub2.load_icon_app_id = "-";
+    auto icon_key = apps::mojom::IconKey::New(app_type, "o", 0, 0, 0);
     constexpr bool allow_placeholder_icon = false;
     impl.LoadIcon(
         std::move(icon_key), apps::mojom::IconCompression::kUncompressed,
@@ -206,9 +206,9 @@ TEST_F(AppServiceImplTest, PubSub) {
             &callback_ran));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(callback_ran);
-    EXPECT_EQ("-", pub0.load_icon_s_key);
-    EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_s_key);
-    EXPECT_EQ("-", pub2.load_icon_s_key);
+    EXPECT_EQ("-", pub0.load_icon_app_id);
+    EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_app_id);
+    EXPECT_EQ("-", pub2.load_icon_app_id);
   }
 }
 

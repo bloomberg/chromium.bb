@@ -258,18 +258,15 @@ up-front. Instead of sending an icon at all possible resolutions, the
 `Publisher` sends an `IconKey`: enough information to load the icon at given
 resolutions.
 
-The `IconKey` is an `AppType app_type` and a `uint32 icon_effects` bitmask
-(whether to apply various image processing effects such as desaturation to
-gray), plus additional data (`uint64 u_key` and `string s_key`) whose semantics
-depend on the `app_type`.
-
-For example, some icons are statically built into the Chrome or Chrome OS
+An `IconKey` holds an `AppType app_type` and `string app_id`, plus additional
+data. For example, some icons are statically built into the Chrome or Chrome OS
 binary, as PNG-formatted resources, and can be loaded (synchronously, without
-sandboxing). They can be loaded from a `u_key` resource ID. Some icons are
+sandboxing). They can be loaded from the `IconKey.resource_id`. Other icons are
 dynamically (and asynchronously) loaded from the extension database on disk.
-They can be loaded from the `s_key` app ID, with the `u_key` serving as a
-(monotonically increasing) epoch number so that an icon update results in a
-different `u_key` and hence a different `IconKey`.
+They can be loaded just from the `app_id` alone.
+
+In either case, the `IconKey.icon_effects` bitmask holds whether to apply
+various image processing effects such as desaturation to gray.
 
     interface AppService {
       // App Icon Factory methods.
@@ -294,10 +291,27 @@ different `u_key` and hence a different `IconKey`.
     };
 
     struct IconKey {
-      AppType app_type;
-      // The semantics of u_key and s_key depend on the app_type.
-      uint64 u_key;
-      string s_key;
+      AppType app_type,
+      string app_id,
+      // A monotonically increasing number so that, after an icon update, a new
+      // IconKey, one that is different in terms of field-by-field equality, can be
+      // broadcast by a Publisher.
+      //
+      // The exact value of the number isn't important, only that newer IconKey's
+      // (those that were created more recently) have a larger timeline than older
+      // IconKey's.
+      //
+      // This is, in some sense, *a* version number, but the field is not called
+      // "version", to avoid any possible confusion that it encodes *the* app's
+      // version number, e.g. the "2.3.5" in "FooBar version 2.3.5 is installed".
+      //
+      // For example, if an app is disabled for some reason (so that its icon is
+      // grayed out), this would result in a different timeline even though the
+      // app's version is unchanged.
+      uint64 timeline;
+      // If non-zero, the compressed icon is compiled into the Chromium binary
+      // as a statically available, int-keyed resource.
+      int32 resource_id;
       // A bitmask of icon post-processing effects, such as desaturation to
       // gray and rounding the corners.
       uint32 icon_effects;
@@ -334,10 +348,10 @@ callback can't be used for both the old and the new icon.
 Grouping the `IconKey` with the other `LoadIcon` arguments, the combination
 identifies a static (unchanging, but possibly obsolete) image: if a new version
 of an app results in a new icon, or if a change in app state results in a
-grayed out icon, this is represented by a different `IconKey`, such as a
-different `u_key` or `icon_effects` value. As a consequence, the combined
-`LoadIcon` arguments can be used to key a cache or map of `IconValue`s, or to
-recognize and coalesce multiple concurrent requests to the same combination.
+grayed out icon, this is represented by a different, larger `IconKey.timeline`.
+As a consequence, the combined `LoadIcon` arguments can be used to key a cache
+or map of `IconValue`s, or to recognize and coalesce multiple concurrent
+requests to the same combination.
 
 Such optimizations can be implemented as a series of "wrapper" classes (as in
 the classic "decorator" or "wrapper" design pattern) that all implement the
@@ -483,4 +497,4 @@ TBD: details.
 
 ---
 
-Updated on 2019-03-15.
+Updated on 2019-03-20.
