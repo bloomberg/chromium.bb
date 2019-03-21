@@ -32753,6 +32753,7 @@ from previous Chrome versions.
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
   <int value="-606898702" label="MaterialDesignSettings:disabled"/>
+  <int value="-606431158" label="DrawVerticallyEdgeToEdge:enabled"/>
   <int value="-604814313" label="enable-pinch"/>
   <int value="-604269405"
       label="ContentSuggestionsFaviconsFromNewServer:enabled"/>
@@ -33799,6 +33800,7 @@ from previous Chrome versions.
   <int value="1152491093" label="MediaSessionService:disabled"/>
   <int value="1153454438"
       label="AutofillCreditCardLastUsedDateDisplay:disabled"/>
+  <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1161075291" label="OmniboxReverseTabSwitchLogic:disabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>

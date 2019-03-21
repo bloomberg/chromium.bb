@@ -172,6 +172,9 @@ extern const char kCloudPrinterHandlerDescription[];
 extern const char kDelegateOverscrollSwipesName[];
 extern const char kDelegateOverscrollSwipesDescription[];
 
+extern const char kDrawVerticallyEdgeToEdgeName[];
+extern const char kDrawVerticallyEdgeToEdgeDescription[];
+
 extern const char kExperimentalAccessibilityFeaturesName[];
 extern const char kExperimentalAccessibilityFeaturesDescription[];
 

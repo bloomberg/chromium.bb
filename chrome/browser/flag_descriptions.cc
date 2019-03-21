@@ -81,6 +81,11 @@ const char kDelegateOverscrollSwipesName[] =
 const char kDelegateOverscrollSwipesDescription[] =
     "Delegate overscroll swipes to websites first";
 
+const char kDrawVerticallyEdgeToEdgeName[] =
+    "Draw contents vertically from edge to edge.";
+const char kDrawVerticallyEdgeToEdgeDescription[] =
+    "Draw contents vertically from edge to edge.";
+
 const char kEnableBlinkHeapUnifiedGarbageCollectionName[] =
     "Blink Heap Unified Garbage Collection";
 const char kEnableBlinkHeapUnifiedGarbageCollectionDescription[] =
