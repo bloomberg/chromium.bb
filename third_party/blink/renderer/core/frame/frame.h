@@ -267,8 +267,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameOwner> owner_;
   Member<DOMWindow> dom_window_;
 
-  // The user activation state of the current frame.  See
-  // FrameTreeNode::user_activation_state_ for details.
+  // The user activation state of the current frame.  See |UserActivationState|
+  // for details on how this state is maintained.
   UserActivationState user_activation_state_;
 
   bool has_received_user_gesture_before_nav_ = false;

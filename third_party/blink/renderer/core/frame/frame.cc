@@ -190,7 +190,8 @@ void Frame::NotifyUserActivationInLocalTree() {
   for (Frame* node = this; node; node = node->Tree().Parent())
     node->user_activation_state_.Activate();
 
-  // See FrameTreeNode::NotifyUserActivation() for details about this block.
+  // See the "Same-origin Visibility" section in |UserActivationState| class
+  // doc.
   auto* local_frame = DynamicTo<LocalFrame>(this);
   if (local_frame && RuntimeEnabledFeatures::UserActivationV2Enabled() &&
       RuntimeEnabledFeatures::UserActivationSameOriginVisibilityEnabled()) {
@@ -212,9 +213,6 @@ void Frame::NotifyUserActivationInLocalTree() {
 bool Frame::ConsumeTransientUserActivationInLocalTree() {
   bool was_active = user_activation_state_.IsActive();
 
-  // Note that consumption "touches" the whole frame tree, to guarantee that a
-  // malicious subframe can't embed sub-subframes in a way that could allow
-  // multiple consumptions per user activation.
   Frame& root = Tree().Top();
   for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root))
     node->user_activation_state_.ConsumeIfActive();
