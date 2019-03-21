@@ -1728,7 +1728,7 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
        content_data = content_data->Next()) {
     if (content_data->IsCounter()) {
       const CounterContent* counter =
-          ToCounterContentData(content_data)->Counter();
+          To<CounterContentData>(content_data)->Counter();
       DCHECK(counter);
       CSSCustomIdentValue* identifier =
           CSSCustomIdentValue::Create(counter->Identifier());
@@ -1744,14 +1744,14 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
           CSSIdentifierValue::Create(list_style_ident);
       list->Append(*CSSCounterValue::Create(identifier, list_style, separator));
     } else if (content_data->IsImage()) {
-      const StyleImage* image = ToImageContentData(content_data)->GetImage();
+      const StyleImage* image = To<ImageContentData>(content_data)->GetImage();
       DCHECK(image);
       list->Append(*image->ComputedCSSValue());
     } else if (content_data->IsText()) {
-      list->Append(
-          *CSSStringValue::Create(ToTextContentData(content_data)->GetText()));
+      list->Append(*CSSStringValue::Create(
+          To<TextContentData>(content_data)->GetText()));
     } else if (content_data->IsQuote()) {
-      const QuoteType quote_type = ToQuoteContentData(content_data)->Quote();
+      const QuoteType quote_type = To<QuoteContentData>(content_data)->Quote();
       list->Append(*CSSIdentifierValue::Create(ValueForQuoteType(quote_type)));
     } else {
       NOTREACHED();

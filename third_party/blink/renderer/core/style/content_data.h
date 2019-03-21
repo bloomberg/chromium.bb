@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/style/counter_content.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -70,10 +71,6 @@ class ContentData : public GarbageCollectedFinalized<ContentData> {
   Member<ContentData> next_;
 };
 
-#define DEFINE_CONTENT_DATA_TYPE_CASTS(typeName)                 \
-  DEFINE_TYPE_CASTS(typeName##ContentData, ContentData, content, \
-                    content->Is##typeName(), content.Is##typeName())
-
 class ImageContentData final : public ContentData {
   friend class ContentData;
 
@@ -109,7 +106,12 @@ class ImageContentData final : public ContentData {
   Member<StyleImage> image_;
 };
 
-DEFINE_CONTENT_DATA_TYPE_CASTS(Image);
+template <>
+struct DowncastTraits<ImageContentData> {
+  static bool AllowFrom(const ContentData& content) {
+    return content.IsImage();
+  }
+};
 
 class TextContentData final : public ContentData {
   friend class ContentData;
@@ -136,7 +138,10 @@ class TextContentData final : public ContentData {
   String text_;
 };
 
-DEFINE_CONTENT_DATA_TYPE_CASTS(Text);
+template <>
+struct DowncastTraits<TextContentData> {
+  static bool AllowFrom(const ContentData& content) { return content.IsText(); }
+};
 
 class CounterContentData final : public ContentData {
   friend class ContentData;
@@ -171,7 +176,12 @@ class CounterContentData final : public ContentData {
   std::unique_ptr<CounterContent> counter_;
 };
 
-DEFINE_CONTENT_DATA_TYPE_CASTS(Counter);
+template <>
+struct DowncastTraits<CounterContentData> {
+  static bool AllowFrom(const ContentData& content) {
+    return content.IsCounter();
+  }
+};
 
 class QuoteContentData final : public ContentData {
   friend class ContentData;
@@ -198,7 +208,12 @@ class QuoteContentData final : public ContentData {
   QuoteType quote_;
 };
 
-DEFINE_CONTENT_DATA_TYPE_CASTS(Quote);
+template <>
+struct DowncastTraits<QuoteContentData> {
+  static bool AllowFrom(const ContentData& content) {
+    return content.IsQuote();
+  }
+};
 
 inline bool operator==(const ContentData& a, const ContentData& b) {
   const ContentData* ptr_a = &a;

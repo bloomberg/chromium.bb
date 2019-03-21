@@ -225,7 +225,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     // should be run once at layoutObject creation.
     image->SetStyleInternal(const_cast<ComputedStyle*>(&style));
     if (const StyleImage* style_image =
-            ToImageContentData(content_data)->GetImage()) {
+            To<ImageContentData>(content_data)->GetImage()) {
       image->SetImageResource(LayoutImageResourceStyleImage::Create(
           const_cast<StyleImage*>(style_image)));
       image->SetIsGeneratedContent();
@@ -2210,12 +2210,12 @@ void LayoutObject::UpdateImageObservers(const ComputedStyle* old_style,
   StyleImage* old_content_image =
       old_style && old_style->GetContentData() &&
               old_style->GetContentData()->IsImage()
-          ? ToImageContentData(old_style->GetContentData())->GetImage()
+          ? To<ImageContentData>(old_style->GetContentData())->GetImage()
           : nullptr;
   StyleImage* new_content_image =
       new_style && new_style->GetContentData() &&
               new_style->GetContentData()->IsImage()
-          ? ToImageContentData(new_style->GetContentData())->GetImage()
+          ? To<ImageContentData>(new_style->GetContentData())->GetImage()
           : nullptr;
   UpdateImage(old_content_image, new_content_image);
 
