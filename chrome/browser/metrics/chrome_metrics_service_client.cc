@@ -103,8 +103,6 @@
 #include "base/android/build_info.h"
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -356,25 +354,6 @@ void GetExecutableVersionDetails(base::string16* product_name,
 }
 #endif  // OS_WIN
 
-#if defined(OS_ANDROID)
-class AndroidIncognitoObserver : public TabModelListObserver {
- public:
-  explicit AndroidIncognitoObserver(ChromeMetricsServiceClient* parent)
-      : parent_(parent) {
-    TabModelList::AddObserver(this);
-  }
-
-  ~AndroidIncognitoObserver() override { TabModelList::RemoveObserver(this); }
-
-  void OnTabModelAdded() override { parent_->UpdateRunningServices(); }
-
-  void OnTabModelRemoved() override { parent_->UpdateRunningServices(); }
-
- private:
-  ChromeMetricsServiceClient* parent_;
-};
-#endif
-
 ChromeMetricsServiceClient::IsProcessRunningFunction g_is_process_running =
     nullptr;
 
@@ -420,10 +399,9 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
   notification_listeners_active_ = RegisterForNotifications();
-#if defined(OS_ANDROID)
-  incognito_observer_ = std::make_unique<AndroidIncognitoObserver>(this);
-  notification_listeners_active_ &= (incognito_observer_ != nullptr);
-#endif
+  incognito_observer_ = std::make_unique<IncognitoObserver>(
+      base::BindRepeating(&ChromeMetricsServiceClient::UpdateRunningServices,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
@@ -899,8 +877,6 @@ bool ChromeMetricsServiceClient::RegisterForNotifications() {
   // Observe history deletions for all profiles.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 
   bool all_profiles_succeeded = true;
   for (Profile* profile :
@@ -955,8 +931,6 @@ void ChromeMetricsServiceClient::Observe(
 
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED:
-      // May have opened an incognito window.
-      UpdateRunningServices();
       metrics_service_->OnApplicationNotIdle();
       break;
     case chrome::NOTIFICATION_BROWSER_CLOSED:
@@ -972,16 +946,14 @@ void ChromeMetricsServiceClient::Observe(
     case chrome::NOTIFICATION_PROFILE_ADDED: {
       bool success =
           RegisterForProfileEvents(content::Source<Profile>(source).ptr());
+      // On failure, set |notification_listeners_active_| to false which will
+      // disable UKM reporting via UpdateRunningServices().
       if (!success && notification_listeners_active_) {
         notification_listeners_active_ = false;
         UpdateRunningServices();
       }
       break;
     }
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      // May have closed last incognito window.
-      UpdateRunningServices();
-      break;
 
     default:
       NOTREACHED();

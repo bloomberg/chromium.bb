@@ -784,6 +784,8 @@ jumbo_split_static_library("browser") {
     "metrics/google_update_metrics_provider_win.h",
     "metrics/https_engagement_metrics_provider.cc",
     "metrics/https_engagement_metrics_provider.h",
+    "metrics/incognito_observer.cc",
+    "metrics/incognito_observer.h",
     "metrics/jumplist_metrics_win.cc",
     "metrics/jumplist_metrics_win.h",
     "metrics/live_tab_count_metrics.cc",
