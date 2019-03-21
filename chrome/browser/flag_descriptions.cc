@@ -1700,6 +1700,11 @@ const char kSendTabToSelfDescription[] =
     "Allows users to push tabs from Android devices to other synced "
     "devices, in order to easily transition those tabs to the new device ";
 
+const char kSendTabToSelfReceiveName[] = "Send tab to self receive";
+const char kSendTabToSelfReceiveDescription[] =
+    "Allows users to receive tabs that were pushed from other synced "
+    "devices, in order to easily transition those tabs to the new device ";
+
 const char kServiceWorkerImportedScriptUpdateCheckName[] =
     "Enable update check for service worker importScripts() resources";
 const char kServiceWorkerImportedScriptUpdateCheckDescription[] =

@@ -4,6 +4,8 @@
 
 static_library("send_tab_to_self") {
   sources = [
+    "features.cc",
+    "features.h",
     "send_tab_to_self_bridge.cc",
     "send_tab_to_self_bridge.h",
     "send_tab_to_self_entry.cc",

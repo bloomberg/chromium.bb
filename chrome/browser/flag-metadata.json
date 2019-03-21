@@ -1605,8 +1605,13 @@
   },
   {
     "name": "enable-send-tab-to-self",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//components/send_tab_to_self/OWNERS" ],
+    "expiry_milestone": 77
+  },
+  {
+    "name": "enable-send-tab-to-self-receive",
+    "owners": [ "//components/send_tab_to_self/OWNERS" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-sensor-content-setting",
