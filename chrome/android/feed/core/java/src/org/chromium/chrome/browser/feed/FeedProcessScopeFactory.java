@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.feed;
 import android.support.annotation.Nullable;
 
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
+import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.config.ApplicationInfo;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.network.NetworkClient;
+import com.google.android.libraries.feed.host.stream.TooltipSupportedApi;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
 import org.chromium.base.ContextUtils;
@@ -139,7 +141,8 @@ public class FeedProcessScopeFactory {
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                             new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
                                             schedulerBridge, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo)
+                                            ContextUtils.getApplicationContext(), applicationInfo,
+                                            new StubFeedTooltiSupportedApi())
                                     .setContentStorage(contentStorage)
                                     .setJournalStorage(journalStorage)
                                     .build();
@@ -180,7 +183,8 @@ public class FeedProcessScopeFactory {
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                             new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
                                             sFeedScheduler, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo)
+                                            ContextUtils.getApplicationContext(), applicationInfo,
+                                            new StubFeedTooltiSupportedApi())
                                     .build();
     }
 
@@ -258,5 +262,10 @@ public class FeedProcessScopeFactory {
             sFeedLoggingBridge.destroy();
             sFeedLoggingBridge = null;
         }
+    }
+
+    private static class StubFeedTooltiSupportedApi implements TooltipSupportedApi {
+        @Override
+        public void wouldTriggerHelpUi(String featureName, Consumer<Boolean> consumer) {}
     }
 }
