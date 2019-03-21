@@ -14,14 +14,13 @@ body {
   /* This is identical to the default background color. It's necessary to set it
      for the case when a theme with a background image is installed. */
   background-color: rgb(50, 54, 57);
-  color: rgb(189, 193, 198);
+  color: rgb(232, 234, 237);  /* --google-grey-200 */
   font-size: calc(100% - 2px);
   line-height: calc(100% + 6px);
   min-width: 240px;
 }
 
 h1 {
-  color: rgb(218, 220, 224);
   font-size: calc(100% + 8px);
   font-weight: 400;
   line-height: calc(100% + 8px);
