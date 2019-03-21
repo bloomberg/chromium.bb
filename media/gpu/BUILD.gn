@@ -136,6 +136,7 @@ component("gpu") {
       "QuartzCore.framework",
       "VideoToolbox.framework",
     ]
+    deps += [ "//components/crash/core/common:crash_key" ]
   }
 
   if (is_android) {

@@ -4,6 +4,7 @@
 
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <CoreVideo/CoreVideo.h>
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/gl.h>
@@ -20,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,6 +29,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/version.h"
+#include "components/crash/core/common/crash_key.h"
 #include "media/base/limits.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -177,6 +180,28 @@ bool CreateVideoToolboxSession(const uint8_t* sps,
       BuildImageConfig(visible_dimensions));
   if (!image_config.get())
     return false;
+
+  // TODO(crbug.com/871280): Remove this once crash is resolved.
+  static crash_reporter::CrashKeyString<64> vt_decode_pref("vt_decode_pref");
+  static crash_reporter::CrashKeyString<64> hardware_interlaced_pref(
+      "hardware_interlaced");
+
+  base::ScopedCFTypeRef<CFPropertyListRef> prop_list(CFPreferencesCopyAppValue(
+      CFSTR("VTDecodeServer"), CFSTR("com.apple.coremedia")));
+  if (prop_list.get() && CFGetTypeID(prop_list) == CFStringGetTypeID()) {
+    vt_decode_pref.Set(
+        base::SysCFStringRefToUTF8(static_cast<CFStringRef>(prop_list.get())));
+  }
+
+  base::ScopedCFTypeRef<CFPropertyListRef> interlaced_value(
+      CFPreferencesCopyValue(CFSTR("hardwareVideoDecoderInterlacedBypass"),
+                             CFSTR("com.apple.coremedia"),
+                             kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
+  if (interlaced_value.get() &&
+      CFGetTypeID(interlaced_value) == CFStringGetTypeID()) {
+    hardware_interlaced_pref.Set(base::SysCFStringRefToUTF8(
+        static_cast<CFStringRef>(interlaced_value.get())));
+  }
 
   VTDecompressionOutputCallbackRecord callback = {0};
 
