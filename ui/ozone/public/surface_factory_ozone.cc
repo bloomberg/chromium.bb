@@ -5,6 +5,7 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 #include <stdlib.h>
+#include <memory>
 
 #include "base/command_line.h"
 #include "gpu/vulkan/buildflags.h"

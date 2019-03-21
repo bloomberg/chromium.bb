@@ -5,12 +5,13 @@
 #ifndef UI_OZONE_COMMON_LINUX_GBM_DEVICE_H_
 #define UI_OZONE_COMMON_LINUX_GBM_DEVICE_H_
 
+#include <gbm.h>
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
-
-#include <gbm.h>
 
 namespace ui {
 

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <memory>
-
 #include <wayland-server.h>
 
 #include "testing/gtest/include/gtest/gtest.h"

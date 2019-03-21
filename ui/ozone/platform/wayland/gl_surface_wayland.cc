@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/wayland/gl_surface_wayland.h"
 
 #include <wayland-egl.h>
-
+#include <memory>
 #include <utility>
 
 #include "third_party/khronos/EGL/egl.h"

@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 
 #include <gbm.h>
-
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"

@@ -8,7 +8,6 @@
 #include <drm_fourcc.h>
 #include <stddef.h>
 #include <stdint.h>
-
 #include <memory>
 #include <vector>
 

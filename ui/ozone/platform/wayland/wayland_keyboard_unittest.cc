@@ -4,6 +4,7 @@
 
 #include <linux/input.h>
 #include <wayland-server.h>
+#include <memory>
 
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/timer.h"

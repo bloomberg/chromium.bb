@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_FACTORY_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 

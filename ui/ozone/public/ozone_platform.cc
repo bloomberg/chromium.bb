@@ -4,6 +4,7 @@
 
 #include "ui/ozone/public/ozone_platform.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"

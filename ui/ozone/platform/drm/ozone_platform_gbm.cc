@@ -7,7 +7,6 @@
 #include <gbm.h>
 #include <stdlib.h>
 #include <xf86drm.h>
-
 #include <memory>
 #include <utility>
 

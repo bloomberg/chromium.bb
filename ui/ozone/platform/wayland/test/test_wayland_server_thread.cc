@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <wayland-server.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"

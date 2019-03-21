@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/vulkan_implementation_gbm.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"

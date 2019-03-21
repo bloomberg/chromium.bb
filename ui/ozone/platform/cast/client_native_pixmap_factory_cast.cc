@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/cast/client_native_pixmap_factory_cast.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/client_native_pixmap.h"

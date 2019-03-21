@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"

@@ -4,9 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
-#include <memory>
-
 #include <wayland-client.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"

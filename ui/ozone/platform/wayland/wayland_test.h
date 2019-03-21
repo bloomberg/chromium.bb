@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_TEST_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_TEST_H_
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"

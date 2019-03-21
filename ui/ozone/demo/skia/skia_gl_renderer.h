@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_DEMO_SKIA_SKIA_GL_RENDERER_H_
 #define UI_OZONE_DEMO_SKIA_SKIA_GL_RENDERER_H_
 
+#include <memory>
+
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

@@ -5,6 +5,8 @@
 #include "ui/ozone/demo/vulkan_overlay_renderer.h"
 
 #include <vulkan/vulkan.h>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"

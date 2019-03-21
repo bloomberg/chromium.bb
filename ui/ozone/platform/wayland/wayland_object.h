@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_OBJECT_H_
 
 #include <wayland-client-core.h>
-
 #include <memory>
 
 struct wl_buffer;

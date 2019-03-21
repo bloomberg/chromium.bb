@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACE_FACTORY_H_
 
 #include <stdint.h>
-
 #include <map>
 #include <memory>
 #include <vector>

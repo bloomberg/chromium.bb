@@ -5,10 +5,8 @@
 #include "ui/ozone/common/linux/gbm_wrapper.h"
 
 #include <gbm.h>
-#if !defined(MINIGBM)
-#include <fcntl.h>
-#include <xf86drm.h>
-#endif
+#include <memory>
+#include <utility>
 
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -16,6 +14,11 @@
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/common/linux/gbm_device.h"
+
+#if !defined(MINIGBM)
+#include <fcntl.h>
+#include <xf86drm.h>
+#endif
 
 namespace gbm_wrapper {
 

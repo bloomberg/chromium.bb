@@ -5,8 +5,8 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 
 #include <drm_fourcc.h>
-
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 

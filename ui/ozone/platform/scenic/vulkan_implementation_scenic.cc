@@ -8,6 +8,7 @@
 #include <lib/ui/scenic/cpp/session.h>
 #include <lib/zx/channel.h>
 #include <vulkan/vulkan.h>
+#include <memory>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"

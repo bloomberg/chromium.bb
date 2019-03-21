@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/wayland/wayland_cursor.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/memory/shared_memory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/skia_util.h"

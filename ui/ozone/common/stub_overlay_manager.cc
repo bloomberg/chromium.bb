@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/common/stub_overlay_manager.h"
+
+#include <memory>
+
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {

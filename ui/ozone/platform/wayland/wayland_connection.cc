@@ -6,6 +6,7 @@
 
 #include <xdg-shell-unstable-v5-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
+#include <memory>
 
 #include <algorithm>
 #include <utility>

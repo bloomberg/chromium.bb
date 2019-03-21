@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
 
+#include <memory>
+
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_output.h"
 

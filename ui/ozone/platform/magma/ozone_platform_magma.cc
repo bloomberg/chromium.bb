@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/magma/ozone_platform_magma.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"

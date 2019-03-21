@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 
+#include <memory>
+
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {

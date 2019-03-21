@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/drm/gpu/gbm_pixmap.h"
 
 #include <gbm.h>
+#include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/gfx/gpu_fence.h"

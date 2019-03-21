@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 
+#include <memory>
+
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "ui/ozone/platform/scenic/ozone_platform_scenic.h"
