@@ -362,7 +362,8 @@ class SlaveBuilderStatus(object):
     self.builders_array = self.buildbucket_info_dict.keys()
 
     self.cidb_info_dict = self.GetAllSlaveCIDBStatusInfo(
-        self.buildstore, self.master_build_id, self.buildbucket_info_dict)
+        self.buildstore, self.master_build_identifier,
+        self.buildbucket_info_dict)
 
     self.slave_failures_dict = self._GetSlaveFailures(
         self.buildbucket_info_dict)
@@ -516,13 +517,13 @@ class SlaveBuilderStatus(object):
     return all_buildbucket_info_dict
 
   @staticmethod
-  def GetAllSlaveCIDBStatusInfo(buildstore, master_build_id,
+  def GetAllSlaveCIDBStatusInfo(buildstore, master_build_identifier,
                                 all_buildbucket_info_dict):
     """Get build status information from CIDB for all slaves.
 
     Args:
       buildstore: An instance of buildstore.BuildStore.
-      master_build_id: The build_id of the master build for slaves.
+      master_build_identifier: The BuildIdentifier of the master build.
       all_buildbucket_info_dict: A dict mapping all build config names to their
         information fetched from Buildbucket server (in the format of
         BuildbucketInfo).
@@ -543,8 +544,7 @@ class SlaveBuilderStatus(object):
         slave_statuses = buildstore.GetBuildStatuses(
             buildbucket_ids=buildbucket_ids)
       else:
-        slave_statuses = buildstore.GetSlaveStatuses(
-            master_build_id=master_build_id)
+        slave_statuses = buildstore.GetSlaveStatuses(master_build_identifier)
 
       all_cidb_status_dict = {s['build_config']: CIDBStatusInfo(
           s['id'], s['status'], s['buildbucket_id']) for s in slave_statuses}
