@@ -261,11 +261,6 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::DataTypeManager::ConfigureResult& result) override;
   void OnConfigureStart() override;
 
-  // TODO(crbug.com/884159): Remove these; they should be queried via
-  // SyncUserSettings instead.
-  bool IsPassphraseRequired() const;
-  syncer::ModelTypeSet GetEncryptedDataTypes() const;
-
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
@@ -281,13 +276,29 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasCookieJarMismatch(
       const std::vector<gaia::ListedAccount>& cookie_jar_accounts);
 
-  syncer::PassphraseRequiredReason passphrase_required_reason_for_test() const {
-    return crypto_.passphrase_required_reason();
-  }
-
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
+
+  // SyncPrefObserver implementation.
+  void OnSyncManagedPrefChange(bool is_sync_managed) override;
+  void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) override;
+  void OnSyncRequestedPrefChange(bool is_sync_requested) override;
+  void OnPreferredDataTypesPrefChange() override;
+
+  // KeyedService implementation.  This must be called exactly
+  // once (before this object is destroyed).
+  void Shutdown() override;
+
+  // This triggers a Directory::SaveChanges() call on the sync thread.
+  // It should be used to persist data to disk when the process might be
+  // killed in the near future.
+  void FlushDirectory() const;
+
+  bool IsPassphrasePrompted() const;
+  void SetPassphrasePrompted(bool prompted);
+
+  syncer::PassphraseRequiredReason GetPassphraseRequiredReasonForTest() const;
 
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
@@ -303,18 +314,8 @@ class ProfileSyncService : public syncer::SyncService,
   // Used by tests to inspect the OAuth2 access tokens used by PSS.
   std::string GetAccessTokenForTest() const;
 
-  // SyncPrefObserver implementation.
-  void OnSyncManagedPrefChange(bool is_sync_managed) override;
-  void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) override;
-  void OnSyncRequestedPrefChange(bool is_sync_requested) override;
-  void OnPreferredDataTypesPrefChange() override;
-
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
-  bool encryption_pending() const;
-
-  // KeyedService implementation.  This must be called exactly
-  // once (before this object is destroyed).
-  void Shutdown() override;
+  bool IsEncryptionPendingForTest() const;
 
   // Overrides the NetworkResources used for Sync connections.
   // TODO(treib): Inject this in the ctor instead. As it is, it's possible that
@@ -323,18 +324,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OverrideNetworkResourcesForTest(
       std::unique_ptr<syncer::NetworkResources> network_resources);
 
-  // Virtual for testing.
-  virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
-
-  // This triggers a Directory::SaveChanges() call on the sync thread.
-  // It should be used to persist data to disk when the process might be
-  // killed in the near future.
-  void FlushDirectory() const;
-
-  bool IsPassphrasePrompted() const;
-  void SetPassphrasePrompted(bool prompted);
-
-  void SyncAllowedByPlatformChanged(bool allowed);
+  bool IsDataTypeControllerRunningForTest(syncer::ModelType type) const;
 
   // Sometimes we need to wait for tasks on the sync thread in tests.
   scoped_refptr<base::SingleThreadTaskRunner> GetSyncThreadTaskRunnerForTest()
@@ -346,6 +336,8 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncClient* GetSyncClientForTest();
 
  private:
+  friend class TestProfileSyncService;
+
   // Passed as an argument to StopImpl to control whether or not the sync
   // engine should clear its data directory when it shuts down. See StopImpl
   // for more information.
@@ -354,8 +346,15 @@ class ProfileSyncService : public syncer::SyncService,
     CLEAR_DATA,
   };
 
-  // Shorthand for user_settings_.IsFirstSetupComplete().
-  bool IsFirstSetupComplete() const;
+  enum UnrecoverableErrorReason {
+    ERROR_REASON_UNSET,
+    ERROR_REASON_SYNCER,
+    ERROR_REASON_ENGINE_INIT_FAILURE,
+    ERROR_REASON_CONFIGURATION_RETRY,
+    ERROR_REASON_CONFIGURATION_FAILURE,
+    ERROR_REASON_ACTIONABLE_ERROR,
+    ERROR_REASON_LIMIT
+  };
 
   // Virtual for testing.
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
@@ -370,19 +369,10 @@ class ProfileSyncService : public syncer::SyncService,
   void AccountStateChanged();
   void CredentialsChanged();
 
+  // Callback for SyncPrefs.
+  void SyncAllowedByPlatformChanged(bool allowed);
+
   bool IsEngineAllowedToStart() const;
-
-  enum UnrecoverableErrorReason {
-    ERROR_REASON_UNSET,
-    ERROR_REASON_SYNCER,
-    ERROR_REASON_ENGINE_INIT_FAILURE,
-    ERROR_REASON_CONFIGURATION_RETRY,
-    ERROR_REASON_CONFIGURATION_FAILURE,
-    ERROR_REASON_ACTIONABLE_ERROR,
-    ERROR_REASON_LIMIT
-  };
-
-  friend class TestProfileSyncService;
 
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the engine if it is not already initialized.
@@ -395,12 +385,8 @@ class ProfileSyncService : public syncer::SyncService,
   void ConfigureDataTypeManager(syncer::ConfigureReason reason);
 
   // Shuts down the engine sync components.
-  // |reason| dictates if syncing is being disabled or not, and whether
-  // to claim ownership of sync thread from engine.
+  // |reason| dictates if syncing is being disabled or not.
   void ShutdownImpl(syncer::ShutdownReason reason);
-
-  // Helper method for managing encryption UI.
-  bool IsEncryptedDatatypeEnabled() const;
 
   // Helper for OnUnrecoverableError.
   void OnUnrecoverableErrorImpl(const base::Location& from_here,
@@ -428,8 +414,7 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearUnrecoverableError();
 
   // Kicks off asynchronous initialization of the SyncEngine.
-  // Virtual for testing.
-  virtual void StartUpSlowEngineComponents();
+  void StartUpSlowEngineComponents();
 
   // Update UMA for syncing engine.
   void UpdateEngineInitUMA(bool success) const;
@@ -454,7 +439,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool CanConfigureDataTypes(bool bypass_setup_in_progress_check) const;
 
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
-  virtual void OnSetupInProgressHandleDestroyed();
+  void OnSetupInProgressHandleDestroyed();
 
   // Called by SyncServiceCrypto when a passphrase is required or accepted.
   void ReconfigureDueToPassphrase(syncer::ConfigureReason reason);
@@ -470,6 +455,7 @@ class ProfileSyncService : public syncer::SyncService,
   // email address and sign-out upon error.
   identity::IdentityManager* const identity_manager_;
 
+  // The user-configurable knobs. Non-null between Initialize() and Shutdown().
   std::unique_ptr<syncer::SyncUserSettingsImpl> user_settings_;
 
   // Handles tracking of the authenticated account and acquiring access tokens.

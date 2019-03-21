@@ -196,7 +196,7 @@ class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    return !service()->IsDataTypeControllerRunning(syncer::PREFERENCES);
+    return !service()->IsDataTypeControllerRunningForTest(syncer::PREFERENCES);
   }
 
   std::string GetDebugMessage() const override {

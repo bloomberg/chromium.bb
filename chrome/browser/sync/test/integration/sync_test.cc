@@ -145,7 +145,7 @@ class SyncProfileDelegate : public Profile::Delegate {
 
 bool IsEncryptionComplete(const ProfileSyncService* service) {
   return service->GetUserSettings()->IsEncryptEverythingEnabled() &&
-         !service->encryption_pending();
+         !service->IsEncryptionPendingForTest();
 }
 
 // Helper class to wait for encryption to complete.

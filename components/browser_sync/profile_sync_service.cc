@@ -275,13 +275,14 @@ void ProfileSyncService::Initialize() {
   // Note: We need to record the initial state *after* calling
   // RegisterForAuthNotifications(), because before that the authenticated
   // account isn't initialized.
-  RecordSyncInitialState(GetDisableReasons(), IsFirstSetupComplete());
+  RecordSyncInitialState(GetDisableReasons(),
+                         user_settings_->IsFirstSetupComplete());
 
   // Auto-start means the first time the profile starts up, sync should start up
   // immediately.
   bool force_immediate = (start_behavior_ == AUTO_START &&
                           !HasDisableReason(DISABLE_REASON_USER_CHOICE) &&
-                          !IsFirstSetupComplete());
+                          !user_settings_->IsFirstSetupComplete());
   startup_controller_->TryStart(force_immediate);
 }
 
@@ -295,7 +296,7 @@ void ProfileSyncService::StartSyncingWithServer() {
   }
 }
 
-bool ProfileSyncService::IsDataTypeControllerRunning(
+bool ProfileSyncService::IsDataTypeControllerRunningForTest(
     syncer::ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto iter = data_type_controllers_.find(type);
@@ -377,10 +378,6 @@ bool ProfileSyncService::IsEngineAllowedToStart() const {
   return (GetDisableReasons() & kDisableReasonMask) == DISABLE_REASON_NONE;
 }
 
-bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
-  return user_settings_->IsEncryptedDatatypeEnabled();
-}
-
 void ProfileSyncService::OnProtocolEvent(const syncer::ProtocolEvent& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : protocol_event_observers_)
@@ -425,7 +422,8 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
 
   // If this is a data type change after a major version update, reset the
   // passphrase prompted state and notify observers.
-  if (IsPassphraseRequired() && passphrase_prompt_triggered_by_version_) {
+  if (user_settings_->IsPassphraseRequired() &&
+      passphrase_prompt_triggered_by_version_) {
     // The major version has changed and a local syncable change was made.
     // Reset the passphrase prompt state.
     passphrase_prompt_triggered_by_version_ = false;
@@ -450,7 +448,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_prefs_.AsWeakPtr());
 
   // Clear any old errors the first time sync starts.
-  if (!IsFirstSetupComplete()) {
+  if (!user_settings_->IsFirstSetupComplete()) {
     last_actionable_error_ = syncer::SyncProtocolError();
   }
 
@@ -490,7 +488,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       std::make_unique<syncer::SyncManagerFactory>(network_connection_tracker_);
   // The first time we start up the engine we want to ensure we have a clean
   // directory, so delete any old one that might be there.
-  params.delete_sync_data_folder = !IsFirstSetupComplete();
+  params.delete_sync_data_folder = !user_settings_->IsFirstSetupComplete();
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
   params.restored_key_for_bootstrapping =
@@ -648,10 +646,12 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
 }
 
 syncer::SyncUserSettings* ProfileSyncService::GetUserSettings() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return user_settings_.get();
 }
 
 const syncer::SyncUserSettings* ProfileSyncService::GetUserSettings() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return user_settings_.get();
 }
 
@@ -741,11 +741,6 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
   }
 
   return TransportState::ACTIVE;
-}
-
-bool ProfileSyncService::IsFirstSetupComplete() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->IsFirstSetupComplete();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
@@ -914,7 +909,8 @@ void ProfileSyncService::OnEngineInitialized(
   crypto_.SetSyncEngine(engine_.get());
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
-  if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
+  if (start_behavior_ == AUTO_START &&
+      !user_settings_->IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
     user_settings_->SetFirstSetupComplete();
   } else if (CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false)) {
@@ -1095,8 +1091,8 @@ void ProfileSyncService::OnConfigureDone(
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
-  DCHECK(!GetUserSettings()->IsPassphraseRequiredForDecryption() ||
-         IsEncryptedDatatypeEnabled());
+  DCHECK(!user_settings_->IsPassphraseRequiredForDecryption() ||
+         user_settings_->IsEncryptedDatatypeEnabled());
 
   // Notify listeners that configuration is done.
   for (auto& observer : observers_)
@@ -1194,11 +1190,6 @@ void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
 bool ProfileSyncService::IsSignedIn() const {
   // Sync is logged in if there is a non-empty account id.
   return !GetAuthenticatedAccountInfo().account_id.empty();
-}
-
-bool ProfileSyncService::IsPassphraseRequired() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->IsPassphraseRequired();
 }
 
 base::Time ProfileSyncService::GetLastSyncedTime() const {
@@ -1390,6 +1381,11 @@ syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
   return last_snapshot_;
 }
 
+syncer::PassphraseRequiredReason
+ProfileSyncService::GetPassphraseRequiredReasonForTest() const {
+  return crypto_.passphrase_required_reason();
+}
+
 void ProfileSyncService::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1487,16 +1483,9 @@ ProfileSyncService::GetTypeStatusMapForDebugging() {
   return std::move(result);
 }
 
-bool ProfileSyncService::encryption_pending() const {
+bool ProfileSyncService::IsEncryptionPendingForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // We may be called during the setup process before we're initialized (via
-  // IsEncryptedDatatypeEnabled and IsPassphraseRequiredForDecryption).
   return user_settings_->IsEncryptionPending();
-}
-
-syncer::ModelTypeSet ProfileSyncService::GetEncryptedDataTypes() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->GetEncryptedDataTypes();
 }
 
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {

@@ -21,15 +21,7 @@
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace browser_sync {
-
-// Call this to register preferences needed for ProfileSyncService creation.
-void RegisterPrefsForProfileSyncService(
-    user_prefs::PrefRegistrySyncable* registry);
 
 // Aggregate this class to get all necessary support for creating a
 // ProfileSyncService in tests. The test still needs to have its own
