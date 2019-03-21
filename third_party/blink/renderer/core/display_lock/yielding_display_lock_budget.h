@@ -40,6 +40,7 @@ class CORE_EXPORT YieldingDisplayLockBudget final : public DisplayLockBudget {
   int lifecycle_count_ = 0;
   TimeTicks deadline_;
   base::Optional<Phase> last_completed_phase_;
+  Phase next_phase_from_start_of_lifecycle_ = Phase::kFirst;
 };
 
 }  // namespace blink

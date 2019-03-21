@@ -166,8 +166,12 @@ class CORE_EXPORT DisplayLockContext final
   void WillStartLifecycleUpdate() override;
   void DidFinishLifecycleUpdate() override;
 
+  // Notify this element will be disconnected.
+  void NotifyWillDisconnect();
+
  private:
   friend class DisplayLockContextTest;
+  friend class DisplayLockBudgetTest;
   friend class DisplayLockSuspendedHandle;
   friend class DisplayLockBudget;
 

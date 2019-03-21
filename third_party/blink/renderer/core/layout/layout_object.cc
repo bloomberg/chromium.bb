@@ -954,7 +954,14 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
     object->SetNeedsCollectInlines(true);
 
   while (object) {
-    if (object->SelfNeedsLayout() || object->LayoutBlockedByDisplayLock())
+    if (object->SelfNeedsLayout())
+      return;
+
+    // Note that if the last element we processed was blocked by a display lock,
+    // then we can return and stop the dirty bit propagation. Note that it's not
+    // enough to check |object|, since the element that is actually locked needs
+    // its child bits set properly, we need to go one more iteration after that.
+    if (last->LayoutBlockedByDisplayLock())
       return;
 
     // Don't mark the outermost object of an unrooted subtree. That object will
