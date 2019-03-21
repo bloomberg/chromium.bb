@@ -24,6 +24,8 @@ class BASE_EXPORT TaskAnnotator {
     virtual void BeforeRunTask(const PendingTask* pending_task) = 0;
   };
 
+  static const PendingTask* CurrentTaskForThread();
+
   TaskAnnotator();
   ~TaskAnnotator();
 

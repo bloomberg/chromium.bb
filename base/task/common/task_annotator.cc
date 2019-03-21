@@ -30,6 +30,10 @@ ThreadLocalPointer<const PendingTask>* GetTLSForCurrentPendingTask() {
 
 }  // namespace
 
+const PendingTask* TaskAnnotator::CurrentTaskForThread() {
+  return GetTLSForCurrentPendingTask()->Get();
+}
+
 TaskAnnotator::TaskAnnotator() = default;
 
 TaskAnnotator::~TaskAnnotator() = default;
@@ -58,6 +62,9 @@ void TaskAnnotator::WillQueueTask(const char* trace_event_name,
   std::copy(parent_task->task_backtrace.begin(),
             parent_task->task_backtrace.end() - 1,
             pending_task->task_backtrace.begin() + 1);
+  pending_task->task_backtrace_overflow =
+      parent_task->task_backtrace_overflow ||
+      parent_task->task_backtrace.back() != nullptr;
 }
 
 void TaskAnnotator::RunTask(const char* trace_event_name,
@@ -82,7 +89,7 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   // variable itself will have the expected value when displayed by the
   // optimizer in an optimized build. Look at a memory dump of the stack.
   static constexpr int kStackTaskTraceSnapshotSize =
-      std::tuple_size<decltype(pending_task->task_backtrace)>::value + 3;
+      PendingTask::kTaskBacktraceLength + 3;
   std::array<const void*, kStackTaskTraceSnapshotSize> task_backtrace;
 
   // Store a marker to locate |task_backtrace| content easily on a memory

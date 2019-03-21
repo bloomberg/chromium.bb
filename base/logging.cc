@@ -92,6 +92,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/debug/alias.h"
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
+#include "base/debug/task_trace.h"
 #include "base/lazy_instance.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
@@ -585,9 +586,12 @@ LogMessage::~LogMessage() {
     !defined(OS_AIX)
   if (severity_ == LOG_FATAL && !base::debug::BeingDebugged()) {
     // Include a stack trace on a fatal, unless a debugger is attached.
-    base::debug::StackTrace trace;
+    base::debug::StackTrace stack_trace;
     stream_ << std::endl;  // Newline to separate from log message.
-    trace.OutputToStream(&stream_);
+    stack_trace.OutputToStream(&stream_);
+    base::debug::TaskTrace task_trace;
+    if (!task_trace.empty())
+      task_trace.OutputToStream(&stream_);
   }
 #endif
   stream_ << std::endl;
