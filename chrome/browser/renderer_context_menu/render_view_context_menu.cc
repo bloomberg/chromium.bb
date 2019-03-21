@@ -39,6 +39,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -177,7 +178,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
 #include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
@@ -1633,13 +1633,11 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
-#if defined(OS_CHROMEOS)
   // Disable context menu in locked fullscreen mode (the menu is not really
   // disabled as the user can still open it, but all the individual context menu
   // entries are disabled / greyed out).
-  if (GetBrowser() && ash::IsWindowTrustedPinned(GetBrowser()->window()))
+  if (GetBrowser() && platform_util::IsBrowserLockedFullscreen(GetBrowser()))
     return false;
-#endif
 
   {
     bool enabled = false;

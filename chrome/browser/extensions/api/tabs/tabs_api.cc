@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -97,7 +98,6 @@
 #include "ui/base/ui_base_types.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -746,23 +746,23 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
   }
 
 #if defined(OS_CHROMEOS)
-  const bool is_window_trusted_pinned =
-      ash::IsWindowTrustedPinned(browser->window());
+  const bool is_locked_fullscreen =
+      platform_util::IsBrowserLockedFullscreen(browser);
   // Don't allow locked fullscreen operations on a window without the proper
   // permission (also don't allow any operations on a locked window if the
   // extension doesn't have the permission).
-  if (is_window_trusted_pinned &&
+  if (is_locked_fullscreen &&
       !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(
         Error(tabs_constants::kMissingLockWindowFullscreenPrivatePermission));
   }
   // state will be WINDOW_STATE_NONE if the state parameter wasn't passed from
   // the JS side, and in that case we don't want to change the locked state.
-  if (is_window_trusted_pinned &&
+  if (is_locked_fullscreen &&
       params->update_info.state != windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
       params->update_info.state != windows::WINDOW_STATE_NONE) {
     SetLockedFullscreenState(browser, false);
-  } else if (!is_window_trusted_pinned &&
+  } else if (!is_locked_fullscreen &&
              params->update_info.state ==
                  windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
     SetLockedFullscreenState(browser, true);
@@ -873,13 +873,11 @@ ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
     return RespondNow(Error(error));
   }
 
-#if defined(OS_CHROMEOS)
-  if (ash::IsWindowTrustedPinned(browser->window()) &&
+  if (platform_util::IsBrowserLockedFullscreen(browser) &&
       !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(
         Error(tabs_constants::kMissingLockWindowFullscreenPrivatePermission));
   }
-#endif
 
   WindowController* controller = browser->extension_window_controller();
   WindowController::Reason reason;

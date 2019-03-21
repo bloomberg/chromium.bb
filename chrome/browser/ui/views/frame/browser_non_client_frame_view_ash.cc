@@ -16,7 +16,6 @@
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/touch_uma.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -25,6 +24,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
@@ -301,7 +301,7 @@ void BrowserNonClientFrameViewAsh::OnTabsMaxXChanged() {
 }
 
 bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
-  return ash::IsWindowTrustedPinned(GetFrameWindow()) ? false : true;
+  return !platform_util::IsBrowserLockedFullscreen(browser_view()->browser());
 }
 
 SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(

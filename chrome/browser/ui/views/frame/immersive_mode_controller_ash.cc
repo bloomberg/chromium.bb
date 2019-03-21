@@ -5,13 +5,12 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/shell.h"  // mash-ok
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -192,9 +191,7 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 
   // Don't use immersive mode as long as we are in the locked fullscreen mode
   // since immersive shows browser controls which allow exiting the mode.
-  aura::Window* window = widget->GetNativeWindow();
-  window = features::IsUsingWindowService() ? window->GetRootWindow() : window;
-  if (ash::IsWindowTrustedPinned(window))
+  if (platform_util::IsBrowserLockedFullscreen(browser_view_->browser()))
     return;
 
   // Enable immersive mode if the widget is activated. Do not disable immersive
