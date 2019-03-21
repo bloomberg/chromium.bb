@@ -22,7 +22,7 @@
 namespace browser_sync {
 
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+    scoped_refptr<base::SequencedTaskRunner> db_thread,
     const base::Closure& dump_stack,
     syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,

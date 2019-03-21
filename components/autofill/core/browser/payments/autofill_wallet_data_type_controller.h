@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 
@@ -34,7 +34,7 @@ class AutofillWalletDataTypeController
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillWalletDataTypeController(
       syncer::ModelType type,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+      scoped_refptr<base::SequencedTaskRunner> db_thread,
       const base::RepeatingClosure& dump_stack,
       syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
