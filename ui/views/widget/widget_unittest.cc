@@ -320,10 +320,10 @@ class WidgetOwnershipTest : public WidgetTest {
 
 // A bag of state to monitor destructions.
 struct OwnershipTestState {
-  OwnershipTestState() : widget_deleted(false), native_widget_deleted(false) {}
+  OwnershipTestState() = default;
 
-  bool widget_deleted;
-  bool native_widget_deleted;
+  bool widget_deleted = false;
+  bool native_widget_deleted = false;
 };
 
 // A Widget subclass that updates a bag of state when it is destroyed.
@@ -1376,12 +1376,7 @@ TEST_F(DesktopWidgetTest, TestViewWidthAfterMinimizingWidget) {
 // paints are expected.
 class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
  public:
-  DesktopAuraTestValidPaintWidget()
-      : received_paint_(false),
-        expect_paint_(true),
-        received_paint_while_hidden_(false) {
-    AddObserver(this);
-  }
+  DesktopAuraTestValidPaintWidget() { AddObserver(this); }
 
   ~DesktopAuraTestValidPaintWidget() override { RemoveObserver(this); }
 
@@ -1424,9 +1419,9 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
   }
 
  private:
-  bool received_paint_;
-  bool expect_paint_;
-  bool received_paint_while_hidden_;
+  bool received_paint_ = false;
+  bool expect_paint_ = true;
+  bool received_paint_while_hidden_ = false;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopAuraTestValidPaintWidget);
@@ -2204,7 +2199,7 @@ class CloseDestroysWidget : public Widget {
 // An observer that registers that an animation has ended.
 class AnimationEndObserver : public ui::ImplicitAnimationObserver {
  public:
-  AnimationEndObserver() : animation_completed_(false) {}
+  AnimationEndObserver() = default;
   ~AnimationEndObserver() override = default;
 
   bool animation_completed() const { return animation_completed_; }
@@ -2213,7 +2208,7 @@ class AnimationEndObserver : public ui::ImplicitAnimationObserver {
   void OnImplicitAnimationsCompleted() override { animation_completed_ = true; }
 
  private:
-  bool animation_completed_;
+  bool animation_completed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationEndObserver);
 };

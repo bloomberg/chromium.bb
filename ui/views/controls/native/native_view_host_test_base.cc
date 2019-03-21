@@ -24,8 +24,7 @@ class NativeViewHostTestBase::NativeViewHostTesting : public NativeViewHost {
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostTesting);
 };
 
-NativeViewHostTestBase::NativeViewHostTestBase() : host_destroyed_count_(0) {
-}
+NativeViewHostTestBase::NativeViewHostTestBase() = default;
 
 NativeViewHostTestBase::~NativeViewHostTestBase() = default;
 

@@ -45,7 +45,7 @@ namespace views {
 class TextfieldModelTest : public ViewsTestBase,
                            public TextfieldModel::Delegate {
  public:
-  TextfieldModelTest() : composition_text_confirmed_or_cleared_(false) {}
+  TextfieldModelTest() = default;
 
   // ::testing::Test:
   void TearDown() override {
@@ -65,7 +65,7 @@ class TextfieldModelTest : public ViewsTestBase,
     model->ClearEditHistory();
   }
 
-  bool composition_text_confirmed_or_cleared_;
+  bool composition_text_confirmed_or_cleared_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextfieldModelTest);

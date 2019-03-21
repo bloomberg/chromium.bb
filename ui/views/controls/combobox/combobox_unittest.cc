@@ -141,7 +141,7 @@ class VectorComboboxModel : public ui::ComboboxModel {
 
 class EvilListener : public ComboboxListener {
  public:
-  EvilListener() : deleted_(false) {}
+  EvilListener() = default;
   ~EvilListener() override = default;
 
   // ComboboxListener:
@@ -153,14 +153,14 @@ class EvilListener : public ComboboxListener {
   bool deleted() const { return deleted_; }
 
  private:
-  bool deleted_;
+  bool deleted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EvilListener);
 };
 
 class TestComboboxListener : public views::ComboboxListener {
  public:
-  TestComboboxListener() : perform_action_index_(-1), actions_performed_(0) {}
+  TestComboboxListener() = default;
   ~TestComboboxListener() override = default;
 
   void OnPerformAction(views::Combobox* combobox) override {
@@ -181,8 +181,8 @@ class TestComboboxListener : public views::ComboboxListener {
   }
 
  private:
-  int perform_action_index_;
-  int actions_performed_;
+  int perform_action_index_ = -1;
+  int actions_performed_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestComboboxListener);

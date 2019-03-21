@@ -43,15 +43,14 @@ class TestResizeAreaDelegate : public ResizeAreaDelegate {
   bool on_resize_called() { return on_resize_called_; }
 
  private:
-  int resize_amount_;
-  bool done_resizing_;
-  bool on_resize_called_;
+  int resize_amount_ = 0;
+  bool done_resizing_ = false;
+  bool on_resize_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestResizeAreaDelegate);
 };
 
-TestResizeAreaDelegate::TestResizeAreaDelegate()
-    : resize_amount_(0), done_resizing_(false), on_resize_called_(false) {}
+TestResizeAreaDelegate::TestResizeAreaDelegate() = default;
 
 TestResizeAreaDelegate::~TestResizeAreaDelegate() = default;
 

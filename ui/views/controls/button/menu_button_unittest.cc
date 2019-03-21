@@ -54,7 +54,7 @@ class TestMenuButton : public MenuButton {
 
 class MenuButtonTest : public ViewsTestBase {
  public:
-  MenuButtonTest() : widget_(nullptr), button_(nullptr), ink_drop_(nullptr) {}
+  MenuButtonTest() = default;
   ~MenuButtonTest() override = default;
 
   void TearDown() override {
@@ -116,22 +116,19 @@ class MenuButtonTest : public ViewsTestBase {
     widget_->Init(params);
   }
 
-  Widget* widget_;
-  TestMenuButton* button_;
+  Widget* widget_ = nullptr;
+  TestMenuButton* button_ = nullptr;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
   // Weak ptr, |button_| owns the instance.
-  TestInkDrop* ink_drop_;
+  TestInkDrop* ink_drop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButtonTest);
 };
 
 class TestButtonListener : public ButtonListener {
  public:
-  TestButtonListener()
-      : last_sender_(nullptr),
-        last_sender_state_(Button::STATE_NORMAL),
-        last_event_type_(ui::ET_UNKNOWN) {}
+  TestButtonListener() = default;
   ~TestButtonListener() override = default;
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
@@ -147,17 +144,16 @@ class TestButtonListener : public ButtonListener {
   ui::EventType last_event_type() { return last_event_type_; }
 
  private:
-  Button* last_sender_;
-  Button::ButtonState last_sender_state_;
-  ui::EventType last_event_type_;
+  Button* last_sender_ = nullptr;
+  Button::ButtonState last_sender_state_ = Button::STATE_NORMAL;
+  ui::EventType last_event_type_ = ui::ET_UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(TestButtonListener);
 };
 
 class TestMenuButtonListener : public MenuButtonListener {
  public:
-  TestMenuButtonListener()
-      : last_source_(nullptr), last_source_state_(Button::STATE_NORMAL) {}
+  TestMenuButtonListener() = default;
   ~TestMenuButtonListener() override = default;
 
   void OnMenuButtonClicked(MenuButton* source,
@@ -173,8 +169,8 @@ class TestMenuButtonListener : public MenuButtonListener {
   Button::ButtonState last_source_state() { return last_source_state_; }
 
  private:
-  View* last_source_;
-  Button::ButtonState last_source_state_;
+  View* last_source_ = nullptr;
+  Button::ButtonState last_source_state_ = Button::STATE_NORMAL;
 
   DISALLOW_COPY_AND_ASSIGN(TestMenuButtonListener);
 };
@@ -264,17 +260,15 @@ class TestDragDropClient : public aura::client::DragDropClient,
 
  private:
   // True while receiving ui::LocatedEvents for drag operations.
-  bool drag_in_progress_;
+  bool drag_in_progress_ = false;
 
   // Target window where drag operations are occurring.
-  aura::Window* target_;
+  aura::Window* target_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
 };
 
-TestDragDropClient::TestDragDropClient()
-    : drag_in_progress_(false), target_(nullptr) {
-}
+TestDragDropClient::TestDragDropClient() = default;
 
 TestDragDropClient::~TestDragDropClient() = default;
 

@@ -19,7 +19,7 @@ namespace views {
 
 class TestPrefixDelegate : public View, public PrefixDelegate {
  public:
-  TestPrefixDelegate() : selected_row_(0) {
+  TestPrefixDelegate() {
     rows_.push_back(ASCIIToUTF16("aardvark"));
     rows_.push_back(ASCIIToUTF16("antelope"));
     rows_.push_back(ASCIIToUTF16("badger"));
@@ -38,7 +38,7 @@ class TestPrefixDelegate : public View, public PrefixDelegate {
 
  private:
   std::vector<base::string16> rows_;
-  int selected_row_;
+  int selected_row_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestPrefixDelegate);
 };

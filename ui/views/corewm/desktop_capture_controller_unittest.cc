@@ -33,8 +33,7 @@ using DesktopCaptureControllerTest = ViewsInteractiveUITestBase;
 // received the gesture event.
 class DesktopViewInputTest : public View {
  public:
-  DesktopViewInputTest()
-      : received_gesture_event_(false) {}
+  DesktopViewInputTest() = default;
 
   void OnGestureEvent(ui::GestureEvent* event) override {
     received_gesture_event_ = true;
@@ -49,7 +48,7 @@ class DesktopViewInputTest : public View {
   bool received_gesture_event() const { return received_gesture_event_; }
 
  private:
-  bool received_gesture_event_;
+  bool received_gesture_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopViewInputTest);
 };

@@ -205,12 +205,7 @@ using ViewTest = ViewsTestBase;
 // A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView()
-      : did_layout_(false),
-        delete_on_pressed_(false),
-        did_paint_(false),
-        native_theme_(nullptr),
-        can_process_events_within_subtree_(true) {}
+  TestView() = default;
   ~TestView() override = default;
 
   // Reset all test state
@@ -270,27 +265,27 @@ class TestView : public View {
   gfx::Rect new_bounds_;
 
   // Layout.
-  bool did_layout_;
+  bool did_layout_ = false;
 
   // MouseEvent.
   int last_mouse_event_type_;
   gfx::Point location_;
   bool received_mouse_enter_;
   bool received_mouse_exit_;
-  bool delete_on_pressed_;
+  bool delete_on_pressed_ = false;
 
   // Painting.
   std::vector<gfx::Rect> scheduled_paint_rects_;
-  bool did_paint_;
+  bool did_paint_ = false;
 
   // Accelerators.
   std::map<ui::Accelerator, int> accelerator_count_map_;
 
   // Native theme.
-  const ui::NativeTheme* native_theme_;
+  const ui::NativeTheme* native_theme_ = nullptr;
 
   // Value to return from CanProcessEventsWithinSubtree().
-  bool can_process_events_within_subtree_;
+  bool can_process_events_within_subtree_ = true;
 
   // Accessibility events
   ax::mojom::Event last_a11y_event_;
@@ -2411,7 +2406,7 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 ////////////////////////////////////////////////////////////////////////////////
 class ToplevelWidgetObserverView : public View {
  public:
-  ToplevelWidgetObserverView() : toplevel_(nullptr) {}
+  ToplevelWidgetObserverView() = default;
   ~ToplevelWidgetObserverView() override = default;
 
   // View overrides:
@@ -2430,7 +2425,7 @@ class ToplevelWidgetObserverView : public View {
   Widget* toplevel() { return toplevel_; }
 
  private:
-  Widget* toplevel_;
+  Widget* toplevel_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelWidgetObserverView);
 };
@@ -2719,7 +2714,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
 
 class VisibleBoundsView : public View {
  public:
-  VisibleBoundsView() : received_notification_(false) {}
+  VisibleBoundsView() = default;
   ~VisibleBoundsView() override = default;
 
   bool received_notification() const { return received_notification_; }
@@ -2734,7 +2729,7 @@ class VisibleBoundsView : public View {
   }
   void OnVisibleBoundsChanged() override { received_notification_ = true; }
 
-  bool received_notification_;
+  bool received_notification_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VisibleBoundsView);
 };
@@ -3160,18 +3155,15 @@ class ObserverView : public View {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  bool has_add_details_;
-  bool has_remove_details_;
+  bool has_add_details_ = false;
+  bool has_remove_details_ = false;
   ViewHierarchyChangedDetails add_details_;
   ViewHierarchyChangedDetails remove_details_;
 
   DISALLOW_COPY_AND_ASSIGN(ObserverView);
 };
 
-ObserverView::ObserverView()
-    : has_add_details_(false),
-      has_remove_details_(false) {
-}
+ObserverView::ObserverView() = default;
 
 ObserverView::~ObserverView() = default;
 
@@ -3796,7 +3788,7 @@ void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
 
 class ViewLayerTest : public ViewsTestBase {
  public:
-  ViewLayerTest() : widget_(nullptr) {}
+  ViewLayerTest() = default;
 
   ~ViewLayerTest() override = default;
 
@@ -3833,7 +3825,7 @@ class ViewLayerTest : public ViewsTestBase {
   void SchedulePaintOnParent(View* view) { view->SchedulePaintOnParent(); }
 
  private:
-  Widget* widget_;
+  Widget* widget_ = nullptr;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -4237,8 +4229,7 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
 
 class PaintTrackingView : public View {
  public:
-  PaintTrackingView() : painted_(false) {
-  }
+  PaintTrackingView() = default;
 
   bool painted() const { return painted_; }
   void set_painted(bool value) { painted_ = value; }
@@ -4246,7 +4237,7 @@ class PaintTrackingView : public View {
   void OnPaint(gfx::Canvas* canvas) override { painted_ = true; }
 
  private:
-  bool painted_;
+  bool painted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PaintTrackingView);
 };
@@ -5002,17 +4993,7 @@ TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
 
 class ViewObserverTest : public ViewTest, public ViewObserver {
  public:
-  ViewObserverTest()
-      : child_view_added_times_(0),
-        child_view_removed_times_(0),
-        child_view_added_parent_(nullptr),
-        child_view_added_(nullptr),
-        child_view_removed_(nullptr),
-        child_view_removed_parent_(nullptr),
-        view_visibility_changed_(nullptr),
-        view_enabled_changed_(nullptr),
-        view_bounds_changed_(nullptr),
-        view_reordered_(nullptr) {}
+  ViewObserverTest() = default;
 
   ~ViewObserverTest() override = default;
 
@@ -5079,17 +5060,17 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   const View* view_reordered() const { return view_reordered_; }
 
  private:
-  int child_view_added_times_;
-  int child_view_removed_times_;
+  int child_view_added_times_ = 0;
+  int child_view_removed_times_ = 0;
 
-  View* child_view_added_parent_;
-  View* child_view_added_;
-  View* child_view_removed_;
-  View* child_view_removed_parent_;
-  View* view_visibility_changed_;
-  View* view_enabled_changed_;
-  View* view_bounds_changed_;
-  View* view_reordered_;
+  View* child_view_added_parent_ = nullptr;
+  View* child_view_added_ = nullptr;
+  View* child_view_removed_ = nullptr;
+  View* child_view_removed_parent_ = nullptr;
+  View* view_visibility_changed_ = nullptr;
+  View* view_enabled_changed_ = nullptr;
+  View* view_bounds_changed_ = nullptr;
+  View* view_reordered_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ViewObserverTest);
 };
@@ -5166,8 +5147,7 @@ TEST_F(ViewObserverTest, ChildViewReordered) {
 // notifications from child views.
 class TestParentView : public View {
  public:
-  TestParentView()
-      : received_layer_change_notification_(false), layer_change_count_(0) {}
+  TestParentView() = default;
 
   void Reset() {
     received_layer_change_notification_ = false;
@@ -5189,10 +5169,10 @@ class TestParentView : public View {
  private:
   // Set to true if we receive the OnChildLayerChanged() notification for a
   // child.
-  bool received_layer_change_notification_;
+  bool received_layer_change_notification_ = false;
 
   // Contains the number of OnChildLayerChanged() notifications for a child.
-  int layer_change_count_;
+  int layer_change_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestParentView);
 };

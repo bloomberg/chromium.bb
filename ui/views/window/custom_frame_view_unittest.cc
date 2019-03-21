@@ -23,9 +23,7 @@ namespace {
 // forms of delegates. By default this can minimize and maximize.
 class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
  public:
-  MinimizeAndMaximizeStateControlDelegate()
-        : can_maximize_(true),
-          can_minimize_(true) {}
+  MinimizeAndMaximizeStateControlDelegate() = default;
   ~MinimizeAndMaximizeStateControlDelegate() override = default;
 
   void set_can_maximize(bool can_maximize) {
@@ -41,8 +39,8 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
   bool CanMinimize() const override { return can_minimize_; }
 
  private:
-  bool can_maximize_;
-  bool can_minimize_;
+  bool can_maximize_ = true;
+  bool can_minimize_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(MinimizeAndMaximizeStateControlDelegate);
 };

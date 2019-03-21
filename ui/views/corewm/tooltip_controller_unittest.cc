@@ -564,7 +564,7 @@ namespace {
 
 class TestTooltip : public Tooltip {
  public:
-  TestTooltip() : is_visible_(false) {}
+  TestTooltip() = default;
   ~TestTooltip() override = default;
 
   const base::string16& tooltip_text() const { return tooltip_text_; }
@@ -585,7 +585,7 @@ class TestTooltip : public Tooltip {
   const gfx::Point& location() { return location_; }
 
  private:
-  bool is_visible_;
+  bool is_visible_ = false;
   base::string16 tooltip_text_;
   gfx::Point location_;
 

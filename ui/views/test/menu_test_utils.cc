@@ -17,11 +17,7 @@ namespace test {
 
 // TestMenuDelegate -----------------------------------------------------------
 
-TestMenuDelegate::TestMenuDelegate()
-    : execute_command_id_(0),
-      on_menu_closed_called_count_(0),
-      on_menu_closed_menu_(nullptr),
-      on_perform_drop_called_(false) {}
+TestMenuDelegate::TestMenuDelegate() = default;
 
 TestMenuDelegate::~TestMenuDelegate() = default;
 

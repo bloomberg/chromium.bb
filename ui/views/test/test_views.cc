@@ -69,8 +69,7 @@ void CloseWidgetView::OnEvent(ui::Event* event) {
   }
 }
 
-EventCountView::EventCountView()
-    : last_flags_(0), handle_mode_(PROPAGATE_EVENTS) {}
+EventCountView::EventCountView() = default;
 
 EventCountView::~EventCountView() = default;
 

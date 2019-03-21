@@ -64,10 +64,7 @@ namespace views {
 class TouchSelectionControllerImplTest : public ViewsTestBase {
  public:
   TouchSelectionControllerImplTest()
-      : textfield_widget_(nullptr),
-        widget_(nullptr),
-        textfield_(nullptr),
-        views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
+      : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
     ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
   }
 
@@ -306,10 +303,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
               textfield_->GetSelectedRange());
   }
 
-  Widget* textfield_widget_;
-  Widget* widget_;
+  Widget* textfield_widget_ = nullptr;
+  Widget* widget_ = nullptr;
 
-  Textfield* textfield_;
+  Textfield* textfield_ = nullptr;
   std::unique_ptr<TextfieldTestApi> textfield_test_api_;
   std::unique_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
   std::unique_ptr<aura::test::TestCursorClient> test_cursor_client_;

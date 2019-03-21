@@ -93,12 +93,12 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
 
  private:
   // Number of times OnMenuClosed has been called.
-  int on_menu_closed_called_;
+  int on_menu_closed_called_ = 0;
 
   // The values passed on the last call of OnMenuClosed.
-  NotifyType on_menu_closed_notify_type_;
-  MenuItemView* on_menu_closed_menu_;
-  int on_menu_closed_mouse_event_flags_;
+  NotifyType on_menu_closed_notify_type_ = NOTIFY_DELEGATE;
+  MenuItemView* on_menu_closed_menu_ = nullptr;
+  int on_menu_closed_mouse_event_flags_ = 0;
 
   // Optional callback triggered during OnMenuClosed
   base::RepeatingClosure on_menu_closed_callback_;
@@ -106,11 +106,7 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestMenuControllerDelegate);
 };
 
-TestMenuControllerDelegate::TestMenuControllerDelegate()
-    : on_menu_closed_called_(0),
-      on_menu_closed_notify_type_(NOTIFY_DELEGATE),
-      on_menu_closed_menu_(nullptr),
-      on_menu_closed_mouse_event_flags_(0) {}
+TestMenuControllerDelegate::TestMenuControllerDelegate() = default;
 
 void TestMenuControllerDelegate::OnMenuClosed(NotifyType type,
                                               MenuItemView* menu,
@@ -137,7 +133,7 @@ class SubmenuViewShown : public SubmenuView {
 
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler() : outstanding_touches_(0) {}
+  TestEventHandler() = default;
 
   void OnTouchEvent(ui::TouchEvent* event) override {
     switch (event->type()) {
@@ -156,7 +152,7 @@ class TestEventHandler : public ui::EventHandler {
   int outstanding_touches() const { return outstanding_touches_; }
 
  private:
-  int outstanding_touches_;
+  int outstanding_touches_ = 0;
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
@@ -322,7 +318,7 @@ struct MenuBoundsOptions {
 
 class MenuControllerTest : public ViewsTestBase {
  public:
-  MenuControllerTest() : menu_controller_(nullptr) {}
+  MenuControllerTest() = default;
 
   ~MenuControllerTest() override = default;
 
@@ -763,7 +759,7 @@ class MenuControllerTest : public ViewsTestBase {
   std::unique_ptr<TestMenuItemViewShown> menu_item_;
   std::unique_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
   std::unique_ptr<TestMenuDelegate> menu_delegate_;
-  MenuController* menu_controller_;
+  MenuController* menu_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };

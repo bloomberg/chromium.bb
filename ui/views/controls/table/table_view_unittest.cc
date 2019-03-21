@@ -118,7 +118,7 @@ class TestTableModel2 : public ui::TableModel {
   int CompareValues(int row1, int row2, int column_id) override;
 
  private:
-  ui::TableModelObserver* observer_;
+  ui::TableModelObserver* observer_ = nullptr;
 
   // The data.
   std::vector<std::vector<int> > rows_;
@@ -126,7 +126,7 @@ class TestTableModel2 : public ui::TableModel {
   DISALLOW_COPY_AND_ASSIGN(TestTableModel2);
 };
 
-TestTableModel2::TestTableModel2() : observer_(nullptr) {
+TestTableModel2::TestTableModel2() {
   AddRow(0, 0, 1);
   AddRow(1, 1, 1);
   AddRow(2, 2, 2);
@@ -258,7 +258,7 @@ bool DragLeftMouseTo(views::View* target, const gfx::Point& point) {
 
 class TableViewTest : public ViewsTestBase {
  public:
-  TableViewTest() : table_(nullptr) {}
+  TableViewTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -336,7 +336,7 @@ class TableViewTest : public ViewsTestBase {
   std::unique_ptr<TestTableModel2> model_;
 
   // Owned by |parent_|.
-  TableView* table_;
+  TableView* table_ = nullptr;
 
   std::unique_ptr<TableViewTestHelper> helper_;
 
@@ -856,7 +856,7 @@ namespace {
 
 class TableViewObserverImpl : public TableViewObserver {
  public:
-  TableViewObserverImpl() : selection_changed_count_(0) {}
+  TableViewObserverImpl() = default;
 
   int GetChangedCountAndClear() {
     const int count = selection_changed_count_;
@@ -868,7 +868,7 @@ class TableViewObserverImpl : public TableViewObserver {
   void OnSelectionChanged() override { selection_changed_count_++; }
 
  private:
-  int selection_changed_count_;
+  int selection_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TableViewObserverImpl);
 };

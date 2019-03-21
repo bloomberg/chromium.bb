@@ -60,7 +60,7 @@ class NativeViewHostTestBase : public ViewsTestBase {
 
   std::unique_ptr<Widget> toplevel_;
   std::unique_ptr<NativeViewHost> host_;
-  int host_destroyed_count_;
+  int host_destroyed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostTestBase);
 };

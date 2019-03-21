@@ -49,7 +49,7 @@ namespace views {
 
 class ScrollBarViewsTest : public ViewsTestBase {
  public:
-  ScrollBarViewsTest() : widget_(nullptr), scrollbar_(nullptr) {}
+  ScrollBarViewsTest() = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
@@ -77,10 +77,10 @@ class ScrollBarViewsTest : public ViewsTestBase {
   }
 
  protected:
-  Widget* widget_;
+  Widget* widget_ = nullptr;
 
   // This is the Views scrollbar.
-  BaseScrollBar* scrollbar_;
+  BaseScrollBar* scrollbar_ = nullptr;
 
   // Keep track of the size of the track. This is how we can tell when we
   // scroll to the middle.

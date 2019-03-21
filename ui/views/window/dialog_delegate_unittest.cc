@@ -115,7 +115,7 @@ class TestDialog : public DialogDelegateView {
 
 class DialogTest : public ViewsTestBase {
  public:
-  DialogTest() : dialog_(nullptr) {}
+  DialogTest() = default;
   ~DialogTest() override = default;
 
   void SetUp() override {
@@ -150,7 +150,7 @@ class DialogTest : public ViewsTestBase {
   TestDialog* dialog() const { return dialog_; }
 
  private:
-  TestDialog* dialog_;
+  TestDialog* dialog_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DialogTest);
 };
