@@ -91,16 +91,14 @@ bool TimePointInRange(const base::Time& time_point,
 
 // Do not attempt to upload when there is no active connection.
 // Do not attempt to upload if the connection is known to be a mobile one.
-// Err on the side of caution with unknown connection types (by not uploading).
 // Note #1: A device may have multiple connections, so this is not bullet-proof.
 // Note #2: Does not attempt to recognize mobile hotspots.
 bool UploadSupportedUsingConnectionType(
     network::mojom::ConnectionType connection) {
-  if (connection == network::mojom::ConnectionType::CONNECTION_ETHERNET ||
-      connection == network::mojom::ConnectionType::CONNECTION_WIFI) {
-    return true;
-  }
-  return false;
+  return connection != network::mojom::ConnectionType::CONNECTION_NONE &&
+         connection != network::mojom::ConnectionType::CONNECTION_2G &&
+         connection != network::mojom::ConnectionType::CONNECTION_3G &&
+         connection != network::mojom::ConnectionType::CONNECTION_4G;
 }
 
 // Produce a history file for a given file.
