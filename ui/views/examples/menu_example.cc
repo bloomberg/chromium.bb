@@ -52,7 +52,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
 
   std::unique_ptr<ui::SimpleMenuModel> submenu_;
   std::set<int> checked_fruits_;
-  int current_encoding_command_id_;
+  int current_encoding_command_id_ = COMMAND_SELECT_ASCII;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuModel);
 };
@@ -78,9 +78,7 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
 
 // ExampleMenuModel ---------------------------------------------------------
 
-ExampleMenuModel::ExampleMenuModel()
-    : ui::SimpleMenuModel(this),
-      current_encoding_command_id_(COMMAND_SELECT_ASCII) {
+ExampleMenuModel::ExampleMenuModel() : ui::SimpleMenuModel(this) {
   AddItem(COMMAND_DO_SOMETHING, ASCIIToUTF16("Do Something"));
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddRadioItem(COMMAND_SELECT_ASCII, ASCIIToUTF16("ASCII"),

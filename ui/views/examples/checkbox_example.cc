@@ -13,8 +13,7 @@
 namespace views {
 namespace examples {
 
-CheckboxExample::CheckboxExample() : ExampleBase("Checkbox"), count_(0) {
-}
+CheckboxExample::CheckboxExample() : ExampleBase("Checkbox") {}
 
 CheckboxExample::~CheckboxExample() = default;
 

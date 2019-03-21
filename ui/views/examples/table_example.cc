@@ -32,7 +32,7 @@ ui::TableColumn TestTableColumn(int id, const std::string& title) {
 
 }  // namespace
 
-TableExample::TableExample() : ExampleBase("Table"), table_(nullptr) {}
+TableExample::TableExample() : ExampleBase("Table") {}
 
 TableExample::~TableExample() {
   // Delete the view before the model.

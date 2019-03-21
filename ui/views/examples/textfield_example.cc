@@ -23,19 +23,7 @@ using base::UTF16ToUTF8;
 namespace views {
 namespace examples {
 
-TextfieldExample::TextfieldExample()
-    : ExampleBase("Textfield"),
-      name_(nullptr),
-      password_(nullptr),
-      disabled_(nullptr),
-      read_only_(nullptr),
-      invalid_(nullptr),
-      rtl_(nullptr),
-      show_password_(nullptr),
-      clear_all_(nullptr),
-      append_(nullptr),
-      set_(nullptr),
-      set_style_(nullptr) {}
+TextfieldExample::TextfieldExample() : ExampleBase("Textfield") {}
 
 TextfieldExample::~TextfieldExample() = default;
 
