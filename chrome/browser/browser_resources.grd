@@ -487,6 +487,7 @@
       <include name="IDR_USB_DEVICE_MANAGER_TEST_MOJOM_LITE_JS" file="${root_gen_dir}\device\usb\public\mojom\device_manager_test.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_DEVICE_MOJOM_LITE_JS" file="${root_gen_dir}\device\usb\public\mojom\device.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_INTERNALS_CSS" file="resources\usb_internals\usb_internals.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_USB_INTERNALS_DESCRIPTOR_PANEL_JS" file="resources\usb_internals\descriptor_panel.js" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_INTERNALS_DEVICES_PAGE_JS" file="resources\usb_internals\devices_page.js" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_INTERNALS_HTML" file="resources\usb_internals\usb_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_INTERNALS_JS" file="resources\usb_internals\usb_internals.js" type="BINDATA" compress="gzip" />
