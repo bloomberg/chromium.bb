@@ -114,6 +114,8 @@ void EulaScreenHandler::DeclareJSCallbacks() {
   AddCallback("eulaOnLearnMore", &EulaScreenHandler::HandleOnLearnMore);
   AddCallback("eulaOnInstallationSettingsPopupOpened",
               &EulaScreenHandler::HandleOnInstallationSettingsPopupOpened);
+  AddCallback("EulaScreen.usageStatsEnabled",
+              &EulaScreenHandler::HandleUsageStatsEnabled);
 }
 
 void EulaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -150,6 +152,11 @@ void EulaScreenHandler::HandleOnLearnMore() {
 void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened() {
   if (screen_)
     screen_->InitiatePasswordFetch();
+}
+
+void EulaScreenHandler::HandleUsageStatsEnabled(bool enabled) {
+  if (screen_)
+    screen_->SetUsageStatsEnabled(enabled);
 }
 
 void EulaScreenHandler::UpdateLocalizedValues(

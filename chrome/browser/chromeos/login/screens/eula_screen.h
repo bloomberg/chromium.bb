@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chromeos/tpm/tpm_password_fetcher.h"
-#include "components/login/screens/screen_context.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -44,6 +43,8 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // done.
   void InitiatePasswordFetch();
 
+  void SetUsageStatsEnabled(bool enabled);
+
   // Returns true if usage statistics reporting is enabled.
   bool IsUsageStatsEnabled() const;
 
@@ -59,7 +60,6 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   void Show() override;
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
-  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
 
   // TpmPasswordFetcherDelegate implementation:
   void OnPasswordFetched(const std::string& tpm_password) override;
