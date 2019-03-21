@@ -10,9 +10,9 @@ namespace autofill {
 
 AddressEmailFormLabelFormatter::AddressEmailFormLabelFormatter(
     const std::string& app_locale,
-    FieldTypeGroup focused_group,
+    ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_group, field_types),
+    : LabelFormatter(app_locale, focused_field_type, field_types),
       form_has_street_address_(HasStreetAddress(field_types_for_labels())) {}
 
 AddressEmailFormLabelFormatter::~AddressEmailFormLabelFormatter() {}
@@ -22,7 +22,7 @@ std::vector<base::string16> AddressEmailFormLabelFormatter::GetLabels(
   std::vector<base::string16> labels;
 
   for (const AutofillProfile* profile : profiles) {
-    switch (focused_group()) {
+    switch (GetFocusedGroup()) {
       case ADDRESS_HOME:
         labels.push_back(GetLabelForFocusedAddress(*profile));
         break;

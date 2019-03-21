@@ -20,7 +20,7 @@ namespace autofill {
 class ContactFormLabelFormatter : public LabelFormatter {
  public:
   ContactFormLabelFormatter(const std::string& app_locale,
-                            FieldTypeGroup focused_group,
+                            ServerFieldType focused_field_type,
                             uint32_t groups,
                             const std::vector<ServerFieldType>& field_types);
 
