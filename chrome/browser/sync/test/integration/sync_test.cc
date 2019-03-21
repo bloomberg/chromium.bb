@@ -67,7 +67,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "jingle/glue/network_service_config_test_util.h"
 #include "net/base/port_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
