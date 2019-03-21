@@ -128,7 +128,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # Wait for slaves if we're a master, in production or mock-production.
     # Otherwise just look at our own status.
     build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
     builders_array = None
     if not self._run.config.master:
       # The slave build returns its own status.
@@ -885,7 +884,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
         raise ValueError('This build must be a master chrome PFQ build '
                          'when stage_push is True.')
       build_identifier, _ = self._run.GetCIDBHandle()
-      build_id = build_identifier.cidb_id
       buildbucket_id = build_identifier.buildbucket_id
 
       # If the master passed BinHostTest and all the important slaves passed
@@ -893,7 +891,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       if (self.CheckMasterBinhostTest(buildbucket_id) and
           self.CheckSlaveUploadPrebuiltsTest()):
         staging_branch = ('refs/' + constants.PFQ_REF + '/' +
-                          constants.STAGING_PFQ_BRANCH_PREFIX + str(build_id))
+                          constants.STAGING_PFQ_BRANCH_PREFIX +
+                          str(buildbucket_id))
 
     # If we're a commit queue, we should clean out our local changes, resync,
     # and reapply our uprevs. This is necessary so that 1) we are sure to point
