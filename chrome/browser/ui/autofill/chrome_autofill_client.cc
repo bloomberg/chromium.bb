@@ -592,8 +592,12 @@ base::string16 ChromeAutofillClient::GetAccountHolderName() {
       IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager)
     return base::string16();
-  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
-  return base::UTF8ToUTF16(account_info.full_name);
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccount(
+          identity_manager->GetPrimaryAccountInfo());
+  return primary_account_info
+             ? base::UTF8ToUTF16(primary_account_info->full_name)
+             : base::string16();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeAutofillClient)

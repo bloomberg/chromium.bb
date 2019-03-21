@@ -526,7 +526,10 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager)
     return;
-  account_info_ = identity_manager->GetPrimaryAccountInfo();
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccount(
+          identity_manager->GetPrimaryAccountInfo());
+  account_info_ = primary_account_info.value_or(AccountInfo{});
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {
