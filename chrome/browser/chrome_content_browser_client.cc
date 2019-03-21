@@ -2281,11 +2281,12 @@ const gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
 
 bool ChromeContentBrowserClient::IsDataSaverEnabled(
     content::BrowserContext* browser_context) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile)
-    return false;
-  PrefService* prefs = profile->GetPrefs();
-  return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
+  data_reduction_proxy::DataReductionProxySettings*
+      data_reduction_proxy_settings =
+          DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+              browser_context);
+  return data_reduction_proxy_settings &&
+         data_reduction_proxy_settings->IsDataSaverEnabledByUser();
 }
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
