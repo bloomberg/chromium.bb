@@ -16,14 +16,11 @@ namespace ash {
 
 class WallpaperView : public views::View, public views::ContextMenuController {
  public:
-  WallpaperView(int blur, float opacity);
+  WallpaperView();
   ~WallpaperView() override;
 
   // Schedules a repaint of the wallpaper with blur and opacity changes.
   void RepaintBlurAndOpacity(int repaint_blur, float repaint_opacity);
-
-  int repaint_blur() const { return repaint_blur_; }
-  float repaint_opacity() const { return repaint_opacity_; }
 
  private:
   friend class WallpaperControllerTest;
@@ -48,16 +45,14 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   // wallpaper. If |repaint_blur_| is not 0 and |repaint_opacity_| is not 1, the
   // wallpaper will be downsampled and a blur and brightness filter will be
   // applied. It is downsampled to increase performance.
-  int repaint_blur_;
-  float repaint_opacity_;
+  int repaint_blur_ = 0;
+  float repaint_opacity_ = 1.f;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int container_id,
-                                     int blur,
-                                     float opacity,
                                      WallpaperView** out_wallpaper_view);
 
 }  // namespace ash
