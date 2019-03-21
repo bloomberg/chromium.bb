@@ -21,6 +21,15 @@ bool MockDecrypter::SetKey(QuicStringPiece key) {
   return key.empty();
 }
 
+bool MockDecrypter::SetHeaderProtectionKey(QuicStringPiece key) {
+  return key.empty();
+}
+
+std::string MockDecrypter::GenerateHeaderProtectionMask(
+    quic::QuicDataReader* sample_reader) {
+  return std::string(5, 0);
+}
+
 bool MockDecrypter::SetNoncePrefix(QuicStringPiece nonce_prefix) {
   return nonce_prefix.empty();
 }

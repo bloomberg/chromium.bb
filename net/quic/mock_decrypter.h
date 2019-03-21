@@ -29,6 +29,7 @@ class MockDecrypter : public quic::QuicDecrypter {
   // QuicDecrypter implementation
   bool SetKey(quic::QuicStringPiece key) override;
   bool SetNoncePrefix(quic::QuicStringPiece nonce_prefix) override;
+  bool SetHeaderProtectionKey(quic::QuicStringPiece key) override;
   bool SetIV(quic::QuicStringPiece iv) override;
   bool SetPreliminaryKey(quic::QuicStringPiece key) override;
   bool SetDiversificationNonce(
@@ -43,6 +44,8 @@ class MockDecrypter : public quic::QuicDecrypter {
   size_t GetIVSize() const override;
   quic::QuicStringPiece GetKey() const override;
   quic::QuicStringPiece GetNoncePrefix() const override;
+  std::string GenerateHeaderProtectionMask(
+      quic::QuicDataReader* sample_reader) override;
 
   uint32_t cipher_id() const override;
 

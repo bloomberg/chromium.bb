@@ -43,6 +43,15 @@ bool MockEncrypter::EncryptPacket(uint64_t /*packet_number*/,
   return true;
 }
 
+bool MockEncrypter::SetHeaderProtectionKey(QuicStringPiece key) {
+  return key.empty();
+}
+
+std::string MockEncrypter::GenerateHeaderProtectionMask(
+    QuicStringPiece sample) {
+  return std::string(5, 0);
+}
+
 size_t MockEncrypter::GetKeySize() const {
   return 0;
 }
