@@ -136,8 +136,15 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(producer_client),
                                 mojo::MakeRequest(&producer_host_)));
 
-  for (auto* data_source : data_sources_) {
-    RegisterDataSourceWithHost(data_source);
+  // TODO(oysteine) We register the data sources in reverse as a temporary
+  // workaround to make sure that the TraceEventDataSource is registered
+  // *after* the MetadataSource, as the logic which waits for trace clients
+  // to be "ready" (in the tracing coordinator) waits for the TraceLog to
+  // be enabled, which is done by the TraceEventDataSource. We need to register
+  // the MetadataSource first to ensure that it's also ready. Once the
+  // Perfetto Observer interface is ready, we can remove this.
+  for (auto it = data_sources_.rbegin(); it != data_sources_.rend(); ++it) {
+    RegisterDataSourceWithHost(*it);
   }
 }
 
