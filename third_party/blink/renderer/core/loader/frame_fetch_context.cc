@@ -504,11 +504,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
       *GetFrame(), &frame_or_imported_document_->GetDocument(),
       resource_loading_policy, PreloadHelper::kLoadAll, nullptr);
 
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
-  if (response.HasMajorCertificateErrors() &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kTopLevel) {
+  if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(GetFrame(), response,
                                                 request.GetRequestContext());
   }
@@ -679,8 +675,6 @@ bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
 }
 
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            resource_request.GetFrameType());
   if (GetResourceFetcherProperties().IsDetached())
     return;
 
@@ -883,16 +877,8 @@ void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
-  if (request.SiteForCookies().IsNull()) {
-    DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-              request.GetFrameType());
-    if (request.GetFrameType() ==
-        network::mojom::RequestContextFrameType::kTopLevel) {
-      request.SetSiteForCookies(request.Url());
-    } else {
-      request.SetSiteForCookies(GetSiteForCookies());
-    }
-  }
+  if (request.SiteForCookies().IsNull())
+    request.SetSiteForCookies(GetSiteForCookies());
 }
 
 bool FrameFetchContext::AllowScriptFromSource(const KURL& url) const {
@@ -999,7 +985,6 @@ FrameFetchContext::CreateWebSocketHandshakeThrottle() {
 
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
-    network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
@@ -1007,17 +992,13 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     // TODO(yhirano): Implement the detached case.
     return false;
   }
-  return MixedContentChecker::ShouldBlockFetch(GetFrame(), request_context,
-                                               frame_type, redirect_status, url,
-                                               reporting_policy);
+  return MixedContentChecker::ShouldBlockFetch(
+      GetFrame(), request_context, redirect_status, url, reporting_policy);
 }
 
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     const ResourceRequest& resource_request,
     const KURL& url) const {
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            resource_request.GetFrameType());
-
   // URLs with no embedded credentials should load correctly.
   if (url.User().IsEmpty() && url.Pass().IsEmpty())
     return false;

@@ -69,7 +69,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       app_cache_host_id_(0),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
-      frame_type_(network::mojom::RequestContextFrameType::kNone),
       fetch_request_mode_(network::mojom::FetchRequestMode::kNoCors),
       fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),

@@ -106,8 +106,6 @@ void ServiceWorkerNetworkProviderForFrame::WillSendRequest(
   // a service worker that is in the process of becoming the controller (i.e.,
   // via claim()) on the browser-side could handle the request and break the
   // assumptions of the renderer.
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
   if (IsControlledByServiceWorker() ==
       blink::mojom::ControllerServiceWorkerMode::kNoController) {
     request.SetSkipServiceWorker(true);

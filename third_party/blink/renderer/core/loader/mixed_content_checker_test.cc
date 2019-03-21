@@ -194,14 +194,12 @@ TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   // Test that a mixed content favicon is correctly blocked.
   EXPECT_TRUE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
-      network::mojom::RequestContextFrameType::kNone,
       ResourceRequest::RedirectStatus::kNoRedirect, http_favicon_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
 
   // Test that a secure favicon is not blocked.
   EXPECT_FALSE(MixedContentChecker::ShouldBlockFetch(
       &dummy_page_holder->GetFrame(), mojom::RequestContextType::FAVICON,
-      network::mojom::RequestContextFrameType::kNone,
       ResourceRequest::RedirectStatus::kNoRedirect, https_favicon_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
 }

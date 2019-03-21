@@ -81,7 +81,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::RequestContextType,
-      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override {

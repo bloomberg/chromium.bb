@@ -663,10 +663,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
-  // Navigation requests should not go through here.
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
-
   // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
   // instead of the header field. See https://crbug.com/850813.
   GURL referrer_url(
@@ -750,7 +746,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_request_context_type =
       static_cast<int>(GetRequestContextTypeForWebURLRequest(request));
 
-  resource_request->fetch_frame_type = request.GetFrameType();
+  resource_request->fetch_frame_type =
+      network::mojom::RequestContextFrameType::kNone;
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
   resource_request->keepalive = request.GetKeepalive();

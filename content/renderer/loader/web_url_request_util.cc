@@ -206,8 +206,6 @@ ResourceType RequestContextToResourceType(
 }
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
   return RequestContextToResourceType(request.GetRequestContext());
 }
 

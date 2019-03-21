@@ -78,8 +78,6 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
                                       ResourceFetcher* fetcher,
                                       ResourceClient* client,
                                       StreamingAllowed streaming_allowed) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   DCHECK(IsRequestContextSupported(
       params.GetResourceRequest().GetRequestContext()));
   ScriptResource* resource = ToScriptResource(

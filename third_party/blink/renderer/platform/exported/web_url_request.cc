@@ -214,10 +214,6 @@ mojom::RequestContextType WebURLRequest::GetRequestContext() const {
   return resource_request_->GetRequestContext();
 }
 
-network::mojom::RequestContextFrameType WebURLRequest::GetFrameType() const {
-  return resource_request_->GetFrameType();
-}
-
 network::mojom::ReferrerPolicy WebURLRequest::GetReferrerPolicy() const {
   return resource_request_->GetReferrerPolicy();
 }

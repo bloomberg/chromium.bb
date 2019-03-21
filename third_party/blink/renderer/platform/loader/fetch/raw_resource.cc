@@ -54,8 +54,6 @@ RawResource* RawResource::FetchSynchronously(FetchParameters& params,
 RawResource* RawResource::FetchImport(FetchParameters& params,
                                       ResourceFetcher* fetcher,
                                       RawResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   params.SetRequestContext(mojom::RequestContextType::IMPORT);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kImportResource), client));
@@ -64,8 +62,6 @@ RawResource* RawResource::FetchImport(FetchParameters& params,
 RawResource* RawResource::Fetch(FetchParameters& params,
                                 ResourceFetcher* fetcher,
                                 RawResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   DCHECK_NE(params.GetResourceRequest().GetRequestContext(),
             mojom::RequestContextType::UNSPECIFIED);
   return ToRawResource(fetcher->RequestResource(
@@ -75,8 +71,6 @@ RawResource* RawResource::Fetch(FetchParameters& params,
 RawResource* RawResource::FetchMedia(FetchParameters& params,
                                      ResourceFetcher* fetcher,
                                      RawResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   auto context = params.GetResourceRequest().GetRequestContext();
   DCHECK(context == mojom::RequestContextType::AUDIO ||
          context == mojom::RequestContextType::VIDEO);
@@ -90,8 +84,6 @@ RawResource* RawResource::FetchMedia(FetchParameters& params,
 RawResource* RawResource::FetchTextTrack(FetchParameters& params,
                                          ResourceFetcher* fetcher,
                                          RawResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   params.SetRequestContext(mojom::RequestContextType::TRACK);
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kTextTrack), client));
@@ -100,8 +92,6 @@ RawResource* RawResource::FetchTextTrack(FetchParameters& params,
 RawResource* RawResource::FetchManifest(FetchParameters& params,
                                         ResourceFetcher* fetcher,
                                         RawResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   DCHECK_EQ(params.GetResourceRequest().GetRequestContext(),
             mojom::RequestContextType::MANIFEST);
   return ToRawResource(fetcher->RequestResource(

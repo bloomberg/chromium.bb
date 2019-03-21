@@ -1114,8 +1114,6 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
       DispatchDidLoadResourceFromMemoryCache(
           testing::AllOf(
               testing::Property(&ResourceRequest::Url, url),
-              testing::Property(&ResourceRequest::GetFrameType,
-                                network::mojom::RequestContextFrameType::kNone),
               testing::Property(&ResourceRequest::GetRequestContext,
                                 mojom::RequestContextType::IMAGE)),
           testing::Property(&ResourceResponse::IsNull, true)));

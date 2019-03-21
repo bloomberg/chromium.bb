@@ -200,11 +200,8 @@ static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
   }
 }
 
-bool RequestIsSubframeSubresource(
-    Frame* frame,
-    network::mojom::RequestContextFrameType frame_type) {
-  return (frame && frame != frame->Tree().Top() &&
-          frame_type != network::mojom::RequestContextFrameType::kNested);
+bool RequestIsSubframeSubresource(Frame* frame) {
+  return frame && frame != frame->Tree().Top();
 }
 
 static bool IsInsecureUrl(const KURL& url) {
@@ -244,24 +241,19 @@ bool MixedContentChecker::IsMixedContent(
 }
 
 // static
-Frame* MixedContentChecker::InWhichFrameIsContentMixed(
-    Frame* frame,
-    network::mojom::RequestContextFrameType frame_type,
-    const KURL& url,
-    const LocalFrame* source) {
-  // We only care about subresource loads; top-level navigations cannot be mixed
-  // content. Neither can frameless requests.
-  if (frame_type == network::mojom::RequestContextFrameType::kTopLevel ||
-      !frame)
+Frame* MixedContentChecker::InWhichFrameIsContentMixed(LocalFrame* frame,
+                                                       const KURL& url) {
+  // Frameless requests cannot be mixed content.
+  if (!frame)
     return nullptr;
 
   // Check the top frame first.
   Frame& top = frame->Tree().Top();
-  MeasureStricterVersionOfIsMixedContent(top, url, source);
+  MeasureStricterVersionOfIsMixedContent(top, url, frame);
   if (IsMixedContent(top.GetSecurityContext()->GetSecurityOrigin(), url))
     return &top;
 
-  MeasureStricterVersionOfIsMixedContent(*frame, url, source);
+  MeasureStricterVersionOfIsMixedContent(*frame, url, frame);
   if (IsMixedContent(frame->GetSecurityContext()->GetSecurityOrigin(), url))
     return frame;
 
@@ -351,18 +343,10 @@ void MixedContentChecker::Count(Frame* frame,
 bool MixedContentChecker::ShouldBlockFetch(
     LocalFrame* frame,
     mojom::RequestContextType request_context,
-    network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) {
-  // Frame-level loads are checked by the browser. No need to check them again
-  // here.
-  if (frame_type != network::mojom::RequestContextFrameType::kNone)
-    return false;
-
-  Frame* effective_frame = EffectiveFrameForFrameType(frame, frame_type);
-  Frame* mixed_frame =
-      InWhichFrameIsContentMixed(effective_frame, frame_type, url, frame);
+  Frame* mixed_frame = InWhichFrameIsContentMixed(frame, url);
   if (!mixed_frame)
     return false;
 
@@ -397,14 +381,6 @@ bool MixedContentChecker::ShouldBlockFetch(
   // look at the loaded URL. If we're dealing with a CORS-enabled scheme, then
   // block mixed frames as active content. Otherwise, treat frames as passive
   // content.
-  //
-  // FIXME: Remove this temporary hack once we have a reasonable API for
-  // launching external applications via URLs. http://crbug.com/318788 and
-  // https://crbug.com/393481
-  if (frame_type == network::mojom::RequestContextFrameType::kNested &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(url.Protocol()))
-    context_type = WebMixedContentContextType::kOptionallyBlockable;
-
   switch (context_type) {
     case WebMixedContentContextType::kOptionallyBlockable:
       allowed = !strict_mode;
@@ -424,7 +400,7 @@ bool MixedContentChecker::ShouldBlockFetch(
       // https://a.com and not realizing that they are in fact allowing an
       // insecure script on https://b.com.
       if (!settings->GetAllowRunningOfInsecureContent() &&
-          RequestIsSubframeSubresource(effective_frame, frame_type) &&
+          RequestIsSubframeSubresource(frame) &&
           IsMixedContent(frame->GetSecurityContext()->GetSecurityOrigin(),
                          url)) {
         UseCounter::Count(frame->GetDocument(),
@@ -559,8 +535,7 @@ bool MixedContentChecker::IsWebSocketAllowed(
     const FrameFetchContext& frame_fetch_context,
     LocalFrame* frame,
     const KURL& url) {
-  Frame* mixed_frame = InWhichFrameIsContentMixed(
-      frame, network::mojom::RequestContextFrameType::kNone, url, frame);
+  Frame* mixed_frame = InWhichFrameIsContentMixed(frame, url);
   if (!mixed_frame)
     return true;
 
@@ -636,8 +611,7 @@ bool MixedContentChecker::IsMixedFormAction(
   if (url.ProtocolIs("javascript"))
     return false;
 
-  Frame* mixed_frame = InWhichFrameIsContentMixed(
-      frame, network::mojom::RequestContextFrameType::kNone, url, frame);
+  Frame* mixed_frame = InWhichFrameIsContentMixed(frame, url);
   if (!mixed_frame)
     return false;
 
@@ -710,19 +684,6 @@ void MixedContentChecker::CheckMixedPrivatePublic(
                             : WebFeature::kLoopbackEmbeddedInNonSecureContext);
     }
   }
-}
-
-Frame* MixedContentChecker::EffectiveFrameForFrameType(
-    LocalFrame* frame,
-    network::mojom::RequestContextFrameType frame_type) {
-  // If we're loading the main resource of a subframe, ensure that we check
-  // against the parent of the active frame, rather than the frame itself.
-  if (frame_type != network::mojom::RequestContextFrameType::kNested)
-    return frame;
-
-  Frame* parent_frame = frame->Tree().Parent();
-  DCHECK(parent_frame);
-  return parent_frame;
 }
 
 void MixedContentChecker::HandleCertificateError(
@@ -809,24 +770,9 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
 WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
     LocalFrame* frame,
     const ResourceRequest& request) {
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
-  Frame* effective_frame =
-      EffectiveFrameForFrameType(frame, request.GetFrameType());
-
-  Frame* mixed_frame = InWhichFrameIsContentMixed(
-      effective_frame, request.GetFrameType(), request.Url(), frame);
+  Frame* mixed_frame = InWhichFrameIsContentMixed(frame, request.Url());
   if (!mixed_frame)
     return WebMixedContentContextType::kNotMixedContent;
-
-  // See comment in ShouldBlockFetch() about loading the main resource of a
-  // subframe.
-  if (request.GetFrameType() ==
-          network::mojom::RequestContextFrameType::kNested &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(
-          request.Url().Protocol())) {
-    return WebMixedContentContextType::kOptionallyBlockable;
-  }
 
   bool strict_mixed_content_checking_for_plugin =
       mixed_frame->GetSettings() &&

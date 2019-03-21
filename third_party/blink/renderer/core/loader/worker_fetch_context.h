@@ -60,7 +60,6 @@ class WorkerFetchContext final : public BaseFetchContext {
       override;
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::RequestContextType,
-      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
