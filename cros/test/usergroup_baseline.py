@@ -149,7 +149,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                      'crosvm', 'shill'}),
     GroupEntry(group='logs-access', gid=401, users={'debugd-logs'}),
     GroupEntry(group='serial', gid=402, users={'uucp'}),
-    GroupEntry(group='i2c', gid=404, users={'power'}),
+    GroupEntry(group='i2c', gid=404, users={'fwupdate-i2c', 'power'}),
     GroupEntry(group='android-root', gid=655360, users={'android-root'}),
     GroupEntry(group='android-everybody', gid=665357,
                users={'chronos', 'seneschal'}),
