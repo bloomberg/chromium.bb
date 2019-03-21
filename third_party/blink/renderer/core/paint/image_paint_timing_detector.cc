@@ -51,7 +51,7 @@ String GetImageUrl(const LayoutObject& object) {
     StyleImage* bg_image = bg_layer->GetImage();
     if (!bg_image || !bg_image->IsImageResource())
       continue;
-    const StyleFetchedImage* fetched_image = ToStyleFetchedImage(bg_image);
+    const StyleFetchedImage* fetched_image = To<StyleFetchedImage>(bg_image);
     const String url = fetched_image->Url().StrippedForUseAsReferrer();
     concatenated_result.Append(url.Utf8().data(), url.length());
   }
