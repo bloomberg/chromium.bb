@@ -102,4 +102,7 @@ interface PageHandler {
 
   // Internal state dump of the Feed library's process scope.
   GetFeedProcessScopeDump() => (string dump);
+
+  // Record all Feed metrics into a log.
+  GetFeedHistograms() => (string log);
 };

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/feed/feed_debugging_bridge.h"
 #include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
@@ -22,6 +23,8 @@
 #include "components/prefs/pref_service.h"
 
 namespace {
+
+const char kFeedHistogramPrefix[] = "ContentSuggestions.Feed.";
 
 feed_internals::mojom::TimePtr ToMojoTime(base::Time time) {
   return time.is_null() ? nullptr
@@ -154,4 +157,11 @@ void FeedInternalsPageHandler::GetFeedProcessScopeDump(
 
 bool FeedInternalsPageHandler::IsFeedAllowed() {
   return pref_service_->GetBoolean(feed::prefs::kEnableSnippets);
+}
+
+void FeedInternalsPageHandler::GetFeedHistograms(
+    GetFeedHistogramsCallback callback) {
+  std::string log;
+  base::StatisticsRecorder::WriteGraph(kFeedHistogramPrefix, &log);
+  std::move(callback).Run(log);
 }
