@@ -109,8 +109,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     browser_sync::BrowserSyncClient* sync_client,
     version_info::Channel channel,
     const char* history_disabled_pref,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& db_thread,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_on_disk,
     const scoped_refptr<autofill::AutofillWebDataService>&

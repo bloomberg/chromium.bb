@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/version_info/version_info.h"
@@ -45,8 +45,8 @@ class ProfileSyncComponentsFactoryImpl
       BrowserSyncClient* sync_client,
       version_info::Channel channel,
       const char* history_disabled_pref,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& db_thread,
       const scoped_refptr<autofill::AutofillWebDataService>&
           web_data_service_on_disk,
       const scoped_refptr<autofill::AutofillWebDataService>&
@@ -112,8 +112,8 @@ class ProfileSyncComponentsFactoryImpl
   BrowserSyncClient* const sync_client_;
   const version_info::Channel channel_;
   const char* history_disabled_pref_;
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> ui_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> db_thread_;
   const scoped_refptr<autofill::AutofillWebDataService>
       web_data_service_on_disk_;
   const scoped_refptr<autofill::AutofillWebDataService>

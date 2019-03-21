@@ -189,8 +189,7 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
 
   component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
       this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSequencedTaskRunnerWithTraits({content::BrowserThread::UI}),
       web_data_service_thread_, profile_web_data_service_,
       account_web_data_service_, password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
@@ -421,7 +420,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   } else {
     controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
         syncer::APP_LIST, dump_stack, sync_service, this, syncer::GROUP_UI,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+        base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})));
   }
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
@@ -438,7 +437,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
           syncer::DICTIONARY, dump_stack, sync_service, this, syncer::GROUP_UI,
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+          base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})));
     }
   }
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
