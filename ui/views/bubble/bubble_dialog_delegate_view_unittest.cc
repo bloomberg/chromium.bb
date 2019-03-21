@@ -275,14 +275,16 @@ TEST_F(BubbleDialogDelegateViewTest, NonClientHitTest) {
   struct {
     const int point;
     const int hit;
-  } cases[] = {
-      {0, HTNOWHERE}, {60, HTCLIENT}, {1000, HTNOWHERE},
+  } constexpr kTestCases[] = {
+      {0, HTTRANSPARENT},
+      {60, HTCLIENT},
+      {1000, HTNOWHERE},
   };
 
-  for (size_t i = 0; i < base::size(cases); ++i) {
-    gfx::Point point(cases[i].point, cases[i].point);
-    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
-        << " at point " << cases[i].point;
+  for (const auto& test_case : kTestCases) {
+    gfx::Point point(test_case.point, test_case.point);
+    EXPECT_EQ(test_case.hit, frame->NonClientHitTest(point))
+        << " at point " << test_case.point;
   }
 }
 
