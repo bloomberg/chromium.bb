@@ -411,8 +411,7 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::PageLoadMetadata::New()),
-      subframe_metadata_(mojom::PageLoadMetadata::New()),
-      main_frame_render_data_(mojom::PageRenderData::New()) {}
+      subframe_metadata_(mojom::PageLoadMetadata::New()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -608,7 +607,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
     mojom::PageRenderDataPtr render_data) {
-  main_frame_render_data_ = std::move(render_data);
+  main_frame_render_data_.layout_jank_score = render_data->layout_jank_score;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameRenderData(

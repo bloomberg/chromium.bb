@@ -335,7 +335,7 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
   if (it == amp_subframe_info_.end())
     return;
 
-  it->second.render_data = render_data.Clone();
+  it->second.render_data.layout_jank_score = render_data.layout_jank_score;
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(
@@ -501,30 +501,28 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
     }
   }
 
-  if (!subframe_info.render_data.is_null()) {
-    // Clamp the score to a max of 10, which is equivalent to a frame with 10
-    // full-frame janks.
-    float clamped_jank_score =
-        std::min(subframe_info.render_data->layout_jank_score, 10.0f);
+  // Clamp the score to a max of 10, which is equivalent to a frame with 10
+  // full-frame janks.
+  float clamped_jank_score =
+      std::min(subframe_info.render_data.layout_jank_score, 10.0f);
 
-    // For UKM, report (jank_score * 100) as an int in the range [0, 1000].
-    builder.SetSubFrame_LayoutStability_JankScore(
-        static_cast<int>(roundf(clamped_jank_score * 100.0f)));
+  // For UKM, report (jank_score * 100) as an int in the range [0, 1000].
+  builder.SetSubFrame_LayoutStability_JankScore(
+      static_cast<int>(roundf(clamped_jank_score * 100.0f)));
 
-    // For UMA, report (jank_score * 10) an an int in the range [0,100].
-    int32_t uma_value = static_cast<int>(roundf(clamped_jank_score * 10.0f));
-    if (current_main_frame_nav_info_->is_same_document_navigation) {
-      UMA_HISTOGRAM_COUNTS_100(
-          std::string(kHistogramPrefix)
-              .append(kHistogramAMPSubframeLayoutStabilityJankScore),
-          uma_value);
-    } else {
-      UMA_HISTOGRAM_COUNTS_100(
-          std::string(kHistogramPrefix)
-              .append(
-                  kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation),
-          uma_value);
-    }
+  // For UMA, report (jank_score * 10) an an int in the range [0,100].
+  int32_t uma_value = static_cast<int>(roundf(clamped_jank_score * 10.0f));
+  if (current_main_frame_nav_info_->is_same_document_navigation) {
+    UMA_HISTOGRAM_COUNTS_100(
+        std::string(kHistogramPrefix)
+            .append(kHistogramAMPSubframeLayoutStabilityJankScore),
+        uma_value);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100(
+        std::string(kHistogramPrefix)
+            .append(
+                kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation),
+        uma_value);
   }
 
   builder.Record(ukm::UkmRecorder::Get());

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 
 namespace content {
@@ -157,8 +158,8 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::PageLoadMetadata& subframe_metadata() const {
     return *(subframe_metadata_.get());
   }
-  const mojom::PageRenderData& main_frame_render_data() const {
-    return *(main_frame_render_data_.get());
+  const PageRenderData& main_frame_render_data() const {
+    return main_frame_render_data_;
   }
 
  private:
@@ -202,7 +203,7 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::PageLoadMetadataPtr main_frame_metadata_;
   mojom::PageLoadMetadataPtr subframe_metadata_;
 
-  mojom::PageRenderDataPtr main_frame_render_data_;
+  PageRenderData main_frame_render_data_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.
