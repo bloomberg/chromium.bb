@@ -70,6 +70,10 @@ void MobileSetupDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kMobileSetupDialogWidth, kMobileSetupDialogHeight);
 }
 
+bool MobileSetupDialog::CanResizeDialog() const {
+  return true;
+}
+
 std::string MobileSetupDialog::GetDialogArgs() const {
   return std::string();
 }

@@ -49,6 +49,7 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override;
   void GetDialogSize(gfx::Size* size) const override;
+  bool CanResizeDialog() const override;
   std::string GetDialogArgs() const override;
   void OnDialogShown(content::WebUI* webui,
                      content::RenderViewHost* render_view_host) override;
