@@ -26,7 +26,7 @@ enum class InvestigatedScenario : int {
   // of local syncable data.
   DIFFERENT_ACCOUNT,
   // Always the last enumerated type.
-  HISTOGRAM_COUNT,
+  NUM_ENTRIES,
 };
 
 // Performs various checks with the current account being used to login in and
