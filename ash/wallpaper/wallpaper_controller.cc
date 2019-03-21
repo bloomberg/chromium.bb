@@ -1468,9 +1468,12 @@ void WallpaperController::FlushForTesting() {
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   DCHECK_EQ(WALLPAPER_IMAGE, wallpaper_mode_);
 
-  const bool is_wallpaper_blurred =
-      Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-      IsBlurAllowed();
+  bool session_blocked =
+      Shell::Get()->session_controller()->IsUserSessionBlocked();
+  bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
+  bool is_wallpaper_blurred =
+      (session_blocked || in_overview) && IsBlurAllowed();
+
   if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
     is_wallpaper_blurred_ = is_wallpaper_blurred;
     for (auto& observer : observers_)
@@ -1481,34 +1484,17 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   }
 
   const int container_id = GetWallpaperContainerId(locked_);
-  float blur = is_wallpaper_blurred ? login_constants::kBlurSigma
-                                    : login_constants::kClearBlurSigma;
+  float blur = login_constants::kClearBlurSigma;
+  if (is_wallpaper_blurred)
+    blur = session_blocked ? login_constants::kBlurSigma : kWallpaperBlurSigma;
 
-  // There are two types of blurring we can do on the wallpaper. One is on the
-  // widget itself and the other is on the wallpaper view paint code which more
-  // optimized but lower quality. The latter is used by overview mode which
-  // needs to animate the wallpaper blur, meaning the former is not a very good
-  // option in terms of performance.
-  // TODO(crbug.com/944152): Modify wallpaper view use painting blur in all
-  // cases.
+  WallpaperView* wallpaper_view = nullptr;
   auto* wallpaper_widget_controller =
       RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller();
-  WallpaperView* previous_wallpaper_view =
-      wallpaper_widget_controller->wallpaper_view();
-  WallpaperView* current_wallpaper_view = nullptr;
-
-  // Copy the blur and opacity values from the old wallpaper to the new one.
-  const int repaint_blur =
-      previous_wallpaper_view ? previous_wallpaper_view->repaint_blur() : 0;
-  const float repaint_opacity = previous_wallpaper_view
-                                    ? previous_wallpaper_view->repaint_opacity()
-                                    : 1.f;
   auto* widget =
-      CreateWallpaperWidget(root_window, container_id, repaint_blur,
-                            repaint_opacity, &current_wallpaper_view);
-  wallpaper_widget_controller->SetWallpaperWidget(widget,
-                                                  current_wallpaper_view, blur);
+      CreateWallpaperWidget(root_window, container_id, &wallpaper_view);
+  wallpaper_widget_controller->SetWallpaperWidget(widget, wallpaper_view, blur);
 }
 
 void WallpaperController::InstallDesktopControllerForAllWindows() {
