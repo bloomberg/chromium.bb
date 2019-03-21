@@ -79,6 +79,21 @@ void PageLoadMetricsObserverTester::SimulateTimingUpdate(
       mojom::PageRenderData(), mojom::CpuTiming(), rfh);
 }
 
+void PageLoadMetricsObserverTester::SimulateCpuTimingUpdate(
+    const mojom::CpuTiming& cpu_timing) {
+  SimulateCpuTimingUpdate(cpu_timing, web_contents()->GetMainFrame());
+}
+
+void PageLoadMetricsObserverTester::SimulateCpuTimingUpdate(
+    const mojom::CpuTiming& cpu_timing,
+    content::RenderFrameHost* rfh) {
+  auto timing = page_load_metrics::mojom::PageLoadTimingPtr(base::in_place);
+  page_load_metrics::InitPageLoadTimingForTest(timing.get());
+  SimulatePageLoadTimingUpdate(*timing, mojom::PageLoadMetadata(),
+                               mojom::PageLoadFeatures(),
+                               mojom::PageRenderData(), cpu_timing, rfh);
+}
+
 void PageLoadMetricsObserverTester::SimulateTimingAndMetadataUpdate(
     const mojom::PageLoadTiming& timing,
     const mojom::PageLoadMetadata& metadata) {
@@ -179,6 +194,11 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
       info.load_timing_info
           ? std::make_unique<net::LoadTimingInfo>(*info.load_timing_info)
           : nullptr);
+}
+
+void PageLoadMetricsObserverTester::SimulateFrameReceivedFirstUserActivation(
+    content::RenderFrameHost* render_frame_host) {
+  observer_->FrameReceivedFirstUserActivation(render_frame_host);
 }
 
 void PageLoadMetricsObserverTester::SimulateInputEvent(

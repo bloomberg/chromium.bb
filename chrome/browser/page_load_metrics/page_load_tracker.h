@@ -160,7 +160,7 @@ bool IsNavigationUserInitiated(content::NavigationHandle* handle);
 // MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
 // well as a committed PageLoadTracker.
 class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
-                        PageLoadMetricsObserverDelegate {
+                        public PageLoadMetricsObserverDelegate {
  public:
   // Caller must guarantee that the embedder_interface pointer outlives this
   // class. The PageLoadTracker must not hold on to
@@ -222,6 +222,11 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // killed at any time after this method is invoked without further
   // notification.
   void FlushMetricsOnAppEnterBackground();
+
+  // Replaces the |visibility_tracker_| for testing, which can mock a clock.
+  void SetVisibilityTrackerForTesting(const ScopedVisibilityTracker& tracker) {
+    visibility_tracker_ = tracker;
+  }
 
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
 
