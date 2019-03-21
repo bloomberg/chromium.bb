@@ -436,12 +436,23 @@ public class ViewAndroidDelegate {
     }
 
     @CalledByNative
-    private boolean hasTouchlessEventHandler() {
+    private static boolean hasTouchlessEventHandler() {
         return TouchlessEventHandler.hasTouchlessEventHandler();
     }
 
     @CalledByNative
-    private boolean onUnconsumedKeyboardEventAck(int nativeCode) {
+    private static boolean onUnconsumedKeyboardEventAck(int nativeCode) {
         return TouchlessEventHandler.onUnconsumedKeyboardEventAck(nativeCode);
+    }
+
+    @CalledByNative
+    private static void fallbackCursorModeLockCursor(
+            boolean left, boolean right, boolean up, boolean down) {
+        TouchlessEventHandler.fallbackCursorModeLockCursor(left, right, up, down);
+    }
+
+    @CalledByNative
+    private static void fallbackCursorModeSetCursorVisibility(boolean visible) {
+        TouchlessEventHandler.fallbackCursorModeSetCursorVisibility(visible);
     }
 }

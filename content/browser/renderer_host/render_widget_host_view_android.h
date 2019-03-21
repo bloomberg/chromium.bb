@@ -141,6 +141,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                        InputEventAckState ack_result) override;
   bool OnUnconsumedKeyboardEventAck(
       const NativeWebKeyboardEventWithLatencyInfo& event) override;
+  void FallbackCursorModeLockCursor(bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override;
+  void FallbackCursorModeSetCursorVisibility(bool visible) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;

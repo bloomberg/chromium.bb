@@ -1604,6 +1604,20 @@ bool RenderWidgetHostViewAndroid::OnUnconsumedKeyboardEventAck(
          view_.OnUnconsumedKeyboardEventAck(event.event.native_key_code);
 }
 
+void RenderWidgetHostViewAndroid::FallbackCursorModeLockCursor(bool left,
+                                                               bool right,
+                                                               bool up,
+                                                               bool down) {
+  DCHECK(fallback_cursor_mode_enabled_);
+  view_.FallbackCursorModeLockCursor(left, right, up, down);
+}
+
+void RenderWidgetHostViewAndroid::FallbackCursorModeSetCursorVisibility(
+    bool visible) {
+  DCHECK(fallback_cursor_mode_enabled_);
+  view_.FallbackCursorModeSetCursorVisibility(visible);
+}
+
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (overscroll_controller_ &&

@@ -55,6 +55,17 @@ public class TouchlessEventHandler {
         }
     }
 
+    public static void fallbackCursorModeLockCursor(
+            boolean left, boolean right, boolean up, boolean down) {
+        // No null check is needed here because it called after hasTouchlessEventHandler in native.
+        sInstance.fallbackCursorModeLockCursorInternal(left, right, up, down);
+    }
+
+    public static void fallbackCursorModeSetCursorVisibility(boolean visible) {
+        // No null check is needed here because it called after hasTouchlessEventHandler in native.
+        sInstance.fallbackCursorModeSetCursorVisibilityInternal(visible);
+    }
+
     protected boolean onUnconsumedKeyboardEventAckInternal(int nativeCode) {
         return false;
     }
@@ -66,4 +77,9 @@ public class TouchlessEventHandler {
     protected void onDidFinishNavigationInternal() {}
 
     protected void onActivityHiddenInternal() {}
+
+    protected void fallbackCursorModeLockCursorInternal(
+            boolean left, boolean right, boolean up, boolean down) {}
+
+    protected void fallbackCursorModeSetCursorVisibilityInternal(boolean visible) {}
 }

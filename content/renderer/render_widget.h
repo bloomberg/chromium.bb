@@ -433,6 +433,11 @@ class CONTENT_EXPORT RenderWidget
   void RegisterViewportLayers(
       const cc::ViewportLayers& viewport_layers) override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
+  void FallbackCursorModeLockCursor(bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override;
+  void FallbackCursorModeSetCursorVisibility(bool visible) override;
 
   // Override point to obtain that the current input method state and caret
   // position.

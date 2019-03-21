@@ -648,20 +648,44 @@ void ViewAndroid::SetLayoutForTesting(int x, int y, int width, int height) {
   bounds_.SetRect(x, y, width, height);
 }
 
+bool ViewAndroid::HasTouchlessEventHandler() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  static bool s_has_touchless_event_handler =
+      Java_ViewAndroidDelegate_hasTouchlessEventHandler(env);
+
+  return s_has_touchless_event_handler;
+}
+
 bool ViewAndroid::OnUnconsumedKeyboardEventAck(int native_code) {
-  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
-  if (delegate.is_null())
+  if (!HasTouchlessEventHandler())
     return false;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  static bool s_has_touchless_event_handler =
-      Java_ViewAndroidDelegate_hasTouchlessEventHandler(env, delegate);
 
-  if (!s_has_touchless_event_handler)
-    return false;
-
-  return Java_ViewAndroidDelegate_onUnconsumedKeyboardEventAck(env, delegate,
+  return Java_ViewAndroidDelegate_onUnconsumedKeyboardEventAck(env,
                                                                native_code);
+}
+
+void ViewAndroid::FallbackCursorModeLockCursor(bool left,
+                                               bool right,
+                                               bool up,
+                                               bool down) {
+  if (!HasTouchlessEventHandler())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_ViewAndroidDelegate_fallbackCursorModeLockCursor(env, left, right, up,
+                                                        down);
+}
+
+void ViewAndroid::FallbackCursorModeSetCursorVisibility(bool visible) {
+  if (!HasTouchlessEventHandler())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_ViewAndroidDelegate_fallbackCursorModeSetCursorVisibility(env, visible);
 }
 
 }  // namespace ui

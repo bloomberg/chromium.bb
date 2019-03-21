@@ -95,6 +95,9 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void InputWasProcessed(const gfx::PresentationFeedback& feedback);
   void WaitForInputProcessed(base::OnceClosure callback);
 
+  void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
+  void FallbackCursorModeSetCursorVisibility(bool visible);
+
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
   ~WidgetInputHandlerManager() override;
