@@ -224,22 +224,25 @@ IndexAndPersistRulesResult::IndexAndPersistRulesResult() = default;
 RulesetSource RulesetSource::Create(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
-      file_util::GetIndexedRulesetPath(extension.path()));
+      file_util::GetIndexedRulesetPath(extension.path()), kDefaultRulesetID,
+      kDefaultRulesetPriority);
 }
 
 RulesetSource::RulesetSource(base::FilePath json_path,
-                             base::FilePath indexed_path)
+                             base::FilePath indexed_path,
+                             size_t id,
+                             size_t priority)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
-      id_(kDefaultRulesetID),
-      priority_(kDefaultRulesetPriority) {}
+      id_(id),
+      priority_(priority) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  return RulesetSource(json_path_, indexed_path_);
+  return RulesetSource(json_path_, indexed_path_, id_, priority_);
 }
 
 IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {

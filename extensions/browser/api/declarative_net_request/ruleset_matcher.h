@@ -94,9 +94,6 @@ class RulesetMatcher {
   // their own different priorities.
   size_t priority() const { return priority_; }
 
-  void set_id_for_testing(size_t id) { id_ = id; }
-  void set_priority_for_testing(size_t priority) { priority_ = priority; }
-
  private:
   using UrlPatternIndexMatcher = url_pattern_index::UrlPatternIndexMatcher;
   using ExtensionMetadataList =
