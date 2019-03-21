@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/metrics/field_trial.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/fontmgr_default.h"
@@ -38,6 +39,8 @@ void MaybeInitializeDirectWrite() {
   if (tried_dwrite_initialize)
     return;
   tried_dwrite_initialize = true;
+
+  TRACE_EVENT0("fonts", "gfx::MaybeInitializeDirectWrite");
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDirectWriteForUI)) {

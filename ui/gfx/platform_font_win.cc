@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -58,6 +59,8 @@ gfx::Font::Weight ToGfxFontWeight(int weight) {
 HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
                                       LOGFONT* font_info,
                                       IDWriteFont** dwrite_font) {
+  TRACE_EVENT0("fonts", "gfx::FindDirectWriteFontForLOGFONT");
+
   Microsoft::WRL::ComPtr<IDWriteGdiInterop> gdi_interop;
   HRESULT hr = factory->GetGdiInterop(gdi_interop.GetAddressOf());
   if (FAILED(hr)) {
@@ -110,6 +113,8 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
                                    bool italic,
                                    IDWriteFactory* factory,
                                    IDWriteFont** dwrite_font) {
+  TRACE_EVENT0("fonts", "gfx::GetMatchingDirectWriteFont");
+
   // First try the GDI compat route to get a matching DirectWrite font.
   // If that succeeds then we are good. If that fails then try and find a
   // match from the DirectWrite font collection.
@@ -234,6 +239,8 @@ namespace internal {
 class SystemFonts {
  public:
   SystemFonts() {
+    TRACE_EVENT0("fonts", "gfx::SystemFonts::SystemFonts");
+
     NONCLIENTMETRICS_XP metrics;
     base::win::GetNonClientMetrics(&metrics);
 
@@ -312,6 +319,8 @@ class SystemFonts {
   void AddFont(gfx::PlatformFontWin::SystemFont system_font,
                const gfx::PlatformFontWin::FontAdjustment& font_adjustment,
                LOGFONT* logfont) {
+    TRACE_EVENT0("fonts", "gfx::SystemFonts::AddFont");
+
     // Make adjustments to the font as necessary.
     PlatformFontWin::AdjustLOGFONT(font_adjustment, logfont);
 
@@ -580,6 +589,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
 }
 
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
+  TRACE_EVENT0("fonts", "PlatformFont::CreateHFontRef");
   TEXTMETRIC font_metrics;
 
   {
@@ -597,6 +607,8 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromGDI(
     HFONT font,
     const TEXTMETRIC& font_metrics) {
+  TRACE_EVENT0("fonts", "PlatformFontWin::CreateHFontRefFromGDI");
+
   const int height = std::max<int>(1, font_metrics.tmHeight);
   const int baseline = std::max<int>(1, font_metrics.tmAscent);
   const int cap_height =
@@ -619,6 +631,8 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromGDI(
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
     HFONT gdi_font,
     const TEXTMETRIC& font_metrics) {
+  TRACE_EVENT0("fonts", "PlatformFontWin::CreateHFontRefFromSkia");
+
   LOGFONT font_info = {0};
   GetObject(gdi_font, sizeof(LOGFONT), &font_info);
 
@@ -848,6 +862,7 @@ PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
 // static
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
+  TRACE_EVENT0("fonts", "PlatformFont::CreateFromNameAndSize");
   return new PlatformFontWin(font_name, font_size);
 }
 
