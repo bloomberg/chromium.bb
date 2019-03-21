@@ -265,6 +265,8 @@ jumbo_component("capture_lib") {
       "video/chromeos/display_rotation_observer.h",
       "video/chromeos/pixel_format_utils.cc",
       "video/chromeos/pixel_format_utils.h",
+      "video/chromeos/renderer_facing_cros_image_capture.cc",
+      "video/chromeos/renderer_facing_cros_image_capture.h",
       "video/chromeos/reprocess_manager.cc",
       "video/chromeos/reprocess_manager.h",
       "video/chromeos/request_builder.cc",
