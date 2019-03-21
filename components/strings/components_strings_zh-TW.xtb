@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">電話號碼</translation>
 <translation id="2283340219607151381">儲存及填入地址</translation>
 <translation id="2292556288342944218">您的網際網路存取權遭到封鎖</translation>
-<translation id="2294558542833290837">你原先開啟的連結有異常之處</translation>
 <translation id="2297722699537546652">B5 (信封)</translation>
 <translation id="2310021320168182093">Chou2 (信封)</translation>
 <translation id="2316887270356262533">釋出不到 1 MB。下次造訪部分網站時，載入速度可能會變慢。</translation>
@@ -497,7 +496,6 @@
 <translation id="3658742229777143148">修訂版本</translation>
 <translation id="366077651725703012">更新信用卡</translation>
 <translation id="3676592649209844519">裝置 ID：</translation>
-<translation id="3677008721441257057">你是否要前往 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;？</translation>
 <translation id="3678029195006412963">無法簽署要求</translation>
 <translation id="3678529606614285348">在新的無痕式視窗中開啟網頁 (Ctrl + Shift + N 鍵)</translation>
 <translation id="3679803492151881375">當機報告擷取時間：<ph name="CRASH_TIME" />，報告上傳時間：<ph name="UPLOAD_TIME" /></translation>
@@ -1410,7 +1408,6 @@
 <translation id="894185898663964645">你的系統管理員已設定自訂根憑證，這項設定將能允許系統管理員查看你所造訪網站的內容。</translation>
 <translation id="8943282376843390568">萊姆綠</translation>
 <translation id="8957210676456822347">監控式入口網站授權</translation>
-<translation id="8966619695390250636">你是不是要前往：</translation>
 <translation id="8968766641738584599">儲存卡片</translation>
 <translation id="8971063699422889582">伺服器憑證已過期。</translation>
 <translation id="8975012916872825179">包括電話號碼、電子郵件地址和運送地址等資訊</translation>

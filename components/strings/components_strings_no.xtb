@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2283340219607151381">Lagre og fyll inn adresser</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
-<translation id="2294558542833290837">Linken du opprinnelig åpnet, er uvanlig</translation>
 <translation id="2297722699537546652">B5 (konvolutt)</translation>
 <translation id="2310021320168182093">Chou2 (konvolutt)</translation>
 <translation id="2316887270356262533">Frigjør mindre enn 1 MB. Det kan hende enkelte nettsteder lastes inn tregere neste gang du besøker dem.</translation>
@@ -497,7 +496,6 @@
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="366077651725703012">Oppdater kredittkortet</translation>
 <translation id="3676592649209844519">Enhets-ID:</translation>
-<translation id="3677008721441257057">Mente du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Forespørselen kunne ikke undertegnes</translation>
 <translation id="3678529606614285348">Åpne siden i et nytt inkognitovindu (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375">Programstopprapport generert <ph name="CRASH_TIME" /> og lastet opp <ph name="UPLOAD_TIME" /></translation>
@@ -1409,7 +1407,6 @@ Mer informasjon:
 <translation id="894185898663964645">Administratoren din har konfigurert tilpassede rotsertifikater, noe som betyr at vedkommende kanskje kan se innholdet på nettsteder du besøker.</translation>
 <translation id="8943282376843390568">Limegrønn</translation>
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
-<translation id="8966619695390250636">Mente du dette?</translation>
 <translation id="8968766641738584599">Lagre kortet</translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8975012916872825179">Inkluderer informasjon som telefonnumre, e-postadresser og leveringsadresser</translation>

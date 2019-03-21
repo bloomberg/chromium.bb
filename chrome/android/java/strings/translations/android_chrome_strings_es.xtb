@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1006017844123154345">Abrir versión online</translation>
-<translation id="1023450834687746199">Has borrado los datos de <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Añadiendo <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">ha fallado</translation>
 <translation id="2781151931089541271">Queda 1 segundo</translation>
 <translation id="2784212955220061919">En el modo básico, Chrome carga las páginas más rápido y reduce el uso de datos hasta un 60 por ciento. La tecnología de la nube de Google optimiza las páginas que visitas.</translation>
-<translation id="2785336755839207516">Has desinstalado <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Mostrando contraseñas guardadas y opciones de contraseña</translation>
 <translation id="2810645512293415242">Esta página se ha simplificado para ahorrar datos y poder cargarla más rápido.</translation>
 <translation id="281504910091592009">Consulta y gestiona las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gestionar</translation>
-<translation id="3814315701645566481">¿Quieres borrar los datos de <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Descargas eliminadas: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Descargar artículos recomendados para ti</translation>
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>

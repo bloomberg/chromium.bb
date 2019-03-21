@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">Telefono numeris</translation>
 <translation id="2283340219607151381">Išsaugoti ir užpildyti adresus</translation>
 <translation id="2292556288342944218">Interneto prieiga užblokuota</translation>
-<translation id="2294558542833290837">Pradinė atidaryta nuoroda neįprasta</translation>
 <translation id="2297722699537546652">B5 (vokas)</translation>
 <translation id="2310021320168182093">„Chou2“ (vokas)</translation>
 <translation id="2316887270356262533">Atlaisvina mažiau nei 1 MB. Per kitą jūsų apsilankymą kai kurios svetainės gali būti įkeliamos lėčiau.</translation>
@@ -499,7 +498,6 @@
 <translation id="3658742229777143148">Peržiūrėtas ir pataisytas leidimas</translation>
 <translation id="366077651725703012">Atnaujinti kredito kortelę</translation>
 <translation id="3676592649209844519">Įrenginio ID:</translation>
-<translation id="3677008721441257057">Ar norėjote apsilankyti &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Nepavyko pasirašyti užklausos</translation>
 <translation id="3678529606614285348">Atidarykite puslapį naujame inkognito lange („Ctrl“ – „Shift“ – N)</translation>
 <translation id="3679803492151881375">Strigčių ataskaita užfiksuota <ph name="CRASH_TIME" />, įkelta <ph name="UPLOAD_TIME" /></translation>
@@ -1414,7 +1412,6 @@ Papildoma išsami informacija:
 <translation id="894185898663964645">Administratorius sukonfigūravo tinkintus šakninius sertifikatus, kurie gali leisti jam peržiūrėti svetainių, kuriose lankotės, turinį.</translation>
 <translation id="8943282376843390568">Žaliųjų citrinų spalva</translation>
 <translation id="8957210676456822347">Fiksuotojo portalo autorizavimas</translation>
-<translation id="8966619695390250636">Turėjote omenyje?</translation>
 <translation id="8968766641738584599">Išsaugoti kortelę</translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
 <translation id="8975012916872825179">Įtraukiama tokia informacija kaip telefono numeriai, el. pašto adresai ir pristatymo adresai</translation>

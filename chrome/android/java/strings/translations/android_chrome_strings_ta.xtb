@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1006017844123154345">ஆன்லைனில் திற</translation>
-<translation id="1023450834687746199"><ph name="APP_NAME" /> ஆப்ஸின் தரவு அழிக்கப்பட்டது.</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ஐச் சேர்க்கிறது...</translation>
 <translation id="1041308826830691739">இணையதளங்களிலிருந்து</translation>
 <translation id="1049743911850919806">மறைநிலை</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">தோல்வியுற்றது</translation>
 <translation id="2781151931089541271">1 வினாடி மீதமுள்ளது</translation>
 <translation id="2784212955220061919">’லைட்’ பயன்முறையில், பக்கங்களை Chrome வேகமாக ஏற்றுவதோடு, டேட்டாவை 60 சதவீதம் குறைவாகவும் பயன்படுத்தும். Google கிளவுட் தொழில்நுட்பம் நீங்கள் பார்க்கும் பக்கத்தை மேம்படுத்தும்.</translation>
-<translation id="2785336755839207516"><ph name="APP_NAME" /> ஆப்ஸை நிறுவல் நீக்கியுள்ளீர்கள்.</translation>
 <translation id="2803478378562657435">சேமித்த கடவுச்சொற்களையும் கடவுச்சொல் விருப்பங்களையும் காண்பிக்கிறது</translation>
 <translation id="2810645512293415242">தரவைச் சேமித்து, வேகமாக ஏற்றுவதற்கு எளிதாக்கப்பட்ட பக்கம்.</translation>
 <translation id="281504910091592009">உங்கள் <ph name="BEGIN_LINK" />Google கணக்கில்<ph name="END_LINK" /> சேமிக்கப்பட்ட கடவுச்சொற்களைப் பார்த்து, நிர்வகிக்கவும்</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">நிறுவுக</translation>
 <translation id="3810838688059735925">வீடியோ</translation>
 <translation id="3810973564298564668">நிர்வகி</translation>
-<translation id="3814315701645566481"><ph name="URL" />க்கான தரவை அழிக்க விரும்புகிறீர்களா?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> பதிவிறக்கங்கள் உள்ளன</translation>
 <translation id="3819562311292413223">உங்களுக்கான செய்திக் கட்டுரைகளைப் பதிவிறக்குக</translation>
 <translation id="3822502789641063741">தளச் சேமிப்பகத்தை அழிக்கவா?</translation>
