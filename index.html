@@ -87,6 +87,10 @@
 
 import { Logger } from "./out/framework/index.js";
 
+const shadercLoaded = new Promise(res => {
+  Module.onRuntimeInitialized = res;
+});
+
 const resultsVis = document.getElementById("resultsVis");
 function mkTest(path, description) {
   const test = $("<div>")
@@ -149,6 +153,7 @@ function mkCase(testcases, {name, params, run}) {
     .appendTo(testcase);
 
   const runCase = async () => {
+    await shadercLoaded;
     const res = await run();
 
     casetime.text(res.timems.toFixed(4) + " ms");
@@ -221,6 +226,7 @@ async function loadListing(base, listing) {
   // TODO: convert listing to tree so it can be displayed as a tree?
 
   const log = new Logger();
+  const runCaseList = [];
   for (const [path, { mod, description }] of listing) {
     console.log("");
     console.log(path, description);
@@ -232,9 +238,13 @@ async function loadListing(base, listing) {
     const [tResult, tRec] = log.record(path);
     for (const t of mod.group.iterate(tRec)) {
       const runCase = mkCase(testcasesVis, t);
-      if (runnow) {
-        await runCase();
-      }
+      runCaseList.push(runCase);
+    }
+  }
+
+  if (runnow) {
+    for (const runCase of runCaseList) {
+      await runCase();
     }
   }
 })();

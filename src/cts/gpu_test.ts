@@ -26,6 +26,7 @@ export class GPUTest extends Fixture {
   }
 
   public compile(type: ("f" | "v" | "c"), source: string): ArrayBuffer {
+    // TODO: integrate this less hackily (and make it work without index.html)
     // @ts-ignore TS2339
     const Shaderc: any = window.Module;
 
@@ -35,7 +36,7 @@ export class GPUTest extends Fixture {
         type === "f" ? Shaderc.shader_kind.fragment :
         type === "v" ? Shaderc.shader_kind.vertex :
         type === "c" ? Shaderc.shader_kind.compute : null,
-        "", "main", opts);
+        "a.glsl", "main", opts);
     console.warn(result.GetErrorMessage());
     return result.GetBinary();
   }
