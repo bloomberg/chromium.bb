@@ -789,10 +789,14 @@ cr.define('bookmarks', function() {
      * @private
      */
     onKeydown_: function(e) {
-      const selection = this.getState().selection.items;
-      if (e.target == document.body &&
+      const path = e.composedPath();
+      if (path[0].tagName == 'INPUT') {
+        return;
+      }
+      if ((e.target == document.body ||
+           path.some(el => el.tagName == 'BOOKMARKS-TOOLBAR')) &&
           !bookmarks.DialogFocusManager.getInstance().hasOpenDialog()) {
-        this.handleKeyEvent(e, selection);
+        this.handleKeyEvent(e, this.getState().selection.items);
       }
     },
 
