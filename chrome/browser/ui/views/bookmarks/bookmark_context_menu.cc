@@ -79,7 +79,7 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point,
   // width/height don't matter here.
   menu_runner_->RunMenuAt(parent_widget_, nullptr,
                           gfx::Rect(point.x(), point.y(), 0, 0),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 void BookmarkContextMenu::SetPageNavigator(PageNavigator* navigator) {

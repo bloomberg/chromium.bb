@@ -129,7 +129,7 @@ class MenuRunnerTest : public ViewsTestBase {
 TEST_F(MenuRunnerTest, AsynchronousRun) {
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -145,7 +145,7 @@ TEST_F(MenuRunnerTest, AsynchronousRun) {
 TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -166,7 +166,7 @@ TEST_F(MenuRunnerTest, LatinMnemonic) {
   views::test::DisableMenuClosureAnimations();
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -190,7 +190,7 @@ TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   views::test::DisableMenuClosureAnimations();
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -212,8 +212,8 @@ TEST_F(MenuRunnerTest, MenuItemViewShowsMnemonics) {
 
   InitMenuRunner(MenuRunner::HAS_MNEMONICS | MenuRunner::SHOULD_SHOW_MNEMONICS);
 
-  menu_runner()->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                           ui::MENU_SOURCE_NONE);
+  menu_runner()->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                           MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_NONE);
 
   EXPECT_TRUE(menu_item_view()->show_mnemonics());
 }
@@ -224,8 +224,8 @@ TEST_F(MenuRunnerTest, MenuItemViewDoesNotShowMnemonics) {
 
   InitMenuRunner(MenuRunner::HAS_MNEMONICS);
 
-  menu_runner()->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                           ui::MENU_SOURCE_NONE);
+  menu_runner()->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                           MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_NONE);
 
   EXPECT_FALSE(menu_item_view()->show_mnemonics());
 }
@@ -248,7 +248,7 @@ TEST_F(MenuRunnerTest, PrefixSelect) {
   menu_item_view()->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("One Two"));
 
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -291,7 +291,7 @@ TEST_F(MenuRunnerTest, SpaceActivatesItem) {
   InitMenuRunner(0);
 
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -315,7 +315,7 @@ TEST_F(MenuRunnerTest, SpaceActivatesItem) {
 TEST_F(MenuRunnerTest, NestingDuringDrag) {
   InitMenuRunner(MenuRunner::FOR_DROP);
   MenuRunner* runner = menu_runner();
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MenuAnchorPosition::kTopLeft,
                     ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(runner->IsRunning());
 
@@ -323,8 +323,8 @@ TEST_F(MenuRunnerTest, NestingDuringDrag) {
   MenuItemView* nested_menu = new MenuItemView(nested_delegate.get());
   std::unique_ptr<MenuRunner> nested_runner(
       new MenuRunner(nested_menu, MenuRunner::IS_NESTED));
-  nested_runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                           ui::MENU_SOURCE_NONE);
+  nested_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                           MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_NONE);
   EXPECT_TRUE(nested_runner->IsRunning());
   EXPECT_FALSE(runner->IsRunning());
   TestMenuDelegate* delegate = menu_delegate();
@@ -345,8 +345,8 @@ class MenuLauncherEventHandler : public ui::EventHandler {
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override {
     if (event->type() == ui::ET_MOUSE_PRESSED) {
-      runner_->RunMenuAt(owner_, nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                         ui::MENU_SOURCE_NONE);
+      runner_->RunMenuAt(owner_, nullptr, gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_NONE);
       event->SetHandled();
     }
   }
@@ -490,7 +490,8 @@ void MenuRunnerImplTest::SetUp() {
 TEST_F(MenuRunnerImplTest, NestedMenuRunnersDestroyedOutOfOrder) {
   internal::MenuRunnerImpl* menu_runner =
       new internal::MenuRunnerImpl(menu_item_view());
-  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT, 0);
+  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, 0);
 
   std::unique_ptr<TestMenuDelegate> menu_delegate2(new TestMenuDelegate);
   MenuItemView* menu_item_view2 = new MenuItemView(menu_delegate2.get());
@@ -498,8 +499,8 @@ TEST_F(MenuRunnerImplTest, NestedMenuRunnersDestroyedOutOfOrder) {
 
   internal::MenuRunnerImpl* menu_runner2 =
       new internal::MenuRunnerImpl(menu_item_view2);
-  menu_runner2->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                          MenuRunner::IS_NESTED);
+  menu_runner2->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                          MenuAnchorPosition::kTopLeft, MenuRunner::IS_NESTED);
 
   // Hide the controller so we can test out of order destruction.
   MenuControllerTestApi menu_controller;
@@ -521,7 +522,8 @@ TEST_F(MenuRunnerImplTest, NestedMenuRunnersDestroyedOutOfOrder) {
 TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
   internal::MenuRunnerImpl* menu_runner =
       new internal::MenuRunnerImpl(menu_item_view());
-  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT, 0);
+  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, 0);
 
   // Hide the menu, and clear its item selection state.
   MenuControllerTestApi menu_controller;
@@ -534,8 +536,8 @@ TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
 
   internal::MenuRunnerImpl* menu_runner2 =
       new internal::MenuRunnerImpl(menu_item_view2);
-  menu_runner2->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                          MenuRunner::FOR_DROP);
+  menu_runner2->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                          MenuAnchorPosition::kTopLeft, MenuRunner::FOR_DROP);
 
   EXPECT_NE(menu_controller.controller(), MenuController::GetActiveInstance());
   menu_controller.SetShowing(true);
@@ -595,7 +597,8 @@ void MenuRunnerDestructionTest::SetUp() {
 TEST_F(MenuRunnerDestructionTest, MenuRunnerDestroyedDuringReleaseRef) {
   internal::MenuRunnerImpl* menu_runner =
       new internal::MenuRunnerImpl(menu_item_view());
-  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT, 0);
+  menu_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, 0);
 
   views_delegate()->set_menu_runner(menu_runner);
 

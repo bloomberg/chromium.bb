@@ -1196,7 +1196,7 @@ void Textfield::ShowContextMenuForViewImpl(View* source,
   UpdateContextMenu();
   context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
-                                  MENU_ANCHOR_TOPLEFT, source_type);
+                                  MenuAnchorPosition::kTopLeft, source_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

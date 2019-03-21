@@ -248,7 +248,8 @@ void BookmarkEditorView::ShowContextMenuForViewImpl(
 
   context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                                   NULL, gfx::Rect(point, gfx::Size()),
-                                  views::MENU_ANCHOR_TOPRIGHT, source_type);
+                                  views::MenuAnchorPosition::kTopRight,
+                                  source_type);
 }
 
 const char* BookmarkEditorView::GetClassName() const {

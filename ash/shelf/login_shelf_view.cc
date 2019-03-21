@@ -336,7 +336,8 @@ class KioskAppsButton : public views::MenuButton,
     origin.set_y(point.y() - source->height());
     menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
                             gfx::Rect(origin, gfx::Size()),
-                            views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+                            views::MenuAnchorPosition::kTopLeft,
+                            ui::MENU_SOURCE_NONE);
   }
 
   // ui::SimpleMenuModel:

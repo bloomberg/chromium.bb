@@ -168,7 +168,7 @@ void TreeViewExample::ShowContextMenuForViewImpl(
       std::make_unique<MenuRunner>(context_menu_model_.get(), 0);
   context_menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
-                                  MENU_ANCHOR_TOPLEFT, source_type);
+                                  MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool TreeViewExample::IsCommandIdChecked(int command_id) const {

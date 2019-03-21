@@ -350,8 +350,8 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
       menu_model_.get(), MenuRunner::EDITABLE_COMBOBOX,
       base::BindRepeating(&EditableCombobox::OnMenuClosed,
                           base::Unretained(this)));
-  menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds, MENU_ANCHOR_TOPLEFT,
-                          source_type);
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds,
+                          MenuAnchorPosition::kTopLeft, source_type);
 }
 
 }  // namespace views

@@ -357,7 +357,8 @@ void OpaqueBrowserFrameView::OnMenuButtonClicked(views::MenuButton* source,
                                 views::MenuRunner::HAS_MNEMONICS);
   menu_runner.RunMenuAt(browser_view()->GetWidget(), window_icon_,
                         window_icon_->GetBoundsInScreen(),
-                        views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_MOUSE);
+                        views::MenuAnchorPosition::kTopLeft,
+                        ui::MENU_SOURCE_MOUSE);
 #endif
 }
 

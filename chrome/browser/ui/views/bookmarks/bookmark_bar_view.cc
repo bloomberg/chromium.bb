@@ -678,10 +678,11 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
 void BookmarkBarView::GetAnchorPositionForButton(
     views::MenuButton* button,
     views::MenuAnchorPosition* anchor) {
+  using Position = views::MenuAnchorPosition;
   if (button == other_bookmarks_button_ || button == overflow_button_)
-    *anchor = views::MENU_ANCHOR_TOPRIGHT;
+    *anchor = Position::kTopRight;
   else
-    *anchor = views::MENU_ANCHOR_TOPLEFT;
+    *anchor = Position::kTopLeft;
 }
 
 views::MenuItemView* BookmarkBarView::GetMenu() {

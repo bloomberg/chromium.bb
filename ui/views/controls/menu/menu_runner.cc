@@ -58,11 +58,11 @@ void MenuRunner::RunMenuAt(Widget* parent,
       case ui::MENU_SOURCE_NONE:
       case ui::MENU_SOURCE_KEYBOARD:
       case ui::MENU_SOURCE_MOUSE:
-        anchor = MENU_ANCHOR_TOPLEFT;
+        anchor = MenuAnchorPosition::kTopLeft;
         break;
       case ui::MENU_SOURCE_TOUCH:
       case ui::MENU_SOURCE_TOUCH_EDIT_MENU:
-        anchor = MENU_ANCHOR_BOTTOMCENTER;
+        anchor = MenuAnchorPosition::kBottomCenter;
         break;
       default:
         break;

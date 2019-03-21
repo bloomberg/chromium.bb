@@ -349,7 +349,7 @@ void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
   menu_runner_->RunMenuAt(parent, this, GetAnchorBoundsInScreen(),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool ToolbarActionView::CloseActiveMenuIfNeeded() {

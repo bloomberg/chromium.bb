@@ -301,7 +301,7 @@ void BaseScrollBar::ShowContextMenuForViewImpl(View* source,
       menu_model_.get(),
       MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(p, gfx::Size()),
-                          MENU_ANCHOR_TOPLEFT, source_type);
+                          MenuAnchorPosition::kTopLeft, source_type);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

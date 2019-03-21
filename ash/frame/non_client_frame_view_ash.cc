@@ -503,7 +503,7 @@ void NonClientFrameViewAsh::ShowContextMenuForViewImpl(
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
   menu_runner_->RunMenuAt(GetWidget(), nullptr,
                           gfx::Rect(point, gfx::Size(0, 0)),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool NonClientFrameViewAsh::IsCommandIdChecked(int command_id) const {

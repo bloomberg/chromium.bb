@@ -813,9 +813,9 @@ void AppMenu::Init(ui::MenuModel* model) {
 void AppMenu::RunMenu(views::MenuButton* host) {
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
 
-  menu_runner_->RunMenuAt(host->GetWidget(), host,
-                          host->GetAnchorBoundsInScreen(),
-                          views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
+  menu_runner_->RunMenuAt(
+      host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
+      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
 }
 
 void AppMenu::CloseMenu() {

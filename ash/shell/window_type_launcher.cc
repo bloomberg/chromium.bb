@@ -340,7 +340,7 @@ void WindowTypeLauncher::ShowContextMenuForViewImpl(
   menu_runner_.reset(new MenuRunner(
       root, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
   menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 }  // namespace shell

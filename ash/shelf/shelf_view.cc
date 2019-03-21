@@ -2336,8 +2336,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
   shelf_menu_model_adapter_->Run(
       GetMenuAnchorRect(*source, click_point, context_menu),
       shelf_->IsHorizontalAlignment()
-          ? views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE
-          : views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT,
+          ? views::MenuAnchorPosition::kBubbleTouchableAbove
+          : views::MenuAnchorPosition::kBubbleTouchableLeft,
       run_types);
 }
 

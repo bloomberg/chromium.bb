@@ -316,7 +316,7 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
   context_menu_runner_->RunMenuAt(
       GetWidget(), NULL,
       gfx::Rect(point.x(), point.y(), views::GridLayout::kFixedSize, 0),
-      views::MENU_ANCHOR_TOPLEFT, source_type);
+      views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool MediaGalleriesDialogViews::ControllerHasWebContents() const {

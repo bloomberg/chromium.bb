@@ -436,9 +436,9 @@ void OmniboxResultView::ShowContextMenuForViewImpl(
       &context_menu_contents_,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
       set_hovered_false);
-  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
-                                  gfx::Rect(point, gfx::Size()),
-                                  views::MENU_ANCHOR_TOPLEFT, source_type);
+  context_menu_runner_->RunMenuAt(
+      GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+      views::MenuAnchorPosition::kTopLeft, source_type);
 
   // Opening the context menu unsets the hover state, but we still want the
   // result 'hovered' as long as the context menu is open.

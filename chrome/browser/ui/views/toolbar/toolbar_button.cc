@@ -372,7 +372,7 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS);
   menu_runner_->RunMenuAt(GetWidget(), nullptr, menu_anchor_bounds,
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 void ToolbarButton::OnMenuClosed() {

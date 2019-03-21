@@ -220,13 +220,13 @@ bool MenuItemView::HandleAccessibleAction(const ui::AXActionData& action_data) {
 
 // static
 bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
-  return anchor == MENU_ANCHOR_BUBBLE_LEFT ||
-         anchor == MENU_ANCHOR_BUBBLE_RIGHT ||
-         anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
-         anchor == MENU_ANCHOR_BUBBLE_BELOW ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT ||
-         anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
+  return anchor == MenuAnchorPosition::kBubbleLeft ||
+         anchor == MenuAnchorPosition::kBubbleRight ||
+         anchor == MenuAnchorPosition::kBubbleAbove ||
+         anchor == MenuAnchorPosition::kBubbleBelow ||
+         anchor == MenuAnchorPosition::kBubbleTouchableAbove ||
+         anchor == MenuAnchorPosition::kBubbleTouchableLeft ||
+         anchor == MenuAnchorPosition::kBubbleTouchableRight;
 }
 
 // static

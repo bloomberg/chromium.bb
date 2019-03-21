@@ -633,8 +633,8 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
         base::BindRepeating(&Combobox::OnMenuClosed, base::Unretained(this),
                             original_state));
   }
-  menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds, MENU_ANCHOR_TOPLEFT,
-                          source_type);
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds,
+                          MenuAnchorPosition::kTopLeft, source_type);
 }
 
 void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {

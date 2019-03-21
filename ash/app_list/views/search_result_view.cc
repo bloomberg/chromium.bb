@@ -526,7 +526,8 @@ void SearchResultView::OnGetContextMenu(
       std::string(), this, source_type, this,
       AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure());
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(gfx::Rect(point, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
+  context_menu_->Run(gfx::Rect(point, gfx::Size()),
+                     views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);
   source->RequestFocus();
 }
