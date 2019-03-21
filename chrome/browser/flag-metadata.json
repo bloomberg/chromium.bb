@@ -983,6 +983,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-immersive-fullscreen-toolbar",
+    "owners": [ "sdy", "chrome/browser/ui/cocoa/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-content-suggestions-thumbnail-dominant-color",
     "owners": [ "fgorski" ],
     "expiry_milestone": 76

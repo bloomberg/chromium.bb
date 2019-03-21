@@ -255,8 +255,12 @@ NSEvent* MockMouseEventWithParams(CGEventType mouse_type,
                                   CGEventMouseSubtype subtype,
                                   bool is_entering_proximity = false,
                                   bool is_pen_tip = false) {
+  // CGEvents have their origin at the *top* left screen corner. Converting to
+  // an NSEvent, below, flips the location back to bottom left origin.
+  CGPoint cg_location =
+      CGPointMake(location.x, NSHeight(NSScreen.screens[0].frame) - location.y);
   CGEventRef cg_event =
-      CGEventCreateMouseEvent(NULL, mouse_type, location, button);
+      CGEventCreateMouseEvent(NULL, mouse_type, cg_location, button);
   CGEventSetIntegerValueField(cg_event, kCGMouseEventSubtype, subtype);
   CGEventSetIntegerValueField(cg_event, kCGTabletProximityEventEnterProximity,
                               is_entering_proximity);
@@ -1034,7 +1038,7 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeNoTabletEvent) {
             GetPointerType(events));
   events.clear();
 
-  event = cocoa_test_event_utils::EnterEvent();
+  event = cocoa_test_event_utils::EnterEvent({1, 1}, window_);
   [rwhv_mac_->cocoa_view() mouseEntered:event];
   base::RunLoop().RunUntilIdle();
   events = host_->GetAndResetDispatchedMessages();
