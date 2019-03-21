@@ -119,7 +119,7 @@ declare_args() {
 
   # Turn this on to use ghash feature of lld for faster debug link on Windows.
   # http://blog.llvm.org/2018/01/improving-link-time-on-windows-with.html
-  use_ghash = false
+  use_ghash = true
 
   # Whether to enable ThinLTO optimizations. Turning ThinLTO optimizations on
   # can substantially increase link time and binary size, but they generally
