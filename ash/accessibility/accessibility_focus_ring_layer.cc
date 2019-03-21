@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -17,7 +18,9 @@ namespace ash {
 namespace {
 
 // The number of pixels in the color gradient that fades to transparent.
-const int kGradientWidth = 6;
+constexpr int kGradientWidth = 6;
+constexpr int kDefaultStrokeWidth = 2;
+constexpr float kDashLength = 3.f;
 
 int sign(int x) {
   return ((x > 0) ? 1 : (x == 0) ? 0 : -1);
@@ -115,7 +118,6 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(2);
 
   switch (type_) {
     case mojom::FocusRingType::GLOW:
@@ -125,7 +127,8 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
       DrawSolidFocusRing(recorder, flags);
       break;
     case mojom::FocusRingType::DASHED:
-      NOTREACHED();
+      DrawDashedFocusRing(recorder, flags);
+      break;
   }
 }
 
@@ -134,16 +137,45 @@ void AccessibilityFocusRingLayer::DrawSolidFocusRing(
     cc::PaintFlags& flags) {
   if (!has_custom_color())
     NOTREACHED();
-  SkColor base_color = custom_color();
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
-  flags.setColor(base_color);
+  flags.setColor(custom_color());
+  flags.setStrokeWidth(kDefaultStrokeWidth);
+
   path = MakePath(ring_, 0, offset);
   recorder.canvas()->DrawPath(path, flags);
 
   flags.setColor(secondary_color_);
-  path = MakePath(ring_, 2, offset);
+  path = MakePath(ring_, kDefaultStrokeWidth, offset);
+  recorder.canvas()->DrawPath(path, flags);
+}
+
+void AccessibilityFocusRingLayer::DrawDashedFocusRing(
+    ui::PaintRecorder& recorder,
+    cc::PaintFlags& flags) {
+  if (!has_custom_color())
+    NOTREACHED();
+
+  SkPath path;
+  gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
+
+  SkScalar intervals[] = {kDashLength, kDashLength};
+  int intervals_length = 2;
+  flags.setPathEffect(SkDashPathEffect::Make(intervals, intervals_length, 0));
+
+  // To keep the dashes properly lined up, we will draw the outside line first,
+  // and cover it with the inner line.
+  flags.setColor(secondary_color_);
+  flags.setStrokeWidth(2 * kDefaultStrokeWidth);
+
+  path = MakePath(ring_, 0, offset);
+  recorder.canvas()->DrawPath(path, flags);
+
+  flags.setColor(custom_color());
+  flags.setStrokeWidth(kDefaultStrokeWidth);
+
+  path = MakePath(ring_, 0, offset);
   recorder.canvas()->DrawPath(path, flags);
 }
 
@@ -155,6 +187,8 @@ void AccessibilityFocusRingLayer::DrawGlowFocusRing(ui::PaintRecorder& recorder,
 
   SkPath path;
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
+  flags.setStrokeWidth(kDefaultStrokeWidth);
+
   const int w = kGradientWidth;
   for (int i = 0; i < w; ++i) {
     flags.setColor(SkColorSetA(base_color, 255 * (w - i) * (w - i) / (w * w)));
