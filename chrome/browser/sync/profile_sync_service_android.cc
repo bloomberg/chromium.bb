@@ -34,7 +34,6 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync_sessions/session_sync_service.h"
-#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "jni/ProfileSyncService_jni.h"
@@ -46,7 +45,6 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
-using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace {
 
@@ -350,25 +348,6 @@ jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->HasUnrecoverableError();
-}
-
-jboolean ProfileSyncServiceAndroid::IsUrlKeyedDataCollectionEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean personalized) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-      unified_consent_url_helper;
-  if (personalized) {
-    unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
-        NewPersonalizedDataCollectionConsentHelper(sync_service_);
-  } else {
-    PrefService* pref_service = profile_->GetPrefs();
-    unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
-        NewAnonymizedDataCollectionConsentHelper(pref_service, sync_service_);
-  }
-
-  return unified_consent_url_helper->IsEnabled();
 }
 
 jint ProfileSyncServiceAndroid::GetProtocolErrorClientAction(
