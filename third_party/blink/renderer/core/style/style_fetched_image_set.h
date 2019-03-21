@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -100,7 +101,12 @@ class StyleFetchedImageSet final : public StyleImage,
   const KURL url_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, IsImageResourceSet());
+template <>
+struct DowncastTraits<StyleFetchedImageSet> {
+  static bool AllowFrom(const StyleImage& styleImage) {
+    return styleImage.IsImageResourceSet();
+  }
+};
 
 }  // namespace blink
 
