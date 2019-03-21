@@ -831,7 +831,7 @@ void TranslateManager::FilterForHrefTranslate(
     TranslateTriggerDecision* decision,
     TranslatePrefs* translate_prefs,
     const std::string& page_language_code) {
-  if (!language_state_.navigation_from_dse()) {
+  if (!language_state_.navigation_from_google()) {
     decision->PreventAutoHrefTranslate();
   }
 
