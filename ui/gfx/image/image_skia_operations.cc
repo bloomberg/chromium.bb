@@ -5,6 +5,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -477,6 +478,30 @@ class IconWithBadgeSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeSource);
 };
 
+// ImageSkiaSource which uses SkBitmapOperations::CreateColorMask
+// to generate image reps for the target image.
+class ColorMaskSource : public gfx::ImageSkiaSource {
+ public:
+  ColorMaskSource(const ImageSkia& image, SkColor color)
+      : image_(image), color_(color) {}
+
+  ~ColorMaskSource() override {}
+
+  // gfx::ImageSkiaSource overrides:
+  ImageSkiaRep GetImageForScale(float scale) override {
+    ImageSkiaRep image_rep = image_.GetRepresentation(scale);
+    return ImageSkiaRep(
+        SkBitmapOperations::CreateColorMask(image_rep.GetBitmap(), color_),
+        image_rep.scale());
+  }
+
+ private:
+  const ImageSkia image_;
+  const SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(ColorMaskSource);
+};
+
 }  // namespace
 
 // static
@@ -633,4 +658,13 @@ ImageSkia ImageSkiaOperations::CreateIconWithBadge(const ImageSkia& icon,
                    icon.size());
 }
 
+// static
+ImageSkia ImageSkiaOperations::CreateColorMask(const ImageSkia& image,
+                                               SkColor color) {
+  if (image.isNull())
+    return ImageSkia();
+
+  return ImageSkia(std::make_unique<ColorMaskSource>(image, color),
+                   image.size());
+}
 }  // namespace gfx

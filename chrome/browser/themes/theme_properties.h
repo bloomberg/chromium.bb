@@ -49,7 +49,8 @@ class ThemeProperties {
     COLOR_NTP_TEXT,
     COLOR_NTP_LINK,
     COLOR_NTP_HEADER,
-    COLOR_BUTTON_BACKGROUND,
+    COLOR_CONTROL_BUTTON_BACKGROUND,
+    COLOR_TOOLBAR_BUTTON_ICON,
 
     TINT_BUTTONS,
     TINT_FRAME,
@@ -95,8 +96,6 @@ class ThemeProperties {
     // contents.
     COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR,
 
-    // The color of a normal toolbar button's icon.
-    COLOR_TOOLBAR_BUTTON_ICON,
     // The color of a disabled toolbar button's icon.
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
 

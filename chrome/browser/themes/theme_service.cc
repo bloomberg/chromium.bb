@@ -218,6 +218,18 @@ bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
 bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
   DefaultScope scope(*this);
   bool has_custom_color = false;
+
+  // COLOR_TOOLBAR_BUTTON_ICON has custom value if it is explicitly specified or
+  // calclated from non {-1, -1, -1} tint (means "no change"). Note that, tint
+  // can have a value other than {-1, -1, -1} even if it is not explicitly
+  // specified (e.g incognito and dark mode).
+  if (id == ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON) {
+    theme_service_.GetColor(id, incognito_, &has_custom_color);
+    color_utils::HSL hsl =
+        theme_service_.GetTint(ThemeProperties::TINT_BUTTONS, incognito_);
+    return has_custom_color || (hsl.h != -1 || hsl.s != -1 || hsl.l != -1);
+  }
+
   theme_service_.GetColor(id, incognito_, &has_custom_color);
   return has_custom_color;
 }

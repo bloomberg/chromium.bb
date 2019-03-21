@@ -1619,9 +1619,12 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
       themify_icon = true;
     }
 
-    if (themify_icon && GetThemeProvider()) {
-      favicon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
-          favicon, GetThemeProvider()->GetTint(ThemeProperties::TINT_BUTTONS));
+    if (themify_icon && GetThemeProvider() &&
+        GetThemeProvider()->HasCustomColor(
+            ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)) {
+      favicon = gfx::ImageSkiaOperations::CreateColorMask(
+          favicon, GetThemeProvider()->GetColor(
+                       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
     }
 
     button->SetImage(views::Button::STATE_NORMAL, favicon);

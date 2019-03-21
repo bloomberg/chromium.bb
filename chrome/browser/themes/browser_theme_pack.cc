@@ -241,19 +241,20 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
     {"background_tab_incognito", TP::COLOR_BACKGROUND_TAB_INCOGNITO},
     {"background_tab_incognito_inactive",
      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
-    {"toolbar", TP::COLOR_TOOLBAR},
-    {"tab_text", TP::COLOR_TAB_TEXT},
+    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
+    {"button_background", TP::COLOR_CONTROL_BUTTON_BACKGROUND},
     {"tab_background_text", TP::COLOR_BACKGROUND_TAB_TEXT},
     {"tab_background_text_inactive", TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
     {"tab_background_text_incognito", TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
     {"tab_background_text_incognito_inactive",
      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
-    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
+    {"tab_text", TP::COLOR_TAB_TEXT},
+    {"toolbar", TP::COLOR_TOOLBAR},
+    {"toolbar_button_icon", TP::COLOR_TOOLBAR_BUTTON_ICON},
     {"ntp_background", TP::COLOR_NTP_BACKGROUND},
-    {"ntp_text", TP::COLOR_NTP_TEXT},
-    {"ntp_link", TP::COLOR_NTP_LINK},
     {"ntp_header", TP::COLOR_NTP_HEADER},
-    {"button_background", TP::COLOR_BUTTON_BACKGROUND},
+    {"ntp_link", TP::COLOR_NTP_LINK},
+    {"ntp_text", TP::COLOR_NTP_TEXT},
 };
 constexpr size_t kOverwritableColorTableLength =
     base::size(kOverwritableColorTable);
@@ -1525,7 +1526,7 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
 
   SkColor button_bg_color;
   SkAlpha button_bg_alpha = SK_AlphaTRANSPARENT;
-  if (GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color))
+  if (GetColor(TP::COLOR_CONTROL_BUTTON_BACKGROUND, &button_bg_color))
     button_bg_alpha = SkColorGetA(button_bg_color);
 
   button_bg_alpha =

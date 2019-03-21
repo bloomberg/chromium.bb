@@ -419,6 +419,11 @@ void TabIcon::RefreshLayer() {
 }
 
 gfx::ImageSkia TabIcon::ThemeImage(const gfx::ImageSkia& source) {
-  return gfx::ImageSkiaOperations::CreateHSLShiftedImage(
-      source, GetThemeProvider()->GetTint(ThemeProperties::TINT_BUTTONS));
+  if (!GetThemeProvider()->HasCustomColor(
+          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON))
+    return source;
+
+  return gfx::ImageSkiaOperations::CreateColorMask(
+      source,
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
 }

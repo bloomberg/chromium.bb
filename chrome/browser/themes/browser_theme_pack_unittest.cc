@@ -136,7 +136,7 @@ std::map<int, SkColor> BrowserThemePackTest::GetDefaultColorMap() {
 
   // For the rest, use default colors.
   for (int i = TP::COLOR_FRAME_INCOGNITO_INACTIVE + 1;
-       i <= TP::COLOR_BUTTON_BACKGROUND; ++i) {
+       i <= TP::COLOR_CONTROL_BUTTON_BACKGROUND; ++i) {
     colors[i] = GetDefaultColor(i);
   }
 
@@ -939,7 +939,7 @@ TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGColor) {
 
   SkColor button_bg_color;
   const bool has_button_bg_color =
-      pack->GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color);
+      pack->GetColor(TP::COLOR_CONTROL_BUTTON_BACKGROUND, &button_bg_color);
   ASSERT_TRUE(has_button_bg_color);
   SkAlpha button_bg_alpha = SkColorGetA(button_bg_color);
 
@@ -1129,4 +1129,17 @@ TEST_F(BrowserThemePackTest, BuildFromColor_TestColors) {
               kActiveTabMinContrast);
     EXPECT_TRUE(has_readable_contrast(toolbar_color));
   }
+}
+
+TEST_F(BrowserThemePackTest, TestToolbarButtonColor) {
+  scoped_refptr<BrowserThemePack> pack(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_test_toolbar_button_color", pack.get());
+
+  SkColor button_color;
+  EXPECT_TRUE(pack->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &button_color));
+  EXPECT_EQ(button_color, SkColorSetRGB(255, 0, 0));
+
+  color_utils::HSL hsl;
+  EXPECT_TRUE(pack->GetTint(TP::TINT_BUTTONS, &hsl));
 }
