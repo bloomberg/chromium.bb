@@ -130,6 +130,7 @@ mojom("mojom_platform") {
 
   public_deps = [
     ":android_mojo_bindings",
+    ":authenticator_test_mojo_bindings",
     ":mojom_mhtml_load_result",
     ":speech_recognition_error_code",
     ":web_client_hints_types_mojo_bindings",
@@ -173,14 +174,15 @@ mojom("mojom_platform") {
 # Kept separate from "mojom_platform" because the Java bindings are specifically
 # needed by Android's implementation of payments and webshare
 # (in components/payments/content/android and chrome/android/),
-# input (in android_webview/ and content/browser/android/) and
-# remote objects(in content/public/android/).
+# input (in android_webview/ and content/browser/android/), remote objects
+# (in content/public/android/) and webauthn (in chrome/android).
 mojom("android_mojo_bindings") {
   sources = [
     "input/input_host.mojom",
     "input/input_messages.mojom",
     "payments/payment_request.mojom",
     "remote_objects/remote_objects.mojom",
+    "webauthn/authenticator.mojom",
     "webshare/webshare.mojom",
   ]
   public_deps = [
@@ -203,6 +205,9 @@ mojom("android_mojo_bindings") {
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+
+  # Don't scramble message IDs so they are redistributable to external tests.
+  scramble_message_ids = false
 }
 
 # Kept separate from "mojom_platform" because the Java bindings are needed by
@@ -339,4 +344,27 @@ mojom("web_client_hints_types_mojo_bindings") {
   sources = [
     "web_client_hints/web_client_hints_types.mojom",
   ]
+}
+
+# This is a separate target because it needs unscrambled message IDs.
+mojom("authenticator_test_mojo_bindings") {
+  sources = [
+    "webauthn/virtual_authenticator.mojom",
+  ]
+
+  public_deps = [
+    ":android_mojo_bindings",
+    "//url/mojom:url_mojom_gurl",
+  ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
+
+  export_class_attribute_blink = "PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+
+  # Don't scramble message IDs so they are redistributable to external tests.
+  scramble_message_ids = false
 }

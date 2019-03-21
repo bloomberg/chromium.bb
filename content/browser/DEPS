@@ -137,8 +137,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h",
   "+third_party/blink/public/platform/modules/notifications/notification_service.mojom.h",
   "+third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom.h",
-  "+third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h",
-  "+third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h",
   "+third_party/blink/public/platform/modules/websockets/websocket.mojom.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
