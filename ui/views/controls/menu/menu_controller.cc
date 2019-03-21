@@ -464,7 +464,7 @@ void MenuController::Run(Widget* parent,
     state_.hot_button = hot_button_;
     hot_button_ = nullptr;
     // We're already showing, push the current state.
-    menu_stack_.push_back(std::make_pair(state_, std::move(pressed_lock_)));
+    menu_stack_.emplace_back(state_, std::move(pressed_lock_));
 
     // The context menu should be owned by the same parent.
     DCHECK_EQ(owner_, parent);
