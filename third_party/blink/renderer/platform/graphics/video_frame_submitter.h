@@ -95,6 +95,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // visible or an empty frame if not.
   void UpdateSubmissionState();
 
+  // Will submit an empty frame to clear resource usage if it's safe.
+  void SubmitEmptyFrameIfNeeded();
+
   // Returns whether a frame was submitted.
   bool SubmitFrame(const viz::BeginFrameAck&, scoped_refptr<media::VideoFrame>);
 
@@ -167,6 +170,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   viz::FrameTokenGenerator next_frame_token_;
 
   THREAD_CHECKER(thread_checker_);
+
+  // Weak factory that's used to cancel empty frame callbacks.
+  base::WeakPtrFactory<VideoFrameSubmitter> empty_frame_weak_ptr_factory_;
 
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
 
