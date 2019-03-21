@@ -27,6 +27,18 @@ static const struct GFMaxPyrHeightTestParam {
   { 4, 36.0 },
 };
 
+// Compiler may decide to add some padding to the struct above for alignment,
+// which the gtest may try to print (on error for example). This would cause
+// valgrind to complain that the padding is uninitialized. To avoid that, we
+// provide our own function to print the struct.
+// This also makes '--gtest_list_tests' output more understandable.
+std::ostream &operator<<(std::ostream &os, const GFMaxPyrHeightTestParam &p) {
+  os << "GFMaxPyrHeightTestParam { "
+     << "gf_max_pyr_height = " << p.gf_max_pyr_height << ", "
+     << "psnr_thresh = " << p.psnr_thresh << " }";
+  return os;
+}
+
 // Params: encoding mode and GFMaxPyrHeightTestParam object.
 class GFMaxPyrHeightTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode,
