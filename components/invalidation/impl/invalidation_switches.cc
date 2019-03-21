@@ -30,5 +30,10 @@ const base::Feature kFCMInvalidationsStartOnceActiveAccountAvailable = {
     "FCMInvalidationsStartOnceActiveAccountAvailable",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+extern const base::Feature kFCMInvalidationsForSyncDontCheckVersion;
+const base::Feature kFCMInvalidationsForSyncDontCheckVersion = {
+    "FCMInvalidationsForSyncDontCheckVersion",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace switches
 }  // namespace invalidation
