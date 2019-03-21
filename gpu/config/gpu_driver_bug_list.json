@@ -2588,19 +2588,6 @@
       ]
     },
     {
-      "id": 248,
-      "description": "Direct composition causes slow presents on Intel Sandybridge",
-      "cr_bugs": [775898, 785648],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0116"],
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
       "id": 249,
       "description": "Direct composition causes slow presents on old Nvidia GPUs",
       "cr_bugs": [775898],
@@ -3261,6 +3248,21 @@
       "gl_renderer": "PowerVR Rogue GE8.*",
       "features": [
         "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 300,
+      "cr_bugs": [775898, 785648, 9245627],
+      "description": "Direct composition causes rendering issues on Intel SandyBridge and IvyBridge GPUs",
+      "os": {
+        "type" : "win"
+      },
+      "gpu_series": [
+        "intel_sandybridge",
+        "intel_ivybridge"
+      ],
+      "features": [
+        "disable_direct_composition"
       ]
     }
   ]
