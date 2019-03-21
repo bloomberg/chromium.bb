@@ -47,6 +47,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
 //
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
     ITextRangeProvider** clone) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_CLONE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
   *clone = nullptr;
 
@@ -56,6 +57,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
     ITextRangeProvider* other,
     BOOL* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPARE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
@@ -77,6 +79,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
     ITextRangeProvider* other,
     TextPatternRangeEndpoint other_endpoint,
     int* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPAREENDPOINTS);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
@@ -105,6 +108,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     TextUnit unit) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT);
   return E_NOTIMPL;
 }
 
@@ -113,6 +117,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
     VARIANT val,
     BOOL backward,
     ITextRangeProvider** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_FINDATTRIBUTE);
   return E_NOTIMPL;
 }
 
@@ -121,17 +126,20 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
     BOOL backwards,
     BOOL ignore_case,
     ITextRangeProvider** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_FINDTEXT);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
     TEXTATTRIBUTEID attribute_id,
     VARIANT* value) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
     SAFEARRAY** rectangles) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETBOUNDINGRECTANGLES);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *rectangles = nullptr;
@@ -187,6 +195,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
     IRawElementProviderSimple** element) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETENCLOSINGELEMENT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
@@ -202,6 +211,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetText(int max_count,
                                                          BSTR* text) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETTEXT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   // -1 is a valid value that signifies that the caller wants complete text.
@@ -227,6 +237,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetText(int max_count,
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
                                                       int count,
                                                       int* units_moved) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVE);
   return E_NOTIMPL;
 }
 
@@ -235,6 +246,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
     TextUnit unit,
     int count,
     int* units_moved) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT);
   return E_NOTIMPL;
 }
 
@@ -242,6 +254,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
     TextPatternRangeEndpoint this_endpoint,
     ITextRangeProvider* other,
     TextPatternRangeEndpoint other_endpoint) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
@@ -268,25 +281,30 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Select() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_SELECT);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::AddToSelection() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_ADDTOSELECTION);
   return UIA_E_INVALIDOPERATION;  // not supporting disjoint text selections
 }
 
 STDMETHODIMP
 AXPlatformNodeTextRangeProviderWin::RemoveFromSelection() {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_REMOVEFROMSELECTION);
   return UIA_E_INVALIDOPERATION;  // not supporting disjoint text selections
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
     BOOL align_to_top) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_SCROLLINTOVIEW);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
     SAFEARRAY** children) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETCHILDREN);
   return E_NOTIMPL;
 }
 
