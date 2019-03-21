@@ -94,12 +94,6 @@ constexpr TimeDelta kDefaultBackgroundTabLoadTimeout =
 // load the next background tab when the loading slots free up.
 constexpr size_t kNumOfLoadingSlots = 1;
 
-#if defined(OS_CHROMEOS)
-// The default interval in seconds after which to adjust the oom_score_adj
-// value.
-constexpr int kAdjustmentIntervalSeconds = 10;
-#endif
-
 struct LifecycleUnitAndSortKey {
   explicit LifecycleUnitAndSortKey(LifecycleUnit* lifecycle_unit)
       : lifecycle_unit(lifecycle_unit),
@@ -223,13 +217,8 @@ void TabManager::Start() {
     return;
 #endif
 
-// TODO(adityakeerthi): Move this logic into TabManagerDelegate.
 #if defined(OS_CHROMEOS)
-  if (!update_timer_.IsRunning()) {
-    update_timer_.Start(FROM_HERE,
-                        TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
-                        this, &TabManager::UpdateTimerCallback);
-  }
+  delegate_->StartPeriodicOOMScoreUpdate();
 #endif
 
 // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
@@ -375,23 +364,6 @@ bool TabManager::IsInternalPage(const GURL& url) {
       return true;
   }
   return false;
-}
-
-// This function is called when |update_timer_| fires. It will adjust the clock
-// if needed (if it detects that the machine was asleep) and will fire the stats
-// updating on ChromeOS via the delegate.
-void TabManager::UpdateTimerCallback() {
-  // If Chrome is shutting down, do not do anything.
-  if (g_browser_process->IsShuttingDown())
-    return;
-
-  if (BrowserList::GetInstance()->empty())
-    return;
-
-#if defined(OS_CHROMEOS)
-  // This starts the CrOS specific OOM adjustments in /proc/<pid>/oom_score_adj.
-  delegate_->AdjustOomPriorities();
-#endif
 }
 
 void TabManager::PauseBackgroundTabOpeningIfNeeded() {

@@ -26,6 +26,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
@@ -56,6 +57,10 @@ using content::BrowserThread;
 
 namespace resource_coordinator {
 namespace {
+
+// The default interval after which to adjust OOM scores.
+constexpr base::TimeDelta kAdjustmentInterval =
+    base::TimeDelta::FromSeconds(10);
 
 // When switching to a new tab the tab's renderer's OOM score needs to be
 // updated to reflect its front-most status and protect it from discard.
@@ -358,6 +363,12 @@ void TabManagerDelegate::OnWindowActivated(
   }
 }
 
+void TabManagerDelegate::StartPeriodicOOMScoreUpdate() {
+  DCHECK(!adjust_oom_priorities_timer_.IsRunning());
+  adjust_oom_priorities_timer_.Start(FROM_HERE, kAdjustmentInterval, this,
+                                     &TabManagerDelegate::AdjustOomPriorities);
+}
+
 void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AdjustOomPriorities();
@@ -503,6 +514,10 @@ void TabManagerDelegate::Observe(int type,
 // 2) last time a tab was selected
 // 3) is the tab currently selected
 void TabManagerDelegate::AdjustOomPriorities() {
+  // If Chrome is shutting down, do not do anything
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   if (arc_process_service) {
     arc_process_service->RequestAppProcessList(

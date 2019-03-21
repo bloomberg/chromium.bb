@@ -87,6 +87,10 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // Called by TabManager::Start to start a timer that periodically updates
+  // OOM scores.
+  void StartPeriodicOOMScoreUpdate();
+
   // Kills a process on memory pressure.
   void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason,
                      TabManager::TabDiscardDoneCB tab_discard_done);
@@ -95,9 +99,6 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // If couldn't find the score in the cache, returns -1001 since the valid
   // range of oom_score_adj is [-1000, 1000].
   int GetCachedOomScore(base::ProcessHandle process_handle);
-
-  // Called when the timer fires, sets oom_adjust_score for all renderers.
-  void AdjustOomPriorities();
 
   // Returns true if the process has recently been killed.
   // Virtual for unit testing.
@@ -171,6 +172,9 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Sets a newly focused tab the highest priority process if it wasn't.
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
+  // Called when the timer fires, sets oom_adjust_score for all renderers.
+  void AdjustOomPriorities();
+
   // Called by AdjustOomPriorities. Runs on the main thread.
   void AdjustOomPrioritiesImpl(OptionalArcProcessList arc_processes);
 
@@ -203,6 +207,9 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Registrar to receive renderer notifications.
   content::NotificationRegistrar registrar_;
+
+  // Timer to periodically make OOM score adjustments.
+  base::RepeatingTimer adjust_oom_priorities_timer_;
 
   // Timer to guarantee that the tab or app is focused for a certain amount of
   // time.
