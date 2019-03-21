@@ -3175,7 +3175,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatteningIn3DContext) {
             c_properties->Transform()->Matrix());
   EXPECT_FALSE(c_properties->Transform()->HasRenderingContext());
   EXPECT_TRUE(c_properties->Transform()->FlattensInheritedTransform());
-  EXPECT_EQ(c_properties->Effect(), nullptr);
+  EXPECT_EQ(c_properties->Filter(), nullptr);
 
   const auto* d_properties = PaintPropertiesForElement("d");
   ASSERT_NE(d_properties, nullptr);
@@ -5601,9 +5601,19 @@ TEST_P(PaintPropertyTreeBuilderTest,
   opacity_element->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
-  // All paint chunks contained by the new opacity effect node need to be
-  // re-painted.
-  EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    // TODO(crbug.com/900241): In BlinkGenPropertyTrees/CompositeAfterPaint we
+    // create effect and filter nodes when the transform node needs compositing,
+    // for crbug.com/942681.
+    // TODO(crbug.com/943671): CompositeAfterPaint also does this but the layer
+    // is marked needing repaint because of paint invalidation. Figure out if
+    // this is an over invalidation.
+    EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+  } else {
+    // All paint chunks contained by the new opacity effect node need to be
+    // re-painted.
+    EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithMask) {
@@ -6515,7 +6525,15 @@ TEST_P(PaintPropertyTreeBuilderTest,
                                    .LocalBorderBoxProperties();
   EXPECT_EQ(clip_path_properties->MaskClip(),
             span_all_state.Clip().Parent()->Parent());
-  EXPECT_EQ(clip_path_properties->Effect(), span_all_state.Effect().Parent());
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    // TODO(crbug.com/900241): In BlinkGenPropertyTrees/CompositeAfterPaint we
+    // create effect and filter nodes when the transform node needs compositing,
+    // for crbug.com/942681.
+    EXPECT_EQ(clip_path_properties->Effect(),
+              span_all_state.Effect().Parent()->Parent()->Parent());
+  } else {
+    EXPECT_EQ(clip_path_properties->Effect(), span_all_state.Effect().Parent());
+  }
 }
 
 }  // namespace blink
