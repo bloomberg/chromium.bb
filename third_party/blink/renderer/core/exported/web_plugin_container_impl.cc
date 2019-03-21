@@ -431,6 +431,7 @@ void WebPluginContainerImpl::Copy() {
 
   SystemClipboard::GetInstance().WriteHTML(
       web_plugin_->SelectionAsMarkup(), KURL(), web_plugin_->SelectionAsText());
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name) {

@@ -165,6 +165,7 @@ float DevToolsHost::zoomFactor() {
 
 void DevToolsHost::copyText(const String& text) {
   SystemClipboard::GetInstance().WritePlainText(text);
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 static String EscapeUnicodeNonCharacters(const String& str) {

@@ -122,6 +122,7 @@ bool ClipboardCommands::DispatchClipboardEvent(LocalFrame& frame,
   if (no_default_processing && policy == DataTransferAccessPolicy::kWritable) {
     SystemClipboard::GetInstance().WriteDataObject(
         data_transfer->GetDataObject());
+    SystemClipboard::GetInstance().CommitWrite();
   }
 
   // Invalidate clipboard here for security.
@@ -205,6 +206,7 @@ void ClipboardCommands::WriteSelectionToClipboard(LocalFrame& frame) {
   const String plain_text = frame.SelectedTextForClipboard();
   SystemClipboard::GetInstance().WriteHTML(html, url, plain_text,
                                            GetSmartReplaceOption(frame));
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 bool ClipboardCommands::PasteSupported(LocalFrame* frame) {
@@ -252,6 +254,7 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     SystemClipboard::GetInstance().WritePlainText(
         frame.SelectedTextForClipboard(), GetSmartReplaceOption(frame));
+    SystemClipboard::GetInstance().CommitWrite();
     return true;
   }
   WriteSelectionToClipboard(frame);
@@ -302,6 +305,7 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
     const String plain_text = frame.SelectedTextForClipboard();
     SystemClipboard::GetInstance().WritePlainText(plain_text,
                                                   GetSmartReplaceOption(frame));
+    SystemClipboard::GetInstance().CommitWrite();
   } else {
     WriteSelectionToClipboard(frame);
   }

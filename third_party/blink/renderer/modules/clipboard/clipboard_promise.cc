@@ -328,6 +328,7 @@ void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
   }
 
   SystemClipboard::GetInstance().WritePlainText(write_data_);
+  SystemClipboard::GetInstance().CommitWrite();
   script_promise_resolver_->Resolve();
 }
 
@@ -414,14 +415,14 @@ void ClipboardPromise::WriteDecodedImage(sk_sp<SkImage> image) {
   SkBitmap bitmap;
   image->asLegacyBitmap(&bitmap);
 
-  SystemClipboard::GetInstance().WriteImageNoCommit(std::move(bitmap));
+  SystemClipboard::GetInstance().WriteImage(std::move(bitmap));
   WriteNextRepresentation();
 }
 
 void ClipboardPromise::WriteDecodedText(const String& text) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
 
-  SystemClipboard::GetInstance().WritePlainTextNoCommit(text);
+  SystemClipboard::GetInstance().WritePlainText(text);
   WriteNextRepresentation();
 }
 

@@ -1703,6 +1703,7 @@ void WriteImageNodeToClipboard(const Node& node, const String& title) {
       StripLeadingAndTrailingHTMLSpaces(GetUrlStringFromNode(node)));
   SystemClipboard::GetInstance().WriteImageWithTag(image.get(), url_string,
                                                    title);
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 Element* FindEventTargetFrom(LocalFrame& frame,

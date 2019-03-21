@@ -100,12 +100,6 @@ String SystemClipboard::ReadPlainText(mojom::ClipboardBuffer buffer) {
 }
 
 void SystemClipboard::WritePlainText(const String& plain_text,
-                                     SmartReplaceOption smart_replace) {
-  WritePlainTextNoCommit(plain_text, smart_replace);
-  CommitWrite();
-}
-
-void SystemClipboard::WritePlainTextNoCommit(const String& plain_text,
                                              SmartReplaceOption) {
   // TODO(https://crbug.com/106449): add support for smart replace, which is
   // currently under-specified.
@@ -137,15 +131,6 @@ void SystemClipboard::WriteHTML(const String& markup,
                                 const KURL& document_url,
                                 const String& plain_text,
                                 SmartReplaceOption smart_replace_option) {
-  WriteHTMLNoCommit(markup, document_url, plain_text, smart_replace_option);
-  CommitWrite();
-}
-
-void SystemClipboard::WriteHTMLNoCommit(
-    const String& markup,
-    const KURL& document_url,
-    const String& plain_text,
-    SmartReplaceOption smart_replace_option) {
   String text = plain_text;
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
@@ -175,13 +160,6 @@ SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
 }
 
 void SystemClipboard::WriteImageWithTag(Image* image,
-                                        const KURL& url,
-                                        const String& title) {
-  WriteImageWithTagNoCommit(image, url, title);
-  CommitWrite();
-}
-
-void SystemClipboard::WriteImageWithTagNoCommit(Image* image,
                                                 const KURL& url,
                                                 const String& title) {
   DCHECK(image);
@@ -211,7 +189,7 @@ void SystemClipboard::WriteImageWithTagNoCommit(Image* image,
   }
 }
 
-void SystemClipboard::WriteImageNoCommit(const SkBitmap& bitmap) {
+void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
   clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
 }
 
@@ -224,11 +202,6 @@ String SystemClipboard::ReadCustomData(const String& type) {
 }
 
 void SystemClipboard::WriteDataObject(DataObject* data_object) {
-  WriteDataObjectNoCommit(data_object);
-  CommitWrite();
-}
-
-void SystemClipboard::WriteDataObjectNoCommit(DataObject* data_object) {
   // This plagiarizes the logic in DropDataBuilder::Build, but only extracts the
   // data needed for the implementation of WriteDataObject.
   //
