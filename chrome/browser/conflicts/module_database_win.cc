@@ -62,10 +62,8 @@ bool AreThirdPartyFeaturesEnabledViaCommandLine() {
 // static
 constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 
-ModuleDatabase::ModuleDatabase(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(task_runner),
-      idle_timer_(
+ModuleDatabase::ModuleDatabase()
+    : idle_timer_(
           FROM_HERE,
           kIdleTimeout,
           base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this))),
@@ -85,6 +83,8 @@ ModuleDatabase::ModuleDatabase(
 }
 
 ModuleDatabase::~ModuleDatabase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (this == g_module_database_win_instance)
     g_module_database_win_instance = nullptr;
 }
@@ -121,7 +121,7 @@ bool ModuleDatabase::IsIdle() {
 void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
                                                 uint32_t size_of_image,
                                                 uint32_t time_date_stamp) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   idle_timer_.Reset();
 
@@ -132,7 +132,7 @@ void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
 }
 
 void ModuleDatabase::OnShellExtensionEnumerationFinished() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!shell_extensions_enumerated_);
 
   shell_extensions_enumerated_ = true;
@@ -144,7 +144,7 @@ void ModuleDatabase::OnShellExtensionEnumerationFinished() {
 void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
                                      uint32_t size_of_image,
                                      uint32_t time_date_stamp) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   idle_timer_.Reset();
 
@@ -154,7 +154,7 @@ void ModuleDatabase::OnImeEnumerated(const base::FilePath& path,
 }
 
 void ModuleDatabase::OnImeEnumerationFinished() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ime_enumerated_);
 
   ime_enumerated_ = true;
@@ -167,18 +167,7 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
                                   const base::FilePath& module_path,
                                   uint32_t module_size,
                                   uint32_t module_time_date_stamp) {
-  // Messages can arrive from any thread (UI thread for calls over IPC, and
-  // anywhere at all for calls from ModuleWatcher), so bounce if necessary.
-  // It is safe to use base::Unretained() because this class is a singleton that
-  // is never freed.
-  if (!task_runner_->RunsTasksInCurrentSequence()) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ModuleDatabase::OnModuleLoad, base::Unretained(this),
-                       process_type, module_path, module_size,
-                       module_time_date_stamp));
-    return;
-  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ModuleInfo* module_info = nullptr;
   bool new_module = FindOrCreateModuleInfo(
@@ -219,6 +208,8 @@ void ModuleDatabase::HandleModuleLoadEvent(content::ProcessType process_type,
 void ModuleDatabase::OnModuleBlocked(const base::FilePath& module_path,
                                      uint32_t module_size,
                                      uint32_t module_time_date_stamp) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   ModuleInfo* module_info = nullptr;
   FindOrCreateModuleInfo(module_path, module_size, module_time_date_stamp,
                          &module_info);
@@ -229,6 +220,8 @@ void ModuleDatabase::OnModuleBlocked(const base::FilePath& module_path,
 void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
                                               uint32_t module_size,
                                               uint32_t module_time_date_stamp) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto iter = modules_.find(
       ModuleInfoKey(module_path, module_size, module_time_date_stamp));
 
@@ -239,6 +232,8 @@ void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
 }
 
 void ModuleDatabase::AddObserver(ModuleDatabaseObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observer_list_.AddObserver(observer);
 
   // If the registered modules enumeration is not finished yet, the |observer|
@@ -253,6 +248,8 @@ void ModuleDatabase::AddObserver(ModuleDatabaseObserver* observer) {
 }
 
 void ModuleDatabase::RemoveObserver(ModuleDatabaseObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observer_list_.RemoveObserver(observer);
 }
 
@@ -351,7 +348,7 @@ void ModuleDatabase::OnRegisteredModulesEnumerated() {
 void ModuleDatabase::OnModuleInspected(
     const ModuleInfoKey& module_key,
     ModuleInspectionResult inspection_result) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = modules_.find(module_key);
   if (it == modules_.end())
@@ -389,6 +386,8 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
 
 #if defined(GOOGLE_CHROME_BUILD)
 void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Temporarily disable this class on domain-joined machines because enterprise
   // clients depend on IAttachmentExecute::Save() to be invoked for downloaded
   // files, but that API call has a known issue (https://crbug.com/870998) with
@@ -419,6 +418,8 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
 }
 
 void ModuleDatabase::OnThirdPartyBlockingPolicyChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!IsThirdPartyBlockingPolicyEnabled()) {
     DCHECK(third_party_conflicts_manager_);
     ThirdPartyConflictsManager::ShutdownAndDestroy(
