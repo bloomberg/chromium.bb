@@ -20,10 +20,7 @@ ProcessResourceMeasurement::ProcessResourceMeasurement() = default;
 ProcessResourceMeasurementBatch::ProcessResourceMeasurementBatch() = default;
 ProcessResourceMeasurementBatch::~ProcessResourceMeasurementBatch() = default;
 
-SystemNodeImpl::SystemNodeImpl(
-    const resource_coordinator::CoordinationUnitID& id,
-    Graph* graph)
-    : TypedNodeBase(id, graph) {}
+SystemNodeImpl::SystemNodeImpl(Graph* graph) : TypedNodeBase(graph) {}
 
 SystemNodeImpl::~SystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

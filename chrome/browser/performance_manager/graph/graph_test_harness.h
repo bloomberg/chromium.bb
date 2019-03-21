@@ -19,10 +19,6 @@
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
-struct CoordinationUnitID;
-}  // namespace resource_coordinator
-
 namespace performance_manager {
 
 class SystemNodeImpl;
@@ -30,17 +26,10 @@ class SystemNodeImpl;
 template <class NodeClass>
 class TestNodeWrapper {
  public:
-  static TestNodeWrapper<NodeClass> Create(
-      const resource_coordinator::CoordinationUnitID& cu_id,
-      Graph* graph) {
-    std::unique_ptr<NodeClass> node = std::make_unique<NodeClass>(cu_id, graph);
+  static TestNodeWrapper<NodeClass> Create(Graph* graph) {
+    std::unique_ptr<NodeClass> node = std::make_unique<NodeClass>(graph);
     graph->AddNewNode(node.get());
     return TestNodeWrapper<NodeClass>(std::move(node));
-  }
-  static TestNodeWrapper<NodeClass> Create(Graph* graph) {
-    resource_coordinator::CoordinationUnitID cu_id(
-        NodeClass::Type(), resource_coordinator::CoordinationUnitID::RANDOM_ID);
-    return Create(cu_id, graph);
   }
 
   explicit TestNodeWrapper(std::unique_ptr<NodeClass> impl)
@@ -99,16 +88,8 @@ class GraphTestHarness : public ::testing::Test {
   ~GraphTestHarness() override;
 
   template <class NodeClass>
-  TestNodeWrapper<NodeClass> CreateNode(
-      resource_coordinator::CoordinationUnitID cu_id) {
-    return TestNodeWrapper<NodeClass>::Create(cu_id, graph());
-  }
-
-  template <class NodeClass>
   TestNodeWrapper<NodeClass> CreateNode() {
-    resource_coordinator::CoordinationUnitID cu_id(
-        NodeClass::Type(), resource_coordinator::CoordinationUnitID::RANDOM_ID);
-    return CreateNode<NodeClass>(cu_id);
+    return TestNodeWrapper<NodeClass>::Create(graph());
   }
 
   TestNodeWrapper<SystemNodeImpl> GetSystemCoordinationUnit() {

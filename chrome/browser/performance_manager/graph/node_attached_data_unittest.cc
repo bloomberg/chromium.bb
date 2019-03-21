@@ -30,9 +30,7 @@ constexpr size_t kFooDataSize = sizeof(uintptr_t);
 class DummyNode : public NodeBase {
  public:
   explicit DummyNode(Graph* graph)
-      : NodeBase(resource_coordinator::CoordinationUnitID(
-                     resource_coordinator::CoordinationUnitType::kInvalidType,
-                     resource_coordinator::CoordinationUnitID::RANDOM_ID),
+      : NodeBase(resource_coordinator::CoordinationUnitType::kInvalidType,
                  graph) {}
 
   ~DummyNode() override = default;

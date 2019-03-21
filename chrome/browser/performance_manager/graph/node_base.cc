@@ -12,16 +12,18 @@
 
 namespace performance_manager {
 
-NodeBase::NodeBase(const resource_coordinator::CoordinationUnitID& id,
+NodeBase::NodeBase(resource_coordinator::CoordinationUnitType node_type,
                    Graph* graph)
-    : graph_(graph), id_(id.type, id.id) {
-}
+    : graph_(graph),
+      id_(node_type, resource_coordinator::CoordinationUnitID::RANDOM_ID) {}
 
 NodeBase::~NodeBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void NodeBase::BeforeDestroyed() {
+void NodeBase::JoinGraph() {}
+
+void NodeBase::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)
     observer.OnBeforeNodeRemoved(this);

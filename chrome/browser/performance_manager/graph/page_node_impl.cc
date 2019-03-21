@@ -30,12 +30,9 @@ size_t ToIndex(
 
 }  // namespace
 
-PageNodeImpl::PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
-                           Graph* graph)
-    : TypedNodeBase(id, graph),
+PageNodeImpl::PageNodeImpl(Graph* graph)
+    : TypedNodeBase(graph),
       visibility_change_time_(ResourceCoordinatorClock::NowTicks()) {
-  InvalidateAllInterventionPolicies();
-
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -255,14 +252,21 @@ PageNodeImpl::GetInterventionPolicy(
   return intervention_policy_[kIndex];
 }
 
-void PageNodeImpl::BeforeDestroyed() {
+void PageNodeImpl::JoinGraph() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  InvalidateAllInterventionPolicies();
+
+  NodeBase::JoinGraph();
+}
+
+void PageNodeImpl::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(siggi): This fails browser_tests for some reason. Would be nice to
   //     assert this.
   // DCHECK(frame_nodes_.empty());
 
-  NodeBase::BeforeDestroyed();
+  NodeBase::LeaveGraph();
 
   for (auto* child_frame : frame_nodes_)
     child_frame->RemovePageNode(this);

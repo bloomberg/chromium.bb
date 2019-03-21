@@ -51,8 +51,7 @@ class SystemNodeImpl : public TypedNodeBase<SystemNodeImpl> {
     return resource_coordinator::CoordinationUnitType::kSystem;
   }
 
-  SystemNodeImpl(const resource_coordinator::CoordinationUnitID& id,
-                 Graph* graph);
+  explicit SystemNodeImpl(Graph* graph);
   ~SystemNodeImpl() override;
 
   void OnProcessCPUUsageReady();

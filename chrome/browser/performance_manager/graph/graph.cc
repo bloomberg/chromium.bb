@@ -63,17 +63,14 @@ void Graph::OnNodeAdded(NodeBase* node) {
 
 void Graph::OnBeforeNodeRemoved(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  node->BeforeDestroyed();
+  node->LeaveGraph();
 }
 
 SystemNodeImpl* Graph::FindOrCreateSystemNode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!system_node_) {
     // Create the singleton SystemCU instance. Ownership is taken by the graph.
-    resource_coordinator::CoordinationUnitID id(
-        resource_coordinator::CoordinationUnitType::kSystem,
-        resource_coordinator::CoordinationUnitID::RANDOM_ID);
-    system_node_ = std::make_unique<SystemNodeImpl>(id, this);
+    system_node_ = std::make_unique<SystemNodeImpl>(this);
     AddNewNode(system_node_.get());
   }
 
@@ -130,6 +127,8 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
 
 void Graph::AddNewNode(NodeBase* new_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Allow the node to initialize itself.
+  new_node->JoinGraph();
   auto it = nodes_.emplace(new_node->id(), new_node);
   DCHECK(it.second);  // Inserted successfully
   OnNodeAdded(new_node);

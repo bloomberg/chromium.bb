@@ -10,10 +10,8 @@
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(
-    const resource_coordinator::CoordinationUnitID& id,
-    Graph* graph)
-    : CoordinationUnitInterface(id, graph) {
+ProcessNodeImpl::ProcessNodeImpl(Graph* graph)
+    : CoordinationUnitInterface(graph) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -121,9 +119,9 @@ void ProcessNodeImpl::OnFrameLifecycleStateChanged(
     IncrementNumFrozenFrames();
 }
 
-void ProcessNodeImpl::BeforeDestroyed() {
+void ProcessNodeImpl::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NodeBase::BeforeDestroyed();
+  NodeBase::LeaveGraph();
 
   // Make as if we're transitioning to the null PID before we die to clear this
   // instance from the PID map.
