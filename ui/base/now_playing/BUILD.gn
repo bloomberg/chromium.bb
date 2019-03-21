@@ -4,6 +4,12 @@
 
 component("now_playing") {
   sources = [
+    "now_playing_info_center_delegate.cc",
+    "now_playing_info_center_delegate.h",
+    "now_playing_info_center_delegate_cocoa.h",
+    "now_playing_info_center_delegate_cocoa.mm",
+    "now_playing_info_center_delegate_impl.h",
+    "now_playing_info_center_delegate_impl.mm",
     "remote_command_center_delegate.cc",
     "remote_command_center_delegate.h",
     "remote_command_center_delegate_impl.h",
@@ -30,6 +36,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "mock_now_playing_info_center_delegate.cc",
+    "mock_now_playing_info_center_delegate.h",
     "mock_remote_command_center_delegate.cc",
     "mock_remote_command_center_delegate.h",
   ]
