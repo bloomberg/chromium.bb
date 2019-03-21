@@ -122,8 +122,8 @@ extern const char kAutofillProfileClientValidationDescription[];
 extern const char kAutofillProfileServerValidationName[];
 extern const char kAutofillProfileServerValidationDescription[];
 
-extern const char kAutofillShowFullDisclosureLabelName[];
-extern const char kAutofillShowFullDisclosureLabelDescription[];
+extern const char kAutofillUseImprovedLabelDisambiguationName[];
+extern const char kAutofillUseImprovedLabelDisambiguationDescription[];
 
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];

@@ -105,7 +105,7 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
       // will be shown rather than 15084880800, 508 488 0800, or +15084880800
       // for US phone numbers.
       if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillShowFullDisclosureLabel) &&
+              autofill::features::kAutofillUseImprovedLabelDisambiguation) &&
           AutofillType(AutofillType(server_field_type).GetStorableType())
                   .group() == PHONE_HOME) {
         value = base::UTF8ToUTF16(i18n::FormatPhoneNationallyForDisplay(

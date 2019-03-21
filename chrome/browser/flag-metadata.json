@@ -272,7 +272,7 @@
     "expiry_milestone": 75
   },
   {
-    "name": "autofill-show-full-disclosure-label",
+    "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "ftirelo", "tmartino" ],
     "expiry_milestone": 77
   },
