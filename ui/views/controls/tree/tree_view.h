@@ -26,6 +26,7 @@ class Rect;
 namespace views {
 
 class PrefixSelector;
+class ScrollView;
 class Textfield;
 class TreeViewController;
 
@@ -48,8 +49,9 @@ class VIEWS_EXPORT TreeView : public View,
   TreeView();
   ~TreeView() override;
 
-  // Returns new ScrollPane that contains the receiver.
-  View* CreateParentIfNecessary();
+  // Returns a new ScrollView that contains the given |tree|.
+  static std::unique_ptr<ScrollView> CreateScrollViewWithTree(
+      std::unique_ptr<TreeView> tree);
 
   // Sets the model. TreeView does not take ownership of the model.
   void SetModel(ui::TreeModel* model);

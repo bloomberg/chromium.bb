@@ -5,6 +5,7 @@
 #include "ui/views/controls/tree/tree_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
@@ -120,9 +121,11 @@ TreeView::~TreeView() {
   }
 }
 
-View* TreeView::CreateParentIfNecessary() {
-  auto* scroll_view = ScrollView::CreateScrollViewWithBorder();
-  scroll_view->SetContents(base::WrapUnique(this));
+// static
+std::unique_ptr<ScrollView> TreeView::CreateScrollViewWithTree(
+    std::unique_ptr<TreeView> tree) {
+  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
+  scroll_view->SetContents(std::move(tree));
   return scroll_view;
 }
 
