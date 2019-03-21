@@ -10,9 +10,9 @@ namespace autofill {
 
 AddressFormLabelFormatter::AddressFormLabelFormatter(
     const std::string& app_locale,
-    FieldTypeGroup focused_group,
+    ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_group, field_types) {}
+    : LabelFormatter(app_locale, focused_field_type, field_types) {}
 
 AddressFormLabelFormatter::~AddressFormLabelFormatter() {}
 
@@ -20,7 +20,7 @@ std::vector<base::string16> AddressFormLabelFormatter::GetLabels(
     const std::vector<AutofillProfile*>& profiles) const {
   std::vector<base::string16> labels;
   for (const AutofillProfile* profile : profiles) {
-    if (focused_group() == ADDRESS_HOME) {
+    if (GetFocusedGroup() == ADDRESS_HOME) {
       labels.push_back(GetLabelName(*profile, app_locale()));
     } else {
       labels.push_back(GetLabelNationalAddress(*profile, app_locale(),

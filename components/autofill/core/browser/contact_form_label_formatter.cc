@@ -10,10 +10,11 @@ namespace autofill {
 
 ContactFormLabelFormatter::ContactFormLabelFormatter(
     const std::string& app_locale,
-    FieldTypeGroup focused_group,
+    ServerFieldType focused_field_type,
     uint32_t groups,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_group, field_types), groups_(groups) {}
+    : LabelFormatter(app_locale, focused_field_type, field_types),
+      groups_(groups) {}
 
 ContactFormLabelFormatter::~ContactFormLabelFormatter() {}
 
@@ -22,7 +23,7 @@ std::vector<base::string16> ContactFormLabelFormatter::GetLabels(
   std::vector<base::string16> labels;
 
   for (const AutofillProfile* profile : profiles) {
-    switch (focused_group()) {
+    switch (GetFocusedGroup()) {
       case EMAIL:
         labels.push_back(GetLabelForFocusedEmail(*profile));
         break;

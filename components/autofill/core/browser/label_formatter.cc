@@ -23,11 +23,11 @@ using label_formatter_groups::kName;
 using label_formatter_groups::kPhone;
 
 LabelFormatter::LabelFormatter(const std::string& app_locale,
-                               FieldTypeGroup focused_group,
+                               ServerFieldType focused_field_type,
                                const std::vector<ServerFieldType>& field_types)
-    : app_locale_(app_locale), focused_group_(focused_group) {
+    : app_locale_(app_locale), focused_field_type_(focused_field_type) {
   std::set<FieldTypeGroup> groups{NAME, ADDRESS_HOME, EMAIL, PHONE_HOME};
-  groups.erase(focused_group_);
+  groups.erase(GetFocusedGroup());
 
   auto can_be_shown_in_label = [&groups](ServerFieldType type) -> bool {
     return groups.find(
@@ -42,36 +42,36 @@ LabelFormatter::LabelFormatter(const std::string& app_locale,
 
 LabelFormatter::~LabelFormatter() = default;
 
+FieldTypeGroup LabelFormatter::GetFocusedGroup() const {
+  return AutofillType(AutofillType(focused_field_type_).GetStorableType())
+      .group();
+}
+
 // static
 std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types) {
   const uint32_t groups = DetermineGroups(field_types);
-  if (!ContainsName(groups)) {
-    return nullptr;
-  }
 
-  const FieldTypeGroup focused_group =
-      AutofillType(AutofillType(focused_field_type).GetStorableType()).group();
   switch (groups) {
     case kName | kAddress | kEmail | kPhone:
       return std::make_unique<AddressContactFormLabelFormatter>(
-          app_locale, focused_group, field_types);
+          app_locale, focused_field_type, field_types);
     case kName | kAddress | kPhone:
       return std::make_unique<AddressPhoneFormLabelFormatter>(
-          app_locale, focused_group, field_types);
+          app_locale, focused_field_type, field_types);
     case kName | kAddress | kEmail:
       return std::make_unique<AddressEmailFormLabelFormatter>(
-          app_locale, focused_group, field_types);
+          app_locale, focused_field_type, field_types);
     case kName | kAddress:
       return std::make_unique<AddressFormLabelFormatter>(
-          app_locale, focused_group, field_types);
+          app_locale, focused_field_type, field_types);
     case kName | kEmail | kPhone:
     case kName | kEmail:
     case kName | kPhone:
       return std::make_unique<ContactFormLabelFormatter>(
-          app_locale, focused_group, groups, field_types);
+          app_locale, focused_field_type, groups, field_types);
     default:
       return nullptr;
   }

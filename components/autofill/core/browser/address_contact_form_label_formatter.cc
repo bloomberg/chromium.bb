@@ -8,9 +8,9 @@ namespace autofill {
 
 AddressContactFormLabelFormatter::AddressContactFormLabelFormatter(
     const std::string& app_locale,
-    FieldTypeGroup focused_group,
+    ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types)
-    : LabelFormatter(app_locale, focused_group, field_types) {}
+    : LabelFormatter(app_locale, focused_field_type, field_types) {}
 
 AddressContactFormLabelFormatter::~AddressContactFormLabelFormatter() {}
 

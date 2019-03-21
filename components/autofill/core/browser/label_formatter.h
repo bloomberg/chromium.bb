@@ -19,7 +19,7 @@ namespace autofill {
 class LabelFormatter {
  public:
   LabelFormatter(const std::string& app_locale,
-                 FieldTypeGroup focused_group,
+                 ServerFieldType focused_field_type,
                  const std::vector<ServerFieldType>& field_types);
   virtual ~LabelFormatter();
 
@@ -38,10 +38,15 @@ class LabelFormatter {
 
  protected:
   const std::string& app_locale() const { return app_locale_; }
-  FieldTypeGroup focused_group() const { return focused_group_; }
+  ServerFieldType focused_field_type() const { return focused_field_type_; }
   const std::vector<ServerFieldType>& field_types_for_labels() const {
     return field_types_for_labels_;
   }
+  // Returns the FieldTypeGroup with which |focused_field_type_| is associated.
+  // Billing field types are mapped to their corresponding home address field
+  // types. For example, if |focused_field_type_| is ADDRESS_BILLING_ZIP, then
+  // the resulting FieldTypeGroup is ADDRESS_HOME instead of ADDRESS_BILLING.
+  FieldTypeGroup GetFocusedGroup() const;
 
  private:
   // The locale for which to generate labels. This reflects the language and
@@ -49,9 +54,8 @@ class LabelFormatter {
   // English.
   std::string app_locale_;
 
-  // The group of the field on which the user is focused. For example, NAME
-  // is the group of the NAME_FIRST and NAME_MIDDLE fields.
-  FieldTypeGroup focused_group_;
+  // The type of field on which the user is focused, e.g. NAME_FIRST.
+  ServerFieldType focused_field_type_;
 
   // A collection of field types that can be used to make labels. It includes
   // types related to names, addresses, email addresses, and phone numbers.
