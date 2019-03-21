@@ -110,7 +110,7 @@ TEST_P(WaylandDataDeviceManagerTest, WriteToClipboard) {
   run_loop.Run();
 }
 
-TEST_P(WaylandDataDeviceManagerTest, ReadFromClibpard) {
+TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboard) {
   // TODO(nickdiego): implement this in terms of an actual wl_surface that
   // gets focused and compositor sends data_device data to it.
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
@@ -128,6 +128,18 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClibpard) {
       });
   clipboard_client_->ReadData(wl::kTextMimeTypeUtf8, std::move(callback));
   Sync();
+}
+
+TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboardWithoutOffer) {
+  // When no data offer is advertised and client requests clipboard data
+  // from the server, the response callback should be gracefully called with
+  // an empty string.
+  auto callback =
+      base::BindOnce([](const base::Optional<std::vector<uint8_t>>& data) {
+        std::string string_data = std::string(data->begin(), data->end());
+        EXPECT_EQ("", string_data);
+      });
+  clipboard_client_->ReadData(wl::kTextMimeTypeUtf8, std::move(callback));
 }
 
 TEST_P(WaylandDataDeviceManagerTest, IsSelectionOwner) {

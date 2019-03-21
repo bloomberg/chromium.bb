@@ -87,11 +87,14 @@ WaylandDataDevice::~WaylandDataDevice() {
   shared_memory_->Close();
 }
 
-void WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
+bool WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
+  if (!selection_offer_)
+    return false;
+
   base::ScopedFD fd = selection_offer_->Receive(mime_type);
   if (!fd.is_valid()) {
     LOG(ERROR) << "Failed to open file descriptor.";
-    return;
+    return false;
   }
 
   // Ensure there is not pending operation to be performed by the compositor,
@@ -100,6 +103,7 @@ void WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
       base::BindOnce(&WaylandDataDevice::ReadClipboardDataFromFD,
                      base::Unretained(this), std::move(fd), mime_type);
   RegisterDeferredReadCallback();
+  return true;
 }
 
 void WaylandDataDevice::RequestDragData(
