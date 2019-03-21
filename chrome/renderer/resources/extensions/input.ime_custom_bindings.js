@@ -6,13 +6,10 @@
 // v8 contexts for extensions which have permission for the API.
 
 var appWindowNatives = requireNative('app_window_natives');
-var registerArgumentMassager = bindingUtil ?
-    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
-    require('event_bindings').registerArgumentMassager;
 
 var keyEventHandled;
-registerArgumentMassager('input.ime.onKeyEvent',
-                         function(args, dispatch) {
+bindingUtil.registerEventArgumentMassager('input.ime.onKeyEvent',
+                                          function(args, dispatch) {
   var keyData = args[1];
   var result = undefined;
   try {

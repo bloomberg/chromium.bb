@@ -4,11 +4,6 @@
 
 // Custom binding for the fileManagerPrivate API.
 
-// Bindings
-var registerArgumentMassager = bindingUtil ?
-    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
-    require('event_bindings').registerArgumentMassager;
-
 // Natives
 var fileManagerPrivateNatives = requireNative('file_manager_private');
 
@@ -271,15 +266,15 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 });
 
-registerArgumentMassager('fileManagerPrivate.onDirectoryChanged',
-                         function(args, dispatch) {
+bindingUtil.registerEventArgumentMassager(
+    'fileManagerPrivate.onDirectoryChanged', function(args, dispatch) {
   // Convert the entry arguments into a real Entry object.
   args[0].entry = GetExternalFileEntry(args[0].entry);
   dispatch(args);
 });
 
-registerArgumentMassager('fileManagerPrivate.onCrostiniChanged',
-                         function(args, dispatch) {
+bindingUtil.registerEventArgumentMassager(
+    'fileManagerPrivate.onCrostiniChanged', function(args, dispatch) {
   // Convert entries arguments into real Entry objects.
   const entries = args[0].entries;
   for (let i = 0; i < entries.length; i++) {

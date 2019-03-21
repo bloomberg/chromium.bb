@@ -4,9 +4,6 @@
 
 // Custom binding for the fileBrowserHandler API.
 
-var registerArgumentMassager = bindingUtil ?
-    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
-    require('event_bindings').registerArgumentMassager;
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
 var fileBrowserHandlerInternal =
@@ -15,8 +12,8 @@ var fileBrowserHandlerInternal =
         require('binding').Binding.create('fileBrowserHandlerInternal')
             .generate();
 
-registerArgumentMassager('fileBrowserHandler.onExecute',
-                         function(args, dispatch) {
+bindingUtil.registerEventArgumentMassager('fileBrowserHandler.onExecute',
+                                          function(args, dispatch) {
   if (args.length < 2) {
     dispatch(args);
     return;

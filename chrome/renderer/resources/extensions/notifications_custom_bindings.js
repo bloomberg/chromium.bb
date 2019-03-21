@@ -4,23 +4,9 @@
 
 // Custom bindings for the notifications API.
 //
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
 var exceptionHandler = require('uncaught_exception_handler');
 var imageUtil = require('imageUtil');
 var notificationsPrivate = requireNative('notifications_private');
-
-var jsLastError = bindingUtil ? undefined : require('lastError');
-function runCallbackWithLastError(name, message, stack, callback, args) {
-  if (bindingUtil) {
-    bindingUtil.runCallbackWithLastError(message, function() {
-      $Function.apply(callback, null, args);
-    });
-  } else {
-    jsLastError.run(name, message, stack, callback, args);
-  }
-}
 
 function imageDataSetter(context, key) {
   var f = function(val) {
@@ -128,15 +114,14 @@ function genHandle(name, failure_function) {
     var stack = exceptionHandler.getExtensionStackTrace();
     replaceNotificationOptionURLs(notification_details, function(success) {
       if (success) {
-        sendRequest(
-            name, [id, notification_details, callback],
-            bindingUtil ? undefined : that.definition.parameters,
-            bindingUtil ? undefined : {__proto__: null, stack: stack});
+        bindingUtil.sendRequest(
+            name, [id, notification_details, callback], undefined, undefined);
         return;
       }
-      runCallbackWithLastError(
-          name, 'Unable to download all specified images.',
-          stack, failure_function, [callback || function() {}, id]);
+      bindingUtil.runCallbackWithLastError(
+          'Unable to download all specified images.',
+          $Function.bind(failure_function, null,
+                         callback || function() {}, id));
     });
   };
 }

@@ -7,18 +7,14 @@
 // extension action APIs.
 
 var setIcon = require('setIcon').setIcon;
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
 
 apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, $Function.bind(function(args) {
-      sendRequest('systemIndicator.setIcon', [args, callback],
-                  bindingUtil ? undefined : this.definition.parameters,
-                  undefined);
+      bindingUtil.sendRequest('systemIndicator.setIcon', [args, callback],
+                              undefined, undefined);
     }, this));
   });
 });
