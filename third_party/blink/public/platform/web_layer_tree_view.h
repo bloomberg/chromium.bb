@@ -144,10 +144,6 @@ class WebLayerTreeView {
   // Immediately stop deferring commits.
   virtual void StopDeferringCommits() {}
 
-  // Paints are plumbed back to the layer tree via the painter client.
-  virtual void SetPaintWorkletLayerPainterClient(
-      std::unique_ptr<cc::PaintWorkletLayerPainter>) {}
-
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.
   virtual void ForceRecalculateRasterScales() {}

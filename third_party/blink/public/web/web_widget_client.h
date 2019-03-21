@@ -78,6 +78,10 @@ class WebWidgetClient {
   // sync with composited animations running ahead of the main frame state.
   virtual void SetLayerTreeMutator(std::unique_ptr<cc::LayerTreeMutator>) {}
 
+  // Similar to the |SetLayerTreeMutator|, but used by PaintWorklet.
+  virtual void SetPaintWorkletLayerPainterClient(
+      std::unique_ptr<cc::PaintWorkletLayerPainter>) {}
+
   // Sets the root layer of the tree in the compositor. It may be null to remove
   // the root layer in which case nothing would be shown by the compositor.
   virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
