@@ -2537,6 +2537,17 @@ void RenderWidgetHostImpl::SetMouseCapture(bool capture) {
   delegate_->GetInputEventRouter()->SetMouseCaptureTarget(GetView(), capture);
 }
 
+void RenderWidgetHostImpl::FallbackCursorModeLockCursor(bool left,
+                                                        bool right,
+                                                        bool up,
+                                                        bool down) {
+  GetView()->FallbackCursorModeLockCursor(left, right, up, down);
+}
+
+void RenderWidgetHostImpl::FallbackCursorModeSetCursorVisibility(bool visible) {
+  GetView()->FallbackCursorModeSetCursorVisibility(visible);
+}
+
 void RenderWidgetHostImpl::OnInvalidFrameToken(uint32_t frame_token) {
   bad_message::ReceivedBadMessage(GetProcess(),
                                   bad_message::RWH_INVALID_FRAME_TOKEN);

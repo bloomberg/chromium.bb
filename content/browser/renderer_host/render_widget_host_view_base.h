@@ -259,6 +259,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual bool OnUnconsumedKeyboardEventAck(
       const NativeWebKeyboardEventWithLatencyInfo& event);
 
+  // Call platform APIs for Fallback Cursor Mode.
+  virtual void FallbackCursorModeLockCursor(bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down);
+  virtual void FallbackCursorModeSetCursorVisibility(bool visible);
+
   // Create a platform specific SyntheticGestureTarget implementation that will
   // be used to inject synthetic input events.
   virtual std::unique_ptr<SyntheticGestureTarget>

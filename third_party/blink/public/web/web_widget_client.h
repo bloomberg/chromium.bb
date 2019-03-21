@@ -225,6 +225,13 @@ class WebWidgetClient {
   // Used to update the active selection bounds. Pass a default-constructed
   // LayerSelection to clear it.
   virtual void RegisterSelection(const cc::LayerSelection&) {}
+
+  // Used to call platform API for FallbackCursorMode.
+  virtual void FallbackCursorModeLockCursor(bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down) {}
+  virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
 };
 
 }  // namespace blink

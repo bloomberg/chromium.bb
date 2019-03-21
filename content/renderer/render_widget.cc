@@ -3292,6 +3292,18 @@ void RenderWidget::RegisterSelection(const cc::LayerSelection& selection) {
   layer_tree_view_->layer_tree_host()->RegisterSelection(selection);
 }
 
+void RenderWidget::FallbackCursorModeLockCursor(bool left,
+                                                bool right,
+                                                bool up,
+                                                bool down) {
+  widget_input_handler_manager_->FallbackCursorModeLockCursor(left, right, up,
+                                                              down);
+}
+
+void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
+  widget_input_handler_manager_->FallbackCursorModeSetCursorVisibility(visible);
+}
+
 void RenderWidget::RequestUnbufferedInputEvents() {
   if (input_event_queue_)
     input_event_queue_->RequestUnbufferedInputEvents();

@@ -441,6 +441,24 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
       base::BindOnce(&WaitForInputProcessedFromMain, render_widget_));
 }
 
+void WidgetInputHandlerManager::FallbackCursorModeLockCursor(bool left,
+                                                             bool right,
+                                                             bool up,
+                                                             bool down) {
+#if defined(OS_ANDROID)
+  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
+    host->FallbackCursorModeLockCursor(left, right, up, down);
+#endif
+}
+
+void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
+    bool visible) {
+#if defined(OS_ANDROID)
+  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
+    host->FallbackCursorModeSetCursorVisibility(visible);
+#endif
+}
+
 void WidgetInputHandlerManager::InitOnInputHandlingThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
     bool smooth_scroll_enabled,

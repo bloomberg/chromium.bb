@@ -42,6 +42,11 @@ class MockInputRouterClient : public InputRouterClient,
   bool IsWheelScrollInProgress() override;
   bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override {}
+  void FallbackCursorModeLockCursor(bool left,
+                                    bool right,
+                                    bool up,
+                                    bool down) override {}
+  void FallbackCursorModeSetCursorVisibility(bool visible) override {}
 
   bool GetAndResetFilterEventCalled();
   ui::DidOverscrollParams GetAndResetOverscroll();

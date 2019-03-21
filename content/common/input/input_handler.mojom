@@ -156,6 +156,12 @@ struct TouchActionOptional {
 // contained in here are state changes that the renderer has taken
 // that the browser must be aware of.
 interface WidgetInputHandlerHost {
+  // Call platform Fallback Cursor Mode APIs.
+  [EnableIf=is_android]
+  FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
+  [EnableIf=is_android]
+  FallbackCursorModeSetCursorVisibility(bool visible);
+
   // When the renderer's main thread computes the touch action, send this to the
   // browser.
   SetTouchActionFromMain(TouchAction touch_action);

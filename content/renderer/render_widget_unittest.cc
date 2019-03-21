@@ -88,6 +88,12 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
   MockWidgetInputHandlerHost(
       mojo::InterfaceRequest<mojom::WidgetInputHandlerHost> request)
       : binding_(this, std::move(request)) {}
+#if defined(OS_ANDROID)
+  MOCK_METHOD4(FallbackCursorModeLockCursor, void(bool, bool, bool, bool));
+
+  MOCK_METHOD1(FallbackCursorModeSetCursorVisibility, void(bool));
+#endif
+
   MOCK_METHOD1(SetTouchActionFromMain, void(cc::TouchAction));
 
   MOCK_METHOD3(SetWhiteListedTouchAction,
