@@ -378,17 +378,17 @@
   },
   {
     "name": "content-suggestions-category-order",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
     "name": "content-suggestions-category-ranker",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
     "name": "content-suggestions-debug-log",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
@@ -2210,7 +2210,7 @@
   },
   {
     "name": "keep-prefetched-content-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
