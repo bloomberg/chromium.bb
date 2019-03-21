@@ -103,6 +103,7 @@ void FidoCableHandshakeHandler::InitiateCableHandshake(
     return;
   }
 
+  VLOG(2) << "Sending the caBLE handshake message";
   cable_device_->SendHandshakeMessage(
       fido_parsing_utils::Materialize(*handshake_message), std::move(callback));
 }

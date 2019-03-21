@@ -342,10 +342,11 @@ bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
   // request to an authenticator immediately after it has been
   // discovered, or whether the embedder/UI takes charge of that by
   // invoking its RequestCallback.
+  auto transport = authenticator.AuthenticatorTransport();
   return IsWebAuthnUIEnabled() &&
-         (!authenticator.AuthenticatorTransport() ||
-          *authenticator.AuthenticatorTransport() !=
-              device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
+         (!transport ||  // Windows
+          *transport == device::FidoTransportProtocol::kInternal ||
+          *transport == device::FidoTransportProtocol::kBluetoothLowEnergy);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
