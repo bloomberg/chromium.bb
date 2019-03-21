@@ -278,6 +278,7 @@ void ShapeResultView::AddSegments(const Segment* segments,
     char_index_offset_ = 0;
   }
 
+  FloatRect bounds;
   for (unsigned i = 0; i < segment_count; i++) {
     const Segment& segment = segments[Rtl() ? last_segment_index - i : i];
     if (segment.result) {
@@ -285,25 +286,49 @@ void ShapeResultView::AddSegments(const Segment* segments,
       CreateViewsForResult(segment.result, segment.start_index,
                            segment.end_index);
       has_vertical_offsets_ |= segment.result->has_vertical_offsets_;
+      bounds.Unite(segment.result->Bounds());
     } else if (segment.view) {
       DCHECK_EQ(segment.view->Direction(), Direction());
       CreateViewsForResult(segment.view, segment.start_index,
                            segment.end_index);
       has_vertical_offsets_ |= segment.view->has_vertical_offsets_;
+      bounds.Unite(segment.view->Bounds());
     } else {
       NOTREACHED();
     }
   }
 
+  // Compute new glyph bounding box. We only need accurate (logical) left and
+  // right edges. For the (logical) top and bottom use on the unified bounds of
+  // all source ShapeResults which gurantees that the bounds of the view fully
+  // contains all text.
   float origin = 0;
   for (const auto& part : parts_) {
+    if (!part->NumGlyphs())
+      continue;
     if (part->IsHorizontal())
       ComputeBoundsForPart<true>(*part, origin);
     else
       ComputeBoundsForPart<false>(*part, origin);
     origin += part->width_;
   }
+  glyph_bounding_box_.SetY(bounds.Y());
+  glyph_bounding_box_.SetHeight(bounds.Height());
 }
+
+namespace {
+
+template <bool is_horizontal_run>
+void AccumulateGlyphBounds(GlyphBoundsAccumulator* bounds,
+                           const HarfBuzzRunGlyphData& glyph_data,
+                           const SimpleFontData* font_data) {
+  FloatRect glyph_bounds = glyph_data.HasValidGlyphBounds()
+                               ? glyph_data.GlyphBounds<is_horizontal_run>()
+                               : font_data->BoundsForGlyph(glyph_data.glyph);
+  bounds->Unite<is_horizontal_run>(glyph_data, glyph_bounds);
+}
+
+}  // Anonymous namespace
 
 template <bool is_horizontal_run>
 void ShapeResultView::ComputeBoundsForPart(const RunInfoPart& part,
@@ -311,15 +336,29 @@ void ShapeResultView::ComputeBoundsForPart(const RunInfoPart& part,
   GlyphBoundsAccumulator bounds(origin);
   const auto& run = part.run_;
   const SimpleFontData* font_data = run->font_data_.get();
-  for (const auto& glyph_data : part) {
-    FloatRect glyph_bounds = glyph_data.HasValidGlyphBounds()
-                                 ? FloatRect(glyph_data.GlyphBoundsBefore(), 0,
-                                             glyph_data.GlyphBoundsAfter(), 0)
-                                 : font_data->BoundsForGlyph(glyph_data.glyph);
+  DCHECK_GT(part.NumGlyphs(), 0u);
 
-    bounds.Unite<is_horizontal_run>(glyph_data, glyph_bounds);
+  // We only need the bounds of the full first...
+  const unsigned first_character_index = part.GlyphAt(0).character_index;
+  for (const auto& glyph_data : part) {
+    if (first_character_index != glyph_data.character_index)
+      break;
+    AccumulateGlyphBounds<is_horizontal_run>(&bounds, glyph_data, font_data);
     bounds.origin += glyph_data.advance;
   }
+
+  /// ...and last glyph.
+  unsigned last_character_index =
+      part.GlyphAt(part.NumGlyphs() - 1).character_index;
+  bounds.origin = origin + part.width_;
+  for (auto it = part.rbegin(); it != part.rend(); it++) {
+    const auto& glyph_data = *it;
+    if (last_character_index != glyph_data.character_index)
+      break;
+    bounds.origin -= glyph_data.advance;
+    AccumulateGlyphBounds<is_horizontal_run>(&bounds, glyph_data, font_data);
+  }
+
   if (!is_horizontal_run)
     bounds.ConvertVerticalRunToLogical(font_data->GetFontMetrics());
   glyph_bounding_box_.Unite(bounds.bounds);
