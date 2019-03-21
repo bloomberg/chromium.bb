@@ -63,8 +63,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "browser_view_controller_helper_unittest.mm",
-    "browser_view_controller_unittest.mm",
     "file_locations_unittest.mm",
     "key_commands_provider_unittest.mm",
     "native_content_controller_unittest.mm",
@@ -228,13 +226,6 @@ source_set("external_files") {
 source_set("ui_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "browser_view_controller+private.h",
-    "browser_view_controller.h",
-    "browser_view_controller.mm",
-    "browser_view_controller_dependency_factory.h",
-    "browser_view_controller_dependency_factory.mm",
-    "browser_view_controller_helper.h",
-    "browser_view_controller_helper.mm",
     "key_commands_provider.h",
     "key_commands_provider.mm",
     "open_in_controller.h",
@@ -429,7 +420,6 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "browser_view_controller_egtest.mm",
     "keyboard_commands_egtest.mm",
   ]
   deps = [
@@ -441,6 +431,7 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
+    "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/popup_menu:constants",
