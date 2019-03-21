@@ -67,13 +67,6 @@ namespace {
 
 class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
  public:
-  // static
-  static std::unique_ptr<WebIDBGetDBNamesCallbacksImpl> Create(
-      ScriptPromiseResolver* promise_resolver) {
-    return base::WrapUnique(
-        new WebIDBGetDBNamesCallbacksImpl(promise_resolver));
-  }
-
   WebIDBGetDBNamesCallbacksImpl(ScriptPromiseResolver* promise_resolver)
       : promise_resolver_(promise_resolver) {
     probe::AsyncTaskScheduled(
@@ -244,7 +237,8 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
     resolver->Reject();
     return resolver->Promise();
   }
-  factory->GetDatabaseInfo(WebIDBGetDBNamesCallbacksImpl::Create(resolver));
+  factory->GetDatabaseInfo(
+      std::make_unique<WebIDBGetDBNamesCallbacksImpl>(resolver));
   ScriptPromise promise = resolver->Promise();
   return promise;
 }
