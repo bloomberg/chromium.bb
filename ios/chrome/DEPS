@@ -22,10 +22,12 @@ include_rules = [
   "+ios/chrome/common",
   "+ios/chrome/test",
 
+  "+ios/web/common",
+  "+ios/web/public",
+
   # All code in ios/chrome assumes that web::BrowserState* can be safely
   # casted to ios::ChromeBrowserState*. This mean that no code should use
   # web::TestBrowserState in ios/chrome.
-  "+ios/web/public",
   "-ios/web/public/test/fakes/test_browser_state.h",
 
   # web::HttpServer is deprecated in favor of net::EmbeddedTestServer.
