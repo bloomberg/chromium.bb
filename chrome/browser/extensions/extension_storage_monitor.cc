@@ -437,7 +437,7 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
                      weak_ptr_factory_.GetWeakPtr(), extension_id)));
   notification.SetSystemPriority();
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
 
   notified_extension_ids_.insert(extension_id);
 }

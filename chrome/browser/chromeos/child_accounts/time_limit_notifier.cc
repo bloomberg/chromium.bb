@@ -59,7 +59,8 @@ void ShowNotification(TimeLimitNotifier::LimitType limit_type,
           message_center::SystemNotificationWarningLevel::NORMAL);
   NotificationDisplayService::GetForProfile(
       Profile::FromBrowserContext(context))
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
+      ->Display(NotificationHandler::Type::TRANSIENT, *notification,
+                /*metadata=*/nullptr);
 }
 
 }  // namespace

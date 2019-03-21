@@ -72,7 +72,8 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
   notification->set_renotify(true);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 }  // namespace arc

@@ -128,7 +128,8 @@ void EasyUnlockNotificationController::ShowNotification(
     std::unique_ptr<message_center::Notification> notification) {
   notification->SetSystemPriority();
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 void EasyUnlockNotificationController::LaunchEasyUnlockSettings() {

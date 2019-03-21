@@ -164,7 +164,7 @@ void NotificationImageReady(const std::string extension_name,
       {}, delegate);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
 }
 
 // Show a popup notification balloon with a crash message for a given app/

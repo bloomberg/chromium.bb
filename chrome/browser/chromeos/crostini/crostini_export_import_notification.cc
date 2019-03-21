@@ -115,7 +115,8 @@ void CrostiniExportImportNotification::UpdateStatus(Status status,
       NOTREACHED();
   }
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification_);
+      NotificationHandler::Type::TRANSIENT, *notification_,
+      /*metadata=*/nullptr);
 }
 
 void CrostiniExportImportNotification::Close(bool by_user) {
