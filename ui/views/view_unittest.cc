@@ -206,8 +206,7 @@ using ViewTest = ViewsTestBase;
 class TestView : public View {
  public:
   TestView()
-      : View(),
-        did_layout_(false),
+      : did_layout_(false),
         delete_on_pressed_(false),
         did_paint_(false),
         native_theme_(nullptr),
@@ -1271,7 +1270,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 // A derived class for testing paint.
 class TestPaintView : public TestView {
  public:
-  TestPaintView() : TestView(), canvas_bounds_(gfx::Rect()) {}
+  TestPaintView() : canvas_bounds_(gfx::Rect()) {}
   ~TestPaintView() override = default;
 
   void OnPaint(gfx::Canvas* canvas) override {
@@ -4910,7 +4909,7 @@ class OrderableView : public View {
   // ID used by the children that are stacked above other children.
   static constexpr int VIEW_ID_RAISED = 1000;
 
-  OrderableView() : View() {}
+  OrderableView() = default;
   ~OrderableView() override = default;
 
   View::Views GetChildrenInZOrder() override {

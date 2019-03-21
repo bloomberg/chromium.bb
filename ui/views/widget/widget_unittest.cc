@@ -2382,7 +2382,7 @@ TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
 // A view that consumes mouse-pressed event and gesture-tap-down events.
 class RootViewTestView : public View {
  public:
-  RootViewTestView(): View() {}
+  RootViewTestView() = default;
 
  private:
   bool OnMousePressed(const ui::MouseEvent& event) override { return true; }

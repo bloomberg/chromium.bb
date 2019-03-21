@@ -45,10 +45,7 @@ namespace views {
 class TextfieldModelTest : public ViewsTestBase,
                            public TextfieldModel::Delegate {
  public:
-  TextfieldModelTest()
-      : ViewsTestBase(),
-        composition_text_confirmed_or_cleared_(false) {
-  }
+  TextfieldModelTest() : composition_text_confirmed_or_cleared_(false) {}
 
   // ::testing::Test:
   void TearDown() override {

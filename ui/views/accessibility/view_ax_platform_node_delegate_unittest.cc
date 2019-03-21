@@ -174,7 +174,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, WritableFocus) {
 #if defined(USE_AURA)
 class DerivedTestView : public View {
  public:
-  DerivedTestView() : View() {}
+  DerivedTestView() = default;
   ~DerivedTestView() override = default;
 
   void OnBlur() override { SetVisible(false); }

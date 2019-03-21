@@ -61,7 +61,7 @@ void FullPanel::Layout() {
 
 LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example,
                                           const gfx::Size& preferred_size)
-    : View(), example_(example), preferred_size_(preferred_size) {
+    : example_(example), preferred_size_(preferred_size) {
   SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   for (unsigned i = 0; i < sizeof(margin_) / sizeof(margin_[0]); ++i)
     margin_[i] = CreateTextfield();

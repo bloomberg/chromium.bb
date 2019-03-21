@@ -97,12 +97,7 @@ class GestureCaptureView : public View {
 // A view that always processes all mouse events.
 class MouseView : public View {
  public:
-  MouseView()
-      : View(),
-        entered_(0),
-        exited_(0),
-        pressed_(0) {
-  }
+  MouseView() : entered_(0), exited_(0), pressed_(0) {}
   ~MouseView() override = default;
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
