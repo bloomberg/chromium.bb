@@ -180,34 +180,6 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 }
 #endif
 
-// Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
-// establishes a GPU channel.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_CallbacksDontRunOnEstablishSync CallbacksDontRunOnEstablishSync
-#else
-#define MAYBE_CallbacksDontRunOnEstablishSync \
-  DISABLED_CallbacksDontRunOnEstablishSync
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
-                       MAYBE_CallbacksDontRunOnEstablishSync) {
-  DCHECK(!IsChannelEstablished());
-  bool event = false;
-  base::RunLoop run_loop;
-  GetFactory()->EstablishGpuChannel(
-      base::BindOnce(&BrowserGpuChannelHostFactoryTest::SignalAndQuitLoop,
-                     base::Unretained(this), &event, &run_loop));
-
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel =
-      GetFactory()->EstablishGpuChannelSync();
-
-  // Expect async callback didn't run yet.
-  EXPECT_FALSE(event);
-
-  run_loop.Run();
-  EXPECT_TRUE(event);
-  EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
-}
-
 // Test fails on Windows because GPU Channel set-up fails.
 #if !defined(OS_WIN)
 #define MAYBE_GrContextKeepsGpuChannelAlive GrContextKeepsGpuChannelAlive
