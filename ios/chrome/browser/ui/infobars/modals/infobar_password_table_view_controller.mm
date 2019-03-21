@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
-#import "ios/chrome/browser/ui/table_view/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -69,23 +69,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierContent];
 
-  SettingsDetailItem* URLDetailItem =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeURL];
+  TableViewDetailIconItem* URLDetailItem =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeURL];
   URLDetailItem.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
   URLDetailItem.detailText = self.URL;
   [model addItem:URLDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  SettingsDetailItem* usernameDetailItem =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeUsername];
+  TableViewDetailIconItem* usernameDetailItem =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeUsername];
   usernameDetailItem.text =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
   usernameDetailItem.detailText = self.username;
   [model addItem:usernameDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  SettingsDetailItem* passwordDetailItem =
-      [[SettingsDetailItem alloc] initWithType:ItemTypePassword];
+  TableViewDetailIconItem* passwordDetailItem =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypePassword];
   passwordDetailItem.text =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
   // TODO(crbug.com/927064): Set the number of dots depending on Password

@@ -59,8 +59,8 @@
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
-#import "ios/chrome/browser/ui/table_view/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -245,11 +245,11 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   PrefChangeRegistrar _prefChangeRegistrar;
 
   // Updatable Items.
-  SettingsDetailItem* _voiceSearchDetailItem;
-  SettingsDetailItem* _defaultSearchEngineItem;
-  SettingsDetailItem* _passwordsDetailItem;
-  SettingsDetailItem* _autoFillProfileDetailItem;
-  SettingsDetailItem* _autoFillCreditCardDetailItem;
+  TableViewDetailIconItem* _voiceSearchDetailItem;
+  TableViewDetailIconItem* _defaultSearchEngineItem;
+  TableViewDetailIconItem* _passwordsDetailItem;
+  TableViewDetailIconItem* _autoFillProfileDetailItem;
+  TableViewDetailIconItem* _autoFillCreditCardDetailItem;
 
   // YES if the user used at least once the sign-in promo view buttons.
   BOOL _signinStarted;
@@ -675,14 +675,14 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                   withDefaultsKey:kDevViewSourceKey];
 }
 
-- (SettingsDetailItem*)collectionViewCatalogDetailItem {
+- (TableViewDetailIconItem*)collectionViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeCollectionCellCatalog
                              text:@"Collection Cell Catalog"
                        detailText:nil
                     iconImageName:kSettingsDebugImageName];
 }
 
-- (SettingsDetailItem*)tableViewCatalogDetailItem {
+- (TableViewDetailIconItem*)tableViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeTableCellCatalog
                              text:@"TableView Cell Catalog"
                        detailText:nil
@@ -703,12 +703,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 
 #pragma mark Item Constructors
 
-- (SettingsDetailItem*)detailItemWithType:(NSInteger)type
-                                     text:(NSString*)text
-                               detailText:(NSString*)detailText
-                            iconImageName:(NSString*)iconImageName {
-  SettingsDetailItem* detailItem =
-      [[SettingsDetailItem alloc] initWithType:type];
+- (TableViewDetailIconItem*)detailItemWithType:(NSInteger)type
+                                          text:(NSString*)text
+                                    detailText:(NSString*)detailText
+                                 iconImageName:(NSString*)iconImageName {
+  TableViewDetailIconItem* detailItem =
+      [[TableViewDetailIconItem alloc] initWithType:type];
   detailItem.text = text;
   detailItem.detailText = detailText;
   detailItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -742,9 +742,9 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                      cellForRowAtIndexPath:indexPath];
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
-  if ([cell isKindOfClass:[SettingsDetailCell class]]) {
-    SettingsDetailCell* detailCell =
-        base::mac::ObjCCastStrict<SettingsDetailCell>(cell);
+  if ([cell isKindOfClass:[TableViewDetailIconCell class]]) {
+    TableViewDetailIconCell* detailCell =
+        base::mac::ObjCCastStrict<TableViewDetailIconCell>(cell);
     if (itemType == ItemTypePasswords) {
       scoped_refptr<password_manager::PasswordStore> passwordStore =
           IOSChromePasswordStoreFactory::GetForBrowserState(

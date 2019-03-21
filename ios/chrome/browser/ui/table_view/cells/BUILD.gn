@@ -4,14 +4,14 @@
 
 source_set("cells") {
   sources = [
-    "settings_detail_item.h",
-    "settings_detail_item.mm",
     "table_view_activity_indicator_header_footer_item.h",
     "table_view_activity_indicator_header_footer_item.mm",
     "table_view_cell.h",
     "table_view_cell.mm",
     "table_view_cells_constants.h",
     "table_view_cells_constants.mm",
+    "table_view_detail_icon_item.h",
+    "table_view_detail_icon_item.mm",
     "table_view_detail_text_item.h",
     "table_view_detail_text_item.mm",
     "table_view_disclosure_header_footer_item.h",
