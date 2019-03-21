@@ -40,8 +40,9 @@ std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  apps::mojom::IconKey null_icon_key;
   IconLoader::Key key(
-      *icon_key, icon_compression, size_hint_in_dip,
+      icon_key ? *icon_key : null_icon_key, icon_compression, size_hint_in_dip,
       // We pass false instead of allow_placeholder_icon, as the Value
       // already records placeholder-ness. If the allow_placeholder_icon
       // arg to this function is true, we can re-use a cache hit regardless

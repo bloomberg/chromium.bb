@@ -16,12 +16,68 @@
 
 namespace apps {
 
+AppServiceProxy::InnerIconLoader::InnerIconLoader(AppServiceProxy* host)
+    : host_(host), overriding_icon_loader_for_testing_(nullptr) {}
+
+apps::mojom::IconKeyPtr AppServiceProxy::InnerIconLoader::GetIconKey(
+    const std::string& app_id) {
+  if (overriding_icon_loader_for_testing_) {
+    return overriding_icon_loader_for_testing_->GetIconKey(app_id);
+  }
+
+  apps::mojom::IconKeyPtr icon_key;
+  if (host_->app_service_.is_bound()) {
+    host_->cache_.ForOneApp(app_id, [&icon_key](const apps::AppUpdate& update) {
+      icon_key = update.IconKey();
+    });
+  }
+  return icon_key;
+}
+
+std::unique_ptr<IconLoader::Releaser>
+AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
+    apps::mojom::IconKeyPtr icon_key,
+    apps::mojom::IconCompression icon_compression,
+    int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
+    apps::mojom::Publisher::LoadIconCallback callback) {
+  if (overriding_icon_loader_for_testing_) {
+    return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
+        std::move(icon_key), icon_compression, size_hint_in_dip,
+        allow_placeholder_icon, std::move(callback));
+  }
+
+  if (host_->app_service_.is_bound() && !icon_key.is_null()) {
+    // TODO(crbug.com/826982): wrap another IconLoader that coalesces multiple
+    // in-flight calls with the same IconLoader::Key, and use it here.
+    //
+    // Possibly related to that, Mojo doesn't guarantee the order of messages,
+    // so multiple calls to this method might not resolve their callbacks in
+    // order. As per khmel@, "you may have race here, assume you publish change
+    // for the app and app requested new icon. But new icon is not delivered
+    // yet and you resolve old one instead. Now new icon arrives asynchronously
+    // but you no longer notify the app or do?"
+    host_->app_service_->LoadIcon(std::move(icon_key), icon_compression,
+                                  size_hint_in_dip, allow_placeholder_icon,
+                                  std::move(callback));
+  } else {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+  }
+  return nullptr;
+}
+
 // static
 AppServiceProxy* AppServiceProxy::Get(Profile* profile) {
   return AppServiceProxyFactory::GetForProfile(profile);
 }
 
-AppServiceProxy::AppServiceProxy(Profile* profile) {
+AppServiceProxy::AppServiceProxy(Profile* profile)
+    : inner_icon_loader_(this),
+      outer_icon_loader_(&inner_icon_loader_,
+                         apps::IconCache::GarbageCollectionPolicy::kEager) {
+  if (!profile) {
+    return;
+  }
   service_manager::Connector* connector =
       content::BrowserContext::GetConnectorFor(profile);
   if (!connector) {
@@ -60,13 +116,7 @@ apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
 }
 
 apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
-  apps::mojom::IconKeyPtr icon_key;
-  if (app_service_.is_bound()) {
-    cache_.ForOneApp(app_id, [&icon_key](const apps::AppUpdate& update) {
-      icon_key = update.IconKey();
-    });
-  }
-  return icon_key;
+  return outer_icon_loader_.GetIconKey(app_id);
 }
 
 std::unique_ptr<apps::IconLoader::Releaser>
@@ -76,23 +126,9 @@ AppServiceProxy::LoadIconFromIconKey(
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
-  if (app_service_.is_bound() && !icon_key.is_null()) {
-    // TODO(crbug.com/826982): implement another IconLoader that coalesces
-    // multiple in-flight calls with the same IconLoader::Key, and use it here.
-    //
-    // Possibly related to that, Mojo doesn't guarantee the order of messages,
-    // so multiple calls to this method might not resolve their callbacks in
-    // order. As per khmel@, "you may have race here, assume you publish change
-    // for the app and app requested new icon. But new icon is not delivered
-    // yet and you resolve old one instead. Now new icon arrives asynchronously
-    // but you no longer notify the app or do?"
-    app_service_->LoadIcon(std::move(icon_key), icon_compression,
-                           size_hint_in_dip, allow_placeholder_icon,
-                           std::move(callback));
-  } else {
-    std::move(callback).Run(apps::mojom::IconValue::New());
-  }
-  return nullptr;
+  return outer_icon_loader_.LoadIconFromIconKey(
+      std::move(icon_key), icon_compression, size_hint_in_dip,
+      allow_placeholder_icon, std::move(callback));
 }
 
 void AppServiceProxy::Launch(const std::string& app_id,
@@ -133,6 +169,11 @@ void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
       app_service_->OpenNativeSettings(update.AppType(), update.AppId());
     });
   }
+}
+
+void AppServiceProxy::OverrideInnerIconLoaderForTesting(
+    apps::IconLoader* icon_loader) {
+  inner_icon_loader_.overriding_icon_loader_for_testing_ = icon_loader;
 }
 
 void AppServiceProxy::Shutdown() {
