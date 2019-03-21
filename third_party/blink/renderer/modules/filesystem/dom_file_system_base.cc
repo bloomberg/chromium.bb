@@ -314,20 +314,20 @@ void DOMFileSystemBase::Copy(const EntryBase* source,
     dispatcher.Copy(src, dest, std::move(callbacks));
 }
 
-void DOMFileSystemBase::Remove(
-    const EntryBase* entry,
-    VoidCallbacks::OnDidSucceedCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    SynchronousType synchronous_type) {
+void DOMFileSystemBase::Remove(const EntryBase* entry,
+                               VoidCallbacks::SuccessCallback success_callback,
+                               ErrorCallback error_callback,
+                               SynchronousType synchronous_type) {
   DCHECK(entry);
   // We don't allow calling remove() on the root directory.
   if (entry->fullPath() == String(DOMFilePath::kRoot)) {
-    ReportError(error_callback, base::File::FILE_ERROR_INVALID_OPERATION);
+    ReportError(std::move(error_callback),
+                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto callbacks = std::make_unique<VoidCallbacks>(
-      success_callback, error_callback, context_, this);
+      std::move(success_callback), std::move(error_callback), context_, this);
   const KURL& url = CreateFileSystemURL(entry);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   if (synchronous_type == kSynchronous)
@@ -338,19 +338,20 @@ void DOMFileSystemBase::Remove(
 
 void DOMFileSystemBase::RemoveRecursively(
     const EntryBase* entry,
-    VoidCallbacks::OnDidSucceedCallback* success_callback,
-    ErrorCallbackBase* error_callback,
+    VoidCallbacks::SuccessCallback success_callback,
+    ErrorCallback error_callback,
     SynchronousType synchronous_type) {
   DCHECK(entry);
   DCHECK(entry->isDirectory());
   // We don't allow calling remove() on the root directory.
   if (entry->fullPath() == String(DOMFilePath::kRoot)) {
-    ReportError(error_callback, base::File::FILE_ERROR_INVALID_OPERATION);
+    ReportError(std::move(error_callback),
+                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto callbacks = std::make_unique<VoidCallbacks>(
-      success_callback, error_callback, context_, this);
+      std::move(success_callback), std::move(error_callback), context_, this);
   const KURL& url = CreateFileSystemURL(entry);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   if (synchronous_type == kSynchronous)

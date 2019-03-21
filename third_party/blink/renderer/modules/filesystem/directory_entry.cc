@@ -76,9 +76,13 @@ void DirectoryEntry::getDirectory(const String& path,
 
 void DirectoryEntry::removeRecursively(V8VoidCallback* success_callback,
                                        V8ErrorCallback* error_callback) const {
-  file_system_->RemoveRecursively(
-      this, VoidCallbacks::OnDidSucceedV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::VoidSuccessCallback(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->RemoveRecursively(this, std::move(success_callback_wrapper),
+                                  std::move(error_callback_wrapper));
 }
 
 void DirectoryEntry::Trace(blink::Visitor* visitor) {

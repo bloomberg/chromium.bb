@@ -116,9 +116,14 @@ void Entry::remove(ScriptState* script_state,
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kEntry_Remove_Method_IsolatedFileSystem);
   }
-  file_system_->Remove(
-      this, VoidCallbacks::OnDidSucceedV8Impl::Create(success_callback),
-      ScriptErrorCallback::Wrap(error_callback));
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::VoidSuccessCallback(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
+  file_system_->Remove(this, std::move(success_callback_wrapper),
+                       std::move(error_callback_wrapper));
 }
 
 void Entry::getParent(ScriptState* script_state,

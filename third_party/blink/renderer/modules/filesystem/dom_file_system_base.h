@@ -126,12 +126,12 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
             EntryCallbacks::ErrorCallback,
             SynchronousType = kAsynchronous);
   void Remove(const EntryBase*,
-              VoidCallbacks::OnDidSucceedCallback*,
-              ErrorCallbackBase*,
+              VoidCallbacks::SuccessCallback,
+              VoidCallbacks::ErrorCallback,
               SynchronousType = kAsynchronous);
   void RemoveRecursively(const EntryBase*,
-                         VoidCallbacks::OnDidSucceedCallback*,
-                         ErrorCallbackBase*,
+                         VoidCallbacks::SuccessCallback,
+                         VoidCallbacks::ErrorCallback,
                          SynchronousType = kAsynchronous);
   void GetParent(const EntryBase*,
                  EntryCallbacks::SuccessCallback,
