@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "third_party/blink/renderer/modules/xr/xr_test_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,23 +19,12 @@
 namespace blink {
 namespace {
 
-constexpr double kEpsilon = 0.0001;
-
 static void AssertDOMPointsEqualForTest(const DOMPointReadOnly* a,
                                         const DOMPointReadOnly* b) {
   ASSERT_NEAR(a->x(), b->x(), kEpsilon);
   ASSERT_NEAR(a->y(), b->y(), kEpsilon);
   ASSERT_NEAR(a->z(), b->z(), kEpsilon);
   ASSERT_NEAR(a->w(), b->w(), kEpsilon);
-}
-
-std::vector<double> GetMatrixDataForTest(const TransformationMatrix& matrix) {
-  std::vector<double> data{
-      matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
-      matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),
-      matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34(),
-      matrix.M41(), matrix.M42(), matrix.M43(), matrix.M44()};
-  return data;
 }
 
 static void AssertMatricesEqualForTest(const TransformationMatrix& a,
@@ -51,15 +41,6 @@ static void AssertTransformsEqualForTest(XRRigidTransform& a,
   AssertDOMPointsEqualForTest(a.position(), b.position());
   AssertDOMPointsEqualForTest(a.orientation(), b.orientation());
   AssertMatricesEqualForTest(a.TransformMatrix(), b.TransformMatrix());
-}
-
-static DOMPointInit* MakePointForTest(double x, double y, double z, double w) {
-  DOMPointInit* point = DOMPointInit::Create();
-  point->setX(x);
-  point->setY(y);
-  point->setZ(z);
-  point->setW(w);
-  return point;
 }
 
 static void TestComposeDecompose(DOMPointInit* position,

@@ -10577,7 +10577,6 @@ interface XRView
     getter eye
     getter projectionMatrix
     getter transform
-    getter viewMatrix
     method constructor
 interface XRViewerPose : XRPose
     attribute @@toStringTag
