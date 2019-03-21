@@ -47,7 +47,7 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
         allow_placeholder_icon, std::move(callback));
   }
 
-  if (host_->app_service_.is_bound() && !icon_key.is_null()) {
+  if (host_->app_service_.is_bound() && icon_key) {
     // TODO(crbug.com/826982): wrap another IconLoader that coalesces multiple
     // in-flight calls with the same IconLoader::Key, and use it here.
     //
