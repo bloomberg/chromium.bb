@@ -1171,40 +1171,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   EXPECT_FALSE(active_web_contents->GetController().GetPendingEntry());
 }
 
-// For both PDFExtensionTest and PDFIsolatedExtensionTest, MultipleDomains case
-// is flaky.
-// https://crbug.com/825038
-// https://crbug.com/851805
-#define MAYBE_MultipleDomains DISABLED_MultipleDomains
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_MultipleDomains) {
-  for (const auto& url :
-       {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
-        embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),
-        embedded_test_server()->GetURL("c.com", "/pdf/test.pdf"),
-        embedded_test_server()->GetURL("d.com", "/pdf/test.pdf")}) {
-    ASSERT_TRUE(LoadPdfInNewTab(url));
-  }
-  EXPECT_EQ(1, CountPDFProcesses());
-}
-
-class PDFIsolatedExtensionTest : public PDFExtensionTest {
- public:
-  PDFIsolatedExtensionTest() {}
-  ~PDFIsolatedExtensionTest() override {}
-
-  void SetUp() override {
-    features_.InitAndEnableFeature(features::kPdfIsolation);
-    PDFExtensionTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-// See MAYBE_MultipleDomains definition, above.
-// https://crbug.com/825038 and https://crbug.com/851805
-IN_PROC_BROWSER_TEST_F(PDFIsolatedExtensionTest, MAYBE_MultipleDomains) {
+// Flaky: https://crbug.com/851805
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_MultipleDomains) {
   for (const auto& url :
        {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
         embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),

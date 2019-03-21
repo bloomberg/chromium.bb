@@ -339,7 +339,7 @@ const base::Feature kPaymentRequestHasEnrolledInstrument = {
 
 // Whether PDF files should be rendered in diffent processes based on origin.
 const base::Feature kPdfIsolation = {"PdfIsolation",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether we should use the navigation_client mojo interface for navigations.
 const base::Feature kPerNavigationMojoInterface = {
