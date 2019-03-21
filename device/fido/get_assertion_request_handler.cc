@@ -207,34 +207,33 @@ void GetAssertionRequestHandler::DispatchRequest(
     return;
   }
 
-  CtapGetAssertionRequest request(request_);
-
   if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
       authenticator->WillNeedPINToGetAssertion(request_)) {
-    request.SetUserVerification(UserVerificationRequirement::kRequired);
-    // Set empty pinAuth to trigger just a touch.
-    request.SetPinAuth({});
-    authenticator->GetAssertion(
-        std::move(request),
-        base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+    // A PIN will be needed. Just request a touch to let the user select this
+    // authenticator if they wish.
+    authenticator->GetTouch(
+        base::BindOnce(&GetAssertionRequestHandler::HandleTouch,
                        weak_factory_.GetWeakPtr(), authenticator));
-  } else {
-    if (authenticator->Options()) {
-      if (authenticator->Options()->user_verification_availability ==
-              AuthenticatorSupportedOptions::UserVerificationAvailability::
-                  kSupportedAndConfigured &&
-          request_.user_verification() !=
-              UserVerificationRequirement::kDiscouraged) {
-        request.SetUserVerification(UserVerificationRequirement::kRequired);
-      } else {
-        request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
-      }
-    }
-    authenticator->GetAssertion(
-        std::move(request),
-        base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
-                       weak_factory_.GetWeakPtr(), authenticator));
+    return;
   }
+
+  CtapGetAssertionRequest request(request_);
+  if (authenticator->Options()) {
+    if (authenticator->Options()->user_verification_availability ==
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured &&
+        request_.user_verification() !=
+            UserVerificationRequirement::kDiscouraged) {
+      request.SetUserVerification(UserVerificationRequirement::kRequired);
+    } else {
+      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+    }
+  }
+
+  authenticator->GetAssertion(
+      std::move(request),
+      base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+                     weak_factory_.GetWeakPtr(), authenticator));
 }
 
 void GetAssertionRequestHandler::AuthenticatorRemoved(
@@ -267,24 +266,10 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
-  if (state_ == State::kWaitingForTouch &&
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-      authenticator->WillNeedPINToGetAssertion(request_)) {
-    if (response_code != CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid &&
-        response_code != CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
-      VLOG(1) << "Expected invalid pinAuth error but got "
-              << static_cast<int>(response_code);
-      return;
-    }
-    DCHECK(observer());
-    CancelActiveAuthenticators(authenticator->GetId());
-    state_ = State::kGettingRetries;
-    authenticator_ = authenticator;
-    authenticator_->GetRetries(
-        base::BindOnce(&GetAssertionRequestHandler::OnRetriesResponse,
-                       weak_factory_.GetWeakPtr()));
-    return;
-  }
+  // Requests that require a PIN should follow the |GetTouch| path initially.
+  DCHECK(state_ == State::kWaitingForSecondTouch ||
+         !base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
+         !authenticator->WillNeedPINToGetAssertion(request_));
 
   state_ = State::kFinished;
   if (response_code != CtapDeviceResponseCode::kSuccess) {
@@ -305,6 +290,23 @@ void GetAssertionRequestHandler::HandleResponse(
   std::vector<AuthenticatorGetAssertionResponse> responses;
   responses.emplace_back(std::move(*response));
   OnAuthenticatorResponse(authenticator, response_code, std::move(responses));
+}
+
+void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
+  if (state_ != State::kWaitingForTouch) {
+    return;
+  }
+
+  DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
+         authenticator->WillNeedPINToGetAssertion(request_));
+
+  DCHECK(observer());
+  CancelActiveAuthenticators(authenticator->GetId());
+  state_ = State::kGettingRetries;
+  authenticator_ = authenticator;
+  authenticator_->GetRetries(
+      base::BindOnce(&GetAssertionRequestHandler::OnRetriesResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void GetAssertionRequestHandler::OnRetriesResponse(
