@@ -28,12 +28,77 @@ class MetricsStateManager;
 
 namespace android_webview {
 
-// This singleton manages metrics for an app using any number of WebViews. It
-// must always be used on the same thread. (Currently the UI thread is enforced,
-// but it could be any thread.) This is to prevent enable/disable race
-// conditions, and because MetricsService is single-threaded. Initialization is
-// asynchronous; even after Initialize has returned, some methods may not be
-// ready to use (see below).
+// Exposed for testing.
+namespace internal {
+bool GetLegacyClientIdPath(base::FilePath* path);
+}
+
+// AwMetricsServiceClient is a singleton which manages WebView metrics
+// collection.
+//
+// Metrics should be enabled iff all these conditions are met:
+//  - The user has not opted out (controlled by GMS).
+//  - The app has not opted out (controlled by manifest tag).
+//  - This client is in the 2% sample (controlled by client ID hash).
+// The first two are recorded in |user_and_app_consent_|, which is set by
+// SetHaveMetricsConsent(). The last is recorded in |is_in_sample_|.
+//
+// Metrics are pseudonymously identified by a randomly-generated "client ID".
+// WebView stores this in the app's data directory. There's a different such
+// directory for each user, for each app, on each device. So the ID should be
+// unique per (device, app, user) tuple.
+//
+// The client ID should be stored in prefs. But as a vestige from before WebView
+// persisted prefs across runs, it may be stored in a separate file named
+// "metrics_guid". If such a file is found, it should be deleted and the ID
+// moved into prefs.
+//
+// To avoid the appearance that we're doing anything sneaky, the client ID
+// should only be created or persisted when neither the user nor the app have
+// opted out. Otherwise, the presence of the ID could give the impression that
+// metrics were being collected.
+//
+// WebView metrics set up happens like so:
+//
+//   startup
+//      │
+//      ├──────────────────────────┐
+//      │                          ▼
+//      ▼                       query GMS for consent
+//   Initialize()                  │
+//      │                          │
+//      ▼                          │
+//   LoadLegacyClientId()          │
+//      │                          │
+//      ▼                          │
+//   InitializeWithClientId()      ▼
+//      │                       SetHaveMetricsConsent()
+//      │                          │
+//      │ ┌────────────────────────┘
+//      ▼ ▼
+//   MaybeStartMetrics()
+//      │
+//      ▼
+//   MetricsService::Start()
+//
+// LoadLegacyClientId() is the only function in this diagram that happens off
+// the UI thread. It checks for the legacy metrics_guid file. If it contains a
+// client ID, it stores the ID in |legacy_client_id_|. Then it deletes the file.
+// Once ~all clients have deleted the file, LoadLegacyClientId() can be removed,
+// and Initialize() and InitializeWithClientId() can be merged.
+//
+// Querying GMS is slow, so SetHaveMetricsConsent() typically happens after
+// InitializeWithClientId(). But it may happen before Initialize(), or between
+// Initialize() and InitializeWithClientId().
+//
+// Each path sets a flag, |init_finished_| or |set_consent_finished_|, to show
+// that path has finished, and then calls MaybeStartMetrics(). When
+// MaybeStartMetrics() is called the second time, it sees both flags true,
+// meaning we have both the client ID (if any) and the user/app opt-out status.
+//
+// If consent is granted, MaybeStartMetrics() then determines sampling by
+// hashing the ID (generating a new ID if there was none), and may then enable
+// metrics. Otherwise, it clears the client ID.
 class AwMetricsServiceClient : public metrics::MetricsServiceClient,
                                public metrics::EnabledStateProvider {
   friend struct base::LazyInstanceTraitsBase<AwMetricsServiceClient>;
@@ -41,27 +106,19 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
  public:
   static AwMetricsServiceClient* GetInstance();
 
-  // Retrieve the client ID or generate one if none exists.
-  static void LoadOrCreateClientId();
-
-  // Return the cached client id.
-  static std::string GetClientId();
+  AwMetricsServiceClient();
+  ~AwMetricsServiceClient() override;
 
   void Initialize(PrefService* pref_service);
-
+  void SetHaveMetricsConsent(bool consent);
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateLowEntropyProvider();
+      CreateLowEntropyProvider();
 
-  // metrics::EnabledStateProvider implementation
+  // metrics::EnabledStateProvider
   bool IsConsentGiven() const override;
   bool IsReportingEnabled() const override;
 
-  // The below functions must not be called until initialization has
-  // asynchronously finished.
-
-  void SetHaveMetricsConsent(bool consent);
-
-  // metrics::MetricsServiceClient implementation
+  // metrics::MetricsServiceClient
   metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   int32_t GetProduct() override;
@@ -80,22 +137,30 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   base::TimeDelta GetStandardUploadInterval() override;
   std::string GetAppPackageName() override;
 
- private:
-  AwMetricsServiceClient();
-  ~AwMetricsServiceClient() override;
+ protected:
+  // virtual for testing
+  virtual void InitializeWithClientId();
+  virtual bool IsInSample();
 
-  void InitializeWithClientId();
+ private:
+  void MaybeStartMetrics();
+
+  // Temporarily stores a client ID loaded from the legacy file, to pass it from
+  // LoadLegacyClientId() to InitializeWithClientId().
+  // TODO(crbug/939002): Remove this after ~all clients have migrated the ID.
+  std::unique_ptr<std::string> legacy_client_id_;
 
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<metrics::MetricsService> metrics_service_;
-  PrefService* pref_service_;
-  bool consent_;    // = (user has consented) && !(app has opted out)
-  bool in_sample_;  // Is this client enabled by sampling?
+  PrefService* pref_service_ = nullptr;
+  bool init_finished_ = false;
+  bool set_consent_finished_ = false;
+  bool user_and_app_consent_ = false;
+  bool is_in_sample_ = false;
 
-  // The AwMetricsServiceClient may be created before the ui thread be promoted
-  // to BrowserThread::UI thread. Therefore, we use |sequence_checker_| to check
-  // whether the AwMetricsServiceClient instance is accessed on the same
-  // thread.
+  // AwMetricsServiceClient may be created before the UI thread is promoted to
+  // BrowserThread::UI. Use |sequence_checker_| to enforce that the
+  // AwMetricsServiceClient is used on a single thread.
   base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClient);

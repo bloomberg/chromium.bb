@@ -48,6 +48,8 @@ namespace {
 // These prefs go in the JsonPrefStore, and will persist across runs. Other
 // prefs go in the InMemoryPrefStore, and will be lost when the process ends.
 const char* const kPersistentPrefsWhitelist[] = {
+    // Randomly-generated GUID which pseudonymously identifies uploaded metrics.
+    metrics::prefs::kMetricsClientID,
     // Random seed values for variation's entropy providers, used to assign
     // experiment groups.
     metrics::prefs::kMetricsLowEntropySource,
