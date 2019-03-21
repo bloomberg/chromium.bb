@@ -469,9 +469,8 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
       gl::GLApi* api = gl::g_current_gl_context;
       ScopedRestoreTexture scoped_restore(api, target);
 
-      bool framebuffer_attachment_angle =
-          (usage() & (SHARED_IMAGE_USAGE_RASTER |
-                      SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
+      // Set to false as this code path is only used on Mac.
+      bool framebuffer_attachment_angle = false;
       GLuint service_id = MakeTextureAndSetParameters(
           api, target, framebuffer_attachment_angle);
 
@@ -498,10 +497,15 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
       rgb_emulation_texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
       rgb_emulation_texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
 
+      GLenum format = gles2::TextureManager::ExtractFormatFromStorageFormat(
+          internal_format);
+      GLenum type =
+          gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
+
       const gles2::Texture::LevelInfo* info = texture_->GetLevelInfo(target, 0);
-      rgb_emulation_texture_->SetLevelInfo(
-          target, 0, internal_format, info->width, info->height, 1, 0,
-          info->format, info->type, info->cleared_rect);
+      rgb_emulation_texture_->SetLevelInfo(target, 0, internal_format,
+                                           info->width, info->height, 1, 0,
+                                           format, type, info->cleared_rect);
 
       rgb_emulation_texture_->SetLevelImage(target, 0, image, image_state);
       rgb_emulation_texture_->SetImmutable(true);
