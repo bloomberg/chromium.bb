@@ -2385,12 +2385,6 @@ const char kEnableNtpRemoteSuggestionsDescription[] =
     "allows to override the source used to retrieve these server-side "
     "suggestions.";
 
-const char kEnableNtpSnippetsVisibilityName[] =
-    "Make New Tab Page Snippets more visible.";
-const char kEnableNtpSnippetsVisibilityDescription[] =
-    "If enabled, the NTP snippets will become more discoverable with a larger "
-    "portion of the first card above the fold.";
-
 const char kEnableNtpSuggestionsNotificationsName[] =
     "Notify about new content suggestions available at the New Tab page";
 const char kEnableNtpSuggestionsNotificationsDescription[] =

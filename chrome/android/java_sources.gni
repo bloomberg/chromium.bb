@@ -1021,7 +1021,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticle.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetArticleViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsBridge.java",
-  "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsConfig.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SuggestionsSource.java",
   "java/src/org/chromium/chrome/browser/offlinepages/BackgroundScheduler.java",
