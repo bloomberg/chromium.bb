@@ -716,8 +716,6 @@ source_set("common") {
     "renderer/aw_websocket_handshake_throttle_provider.h",
     "renderer/print_render_frame_observer.cc",
     "renderer/print_render_frame_observer.h",
-    "utility/aw_content_utility_client.cc",
-    "utility/aw_content_utility_client.h",
   ]
 
   deps = [
@@ -726,6 +724,7 @@ source_set("common") {
     ":generate_components_strings",
     ":native_jni",
     "//android_webview/browser/gfx:gfx",
+    "//android_webview/utility",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/autofill/android:provider",
