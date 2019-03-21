@@ -116,9 +116,6 @@ cr.define('cr.ui.Oobe', function() {
       login.HeaderBar.decorate($('login-header-bar'));
 
       chrome.send('screenStateInitialize');
-
-      if (Oobe.getInstance().showingViewsLogin)
-        chrome.send('showAddUser');
     },
 
     // Dummy Oobe functions not present with stripped login UI.

@@ -202,6 +202,16 @@ class UserAffiliationBrowserTest
     policy::DeviceManagementService::SetRetryDelayForTesting(0);
   }
 
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    InProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
+
+    login_ui_visible_waiter_ =
+        std::make_unique<content::WindowedNotificationObserver>(
+            chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+            content::NotificationService::AllSources());
+  }
+
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -210,10 +220,7 @@ class UserAffiliationBrowserTest
       // This is a workaround for chrome crashing when running with DCHECKS when
       // it exits while the login manager is being loaded.
       // TODO(pmarko): Remove this when https://crbug.com/869272 is fixed.
-      content::WindowedNotificationObserver(
-          chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-          content::NotificationService::AllSources())
-          .Wait();
+      login_ui_visible_waiter_->Wait();
     }
   }
 
@@ -277,6 +284,9 @@ class UserAffiliationBrowserTest
   void TearDownTestSystemSlotOnIO() { test_system_slot_.reset(); }
 
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
+
+  std::unique_ptr<content::WindowedNotificationObserver>
+      login_ui_visible_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(UserAffiliationBrowserTest);
 };

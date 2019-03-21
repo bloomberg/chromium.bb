@@ -250,6 +250,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Email to pre-populate with.
   std::string populated_email_;
 
+  // Whether the handler has been initialized.
+  bool initialized_ = false;
+
   // True if dns cache cleanup is done.
   bool dns_cleared_ = false;
 
@@ -260,8 +263,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   bool cookies_cleared_ = false;
 
   // If true, the sign-in screen will be shown when DNS cache and cookie
-  // clean-up finish.
-  bool show_when_dns_and_cookies_cleared_ = false;
+  // clean-up finish, and the handler is initialized (i.e. the web UI is ready).
+  bool show_when_ready_ = false;
 
   // Has Gaia page silent load been started for the current sign-in attempt?
   bool gaia_silent_load_ = false;
