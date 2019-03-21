@@ -34,6 +34,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
+  void SetArcPlayStoreEnabled(bool enabled) override;
   State GetState() const override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
 

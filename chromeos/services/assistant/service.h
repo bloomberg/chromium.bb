@@ -130,6 +130,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   void UpdateAssistantManagerState();
   void BindAssistantSettingsManager(

@@ -63,4 +63,9 @@ void FakeVoiceInteractionController::NotifyLaunchWithMicOpen(
   launch_with_mic_open_ = launch_with_mic_open;
 }
 
+void FakeVoiceInteractionController::NotifyArcPlayStoreEnabledChanged(
+    bool enabled) {
+  arc_play_store_enabled_ = enabled;
+}
+
 }  // namespace arc

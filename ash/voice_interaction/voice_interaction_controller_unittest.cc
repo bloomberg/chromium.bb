@@ -44,6 +44,9 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}
   void OnLocaleChanged(const std::string& locale) override {}
+  void OnArcPlayStoreEnabledChanged(bool enabled) override {
+    arc_play_store_enabled_ = enabled;
+  }
 
   mojom::VoiceInteractionState voice_interaction_state() const {
     return state_;
@@ -52,6 +55,7 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   bool context_enabled() const { return context_enabled_; }
   bool hotword_always_on() const { return hotword_always_on_; }
   bool hotword_enabled() const { return hotword_enabled_; }
+  bool arc_play_store_enabled() const { return arc_play_store_enabled_; }
   mojom::ConsentStatus consent_status() const { return consent_status_; }
 
   void SetVoiceInteractionController(VoiceInteractionController* controller) {
@@ -66,6 +70,7 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   bool context_enabled_ = false;
   bool hotword_always_on_ = false;
   bool hotword_enabled_ = false;
+  bool arc_play_store_enabled_ = false;
   mojom::ConsentStatus consent_status_ = mojom::ConsentStatus::kUnknown;
 
   mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
@@ -158,6 +163,13 @@ TEST_F(VoiceInteractionControllerTest, NotifyConsentStatus) {
   // The observers should be notified.
   EXPECT_TRUE(observer()->consent_status() ==
               mojom::ConsentStatus::kActivityControlAccepted);
+}
+
+TEST_F(VoiceInteractionControllerTest, NotifyArcPlayStoreEnabledChanged) {
+  controller()->NotifyArcPlayStoreEnabledChanged(true);
+  controller()->FlushForTesting();
+  // The observers should be notified.
+  EXPECT_TRUE(observer()->arc_play_store_enabled());
 }
 
 }  // namespace ash
