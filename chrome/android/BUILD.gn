@@ -1591,11 +1591,9 @@ template("chrome_public_apk_or_module_tmpl") {
     deps = _chrome_public_shared_deps
 
     if (_is_modern) {
-      min_sdk_version = 21
       android_manifest = chrome_modern_public_android_manifest
       android_manifest_dep = ":chrome_modern_public_android_manifest"
     } else {
-      min_sdk_version = 19
       android_manifest = chrome_public_android_manifest
       android_manifest_dep = ":chrome_public_android_manifest"
     }

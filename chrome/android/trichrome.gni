@@ -58,6 +58,7 @@ template("trichrome_library_apk_tmpl") {
     uncompress_dex = use_uncompressed_dex
     version_name = chrome_version_name
     version_code = trichrome_version_code
+    min_sdk_version = 28
 
     # TODO(torne): using system_webview_resources just to get a temporary icon
     deps = [
