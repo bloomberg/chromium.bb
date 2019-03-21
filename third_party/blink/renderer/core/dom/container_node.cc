@@ -632,11 +632,6 @@ void ContainerNode::WillRemoveChild(Node& child) {
   EventDispatchForbiddenScope assert_no_event_dispatch;
   // e.g. mutation event listener can create a new range.
   GetDocument().NodeWillBeRemoved(child);
-
-  if (child.IsElementNode()) {
-    if (auto* context = ToElement(child).GetDisplayLockContext())
-      context->NotifyWillDisconnect();
-  }
 }
 
 void ContainerNode::WillRemoveChildren() {
