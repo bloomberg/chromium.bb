@@ -191,11 +191,9 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
 FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(ProgressTracker::Create(frame)),
-      in_stop_all_loaders_(false),
       in_restore_scroll_(false),
       forced_sandbox_flags_(kSandboxNone),
       dispatching_did_clear_window_object_in_main_world_(false),
-      protect_provisional_loader_(false),
       detached_(false),
       virtual_time_pauser_(
           frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
@@ -317,10 +315,6 @@ void FrameLoader::SaveScrollState() {
 
 void FrameLoader::DispatchUnloadEvent() {
   FrameNavigationDisabler navigation_disabler(*frame_);
-
-  // If the frame is unloading, the provisional loader should no longer be
-  // protected. It will be detached soon.
-  protect_provisional_loader_ = false;
   SaveScrollState();
 
   Document* document = frame_->GetDocument();
@@ -811,9 +805,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
-  if (in_stop_all_loaders_)
-    return;
-
   FrameLoadRequest request(passed_request);
   ResourceRequest& resource_request = request.GetResourceRequest();
   const KURL& url = resource_request.Url();
@@ -977,7 +968,7 @@ void FrameLoader::CommitNavigation(
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
 
-  if (in_stop_all_loaders_ || !frame_->IsNavigationAllowed() ||
+  if (!frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal) {
     // Any of the checks above should not be necessary.
@@ -1058,12 +1049,9 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
   DCHECK(!IsReloadLoadType(frame_load_type));
   DCHECK(frame_->GetDocument());
 
-  if (in_stop_all_loaders_)
-    return mojom::CommitResult::Aborted;
-
   bool history_navigation = IsBackForwardLoadType(frame_load_type);
 
-  if (!frame_->IsNavigationAllowed() && history_navigation)
+  if (!frame_->IsNavigationAllowed())
     return mojom::CommitResult::Aborted;
 
   if (!history_navigation) {
@@ -1123,16 +1111,15 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
 }
 
 void FrameLoader::StopAllLoaders() {
-  if (frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
-      Document::kNoDismissal)
+  if (!frame_->IsNavigationAllowed() ||
+      frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
+          Document::kNoDismissal) {
     return;
+  }
 
-  // If this method is called from within this method, infinite recursion can
-  // occur (3442218). Avoid this.
-  if (in_stop_all_loaders_)
-    return;
-
-  base::AutoReset<bool> in_stop_all_loaders(&in_stop_all_loaders_, true);
+  // This method could be called from within this method, e.g. through plugin
+  // detach. Avoid infinite recursion by disabling navigations.
+  FrameNavigationDisabler navigation_disabler(*frame_);
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
@@ -1143,8 +1130,7 @@ void FrameLoader::StopAllLoaders() {
   frame_->GetDocument()->CancelParsing();
   if (document_loader_)
     document_loader_->StopLoading();
-  if (!protect_provisional_loader_)
-    DetachDocumentLoader(provisional_document_loader_);
+  DetachDocumentLoader(provisional_document_loader_);
   frame_->GetNavigationScheduler().Cancel();
   DidFinishNavigation();
 
@@ -1198,23 +1184,24 @@ bool FrameLoader::PrepareForCommit() {
   frame_->DetachChildren();
   // The previous calls to dispatchUnloadEvent() and detachChildren() can
   // execute arbitrary script via things like unload events. If the executed
-  // script intiates a new load or causes the current frame to be detached, we
-  // need to abandon the current load.
-  if (pdl != provisional_document_loader_)
+  // script causes the current frame to be detached, we need to abandon the
+  // current load.
+  if (!frame_->Client())
     return false;
+  // FrameNavigationDisabler should prevent another load from starting.
+  DCHECK_EQ(provisional_document_loader_, pdl);
   // detachFromFrame() will abort XHRs that haven't completed, which can trigger
   // event listeners for 'abort'. These event listeners might call
   // window.stop(), which will in turn detach the provisional document loader.
   // At this point, the provisional document loader should not detach, because
-  // then the FrameLoader would not have any attached DocumentLoaders.
-  if (document_loader_) {
-    base::AutoReset<bool> in_detach_document_loader(
-        &protect_provisional_loader_, true);
+  // then the FrameLoader would not have any attached DocumentLoaders. This is
+  // guaranteed by FrameNavigationDisabler above.
+  if (document_loader_)
     DetachDocumentLoader(document_loader_, true);
-  }
   // 'abort' listeners can also detach the frame.
   if (!frame_->Client())
     return false;
+  // FrameNavigationDisabler should prevent another load from starting.
   DCHECK_EQ(provisional_document_loader_, pdl);
 
   // No more events will be dispatched so detach the Document.
@@ -1382,8 +1369,11 @@ blink::UserAgentMetadata FrameLoader::UserAgentMetadata() const {
 }
 
 void FrameLoader::Detach() {
+  frame_->GetDocument()->CancelParsing();
   DetachDocumentLoader(document_loader_);
   DetachDocumentLoader(provisional_document_loader_);
+  frame_->GetNavigationScheduler().Cancel();
+  DidFinishNavigation();
 
   if (progress_tracker_) {
     progress_tracker_->Dispose();

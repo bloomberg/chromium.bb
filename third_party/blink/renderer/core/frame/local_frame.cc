@@ -386,11 +386,10 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   if (!Client())
     return;
 
-  // stopAllLoaders() needs to be called after detachChildren(), because
+  // Detach() needs to be called after detachChildren(), because
   // detachChildren() will trigger the unload event handlers of any child
   // frames, and those event handlers might start a new subresource load in this
-  // frame.
-  loader_.StopAllLoaders();
+  // frame which should be stopped by Detach.
   loader_.Detach();
   GetDocument()->Shutdown();
 
