@@ -198,7 +198,12 @@ enum {
   FULL_PEL
 } UENUM1BYTE(SUBPEL_FORCE_STOP);
 
-enum { NOT_IN_USE, DIRECT_PRED, RELAXED_PRED } UENUM1BYTE(MAX_PART_PRED_MODE);
+enum {
+  NOT_IN_USE,
+  DIRECT_PRED,
+  RELAXED_PRED,
+  ADAPT_PRED
+} UENUM1BYTE(MAX_PART_PRED_MODE);
 
 typedef struct MV_SPEED_FEATURES {
   // Motion search method (Diamond, NSTEP, Hex, Big Diamond, Square, etc).

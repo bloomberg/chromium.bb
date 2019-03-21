@@ -70,8 +70,8 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
                                         float *features);
 
 // Predict the maximum BLOCK_SIZE to be used to encoder the current superblock.
-BLOCK_SIZE av1_predict_max_partition(
-    const MAX_PART_PRED_MODE max_part_pred_mode, const float *features);
+BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
+                                     const float *features);
 
 // A simplified version of set_offsets meant to be used for
 // simple_motion_search.

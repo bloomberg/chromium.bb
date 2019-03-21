@@ -19,6 +19,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/partition_model_weights.h"
 #include "av1/encoder/partition_strategy.h"
+#include "av1/encoder/rdopt.h"
 
 // Performs a simple_motion_search with a single reference frame and extract
 // the variance of residues. Here features is assumed to be a length 6 array.
@@ -664,20 +665,20 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
   assert(f_idx == FEATURE_SIZE_MAX_MIN_PART_PRED);
 }
 
-BLOCK_SIZE av1_predict_max_partition(
-    const MAX_PART_PRED_MODE max_part_pred_mode, const float *features) {
+BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
+                                     const float *features) {
   float scores[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f },
         probs[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
   const NN_CONFIG *nn_config = &av1_max_part_pred_nn_config;
 
-  assert(max_part_pred_mode != NOT_IN_USE);
+  assert(cpi->sf.auto_max_partition_based_on_simple_motion != NOT_IN_USE);
 
   aom_clear_system_state();
   av1_nn_predict(features, nn_config, scores);
   av1_nn_softmax(scores, probs, MAX_NUM_CLASSES_MAX_MIN_PART_PRED);
 
   int result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1;
-  if (max_part_pred_mode == DIRECT_PRED) {
+  if (cpi->sf.auto_max_partition_based_on_simple_motion == DIRECT_PRED) {
     result = 0;
     float max_prob = probs[0];
     for (int i = 1; i < MAX_NUM_CLASSES_MAX_MIN_PART_PRED; ++i) {
@@ -686,13 +687,34 @@ BLOCK_SIZE av1_predict_max_partition(
         result = i;
       }
     }
-  } else if (max_part_pred_mode == RELAXED_PRED) {
+  } else if (cpi->sf.auto_max_partition_based_on_simple_motion ==
+             RELAXED_PRED) {
     for (result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1; result >= 0;
          --result) {
       if (result < MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1) {
         probs[result] += probs[result + 1];
       }
       if (probs[result] > 0.2) break;
+    }
+  } else if (cpi->sf.auto_max_partition_based_on_simple_motion == ADAPT_PRED) {
+    const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
+    MACROBLOCKD *const xd = &x->e_mbd;
+    // TODO(debargha): x->source_variance is unavailable at this point,
+    // so compute. The redundant recomputation later can be removed.
+    const unsigned int source_variance =
+        is_cur_buf_hbd(xd)
+            ? av1_high_get_sby_perpixel_variance(cpi, &x->plane[0].src, sb_size,
+                                                 xd->bd)
+            : av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, sb_size);
+    if (source_variance > 16) {
+      const double thresh = source_variance < 128 ? 0.05 : 0.1;
+      for (result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1; result >= 0;
+           --result) {
+        if (result < MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1) {
+          probs[result] += probs[result + 1];
+        }
+        if (probs[result] > thresh) break;
+      }
     }
   }
 

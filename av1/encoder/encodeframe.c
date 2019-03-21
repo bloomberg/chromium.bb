@@ -4864,10 +4864,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
         float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
 
         av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
-        max_sq_size = AOMMIN(
-            av1_predict_max_partition(
-                cpi->sf.auto_max_partition_based_on_simple_motion, features),
-            max_sq_size);
+        max_sq_size =
+            AOMMIN(av1_predict_max_partition(cpi, x, features), max_sq_size);
       }
 
       min_sq_size = AOMMIN(min_sq_size, max_sq_size);
