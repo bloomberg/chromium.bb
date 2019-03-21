@@ -618,6 +618,7 @@ jumbo_component("base") {
     "profiler/native_stack_sampler_win.cc",
     "profiler/stack_sampling_profiler.cc",
     "profiler/stack_sampling_profiler.h",
+    "profiler/unwind_result.h",
     "rand_util.cc",
     "rand_util.h",
     "rand_util_nacl.cc",

@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/profiler/unwind_result.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/stl_util.h"
@@ -275,7 +276,11 @@ class NativeStackSamplerWin : public NativeStackSampler {
   // the frames.
   std::vector<Frame> WalkStack(CONTEXT* thread_context);
 
-  std::vector<Frame> RecordStack(CONTEXT* context);
+  // Attempts to walk native frames in the stack represented by
+  // |thread_context|, appending frames to |stack|. Returns a result indicating
+  // the disposition of the unwinding.
+  UnwindResult WalkNativeFrames(CONTEXT* thread_context,
+                                std::vector<Frame>* stack);
 
   win::ScopedHandle thread_handle_;
 
@@ -384,49 +389,54 @@ bool NativeStackSamplerWin::CopyStack(HANDLE thread_handle,
 
 std::vector<Frame> NativeStackSamplerWin::WalkStack(CONTEXT* thread_context) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"), "WalkStack");
-  return RecordStack(thread_context);
-}
-
-// Walks the stack represented by |context| from the current frame downwards,
-// recording the instruction pointer and associated module for each frame.
-std::vector<Frame> NativeStackSamplerWin::RecordStack(CONTEXT* context) {
   std::vector<Frame> stack;
-
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
   // fewer.
   stack.reserve(128);
 
+  WalkNativeFrames(thread_context, &stack);
+
+  return stack;
+}
+
+UnwindResult NativeStackSamplerWin::WalkNativeFrames(
+    CONTEXT* thread_context,
+    std::vector<Frame>* stack) {
   Win32StackFrameUnwinder frame_unwinder;
-  while (ContextPC(context)) {
+  while (ContextPC(thread_context)) {
     const ModuleCache::Module* const module =
-        module_cache_->GetModuleForAddress(ContextPC(context));
+        module_cache_->GetModuleForAddress(ContextPC(thread_context));
 
     if (!module) {
       // There's no loaded module containing the instruction pointer. This can
-      // be due to executing code that is not in a module. In particular,
-      // runtime-generated code associated with third-party injected DLLs
-      // typically is not in a module. It can also be due to the the module
-      // having been unloaded since we recorded the stack.  In the latter case
-      // the function unwind information was part of the unloaded module, so
-      // it's not possible to unwind further.
+      // be due to executing code that is not in a module (e.g. V8 generated
+      // code or runtime-generated code associated with third-party injected
+      // DLLs). It can also be due to the the module having been unloaded since
+      // we recorded the stack.  In the latter case the function unwind
+      // information was part of the unloaded module, so it's not possible to
+      // unwind further.
       //
       // If a module was found, it's still theoretically possible for the
       // detected module module to be different than the one that was loaded
       // when the stack was copied (i.e. if the module was unloaded and a
       // different module loaded in overlapping memory). This likely would cause
       // a crash, but has not been observed in practice.
-      break;
+      //
+      // We return UNRECOGNIZED_FRAME on the optimistic assumption that this may
+      // be a frame the AuxUnwinder knows how to handle (e.g. a frame in V8
+      // generated code).
+      return UnwindResult::UNRECOGNIZED_FRAME;
     }
 
     // Record the current frame.
-    stack.emplace_back(ContextPC(context), module);
+    stack->emplace_back(ContextPC(thread_context), module);
 
-    if (!frame_unwinder.TryUnwind(context, module))
-      break;
+    if (!frame_unwinder.TryUnwind(thread_context, module))
+      return UnwindResult::ABORTED;
   }
 
-  return stack;
+  return UnwindResult::COMPLETED;
 }
 
 // NativeStackSampler ---------------------------------------------------------
