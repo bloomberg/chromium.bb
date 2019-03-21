@@ -7,7 +7,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -65,17 +64,7 @@ base::TimeDelta AutoclickController::GetDefaultAutoclickDelay() {
 }
 
 AutoclickController::AutoclickController()
-    : enabled_(false),
-      event_type_(kDefaultAutoclickEventType),
-      revert_to_left_click_(true),
-      movement_threshold_(kDefaultAutoclickMovementThreshold),
-      tap_down_target_(nullptr),
-      delay_(GetDefaultAutoclickDelay()),
-      mouse_event_flags_(ui::EF_NONE),
-      anchor_location_(-kDefaultAutoclickMovementThreshold,
-                       -kDefaultAutoclickMovementThreshold),
-      gesture_anchor_location_(-kDefaultAutoclickMovementThreshold,
-                               -kDefaultAutoclickMovementThreshold),
+    : delay_(GetDefaultAutoclickDelay()),
       autoclick_ring_handler_(std::make_unique<AutoclickRingHandler>()),
       drag_event_rewriter_(std::make_unique<AutoclickDragEventRewriter>()) {
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
@@ -145,6 +134,12 @@ void AutoclickController::SetAutoclickEventType(
 void AutoclickController::SetMovementThreshold(int movement_threshold) {
   movement_threshold_ = movement_threshold;
   UpdateRingSize();
+}
+
+void AutoclickController::SetMenuPosition(
+    mojom::AutoclickMenuPosition menu_position) {
+  menu_position_ = menu_position;
+  // TODO(katie): When the on-screen menu exists, update its position here.
 }
 
 void AutoclickController::CreateAutoclickRingWidget(

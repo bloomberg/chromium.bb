@@ -78,11 +78,10 @@ enum SelectToSpeakState {
   kSelectToSpeakStateSpeaking,
 };
 
-// The type of mouse event the dwell control feature should perform when
+// The type of mouse event the Automatic Clicks feature should perform when
 // dwelling. These values are written to prefs and correspond to
 // AutoclickActionType in enums.xml, so should not be changed. New values
 // should be added at the end.
-[Extensible]
 enum AutoclickEventType {
   // Perform a left click.
   kLeftClick,
@@ -101,4 +100,21 @@ enum AutoclickEventType {
   kNoAction,
 
   // TODO(katie): Add scroll.
+};
+
+// The Automatic Clicks feature's on-screen menu display location. These values
+// are written to prefs so they should not be changed. New values should be
+// added at the end.
+enum AutoclickMenuPosition {
+  // The bottom right of the screen.
+  kBottomRight,
+
+  // The bottom left of the screen.
+  kBottomLeft,
+
+  // The top left of the screen.
+  kTopLeft,
+
+  // The top right of the screen.
+  kTopRight,
 };

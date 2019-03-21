@@ -270,6 +270,9 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterIntegerPref(
         prefs::kAccessibilityAutoclickMovementThreshold,
         kDefaultAutoclickMovementThreshold);
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilityAutoclickMenuPosition,
+        static_cast<int>(kDefaultAutoclickMenuPosition));
     registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
@@ -320,6 +323,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
       prefs::kAccessibilityAutoclickRevertToLeftClick);
   registry->RegisterForeignPref(
       prefs::kAccessibilityAutoclickMovementThreshold);
+  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickMenuPosition);
   registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
@@ -837,6 +841,11 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
           &AccessibilityController::UpdateAutoclickMovementThresholdFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickMenuPosition,
+      base::BindRepeating(
+          &AccessibilityController::UpdateAutoclickMenuPositionFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityCaretHighlightEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateCaretHighlightFromPref,
@@ -900,6 +909,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickEventTypeFromPref();
   UpdateAutoclickRevertToLeftClickFromPref();
   UpdateAutoclickMovementThresholdFromPref();
+  UpdateAutoclickMenuPositionFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateDictationFromPref();
@@ -978,6 +988,15 @@ void AccessibilityController::UpdateAutoclickMovementThresholdFromPref() {
 
   Shell::Get()->autoclick_controller()->SetMovementThreshold(
       movement_threshold);
+}
+
+void AccessibilityController::UpdateAutoclickMenuPositionFromPref() {
+  DCHECK(active_user_prefs_);
+  mojom::AutoclickMenuPosition menu_position =
+      static_cast<mojom::AutoclickMenuPosition>(active_user_prefs_->GetInteger(
+          prefs::kAccessibilityAutoclickMenuPosition));
+
+  Shell::Get()->autoclick_controller()->SetMenuPosition(menu_position);
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {
