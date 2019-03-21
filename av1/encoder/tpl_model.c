@@ -392,13 +392,13 @@ static void mc_flow_dispenser(AV1_COMP *cpi, GF_PICTURE *gf_picture,
   MACROBLOCKD *xd = &x->e_mbd;
   int mi_row, mi_col;
 
-  DECLARE_ALIGNED(16, uint16_t, predictor16[32 * 32 * 3]);
-  DECLARE_ALIGNED(16, uint8_t, predictor8[32 * 32 * 3]);
+  DECLARE_ALIGNED(32, uint16_t, predictor16[32 * 32 * 3]);
+  DECLARE_ALIGNED(32, uint8_t, predictor8[32 * 32 * 3]);
   uint8_t *predictor;
-  DECLARE_ALIGNED(16, int16_t, src_diff[32 * 32]);
-  DECLARE_ALIGNED(16, tran_low_t, coeff[32 * 32]);
-  DECLARE_ALIGNED(16, tran_low_t, qcoeff[32 * 32]);
-  DECLARE_ALIGNED(16, tran_low_t, dqcoeff[32 * 32]);
+  DECLARE_ALIGNED(32, int16_t, src_diff[32 * 32]);
+  DECLARE_ALIGNED(32, tran_low_t, coeff[32 * 32]);
+  DECLARE_ALIGNED(32, tran_low_t, qcoeff[32 * 32]);
+  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[32 * 32]);
 
   const BLOCK_SIZE bsize = BLOCK_32X32;
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
