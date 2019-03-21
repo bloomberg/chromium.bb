@@ -44,9 +44,9 @@ TEST(NameTraitTest, InternalNamesHiddenInOfficialBuild) {
 }
 
 TEST(NameTraitTest, InternalNamesHiddenWhenFlagIsTurnedOff) {
-#if !BUILDFLAG(FULL_HEAP_SNAPSHOTS)
+#if !BUILDFLAG(RAW_HEAP_SNAPSHOTS)
   EXPECT_TRUE(NameClient::HideInternalName());
-#endif  // BUILDFLAG(FULL_HEAP_SNAPSHOTS)
+#endif  // BUILDFLAG(RAW_HEAP_SNAPSHOTS)
 }
 
 TEST(NameTraitTest, DefaultName) {

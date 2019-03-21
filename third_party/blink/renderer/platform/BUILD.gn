@@ -216,7 +216,7 @@ buildflag_header("bindings_buildflags") {
   header_dir = "third_party/blink/renderer/platform/bindings"
 
   flags = [
-    "FULL_HEAP_SNAPSHOTS=$v8_enable_full_heap_snapshots",
+    "RAW_HEAP_SNAPSHOTS=$v8_enable_raw_heap_snapshots",
     "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything",
   ]
 }
