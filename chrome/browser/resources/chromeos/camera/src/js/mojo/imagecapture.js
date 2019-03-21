@@ -25,9 +25,15 @@ cca.mojo.PhotoCapabilities;
  * Creates the wrapper of JS image-capture and Mojo image-capture.
  * @param {MediaStreamTrack} videoTrack A video track whose still images will be
  *     taken.
+ * @param {string} deviceId The id of target media device.
  * @constructor
  */
-cca.mojo.ImageCapture = function(videoTrack) {
+cca.mojo.ImageCapture = function(videoTrack, deviceId) {
+  /**
+   * @type {string} The id of target media device.
+   */
+  this.deviceId_ = deviceId;
+
   /**
    * @type {ImageCapture}
    * @private
@@ -52,7 +58,7 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = function() {
   return Promise
       .all([
         this.capture_.getPhotoCapabilities(),
-        this.mojoCapture_.getSupportedEffects(),
+        this.mojoCapture_.getSupportedEffects(this.deviceId_),
       ])
       .then(([capabilities, effects]) => {
         capabilities.supportedEffects = effects.supportedEffects;
@@ -74,7 +80,7 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
   const takes = [];
   if (photoEffects) {
     photoEffects.forEach((effect) => {
-      takes.push((this.mojoCapture_.setReprocessOption(effect))
+      takes.push((this.mojoCapture_.setReprocessOption(this.deviceId_, effect))
                      .then(({status, blob}) => {
                        if (status != 0) {
                          throw new Error('Mojo image capture error: ' + status);

@@ -193,7 +193,7 @@ void CameraDeviceDelegate::StopAndDeAllocate(
     base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  reprocess_manager_->FlushReprocessOptions();
+  reprocess_manager_->FlushReprocessOptions(device_descriptor_.device_id);
 
   if (!device_context_ ||
       device_context_->GetState() == CameraDeviceContext::State::kStopped ||
@@ -408,7 +408,8 @@ void CameraDeviceDelegate::OnGotCameraInfo(
   SortCameraMetadata(&camera_info->static_camera_characteristics);
   static_metadata_ = std::move(camera_info->static_camera_characteristics);
 
-  reprocess_manager_->UpdateSupportedEffects(static_metadata_);
+  reprocess_manager_->UpdateSupportedEffects(device_descriptor_.device_id,
+                                             static_metadata_);
 
   const cros::mojom::CameraMetadataEntryPtr* sensor_orientation =
       GetMetadataEntry(
@@ -760,6 +761,7 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
 
   while (!take_photo_callbacks_.empty()) {
     reprocess_manager_->ConsumeReprocessOptions(
+        device_descriptor_.device_id,
         base::BindOnce(
             &TakePhotoCallbackBundle, std::move(take_photo_callbacks_.front()),
             base::BindOnce(&Camera3AController::SetAutoFocusModeForStillCapture,
