@@ -82,7 +82,7 @@ class ArcApps : public KeyedService,
 
   const base::FilePath GetCachedIconFilePath(const std::string& app_id,
                                              int32_t size_hint_in_dip);
-  void LoadIconFromVM(const std::string icon_key_s_key,
+  void LoadIconFromVM(const std::string app_id,
                       apps::mojom::IconCompression icon_compression,
                       int32_t size_hint_in_dip,
                       bool allow_placeholder_icon,

@@ -130,9 +130,9 @@ void ExtensionApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                              int32_t size_hint_in_dip,
                              bool allow_placeholder_icon,
                              LoadIconCallback callback) {
-  if (!icon_key.is_null() && !icon_key->s_key.empty()) {
+  if (!icon_key.is_null() && !icon_key->app_id.empty()) {
     LoadIconFromExtension(
-        icon_compression, size_hint_in_dip, profile_, icon_key->s_key,
+        icon_compression, size_hint_in_dip, profile_, icon_key->app_id,
         static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
     return;
   }

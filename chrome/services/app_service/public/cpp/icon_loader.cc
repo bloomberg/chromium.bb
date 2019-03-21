@@ -23,8 +23,8 @@ IconLoader::Key::Key(const apps::mojom::IconKey& icon_key,
                      int32_t size_hint_in_dip,
                      bool allow_placeholder_icon)
     : app_type_(icon_key.app_type),
-      s_key_(icon_key.s_key),
-      u_key_(icon_key.u_key),
+      app_id_(icon_key.app_id),
+      timeline_(icon_key.timeline),
       resource_id_(icon_key.resource_id),
       icon_effects_(icon_key.icon_effects),
       icon_compression_(icon_compression),
@@ -37,8 +37,8 @@ bool IconLoader::Key::operator<(const Key& that) const {
   if (this->app_type_ != that.app_type_) {
     return this->app_type_ < that.app_type_;
   }
-  if (this->u_key_ != that.u_key_) {
-    return this->u_key_ < that.u_key_;
+  if (this->timeline_ != that.timeline_) {
+    return this->timeline_ < that.timeline_;
   }
   if (this->resource_id_ != that.resource_id_) {
     return this->resource_id_ < that.resource_id_;
@@ -55,7 +55,7 @@ bool IconLoader::Key::operator<(const Key& that) const {
   if (this->allow_placeholder_icon_ != that.allow_placeholder_icon_) {
     return this->allow_placeholder_icon_ < that.allow_placeholder_icon_;
   }
-  return this->s_key_ < that.s_key_;
+  return this->app_id_ < that.app_id_;
 }
 
 std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(

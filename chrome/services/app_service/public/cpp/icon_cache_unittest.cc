@@ -30,7 +30,7 @@ class AppsIconCacheTest : public testing::Test {
 
    private:
     apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override {
-      return apps::mojom::IconKey::New(apps::mojom::AppType::kWeb, 0, app_id, 0,
+      return apps::mojom::IconKey::New(apps::mojom::AppType::kWeb, app_id, 0, 0,
                                        0);
     }
 

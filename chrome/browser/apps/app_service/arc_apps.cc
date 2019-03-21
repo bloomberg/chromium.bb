@@ -200,14 +200,14 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
-  if (!icon_key.is_null() && !icon_key->s_key.empty()) {
+  if (!icon_key.is_null() && !icon_key->app_id.empty()) {
     // Treat the Play Store as a special case, loading an icon defined by a
     // resource instead of asking the Android VM (or the cache of previous
     // responses from the Android VM). Presumably this is for bootstrapping:
     // the Play Store icon (the UI for enabling and installing Android apps)
     // should be showable even before the user has installed their first
     // Android app and before bringing up an Android VM for the first time.
-    if (icon_key->s_key == arc::kPlayStoreAppId) {
+    if (icon_key->app_id == arc::kPlayStoreAppId) {
       LoadPlayStoreIcon(icon_compression, size_hint_in_dip,
                         static_cast<IconEffects>(icon_key->icon_effects),
                         std::move(callback));
@@ -218,10 +218,10 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
     // LoadIconFromVM.
     LoadIconFromFileWithFallback(
         icon_compression, size_hint_in_dip,
-        GetCachedIconFilePath(icon_key->s_key, size_hint_in_dip),
+        GetCachedIconFilePath(icon_key->app_id, size_hint_in_dip),
         static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
         base::BindOnce(&ArcApps::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
-                       icon_key->s_key, icon_compression, size_hint_in_dip,
+                       icon_key->app_id, icon_compression, size_hint_in_dip,
                        allow_placeholder_icon,
                        static_cast<IconEffects>(icon_key->icon_effects)));
     return;
@@ -414,7 +414,7 @@ const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
                            apps_util::GetPrimaryDisplayUIScaleFactor()));
 }
 
-void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
+void ArcApps::LoadIconFromVM(const std::string app_id,
                              apps::mojom::IconCompression icon_compression,
                              int32_t size_hint_in_dip,
                              bool allow_placeholder_icon,
@@ -428,8 +428,7 @@ void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
     return;
   }
 
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs_->GetApp(icon_key_s_key);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
   if (app_info) {
     base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
         base::BindOnce(&LoadIcon0, icon_compression,

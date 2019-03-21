@@ -77,8 +77,8 @@ class IconLoader {
    public:
     // apps::mojom::IconKey fields.
     apps::mojom::AppType app_type_;
-    std::string s_key_;
-    uint64_t u_key_;
+    std::string app_id_;
+    uint64_t timeline_;
     int32_t resource_id_;
     uint32_t icon_effects_;
     // Other fields.
