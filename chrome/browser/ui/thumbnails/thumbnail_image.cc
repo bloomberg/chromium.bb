@@ -66,11 +66,10 @@ bool ThumbnailImage::AsImageSkiaAsync(AsImageSkiaCallback callback) const {
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailData::ToImageSkia, image_representation_),
       std::move(callback));
-
   return true;
 }
 
@@ -98,7 +97,7 @@ void ThumbnailImage::FromSkBitmapAsync(SkBitmap bitmap,
                                        CreateThumbnailCallback callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ThumbnailData::FromSkBitmap, bitmap),
       base::BindOnce(

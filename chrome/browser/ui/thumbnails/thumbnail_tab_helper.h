@@ -7,107 +7,76 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
-#include "content/public/browser/render_widget_host_observer.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/base/page_transition_types.h"
-
-namespace content {
-class NavigationHandle;
-class RenderViewHost;
-}  // namespace content
 
 class ThumbnailTabHelper
-    : public content::RenderWidgetHostObserver,
-      public content::WebContentsObserver,
+    : public ThumbnailWebContentsObserver,
       public content::WebContentsUserData<ThumbnailTabHelper> {
  public:
+  enum class ThumbnailState {
+    kNoThumbnail,     // no thumbnail is available
+    kLoadInProgress,  // thumbnail available but is of a page that is loading
+    kFinishedLoading  // thumbnail should represent the finished page
+  };
+
   ~ThumbnailTabHelper() override;
 
+  ThumbnailState thumbnail_state() const { return thumbnail_state_; }
   ThumbnailImage thumbnail() const { return thumbnail_; }
 
+ protected:
+  // ThumbnailWebContentsObserver:
+  void TopLevelNavigationStarted(const GURL& url) override;
+  void TopLevelNavigationEnded(const GURL& url) override;
+  void PageLoadStarted(FrameContext frame_context) override;
+  void PageLoadFinished(FrameContext frame_context) override;
+  void PageUpdated(FrameContext frame_context) override;
+  void VisibilityChanged(bool visible) override;
+
  private:
+  enum class CaptureSchedule { kImmediate, kAttemptImmediate, kDelayed };
+
+  struct CaptureInfo {
+    GURL url;
+    ThumbnailState target_state;
+  };
+
   explicit ThumbnailTabHelper(content::WebContents* contents);
   friend class content::WebContentsUserData<ThumbnailTabHelper>;
 
-  enum class TriggerReason {
-    TAB_HIDDEN,
-    NAVIGATING_AWAY,
-  };
+  void UpdateCurrentUrl(const GURL& url);
+  void ScheduleThumbnailCapture(CaptureSchedule schedule);
+  void StartThumbnailCapture(CaptureSchedule schedule);
+  void ProcessCapturedThumbnail(const CaptureInfo& capture_info,
+                                base::TimeTicks start_time,
+                                const SkBitmap& bitmap);
+  void StoreThumbnail(const CaptureInfo& capture_info,
+                      base::TimeTicks start_time,
+                      ThumbnailImage thumbnail);
+  void NotifyTabPreviewChanged();
 
-  // Used for UMA histograms. Don't change or delete entries, and only add new
-  // ones at the end.
-  enum class Outcome {
-    SUCCESS = 0,
-    NOT_ATTEMPTED_PENDING_NAVIGATION,
-    NOT_ATTEMPTED_NO_PAINT_YET,
-    NOT_ATTEMPTED_IN_PROGRESS,
-    NOT_ATTEMPTED_NO_WEBCONTENTS,
-    NOT_ATTEMPTED_NO_URL,
-    NOT_ATTEMPTED_SHOULD_NOT_ACQUIRE,
-    NOT_ATTEMPTED_VIEW_NOT_AVAILABLE,
-    NOT_ATTEMPTED_EMPTY_RECT,
-    CANCELED,
-    READBACK_FAILED,
-    // Add new entries here!
-    COUNT
-  };
-
-  // content::RenderWidgetHostObserver overrides.
-  void RenderWidgetHostVisibilityChanged(content::RenderWidgetHost* widget_host,
-                                         bool became_visible) override;
-  void RenderWidgetHostDestroyed(
-      content::RenderWidgetHost* widget_host) override;
-
-  // content::WebContentsObserver overrides.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host) override;
-  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DocumentAvailableInMainFrame() override;
-  void DocumentOnLoadCompletedInMainFrame() override;
-  void DidFirstVisuallyNonEmptyPaint() override;
-  void DidStartLoading() override;
-  void NavigationStopped() override;
-
-  void StartWatchingRenderViewHost(content::RenderViewHost* render_view_host);
-  void StopWatchingRenderViewHost(content::RenderViewHost* render_view_host);
-
-  // Starts the process of capturing a thumbnail of the current tab contents if
-  // necessary and possible.
-  void StartThumbnailCaptureIfNecessary(TriggerReason trigger);
-
-  // Creates a thumbnail from the web contents bitmap.
-  void ProcessCapturedBitmap(TriggerReason trigger, const SkBitmap& bitmap);
-
-  // Called when the current tab gets hidden.
-  void TabHidden();
-
-  static void LogThumbnailingOutcome(TriggerReason trigger, Outcome outcome);
-
-  bool did_navigation_finish_ = false;
-  bool has_received_document_since_navigation_finished_ = false;
-  bool has_painted_since_document_received_ = false;
-
-  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
-  bool load_interrupted_ = false;
-
-  bool thumbnailing_in_progress_ = false;
-  bool waiting_for_capture_ = false;
-
-  base::TimeTicks copy_from_surface_start_time_;
+  // For tabs in the process of loading, schedules another capture if none is
+  // currently queued.
+  void MaybeScheduleAnotherCapture(const CaptureInfo& capture_info,
+                                   base::TimeTicks finish_time);
 
   ThumbnailImage thumbnail_;
+  ThumbnailState thumbnail_state_ = ThumbnailState::kNoThumbnail;
+  GURL thumbnail_url_;
 
-  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
-      observer_{this};
+  // Caches whether or not the web contents view is visible. See notes in
+  // VisibilityChanged() for more information.
+  bool view_is_visible_;  // set in constructor
+  bool is_loading_ = false;
+  GURL current_url_;
+
+  // The time that the most recently-scheduled capture is/was scheduled for.
+  // Can be in the past. Used to prevent captures from bunching up or being
+  // scheduled in the wrong order.
+  base::TimeTicks last_scheduled_capture_time_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
