@@ -71,7 +71,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
 
         css_name_and_enum_pairs = [
             (property_['name'].original,
-             'static_cast<int>(' + property_['property_id'] + ')')
+             'static_cast<int>(CSSPropertyID::' + property_['enum_key'] + ')')
             for property_ in self._css_properties.properties_including_aliases]
 
         return {

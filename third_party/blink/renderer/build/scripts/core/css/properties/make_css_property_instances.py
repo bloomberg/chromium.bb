@@ -11,7 +11,7 @@ from core.css import css_properties
 
 
 class PropertyClassData(
-        namedtuple('PropertyClassData', 'enum_value,property_id,classname,namespace_group,filename')):
+        namedtuple('PropertyClassData', 'enum_key,enum_value,property_id,classname,namespace_group,filename')):
     pass
 
 
@@ -73,6 +73,7 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         """
         namespace_group = 'Shorthand' if property_['longhands'] else 'Longhand'
         return PropertyClassData(
+            enum_key=property_['enum_key'],
             enum_value=property_['enum_value'],
             property_id=property_['property_id'],
             classname=property_['name'].to_upper_camel_case(),
