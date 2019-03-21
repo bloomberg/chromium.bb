@@ -10,10 +10,12 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
@@ -42,6 +44,32 @@ bool CancelOverview() {
   return false;
 }
 
+// Returns true if windows[i] exists, can snap in split view, and is not ARC. A
+// window snapped in clamshell mode must meet these criteria to potentially
+// carry over into tablet mode split view. We want ARC windows to be included,
+// but there is an obstacle (see https://crbug.com/922282 and
+// https://buganizer.corp.google.com/issues/123432223).
+bool IsCandidateForSplitView(const MruWindowTracker::WindowList& windows,
+                             size_t i) {
+  return windows.size() > i && CanSnapInSplitview(windows[i]) &&
+         static_cast<ash::AppType>(windows[i]->GetProperty(
+             aura::client::kAppType)) != AppType::ARC_APP;
+}
+
+// Iterates over |windows| and |positions| in parallel, up to the length of
+// |positions| (assumed not to exceed the length of |windows|), snapping the
+// windows in the positions.
+void DoSplitView(
+    const MruWindowTracker::WindowList& windows,
+    const std::vector<SplitViewController::SnapPosition>& positions) {
+  DCHECK_GE(windows.size(), positions.size());
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  for (size_t i = 0u; i < positions.size(); ++i)
+    split_view_controller->SnapWindow(windows[i], positions[i]);
+}
+
 }  // namespace
 
 TabletModeWindowManager::~TabletModeWindowManager() {
@@ -56,6 +84,7 @@ TabletModeWindowManager::~TabletModeWindowManager() {
   Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->split_view_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   ArrangeWindowsForDesktopMode(was_in_overview);
@@ -262,6 +291,78 @@ void TabletModeWindowManager::OnSplitViewStateChanged(
   }
 }
 
+void TabletModeWindowManager::OnActiveUserSessionChanged(
+    const AccountId& account_id) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+
+  // There is only one SplitViewController object for all user sessions, but
+  // functionally, each user session independently can be in split view or not.
+  // Here, a new user session has just been switched to, and if split view mode
+  // is active then it was for the previous user session.
+  // SplitViewController::EndSplitView() will perform some cleanup, including
+  // setting |SplitViewController::left_window_| and
+  // |SplitViewController::right_window_| to null, but the aura::Window objects
+  // will be left unchanged to facilitate switching back.
+  split_view_controller->EndSplitView(
+      SplitViewController::EndReason::kActiveUserChanged);
+
+  // If a user session is now active for the first time since clamshell mode,
+  // then do the logic for carrying over snapped windows. Else recreate the
+  // split view layout from the last time the current user session was active.
+  if (accounts_since_entering_tablet_.count(account_id) == 0u) {
+    MruWindowTracker::WindowList windows =
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+    DoSplitView(windows, GetSnapPositions(windows));
+    accounts_since_entering_tablet_.insert(account_id);
+  } else {
+    // Search for snapped windows to detect if the now active user session was
+    // in split view. In case multiple windows were snapped to one side, one
+    // window after another, there may be multiple windows in a LEFT_SNAPPED
+    // state or multiple windows in a RIGHT_SNAPPED state. For each of those two
+    // state types that belongs to multiple windows, the relevant window will be
+    // listed first among those windows, and a null check in the loop body below
+    // will filter out the rest of them.
+    // TODO(amusbach): The windows that were in split view may have later been
+    // destroyed or changed to non-snapped states. Then the following for loop
+    // could snap windows that were not in split view. Also, a window may have
+    // become full screen, and if so, then it would be better not to reactivate
+    // split view. See https://crbug.com/944134.
+    MruWindowTracker::WindowList windows =
+        Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+    for (aura::Window* window : windows) {
+      switch (wm::GetWindowState(window)->GetStateType()) {
+        case mojom::WindowStateType::LEFT_SNAPPED:
+          if (split_view_controller->left_window() == nullptr) {
+            split_view_controller->SnapWindow(window,
+                                              SplitViewController::LEFT);
+          }
+          break;
+        case mojom::WindowStateType::RIGHT_SNAPPED:
+          if (split_view_controller->right_window() == nullptr) {
+            split_view_controller->SnapWindow(window,
+                                              SplitViewController::RIGHT);
+          }
+          break;
+        default:
+          break;
+      }
+      if (split_view_controller->state() == SplitViewController::BOTH_SNAPPED)
+        break;
+    }
+  }
+
+  // Ensure that overview mode is active if and only if there is a window
+  // snapped to one side but no window snapped to the other side.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  SplitViewController::State state = split_view_controller->state();
+  if (overview_controller->IsSelecting() !=
+      (state == SplitViewController::LEFT_SNAPPED ||
+       state == SplitViewController::RIGHT_SNAPPED)) {
+    overview_controller->ToggleOverview();
+  }
+}
+
 void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
   for (auto& pair : window_state_map_)
     pair.second->set_ignore_wm_events(true);
@@ -279,7 +380,52 @@ TabletModeWindowManager::TabletModeWindowManager() {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
+  accounts_since_entering_tablet_.insert(
+      Shell::Get()->session_controller()->GetActiveAccountId());
   event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
+}
+
+mojom::WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
+    aura::Window* window) const {
+  auto iter = window_state_map_.find(window);
+  return iter == window_state_map_.end()
+             ? wm::GetWindowState(window)->GetStateType()
+             : iter->second->old_state()->GetType();
+}
+
+std::vector<SplitViewController::SnapPosition>
+TabletModeWindowManager::GetSnapPositions(
+    const MruWindowTracker::WindowList& windows) const {
+  std::vector<SplitViewController::SnapPosition> result;
+  if (!IsCandidateForSplitView(windows, 0u))
+    return result;
+  switch (GetDesktopWindowStateType(windows[0])) {
+    case mojom::WindowStateType::LEFT_SNAPPED:
+      // windows[0] was snapped on the left in desktop mode. Snap windows[0] on
+      // the left in split view. If windows[1] was snapped on the right in
+      // desktop mode, then snap windows[1] on the right in split view.
+      result.push_back(SplitViewController::LEFT);
+      if (IsCandidateForSplitView(windows, 1u) &&
+          GetDesktopWindowStateType(windows[1]) ==
+              mojom::WindowStateType::RIGHT_SNAPPED) {
+        result.push_back(SplitViewController::RIGHT);
+      }
+      return result;
+    case mojom::WindowStateType::RIGHT_SNAPPED:
+      // windows[0] was snapped on the right in desktop mode. Snap windows[0] on
+      // the right in split view. If windows[1] was snapped on the left in
+      // desktop mode, then snap windows[1] on the left in split view.
+      result.push_back(SplitViewController::RIGHT);
+      if (IsCandidateForSplitView(windows, 1u) &&
+          GetDesktopWindowStateType(windows[1]) ==
+              mojom::WindowStateType::LEFT_SNAPPED) {
+        result.push_back(SplitViewController::LEFT);
+      }
+      return result;
+    default:
+      return result;
+  }
 }
 
 void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
@@ -292,54 +438,19 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   MruWindowTracker::WindowList activatable_windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
-  // If split_view_eligible_windows[0] does not exist, cannot be snapped in
-  // split view, or is ARC or not snapped, then just maximize all windows.
-  if (split_view_eligible_windows.empty() ||
-      !CanSnapInSplitview(split_view_eligible_windows[0]) ||
-      static_cast<ash::AppType>(split_view_eligible_windows[0]->GetProperty(
-          aura::client::kAppType)) == AppType::ARC_APP ||
-      !wm::GetWindowState(split_view_eligible_windows[0])->IsSnapped()) {
+  // Determine the desired split view layout.
+  const std::vector<SplitViewController::SnapPosition> snap_positions =
+      GetSnapPositions(split_view_eligible_windows);
+
+  // If split view is not appropriate, then maximize all windows and bail out.
+  if (snap_positions.empty()) {
     for (auto* window : activatable_windows)
       TrackWindow(window);
     return;
   }
 
-  // Carry over split_view_eligible_windows[0] to split view, along with
-  // split_view_eligible_windows[1] if it exists, is snapped on the opposite
-  // side, can be snapped in split view, and is not ARC.
-  const bool prev_win_eligible =
-      split_view_eligible_windows.size() > 1u &&
-      CanSnapInSplitview(split_view_eligible_windows[1]) &&
-      static_cast<ash::AppType>(split_view_eligible_windows[1]->GetProperty(
-          aura::client::kAppType)) != AppType::ARC_APP;
-  std::vector<SplitViewController::SnapPosition> snap_positions;
-  if (wm::GetWindowState(split_view_eligible_windows[0])->GetStateType() ==
-      mojom::WindowStateType::LEFT_SNAPPED) {
-    // split_view_eligible_windows[0] goes on the left.
-    snap_positions.push_back(SplitViewController::LEFT);
-
-    if (prev_win_eligible &&
-        wm::GetWindowState(split_view_eligible_windows[1])->GetStateType() ==
-            mojom::WindowStateType::RIGHT_SNAPPED) {
-      // split_view_eligible_windows[1] goes on the right.
-      snap_positions.push_back(SplitViewController::RIGHT);
-    }
-  } else {
-    DCHECK_EQ(
-        mojom::WindowStateType::RIGHT_SNAPPED,
-        wm::GetWindowState(split_view_eligible_windows[0])->GetStateType());
-
-    // split_view_eligible_windows[0] goes on the right.
-    snap_positions.push_back(SplitViewController::RIGHT);
-
-    if (prev_win_eligible &&
-        wm::GetWindowState(split_view_eligible_windows[1])->GetStateType() ==
-            mojom::WindowStateType::LEFT_SNAPPED) {
-      // split_view_eligible_windows[1] goes on the left.
-      snap_positions.push_back(SplitViewController::LEFT);
-    }
-  }
-
+  // Carry over the state types of the windows that shall be in split view.
+  // Maximize all other windows. Do not animate any window bounds updates.
   for (auto* window : activatable_windows) {
     bool snap = false;
     for (size_t i = 0u; i < snap_positions.size(); ++i) {
@@ -350,12 +461,9 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
     }
     TrackWindow(window, snap, /*animate_bounds_on_attach=*/false);
   }
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  for (size_t i = 0u; i < snap_positions.size(); ++i) {
-    split_view_controller->SnapWindow(split_view_eligible_windows[i],
-                                      snap_positions[i]);
-  }
+
+  // Enter split view mode.
+  DoSplitView(split_view_eligible_windows, snap_positions);
 }
 
 void TabletModeWindowManager::ArrangeWindowsForDesktopMode(
