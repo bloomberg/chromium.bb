@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -36,6 +35,7 @@ import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
@@ -200,18 +200,18 @@ public class InfoBarContainerTest {
     public void testInfoBarExpirationNoPrerender() throws Exception {
         // Save prediction preference.
         boolean networkPredictionEnabled =
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() {
                         return PrefServiceBridge.getInstance().getNetworkPredictionEnabled();
                     }
                 });
         try {
-            ThreadUtils.runOnUiThreadBlocking(setNetworkPredictionOptions(false));
+            TestThreadUtils.runOnUiThreadBlocking(setNetworkPredictionOptions(false));
             testInfoBarExpiration();
         } finally {
             // Make sure we restore prediction preference.
-            ThreadUtils.runOnUiThreadBlocking(
+            TestThreadUtils.runOnUiThreadBlocking(
                     setNetworkPredictionOptions(networkPredictionEnabled));
         }
     }
@@ -245,14 +245,11 @@ public class InfoBarContainerTest {
         Assert.assertEquals(1, mActivityTestRule.getInfoBars().size());
         final InfoBar infoBar = mActivityTestRule.getInfoBars().get(0);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals(0, infobarListener.dismissedCallback.getCallCount());
-                infoBar.onCloseButtonClicked();
-                mActivityTestRule.getActivity().getTabModelSelector().closeTab(
-                        mActivityTestRule.getActivity().getActivityTab());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(0, infobarListener.dismissedCallback.getCallCount());
+            infoBar.onCloseButtonClicked();
+            mActivityTestRule.getActivity().getTabModelSelector().closeTab(
+                    mActivityTestRule.getActivity().getActivityTab());
         });
 
         infobarListener.dismissedCallback.waitForCallback(0, 1);

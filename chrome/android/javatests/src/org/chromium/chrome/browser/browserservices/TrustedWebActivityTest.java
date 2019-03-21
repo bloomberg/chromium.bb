@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -32,6 +31,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
@@ -77,9 +77,9 @@ public class TrustedWebActivityTest {
 
     /** Caches a successful verification for the given |packageName| and |url|. */
     private static void spoofVerification(String packageName, String url) {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> OriginVerifier.addVerificationOverride(packageName, new Origin(url),
-                        CustomTabsService.RELATION_HANDLE_ALL_URLS));
+                                CustomTabsService.RELATION_HANDLE_ALL_URLS));
     }
 
     /** Creates a Custom Tabs Session from the Intent, specifying the |packageName|. */

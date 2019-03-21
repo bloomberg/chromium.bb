@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags.Add;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -26,6 +25,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -55,7 +55,7 @@ public class EnabledStateMonitorTest {
         });
 
         mActivityTestRule.startMainActivityOnBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mOriginalSignedInAccountName = ChromeSigninController.get().getSignedInAccountName();
             ChromeSigninController.get().setSignedInAccountName("test@gmail.com");
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
@@ -65,7 +65,7 @@ public class EnabledStateMonitorTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
         });
     }
@@ -75,7 +75,7 @@ public class EnabledStateMonitorTest {
     @Feature({"ContextualSuggestions"})
     @Policies.Add({ @Policies.Item(key = "ContextualSuggestionsEnabled", string = "false") })
     public void testEnterprisePolicy_Disabled() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse(mEnabledStateMonitor.getEnabledState());
             Assert.assertFalse(mEnabledStateMonitor.getSettingsEnabled());
         });
@@ -86,7 +86,7 @@ public class EnabledStateMonitorTest {
     @Feature({"ContextualSuggestions"})
     @Policies.Add({ @Policies.Item(key = "ContextualSuggestionsEnabled", string = "true") })
     public void testEnterprisePolicy_Enabled() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(mEnabledStateMonitor.getEnabledState());
             Assert.assertTrue(mEnabledStateMonitor.getSettingsEnabled());
         });
@@ -97,7 +97,7 @@ public class EnabledStateMonitorTest {
     @Feature({"ContextualSuggestions"})
     @Policies.Remove({ @Policies.Item(key = "ContextualSuggestionsEnabled") })
     public void testEnterprisePolicy_DefaultEnabled() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue(mEnabledStateMonitor.getEnabledState());
             Assert.assertTrue(mEnabledStateMonitor.getSettingsEnabled());
         });

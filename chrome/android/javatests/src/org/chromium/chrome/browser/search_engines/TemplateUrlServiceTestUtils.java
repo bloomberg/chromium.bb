@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.search_engines;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +30,7 @@ public class TemplateUrlServiceTestUtils {
                 return null;
             }
         };
-        ThreadUtils.runOnUiThreadBlocking(setSearchEngineCallable);
+        TestThreadUtils.runOnUiThreadBlocking(setSearchEngineCallable);
         callback.waitForCallback("Failed to set search engine", 0);
     }
 }

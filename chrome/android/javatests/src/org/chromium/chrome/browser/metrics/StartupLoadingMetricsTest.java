@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -32,6 +31,7 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -88,13 +88,13 @@ public class StartupLoadingMetricsTest {
     private void runAndWaitForPageLoadMetricsRecorded(CheckedRunnable runnable) throws Exception {
         PageLoadMetricsTest.PageLoadMetricsTestObserver testObserver =
                 new PageLoadMetricsTest.PageLoadMetricsTestObserver();
-        ThreadUtils.runOnUiThreadBlockingNoException(
+        TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PageLoadMetrics.addObserver(testObserver));
         runnable.run();
         // First Contentful Paint may be recorded asynchronously after a page load is finished, we
         // have to wait the event to occur.
         testObserver.waitForFirstContentfulPaintEvent();
-        ThreadUtils.runOnUiThreadBlockingNoException(
+        TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PageLoadMetrics.removeObserver(testObserver));
     }
 

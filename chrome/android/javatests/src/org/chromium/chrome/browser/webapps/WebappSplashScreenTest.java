@@ -100,8 +100,7 @@ public class WebappSplashScreenTest {
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
+                () -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
                                 mActivityTestRule.getActivity().getActivityTab()));
 
         mActivityTestRule.waitUntilSplashscreenHides();
@@ -115,8 +114,7 @@ public class WebappSplashScreenTest {
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> TabTestUtils.simulateCrash(
+                () -> TabTestUtils.simulateCrash(
                                 mActivityTestRule.getActivity().getActivityTab(), true));
 
         mActivityTestRule.waitUntilSplashscreenHides();
@@ -130,8 +128,7 @@ public class WebappSplashScreenTest {
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> TabTestUtils.simulatePageLoadFinished(
+                () -> TabTestUtils.simulatePageLoadFinished(
                                 mActivityTestRule.getActivity().getActivityTab()));
 
         mActivityTestRule.waitUntilSplashscreenHides();
@@ -145,8 +142,7 @@ public class WebappSplashScreenTest {
         Assert.assertTrue(mActivityTestRule.isSplashScreenVisible());
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> TabTestUtils.simulatePageLoadFailed(
+                () -> TabTestUtils.simulatePageLoadFailed(
                                 mActivityTestRule.getActivity().getActivityTab(), 0));
 
         mActivityTestRule.waitUntilSplashscreenHides();
@@ -223,8 +219,7 @@ public class WebappSplashScreenTest {
     public void testUmaWhenSplashHides() throws Exception {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
+                () -> TabTestUtils.simulateFirstVisuallyNonEmptyPaint(
                                 mActivityTestRule.getActivity().getActivityTab()));
 
         mActivityTestRule.waitUntilSplashscreenHides();

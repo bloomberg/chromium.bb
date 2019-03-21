@@ -9,9 +9,9 @@ import android.support.annotation.Nullable;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -41,7 +41,7 @@ public class ModalDialogTestUtils {
      */
     public static PropertyModel createDialog(ChromeActivity activity, String title,
             @Nullable TestDialogDismissedObserver observer) throws ExecutionException {
-        return ThreadUtils.runOnUiThreadBlocking(() -> {
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
             ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
                 @Override
                 public void onDismiss(
@@ -77,7 +77,7 @@ public class ModalDialogTestUtils {
      */
     public static void showDialog(
             ModalDialogManager manager, PropertyModel model, @ModalDialogType int dialogType) {
-        ThreadUtils.runOnUiThreadBlocking(() -> manager.showDialog(model, dialogType));
+        TestThreadUtils.runOnUiThreadBlocking(() -> manager.showDialog(model, dialogType));
     }
 
     /**
@@ -85,7 +85,7 @@ public class ModalDialogTestUtils {
      */
     public static void checkPendingSize(
             ModalDialogManager manager, @ModalDialogType int dialogType, int expected) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             List list = manager.getPendingDialogsForTest(dialogType);
             Assert.assertEquals(expected, list != null ? list.size() : 0);
         });
@@ -97,7 +97,7 @@ public class ModalDialogTestUtils {
      */
     public static void checkCurrentPresenter(
             ModalDialogManager manager, @Nullable Integer dialogType) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (dialogType == null) {
                 Assert.assertFalse(manager.isShowing());
                 Assert.assertNull(manager.getCurrentPresenterForTest());

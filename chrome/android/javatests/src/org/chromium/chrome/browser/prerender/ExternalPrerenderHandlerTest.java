@@ -18,7 +18,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -27,6 +26,7 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -65,7 +65,7 @@ public class ExternalPrerenderHandlerTest {
                 return Profile.getLastUsedProfile();
             }
         };
-        mProfile = ThreadUtils.runOnUiThreadBlocking(profileCallable);
+        mProfile = TestThreadUtils.runOnUiThreadBlocking(profileCallable);
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
@@ -74,12 +74,8 @@ public class ExternalPrerenderHandlerTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mExternalPrerenderHandler.cancelCurrentPrerender();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mExternalPrerenderHandler.cancelCurrentPrerender());
         mTestServer.stopAndDestroyServer();
     }
 
@@ -99,13 +95,10 @@ public class ExternalPrerenderHandlerTest {
     public void testAddAndCancelPrerender() throws Exception {
         final WebContents webContents = ensureStartedPrerenderForUrl(mTestPage);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mExternalPrerenderHandler.cancelCurrentPrerender();
-                Assert.assertFalse(ExternalPrerenderHandler.hasPrerenderedUrl(
-                        mProfile, mTestPage, webContents));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mExternalPrerenderHandler.cancelCurrentPrerender();
+            Assert.assertFalse(
+                    ExternalPrerenderHandler.hasPrerenderedUrl(mProfile, mTestPage, webContents));
         });
     }
 
@@ -137,7 +130,7 @@ public class ExternalPrerenderHandlerTest {
                 return webContents.first;
             }
         };
-        return ThreadUtils.runOnUiThreadBlocking(addPrerenderCallable);
+        return TestThreadUtils.runOnUiThreadBlocking(addPrerenderCallable);
     }
 
     private void ensureCompletedPrefetchForUrl(final String url) {

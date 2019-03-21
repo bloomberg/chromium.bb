@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.util.concurrent.Callable;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeoutException;
 public class LocaleManagerTest {
     @Before
     public void setUp() throws ExecutionException, ProcessInitException {
-        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws ProcessInitException {
                 ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
@@ -65,19 +65,15 @@ public class LocaleManagerTest {
                 InstrumentationRegistry.getInstrumentation(), SearchActivity.class);
 
         final CallbackHelper searchEnginesFinalizedCallback = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
-                        searchActivity, new Callback<Boolean>() {
-                            @Override
-                            public void onResult(Boolean result) {
-                                Assert.assertTrue(result);
-                                searchEnginesFinalizedCallback.notifyCalled();
-                            }
-                        });
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
+                                searchActivity, new Callback<Boolean>() {
+                                    @Override
+                                    public void onResult(Boolean result) {
+                                        Assert.assertTrue(result);
+                                        searchEnginesFinalizedCallback.notifyCalled();
+                                    }
+                                }));
         searchEnginesFinalizedCallback.waitForCallback(0);
         Assert.assertEquals(0, getShowTypeCallback.getCallCount());
     }

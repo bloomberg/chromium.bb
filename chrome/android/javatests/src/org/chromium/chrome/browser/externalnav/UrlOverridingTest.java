@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -43,6 +42,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -252,7 +252,7 @@ public class UrlOverridingTest {
     }
 
     private static InterceptNavigationDelegateImpl getInterceptNavigationDelegate(Tab tab) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> InterceptNavigationDelegateImpl.get(tab));
     }
 

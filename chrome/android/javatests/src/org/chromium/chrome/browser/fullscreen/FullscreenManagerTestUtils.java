@@ -19,6 +19,7 @@ import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
@@ -225,12 +226,8 @@ public class FullscreenManagerTestUtils {
      * Disable any browser visibility overrides for testing.
      */
     public static void disableBrowserOverrides() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStateBrowserControlsVisibilityDelegate.disableForTesting();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> BrowserStateBrowserControlsVisibilityDelegate.disableForTesting());
     }
 
     public static void fling(ChromeTabbedActivityTestRule testRule, final int vx, final int vy) {

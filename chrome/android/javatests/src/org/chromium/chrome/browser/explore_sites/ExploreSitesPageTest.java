@@ -23,7 +23,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -37,6 +36,7 @@ import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 
@@ -111,7 +111,8 @@ public class ExploreSitesPageTest {
         // scroll bar to disappear.
         SystemClock.sleep(3000);
         mActivityTestRule.loadUrl("about:blank");
-        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().onBackPressed());
         mRenderTestRule.render(mRecyclerView, "recycler_layout_back");
     }
 

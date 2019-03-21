@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -23,6 +22,7 @@ import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -116,7 +116,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
         @Override
         public boolean isSatisfied() {
             try {
-                return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                return TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() {
                         mDialog = PermissionDialogController.getInstance()
@@ -167,12 +167,8 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Simulates clicking a button on an PermissionDialogView.
      */
     private void clickButton(final PermissionDialogView dialog, final int button) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                dialog.getButton(button).performClick();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+            (Runnable) () -> dialog.getButton(button).performClick());
     }
 
     /**

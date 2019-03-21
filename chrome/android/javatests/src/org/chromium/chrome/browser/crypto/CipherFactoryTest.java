@@ -12,9 +12,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.crypto.CipherFactory.CipherDataObserver;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -263,13 +263,13 @@ public class CipherFactoryTest {
         CipherFactory.getInstance().addCipherDataObserver(observer);
         Assert.assertEquals(0, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
-        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
         Assert.assertEquals(1, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
-        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
         Assert.assertEquals(1, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
-        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
         Assert.assertEquals(1, observer.getTimesNotified());
         CipherFactory.getInstance().removeCipherDataObserver(observer);
     }
@@ -283,13 +283,13 @@ public class CipherFactoryTest {
     public void testCipherFactoryObserverTooLate() throws Exception {
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
         // Ensures that cipher finishes initializing before running the rest of the test.
-        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
         TestCipherDataObserver observer = new TestCipherDataObserver();
         CipherFactory.getInstance().addCipherDataObserver(observer);
-        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
         Assert.assertEquals(0, observer.getTimesNotified());
         CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
-        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        TestThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
         Assert.assertEquals(0, observer.getTimesNotified());
     }
 

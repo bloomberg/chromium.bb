@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -28,6 +27,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
@@ -138,6 +138,6 @@ public class PrerenderTest {
 
         // Cancel the prerender. This will discard the prerendered WebContents and close the
         // infobars.
-        ThreadUtils.runOnUiThreadBlocking(() -> handler.cancelCurrentPrerender());
+        TestThreadUtils.runOnUiThreadBlocking(() -> handler.cancelCurrentPrerender());
     }
 }

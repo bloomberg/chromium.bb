@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -24,6 +23,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,23 +47,17 @@ public class BookmarkBridgeTest {
 
     @Before
     public void setUp() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Profile profile = Profile.getLastUsedProfile();
-                mBookmarkBridge = new BookmarkBridge(profile);
-                mBookmarkBridge.loadEmptyPartnerBookmarkShimForTesting();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Profile profile = Profile.getLastUsedProfile();
+            mBookmarkBridge = new BookmarkBridge(profile);
+            mBookmarkBridge.loadEmptyPartnerBookmarkShimForTesting();
         });
 
         BookmarkTestUtil.waitForBookmarkModelLoaded();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mMobileNode = mBookmarkBridge.getMobileFolderId();
-                mDesktopNode = mBookmarkBridge.getDesktopFolderId();
-                mOtherNode = mBookmarkBridge.getOtherFolderId();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMobileNode = mBookmarkBridge.getMobileFolderId();
+            mDesktopNode = mBookmarkBridge.getDesktopFolderId();
+            mOtherNode = mBookmarkBridge.getOtherFolderId();
         });
     }
 

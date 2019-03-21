@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
@@ -19,6 +18,7 @@ import org.chromium.chrome.test.util.browser.notifications.MockNotificationManag
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -57,14 +57,11 @@ public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedAct
      */
     public void setNotificationContentSettingForOrigin(final @ContentSettingValues int setting,
             String origin) throws InterruptedException, TimeoutException {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // The notification content setting does not consider the embedder origin.
-                PermissionInfo notificationInfo =
-                        new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, "", false);
-                notificationInfo.setContentSetting(setting);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // The notification content setting does not consider the embedder origin.
+            PermissionInfo notificationInfo =
+                    new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, "", false);
+            notificationInfo.setContentSetting(setting);
         });
 
         String permission = runJavaScriptCodeInCurrentTab("Notification.permission");
