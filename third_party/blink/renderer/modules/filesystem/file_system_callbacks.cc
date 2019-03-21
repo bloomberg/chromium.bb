@@ -146,15 +146,16 @@ void EntryCallbacks::DidFail(base::File::Error error) {
 
 // EntriesCallbacks -----------------------------------------------------------
 
-EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
-                                   ErrorCallbackBase* error_callback,
+EntriesCallbacks::EntriesCallbacks(const SuccessCallback& success_callback,
+                                   ErrorCallback error_callback,
                                    ExecutionContext* context,
                                    DirectoryReaderBase* directory_reader,
                                    const String& base_path)
-    : FileSystemCallbacksBase(error_callback,
+    : FileSystemCallbacksBase(/*error_callback =*/nullptr,
                               directory_reader->Filesystem(),
                               context),
       success_callback_(success_callback),
+      error_callback_(std::move(error_callback)),
       directory_reader_(directory_reader),
       base_path_(base_path),
       entries_(MakeGarbageCollected<HeapVector<Member<Entry>>>()) {
@@ -177,17 +178,19 @@ void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   EntryHeapVector* entries =
       MakeGarbageCollected<EntryHeapVector>(std::move(*entries_));
 
-  if (!success_callback_)
+  if (!success_callback_) {
     return;
+  }
 
-  success_callback_->OnSuccess(entries);
+  success_callback_.Run(entries);
 }
 
 void EntriesCallbacks::DidFail(base::File::Error error) {
-  if (!error_callback_)
+  if (!error_callback_) {
     return;
+  }
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // FileSystemCallbacks --------------------------------------------------------

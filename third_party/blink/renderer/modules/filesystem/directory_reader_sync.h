@@ -60,9 +60,6 @@ class DirectoryReaderSync : public DirectoryReaderBase {
   void Trace(blink::Visitor*) override;
 
  private:
-  class EntriesCallbackHelper;
-  class ErrorCallbackHelper;
-
   bool has_called_read_directory_ = false;
   EntrySyncHeapVector entries_;
   base::File::Error error_code_ = base::File::FILE_OK;

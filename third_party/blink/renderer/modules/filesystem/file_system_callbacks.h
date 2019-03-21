@@ -155,19 +155,11 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
 
 class EntriesCallbacks final : public FileSystemCallbacksBase {
  public:
-  class OnDidGetEntriesCallback
-      : public GarbageCollectedFinalized<OnDidGetEntriesCallback> {
-   public:
-    virtual ~OnDidGetEntriesCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(EntryHeapVector*) = 0;
+  using SuccessCallback = base::RepeatingCallback<void(EntryHeapVector*)>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
 
-   protected:
-    OnDidGetEntriesCallback() = default;
-  };
-
-  EntriesCallbacks(OnDidGetEntriesCallback*,
-                   ErrorCallbackBase*,
+  EntriesCallbacks(const SuccessCallback&,
+                   ErrorCallback,
                    ExecutionContext*,
                    DirectoryReaderBase*,
                    const String& base_path);
@@ -184,7 +176,8 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  Persistent<OnDidGetEntriesCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
   Persistent<DirectoryReaderBase> directory_reader_;
   String base_path_;
   Persistent<HeapVector<Member<Entry>>> entries_;

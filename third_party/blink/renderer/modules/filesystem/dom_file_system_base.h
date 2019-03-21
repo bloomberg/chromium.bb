@@ -150,8 +150,8 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
                     SynchronousType = kAsynchronous);
   void ReadDirectory(DirectoryReaderBase*,
                      const String& path,
-                     EntriesCallbacks::OnDidGetEntriesCallback*,
-                     ErrorCallbackBase*,
+                     const EntriesCallbacks::SuccessCallback&,
+                     EntriesCallbacks::ErrorCallback,
                      SynchronousType = kAsynchronous);
 
   void Trace(blink::Visitor*) override;
