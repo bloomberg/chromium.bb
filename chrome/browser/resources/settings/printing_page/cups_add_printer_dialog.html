@@ -42,7 +42,8 @@
         <add-printer-list printers="[[discoveredPrinters]]"
             selected-printer="{{selectedPrinter}}">
         </add-printer-list>
-        <div class="center" id="noPrinterMessage" hidden>
+        <div class="center" id="noPrinterMessage"
+            hidden="[[discoveredPrinters.length]]">
            $i18n{noPrinterNearbyMessage}
         </div>
         <div id="searchSpinner" hidden="[[!discovering_]]">
