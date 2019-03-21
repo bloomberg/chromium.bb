@@ -20,9 +20,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1585657529869845941">Haz clic en <ph name="BEGIN_BOLD" />Cambiar de todos modos<ph name="END_BOLD" /> (si aparece)</translation>
 <translation id="1668054258064581266">Después de eliminar tu cuenta de Chromium, es posible que tengas que volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Chromium en cualquier ordenador.</translation>
-<translation id="1701453112166152218">Si una imagen no tiene una descripción útil, Chromium intentará proporcionarte una. Google se encarga de analizar las imágenes. Puedes desactivar esta opción cuando quieras desde la configuración.</translation>
 <translation id="1708666629004767631">Hay disponible una nueva versión más segura de Chromium.</translation>
-<translation id="1736416771649788185">Si una imagen no tiene una descripción útil, Chromium intentará proporcionarte una. Google se encarga de analizar las imágenes.</translation>
 <translation id="1766096484055239003">Tu administrador pide que reinicies Chromium para aplicar una actualización</translation>
 <translation id="1774152462503052664">Permitir que Chromium se ejecute en segundo plano</translation>
 <translation id="1779356040007214683">Para aumentar la seguridad de Chromium, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que se podrían haber añadido sin tu conocimiento.</translation>

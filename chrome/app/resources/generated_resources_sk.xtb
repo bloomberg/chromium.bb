@@ -1203,7 +1203,7 @@
 <translation id="2770690685823456775">Exportujte heslá do iného priečinka</translation>
 <translation id="2771268254788431918">Mobilné dáta boli aktivované</translation>
 <translation id="2772936498786524345">Rafinovaný</translation>
-<translation id="2773288106548584039">Podpora staršieho prehliadača</translation>
+<translation id="2773288106548584039">Podpora starších prehliadačov</translation>
 <translation id="2773802008104670137">Tento typ súboru môže poškodiť váš počítač.</translation>
 <translation id="2775104091073479743">Upraviť odtlačky prstov</translation>
 <translation id="2776441542064982094">Zdá sa, že v sieti nie sú žiadne zariadenia dostupné na registráciu. Ak je zariadenie zapnuté a pripojené k internetu, skúste ho zaregistrovať podľa pokynov v tejto príručke.</translation>
@@ -4203,7 +4203,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7289225569524511578">Otvoriť aplikáciu tapety</translation>
 <translation id="7290242001003353852">Prihlasovacia služba hostená doménou <ph name="SAML_DOMAIN" /> pristupuje k vášmu fotoaparátu.</translation>
 <translation id="7290594223351252791">Potvrdenie registrácie</translation>
-<translation id="7292696521213967957">Informácie na ladenie Asistenta</translation>
 <translation id="7295662345261934369">Zdieľať s ostatnými</translation>
 <translation id="729583233778673644">Povoľte šifrovania AES a RC4. Šifry RC4 sú nezabezpečené, takže použitím tejto možnosti zvýšite riziko.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> – Zmluvné podmienky</translation>

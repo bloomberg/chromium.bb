@@ -4,6 +4,7 @@
 <translation id="111910763555783249">Nastavitve obvestil</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Pred 1 dnevom}one{Pred # dnevom}two{Pred # dnevoma}few{Pred # dnevi}other{Pred # dnevi}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Pred 1 minuto}one{Pred # minuto}two{Pred # minutama}few{Pred # minutami}other{Pred # minutami}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{1 m}one{# m}two{# m}few{# m}other{# m}}</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -18,6 +19,7 @@
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
 <translation id="169515659049020177">Shift</translation>
+<translation id="1710340000377843106">zdaj</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 min}one{# min}two{# min}few{# min}other{# min}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Obdobje</translation>
@@ -29,8 +31,10 @@
 <translation id="1859234291848436338">Smer pisanja</translation>
 <translation id="1860796786778352021">Zapri obvestilo</translation>
 <translation id="1871244248791675517">Ins</translation>
+<translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Izberi &amp;vse</translation>
 <translation id="1938451708255335766">Če želite prilagoditi gostoto prikaza okna, znova zaženite aplikacijo.</translation>
+<translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}two{# d}few{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2168039046890040389">Stran gor</translation>
 <translation id="2190355936436201913">(prazno)</translation>
@@ -98,6 +102,7 @@
 <translation id="5076340679995252485">&amp;Prilepi</translation>
 <translation id="5137751499640340777">Zagon Pomočnika Google</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
+<translation id="5266161281976477809">Trikotnik z dodatno vsebino</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Izbriši</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> na <ph name="IN_PLACE_APP" />, spustite, da ustvarite mapo.</translation>
@@ -153,6 +158,7 @@
 <translation id="7238427729722629793">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
 <translation id="7319740667687257810">Zaganjalnik, delni pogled</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}one{Pred # min}two{Pred # min}few{Pred # min}other{Pred # min}}</translation>
+<translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Še 1 min}one{Še # min}two{Še # min}few{Še # min}other{Še # min}}</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
@@ -180,10 +186,13 @@
 <translation id="8393700583063109961">Pošlji sporočilo</translation>
 <translation id="8394908167088220973">Ustavitev/začasna ustavitev</translation>
 <translation id="8420205633584771378">Želite odstraniti ta predlog?</translation>
+<translation id="8458811141851741261">{YEARS,plural, =1{1 l}one{# l}two{# l}few{# l}other{# l}}</translation>
 <translation id="8602707065186045623">Datoteka <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polica je vedno prikazana</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8725488761726303204">in še <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Končano</translation>
+<translation id="8772073294905169192">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>
 <translation id="8798099450830957504">Privzeto</translation>
 <translation id="8806053966018712535">Mapa <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Dodaj pripis sliki</translation>

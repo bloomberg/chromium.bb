@@ -1707,7 +1707,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questo criterio è impostato su false, in <ph name="PRODUCT_NAME" /> non sarà possibile creare nuovi profili da Gestione utenti.</translation>
 <translation id="4970855112942626932">Disattiva accesso al browser</translation>
-<translation id="4978405676361550165">Se viene impostata la norma "OffHours", le norme relative ai dispositivi specificate vengono ignorate (vengono usate le impostazioni predefinite delle norme) durante gli intervalli di tempo definiti. Le norme relative ai dispositivi vengono riapplicate da Chrome ogni volta che inizia o finisce il periodo definito in "OffHours". L'utente verrà informato e obbligato a uscire dall'account quando vengono cambiate le impostazioni relative alla fine del periodo "OffHours" e alle norme relative ai dispositivi (ad esempio se l'utente ha eseguito l'accesso con un account non consentito).</translation>
+<translation id="4978405676361550165">Se viene impostata la norma "OffHours", i criteri relativi ai dispositivi specificate vengono ignorate (vengono usate le impostazioni predefinite dei criteri) durante gli intervalli di tempo definiti. I criteri relativi ai dispositivi vengono riapplicati da Chrome ogni volta che inizia o finisce il periodo definito in "OffHours". L'utente verrà informato e obbligato a uscire dall'account quando vengono cambiate le impostazioni relative alla fine del periodo "OffHours" e ai criteri relativi ai dispositivi (ad esempio se l'utente ha eseguito l'accesso con un account non consentito).</translation>
 <translation id="4980635395568992380">Tipo di dati:</translation>
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4986560318567565414">Percorso a Chrome per cambiare il browser alternativo.</translation>
@@ -1938,13 +1938,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Questa norma non viene applicata agli switch del canale.</translation>
 <translation id="5526701598901867718">Tutto (non sicuro)</translation>
-<translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative al dispositivo al servizio di gestione del dispositivo.
+<translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sui criteri relativi al dispositivo al servizio di gestione del dispositivo.
 
       Se questa norma viene impostata, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per questa norma è compreso tra 1800000 (30 minuti) e 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati al relativo limite.
 
       Se questa norma non viene impostata, <ph name="PRODUCT_OS_NAME" /> utilizzerà il valore predefinito di tre ore.
 
-      Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme, rendendo superflui aggiornamenti più frequenti.</translation>
+      Se la piattaforma supporta le notifiche relative ai criteri, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative ai criteri forzino l'aggiornamento automatico quando cambiano i criteri, rendendo superflui aggiornamenti più frequenti.</translation>
 <translation id="5530347722229944744">Blocca download potenzialmente pericolosi</translation>
 <translation id="5535973522252703021">Whitelist server di delega Kerberos</translation>
 <translation id="555077880566103058">Consenti l'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> in tutti i siti</translation>

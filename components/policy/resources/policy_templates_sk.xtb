@@ -482,7 +482,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Upozorňujeme, že ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín (všetky predvolené nastavenia a hodnota určená v tomto pravidle budú ignorované), pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel. Častejšie obnovenia sú preto zbytočné.</translation>
 <translation id="2024149678078029009">Toto pravidlo ovláda príkaz na otváranie webových adries v prehliadači <ph name="PRODUCT_NAME" /> pri prepnutí z prehliadača Internet Explorer.
 
-      Ak nie je nainštalovaný doplnok Podpora staršieho prehliadača pre Internet Explorer, toto pravidlo nemá žiadny účinok.
+      Ak nie je nainštalovaný doplnok Podpora starších prehliadačov pre Internet Explorer, toto pravidlo nemá žiadny účinok.
 
       Keď toto pravidlo nenastavíte, Internet Explorer pri spustení prehliadača<ph name="PRODUCT_NAME" /> z tohto programu automaticky zistí vlastnú cestu spustenia prehliadača <ph name="PRODUCT_NAME" />.
 
@@ -1215,7 +1215,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="3583230441447348508">Umožňuje špecifikovať zoznam vopred nakonfigurovaných zdieľaných úložísk v sieti.
 
       Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z dvoch častí: „share_url“ a „mode“. „share_url“ by mala byť webová adresa zdieľaného úložiska a „mode“ by malo byť „drop_down“ alebo „pre_mount“. „drop_down“ označuje, že „share_url“ sa pridá do rozbaľovacieho zoznamu na objavovanie zdieľaných úložísk. Režim „pre_mount“ označuje, že „share_url“ sa pripojí.</translation>
-<translation id="3591527072193107424">Povoliť funkciu podpory staršieho prehliadača</translation>
+<translation id="3591527072193107424">Zapnúť funkciu Podpora starších prehliadačov</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
 <translation id="3624171042292187668">
       Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie, SitePerProcess, izoluje všetky weby.
@@ -1406,7 +1406,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak je toto pravidlo nastavené na hodnotu True, budú sa odosielať sledovacie sieťové pakety (tzv. <ph name="HEARTBEATS_TERM" />).
       Ak je nastavené na hodnotu False alebo nie je nastavené, pakety sa odosielať nebudú.</translation>
 <translation id="3950239119790560549">Časové obmedzenia aktualizácií</translation>
-<translation id="3956686688560604829">Podporu pre staré verzie prehliadača nájdete v pravidle SiteList prehliadača Internet Explorer.</translation>
+<translation id="3956686688560604829">Používať pravidlo SiteList prehliadača Internet Explorer na podporu starších prehliadačov</translation>
 <translation id="3958586912393694012">Povoliť použitie funkcie Smart Lock</translation>
 <translation id="3963602271515417124">Ak je toto pravidlo nastavené na hodnotu True, pre zariadenia sa povolí vzdialené overenie a certifikát sa automaticky vygeneruje a nahrá na server na správu zariadení.
 
@@ -1414,7 +1414,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="3965339130942650562">Časový limit pred odhlásením nečinného používateľa</translation>
 <translation id="3973371701361892765">Poličku nikdy neskrývať automaticky</translation>
 <translation id="3984028218719007910">Určuje, či má systém <ph name="PRODUCT_OS_NAME" /> po odhlásení zachovať miestne údaje o účte. Ak je toto pravidlo nastavené na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> nebude uchovávať žiadne trvalé účty a všetky údaje z relácií používateľov budú po odhlásení odstránené. Ak je toto pravidlo nastavené na hodnotu false, alebo nie je nakonfigurované, zariadenie môže uchovávať (zašifrované) miestne údaje používateľa.</translation>
-<translation id="398475542699441679">Toto pravidlo ovláda, či má byť povolená podpora staršieho prehliadača.
+<translation id="398475542699441679">Toto pravidlo ovláda, či má byť zapnutá Podpora starších prehliadačov.
 
       Keď ho nenastavíte alebo nastavíte na hodnotu false, Chrome sa nebude pokúšať určené webové adresy spúšťať v alternatívnom prehliadači.
 

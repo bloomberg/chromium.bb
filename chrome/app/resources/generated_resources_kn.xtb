@@ -1373,6 +1373,7 @@
 <translation id="3016780570757425217">ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ತಿಳಿದುಕೊಳ್ಳಿ</translation>
 <translation id="3020183492814296499">ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="3020990233660977256">ಕ್ರಮ ಸಂಖ್ಯೆ: <ph name="SERIAL_NUMBER" /></translation>
+<translation id="3021066826692793094">ಚಿಟ್ಟೆ</translation>
 <translation id="3021678814754966447">ಫ್ರೇಮ್ ಮೂಲವನ್ನು &amp;ವೀಕ್ಷಿಸಿ</translation>
 <translation id="3022978424994383087">ಅದು ಅರ್ಥವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3023464535986383522">ಧ್ವನಿ ಆಯ್ಕೆ ಮಾಡಿ</translation>
@@ -1390,6 +1391,7 @@
 <translation id="3045447014237878114">ಈ ಸೈಟ್‌ ಬಹು ಫೈಲ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿದೆ</translation>
 <translation id="3046910703532196514">ವೆಬ್‌ಪುಟ, ಪೂರ್ಣಗೊಳಿಸಿ</translation>
 <translation id="304747341537320566">ಧ್ವನಿ ಎಂಜಿನ್‌ಗಳು</translation>
+<translation id="3047644958362961983">ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್ ಸಮಸ್ಯೆಯನ್ನು ಇನ್ನಷ್ಟು ಚೆನ್ನಾಗಿ ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು, ಈ ಮಾಹಿತಿ ನಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ. ಇದನ್ನು 90 ದಿನಗಳವರೆಗೆ ಸಂಗ್ರಹಣೆ ಮಾಡಲಾಗುತ್ತದೆ ಮತ್ತು ಸೂಕ್ತ ಇಂಜಿನಿಯರಿಂಗ್ ಹಾಗೂ ಪ್ರತಿಕ್ರಿಯೆ ತಂಡಗಳಿಗೆ ಮಾತ್ರ ಇದಕ್ಕೆ ಪ್ರವೇಶಿಸಲು ಅವಕಾಶ ನೀಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="3053013834507634016">ಪ್ರಮಾಣಪತ್ರ ಕೀಲಿ ಬಳಕೆ</translation>
 <translation id="3057861065630527966">ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಿ</translation>
 <translation id="3058498974290601450">ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸಿಂಕ್ ಆನ್ ಮಾಡಬಹುದು</translation>
@@ -1630,6 +1632,7 @@
 <translation id="3440663250074896476"><ph name="BOOKMARK_NAME" /> ಗಾಗಿ ಇನ್ನಷ್ಟು ಕ್ರಿಯೆಗಳು</translation>
 <translation id="3440761377721825626">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಪ್ರವೇಶಿಸಲು ಸೈಟ್ ಪ್ಲಗ್ ಇನ್ ಬಳಸಲು ಬಯಸಿದಾಗ ಕೇಳಿ</translation>
 <translation id="3441653493275994384">ಸ್ಕ್ರೀನ್‌</translation>
+<translation id="3442151986393356303">Sherlog ಮೂಲಕ ಇತ್ತೀಚಿನ ಅಸಿಸ್ಟೆಂಟ್ ಇತಿಹಾಸವನ್ನು ಸೇರಿಸಿ. ಇದು ನಿಮ್ಮ ಗುರುತು, ಸ್ಥಳ ಮತ್ತು ಡೀಬಗ್ ಮಾಹಿತಿಯನ್ನು ಒಳಗೊಂಡಿರಬಹುದು <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="3445925074670675829">USB-C ಸಾಧನ</translation>
 <translation id="344630545793878684">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಹಲವಾರು ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಓದಿ</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" /> ಗೆ ಆದೇಶಗಳನ್ನು ಕಳುಹಿಸಲು <ph name="SEARCH_KEY" /> ಒತ್ತಿರಿ</translation>
@@ -2427,6 +2430,7 @@
 <translation id="4663373278480897665">ಕ್ಯಾಮೆರಾಗೆ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="4664482161435122549">PKCS #12 ರಫ್ತು ದೋಷ</translation>
 <translation id="4665014895760275686">ತಯಾರಕರು</translation>
+<translation id="4665446389743427678"><ph name="SITE" /> ವೆಬ್‌ಸೈಟ್‌ ಮೂಲಕ ಸಂಗ್ರಹಣೆ ಮಾಡಲಾದ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುವುದು.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> ಸಕ್ರಿಯಗೊಳಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="4669606053856530811"><ph name="SOURCE_NAME" /> ನ ಸದಸ್ಯರೊಂದಿಗೆ ಈ ಐಟಂಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳದ ಹೊರತು ಅವರು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತಾರೆ.</translation>
 <translation id="4672657274720418656">ಪುಟವನ್ನು ಶೋಧಿಸು</translation>
@@ -2603,6 +2607,7 @@
 <translation id="4917385247580444890">ಪ್ರಬಲ</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ಅವರು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯ ಜೊತೆಗೆ ಸಂವಹಿಸಲು ಬಯಸುತ್ತಾರೆ</translation>
 <translation id="4918086044614829423">ಸಮ್ಮತಿಸು</translation>
+<translation id="4918221908152712722"><ph name="APP_NAME" /> ಆ್ಯಪ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಿ (ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವ ಅಗತ್ಯವಿಲ್ಲ)</translation>
 <translation id="4920887663447894854">ಈ ಪುಟದಲ್ಲಿ ನಿಮ್ಮ ಸ್ಥಾನವನ್ನು ನಿಗಾ ಇರಿಸದಂತೆ ಮುಂದಿನ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
 <translation id="4922897038695506037"><ph name="URL_HOST" /> ಹೆಚ್ಚುವರಿ ಅನುಮತಿಗಳನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.</translation>
 <translation id="492299503953721473">Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕು</translation>
@@ -3792,6 +3797,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822"><ph name="SOURCE_LANGUAGE" /> ಭಾಷೆಯಿಂದ <ph name="TARGET_LANGUAGE" /> ಭಾಷೆಗೆ ಈ ಪುಟವನ್ನು ಅನುವಾದಿಸಲು ನಿಮಗೆ Google ಸಹಾಯ ಬೇಕೇ?</translation>
 <translation id="6675665718701918026">ಪಾಯಿಂಟಿಂಗ್ ಸಾಧನ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
+<translation id="6676212663108450937">ನಿಮ್ಮ ಧ್ವನಿಗೆ ತರಬೇತಿ ನೀಡುವಾಗ, ಹೆಡ್‌ಫೋನ್‌ಗಳನ್ನು ಬಳಸುವುದನ್ನು ಪರಿಗಣಿಸಿ</translation>
 <translation id="6678717876183468697">ಕ್ವೆರಿ URL</translation>
 <translation id="6680442031740878064">ಲಭ್ಯವಿದೆ: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ದರ</translation>
@@ -4200,7 +4206,6 @@
 <translation id="7289225569524511578">ವಾಲ್‌ಪೇಪರ್ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7290242001003353852">ಈ ಸೈನ್ ಇನ್ ಸೇವೆಯನ್ನು <ph name="SAML_DOMAIN" /> ಮೂಲಕ ಹೋಸ್ಟ್ ಮಾಡಲಾಗಿದೆ, ಇದು ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸುತ್ತದೆ.</translation>
 <translation id="7290594223351252791">ನೋಂದಣಿಯನ್ನು ದೃಢೀಕರಿಸಿ</translation>
-<translation id="7292696521213967957">ಅಸಿಸ್ಟೆಂಟ್ ಡೀಬಗ್‌ಗೆ ಮಾಹಿತಿ</translation>
 <translation id="7295662345261934369">ಇತರರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="729583233778673644">AES ಮತ್ತು RC4 ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಅನ್ನು ಅನುಮತಿಸಿ . RC4 ಸೈಫರ್‌ಗಳು ಅಸುರಕ್ಷಿತವಾಗಿರುವುದರಿಂದ ಈ ಆಯ್ಕೆಯನ್ನು ಬಳಸುವುದು ನಿಮ್ಮ ಅಪಾಯವನ್ನು ಹೆಚ್ಚಿಸುತ್ತದೆ.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> ನಿಯಮಗಳು</translation>
@@ -4515,6 +4520,7 @@
 <translation id="7788383851298063850">ಏನಾಗುತ್ತಿದೆ ಎಂಬುದನ್ನು ನಮಗೆ ತಿಳಿಸಿ</translation>
 <translation id="7788444488075094252">ಭಾಷೆಗಳು ಮತ್ತು ಇನ್‌ಪುಟ್</translation>
 <translation id="7788668840732459509">ಸ್ಥಳ:</translation>
+<translation id="7789963078219276159">ಆರಂಭಿಕ ಪುಟದ ಹಿನ್ನೆಲೆಯನ್ನು <ph name="CATEGORY" /> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
 <translation id="7792012425874949788">ಸೈನ್ ಇನ್ ಮಾಡುವುದರೊಂದಿಗೆ ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ</translation>
 <translation id="7792388396321542707">ಹಂಚಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ</translation>
@@ -5194,6 +5200,7 @@
 <translation id="8767621466733104912">ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗಾಗಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ Chrome ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="8770406935328356739">ವಿಸ್ತರಣೆ ಮೂಲ ಡೈರೆಕ್ಟರಿ</translation>
 <translation id="8770507190024617908">ಜನರನ್ನು ನಿರ್ವಹಿಸು</translation>
+<translation id="8771300903067484968">ಆರಂಭಿಕ ಪುಟದ ಹಿನ್ನೆಲೆಯನ್ನು ಡೀಫಾಲ್ಟ್ ಹಿನ್ನೆಲೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="8774934320277480003">ಮೇಲಿನ ಅಂಚು</translation>
 <translation id="8775144690796719618">ಅಮಾನ್ಯ URL</translation>
 <translation id="8775404590947523323">ನಿಮ್ಮ ಸಂಪಾದನೆಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಉಳಿಸಲಾಗಿದೆ. <ph name="BREAKS" /> ಮೂಲ ಚಿತ್ರದ ನಕಲೊಂದನ್ನು ಇರಿಸಿಕೊಳ್ಳಲು, "ಮೂಲವನ್ನು ಮೇಲ್ಬರಹಗೊಳಿಸು" ಅನ್ನು ಅನ್‌ಚೆಕ್ ಮಾಡಿ.</translation>
@@ -5218,6 +5225,7 @@
 <translation id="8803953437405899238">ಒಂದೇ ಕ್ಲಿಕ್‌ ಮಾಡುವ ಮೂಲಕ ಹೊಸ ಟ್ಯಾಬ್‌ ತೆರೆಯಿರಿ</translation>
 <translation id="8804398419035066391">ಸಹಕಾರಿ ವೆಬ್‌ಸೈಟ್‌ಗಳೊಂದಿಗೆ ಸಂವಹಿಸಿ</translation>
 <translation id="8805140816472474147">ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು, ಸಿಂಕ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಖಚಿತಪಡಿಸಿ.</translation>
+<translation id="8806680466228877631"><ph name="SHORTCUT" /> ಬಳಸಿಕೊಂಡು ಆಕಸ್ಮಿಕವಾಗಿ ಮುಚ್ಚಲಾದ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪುನಃ ತೆರೆಯಬಹುದು</translation>
 <translation id="8807632654848257479">ಸ್ಥಿರ</translation>
 <translation id="8808478386290700967">ವೆಬ್‌ ಸ್ಟೋರ್‌</translation>
 <translation id="8808686172382650546">ಬೆಕ್ಕು</translation>

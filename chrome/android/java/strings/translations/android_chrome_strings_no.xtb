@@ -144,7 +144,7 @@
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB andre apper</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}other{# filer}}</translation>
 <translation id="2017836877785168846">Tømmer loggen og fjerner automatiske fullføringer fra adressefeltet.</translation>
-<translation id="2018707881002649255">Kontaktene du velger nedenfor deles med nettstedet <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
+<translation id="2018707881002649255">Kontaktene du velger nedenfor, deles med nettstedet <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
@@ -743,7 +743,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="6448273550210938826">Nettadresse- og søkeforslag</translation>
 <translation id="6461962085415701688">Kan ikke åpne filen</translation>
-<translation id="6464977750820128603">Du kan se nettstedene du besøker i Chrome og angi tidtakere for dem.\n\nGoogle får informasjon om nettstedene du setter tidtakere for, og hvor lenge du besøker dem. Denne informasjonen brukes til å gjøre Digital balanse bedre.</translation>
+<translation id="6464977750820128603">Du kan se nettstedene du besøker i Chrome, og angi tidtakere for dem.\n\nGoogle får informasjon om nettstedene du angir tidtakere for, og hvor lenge du besøker dem. Denne informasjonen brukes til å gjøre Digital balanse bedre.</translation>
 <translation id="6475951671322991020">Last ned videoen</translation>
 <translation id="6482749332252372425">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av mangel på lagringsplass.</translation>
 <translation id="6496823230996795692">For å bruke <ph name="APP_NAME" /> for første gang, koble til Internett.</translation>
@@ -892,7 +892,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="751961395872307827">Kan ikke koble til nettstedet</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Kan ikke hente forslag</translation>
-<translation id="7559245342362162951">Viser gruppens faner i fullskjermrutenett</translation>
+<translation id="7559245342362162951">Vis gruppens faner i fullskjermrutenett</translation>
 <translation id="7559975015014302720">Forenklet modus er av</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
@@ -975,7 +975,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Foreslå relaterte sider</translation>
 <translation id="8109613176066109935">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering</translation>
-<translation id="8110087112193408731">Vise Chrome-aktiviteten din i Digital balanse?</translation>
+<translation id="8110087112193408731">Vil du vise Chrome-aktiviteten din i Digital balanse?</translation>
 <translation id="8116925261070264013">Kuttet lyd</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8131740175452115882">Bekreft</translation>
@@ -1072,7 +1072,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på informasjon om foreldre.</translation>
 <translation id="8922289737868596582">Last ned sider via Flere alternativer-knappen for å bruke dem uten nett</translation>
-<translation id="8937772741022875483">Fjerne Chrome-aktiviteten din fra Digital balanse?</translation>
+<translation id="8937772741022875483">Vil du fjerne Chrome-aktiviteten din fra Digital balanse?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>

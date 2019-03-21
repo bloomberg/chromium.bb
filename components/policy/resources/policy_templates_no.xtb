@@ -499,9 +499,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
 <translation id="2043770014371753404">Deaktiverte bedriftsskrivere</translation>
-<translation id="2050629715135525072">Bestemmer muligheten en bruker som er koblet til en ekstern tilgangsvert har til å overføre filer mellom klienten og verten. Dette er ikke relevant for eksterne assistansetilkoblinger, som ikke støtter filoverføring.
+<translation id="2050629715135525072">Bestemmer om en bruker som er koblet til en ekstern tilgangsvert, kan overføre filer mellom klienten og verten. Dette er ikke relevant for forbindelser for ekstern hjelp, som ikke støtter filoverføring.
 
-          Hvis denne innstillingen er deaktivert, er ikke filoverføring tillatt. Hvis denne innstillingen er aktivert, er filoverføring tillatt.</translation>
+          Hvis denne innstillingen er av, er ikke filoverføring tillatt. Hvis denne innstillingen er på, er filoverføring tillatt.</translation>
 <translation id="2057317273526988987">Gi tilgang til en liste med nettadresser</translation>
 <translation id="206623763829450685">Spesifiserer hvilke HTTP-autentiseringsskjemaer som støttes av <ph name="PRODUCT_NAME" />.
 
@@ -598,7 +598,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="2236488539271255289">Ikke la noen nettsteder angi lokale data</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
-<translation id="2258126710006312594">Tillatt at brukere med ekstern tilgang kan overføre filer til/fra verten</translation>
+<translation id="2258126710006312594">Tillat at brukere med ekstern tilgang kan overføre filer til/fra verten</translation>
 <translation id="2265214338421787313">Denne regelen lar administratorer angi at sider kan vise forgrunnsvinduer mens de lastes ut.
 
       Når regelen er satt til «enabled» (aktivert), kan sider vise forgrunnsvinduer mens de lastes ut.

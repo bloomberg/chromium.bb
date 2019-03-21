@@ -224,6 +224,7 @@
 <translation id="2593272815202181319">মোনোস্পেস</translation>
 <translation id="2610239185026711824">পাসওয়ার্ড সাজেস্ট করুন</translation>
 <translation id="2612676031748830579">কার্ড নম্বর</translation>
+<translation id="2613747923081026172">গ্রুপ তৈরি করুন</translation>
 <translation id="2621115761605608342">একটি নির্দিষ্ট সাইটের জন্য JavaScript মঞ্জুর করুন।</translation>
 <translation id="2625189173221582860">পাসওয়ার্ড কপি করা হয়েছে</translation>
 <translation id="2631006050119455616">সংরক্ষিত হয়েছে</translation>
@@ -745,7 +746,7 @@
 <translation id="6447842834002726250">কুকিজ</translation>
 <translation id="6448273550210938826">সার্চ এবং URL পরামর্শগুলি</translation>
 <translation id="6461962085415701688">ফাইল খোলা যাচ্ছে না</translation>
-<translation id="6464977750820128603">Chrome-এ দেখা সাইটগুলি আপনি দেখতে পাবেন এবং সাইটগুলিতে টাইমার সেট করতে পারবেন।\n\nযে সমস্ত সাইটে টাইমার সেট করেছেন বা কত সময় ধরে সাইটটি দেখেছেন তার সমস্ত তথ্য Google-এর কাছে যায়। ডিজিটাল ওয়েলবিয়িং-কে আরও উন্নত করতে এই তথ্য ব্যবহার করা হয়।</translation>
+<translation id="6464977750820128603">Chrome-এ দেখা সাইটগুলি আপনি দেখতে পাবেন এবং সাইটগুলিতে টাইমার সেট করতে পারবেন।\n\nযে সমস্ত সাইটে টাইমার সেট করেছেন বা কত সময় ধরে সাইটটি দেখেছেন তার সমস্ত তথ্য Google-এর কাছে যায়। ডিজিটাল ওয়েলবিং-কে আরও উন্নত করতে এই তথ্য ব্যবহার করা হয়।</translation>
 <translation id="6475951671322991020">ভিডিও ডাউনলোড করুন</translation>
 <translation id="6482749332252372425">স্টোরেজে জায়গার ঘাটতির কারণে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> প্রথমবার ব্যবহার করার জন্য অনুগ্রহ করে ইন্টারনেটে সংযুক্ত হন।</translation>
@@ -885,6 +886,7 @@
 <translation id="7473891865547856676">না থাক</translation>
 <translation id="7475192538862203634">আপনি যদি এটি প্রায়ই দেখতে পান, তাহলে <ph name="BEGIN_LINK" />প্রস্তাবনাগুলি<ph name="END_LINK" /> চেষ্টা করে দেখুন৷</translation>
 <translation id="7475688122056506577">এসডি কার্ড পাওয়া যায়নি। আপনার কিছু ফাইল নাও থাকতে পারে।</translation>
+<translation id="7479104141328977413">ট্যাব ম্যানেজমেন্ট</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (আপডেট করা হয়েছে <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">পাসওয়ার্ড দেখান</translation>
@@ -977,7 +979,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">সম্পর্কিত পৃষ্ঠাগুলি সাজেস্ট করুন</translation>
 <translation id="8109613176066109935">আপনার সমস্ত ডিভাইসে বুকমার্কগুলি পেতে সিঙ্ক বিকল্প চালু করুন</translation>
-<translation id="8110087112193408731">ডিজিটাল ওয়েলবিয়িং-এ আপনার Chrome অ্যাক্টিভিটি দেখবেন?</translation>
+<translation id="8110087112193408731">ডিজিটাল ওয়েলবিং-এ আপনার Chrome অ্যাক্টিভিটি দেখতে চান?</translation>
 <translation id="8116925261070264013">মিউট করা আছে</translation>
 <translation id="813082847718468539">সাইটের তথ্য দর্শন করুন</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
@@ -1114,7 +1116,7 @@
 <translation id="9206873250291191720">আ</translation>
 <translation id="9215534869786664672">৬০ শতাংশ পর্যন্ত কম ডেটা ব্যবহার করে এবং ওয়েবের গতি বৃদ্ধি করে। আপনার দেখা পৃষ্ঠাগুলি Google সার্ভার অপ্টিমাইজ করে দেবে।</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
-<translation id="926205370408745186">ডিজিটাল ওয়েলবিয়িং থেকে আপনার Chrome অ্যাক্টিভিটি সরিয়ে দিন</translation>
+<translation id="926205370408745186">ডিজিটাল ওয়েলবিং থেকে আপনার Chrome অ্যাক্টিভিটি সরিয়ে দিন</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="932599481871055447">ডেটা সেভ করুন এবং দ্রুত ব্রাউজ করুন</translation>
 <translation id="938850635132480979">ত্রুটি: <ph name="ERROR_CODE" /></translation>

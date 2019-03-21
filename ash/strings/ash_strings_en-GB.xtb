@@ -132,6 +132,7 @@
 <translation id="2961963223658824723">Something went wrong. Try again in a few seconds.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2970920913501714344">Install apps, extensions and themes</translation>
+<translation id="2977598380246111477">Next number</translation>
 <translation id="2995447421581609334">Show cast devices.</translation>
 <translation id="2996462380875591307">Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -235,6 +236,7 @@
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4696813013609194136">Unlock device with parent code</translation>
+<translation id="4731797938093519117">Parent access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4774338217796918551">Come back tomorrow at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>

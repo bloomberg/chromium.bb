@@ -1395,6 +1395,7 @@ Pretende pará-lo?</translation>
 <translation id="3045447014237878114">Este site transferiu vários ficheiros automaticamente</translation>
 <translation id="3046910703532196514">Página Web, Completa</translation>
 <translation id="304747341537320566">Motores de voz</translation>
+<translation id="3047644958362961983">Estas informações ajudam-nos a compreender melhor o seu problema com o Assistente. Ficam armazenadas durante um máximo de 90 dias e o acesso está restrito às equipas relevantes de engenharia e comentários.</translation>
 <translation id="3053013834507634016">Utilização de chave de certificado</translation>
 <translation id="3057861065630527966">Fazer uma cópia de segurança de fotos e vídeos</translation>
 <translation id="3058498974290601450">Pode ativar a sincronização em qualquer altura nas definições.</translation>
@@ -1635,6 +1636,7 @@ Pretende pará-lo?</translation>
 <translation id="3440663250074896476">Mais ações para <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Perguntar quando um site pretender utilizar um plug-in para aceder ao seu computador</translation>
 <translation id="3441653493275994384">Ecrã</translation>
+<translation id="3442151986393356303">Inclua o histórico recente do Assistente através do Sherlog. Pode incluir as suas informações de identidade, localização e depuração. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="344630545793878684">Ler os seus dados em vários Sites</translation>
 <translation id="3449839693241009168">Prima <ph name="SEARCH_KEY" /> para enviar comandos para <ph name="EXTENSION_NAME" /></translation>
@@ -3798,6 +3800,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Pretende que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador ligado</translation>
+<translation id="6676212663108450937">Considere utilizar auscultadores enquanto treina a sua voz</translation>
 <translation id="6678717876183468697">URL de consulta</translation>
 <translation id="6680442031740878064">Disponível: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">Classificar</translation>
@@ -4206,7 +4209,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7289225569524511578">Abrir a aplicação da imagem de fundo</translation>
 <translation id="7290242001003353852">Este serviço de início de sessão, alojado por <ph name="SAML_DOMAIN" />, está a aceder à sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registo</translation>
-<translation id="7292696521213967957">Informações para depurar o Assistente</translation>
 <translation id="7295662345261934369">Partilhar com outros</translation>
 <translation id="729583233778673644">Permitir a encriptação AES e RC4. A utilização desta opção aumenta o seu risco, uma vez que as cifras RC4 são inseguras.</translation>
 <translation id="7296774163727375165">Termos de <ph name="DOMAIN" /></translation>
@@ -4524,6 +4526,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7788383851298063850">Indique-nos o que está a acontecer</translation>
 <translation id="7788444488075094252">Idiomas e introdução</translation>
 <translation id="7788668840732459509">Posição:</translation>
+<translation id="7789963078219276159">O fundo da página de início foi alterado para <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7792012425874949788">Ocorreu um erro ao iniciar sessão</translation>
 <translation id="7792388396321542707">Parar a partilha</translation>
@@ -5205,6 +5208,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8767621466733104912">Atualizar automaticamente o Chrome para todos os utilizadores</translation>
 <translation id="8770406935328356739">Diretório raiz da extensão</translation>
 <translation id="8770507190024617908">Gerir pessoas</translation>
+<translation id="8771300903067484968">O fundo da página de inicio foi reposto para a predefinição.</translation>
 <translation id="8774934320277480003">Margem superior</translation>
 <translation id="8775144690796719618">URL inválido</translation>
 <translation id="8775404590947523323">As suas edições são guardadas automaticamente.<ph name="BREAKS" />Para manter uma cópia da imagem original, desmarque a opção "Substituir original"</translation>

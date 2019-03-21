@@ -1395,6 +1395,7 @@
 <translation id="3045447014237878114">Awtomatikong nag-download ng maraming file ang site na ito</translation>
 <translation id="3046910703532196514">Webpage, Kumpleto</translation>
 <translation id="304747341537320566">Mga Engine sa Pagsasalita</translation>
+<translation id="3047644958362961983">Makakatulong sa amin ang impormasyong ito na maunawaan nang mas mabuti ang iyong isyu sa Assistant. Iso-store ito sa loob ng hanggang 90 araw at paghihigpitan ang access sa mga naaangkop na team ng engineering at feedback.</translation>
 <translation id="3053013834507634016">Paggamit ng Certificate Key </translation>
 <translation id="3057861065630527966">I-back up ang iyong mga larawan at video</translation>
 <translation id="3058498974290601450">Maaari mong i-on ang pag-sync anumang oras sa mga setting.</translation>
@@ -1635,6 +1636,7 @@
 <translation id="3440663250074896476">Higit pang aksyon para sa <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Magtanong kapag gusto ng isang site na gumamit ng plugin upang i-access ang iyong computer</translation>
 <translation id="3441653493275994384">Screen</translation>
+<translation id="3442151986393356303">Isama ang kamakailang history ng Assistant sa pamamagitan ng Sherlog. Puwedeng kasama rito ang iyong pagkakakilanlan, lokasyon, at impormasyon sa pag-debug <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="344630545793878684">Basahin ang iyong data sa ilang website</translation>
 <translation id="3449839693241009168">Pindutin ang <ph name="SEARCH_KEY" /> upang magpadala ng mga command sa <ph name="EXTENSION_NAME" /></translation>
@@ -3797,6 +3799,7 @@
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Gusto mo bang i-translate ng Google ang page na ito mula sa <ph name="SOURCE_LANGUAGE" /> patungo sa <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">May nakakonektang pointing device</translation>
+<translation id="6676212663108450937">Pag-isipang gumamit ng headphones habang sinasanay ang iyong boses</translation>
 <translation id="6678717876183468697">URL ng Query</translation>
 <translation id="6680442031740878064">Available: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">I-rate</translation>
@@ -4205,7 +4208,6 @@
 <translation id="7289225569524511578">Buksan ang wallpaper app</translation>
 <translation id="7290242001003353852">Ina-access ng serbisyo sa pag-sign in na ito, na hino-host ng <ph name="SAML_DOMAIN" />, ang iyong camera.</translation>
 <translation id="7290594223351252791">Kumpirmahin ang pagpaparehistro</translation>
-<translation id="7292696521213967957">Impormasyon para i-debug ang Assistant</translation>
 <translation id="7295662345261934369">Ibahagi sa iba</translation>
 <translation id="729583233778673644">Payagan ang AES at RC4 encryption. Magiging mas mapanganib para sa iyo kapag ginamit ang opsyong ito, dahil hindi secure ang mga RC4 cipher.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Mga Tuntunin</translation>
@@ -4523,6 +4525,7 @@
 <translation id="7788383851298063850">Sabihin sa amin kung ano ang nangyayari</translation>
 <translation id="7788444488075094252">Mga wika at input</translation>
 <translation id="7788668840732459509">Posisyon:</translation>
+<translation id="7789963078219276159">Napalitan ng <ph name="CATEGORY" /> ang background ng start page.</translation>
 <translation id="7791543448312431591">Magdagdag</translation>
 <translation id="7792012425874949788">Nagkaproblema sa pag-sign in</translation>
 <translation id="7792388396321542707">Ihinto ang pagbabahagi</translation>
@@ -5206,6 +5209,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8767621466733104912">Awtomatikong i-update ang Chrome para sa lahat ng user</translation>
 <translation id="8770406935328356739">Root directory ng extension</translation>
 <translation id="8770507190024617908">Pamahalaan ang Mga Tao</translation>
+<translation id="8771300903067484968">Na-reset sa default na background ang background ng start page.</translation>
 <translation id="8774934320277480003">Tuktok na margin</translation>
 <translation id="8775144690796719618">Di-wastong URL</translation>
 <translation id="8775404590947523323">Awtomatikong na-save ang iyong mga pag-edit.<ph name="BREAKS" />Upang maitago ang kopya ng orihinal na larawan, tanggalan ng check ang "Patungan ang orihinal"</translation>

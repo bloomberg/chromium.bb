@@ -144,6 +144,7 @@
 <translation id="200815880754187296">અન્ય અ‍ૅપ્લિકેશનો દ્વારા <ph name="KILOBYTES" /> KB</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ફાઇલ}one{# ફાઇલો}other{# ફાઇલો}}</translation>
 <translation id="2017836877785168846">ઍડ્રેસ બારમાં ઇતિહાસ અને સ્વતઃપૂર્ણ કરવું સાફ કરો.</translation>
+<translation id="2018707881002649255">તમે નીચે આપેલામાંથી જે સંપર્કો પસંદ કરશો, તેને <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />ની વેબસાઇટ સાથે શેર કરવામાં આવશે.</translation>
 <translation id="2021896219286479412">પૂર્ણ સ્ક્રીન સાઇટ નિયંત્રણો</translation>
 <translation id="2038563949887743358">વિનંતી ડેસ્કટૉપ સાઇટ ચાલુ કરો</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> નો ડેટા Chromeમાં પણ છે</translation>
@@ -547,6 +548,7 @@
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5040262127954254034">ગોપનીયતા</translation>
 <translation id="5063480226653192405">ઉપયોગ</translation>
+<translation id="5073204694187207510">પૂર્ણસ્ક્રીન ગ્રિડને છુપાવો</translation>
 <translation id="5082793167783849073">ગ્રૂપ બનાવીને ઝડપથી પેજની સરખામણી કરો. શરૂ કરવા માટે, લિંકને સ્પર્શ કરી રાખો.</translation>
 <translation id="5087580092889165836">કાર્ડ ઉમેરો</translation>
 <translation id="5100237604440890931">સંકુચિત - વિસ્તૃત કરવા માટે ક્લિક કરો.</translation>
@@ -742,11 +744,13 @@
 <translation id="6447842834002726250">કૂકીઝ</translation>
 <translation id="6448273550210938826">શોધ અને URL સૂચનો</translation>
 <translation id="6461962085415701688">ફાઇલ ખોલી શકતાં નથી</translation>
+<translation id="6464977750820128603">તમે Chromeમાં મુલાકાત લીધેલી સાઇટ જોઈ શકશો અને તેના માટે ટાઇમર પણ સેટ કરી શકશો.\n\nતમે જે સાઇટ માટે ટાઇમર સેટ કરો છો અને કેટલા સમય માટે તેની મુલાકાત લો છો, તે માહિતી Google મેળવે છે. આ માહિતી ડિજિટલ લાઇફસ્ટાઇલને બહેતર બનાવવા માટે ઉપયોગમાં લેવામાં આવે છે.</translation>
 <translation id="6475951671322991020">વીડિયો ડાઉનલોડ કરો</translation>
 <translation id="6482749332252372425">સ્ટોરેજ સ્થાનના અભાવના કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="6496823230996795692">પહેલી વખત <ph name="APP_NAME" />નો ઉપયોગ કરવા માટે, કૃપા કરીને ઇન્ટરનેટ સાથે કનેક્ટ કરો.</translation>
 <translation id="6508722015517270189">Chrome ને પુનઃપ્રારંભ કરો</translation>
 <translation id="6527303717912515753">શેર કરો</translation>
+<translation id="6532866250404780454">Chromeમાં તમે મુલાકાત લીધેલી સાઇટ બતાવવામાં આવશે નહીં. સાઇટના બધા ટાઇમર ડિલીટ કરવામાં આવશે.</translation>
 <translation id="6534565668554028783">પ્રતિભાવ આપવા માટે Googleએ ઘણો સમય લીધો</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ડાઉનલોડ કર્યા</translation>
 <translation id="654446541061731451">બીમ કરવા માટે એક ટેબ પસંદ કરો</translation>
@@ -890,6 +894,7 @@
 <translation id="751961395872307827">સાઇટ સાથે કનેક્ટ કરી શકાતું નથી</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">સૂચનો મેળવી શકતાં નથી</translation>
+<translation id="7559245342362162951">ગ્રુપના ટૅબને પૂર્ણસ્ક્રીન ગ્રિડમાં બતાવો</translation>
 <translation id="7559975015014302720">લાઇટ મોડ બંધ છે</translation>
 <translation id="7562080006725997899">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="756809126120519699">Chrome ડેટા સાફ કર્યો</translation>
@@ -972,6 +977,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">સંબંધિત પેજ સૂચવો</translation>
 <translation id="8109613176066109935">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
+<translation id="8110087112193408731">શું તમારી Chromeની પ્રવૃત્તિ ડિજિટલ લાઇફસ્ટાઇલમાં બતાવીએ?</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>
@@ -1068,6 +1074,7 @@
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
 <translation id="8920114477895755567">માતાપિતાની વિગતોની રાહ જોઈ રહ્યાં છે.</translation>
 <translation id="8922289737868596582">વધુ વિકલ્પો બટનની મદદથી પેજ ડાઉનલોડ કરો, જેથી તમે ઇન્ટરનેટ વિના પણ તેનો ઉપયોગ કરી શકો</translation>
+<translation id="8937772741022875483">તમારી Chromeની પ્રવૃત્તિને ડિજિટલ લાઇફસ્ટાઇલમાંથી કાઢી નાખીએ?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">અન્ય વિંડોમાં ખોલો</translation>
 <translation id="8951232171465285730">Chrome એ તમારો <ph name="MEGABYTES" /> MB ડેટા બચાવ્યો</translation>
@@ -1099,12 +1106,15 @@
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="9139068048179869749">સાઇટ્સને સૂચનાઓ મોકલતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="9139318394846604261">ખરીદી</translation>
+<translation id="9150694013019234766">સ્ક્રીનના નીચેના ભાગમાં, તમારા ટૅબ ગ્રૂપમાં એકથી વધુ ટૅબની વચ્ચે સ્વિચ કરો</translation>
 <translation id="9155898266292537608">તમે કોઈએક શબ્દ પર ટૅપ કરીને પણ ઝડપથી શોધી શકો છો</translation>
+<translation id="9169594135889675189">ગ્રૂપમાં નવું ટૅબ ઉમેરો</translation>
 <translation id="9188680907066685419">સંચાલિત એકાઉન્ટમાંથી સાઇન આઉટ કરો</translation>
 <translation id="9204836675896933765">1 ફાઇલ બાકી છે</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">60 ટકા જેટલા ઓછા ડેટાનો ઉપયોગ કરો અને વેબની ઝડપ વધારો. Google સર્વર, તમે મુલાકાત લો છો તે પેજને ઑપ્ટિમાઇઝ કરશે.</translation>
 <translation id="9219103736887031265">છબીઓ</translation>
+<translation id="926205370408745186">ડિજિટલ લાઇફસ્ટાઇલમાંથી તમારી Chromeની પ્રવૃત્તિને કેવી રીતે કાઢવી</translation>
 <translation id="932327136139879170">હોમ</translation>
 <translation id="932599481871055447">ડેટા બચાવો અને વધુ ઝડપથી બ્રાઉઝ કરો</translation>
 <translation id="938850635132480979">ભૂલ: <ph name="ERROR_CODE" /></translation>

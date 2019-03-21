@@ -744,13 +744,13 @@
 <translation id="6447842834002726250">कुकीज</translation>
 <translation id="6448273550210938826">शोध आणि URL सूचना</translation>
 <translation id="6461962085415701688">फाइल उघडू शकत नाही</translation>
-<translation id="6464977750820128603">तुम्ही Chrome मध्ये भेट दिलेल्या साइट पाहू शकता आणि त्यांच्यासाठी टाइमर सेट करू शकता.\n\nGoogle ला तुम्ही ज्या साइटसाठी टाइमर सेट केला आणि त्यांना किती वेळ भेट दिली याबद्दलची माहिती मिळते. ही माहिती डिजिटल संतुलन चांगले करण्यास वापरली जाते.</translation>
+<translation id="6464977750820128603">तुम्ही Chrome मध्ये भेट दिलेल्या साइट पाहू शकता आणि त्यांच्यासाठी टायमर सेट करू शकता.\n\nGoogle ला तुम्ही ज्या साइटसाठी टायमर सेट केला आणि त्यांना किती वेळ भेट दिली याबद्दलची माहिती मिळते. ही माहिती डिजिटल संतुलन चांगले करण्यास वापरली जाते.</translation>
 <translation id="6475951671322991020">व्हिडिओ डाउनलोड करा</translation>
 <translation id="6482749332252372425">स्टोरेज स्थानाच्या अभावामुळे <ph name="FILE_NAME" /> डाउनलोड अयशस्वी झाले.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> पहिल्यांदा वापरण्यासाठी, कृपया इंटरनेटशी कनेक्ट करा.</translation>
 <translation id="6508722015517270189">Chrome रीस्टार्ट करा</translation>
 <translation id="6527303717912515753">शेअर करा</translation>
-<translation id="6532866250404780454">तुम्ही Chrome मध्ये भेट दिलेल्या साइट दाखवणार नाही. सर्व साइट टाइमर हटवले जातील.</translation>
+<translation id="6532866250404780454">तुम्ही Chrome मध्ये भेट दिलेल्या साइट दाखवणार नाही. सर्व साइट टायमर हटवले जातील.</translation>
 <translation id="6534565668554028783">Google ने प्रतिसाद देण्यास बराच वेळ घेतला</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB डाउलोड केले</translation>
 <translation id="654446541061731451">बीममध्ये एक टॅब निवडा</translation>
@@ -977,7 +977,7 @@
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">संबंधित पेज सूचवा</translation>
 <translation id="8109613176066109935">तुमच्या सर्व डिव्हाइसवरील तुमचे बुकमार्क मिळवण्यासाठी, सिंक सुरू करा</translation>
-<translation id="8110087112193408731">डिजिटल संतुलनामध्ये तुमची Chrome अॅक्टिव्हिटी दाखवायची का?</translation>
+<translation id="8110087112193408731">डिजिटल संतुलन मध्ये तुमची Chrome अॅक्टिव्हिटी दाखवायची का?</translation>
 <translation id="8116925261070264013">म्यूट केले</translation>
 <translation id="813082847718468539">साइटची माहिती पहा</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
@@ -1074,7 +1074,7 @@
 <translation id="8912362522468806198">Google खाते</translation>
 <translation id="8920114477895755567">पालकांच्या तपशीलांसाठी प्रतीक्षा करत आहोत.</translation>
 <translation id="8922289737868596582">पेज ऑफलाइन वापरता येण्यासाठी ती अधिक पर्यायांमधून डाउनलोड करा</translation>
-<translation id="8937772741022875483">डिजिटल संतुलनावरून तुमची Chrome अॅक्टिव्हिटी काढून टाकायची का?</translation>
+<translation id="8937772741022875483">डिजिटल संतुलन वरून तुमची Chrome अॅक्टिव्हिटी काढून टाकायची का?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">इतर विंडोमध्ये उघडा</translation>
 <translation id="8951232171465285730">Chrome ने तुमच्यासाठी <ph name="MEGABYTES" /> MB सेव्ह केले</translation>
@@ -1114,7 +1114,7 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">६० टक्क्यांपर्यंत कमी डेटा वापरा आणि वेबचा वेग वाढवा. Google सर्व्हर तुम्ही भेट देत असलेली पेज ऑप्टिमाइझ करतील.</translation>
 <translation id="9219103736887031265">इमेज</translation>
-<translation id="926205370408745186">डिजिटल संतुलनावरून तुमची Chrome अॅक्टिव्हिटी काढून टाका</translation>
+<translation id="926205370408745186">डिजिटल संतुलन वरून तुमची Chrome अॅक्टिव्हिटी काढून टाका</translation>
 <translation id="932327136139879170">घर</translation>
 <translation id="932599481871055447">डेटा सेव्ह करा आणि अधिक जलद ब्राउझ करा</translation>
 <translation id="938850635132480979">एरर: <ph name="ERROR_CODE" /></translation>
