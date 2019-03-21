@@ -34,14 +34,15 @@ TEST_P(TimeLimitConsistencyTest, OutputMatchesGolden) {
       base::Time::FromJavaTime(current_state.time_millis());
   base::Time usage_timestamp =
       base::Time::FromJavaTime(current_state.usage_timestamp());
+  base::Optional<usage_time_limit::State> previous_state =
+      GenerateUnlockUsageLimitOverrideStateFromInput(golden_case.input());
 
   std::unique_ptr<base::DictionaryValue> policy =
       ConvertGoldenInputToProcessorInput(golden_case.input());
   usage_time_limit::State state = usage_time_limit::GetState(
       policy, /* local_override */ nullptr,
       base::TimeDelta::FromMilliseconds(current_state.usage_millis()),
-      usage_timestamp, current_time, timezone,
-      /* previous_state */ base::nullopt);
+      usage_timestamp, current_time, timezone, previous_state);
   ConsistencyGoldenOutput actual_output =
       ConvertProcessorOutputToGoldenOutput(state);
 
