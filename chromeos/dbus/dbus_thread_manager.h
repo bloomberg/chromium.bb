@@ -64,24 +64,15 @@ class SMSClient;
 class UpdateEngineClient;
 class VirtualFileProviderClient;
 
+// THIS CLASS IS BEING DEPRECATED. See README.md for guidelines and
+// https://crbug.com/647367 for details.
+//
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
 //
 // This class also manages D-Bus connections and D-Bus clients, which
 // depend on the D-Bus thread to ensure the right order of shutdowns for
 // the D-Bus thread, the D-Bus connections, and the D-Bus clients.
-//
-// CALLBACKS IN D-BUS CLIENTS:
-//
-// D-Bus clients managed by DBusThreadManager are guaranteed to be deleted
-// after the D-Bus thread so the clients don't need to worry if new
-// incoming messages arrive from the D-Bus thread during shutdown of the
-// clients. The UI message loop is not running during the shutdown hence
-// the UI message loop won't post tasks to D-BUS clients during the
-// shutdown. However, to be extra cautious, clients should use
-// WeakPtrFactory when creating callbacks that run on UI thread. See
-// session_manager_client.cc for examples.
-//
 class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
  public:
   // Processes for which to create and initialize the D-Bus clients.

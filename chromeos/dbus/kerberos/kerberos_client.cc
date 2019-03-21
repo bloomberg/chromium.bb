@@ -43,11 +43,7 @@ KerberosClient* g_instance = nullptr;
 // Chrome OS side.
 class KerberosClientImpl : public KerberosClient {
  public:
-  explicit KerberosClientImpl(dbus::Bus* bus) {
-    CHECK(bus);
-    InitDBus(bus);
-  }
-
+  KerberosClientImpl() = default;
   ~KerberosClientImpl() override = default;
 
   // KerberosClient overrides:
@@ -125,13 +121,13 @@ class KerberosClientImpl : public KerberosClient {
 
   TestInterface* GetTestInterface() override { return nullptr; }
 
- private:
-  void InitDBus(dbus::Bus* bus) {
+  void Init(dbus::Bus* bus) {
     proxy_ =
         bus->GetObjectProxy(kerberos::kKerberosServiceName,
                             dbus::ObjectPath(kerberos::kKerberosServicePath));
   }
 
+ private:
   // Calls kerberosd's |method_name| method, passing in |request| as input. Once
   // the (asynchronous) call finishes, |callback| is called with the response
   // proto (on the same thread as this call).
@@ -204,7 +200,7 @@ KerberosClient::~KerberosClient() {
 // static
 void KerberosClient::Initialize(dbus::Bus* bus) {
   CHECK(bus);
-  new KerberosClientImpl(bus);
+  (new KerberosClientImpl())->Init(bus);
 }
 
 // static
