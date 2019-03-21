@@ -296,6 +296,10 @@ void Preferences::RegisterProfilePrefs(
       ash::prefs::kAccessibilityAutoclickMovementThreshold,
       ash::kDefaultAutoclickMovementThreshold,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilityAutoclickMenuPosition,
+      static_cast<int>(ash::kDefaultAutoclickMenuPosition),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);

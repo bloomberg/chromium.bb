@@ -61,6 +61,9 @@ const char kAccessibilityAutoclickRevertToLeftClick[] =
 // a new autoclick.
 const char kAccessibilityAutoclickMovementThreshold[] =
     "settings.a11y.autoclick_movement_threshold";
+// The Autoclick menu position on the screen, an mojom::AutoclickMenuPosition.
+const char kAccessibilityAutoclickMenuPosition[] =
+    "settings.a11y.autoclick_menu_position";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";
