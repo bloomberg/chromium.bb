@@ -966,42 +966,42 @@ TEST_F(NavigationControllerTest, LoadURL_PrivilegedPending) {
 
   // First make some history, starting with a privileged URL.
   const GURL kExistingURL1("http://privileged");
-  controller.LoadURL(
-      kExistingURL1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  // Pretend it has bindings so we can tell if we incorrectly copy it.
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kExistingURL1, contents());
+  navigation->Start();
+  navigation->ReadyToCommit();
+  // Pretend it has bindings so we can tell if we incorrectly copy it. This has
+  // to be done after ReadyToCommit, otherwise we won't use the current RFH to
+  // commit since its bindings don't match the URL.
   main_test_rfh()->AllowBindings(BINDINGS_POLICY_MOJO_WEB_UI);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, true, kExistingURL1);
+  navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
+            controller.GetLastCommittedEntry()->bindings());
 
   // Navigate cross-process to a second URL.
   const GURL kExistingURL2("http://foo/eh");
-  controller.LoadURL(
-      kExistingURL2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  TestRenderFrameHost* foo_rfh = contents()->GetPendingMainFrame();
-  foo_rfh->SendNavigate(entry_id, true, kExistingURL2);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kExistingURL2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  EXPECT_EQ(0, controller.GetLastCommittedEntry()->bindings());
 
   // Now make a pending back/forward navigation to a privileged entry.
   // The zeroth entry should be pending.
-  controller.GoBack();
-  foo_rfh->SendBeforeUnloadACK(true);
+  auto back_navigation =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation->ReadyToCommit();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, controller.GetPendingEntry()->bindings());
+  EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
+            controller.GetPendingEntry()->bindings());
 
   // Before that commits, do a new navigation.
   const GURL kNewURL("http://foo/bee");
-  foo_rfh->SendRendererInitiatedNavigationRequest(kNewURL, true);
-  foo_rfh->PrepareForCommit();
-  foo_rfh->SendNavigate(0, true, kNewURL);
+  NavigationSimulator::NavigateAndCommitFromDocument(kNewURL, main_test_rfh());
 
   // There should no longer be any pending entry, and the new navigation we
   // just made should be committed.
@@ -1626,24 +1626,17 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
   const GURL url2("http://foo/2");
   const GURL url3("http://foo/3");
 
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry1_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry1_id, true, url1);
-  EXPECT_EQ(1U, navigation_entry_committed_counter_);
-  navigation_entry_committed_counter_ = 0;
-  entry1_id = controller.GetLastCommittedEntry()->GetUniqueID();
-
-  controller.LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, true, url2);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
-  controller.GoBack();
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url2);
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+
+  auto navigation =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  navigation->Start();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
 
@@ -1656,21 +1649,19 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_TRUE(controller.CanGoForward());
 
-  main_test_rfh()->PrepareForCommitWithServerRedirect(url3);
-  main_test_rfh()->SendNavigateWithTransition(
-      entry1_id, true, url3, controller.GetPendingEntry()->GetTransitionType());
+  navigation->Redirect(url3);
+  navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
-  // The back navigation resulted in a completely new navigation.
-  // TODO(darin): perhaps this behavior will be confusing to users?
-  EXPECT_EQ(controller.GetEntryCount(), 3);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  // The first NavigationEntry should have been used.
+  EXPECT_EQ(controller.GetEntryCount(), 2);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
   EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
   EXPECT_TRUE(controller.GetLastCommittedEntry());
   EXPECT_FALSE(controller.GetPendingEntry());
-  EXPECT_TRUE(controller.CanGoBack());
-  EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_TRUE(controller.CanGoForward());
 }
 
 // Receives a back message when there is a new pending navigation entry.
@@ -2639,19 +2630,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_EQ(timestamp, our_controller.GetEntryAtIndex(0)->GetTimestamp());
 
   // Say we navigated to that entry.
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = our_controller.GetPendingEntry()->GetUniqueID();
-  params.did_create_new_entry = false;
-  params.url = url;
-  params.transition = ui::PAGE_TRANSITION_LINK;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureUser;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url);
-  TestRenderFrameHost* main_rfh =
-      static_cast<TestRenderFrameHost*>(raw_our_contents->GetMainFrame());
-  main_rfh->PrepareForCommit();
-  main_rfh->SendNavigateWithParams(&params, false);
+  auto navigation = NavigationSimulator::CreateFromPending(raw_our_contents);
+  navigation->Commit();
 
   // There should be no longer any pending entry and one committed one. This
   // means that we were able to locate the entry, assign its site instance, and

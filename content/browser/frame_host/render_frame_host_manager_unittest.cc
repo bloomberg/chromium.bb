@@ -502,19 +502,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                                                     nodes_with_back_links);
   }
 
-  void BaseSimultaneousNavigationWithOneWebUI(
-      const std::function<void(RenderFrameHostImpl*,
-                               RenderFrameHostImpl*,
-                               WebUIImpl*,
-                               RenderFrameHostManager*)>& commit_lambda);
-
-  void BaseSimultaneousNavigationWithTwoWebUIs(
-      const std::function<void(RenderFrameHostImpl*,
-                               RenderFrameHostImpl*,
-                               WebUIImpl*,
-                               WebUIImpl*,
-                               RenderFrameHostManager*)>& commit_lambda);
-
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
 };
@@ -2573,15 +2560,12 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   EXPECT_FALSE(current_host->pending_web_ui());
 }
 
-// Shared code until before commit for the SimultaneousNavigationWithOneWebUI*
-// tests, accepting a lambda to execute the commit step.
-void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithOneWebUI(
-    const std::function<void(RenderFrameHostImpl*,
-                             RenderFrameHostImpl*,
-                             WebUIImpl*,
-                             RenderFrameHostManager*)>& commit_lambda) {
+// Simulates two simultaneous navigations involving one WebUI where the current
+// RenderFrameHost commits.
+TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
   set_should_create_webui(true);
-  NavigateActiveAndCommit(GURL("chrome://foo/"));
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("chrome://foo/"));
 
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
   RenderFrameHostImpl* host1 = manager->current_frame_host();
@@ -2591,7 +2575,8 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithOneWebUI(
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
-  main_test_rfh()->PrepareForCommit();
+  auto reload = NavigationSimulator::CreateFromPending(contents());
+  reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
   EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
@@ -2601,11 +2586,10 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithOneWebUI(
 
   // Navigation request to a non-WebUI page.
   const GURL kUrl("http://google.com");
-  NavigationEntryImpl entry(
-      nullptr /* instance */, kUrl, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
-  RenderFrameHostImpl* host2 = NavigateToEntry(manager, &entry);
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl, contents());
+  navigation->ReadyToCommit();
+  RenderFrameHostImpl* host2 = GetPendingFrameHost(manager);
   ASSERT_TRUE(host2);
 
   // The previous navigation should still be ongoing along with the new,
@@ -2619,63 +2603,90 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithOneWebUI(
   EXPECT_EQ(web_ui, host1->pending_web_ui());
 
   EXPECT_NE(host2, host1);
-  EXPECT_EQ(host2, GetPendingFrameHost(manager));
   EXPECT_FALSE(host2->web_ui());
   EXPECT_FALSE(host2->pending_web_ui());
   EXPECT_NE(web_ui, host2->web_ui());
 
-  commit_lambda(host1, host2, web_ui, manager);
-}
-
-// Simulates two simultaneous navigations involving one WebUI where the current
-// RenderFrameHost commits.
-TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
-  auto commit_current_frame_host = [this](
-      RenderFrameHostImpl* host1, RenderFrameHostImpl* host2, WebUIImpl* web_ui,
-      RenderFrameHostManager* manager) {
     // The current RenderFrameHost commits; its WebUI should still be in place.
-    manager->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
-                              false /* is_same_document_navigation */);
-    EXPECT_EQ(host1, manager->current_frame_host());
-    EXPECT_EQ(web_ui, host1->web_ui());
-    EXPECT_FALSE(host1->pending_web_ui());
-    EXPECT_FALSE(manager->GetNavigatingWebUI());
-    EXPECT_FALSE(GetPendingFrameHost(manager));
-  };
+  reload->Commit();
+  EXPECT_EQ(host1, manager->current_frame_host());
+  EXPECT_EQ(web_ui, host1->web_ui());
+  EXPECT_FALSE(host1->pending_web_ui());
+  EXPECT_FALSE(manager->GetNavigatingWebUI());
 
-  BaseSimultaneousNavigationWithOneWebUI(commit_current_frame_host);
+  // Because the Navigation that committed was browser-initiated, it will not
+  // have the user gesture bit set to true. This has the side-effect of not
+  // deleting the speculative RenderFrameHost at commit time.
+  // TODO(clamy): The speculative RenderFrameHost should be deleted at commit
+  // time if a browser-initiated navigation commits.
+  EXPECT_TRUE(GetPendingFrameHost(manager));
 }
 
 // Simulates two simultaneous navigations involving one WebUI where the new,
 // cross-site RenderFrameHost commits.
 TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
-  auto commit_new_frame_host = [this](
-      RenderFrameHostImpl* host1, RenderFrameHostImpl* host2, WebUIImpl* web_ui,
-      RenderFrameHostManager* manager) {
-    // The new RenderFrameHost commits; there should be no active WebUI.
-    manager->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
-                              false /* is_same_document_navigation */);
-    EXPECT_EQ(host2, manager->current_frame_host());
-    EXPECT_FALSE(host2->web_ui());
-    EXPECT_FALSE(host2->pending_web_ui());
-    EXPECT_FALSE(manager->GetNavigatingWebUI());
-    EXPECT_FALSE(GetPendingFrameHost(manager));
-  };
+  set_should_create_webui(true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("chrome://foo/"));
 
-  BaseSimultaneousNavigationWithOneWebUI(commit_new_frame_host);
+  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostImpl* host1 = manager->current_frame_host();
+  EXPECT_TRUE(host1->IsRenderFrameLive());
+  WebUIImpl* web_ui = host1->web_ui();
+  EXPECT_TRUE(web_ui);
+
+  // Starts a reload of the WebUI page.
+  contents()->GetController().Reload(ReloadType::NORMAL, true);
+  auto reload = NavigationSimulator::CreateFromPending(contents());
+  reload->ReadyToCommit();
+
+  // It should be a same-site navigation reusing the same WebUI.
+  EXPECT_EQ(web_ui, manager->GetNavigatingWebUI());
+  EXPECT_EQ(web_ui, host1->web_ui());
+  EXPECT_EQ(web_ui, host1->pending_web_ui());
+  EXPECT_FALSE(GetPendingFrameHost(manager));
+
+  // Navigation request to a non-WebUI page.
+  const GURL kUrl("http://google.com");
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl, contents());
+  navigation->ReadyToCommit();
+  RenderFrameHostImpl* host2 = GetPendingFrameHost(manager);
+  ASSERT_TRUE(host2);
+
+  // The previous navigation should still be ongoing along with the new,
+  // cross-site one.
+  // Note: Simultaneous navigations are weird: there are two ongoing
+  // navigations, a same-site using a WebUI and a cross-site not using one. So
+  // it's unclear what GetNavigatingWebUI should return in this case. As it
+  // currently favors the cross-site navigation it returns null.
+  EXPECT_FALSE(manager->GetNavigatingWebUI());
+  EXPECT_EQ(web_ui, host1->web_ui());
+  EXPECT_EQ(web_ui, host1->pending_web_ui());
+
+  EXPECT_NE(host2, host1);
+  EXPECT_FALSE(host2->web_ui());
+  EXPECT_FALSE(host2->pending_web_ui());
+  EXPECT_NE(web_ui, host2->web_ui());
+
+  // The new RenderFrameHost commits; there should be no active WebUI.
+  navigation->Commit();
+  EXPECT_EQ(host2, manager->current_frame_host());
+  EXPECT_FALSE(host2->web_ui());
+  EXPECT_FALSE(host2->pending_web_ui());
+  EXPECT_FALSE(manager->GetNavigatingWebUI());
+  EXPECT_FALSE(GetPendingFrameHost(manager));
 }
 
 // Shared code until before commit for the SimultaneousNavigationWithTwoWebUIs*
 // tests, accepting a lambda to execute the commit step.
-void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithTwoWebUIs(
-    const std::function<void(RenderFrameHostImpl*,
-                             RenderFrameHostImpl*,
-                             WebUIImpl*,
-                             WebUIImpl*,
-                             RenderFrameHostManager*)>& commit_lambda) {
+// Simulates two simultaneous navigations involving two WebUIs where the current
+// RenderFrameHost commits.
+TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
   set_should_create_webui(true);
   set_webui_type(1);
-  NavigateActiveAndCommit(GURL("chrome://foo/"));
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("chrome://foo/"));
 
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
   RenderFrameHostImpl* host1 = manager->current_frame_host();
@@ -2685,6 +2696,8 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithTwoWebUIs(
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
+  auto reload = NavigationSimulator::CreateFromPending(contents());
+  reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
   EXPECT_EQ(web_ui1, manager->GetNavigatingWebUI());
@@ -2695,11 +2708,10 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithTwoWebUIs(
   // Navigation another WebUI page, with a different type.
   set_webui_type(2);
   const GURL kUrl("chrome://bar/");
-  NavigationEntryImpl entry(
-      nullptr /* instance */, kUrl, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
-  RenderFrameHostImpl* host2 = NavigateToEntry(manager, &entry);
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl, contents());
+  navigation->ReadyToCommit();
+  RenderFrameHostImpl* host2 = GetPendingFrameHost(manager);
   ASSERT_TRUE(host2);
 
   // The previous navigation should still be ongoing along with the new,
@@ -2716,49 +2728,81 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithTwoWebUIs(
   EXPECT_NE(web_ui2, web_ui1);
 
   EXPECT_NE(host2, host1);
-  EXPECT_EQ(host2, GetPendingFrameHost(manager));
   EXPECT_EQ(web_ui2, host2->web_ui());
   EXPECT_FALSE(host2->pending_web_ui());
 
-  commit_lambda(host1, host2, web_ui1, web_ui2, manager);
-}
-
-// Simulates two simultaneous navigations involving two WebUIs where the current
-// RenderFrameHost commits.
-TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
-  auto commit_current_frame_host = [this](
-      RenderFrameHostImpl* host1, RenderFrameHostImpl* host2,
-      WebUIImpl* web_ui1, WebUIImpl* web_ui2, RenderFrameHostManager* manager) {
     // The current RenderFrameHost commits; its WebUI should still be active.
-    manager->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
-                              false /* is_same_document_navigation */);
-    EXPECT_EQ(host1, manager->current_frame_host());
-    EXPECT_EQ(web_ui1, host1->web_ui());
-    EXPECT_FALSE(host1->pending_web_ui());
-    EXPECT_FALSE(manager->GetNavigatingWebUI());
-    EXPECT_FALSE(GetPendingFrameHost(manager));
-  };
+  reload->Commit();
+  EXPECT_EQ(host1, manager->current_frame_host());
+  EXPECT_EQ(web_ui1, host1->web_ui());
+  EXPECT_FALSE(host1->pending_web_ui());
 
-  BaseSimultaneousNavigationWithTwoWebUIs(commit_current_frame_host);
+  // Because the Navigation that committed was browser-initiated, it will not
+  // have the user gesture bit set to true. This has the side-effect of not
+  // deleting the speculative RenderFrameHost at commit time.
+  // TODO(clamy): The speculative RenderFrameHost should be deleted at commit
+  // time if a browser-initiated navigation commits.
+  EXPECT_TRUE(manager->GetNavigatingWebUI());
+  EXPECT_TRUE(GetPendingFrameHost(manager));
 }
 
 // Simulates two simultaneous navigations involving two WebUIs where the new,
 // cross-site RenderFrameHost commits.
 TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
-  auto commit_new_frame_host = [this](
-      RenderFrameHostImpl* host1, RenderFrameHostImpl* host2,
-      WebUIImpl* web_ui1, WebUIImpl* web_ui2, RenderFrameHostManager* manager) {
-    // The new RenderFrameHost commits; its WebUI should now be active.
-    manager->DidNavigateFrame(host2, true /* was_caused_by_user_gesture */,
-                              false /* is_same_document_navigation */);
-    EXPECT_EQ(host2, manager->current_frame_host());
-    EXPECT_EQ(web_ui2, host2->web_ui());
-    EXPECT_FALSE(host2->pending_web_ui());
-    EXPECT_FALSE(manager->GetNavigatingWebUI());
-    EXPECT_FALSE(GetPendingFrameHost(manager));
-  };
+  set_should_create_webui(true);
+  set_webui_type(1);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("chrome://foo/"));
 
-  BaseSimultaneousNavigationWithTwoWebUIs(commit_new_frame_host);
+  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostImpl* host1 = manager->current_frame_host();
+  EXPECT_TRUE(host1->IsRenderFrameLive());
+  WebUIImpl* web_ui1 = host1->web_ui();
+  EXPECT_TRUE(web_ui1);
+
+  // Starts a reload of the WebUI page.
+  contents()->GetController().Reload(ReloadType::NORMAL, true);
+  auto reload = NavigationSimulator::CreateFromPending(contents());
+  reload->ReadyToCommit();
+
+  // It should be a same-site navigation reusing the same WebUI.
+  EXPECT_EQ(web_ui1, manager->GetNavigatingWebUI());
+  EXPECT_EQ(web_ui1, host1->web_ui());
+  EXPECT_EQ(web_ui1, host1->pending_web_ui());
+  EXPECT_FALSE(GetPendingFrameHost(manager));
+
+  // Navigation another WebUI page, with a different type.
+  set_webui_type(2);
+  const GURL kUrl("chrome://bar/");
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(kUrl, contents());
+  navigation->ReadyToCommit();
+  RenderFrameHostImpl* host2 = GetPendingFrameHost(manager);
+  ASSERT_TRUE(host2);
+
+  // The previous navigation should still be ongoing along with the new,
+  // cross-site one.
+  // Note: simultaneous navigations are weird: there are two ongoing
+  // navigations, a same-site and a cross-site both going to WebUIs. So it's
+  // unclear what GetNavigatingWebUI should return in this case. As it currently
+  // favors the cross-site navigation it returns the speculative/pending
+  // RenderFrameHost's WebUI instance.
+  EXPECT_EQ(web_ui1, host1->web_ui());
+  EXPECT_EQ(web_ui1, host1->pending_web_ui());
+  WebUIImpl* web_ui2 = manager->GetNavigatingWebUI();
+  EXPECT_TRUE(web_ui2);
+  EXPECT_NE(web_ui2, web_ui1);
+
+  EXPECT_NE(host2, host1);
+  EXPECT_EQ(web_ui2, host2->web_ui());
+  EXPECT_FALSE(host2->pending_web_ui());
+
+  navigation->Commit();
+  EXPECT_EQ(host2, manager->current_frame_host());
+  EXPECT_EQ(web_ui2, host2->web_ui());
+  EXPECT_FALSE(host2->pending_web_ui());
+  EXPECT_FALSE(manager->GetNavigatingWebUI());
+  EXPECT_FALSE(GetPendingFrameHost(manager));
 }
 
 TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
