@@ -36,8 +36,10 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
   }
 
   // Returns printers from enterprise policy.
-  std::vector<Printer> GetEnterprisePrinters() const override {
-    return enterprise_printers_;
+  bool GetEnterprisePrinters(std::vector<Printer>* printers) const override {
+    if (printers != nullptr)
+      *printers = enterprise_printers_;
+    return true;
   }
 
   // Attach |observer| for notification of events.  |observer| is expected to
@@ -67,7 +69,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
       configured_printers_.push_back(printer);
     }
     for (Observer& observer : observers_) {
-      observer.OnConfiguredPrintersChanged(configured_printers_);
+      observer.OnConfiguredPrintersChanged();
     }
   }
 
@@ -77,7 +79,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
       if (it->id() == printer_id) {
         configured_printers_.erase(it);
         for (Observer& observer : observers_) {
-          observer.OnConfiguredPrintersChanged(configured_printers_);
+          observer.OnConfiguredPrintersChanged();
         }
         return true;
       }
@@ -109,7 +111,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
     configured_printers_.insert(configured_printers_.end(), printers.begin(),
                                 printers.end());
     for (Observer& observer : observers_) {
-      observer.OnConfiguredPrintersChanged(configured_printers_);
+      observer.OnConfiguredPrintersChanged();
     }
   }
 
@@ -118,7 +120,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
   void RemoveConfiguredPrinters(const std::unordered_set<std::string>& ids) {
     RemovePrinters(ids, &configured_printers_);
     for (Observer& observer : observers_) {
-      observer.OnConfiguredPrintersChanged(configured_printers_);
+      observer.OnConfiguredPrintersChanged();
     }
   }
 
@@ -128,7 +130,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
     enterprise_printers_.insert(enterprise_printers_.end(), printers.begin(),
                                 printers.end());
     for (Observer& observer : observers_) {
-      observer.OnEnterprisePrintersChanged(enterprise_printers_);
+      observer.OnEnterprisePrintersChanged();
     }
   }
 
@@ -137,7 +139,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
   void RemoveEnterprisePrinters(const std::unordered_set<std::string>& ids) {
     RemovePrinters(ids, &enterprise_printers_);
     for (Observer& observer : observers_) {
-      observer.OnEnterprisePrintersChanged(enterprise_printers_);
+      observer.OnEnterprisePrintersChanged();
     }
   }
 

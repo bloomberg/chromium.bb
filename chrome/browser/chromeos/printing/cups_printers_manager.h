@@ -45,9 +45,13 @@ class CupsPrintersManager : public KeyedService {
    public:
     // The list of printers in this class has changed to the given printers.
     virtual void OnPrintersChanged(PrinterClass printer_class,
-                                   const std::vector<Printer>& printers) = 0;
+                                   const std::vector<Printer>& printers) {}
+    // It is called exactly once for each observer. It means that the
+    // subsystem for enterprise printers is initialized. When an observer is
+    // being registered after the subsystem's initialization, this call is
+    // scheduled immediately in AddObserver method.
+    virtual void OnEnterprisePrintersInitialized() {}
 
-   protected:
     virtual ~Observer() = default;
   };
 
@@ -90,9 +94,9 @@ class CupsPrintersManager : public KeyedService {
   // the printer_id is not that of a configured printer.
   virtual void RemoveConfiguredPrinter(const std::string& printer_id) = 0;
 
-  // Add or remove observers.  Observers do not need to be on the same
+  // Add or remove observers.  Observers must be on the same
   // sequence as the CupsPrintersManager.  Callbacks for a given observer
-  // will be on the same sequence as was used to call AddObserver().
+  // will be on the same sequence as the CupsPrintersManager.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
