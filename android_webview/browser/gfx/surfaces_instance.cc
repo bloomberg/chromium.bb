@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
@@ -103,17 +102,17 @@ SurfacesInstance::SurfacesInstance()
       enable_vulkan ? AwVulkanContextProvider::GetOrCreateInstance() : nullptr;
   std::unique_ptr<viz::OutputSurface> output_surface;
   viz::SkiaOutputSurface* skia_output_surface = nullptr;
+  gl_surface_ = base::MakeRefCounted<AwGLSurface>();
   if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
     if (!shared_context_state_) {
-      auto surface = base::MakeRefCounted<AwGLSurface>();
       auto gl_context =
           gl::init::CreateGLContext(task_executor->share_group().get(),
-                                    surface.get(), gl::GLContextAttribs());
-      gl_context->MakeCurrent(surface.get());
+                                    gl_surface_.get(), gl::GLContextAttribs());
+      gl_context->MakeCurrent(gl_surface_.get());
       shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
-          task_executor->share_group(), std::move(surface),
-          std::move(gl_context), false /* use_virtualized_gl_contexts */,
+          task_executor->share_group(), gl_surface_, std::move(gl_context),
+          false /* use_virtualized_gl_contexts */,
           base::BindOnce(&OnContextLost), vulkan_context_provider.get());
       shared_context_state_->InitializeGrContext(
           gpu::GpuDriverBugWorkarounds(task_executor->gpu_feature_info()
@@ -122,24 +121,21 @@ SurfacesInstance::SurfacesInstance()
     }
     if (settings.use_skia_renderer_non_ddl) {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
-          base::MakeRefCounted<AwGLSurface>(), shared_context_state_,
-          task_executor->mailbox_manager(),
+          gl_surface_, shared_context_state_, task_executor->mailbox_manager(),
           task_executor->shared_image_manager(),
           task_executor->sync_point_manager(),
           false /* need_swapbuffers_ack */);
     } else {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-          task_executor, base::MakeRefCounted<AwGLSurface>(),
-          shared_context_state_);
+          task_executor, gl_surface_, shared_context_state_);
     }
     skia_output_surface =
         static_cast<viz::SkiaOutputSurface*>(output_surface.get());
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
-        base::MakeRefCounted<AwGLSurface>(),
-        DeferredGpuCommandService::GetInstance());
-    output_surface =
-        std::make_unique<ParentOutputSurface>(std::move(context_provider));
+        gl_surface_, DeferredGpuCommandService::GetInstance());
+    output_surface = std::make_unique<ParentOutputSurface>(
+        gl_surface_, std::move(context_provider));
   }
 
   begin_frame_source_ = std::make_unique<viz::StubBeginFrameSource>();
@@ -248,7 +244,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   display_->Resize(viewport);
   display_->DrawAndSwap();
   display_->DidReceiveSwapBuffersAck();
-  display_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
+  gl_surface_->MaybeDidPresent(gfx::PresentationFeedback(
       base::TimeTicks::Now(), base::TimeDelta(), 0 /* flags */));
 }
 
