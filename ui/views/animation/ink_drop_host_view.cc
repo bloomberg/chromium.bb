@@ -4,7 +4,6 @@
 
 #include "ui/views/animation/ink_drop_host_view.h"
 
-#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/events/scoped_target_handler.h"
 #include "ui/gfx/color_palette.h"
@@ -32,12 +31,6 @@ bool InkDropHostView::InkDropHostViewEventHandlerDelegate::HasInkDrop() const {
 
 InkDrop* InkDropHostView::InkDropHostViewEventHandlerDelegate::GetInkDrop() {
   return host_view_->GetInkDrop();
-}
-
-void InkDropHostView::InkDropHostViewEventHandlerDelegate::AnimateInkDrop(
-    InkDropState state,
-    const ui::LocatedEvent* event) {
-  host_view_->AnimateInkDrop(state, event);
 }
 
 bool InkDropHostView::InkDropHostViewEventHandlerDelegate::
@@ -120,20 +113,7 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
                                      const ui::LocatedEvent* event) {
-#if defined(OS_WIN)
-  // On Windows, don't initiate ink-drops for touch/gesture events.
-  // Additionally, certain event states should dismiss existing ink-drop
-  // animations. If the state is already other than HIDDEN, presumably from
-  // a mouse or keyboard event, then the state should be allowed. Conversely,
-  // if the requested state is ACTIVATED, then it should always be allowed.
-  if (event && (event->IsTouchEvent() || event->IsGestureEvent()) &&
-      GetInkDrop()->GetTargetInkDropState() == InkDropState::HIDDEN &&
-      state != InkDropState::ACTIVATED)
-    return;
-#endif
-  last_ripple_triggering_event_.reset(
-      event ? ui::Event::Clone(*event).release()->AsLocatedEvent() : nullptr);
-  GetInkDrop()->AnimateToState(state);
+  ink_drop_event_handler_.AnimateInkDrop(state, event);
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
@@ -198,8 +178,9 @@ InkDrop* InkDropHostView::GetInkDrop() {
 }
 
 gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
-  return last_ripple_triggering_event_
-             ? last_ripple_triggering_event_->location()
+  return ink_drop_event_handler_.GetLastRippleTriggeringEvent()
+             ? ink_drop_event_handler_.GetLastRippleTriggeringEvent()
+                   ->location()
              : GetMirroredRect(GetContentsBounds()).CenterPoint();
 }
 
