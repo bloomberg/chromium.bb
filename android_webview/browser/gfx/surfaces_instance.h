@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -90,6 +91,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   viz::FrameSinkId frame_sink_id_;
 
+  scoped_refptr<AwGLSurface> gl_surface_;
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;

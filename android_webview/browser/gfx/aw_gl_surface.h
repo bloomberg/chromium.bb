@@ -22,6 +22,7 @@ class AwGLSurface : public gl::GLSurface {
   bool IsOffscreen() override;
   unsigned int GetBackingFramebufferObject() override;
   gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
+  bool SupportsPresentationCallback() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetDisplay() override;
@@ -31,10 +32,13 @@ class AwGLSurface : public gl::GLSurface {
               ColorSpace color_space,
               bool has_alpha) override;
 
+  void MaybeDidPresent(gfx::PresentationFeedback feedback);
+
  protected:
   ~AwGLSurface() override;
 
  private:
+  PresentationCallback pending_presentation_callback_;
   gfx::Size size_;
   DISALLOW_COPY_AND_ASSIGN(AwGLSurface);
 };
