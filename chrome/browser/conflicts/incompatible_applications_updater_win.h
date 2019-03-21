@@ -11,13 +11,14 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/conflicts/installed_applications_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 
-struct CertificateInfo;
 class ModuleListFilter;
 class PrefRegistrySimple;
+struct CertificateInfo;
 
 // Maintains a list of incompatible applications that are installed on the
 // machine. These applications cause unwanted DLLs to be loaded into Chrome.
@@ -139,6 +140,8 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   // Indicates if the analysis of newly found modules is disabled. Used as a
   // workaround for https://crbug.com/892294.
   bool module_analysis_disabled_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsUpdater);
 };
