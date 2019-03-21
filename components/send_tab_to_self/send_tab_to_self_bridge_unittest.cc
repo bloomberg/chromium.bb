@@ -419,6 +419,26 @@ TEST_F(SendTabToSelfBridgeTest, AddExpiredEntry) {
             bridge()->GetEntryByGUID(guids[0])->GetURL().spec());
 }
 
+TEST_F(SendTabToSelfBridgeTest, AddInvalidEntries) {
+  InitializeBridge();
+  EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(_)).Times(0);
+
+  // Add Entry should succeed in this case.
+  EXPECT_NE(nullptr, bridge()->AddEntry(GURL("http://www.example.com/"), "d",
+                                        AdvanceAndGetTime()));
+
+  // Add Entry should fail on invalid URLs.
+  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL(), "d", AdvanceAndGetTime()));
+  EXPECT_EQ(nullptr,
+            bridge()->AddEntry(GURL("http://?k=v"), "d", AdvanceAndGetTime()));
+  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http//google.com"), "d",
+                                        AdvanceAndGetTime()));
+
+  // Add Entry should fail on an invalid navigation_time.
+  EXPECT_EQ(nullptr, bridge()->AddEntry(GURL("http://www.example.com/"), "d",
+                                        base::Time()));
+}
+
 }  // namespace
 
 }  // namespace send_tab_to_self
