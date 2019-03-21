@@ -62,7 +62,6 @@ class DOMFileSystemSync final : public DOMFileSystemBase {
                     const KURL& root_url);
   ~DOMFileSystemSync() override;
 
-  void ReportError(ErrorCallbackBase*, base::File::Error error) override;
   void ReportError(ErrorCallback, base::File::Error error) override;
 
   DirectoryEntrySync* root();

@@ -64,11 +64,6 @@ DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context,
 
 DOMFileSystemSync::~DOMFileSystemSync() = default;
 
-void DOMFileSystemSync::ReportError(ErrorCallbackBase* error_callback,
-                                    base::File::Error error) {
-  error_callback->Invoke(error);
-}
-
 void DOMFileSystemSync::ReportError(ErrorCallback error_callback,
                                     base::File::Error error) {
   std::move(error_callback).Run(error);

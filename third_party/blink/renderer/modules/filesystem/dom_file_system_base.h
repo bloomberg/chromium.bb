@@ -74,8 +74,6 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   virtual void RemovePendingCallbacks() {}
 
   // Overridden by subclasses to handle sync vs async error-handling.
-  virtual void ReportError(ErrorCallbackBase*, base::File::Error error) = 0;
-
   using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
   virtual void ReportError(ErrorCallback, base::File::Error error) = 0;
 
