@@ -45,20 +45,23 @@ constexpr SkColor kActiveColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
 constexpr SkColor kDisabledColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
 constexpr uint8_t kHighlightColorAlpha = 0x4D;
 
+// Color of the empty portion of the slider
+const SkColor kEmptySliderColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
+
 // The thickness of the slider.
 constexpr int kLineThickness = 2;
 
 // The radius used to draw rounded slider ends.
 constexpr float kSliderRoundedRadius = 2.f;
 
+// The padding used to hide the slider underneath the thumb.
+constexpr int kSliderPadding = 2;
+
 // The radius of the thumb and the highlighted thumb of the slider,
 // respectively.
 constexpr float kThumbRadius = 6.f;
 constexpr float kThumbWidth = 2 * kThumbRadius;
 constexpr float kThumbHighlightRadius = 10.f;
-
-// The stroke of the thumb when the slider is disabled.
-constexpr int kSliderThumbStroke = 2;
 
 // Duration of the thumb highlight growing effect animation.
 constexpr int kSlideHighlightChangeDurationMs = 150;
@@ -271,19 +274,23 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   const int x = content.x() + full + kThumbRadius;
   const SkColor current_thumb_color =
       is_active_ ? kActiveColor : kDisabledColor;
+  const SkColor empty_slider_color =
+      is_active_ ? kEmptySliderColor
+                 : SkColorSetA(kEmptySliderColor, kHighlightColorAlpha);
 
-  // Extra space used to hide slider ends behind the thumb.
-  constexpr int kExtraPadding = 1;
+  // Extra space used to hide slider ends behind the thumb when slider is
+  // disabled.
+  const int extra_padding = is_active_ ? 0 : kSliderPadding;
 
   cc::PaintFlags slider_flags;
   slider_flags.setAntiAlias(true);
   slider_flags.setColor(current_thumb_color);
   canvas->DrawRoundRect(
-      gfx::Rect(content.x(), y, full + kExtraPadding, kLineThickness),
+      gfx::Rect(content.x(), y, full - extra_padding, kLineThickness),
       kSliderRoundedRadius, slider_flags);
-  slider_flags.setColor(kDisabledColor);
-  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius - kExtraPadding, y,
-                                  empty + kExtraPadding, kLineThickness),
+  slider_flags.setColor(empty_slider_color);
+  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius + extra_padding, y,
+                                  empty - extra_padding, kLineThickness),
                         kSliderRoundedRadius, slider_flags);
 
   gfx::Point thumb_center(x, content.height() / 2);
@@ -291,10 +298,11 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   // Paint the thumb highlight if it exists.
   const int thumb_highlight_radius =
       HasFocus() ? kThumbHighlightRadius : thumb_highlight_radius_;
-  if (is_active_ && thumb_highlight_radius > kThumbRadius) {
+  if (thumb_highlight_radius > kThumbRadius) {
     cc::PaintFlags highlight;
-    SkColor kHighlightColor = SkColorSetA(kActiveColor, kHighlightColorAlpha);
-    highlight.setColor(kHighlightColor);
+    SkColor highlight_color =
+        SkColorSetA(current_thumb_color, kHighlightColorAlpha);
+    highlight.setColor(highlight_color);
     highlight.setAntiAlias(true);
     canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
   }
@@ -304,14 +312,7 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   flags.setColor(current_thumb_color);
   flags.setAntiAlias(true);
 
-  if (!is_active_) {
-    flags.setStrokeWidth(kSliderThumbStroke);
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-  }
-  canvas->DrawCircle(
-      thumb_center,
-      is_active_ ? kThumbRadius : (kThumbRadius - kSliderThumbStroke / 2),
-      flags);
+  canvas->DrawCircle(thumb_center, kThumbRadius, flags);
 }
 
 void Slider::OnFocus() {
