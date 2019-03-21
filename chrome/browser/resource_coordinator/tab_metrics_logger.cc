@@ -7,16 +7,20 @@
 #include <algorithm>
 #include <string>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_frame_host.h"
@@ -28,6 +32,7 @@
 #include "url/gurl.h"
 
 using metrics::TabMetricsEvent;
+using metrics::WindowMetricsEvent;
 
 namespace {
 
@@ -196,4 +201,38 @@ void TabMetricsLogger::LogTabLifetime(ukm::SourceId ukm_source_id,
   ukm::builders::TabManager_TabLifetime(ukm_source_id)
       .SetTimeSinceNavigation(time_since_navigation.InMilliseconds())
       .Record(ukm::UkmRecorder::Get());
+}
+
+// static
+tab_ranker::WindowFeatures TabMetricsLogger::CreateWindowFeatures(
+    const Browser* browser) {
+  DCHECK(browser->window());
+
+  WindowMetricsEvent::Type window_type = WindowMetricsEvent::TYPE_UNKNOWN;
+  switch (browser->type()) {
+    case Browser::TYPE_TABBED:
+      window_type = WindowMetricsEvent::TYPE_TABBED;
+      break;
+    case Browser::TYPE_POPUP:
+      window_type = WindowMetricsEvent::TYPE_POPUP;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  WindowMetricsEvent::ShowState show_state =
+      WindowMetricsEvent::SHOW_STATE_UNKNOWN;
+  if (browser->window()->IsFullscreen())
+    show_state = WindowMetricsEvent::SHOW_STATE_FULLSCREEN;
+  else if (browser->window()->IsMinimized())
+    show_state = WindowMetricsEvent::SHOW_STATE_MINIMIZED;
+  else if (browser->window()->IsMaximized())
+    show_state = WindowMetricsEvent::SHOW_STATE_MAXIMIZED;
+  else
+    show_state = WindowMetricsEvent::SHOW_STATE_NORMAL;
+
+  const bool is_active = browser->window()->IsActive();
+  const int tab_count = browser->tab_strip_model()->count();
+
+  return {window_type, show_state, is_active, tab_count};
 }

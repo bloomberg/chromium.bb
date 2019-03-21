@@ -1050,8 +1050,6 @@ jumbo_split_static_library("ui") {
       "tabs/tab_switch_event_latency_recorder.h",
       "tabs/tab_utils.cc",
       "tabs/tab_utils.h",
-      "tabs/window_activity_watcher.cc",
-      "tabs/window_activity_watcher.h",
       "task_manager/task_manager_columns.cc",
       "task_manager/task_manager_columns.h",
       "task_manager/task_manager_table_model.cc",
