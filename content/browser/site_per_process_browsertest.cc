@@ -446,19 +446,19 @@ class TestInterstitialDelegate : public InterstitialPageDelegate {
 };
 
 bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(str);
-  if (!value)
+  base::Optional<base::Value> value = base::JSONReader::Read(str);
+  if (!value.has_value())
     return false;
-  base::DictionaryValue* root;
-  if (!value->GetAsDictionary(&root))
+  if (!value->is_dict())
     return false;
-  double x, y;
-  if (!root->GetDouble("x", &x))
+  base::Optional<double> x = value->FindDoubleKey("x");
+  base::Optional<double> y = value->FindDoubleKey("y");
+  if (!x.has_value())
     return false;
-  if (!root->GetDouble("y", &y))
+  if (!y.has_value())
     return false;
-  point->set_x(x);
-  point->set_y(y);
+  point->set_x(x.value());
+  point->set_y(y.value());
   return true;
 }
 
@@ -13713,10 +13713,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDoubleTapZoomBrowserTest,
       base::StringPrintf(actions_template.c_str(), tap_position.x(),
                          tap_position.y(), tap_position.x(), tap_position.y());
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> params =
-      json_reader.ReadToValueDeprecated(double_tap_actions_json);
-  ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
-  ActionsParser actions_parser(params.get());
+  base::Optional<base::Value> params =
+      json_reader.ReadToValue(double_tap_actions_json);
+  ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
+  ActionsParser actions_parser(std::move(params.value()));
 
   ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
   auto synthetic_gesture_doubletap =
@@ -14404,10 +14404,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       scroll_start_location_in_screen.y(), scroll_end_location_in_screen.x(),
       scroll_end_location_in_screen.y());
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> touch_params =
-      json_reader.ReadToValueDeprecated(touch_move_sequence_json);
-  ASSERT_TRUE(touch_params.get()) << json_reader.GetErrorMessage();
-  ActionsParser actions_parser(touch_params.get());
+  base::Optional<base::Value> touch_params =
+      json_reader.ReadToValue(touch_move_sequence_json);
+  ASSERT_TRUE(touch_params.has_value()) << json_reader.GetErrorMessage();
+  ActionsParser actions_parser(std::move(touch_params.value()));
 
   ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
   auto synthetic_scroll_gesture =

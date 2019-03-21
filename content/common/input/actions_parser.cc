@@ -4,6 +4,8 @@
 
 #include "content/common/input/actions_parser.h"
 
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -75,22 +77,20 @@ int ToKeyModifiers(std::string key) {
 
 }  // namespace
 
-ActionsParser::ActionsParser(base::Value* pointer_actions_value)
+ActionsParser::ActionsParser(base::Value pointer_actions_value)
     : longest_action_sequence_(0),
-      pointer_actions_value_(pointer_actions_value),
+      pointer_actions_value_(std::move(pointer_actions_value)),
       action_index_(0) {}
 
 ActionsParser::~ActionsParser() {}
 
 bool ActionsParser::ParsePointerActionSequence() {
-  const base::ListValue* pointer_list;
-  if (!pointer_actions_value_ ||
-      !pointer_actions_value_->GetAsList(&pointer_list)) {
-    error_message_ = std::string("pointer_list is missing or not a list");
+  if (!pointer_actions_value_.is_list()) {
+    error_message_ = std::string("provided value is not a list");
     return false;
   }
 
-  for (const auto& pointer_value : *pointer_list) {
+  for (const auto& pointer_value : pointer_actions_value_.GetList()) {
     const base::DictionaryValue* pointer_actions;
     if (!pointer_value.GetAsDictionary(&pointer_actions)) {
       error_message_ =
