@@ -320,28 +320,17 @@ void FileWriterCallbacks::DidFail(base::File::Error error) {
 
 // SnapshotFileCallback -------------------------------------------------------
 
-void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::Trace(
-    blink::Visitor* visitor) {
-  visitor->Trace(callback_);
-  OnDidCreateSnapshotFileCallback::Trace(visitor);
-}
-
-void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::OnSuccess(
-    File* file) {
-  callback_->InvokeAndReportException(nullptr, file);
-}
-
-SnapshotFileCallback::SnapshotFileCallback(
-    DOMFileSystemBase* filesystem,
-    const String& name,
-    const KURL& url,
-    OnDidCreateSnapshotFileCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context)
-    : FileSystemCallbacksBase(error_callback, filesystem, context),
+SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem,
+                                           const String& name,
+                                           const KURL& url,
+                                           SuccessCallback success_callback,
+                                           ErrorCallback error_callback,
+                                           ExecutionContext* context)
+    : FileSystemCallbacksBase(/*error_callback=*/nullptr, filesystem, context),
       name_(name),
       url_(url),
-      success_callback_(success_callback) {}
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 void SnapshotFileCallback::DidCreateSnapshotFile(
     const FileMetadata& metadata,
@@ -355,15 +344,16 @@ void SnapshotFileCallback::DidCreateSnapshotFile(
   // coined a File with a new handle that has the correct type set on it. This
   // allows the blob storage system to track when a temp file can and can't be
   // safely deleted.
-  success_callback_.Release()->OnSuccess(DOMFileSystemBase::CreateFile(
-      metadata, url_, file_system_->GetType(), name_));
+  std::move(success_callback_)
+      .Run(DOMFileSystemBase::CreateFile(metadata, url_,
+                                         file_system_->GetType(), name_));
 }
 
 void SnapshotFileCallback::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // VoidCallbacks --------------------------------------------------------------

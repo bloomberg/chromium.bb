@@ -174,14 +174,15 @@ void DOMFileSystem::CreateWriter(
 
 void DOMFileSystem::CreateFile(
     const FileEntry* file_entry,
-    SnapshotFileCallback::OnDidCreateSnapshotFileCallback* success_callback,
-    ErrorCallbackBase* error_callback) {
+    SnapshotFileCallback::SuccessCallback success_callback,
+    SnapshotFileCallback::ErrorCallback error_callback) {
   KURL file_system_url = CreateFileSystemURL(file_entry);
 
   FileSystemDispatcher::From(context_).CreateSnapshotFile(
-      file_system_url, std::make_unique<SnapshotFileCallback>(
-                           this, file_entry->name(), file_system_url,
-                           success_callback, error_callback, context_));
+      file_system_url,
+      std::make_unique<SnapshotFileCallback>(
+          this, file_entry->name(), file_system_url,
+          std::move(success_callback), std::move(error_callback), context_));
 }
 
 void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,

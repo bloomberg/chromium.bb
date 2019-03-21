@@ -280,40 +280,14 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
 class SnapshotFileCallback final : public SnapshotFileCallbackBase,
                                    public FileSystemCallbacksBase {
  public:
-  class OnDidCreateSnapshotFileCallback
-      : public GarbageCollectedFinalized<OnDidCreateSnapshotFileCallback> {
-   public:
-    virtual ~OnDidCreateSnapshotFileCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(File*) = 0;
-
-   protected:
-    OnDidCreateSnapshotFileCallback() = default;
-  };
-
-  class OnDidCreateSnapshotFileV8Impl : public OnDidCreateSnapshotFileCallback {
-   public:
-    static OnDidCreateSnapshotFileV8Impl* Create(V8FileCallback* callback) {
-      return callback
-                 ? MakeGarbageCollected<OnDidCreateSnapshotFileV8Impl>(callback)
-                 : nullptr;
-    }
-
-    OnDidCreateSnapshotFileV8Impl(V8FileCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-    void Trace(blink::Visitor*) override;
-    void OnSuccess(File*) override;
-
-   private:
-    Member<V8PersistentCallbackInterface<V8FileCallback>> callback_;
-  };
+  using SuccessCallback = base::OnceCallback<void(File* file)>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
 
   SnapshotFileCallback(DOMFileSystemBase*,
                        const String& name,
                        const KURL&,
-                       OnDidCreateSnapshotFileCallback*,
-                       ErrorCallbackBase*,
+                       SuccessCallback,
+                       ErrorCallback,
                        ExecutionContext*);
 
   // Called when a snapshot file is created successfully.
@@ -326,7 +300,8 @@ class SnapshotFileCallback final : public SnapshotFileCallbackBase,
  private:
   String name_;
   KURL url_;
-  Persistent<OnDidCreateSnapshotFileCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
 };
 
 class VoidCallbacks final : public FileSystemCallbacksBase {
