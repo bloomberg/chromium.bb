@@ -201,11 +201,10 @@ void Shell::SetShellCreatedCallback(
   shell_created_callback_ = std::move(shell_created_callback);
 }
 
-Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
-  for (size_t i = 0; i < windows_.size(); ++i) {
-    if (windows_[i]->web_contents() &&
-        windows_[i]->web_contents()->GetRenderViewHost() == rvh) {
-      return windows_[i];
+Shell* Shell::FromWebContents(WebContents* web_contents) {
+  for (Shell* window : windows_) {
+    if (window->web_contents() && window->web_contents() == web_contents) {
+      return window;
     }
   }
   return nullptr;
