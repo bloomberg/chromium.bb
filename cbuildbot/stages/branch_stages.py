@@ -55,6 +55,12 @@ class BranchUtilStage(generic_stages.BuilderStage):
     self.branch_name = self._run.options.branch_name
     self.rename_to = self._run.options.rename_to
 
+  def _HandleStageException(self, exc_info):
+    """Forgive and do not mark the stage as failed."""
+    logging.info('If a stage fails in a builder and no one knows about it,'
+                 ' does it stop a release?')
+    self._HandleExceptionAsWarning(exc_info)
+
   def _RunPush(self, checkout, src_ref, dest_ref, force=False):
     """Perform a git push for a checkout.
 
