@@ -347,38 +347,29 @@ BaseFetchContext::CanRequestInternal(
   if (IsSVGImageChromeClient() && !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
-  network::mojom::RequestContextFrameType frame_type =
-      resource_request.GetFrameType();
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone, frame_type);
-
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as
   // subresources.
-  if (frame_type != network::mojom::RequestContextFrameType::kTopLevel) {
-    bool is_subresource =
-        frame_type == network::mojom::RequestContextFrameType::kNone;
-    const FetchClientSettingsObject& fetch_client_settings_object =
-        GetResourceFetcherProperties().GetFetchClientSettingsObject();
-    const SecurityOrigin* embedding_origin =
-        is_subresource ? fetch_client_settings_object.GetSecurityOrigin()
-                       : GetParentSecurityOrigin();
-    DCHECK(embedding_origin);
-    if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
-        !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
-            embedding_origin->Protocol())) {
-      CountDeprecation(WebFeature::kLegacyProtocolEmbeddedAsSubresource);
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      GetResourceFetcherProperties().GetFetchClientSettingsObject();
+  const SecurityOrigin* embedding_origin =
+      fetch_client_settings_object.GetSecurityOrigin();
+  DCHECK(embedding_origin);
+  if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
+      !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
+          embedding_origin->Protocol())) {
+    CountDeprecation(WebFeature::kLegacyProtocolEmbeddedAsSubresource);
 
-      return ResourceRequestBlockedReason::kOrigin;
-    }
-
-    if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))
-      return ResourceRequestBlockedReason::kOrigin;
+    return ResourceRequestBlockedReason::kOrigin;
   }
+
+  if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))
+    return ResourceRequestBlockedReason::kOrigin;
 
   // Check for mixed content. We do this second-to-last so that when folks block
   // mixed content via CSP, they don't get a mixed content warning, but a CSP
   // warning instead.
-  if (ShouldBlockFetchByMixedContentCheck(request_context, frame_type,
+  if (ShouldBlockFetchByMixedContentCheck(request_context,
                                           resource_request.GetRedirectStatus(),
                                           url, reporting_policy))
     return ResourceRequestBlockedReason::kMixedContent;

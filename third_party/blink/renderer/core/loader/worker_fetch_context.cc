@@ -137,7 +137,6 @@ WorkerFetchContext::CreateWebSocketHandshakeThrottle() {
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
-    network::mojom::RequestContextFrameType frame_type,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {

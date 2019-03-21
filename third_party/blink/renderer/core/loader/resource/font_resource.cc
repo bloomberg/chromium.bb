@@ -78,8 +78,6 @@ static void RecordPackageFormatHistogram(FontPackageFormat format) {
 FontResource* FontResource::Fetch(FetchParameters& params,
                                   ResourceFetcher* fetcher,
                                   FontResourceClient* client) {
-  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
   params.SetRequestContext(mojom::RequestContextType::FONT);
   return ToFontResource(
       fetcher->RequestResource(params, FontResourceFactory(), client));

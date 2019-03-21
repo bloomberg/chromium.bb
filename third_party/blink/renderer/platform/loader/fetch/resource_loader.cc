@@ -139,25 +139,9 @@ bool CanHandleDataURLRequestLocally(const ResourceRequest& request) {
   if (request.GetRequestContext() == mojom::RequestContextType::OBJECT)
     return false;
 
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
-  // Optimize for the case where we can handle a data URL locally.  We must
-  // skip this for data URLs targeted at frames since those could trigger a
-  // download.
-  //
-  // NOTE: We special case MIME types we can render both for performance
-  // reasons as well as to support unit tests.
-  if (request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kTopLevel &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNested) {
-    return true;
-  }
-
-  if (network_utils::IsDataURLMimeTypeSupported(request.Url()))
-    return true;
-
-  return false;
+  // Main resources are handled in the browser, so we can handle data url
+  // subresources locally.
+  return true;
 }
 
 }  // namespace
@@ -692,9 +676,6 @@ bool ResourceLoader::WillFollowRedirect(
   // The following parameters never change during the lifetime of a request.
   mojom::RequestContextType request_context =
       initial_request.GetRequestContext();
-  network::mojom::RequestContextFrameType frame_type =
-      initial_request.GetFrameType();
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone, frame_type);
   network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
   network::mojom::FetchCredentialsMode fetch_credentials_mode =
@@ -816,7 +797,6 @@ bool ResourceLoader::WillFollowRedirect(
 
   // The following parameters never change during the lifetime of a request.
   DCHECK_EQ(new_request->GetRequestContext(), request_context);
-  DCHECK_EQ(new_request->GetFrameType(), frame_type);
   DCHECK_EQ(new_request->GetFetchRequestMode(), fetch_request_mode);
   DCHECK_EQ(new_request->GetFetchCredentialsMode(), fetch_credentials_mode);
 

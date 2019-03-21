@@ -288,12 +288,6 @@ class PLATFORM_EXPORT ResourceRequest final {
     request_context_ = context;
   }
 
-  network::mojom::RequestContextFrameType GetFrameType() const {
-    // TODO(dgozman): remove this getter.
-    DCHECK_EQ(network::mojom::RequestContextFrameType::kNone, frame_type_);
-    return frame_type_;
-  }
-
   network::mojom::FetchRequestMode GetFetchRequestMode() const {
     return fetch_request_mode_;
   }
@@ -467,7 +461,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;
-  network::mojom::RequestContextFrameType frame_type_;
   network::mojom::FetchRequestMode fetch_request_mode_;
   mojom::FetchImportanceMode fetch_importance_mode_;
   network::mojom::FetchCredentialsMode fetch_credentials_mode_;

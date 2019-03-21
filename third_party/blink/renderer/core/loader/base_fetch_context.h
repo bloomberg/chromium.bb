@@ -79,7 +79,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
       mojom::RequestContextType,
-      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const = 0;

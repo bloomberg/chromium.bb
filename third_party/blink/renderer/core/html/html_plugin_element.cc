@@ -689,7 +689,6 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
   return (!mime_type.IsEmpty() && url.IsEmpty()) ||
          !MixedContentChecker::ShouldBlockFetch(
              frame, mojom::RequestContextType::OBJECT,
-             network::mojom::RequestContextFrameType::kNone,
              ResourceRequest::RedirectStatus::kNoRedirect, url);
 }
 
