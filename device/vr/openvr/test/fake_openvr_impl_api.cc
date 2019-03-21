@@ -428,8 +428,8 @@ void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
   *adapter_index = -1;
   Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
   Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-  DCHECK(
-      SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(dxgi_factory.GetAddressOf()))));
+  bool success = SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory)));
+  DCHECK(success);
   for (int i = 0; SUCCEEDED(
            dxgi_factory->EnumAdapters(i, adapter.ReleaseAndGetAddressOf()));
        ++i) {

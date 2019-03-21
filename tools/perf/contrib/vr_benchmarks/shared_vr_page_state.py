@@ -67,6 +67,12 @@ class _SharedVrPageState(shared_page_state.SharedPageState):
   def recording_wpr(self):
     return self._finder_options.recording_wpr
 
+  def ShouldNavigateToBlankPageBeforeFinishing(self):
+    # TODO(https://crbug.com/941715): Always navigate once the issue with
+    # tracing metadata for the XR device process not being present when
+    # navigation occurs is fixed.
+    return False
+
 
 class AndroidSharedVrPageState(_SharedVrPageState):
   """Android-specific VR SharedPageState.
@@ -158,6 +164,12 @@ class AndroidSharedVrPageState(_SharedVrPageState):
     """
     self.platform.android_action_runner.TurnScreenOff()
     self.platform.android_action_runner.TurnScreenOn()
+
+  def ShouldNavigateToBlankPageBeforeFinishing(self):
+    # Android devices generate a lot of heat while in VR, so navigate away from
+    # the VR page after we're done collecting data so that we aren't in VR while
+    # metric calculation is occurring.
+    return True
 
 
 class WindowsSharedVrPageState(_SharedVrPageState):

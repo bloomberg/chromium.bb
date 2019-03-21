@@ -81,6 +81,10 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
         default=False,
         help='Use the real runtime instead of a mock implementation. This '
              'requires the runtime to be installed on the system.')
+    parser.add_option(
+        '--mock-runtime-directory',
+        help='The directory containing the mock runtime implementation to be '
+             'used.')
 
 
 class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
@@ -135,6 +139,7 @@ class XrWebVrStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with synthetic sample pages."""
 
   def CreateStorySet(self, options):
+    del options
     return webvr_sample_pages.WebVrSamplePageSet()
 
   @classmethod
@@ -148,6 +153,7 @@ class XrWebXrStatic(_BaseWebXRBenchmark):
   """Measures WebXR performance with synthetic sample pages."""
 
   def CreateStorySet(self, options):
+    del options
     return webxr_sample_pages.WebXrSamplePageSet()
 
   @classmethod
@@ -161,6 +167,7 @@ class XrWebVrWprStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with WPR copies of live websites."""
 
   def CreateStorySet(self, options):
+    del options
     return webvr_wpr_pages.WebVrWprPageSet()
 
   @classmethod
@@ -223,6 +230,7 @@ class XrBrowsingStatic(_BaseBrowsingBenchmark):
   """Benchmark for testing the VR Browsing Mode performance on sample pages."""
 
   def CreateStorySet(self, options):
+    del options
     return vr_browsing_mode_pages.VrBrowsingModePageSet()
 
   @classmethod
@@ -235,6 +243,7 @@ class XrBrowsingWprStatic(_BaseBrowsingBenchmark):
   """Benchmark for testing the VR Browsing Mode performance on WPR pages."""
 
   def CreateStorySet(self, options):
+    del options
     return vr_browsing_mode_pages.VrBrowsingModeWprPageSet()
 
   @classmethod
@@ -256,6 +265,7 @@ class XrBrowsingWprSmoothness(_BaseBrowsingBenchmark):
     return options
 
   def CreateStorySet(self, options):
+    del options
     return vr_browsing_mode_pages.VrBrowsingModeWprSmoothnessPageSet()
 
   @classmethod
