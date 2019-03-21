@@ -6,9 +6,12 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/accelerators/media_keys_util.h"
 
 namespace ash {
 
@@ -60,15 +63,35 @@ void MediaController::HandleMediaPlayPause() {
   // If media session media key handling is enabled. Toggle play pause using the
   // media session service.
   if (ShouldUseMediaSession()) {
-    GetMediaSessionController()->ToggleSuspendResume();
+    switch (media_session_info_->playback_state) {
+      case media_session::mojom::MediaPlaybackState::kPaused:
+        GetMediaSessionController()->Resume();
+        ui::RecordMediaHardwareKeyAction(
+            ui::MediaHardwareKeyAction::kPlay);
+        break;
+      case media_session::mojom::MediaPlaybackState::kPlaying:
+        GetMediaSessionController()->Suspend();
+        ui::RecordMediaHardwareKeyAction(
+            ui::MediaHardwareKeyAction::kPause);
+        break;
+    }
+
     return;
   }
+
+  // If media session does not handle the key then we don't know whether the
+  // action will play or pause so we should record a generic "play/pause".
+  ui::RecordMediaHardwareKeyAction(
+      ui::MediaHardwareKeyAction::kPlayPause);
 
   if (client_)
     client_->HandleMediaPlayPause();
 }
 
 void MediaController::HandleMediaNextTrack() {
+  ui::RecordMediaHardwareKeyAction(
+      ui::MediaHardwareKeyAction::kNextTrack);
+
   // If media session media key handling is enabled. Fire next track using the
   // media session service.
   if (ShouldUseMediaSession()) {
@@ -81,6 +104,9 @@ void MediaController::HandleMediaNextTrack() {
 }
 
 void MediaController::HandleMediaPrevTrack() {
+  ui::RecordMediaHardwareKeyAction(
+      ui::MediaHardwareKeyAction::kPreviousTrack);
+
   // If media session media key handling is enabled. Fire previous track using
   // the media session service.
   if (ShouldUseMediaSession()) {
@@ -100,6 +126,11 @@ void MediaController::RequestCaptureState() {
 void MediaController::SuspendMediaSessions() {
   if (client_)
     client_->SuspendMediaSessions();
+}
+
+void MediaController::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  media_session_info_ = std::move(session_info);
 }
 
 void MediaController::MediaSessionActionsChanged(
@@ -161,7 +192,8 @@ void MediaController::BindMediaControllerObserver() {
 
 bool MediaController::ShouldUseMediaSession() {
   return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling) &&
-         GetMediaSessionController() && supported_media_session_action_;
+         GetMediaSessionController() && supported_media_session_action_ &&
+         !media_session_info_.is_null();
 }
 
 }  // namespace ash
