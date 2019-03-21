@@ -92,7 +92,7 @@ def _ExtractLibraryNamesFromDump(build_path, dump_path):
                                       r'"(?P<library_name>lib[^. ]+.so)"')
   in_module = False
   for line in stdout.splitlines():
-    line = line.rstrip('\n')
+    line = line.lstrip().rstrip('\n')
     if line == 'MDRawModule':
       in_module = True
       continue
@@ -149,23 +149,23 @@ def main():
   if not crashpad_file:
     logging.error('Could not locate a crashpad dump')
     return 1
-  else:
-    dump_dir = tempfile.mkdtemp()
-    symbols_dir = None
-    try:
-      device.PullFile(
-          device_path=posixpath.join(device_crashpad_path, crashpad_file),
-          host_path=dump_dir)
-      dump_full_path = os.path.join(dump_dir, crashpad_file)
-      library_names = _ExtractLibraryNamesFromDump(args.build_path,
-                                                   dump_full_path)
-      symbols_dir = _CreateSymbolsDir(args.build_path, library_names)
-      stackwalk_cmd = [stackwalk_path, dump_full_path, symbols_dir]
-      subprocess.call(stackwalk_cmd)
-    finally:
-      shutil.rmtree(dump_dir, ignore_errors=True)
-      if symbols_dir:
-        shutil.rmtree(symbols_dir, ignore_errors=True)
+
+  dump_dir = tempfile.mkdtemp()
+  symbols_dir = None
+  try:
+    device.PullFile(
+        device_path=posixpath.join(device_crashpad_path, crashpad_file),
+        host_path=dump_dir)
+    dump_full_path = os.path.join(dump_dir, crashpad_file)
+    library_names = _ExtractLibraryNamesFromDump(args.build_path,
+                                                 dump_full_path)
+    symbols_dir = _CreateSymbolsDir(args.build_path, library_names)
+    stackwalk_cmd = [stackwalk_path, dump_full_path, symbols_dir]
+    subprocess.call(stackwalk_cmd)
+  finally:
+    shutil.rmtree(dump_dir, ignore_errors=True)
+    if symbols_dir:
+      shutil.rmtree(symbols_dir, ignore_errors=True)
   return 0
 
 
