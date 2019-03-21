@@ -199,6 +199,11 @@ class Adapter : public AlsReader::Observer,
   base::Optional<double> GetBrightnessBasedOnAmbientLogLux(
       double ambient_log_lux) const;
 
+  // Called by |MaybeAdjustBrightness| when brightness should be changed.
+  void WriteLogMessages(double new_log_als,
+                        double new_brightness,
+                        BrightnessChangeCause cause) const;
+
   Profile* const profile_;
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
@@ -262,6 +267,13 @@ class Adapter : public AlsReader::Observer,
 
   // Last time brightness change occurred.
   base::TimeTicks latest_brightness_change_time_;
+
+  // Current recorded brightness. It can be either the user requested brightness
+  // or the model requested brightness.
+  base::Optional<double> current_brightness_;
+
+  // Used to record number of model-triggered brightness changes.
+  int brightness_change_counter_ = 1;
 
   base::WeakPtrFactory<Adapter> weak_ptr_factory_;
 

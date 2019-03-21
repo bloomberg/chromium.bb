@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,30 @@
 namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
+
+namespace {
+
+const char* BrightnessChangeCauseToString(
+    Adapter::BrightnessChangeCause cause) {
+  switch (cause) {
+    case Adapter::BrightnessChangeCause::kInitialAlsReceived:
+      return "InitialAlsReceived";
+    case Adapter::BrightnessChangeCause::kBrightneningThresholdExceeded:
+      return "BrightneningThresholdExceeded";
+    case Adapter::BrightnessChangeCause::kDarkeningThresholdExceeded:
+      return "DarkeningThresholdExceeded";
+    // |kImmediateBrightneningThresholdExceeded| and
+    // |kImmediateDarkeningThresholdExceeded| are deprecated, and shouldn't show
+    // up.
+    case Adapter::BrightnessChangeCause::
+        kImmediateBrightneningThresholdExceeded:
+    case Adapter::BrightnessChangeCause::kImmediateDarkeningThresholdExceeded:
+      return "UnexpectedImmediateTransition";
+  }
+  return "Unknown";
+}
+
+}  // namespace
 
 Adapter::Params::Params() {}
 
@@ -89,7 +114,9 @@ void Adapter::OnBrightnessMonitorInitialized(bool success) {
 }
 
 void Adapter::OnUserBrightnessChanged(double old_brightness_percent,
-                                      double new_brightness_percent) {}
+                                      double new_brightness_percent) {
+  current_brightness_ = new_brightness_percent;
+}
 
 void Adapter::OnUserBrightnessChangeRequested() {
   if (params_.user_adjustment_effect != UserAdjustmentEffect::kContinueAuto) {
@@ -371,10 +398,10 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   const double log_average_ambient_lux =
       ConvertToLog(average_ambient_lux_opt.value());
 
-  const base::Optional<BrightnessChangeCause> can_adjust_brightness =
+  const base::Optional<BrightnessChangeCause> brightness_change_cause =
       CanAdjustBrightness(log_average_ambient_lux);
 
-  if (!can_adjust_brightness.has_value())
+  if (!brightness_change_cause.has_value())
     return;
 
   const base::Optional<double> brightness =
@@ -400,9 +427,14 @@ void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   }
   latest_brightness_change_time_ = brightness_change_time;
 
-  const BrightnessChangeCause cause = *can_adjust_brightness;
+  const BrightnessChangeCause cause = *brightness_change_cause;
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessChange.Cause",
                             cause);
+
+  WriteLogMessages(log_average_ambient_lux, *brightness, cause);
+
+  current_brightness_ = *brightness;
+  brightness_change_counter_++;
 
   log_average_ambient_lux_ = log_average_ambient_lux;
 
@@ -433,6 +465,27 @@ base::Optional<double> Adapter::GetBrightnessBasedOnAmbientLogLux(
         return personal_curve_->Interpolate(ambient_log_lux);
       return global_curve_->Interpolate(ambient_log_lux);
   }
+}
+
+void Adapter::WriteLogMessages(double new_log_als,
+                               double new_brightness,
+                               BrightnessChangeCause cause) const {
+  const std::string old_log_als =
+      log_average_ambient_lux_
+          ? base::StringPrintf("%.4f", log_average_ambient_lux_.value()) + "->"
+          : "";
+
+  const std::string old_brightness =
+      current_brightness_
+          ? base::StringPrintf("%.4f", current_brightness_.value()) + "%->"
+          : "";
+
+  VLOG(1) << "Screen brightness change #" << brightness_change_counter_ << ": "
+          << "brightness=" << old_brightness
+          << base::StringPrintf("%.4f", new_brightness) << "%"
+          << " cause=" << BrightnessChangeCauseToString(cause)
+          << " log_als=" << old_log_als
+          << base::StringPrintf("%.4f", new_log_als);
 }
 
 }  // namespace auto_screen_brightness
