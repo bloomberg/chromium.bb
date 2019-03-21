@@ -148,7 +148,12 @@ void FtlSignalingPlayground::ResetServices() {
   ftl_context_ = std::make_unique<FtlGrpcContext>(token_getter_.get());
   peer_to_peer_stub_ = PeerToPeer::NewStub(ftl_context_->channel());
   registration_stub_ = Registration::NewStub(ftl_context_->channel());
-  messaging_stub_ = Messaging::NewStub(ftl_context_->channel());
+
+  message_subscription_.reset();
+  messaging_client_ = std::make_unique<FtlMessagingClient>(ftl_context_.get());
+  message_subscription_ = messaging_client_->RegisterMessageCallback(
+      base::BindRepeating(&FtlSignalingPlayground::OnMessageReceived,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void FtlSignalingPlayground::AuthenticateAndResetServices() {
@@ -317,88 +322,34 @@ void FtlSignalingPlayground::OnSignInGaiaResponse(
 }
 
 void FtlSignalingPlayground::PullMessages(base::OnceClosure on_done) {
-  DCHECK(messaging_stub_);
+  DCHECK(messaging_client_);
   VLOG(0) << "Running PullMessages...";
 
-  ftl_context_->ExecuteRpc(
-      base::BindOnce(&Messaging::Stub::AsyncPullMessages,
-                     base::Unretained(messaging_stub_.get())),
-      ftl::PullMessagesRequest(),
+  messaging_client_->PullMessages(
       base::BindOnce(&FtlSignalingPlayground::OnPullMessagesResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
 void FtlSignalingPlayground::OnPullMessagesResponse(
     base::OnceClosure on_done,
-    const grpc::Status& status,
-    const ftl::PullMessagesResponse& response) {
+    const grpc::Status& status) {
   if (!status.ok()) {
     if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
       fprintf(stderr, "Please run SignInGaia first\n");
     } else {
       HandleGrpcStatusError(status);
     }
-    std::move(on_done).Run();
-    return;
-  }
-
-  ftl::AckMessagesRequest ack_request;
-  printf("pull_all=%d\n", response.pulled_all());
-  for (const auto& message : response.messages()) {
-    printf(
-        "Message:\n"
-        "  message_type=%d\n"
-        "  message_id=%s\n"
-        "  sender_id.id=%s\n"
-        "  receiver_id.id=%s\n",
-        message.message_type(), message.message_id().c_str(),
-        message.sender_id().id().c_str(), message.receiver_id().id().c_str());
-
-    if (message.message_type() ==
-        ftl::InboxMessage_MessageType_CHROMOTING_MESSAGE) {
-      ftl::ChromotingMessage chromoting_message;
-      chromoting_message.ParseFromString(message.message());
-      printf("  message(ChromotingMessage deserialized)=%s\n",
-             chromoting_message.message().c_str());
-    } else {
-      std::string message_base64;
-      base::Base64Encode(message.message(), &message_base64);
-      printf("  message(base64)=%s\n", message_base64.c_str());
-    }
-
-    ftl::ReceiverMessage* receiver_message = ack_request.add_messages();
-    receiver_message->set_message_id(message.message_id());
-    receiver_message->set_allocated_receiver_id(
-        new ftl::Id(message.receiver_id()));
-  }
-
-  if (ack_request.messages_size() == 0) {
-    VLOG(0) << "No message has been received";
-    std::move(on_done).Run();
-    return;
-  }
-
-  // TODO(yuweih): Might need retry logic.
-  VLOG(0) << "Acking " << ack_request.messages_size() << " messages";
-
-  ftl_context_->ExecuteRpc(
-      base::BindOnce(&Messaging::Stub::AsyncAckMessages,
-                     base::Unretained(messaging_stub_.get())),
-      ack_request,
-      base::BindOnce(&FtlSignalingPlayground::OnAckMessagesResponse,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
-}
-
-void FtlSignalingPlayground::OnAckMessagesResponse(
-    base::OnceClosure on_done,
-    const grpc::Status& status,
-    const ftl::AckMessagesResponse& response) {
-  if (status.ok()) {
-    VLOG(0) << "Messages acked";
-  } else {
-    HandleGrpcStatusError(status);
   }
   std::move(on_done).Run();
+}
+
+void FtlSignalingPlayground::OnMessageReceived(const std::string& sender_id,
+                                               const std::string& message) {
+  printf(
+      "Received message:\n"
+      "  Sender ID=%s\n"
+      "  Message=%s\n",
+      sender_id.c_str(), message.c_str());
 }
 
 }  // namespace remoting
