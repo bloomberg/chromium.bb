@@ -111,7 +111,6 @@ Polymer({
   onPrinterDiscoveryDone_: function() {
     this.discovering_ = false;
     this.$$('add-printer-list').style.maxHeight = kPrinterListFullHeight + 'px';
-    this.$.noPrinterMessage.hidden = !!this.discoveredPrinters.length;
 
     if (!this.discoveredPrinters.length) {
       this.selectedPrinter = getEmptyPrinter_();
