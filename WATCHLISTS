@@ -2418,7 +2418,6 @@
     'select_to_speak': ['katie+watch@chromium.org'],
     'send_tab_to_self': ['hansberry+watch-send_tab_to_self@chromium.org',
                          'jeffreycohen+watch-send_tab_to_self@chromium.org',
-                         'jhawkins+watch-send_tab_to_self@chromium.org',
                          'jlklein+watch-send_tab_to_self@chromium.org',
                          'sebsg+watch-send_tab_to_self@chromium.org',
                          'tgupta+watch@chromium.org'],
