@@ -5,8 +5,10 @@
 
 uname="$(uname -s)"
 case "${uname}" in
-    Linux*)     env="linux64";;
-    Darwin*)    env="mac";;
+    Linux*)     env="linux64"
+                GN_SHA1="3523d50538357829725d4ed74b777a572ce0ac74";;
+    Darwin*)    env="mac"
+                GN_SHA1="d43122f6140d0711518aa909980cb009c4fbce3d";;
 esac
 
 echo "Assuming we are running in $env..."
@@ -18,8 +20,7 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 
 pushd $GIT_ROOT
 set -x  # echo on
-sha1=$(curl "$BUILDTOOLS_REPO_URL/+/master/$env/gn.sha1?format=TEXT" | base64 --decode)
-curl -Lo gn "$GOOGLE_STORAGE_URL/chromium-gn/$sha1"
+curl -Lo gn "$GOOGLE_STORAGE_URL/chromium-gn/$GN_SHA1"
 chmod +x gn
 
 sha1=$(curl "$BUILDTOOLS_REPO_URL/+/master/$env/clang-format.sha1?format=TEXT" | base64 --decode)
