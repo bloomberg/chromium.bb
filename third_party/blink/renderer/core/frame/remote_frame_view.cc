@@ -101,7 +101,8 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   FrameOcclusionState occlusion_state =
       owner_element->GetDocument().GetFrame()->GetOcclusionState();
   bool should_compute_occlusion =
-      needs_occlusion_tracking_ && occlusion_state == kGuaranteedNotOccluded &&
+      needs_occlusion_tracking_ &&
+      occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded &&
       parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
       RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
 
@@ -134,9 +135,9 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
       viewport_intersection = EnclosingIntRect(intersection_rect);
     }
     if (should_compute_occlusion && !geometry.IsVisible())
-      occlusion_state = kPossiblyOccluded;
-  } else if (occlusion_state == kGuaranteedNotOccluded) {
-    occlusion_state = kUnknownOcclusionState;
+      occlusion_state = FrameOcclusionState::kPossiblyOccluded;
+  } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
+    occlusion_state = FrameOcclusionState::kUnknown;
   }
 
   // TODO(szager): There are some redundant IPC's here; clean them up.

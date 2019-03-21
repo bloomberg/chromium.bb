@@ -552,7 +552,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
 
   IntRect remote_viewport_intersection_;
-  FrameOcclusionState occlusion_state_ = kUnknownOcclusionState;
+  FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
 
   // Per-frame URLLoader factory.

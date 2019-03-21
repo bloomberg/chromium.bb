@@ -1440,8 +1440,9 @@ void LocalFrame::SetViewportIntersectionFromParent(
 }
 
 FrameOcclusionState LocalFrame::GetOcclusionState() const {
+  // TODO(dcheng): Get rid of this branch for the main frame.
   if (IsMainFrame())
-    return kGuaranteedNotOccluded;
+    return FrameOcclusionState::kGuaranteedNotOccluded;
   if (IsLocalRoot())
     return occlusion_state_;
   return LocalFrameRoot().GetOcclusionState();

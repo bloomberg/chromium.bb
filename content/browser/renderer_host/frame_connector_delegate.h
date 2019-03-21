@@ -273,7 +273,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // ViewportIntersection() can return a reference.
   gfx::Rect viewport_intersection_rect_;
   gfx::Rect compositor_visible_rect_;
-  blink::FrameOcclusionState occlusion_state_ = blink::kUnknownOcclusionState;
+  blink::FrameOcclusionState occlusion_state_ =
+      blink::FrameOcclusionState::kUnknown;
 
   ScreenInfo screen_info_;
   gfx::Size local_frame_size_in_dip_;
