@@ -67,8 +67,8 @@ void XRReferenceSpace::setOriginOffset(XRRigidTransform* transform) {
   origin_offset_ = transform;
 }
 
-TransformationMatrix XRReferenceSpace::OriginOffsetMatrix() {
-  return origin_offset_->TransformMatrix();
+TransformationMatrix XRReferenceSpace::InverseOriginOffsetMatrix() {
+  return origin_offset_->InverseTransformMatrix();
 }
 
 void XRReferenceSpace::Trace(blink::Visitor* visitor) {

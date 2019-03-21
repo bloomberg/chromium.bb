@@ -53,7 +53,7 @@ class XRSpace : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  virtual TransformationMatrix OriginOffsetMatrix();
+  virtual TransformationMatrix InverseOriginOffsetMatrix();
 
   void Trace(blink::Visitor*) override;
 

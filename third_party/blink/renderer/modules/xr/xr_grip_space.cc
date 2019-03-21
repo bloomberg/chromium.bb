@@ -38,7 +38,7 @@ XRPose* XRGripSpace::getPose(
   // Account for any changes made to the reference space's origin offset so
   // that things like teleportation works.
   grip_pose = std::make_unique<TransformationMatrix>(
-      other_space->OriginOffsetMatrix().Inverse().Multiply(*grip_pose));
+      other_space->InverseOriginOffsetMatrix().Multiply(*grip_pose));
 
   return MakeGarbageCollected<XRPose>(std::move(grip_pose),
                                       input_source_->emulatedPosition());

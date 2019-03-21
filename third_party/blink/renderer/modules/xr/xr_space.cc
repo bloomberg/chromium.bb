@@ -37,7 +37,7 @@ std::unique_ptr<TransformationMatrix> XRSpace::TransformBaseInputPose(
   return nullptr;
 }
 
-TransformationMatrix XRSpace::OriginOffsetMatrix() {
+TransformationMatrix XRSpace::InverseOriginOffsetMatrix() {
   TransformationMatrix identity;
   return identity;
 }
@@ -90,7 +90,7 @@ std::unique_ptr<TransformationMatrix> XRSpace::GetViewerPoseMatrix(
   // Account for any changes made to the reference space's origin offset so that
   // things like teleportation works.
   return std::make_unique<TransformationMatrix>(
-      OriginOffsetMatrix().Inverse().Multiply(*pose));
+      InverseOriginOffsetMatrix().Multiply(*pose));
 }
 
 ExecutionContext* XRSpace::GetExecutionContext() const {

@@ -66,6 +66,10 @@ XRRigidTransform& XRRigidTransform::operator=(const XRRigidTransform& other) {
   if (other.matrix_) {
     matrix_ = std::make_unique<TransformationMatrix>(*(other.matrix_.get()));
   }
+  if (other.inv_matrix_) {
+    inv_matrix_ =
+        std::make_unique<TransformationMatrix>(*(other.inv_matrix_.get()));
+  }
 
   return *this;
 }
@@ -105,9 +109,16 @@ XRRigidTransform* XRRigidTransform::inverse() {
 }
 
 TransformationMatrix XRRigidTransform::InverseTransformMatrix() {
-  EnsureMatrix();
-  DCHECK(matrix_->IsInvertible());
-  return matrix_->Inverse();
+  // Only compute inverse matrix when it's requested, but cache it once we do.
+  // matrix_ does not change once the XRRigidTransfrorm has been constructed, so
+  // the caching is safe.
+  if (!inv_matrix_) {
+    EnsureMatrix();
+    DCHECK(matrix_->IsInvertible());
+    inv_matrix_ = std::make_unique<TransformationMatrix>(matrix_->Inverse());
+  }
+
+  return *inv_matrix_;
 }
 
 TransformationMatrix XRRigidTransform::TransformMatrix() {

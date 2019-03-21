@@ -51,6 +51,7 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   Member<DOMPointReadOnly> position_;
   Member<DOMPointReadOnly> orientation_;
   std::unique_ptr<TransformationMatrix> matrix_;
+  std::unique_ptr<TransformationMatrix> inv_matrix_;
 };
 
 }  // namespace blink

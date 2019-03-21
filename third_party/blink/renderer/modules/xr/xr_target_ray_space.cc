@@ -95,7 +95,7 @@ XRPose* XRTargetRaySpace::getPose(
   // Account for any changes made to the reference space's origin offset so that
   // things like teleportation works.
   pointer_pose = std::make_unique<TransformationMatrix>(
-      other_space->OriginOffsetMatrix().Inverse().Multiply(*pointer_pose));
+      other_space->InverseOriginOffsetMatrix().Multiply(*pointer_pose));
 
   return MakeGarbageCollected<XRPose>(std::move(pointer_pose),
                                       input_source_->emulatedPosition());
