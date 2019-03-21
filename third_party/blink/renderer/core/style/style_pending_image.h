@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -106,12 +107,17 @@ class StylePendingImage final : public StyleImage {
   Member<CSSValue> value_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, IsPendingImage());
+template <>
+struct DowncastTraits<StylePendingImage> {
+  static bool AllowFrom(const StyleImage& styleImage) {
+    return styleImage.IsPendingImage();
+  }
+};
 
 inline bool StylePendingImage::IsEqual(const StyleImage& other) const {
   if (!other.IsPendingImage())
     return false;
-  const auto& other_pending = ToStylePendingImage(other);
+  const auto& other_pending = To<StylePendingImage>(other);
   return value_ == other_pending.value_;
 }
 
