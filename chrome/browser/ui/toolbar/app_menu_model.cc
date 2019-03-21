@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -837,6 +838,10 @@ void AppMenuModel::Build() {
 }
 
 bool AppMenuModel::CreateActionToolbarOverflowMenu() {
+  // The extensions menu replaces the 3-dot menu entry.
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return false;
+
   // We only add the extensions overflow container if there are any icons that
   // aren't shown in the main container.
   // browser_->window() can return null during startup, and

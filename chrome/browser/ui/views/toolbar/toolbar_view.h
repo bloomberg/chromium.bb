@@ -40,6 +40,7 @@ class AppMenuButton;
 class AvatarToolbarButton;
 class BrowserAppMenuButton;
 class Browser;
+class ExtensionsToolbarButton;
 class HomeButton;
 class ReloadButton;
 class ToolbarButton;
@@ -252,6 +253,7 @@ class ToolbarView : public views::AccessiblePaneView,
   CustomTabBarView* custom_tab_bar_ = nullptr;
   LocationBarView* location_bar_ = nullptr;
   BrowserActionsContainer* browser_actions_ = nullptr;
+  ExtensionsToolbarButton* extensions_button_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
   ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;

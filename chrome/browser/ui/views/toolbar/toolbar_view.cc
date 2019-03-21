@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -35,7 +36,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -229,6 +230,9 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    extensions_button_ = new ExtensionsToolbarButton(browser_);
+
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast_ = media_router::CastToolbarButton::Create(browser_).release();
 
@@ -264,6 +268,10 @@ void ToolbarView::Init() {
   AddChildView(home_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
+
+  if (extensions_button_)
+    AddChildView(extensions_button_);
+
   if (cast_)
     AddChildView(cast_);
 
@@ -789,6 +797,8 @@ void ToolbarView::LoadImages() {
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
+  if (extensions_button_)
+    extensions_button_->UpdateIcon();
   if (cast_)
     cast_->UpdateIcon();
   if (avatar_)

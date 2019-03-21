@@ -13,18 +13,9 @@ const base::Feature kDoubleTapToZoomInTabletMode{
     "DoubleTapToZoomInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if !defined(OS_ANDROID)
-// Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
-// UIs implemented with web technologies.
-const base::Feature kWebUIDarkMode {
-  "WebUIDarkMode",
-#if defined(OS_MACOSX) || defined(OS_WIN)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
-};
-#endif  // !defined(OS_ANDROID)
+// Enables an extension menu in the toolbar. See https://crbug.com/943702
+const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -41,5 +32,18 @@ const char kTabHoverCardsFeatureParameterName[] = "setting";
 // https://crbug.com/928954
 const base::Feature kTabHoverCardImages{"TabHoverCardImages",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if !defined(OS_ANDROID)
+// Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
+// UIs implemented with web technologies.
+const base::Feature kWebUIDarkMode {
+  "WebUIDarkMode",
+#if defined(OS_MACOSX) || defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+};
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace features

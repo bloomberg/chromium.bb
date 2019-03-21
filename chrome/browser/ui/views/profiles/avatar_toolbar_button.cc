@@ -307,7 +307,10 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
-  const int icon_size = ui::MaterialDesignController::touch_ui() ? 24 : 20;
+  // Note that the non-touchable icon size is larger than the default to
+  // make the avatar icon easier to read.
+  const int icon_size =
+      ui::MaterialDesignController::touch_ui() ? kDefaultTouchableIconSize : 20;
 
   SkColor icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
