@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -97,8 +98,7 @@ class Graph {
       std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
   NodeAttachedDataMap node_attached_data_map_;
 
-  static void Create();
-
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(Graph);
 };
 
