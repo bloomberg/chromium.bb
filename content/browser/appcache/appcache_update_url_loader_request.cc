@@ -58,7 +58,8 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   loader_factory_getter_->GetNetworkFactoryWithCORBEnabled()
       ->CreateLoaderAndStart(
           mojo::MakeRequest(&url_loader_), -1, -1,
-          network::mojom::kURLLoadOptionNone, request_, std::move(client),
+          network::mojom::kURLLoadOptionSendSSLInfoWithResponse, request_,
+          std::move(client),
           net::MutableNetworkTrafficAnnotationTag(kAppCacheTrafficAnnotation));
 }
 
