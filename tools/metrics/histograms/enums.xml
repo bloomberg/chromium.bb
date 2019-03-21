@@ -147,234 +147,510 @@ uploading your change for review.  These are checked by presubmit scripts.
   <summary>
     Track which Windows accessibility APIs are being called by clients.
   </summary>
-  <int value="0" label="UMA_API_ACC_DO_DEFAULT_ACTION">accDoDefaultAction</int>
-  <int value="1" label="UMA_API_ACC_HIT_TEST">accHitTest</int>
-  <int value="2" label="UMA_API_ACC_LOCATION">accLocation</int>
-  <int value="3" label="UMA_API_ACC_NAVIGATE">accNavigate</int>
-  <int value="4" label="UMA_API_ACC_SELECT">accSelect</int>
-  <int value="5" label="UMA_API_ADD_SELECTION">addSelection</int>
+  <int value="0" label="UMA_API_ACC_DO_DEFAULT_ACTION">
+    MSAA accDoDefaultAction
+  </int>
+  <int value="1" label="UMA_API_ACC_HIT_TEST">MSAA accHitTest</int>
+  <int value="2" label="UMA_API_ACC_LOCATION">MSAA accLocation</int>
+  <int value="3" label="UMA_API_ACC_NAVIGATE">MSAA accNavigate</int>
+  <int value="4" label="UMA_API_ACC_SELECT">MSAA accSelect</int>
+  <int value="5" label="UMA_API_ADD_SELECTION">IA2 addSelection</int>
   <int value="6" label="UMA_API_CONVERT_RETURNED_ELEMENT">
-    ConvertReturnedElement
+    UIA ConvertReturnedElement
   </int>
-  <int value="7" label="UMA_API_DO_ACTION">doAction</int>
-  <int value="8" label="UMA_API_GET_ACCESSIBLE_AT">get_accessibleAt</int>
-  <int value="9" label="UMA_API_GET_ACC_CHILD">get_accChild</int>
-  <int value="10" label="UMA_API_GET_ACC_CHILD_COUNT">get_accChildCount</int>
+  <int value="7" label="UMA_API_DO_ACTION">IA2 doAction</int>
+  <int value="8" label="UMA_API_GET_ACCESSIBLE_AT">IA2 get_accessibleAt</int>
+  <int value="9" label="UMA_API_GET_ACC_CHILD">MSAA get_accChild</int>
+  <int value="10" label="UMA_API_GET_ACC_CHILD_COUNT">
+    MSAA get_accChildCount
+  </int>
   <int value="11" label="UMA_API_GET_ACC_DEFAULT_ACTION">
-    get_accDefaultAction
+    MSAA get_accDefaultAction
   </int>
-  <int value="12" label="UMA_API_GET_ACC_DESCRIPTION">get_accDescription</int>
-  <int value="13" label="UMA_API_GET_ACC_FOCUS">get_accFocus</int>
-  <int value="14" label="UMA_API_GET_ACC_HELP">get_accHelp</int>
-  <int value="15" label="UMA_API_GET_ACC_HELP_TOPIC">get_accHelpTopic</int>
+  <int value="12" label="UMA_API_GET_ACC_DESCRIPTION">
+    MSAA get_accDescription
+  </int>
+  <int value="13" label="UMA_API_GET_ACC_FOCUS">MSAA get_accFocus</int>
+  <int value="14" label="UMA_API_GET_ACC_HELP">MSAA get_accHelp</int>
+  <int value="15" label="UMA_API_GET_ACC_HELP_TOPIC">MSAA get_accHelpTopic</int>
   <int value="16" label="UMA_API_GET_ACC_KEYBOARD_SHORTCUT">
-    get_accKeyboardShortcut
+    MSAA get_accKeyboardShortcut
   </int>
-  <int value="17" label="UMA_API_GET_ACC_NAME">get_accName</int>
-  <int value="18" label="UMA_API_GET_ACC_PARENT">get_accParent</int>
-  <int value="19" label="UMA_API_GET_ACC_ROLE">get_accRole</int>
-  <int value="20" label="UMA_API_GET_ACC_SELECTION">get_accSelection</int>
-  <int value="21" label="UMA_API_GET_ACC_STATE">get_accState</int>
-  <int value="22" label="UMA_API_GET_ACC_VALUE">get_accValue</int>
-  <int value="23" label="UMA_API_GET_ANCHOR">get_anchor</int>
-  <int value="24" label="UMA_API_GET_ANCHOR_TARGET">get_anchorTarget</int>
-  <int value="25" label="UMA_API_GET_APP_NAME">get_appName</int>
-  <int value="26" label="UMA_API_GET_APP_VERSION">get_appVersion</int>
+  <int value="17" label="UMA_API_GET_ACC_NAME">MSAA get_accName</int>
+  <int value="18" label="UMA_API_GET_ACC_PARENT">MSAA get_accParent</int>
+  <int value="19" label="UMA_API_GET_ACC_ROLE">MSAA get_accRole</int>
+  <int value="20" label="UMA_API_GET_ACC_SELECTION">MSAA get_accSelection</int>
+  <int value="21" label="UMA_API_GET_ACC_STATE">MSAA get_accState</int>
+  <int value="22" label="UMA_API_GET_ACC_VALUE">MSAA get_accValue</int>
+  <int value="23" label="UMA_API_GET_ANCHOR">IA2 get_anchor</int>
+  <int value="24" label="UMA_API_GET_ANCHOR_TARGET">IA2 get_anchorTarget</int>
+  <int value="25" label="UMA_API_GET_APP_NAME">IA2 get_appName</int>
+  <int value="26" label="UMA_API_GET_APP_VERSION">IA2 get_appVersion</int>
   <int value="27" label="UMA_API_GET_ATTRIBUTES_FOR_NAMES">
-    get_attributesForNames
+    ISDN get_attributesForNames
   </int>
-  <int value="28" label="UMA_API_GET_CAPTION">get_caption</int>
-  <int value="29" label="UMA_API_GET_CARET_OFFSET">get_caretOffset</int>
-  <int value="30" label="UMA_API_GET_CELL_AT">get_cellAt</int>
+  <int value="28" label="UMA_API_GET_CAPTION">IA2 get_caption</int>
+  <int value="29" label="UMA_API_GET_CARET_OFFSET">IA2 get_caretOffset</int>
+  <int value="30" label="UMA_API_GET_CELL_AT">IA2 get_cellAt</int>
   <int value="31" label="UMA_API_GET_CHARACTER_EXTENTS">
-    get_characterExtents
+    IA2 get_characterExtents
   </int>
-  <int value="32" label="UMA_API_GET_CHILD_AT">get_childAt</int>
-  <int value="33" label="UMA_API_GET_CHILD_INDEX">get_childIndex</int>
+  <int value="32" label="UMA_API_GET_CHILD_AT">ISDN get_childAt</int>
+  <int value="33" label="UMA_API_GET_CHILD_INDEX">IA2 get_childIndex</int>
   <int value="34" label="UMA_API_GET_CLIPPED_SUBSTRING_BOUNDS">
-    get_clippedSubstringBounds
+    IA2 get_clippedSubstringBounds
   </int>
   <int value="35" label="UMA_API_GET_COLUMN_DESCRIPTION">
-    get_columnDescription
+    IA2 get_columnDescription
   </int>
-  <int value="36" label="UMA_API_GET_COLUMN_EXTENT">get_columnExtent</int>
-  <int value="37" label="UMA_API_GET_COLUMN_EXTENT_AT">get_columnExtentAt</int>
-  <int value="38" label="UMA_API_GET_COLUMN_HEADER">get_columnHeader</int>
+  <int value="36" label="UMA_API_GET_COLUMN_EXTENT">IA2 get_columnExtent</int>
+  <int value="37" label="UMA_API_GET_COLUMN_EXTENT_AT">
+    IA2 get_columnExtentAt
+  </int>
+  <int value="38" label="UMA_API_GET_COLUMN_HEADER">IA2 get_columnHeader</int>
   <int value="39" label="UMA_API_GET_COLUMN_HEADER_CELLS">
-    get_columnHeaderCells
+    IA2 get_columnHeaderCells
   </int>
-  <int value="40" label="UMA_API_GET_COLUMN_INDEX">get_columnIndex</int>
-  <int value="41" label="UMA_API_GET_COMPUTED_STYLE">get_computedStyle</int>
+  <int value="40" label="UMA_API_GET_COLUMN_INDEX">IA2 get_columnIndex</int>
+  <int value="41" label="UMA_API_GET_COMPUTED_STYLE">
+    ISDN get_computedStyle
+  </int>
   <int value="42" label="UMA_API_GET_COMPUTED_STYLE_FOR_PROPERTIES">
-    get_computedStyleForProperties
+    ISDN get_computedStyleForProperties
   </int>
-  <int value="43" label="UMA_API_GET_CURRENT_VALUE">get_currentValue</int>
-  <int value="44" label="UMA_API_GET_DESCRIPTION">get_description</int>
-  <int value="45" label="UMA_API_GET_DOC_TYPE">get_docType</int>
-  <int value="46" label="UMA_API_GET_DOM_TEXT">get_domText</int>
-  <int value="47" label="UMA_API_GET_END_INDEX">get_endIndex</int>
-  <int value="48" label="UMA_API_GET_EXTENDED_ROLE">get_extendedRole</int>
-  <int value="49" label="UMA_API_GET_EXTENDED_STATES">get_extendedStates</int>
-  <int value="50" label="UMA_API_GET_FIRST_CHILD">get_firstChild</int>
-  <int value="51" label="UMA_API_GET_FONT_FAMILY">get_fontFamily</int>
-  <int value="52" label="UMA_API_GET_GROUP_POSITION">get_groupPosition</int>
+  <int value="43" label="UMA_API_GET_CURRENT_VALUE">IA2 get_currentValue</int>
+  <int value="44" label="UMA_API_GET_DESCRIPTION">IA2 get_description</int>
+  <int value="45" label="UMA_API_GET_DOC_TYPE">IA2 get_docType</int>
+  <int value="46" label="UMA_API_GET_DOM_TEXT">IA2 get_domText</int>
+  <int value="47" label="UMA_API_GET_END_INDEX">IA2 get_endIndex</int>
+  <int value="48" label="UMA_API_GET_EXTENDED_ROLE">IA2 get_extendedRole</int>
+  <int value="49" label="UMA_API_GET_EXTENDED_STATES">
+    IA2 get_extendedStates
+  </int>
+  <int value="50" label="UMA_API_GET_FIRST_CHILD">ISDN get_firstChild</int>
+  <int value="51" label="UMA_API_GET_FONT_FAMILY">IA2 get_fontFamily</int>
+  <int value="52" label="UMA_API_GET_GROUP_POSITION">IA2 get_groupPosition</int>
   <int value="53" label="UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER">
-    get_HostRawElementProvider
+    UIA get_HostRawElementProvider
   </int>
-  <int value="54" label="UMA_API_GET_HYPERLINK">get_hyperlink</int>
-  <int value="55" label="UMA_API_GET_HYPERLINK_INDEX">get_hyperlinkIndex</int>
+  <int value="54" label="UMA_API_GET_HYPERLINK">IA2 get_hyperlink</int>
+  <int value="55" label="UMA_API_GET_HYPERLINK_INDEX">
+    IA2 get_hyperlinkIndex
+  </int>
   <int value="56" label="UMA_API_GET_IACCESSIBLE_PAIR">
-    GetIAccessiblePair ALT
+    UIA GetIAccessiblePair ALT
   </int>
-  <int value="57" label="UMA_API_GET_IMAGE_POSITION">get_imagePosition</int>
-  <int value="58" label="UMA_API_GET_IMAGE_SIZE">get_imageSize</int>
-  <int value="59" label="UMA_API_GET_INDEX_IN_PARENT">get_indexInParent</int>
-  <int value="60" label="UMA_API_GET_INNER_HTML">get_innerHTML</int>
+  <int value="57" label="UMA_API_GET_IMAGE_POSITION">IA2 get_imagePosition</int>
+  <int value="58" label="UMA_API_GET_IMAGE_SIZE">IA2 get_imageSize</int>
+  <int value="59" label="UMA_API_GET_INDEX_IN_PARENT">
+    IA2 get_indexInParent
+  </int>
+  <int value="60" label="UMA_API_GET_INNER_HTML">ISDN get_innerHTML</int>
   <int value="61" label="UMA_API_GET_IS_COLUMN_SELECTED">
-    get_isColumnSelected
+    IA2 get_isColumnSelected
   </int>
-  <int value="62" label="UMA_API_GET_IS_ROW_SELECTED">get_isRowSelected</int>
-  <int value="63" label="UMA_API_GET_IS_SELECTED">get_isSelected</int>
-  <int value="64" label="UMA_API_GET_KEY_BINDING">get_keyBinding</int>
-  <int value="65" label="UMA_API_GET_LANGUAGE">get_language</int>
-  <int value="66" label="UMA_API_GET_LAST_CHILD">get_lastChild</int>
-  <int value="67" label="UMA_API_GET_LOCALE">get_locale</int>
+  <int value="62" label="UMA_API_GET_IS_ROW_SELECTED">
+    IA2 get_isRowSelected
+  </int>
+  <int value="63" label="UMA_API_GET_IS_SELECTED">IA2 get_isSelected</int>
+  <int value="64" label="UMA_API_GET_KEY_BINDING">IA2 get_keyBinding</int>
+  <int value="65" label="UMA_API_GET_LANGUAGE">ISDN get_language</int>
+  <int value="66" label="UMA_API_GET_LAST_CHILD">ISDN get_lastChild</int>
+  <int value="67" label="UMA_API_GET_LOCALE">IA2 get_locale</int>
   <int value="68" label="UMA_API_GET_LOCALIZED_EXTENDED_ROLE">
-    get_localizedExtendedRole
+    IA2 get_localizedExtendedRole
   </int>
   <int value="69" label="UMA_API_GET_LOCALIZED_EXTENDED_STATES">
-    get_localizedExtendedStates
+    IA2 get_localizedExtendedStates
   </int>
-  <int value="70" label="UMA_API_GET_LOCALIZED_NAME">get_localizedName</int>
-  <int value="71" label="UMA_API_GET_LOCAL_INTERFACE">get_localInterface</int>
-  <int value="72" label="UMA_API_GET_MAXIMUM_VALUE">get_maximumValue</int>
-  <int value="73" label="UMA_API_GET_MIME_TYPE">get_mimeType</int>
-  <int value="74" label="UMA_API_GET_MINIMUM_VALUE">get_minimumValue</int>
-  <int value="75" label="UMA_API_GET_NAME">get_name</int>
+  <int value="70" label="UMA_API_GET_LOCALIZED_NAME">IA2 get_localizedName</int>
+  <int value="71" label="UMA_API_GET_LOCAL_INTERFACE">
+    ISDN get_localInterface
+  </int>
+  <int value="72" label="UMA_API_GET_MAXIMUM_VALUE">IA2 get_maximumValue</int>
+  <int value="73" label="UMA_API_GET_MIME_TYPE">IA2 get_mimeType</int>
+  <int value="74" label="UMA_API_GET_MINIMUM_VALUE">IA2 get_minimumValue</int>
+  <int value="75" label="UMA_API_GET_NAME">IA2 get_name</int>
   <int value="76" label="UMA_API_GET_NAMESPACE_URI_FOR_ID">
-    get_nameSpaceURIForID ALT
+    IA2 get_nameSpaceURIForID ALT
   </int>
-  <int value="77" label="UMA_API_GET_NEW_TEXT">get_newText</int>
-  <int value="78" label="UMA_API_GET_NEXT_SIBLING">get_nextSibling</int>
-  <int value="79" label="UMA_API_GET_NODE_INFO">get_nodeInfo</int>
-  <int value="80" label="UMA_API_GET_N_CHARACTERS">get_nCharacters</int>
-  <int value="81" label="UMA_API_GET_N_COLUMNS">get_nColumns</int>
+  <int value="77" label="UMA_API_GET_NEW_TEXT">IA2 get_newText</int>
+  <int value="78" label="UMA_API_GET_NEXT_SIBLING">ISDN get_nextSibling</int>
+  <int value="79" label="UMA_API_GET_NODE_INFO">ISDN get_nodeInfo</int>
+  <int value="80" label="UMA_API_GET_N_CHARACTERS">IA2 get_nCharacters</int>
+  <int value="81" label="UMA_API_GET_N_COLUMNS">IA2 get_nColumns</int>
   <int value="82" label="UMA_API_GET_N_EXTENDED_STATES">
-    get_nExtendedStates
+    IA2 get_nExtendedStates
   </int>
-  <int value="83" label="UMA_API_GET_N_HYPERLINKS">get_nHyperlinks</int>
-  <int value="84" label="UMA_API_GET_N_RELATIONS">get_nRelations</int>
-  <int value="85" label="UMA_API_GET_N_ROWS">get_nRows</int>
-  <int value="86" label="UMA_API_GET_N_SELECTED_CELLS">get_nSelectedCells</int>
+  <int value="83" label="UMA_API_GET_N_HYPERLINKS">IA2 get_nHyperlinks</int>
+  <int value="84" label="UMA_API_GET_N_RELATIONS">IA2 get_nRelations</int>
+  <int value="85" label="UMA_API_GET_N_ROWS">IA2 get_nRows</int>
+  <int value="86" label="UMA_API_GET_N_SELECTED_CELLS">
+    IA2 get_nSelectedCells
+  </int>
   <int value="87" label="UMA_API_GET_N_SELECTED_CHILDREN">
-    get_nSelectedChildren
+    IA2 get_nSelectedChildren
   </int>
   <int value="88" label="UMA_API_GET_N_SELECTED_COLUMNS">
-    get_nSelectedColumns
+    IA2 get_nSelectedColumns
   </int>
-  <int value="89" label="UMA_API_GET_N_SELECTED_ROWS">get_nSelectedRows</int>
-  <int value="90" label="UMA_API_GET_N_SELECTIONS">get_nSelections</int>
-  <int value="91" label="UMA_API_GET_OBJECT_FOR_CHILD">GetObjectForChild</int>
-  <int value="92" label="UMA_API_GET_OFFSET_AT_POINT">get_offsetAtPoint</int>
-  <int value="93" label="UMA_API_GET_OLD_TEXT">get_oldText</int>
-  <int value="94" label="UMA_API_GET_PARENT_NODE">get_parentNode</int>
-  <int value="95" label="UMA_API_GET_PATTERN_PROVIDER">GetPatternProvider</int>
-  <int value="96" label="UMA_API_GET_PREVIOUS_SIBLING">get_previousSibling</int>
-  <int value="97" label="UMA_API_GET_PROPERTY_VALUE">GetPropertyValue</int>
-  <int value="98" label="UMA_API_GET_PROVIDER_OPTIONS">get_ProviderOptions</int>
-  <int value="99" label="UMA_API_GET_RELATION">get_relation</int>
-  <int value="100" label="UMA_API_GET_RELATIONS">get_relations</int>
+  <int value="89" label="UMA_API_GET_N_SELECTED_ROWS">
+    IA2 get_nSelectedRows
+  </int>
+  <int value="90" label="UMA_API_GET_N_SELECTIONS">IA2 get_nSelections</int>
+  <int value="91" label="UMA_API_GET_OBJECT_FOR_CHILD">
+    UIA GetObjectForChild
+  </int>
+  <int value="92" label="UMA_API_GET_OFFSET_AT_POINT">
+    IA2 get_offsetAtPoint
+  </int>
+  <int value="93" label="UMA_API_GET_OLD_TEXT">IA2 get_oldText</int>
+  <int value="94" label="UMA_API_GET_PARENT_NODE">ISDN get_parentNode</int>
+  <int value="95" label="UMA_API_GET_PATTERN_PROVIDER">
+    UIA GetPatternProvider
+  </int>
+  <int value="96" label="UMA_API_GET_PREVIOUS_SIBLING">
+    ISDN get_previousSibling
+  </int>
+  <int value="97" label="UMA_API_GET_PROPERTY_VALUE">UIA GetPropertyValue</int>
+  <int value="98" label="UMA_API_GET_PROVIDER_OPTIONS">
+    UIA get_ProviderOptions
+  </int>
+  <int value="99" label="UMA_API_GET_RELATION">IA2 get_relation</int>
+  <int value="100" label="UMA_API_GET_RELATIONS">IA2 get_relations</int>
   <int value="101" label="UMA_API_GET_ROW_COLUMN_EXTENTS">
-    get_rowColumnExtents
+    IA2 get_rowColumnExtents
   </int>
   <int value="102" label="UMA_API_GET_ROW_COLUMN_EXTENTS_AT_INDEX">
-    get_rowColumnExtentsAtIndex
+    IA2 get_rowColumnExtentsAtIndex
   </int>
-  <int value="103" label="UMA_API_GET_ROW_DESCRIPTION">get_rowDescription</int>
-  <int value="104" label="UMA_API_GET_ROW_EXTENT">get_rowExtent</int>
-  <int value="105" label="UMA_API_GET_ROW_EXTENT_AT">get_rowExtentAt</int>
-  <int value="106" label="UMA_API_GET_ROW_HEADER">get_rowHeader</int>
-  <int value="107" label="UMA_API_GET_ROW_HEADER_CELLS">get_rowHeaderCells</int>
-  <int value="108" label="UMA_API_GET_ROW_INDEX">get_rowIndex</int>
-  <int value="109" label="UMA_API_GET_RUNTIME_ID">GetRuntimeId</int>
-  <int value="110" label="UMA_API_GET_SELECTED_CELLS">get_selectedCells</int>
+  <int value="103" label="UMA_API_GET_ROW_DESCRIPTION">
+    IA2 get_rowDescription
+  </int>
+  <int value="104" label="UMA_API_GET_ROW_EXTENT">IA2 get_rowExtent</int>
+  <int value="105" label="UMA_API_GET_ROW_EXTENT_AT">IA2 get_rowExtentAt</int>
+  <int value="106" label="UMA_API_GET_ROW_HEADER">IA2 get_rowHeader</int>
+  <int value="107" label="UMA_API_GET_ROW_HEADER_CELLS">
+    IA2 get_rowHeaderCells
+  </int>
+  <int value="108" label="UMA_API_GET_ROW_INDEX">IA2 get_rowIndex</int>
+  <int value="109" label="UMA_API_GET_RUNTIME_ID">UIA GetRuntimeId</int>
+  <int value="110" label="UMA_API_GET_SELECTED_CELLS">
+    IA2 get_selectedCells
+  </int>
   <int value="111" label="UMA_API_GET_SELECTED_CHILDREN">
-    get_selectedChildren
+    IA2 get_selectedChildren
   </int>
   <int value="112" label="UMA_API_GET_SELECTED_COLUMNS">
-    get_selectedColumns
+    IA2 get_selectedColumns
   </int>
-  <int value="113" label="UMA_API_GET_SELECTED_ROWS">get_selectedRows</int>
-  <int value="114" label="UMA_API_GET_SELECTION">get_selection</int>
-  <int value="115" label="UMA_API_GET_START_INDEX">get_startIndex</int>
-  <int value="116" label="UMA_API_GET_STATES">get_states</int>
-  <int value="117" label="UMA_API_GET_SUMMARY">get_summary</int>
-  <int value="118" label="UMA_API_GET_TABLE">get_table</int>
-  <int value="119" label="UMA_API_GET_TEXT">get_text</int>
+  <int value="113" label="UMA_API_GET_SELECTED_ROWS">IA2 get_selectedRows</int>
+  <int value="114" label="UMA_API_GET_SELECTION">IA2 get_selection</int>
+  <int value="115" label="UMA_API_GET_START_INDEX">IA2 get_startIndex</int>
+  <int value="116" label="UMA_API_GET_STATES">IA2 get_states</int>
+  <int value="117" label="UMA_API_GET_SUMMARY">IA2 get_summary</int>
+  <int value="118" label="UMA_API_GET_TABLE">IA2 get_table</int>
+  <int value="119" label="UMA_API_GET_TEXT">IA2 get_text</int>
   <int value="120" label="UMA_API_GET_TEXT_AFTER_OFFSET">
-    get_textAfterOffset
+    IA2 get_textAfterOffset
   </int>
-  <int value="121" label="UMA_API_GET_TEXT_AT_OFFSET">get_textAtOffset</int>
+  <int value="121" label="UMA_API_GET_TEXT_AT_OFFSET">IA2 get_textAtOffset</int>
   <int value="122" label="UMA_API_GET_TEXT_BEFORE_OFFSET">
-    get_textBeforeOffset
+    IA2 get_textBeforeOffset
   </int>
-  <int value="123" label="UMA_API_GET_TITLE">get_title</int>
-  <int value="124" label="UMA_API_GET_TOOLKIT_NAME">get_toolkitName</int>
-  <int value="125" label="UMA_API_GET_TOOLKIT_VERSION">get_toolkitVersion</int>
+  <int value="123" label="UMA_API_GET_TITLE">IA2 get_title</int>
+  <int value="124" label="UMA_API_GET_TOOLKIT_NAME">IA2 get_toolkitName</int>
+  <int value="125" label="UMA_API_GET_TOOLKIT_VERSION">
+    IA2 get_toolkitVersion
+  </int>
   <int value="126" label="UMA_API_GET_UNCLIPPED_SUBSTRING_BOUNDS">
-    get_unclippedSubstringBounds
+    IA2 get_unclippedSubstringBounds
   </int>
-  <int value="127" label="UMA_API_GET_UNIQUE_ID">get_uniqueID</int>
-  <int value="128" label="UMA_API_GET_URL">get_URL</int>
-  <int value="129" label="UMA_API_GET_VALID">get_valid</int>
-  <int value="130" label="UMA_API_GET_WINDOW_HANDLE">get_windowHandle</int>
-  <int value="131" label="UMA_API_IA2_GET_ATTRIBUTES">get_attributes ALT</int>
-  <int value="132" label="UMA_API_IA2_SCROLL_TO">scrollTo ALT</int>
+  <int value="127" label="UMA_API_GET_UNIQUE_ID">IA2 get_uniqueID</int>
+  <int value="128" label="UMA_API_GET_URL">IA2 get_URL</int>
+  <int value="129" label="UMA_API_GET_VALID">IA2 get_valid</int>
+  <int value="130" label="UMA_API_GET_WINDOW_HANDLE">IA2 get_windowHandle</int>
+  <int value="131" label="UMA_API_IA2_GET_ATTRIBUTES">
+    IA2 get_attributes ALT
+  </int>
+  <int value="132" label="UMA_API_IA2_SCROLL_TO">IA2 scrollTo ALT</int>
   <int value="133" label="UMA_API_IAACTION_GET_DESCRIPTION">
-    get_description ALT
+    IA2 get_description ALT
   </int>
   <int value="134" label="UMA_API_IATEXT_GET_ATTRIBUTES">
-    get_attributes ALT
+    IA2 get_attributes ALT
   </int>
   <int value="135" label="UMA_API_ISIMPLEDOMNODE_GET_ATTRIBUTES">
-    get_attributes ALT
+    ISDN get_attributes ALT
   </int>
-  <int value="136" label="UMA_API_ISIMPLEDOMNODE_SCROLL_TO">scrollTo ALT</int>
-  <int value="137" label="UMA_API_N_ACTIONS">nActions</int>
+  <int value="136" label="UMA_API_ISIMPLEDOMNODE_SCROLL_TO">
+    ISDN scrollTo ALT
+  </int>
+  <int value="137" label="UMA_API_N_ACTIONS">IA2 nActions</int>
   <int value="138" label="UMA_API_PUT_ALTERNATE_VIEW_MEDIA_TYPES">
-    put_alternateViewMediaTypes
+    IA2 put_alternateViewMediaTypes
   </int>
   <int value="139" label="UMA_API_QUERY_SERVICE">QueryService</int>
-  <int value="140" label="UMA_API_REMOVE_SELECTION">removeSelection</int>
-  <int value="141" label="UMA_API_ROLE">role</int>
-  <int value="142" label="UMA_API_SCROLL_SUBSTRING_TO">scrollSubstringTo</int>
-  <int value="143" label="UMA_API_SCROLL_SUBSTRING_TO_POINT">
-    scrollSubstringToPoint
+  <int value="140" label="UMA_API_REMOVE_SELECTION">IA2 removeSelection</int>
+  <int value="141" label="UMA_API_ROLE">IA2 role</int>
+  <int value="142" label="UMA_API_SCROLL_SUBSTRING_TO">
+    IA2 scrollSubstringTo
   </int>
-  <int value="144" label="UMA_API_SCROLL_TO_POINT">scrollToPoint</int>
-  <int value="145" label="UMA_API_SCROLL_TO_SUBSTRING">scrollToSubstring</int>
-  <int value="146" label="UMA_API_SELECT_COLUMN">selectColumn</int>
-  <int value="147" label="UMA_API_SELECT_ROW">selectRow</int>
-  <int value="148" label="UMA_API_SET_CARET_OFFSET">setCaretOffset</int>
-  <int value="149" label="UMA_API_SET_CURRENT_VALUE">setCurrentValue</int>
-  <int value="150" label="UMA_API_SET_SELECTION">setSelection</int>
+  <int value="143" label="UMA_API_SCROLL_SUBSTRING_TO_POINT">
+    IA2 scrollSubstringToPoint
+  </int>
+  <int value="144" label="UMA_API_SCROLL_TO_POINT">IA2 scrollToPoint</int>
+  <int value="145" label="UMA_API_SCROLL_TO_SUBSTRING">
+    IA2 scrollToSubstring
+  </int>
+  <int value="146" label="UMA_API_SELECT_COLUMN">IA2 selectColumn</int>
+  <int value="147" label="UMA_API_SELECT_ROW">IA2 selectRow</int>
+  <int value="148" label="UMA_API_SET_CARET_OFFSET">IA2 setCaretOffset</int>
+  <int value="149" label="UMA_API_SET_CURRENT_VALUE">IA2 setCurrentValue</int>
+  <int value="150" label="UMA_API_SET_SELECTION">IA2 setSelection</int>
   <int value="151" label="UMA_API_TABLE2_GET_SELECTED_COLUMNS">
-    get_selectedColumns ALT
+    IA2 get_selectedColumns ALT
   </int>
   <int value="152" label="UMA_API_TABLE2_GET_SELECTED_ROWS">
-    get_selectedRows ALT
+    IA2 get_selectedRows ALT
   </int>
   <int value="153" label="UMA_API_TABLECELL_GET_COLUMN_INDEX">
-    get_columnIndex ALT
+    IA2 get_columnIndex ALT
   </int>
   <int value="154" label="UMA_API_TABLECELL_GET_IS_SELECTED">
-    get_isSelected ALT
+    IA2 get_isSelected ALT
   </int>
   <int value="155" label="UMA_API_TABLECELL_GET_ROW_INDEX">
-    get_rowIndex ALT
+    IA2 get_rowIndex ALT
   </int>
-  <int value="156" label="UMA_API_UNSELECT_COLUMN">unselectColumn</int>
-  <int value="157" label="UMA_API_UNSELECT_ROW">unselectRow</int>
+  <int value="156" label="UMA_API_UNSELECT_COLUMN">IA2 unselectColumn</int>
+  <int value="157" label="UMA_API_UNSELECT_ROW">IA2 unselectRow</int>
+  <int value="158" label="UMA_API_GET_BOUNDINGRECTANGLE">
+    UIA get_BoundingRectangle
+  </int>
+  <int value="159" label="UMA_API_GET_FRAGMENTROOT">UIA get_FragmentRoot</int>
+  <int value="160" label="UMA_API_GETEMBEDDEDFRAGMENTROOTS">
+    UIA GetEmbeddedFragmentRoots
+  </int>
+  <int value="161" label="UMA_API_NAVIGATE">UIA Navigate</int>
+  <int value="162" label="UMA_API_SETFOCUS">UIA SetFocus</int>
+  <int value="163" label="UMA_API_SHOWCONTEXTMENU">UIA ShowContextMenu</int>
+  <int value="164" label="UMA_API_EXPANDCOLLAPSE_COLLAPSE">
+    UIA ExpandCollapse.Collapse
+  </int>
+  <int value="165" label="UMA_API_EXPANDCOLLAPSE_EXPAND">
+    UIA ExpandCollapse.Expand
+  </int>
+  <int value="166" label="UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE">
+    UIA ExpandCollapse.get_ExpandCollapseState
+  </int>
+  <int value="167" label="UMA_API_GRIDITEM_GET_COLUMN">
+    UIA GridItem.get_Column
+  </int>
+  <int value="168" label="UMA_API_GRIDITEM_GET_COLUMNSPAN">
+    UIA GridItem.get_ColumnSpan
+  </int>
+  <int value="169" label="UMA_API_GRIDITEM_GET_CONTAININGGRID">
+    UIA GridItem.get_ContainingGrid
+  </int>
+  <int value="170" label="UMA_API_GRIDITEM_GET_ROW">UIA GridItem.get_Row</int>
+  <int value="171" label="UMA_API_GRIDITEM_GET_ROWSPAN">
+    UIA GridItem.get_RowSpan
+  </int>
+  <int value="172" label="UMA_API_GRID_GETITEM">UIA Grid.GetItem</int>
+  <int value="173" label="UMA_API_GRID_GET_ROWCOUNT">UIA Grid.get_RowCount</int>
+  <int value="174" label="UMA_API_GRID_GET_COLUMNCOUNT">
+    UIA Grid.get_ColumnCount
+  </int>
+  <int value="175" label="UMA_API_INVOKE_INVOKE">UIA Invoke.Invoke</int>
+  <int value="176" label="UMA_API_RANGEVALUE_SETVALUE">
+    UIA RangeValue.SetValue
+  </int>
+  <int value="177" label="UMA_API_RANGEVALUE_GET_LARGECHANGE">
+    UIA RangeValue.get_LargeChange
+  </int>
+  <int value="178" label="UMA_API_RANGEVALUE_GET_MAXIMUM">
+    UIA RangeValue.get_Maximum
+  </int>
+  <int value="179" label="UMA_API_RANGEVALUE_GET_MINIMUM">
+    UIA RangeValue.get_Minimum
+  </int>
+  <int value="180" label="UMA_API_RANGEVALUE_GET_SMALLCHANGE">
+    UIA RangeValue.get_SmallChange
+  </int>
+  <int value="181" label="UMA_API_RANGEVALUE_GET_VALUE">
+    UIA RangeValue.get_Value
+  </int>
+  <int value="182" label="UMA_API_SCROLLITEM_SCROLLINTOVIEW">
+    UIA ScrollItem.ScrollIntoView
+  </int>
+  <int value="183" label="UMA_API_SCROLL_SCROLL">UIA Scroll.Scroll</int>
+  <int value="184" label="UMA_API_SCROLL_SETSCROLLPERCENT">
+    UIA Scroll.SetScrollPercent
+  </int>
+  <int value="185" label="UMA_API_SCROLL_GET_HORIZONTALLYSCROLLABLE">
+    UIA Scroll.get_HorizontallyScrollable
+  </int>
+  <int value="186" label="UMA_API_SCROLL_GET_HORIZONTALSCROLLPERCENT">
+    UIA Scroll.get_HorizontalScrollPercent
+  </int>
+  <int value="187" label="UMA_API_SCROLL_GET_HORIZONTALVIEWSIZE">
+    UIA Scroll.get_HorizontalViewSize
+  </int>
+  <int value="188" label="UMA_API_SCROLL_GET_VERTICALLYSCROLLABLE">
+    UIA Scroll.get_VerticallyScrollable
+  </int>
+  <int value="189" label="UMA_API_SCROLL_GET_VERTICALSCROLLPERCENT">
+    UIA Scroll.get_VerticalScrollPercent
+  </int>
+  <int value="190" label="UMA_API_SCROLL_GET_VERTICALVIEWSIZE">
+    UIA Scroll.get_VerticalViewSize
+  </int>
+  <int value="191" label="UMA_API_SELECTIONITEM_ADDTOSELECTION">
+    UIA SelectionItem.AddToSelection
+  </int>
+  <int value="192" label="UMA_API_SELECTIONITEM_REMOVEFROMSELECTION">
+    UIA SelectionItem.RemoveFromSelection
+  </int>
+  <int value="193" label="UMA_API_SELECTIONITEM_SELECT">
+    UIA SelectionItem.Select
+  </int>
+  <int value="194" label="UMA_API_SELECTIONITEM_GET_ISSELECTED">
+    UIA SelectionItem.get_IsSelected
+  </int>
+  <int value="195" label="UMA_API_SELECTIONITEM_GET_SELECTIONCONTAINER">
+    UIA SelectionItem.get_SelectionContainer
+  </int>
+  <int value="196" label="UMA_API_SELECTION_GETSELECTION">
+    UIA Selection.GetSelection
+  </int>
+  <int value="197" label="UMA_API_SELECTION_GET_CANSELECTMULTIPLE">
+    UIA Selection.get_CanSelectMultiple
+  </int>
+  <int value="198" label="UMA_API_SELECTION_GET_ISSELECTIONREQUIRED">
+    UIA Selection.get_IsSelectionRequired
+  </int>
+  <int value="199" label="UMA_API_TABLEITEM_GETCOLUMNHEADERITEMS">
+    UIA TableItem.GetColumnHeaderItems
+  </int>
+  <int value="200" label="UMA_API_TABLEITEM_GETROWHEADERITEMS">
+    UIA TableItem.GetRowHeaderItems
+  </int>
+  <int value="201" label="UMA_API_TABLE_GETCOLUMNHEADERS">
+    UIA Table.GetColumnGeaders
+  </int>
+  <int value="202" label="UMA_API_TABLE_GETROWHEADERS">
+    UIA Table.GetRowHeaders
+  </int>
+  <int value="203" label="UMA_API_TABLE_GET_ROWORCOLUMNMAJOR">
+    UIA Table.get_RowOrColumnMajor
+  </int>
+  <int value="204" label="UMA_API_TEXT_GETSELECTION">UIA Text.GetSelection</int>
+  <int value="205" label="UMA_API_TEXT_GETVISIBLERANGES">
+    UIA Text.GetVisibleRanges
+  </int>
+  <int value="206" label="UMA_API_TEXT_RANGEFROMCHILD">
+    UIA Text.RangeFromChild
+  </int>
+  <int value="207" label="UMA_API_TEXT_RANGEFROMPOINT">
+    UIA Text.RangeFromPoint
+  </int>
+  <int value="208" label="UMA_API_TEXT_GET_DOCUMENTRANGE">
+    UIA Text.get_DocumentRange
+  </int>
+  <int value="209" label="UMA_API_TEXT_GET_SUPPORTEDTEXTSELECTION">
+    UIA Text.get_SupportedTextSelection
+  </int>
+  <int value="210" label="UMA_API_TEXTCHILD_GET_TEXTCONTAINER">
+    UIA TextChild.get_TextContainer
+  </int>
+  <int value="211" label="UMA_API_TEXTCHILD_GET_TEXTRANGE">
+    UIA TextChild.get_TextRange
+  </int>
+  <int value="212" label="UMA_API_TEXTEDIT_GETACTIVECOMPOSITION">
+    UIA TextEdit.GetActiveComposition
+  </int>
+  <int value="213" label="UMA_API_TEXTEDIT_GETCONVERSIONTARGET">
+    UIA TextEdit.GetConversionTarget
+  </int>
+  <int value="214" label="UMA_API_TEXTRANGE_CLONE">UIA TextRange.Clone</int>
+  <int value="215" label="UMA_API_TEXTRANGE_COMPARE">UIA TextRange.Compare</int>
+  <int value="216" label="UMA_API_TEXTRANGE_COMPAREENDPOINTS">
+    UIA TextRange.CompareEndpoints
+  </int>
+  <int value="217" label="UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT">
+    UIA TextRange.ExpandToEnclosingUnit
+  </int>
+  <int value="218" label="UMA_API_TEXTRANGE_FINDATTRIBUTE">
+    UIA TextRange.FindAttribute
+  </int>
+  <int value="219" label="UMA_API_TEXTRANGE_FINDTEXT">
+    UIA TextRange.FindText
+  </int>
+  <int value="220" label="UMA_API_TEXTRANGE_GETATTRIBUTEVALUE">
+    UIA TextChange.GetAttributeValue
+  </int>
+  <int value="221" label="UMA_API_TEXTRANGE_GETBOUNDINGRECTANGLES">
+    UIA TextRange.GetBoundingRectangles
+  </int>
+  <int value="222" label="UMA_API_TEXTRANGE_GETENCLOSINGELEMENT">
+    UIA TextRange.GetEnclosingElement
+  </int>
+  <int value="223" label="UMA_API_TEXTRANGE_GETTEXT">UIA TextRange.GetText</int>
+  <int value="224" label="UMA_API_TEXTRANGE_MOVE">UIA TextRange.Move</int>
+  <int value="225" label="UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT">
+    UIA TextRange.MoveEndpointByUnit
+  </int>
+  <int value="226" label="UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE">
+    UIA TextRange.MoveEndpointByRange
+  </int>
+  <int value="227" label="UMA_API_TEXTRANGE_SELECT">UIA TextRange.Select</int>
+  <int value="228" label="UMA_API_TEXTRANGE_ADDTOSELECTION">
+    UIA TextRange.AddToSelection
+  </int>
+  <int value="229" label="UMA_API_TEXTRANGE_REMOVEFROMSELECTION">
+    UIA TextRange.RemoveFromSelection
+  </int>
+  <int value="230" label="UMA_API_TEXTRANGE_SCROLLINTOVIEW">
+    UIA TextRange.ScrollIntoView
+  </int>
+  <int value="231" label="UMA_API_TEXTRANGE_GETCHILDREN">
+    UIA TextRange.GetChildren
+  </int>
+  <int value="232" label="UMA_API_TOGGLE_TOGGLE">UIA Toggle.Toggle</int>
+  <int value="233" label="UMA_API_TOGGLE_GET_TOGGLESTATE">
+    UIA Toggle.get_ToggleState
+  </int>
+  <int value="234" label="UMA_API_VALUE_SETVALUE">UIA Value.SetValue</int>
+  <int value="235" label="UMA_API_VALUE_GET_ISREADONLY">
+    UIA Value.get_IsReadOnly
+  </int>
+  <int value="236" label="UMA_API_VALUE_GET_VALUE">UIA Value.get_Value</int>
+  <int value="237" label="UMA_API_WINDOW_SETVISUALSTATE">
+    UIA Window.SetVisualState
+  </int>
+  <int value="238" label="UMA_API_WINDOW_CLOSE">UIA Window.Close</int>
+  <int value="239" label="UMA_API_WINDOW_WAITFORINPUTIDLE">
+    UIA Window.WaitForInputIdle
+  </int>
+  <int value="240" label="UMA_API_WINDOW_GET_CANMAXIMIZE">
+    UIA Window.get_CanMaximize
+  </int>
+  <int value="241" label="UMA_API_WINDOW_GET_CANMINIMIZE">
+    UIA Window.get_CanMinimize
+  </int>
+  <int value="242" label="UMA_API_WINDOW_GET_ISMODAL">
+    UIA Window.get_IsModal
+  </int>
+  <int value="243" label="UMA_API_WINDOW_GET_WINDOWVISUALSTATE">
+    UIA Window.get_WindowVisualState
+  </int>
+  <int value="244" label="UMA_API_WINDOW_GET_WINDOWINTERACTIONSTATE">
+    UIA Window.get_WindowInteractionState
+  </int>
+  <int value="245" label="UMA_API_WINDOW_GET_ISTOPMOST">
+    UIA Window.get_IsTopmost
+  </int>
 </enum>
 
 <enum name="AccessibilityWinAPIGetPropertyValueEnum">

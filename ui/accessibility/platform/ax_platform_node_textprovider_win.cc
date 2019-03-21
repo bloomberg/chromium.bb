@@ -43,30 +43,34 @@ HRESULT AXPlatformNodeTextProviderWin::Create(ui::AXPlatformNodeWin* owner,
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
     SAFEARRAY** selection) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GETSELECTION);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
     SAFEARRAY** visible_ranges) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GETVISIBLERANGES);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::RangeFromChild(
     IRawElementProviderSimple* child,
     ITextRangeProvider** range) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_RANGEFROMCHILD);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::RangeFromPoint(
     UiaPoint uia_point,
     ITextRangeProvider** range) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_RANGEFROMPOINT);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
     ITextRangeProvider** range) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GET_DOCUMENTRANGE);
   UIA_VALIDATE_TEXTPROVIDER_CALL();
-  DVLOG(1) << __func__;
 
   *range = nullptr;
 
@@ -103,6 +107,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::get_SupportedTextSelection(
     enum SupportedTextSelection* text_selection) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GET_SUPPORTEDTEXTSELECTION);
   UIA_VALIDATE_TEXTPROVIDER_CALL();
 
   *text_selection = SupportedTextSelection_Single;
@@ -115,11 +120,13 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_SupportedTextSelection(
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetActiveComposition(
     ITextRangeProvider** range) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTEDIT_GETACTIVECOMPOSITION);
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::GetConversionTarget(
     ITextRangeProvider** range) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTEDIT_GETCONVERSIONTARGET);
   return E_NOTIMPL;
 }
 
