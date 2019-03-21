@@ -284,7 +284,7 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForViewImpl(
                    base::Unretained(this)));
     menu_runner_->RunMenuAt(source->GetWidget(), NULL,
                             gfx::Rect(p, gfx::Size(0, 0)),
-                            views::MENU_ANCHOR_TOPLEFT, source_type);
+                            views::MenuAnchorPosition::kTopLeft, source_type);
   } else {
     menu_model_.reset();
   }

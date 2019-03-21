@@ -74,7 +74,8 @@ base::scoped_nsobject<NSView> CreateMenuAnchorView(
   // When the actual menu width is larger than the anchor, right alignment
   // should be respected.
   if (actual_menu_width > rect.size.width &&
-      position == views::MENU_ANCHOR_TOPRIGHT && !base::i18n::IsRTL()) {
+      position == views::MenuAnchorPosition::kTopRight &&
+      !base::i18n::IsRTL()) {
     int width_diff = actual_menu_width - rect.size.width;
     rect.origin.x -= width_diff;
   }

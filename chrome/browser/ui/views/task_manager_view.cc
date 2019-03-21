@@ -288,7 +288,7 @@ void TaskManagerView::ShowContextMenuForViewImpl(
                                            views::MenuRunner::CONTEXT_MENU));
 
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool TaskManagerView::IsCommandIdChecked(int id) const {

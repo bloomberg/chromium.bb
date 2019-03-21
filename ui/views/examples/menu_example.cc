@@ -181,8 +181,8 @@ void ExampleMenuButton::OnMenuButtonClicked(MenuButton* source,
       std::make_unique<MenuRunner>(GetMenuModel(), MenuRunner::HAS_MNEMONICS);
 
   menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
-                          gfx::Rect(point, gfx::Size()), MENU_ANCHOR_TOPRIGHT,
-                          ui::MENU_SOURCE_NONE);
+                          gfx::Rect(point, gfx::Size()),
+                          MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
 }
 
 ui::SimpleMenuModel* ExampleMenuButton::GetMenuModel() {

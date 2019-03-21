@@ -367,9 +367,9 @@ void CastDialogView::ShowSourcesMenu() {
   sources_menu_runner_ = std::make_unique<views::MenuRunner>(
       sources_menu_model_.get(), views::MenuRunner::COMBOBOX);
   const gfx::Rect& screen_bounds = sources_button_->GetBoundsInScreen();
-  sources_menu_runner_->RunMenuAt(sources_button_->GetWidget(), nullptr,
-                                  screen_bounds, views::MENU_ANCHOR_TOPLEFT,
-                                  ui::MENU_SOURCE_MOUSE);
+  sources_menu_runner_->RunMenuAt(
+      sources_button_->GetWidget(), nullptr, screen_bounds,
+      views::MenuAnchorPosition::kTopLeft, ui::MENU_SOURCE_MOUSE);
 }
 
 void CastDialogView::SelectSource(SourceType source) {

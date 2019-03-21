@@ -429,7 +429,8 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   std::unique_ptr<views::MenuRunner> menu_runner(
       new views::MenuRunner(menu_model.get(), views::MenuRunner::CONTEXT_MENU));
 
-  menu_runner->RunMenuAt(widget, NULL, gfx::Rect(), views::MENU_ANCHOR_TOPLEFT,
+  menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
+                         views::MenuAnchorPosition::kTopLeft,
                          ui::MENU_SOURCE_MOUSE);
   LockScreenAndVerifyMenuClosed();
 }

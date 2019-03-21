@@ -316,7 +316,8 @@ TEST_F(MenuItemViewPaintUnitTest, MinorTextAndIconAssertionCoverage) {
   AddItem("Minor text and icon", base::ASCIIToUTF16("minor text"),
           &views::kMenuCheckIcon);
 
-  menu_runner()->RunMenuAt(widget(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+  menu_runner()->RunMenuAt(widget(), nullptr, gfx::Rect(),
+                           MenuAnchorPosition::kTopLeft,
                            ui::MENU_SOURCE_KEYBOARD);
 
   SkBitmap bitmap;

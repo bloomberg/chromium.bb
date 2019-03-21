@@ -408,7 +408,7 @@ MenuController::State::State()
     : item(nullptr),
       hot_button(nullptr),
       submenu_open(false),
-      anchor(MENU_ANCHOR_TOPLEFT),
+      anchor(MenuAnchorPosition::kTopLeft),
       context_menu(false) {}
 
 MenuController::State::State(const State& other) = default;
@@ -1595,11 +1595,11 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
   pending_state_.initial_bounds = bounds;
 
   // Reverse anchor position for RTL languages.
-  if (base::i18n::IsRTL() &&
-      (position == MENU_ANCHOR_TOPRIGHT || position == MENU_ANCHOR_TOPLEFT)) {
-    pending_state_.anchor = position == MENU_ANCHOR_TOPRIGHT
-                                ? MENU_ANCHOR_TOPLEFT
-                                : MENU_ANCHOR_TOPRIGHT;
+  if (base::i18n::IsRTL() && (position == MenuAnchorPosition::kTopRight ||
+                              position == MenuAnchorPosition::kTopLeft)) {
+    pending_state_.anchor = position == MenuAnchorPosition::kTopRight
+                                ? MenuAnchorPosition::kTopLeft
+                                : MenuAnchorPosition::kTopRight;
   } else {
     pending_state_.anchor = position;
   }
@@ -2210,20 +2210,20 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     const int vertically_centered =
         anchor_bounds.y() + (anchor_bounds.height() - menu_bounds.height()) / 2;
 
-    if (state_.anchor == MENU_ANCHOR_TOPRIGHT) {
+    if (state_.anchor == MenuAnchorPosition::kTopRight) {
       // Move the menu so that its right edge is aligned with the anchor
       // bounds right edge.
       menu_bounds.set_x(anchor_bounds.right() - menu_bounds.width());
-    } else if (state_.anchor == MENU_ANCHOR_BOTTOMCENTER) {
+    } else if (state_.anchor == MenuAnchorPosition::kBottomCenter) {
       // Try to fit the menu above the anchor bounds. If it doesn't fit, place
       // it below.
       menu_bounds.set_x(horizontally_centered);
       menu_bounds.set_y(above_anchor - kTouchYPadding);
       if (menu_bounds.y() < monitor_bounds.y())
         menu_bounds.set_y(anchor_bounds.y() + kTouchYPadding);
-    } else if (state_.anchor == MENU_ANCHOR_FIXED_BOTTOMCENTER) {
+    } else if (state_.anchor == MenuAnchorPosition::kFixedBottomCenter) {
       menu_bounds.set_x(horizontally_centered);
-    } else if (state_.anchor == MENU_ANCHOR_FIXED_SIDECENTER) {
+    } else if (state_.anchor == MenuAnchorPosition::kSideCenter) {
       menu_bounds.set_y(vertically_centered);
     }
 
@@ -2265,7 +2265,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       const int right_of_anchor = anchor_bounds.right();
 
       menu_bounds.set_y(monitor_bounds.bottom() - menu_bounds.height());
-      if (state_.anchor == MENU_ANCHOR_TOPLEFT) {
+      if (state_.anchor == MenuAnchorPosition::kTopLeft) {
         // Prefer menu to right of anchor bounds but move it to left if it
         // doesn't fit.
         menu_bounds.set_x(right_of_anchor);
@@ -2330,19 +2330,19 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
       int max_height = monitor_bounds.height();
       // In case of bubbles, the maximum width is limited by the space
       // between the display corner and the target area + the tip size.
-      if (state_.anchor == MENU_ANCHOR_BUBBLE_LEFT) {
+      if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
         max_width =
             anchor_bounds.x() - monitor_bounds.x() + kBubbleTipSizeLeftRight;
-      } else if (state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT) {
+      } else if (state_.anchor == MenuAnchorPosition::kBubbleRight) {
         max_width = monitor_bounds.right() - anchor_bounds.right() +
                     kBubbleTipSizeLeftRight;
-      } else if (state_.anchor == MENU_ANCHOR_BUBBLE_ABOVE) {
+      } else if (state_.anchor == MenuAnchorPosition::kBubbleAbove) {
         max_height =
             anchor_bounds.y() - monitor_bounds.y() + kBubbleTipSizeTopBottom;
-      } else if (state_.anchor == MENU_ANCHOR_BUBBLE_BELOW) {
+      } else if (state_.anchor == MenuAnchorPosition::kBubbleBelow) {
         max_height = monitor_bounds.bottom() - anchor_bounds.bottom() +
                      kBubbleTipSizeTopBottom;
-      } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE) {
+      } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableAbove) {
         // Don't consider |border_and_shadow_insets| because when the max size
         // is enforced, the scroll view is shown and the md shadows are not
         // applied.
@@ -2360,9 +2360,9 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     menu_size.set_width(std::min(
         menu_size.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
 
-    if (state_.anchor == MENU_ANCHOR_BUBBLE_ABOVE ||
-        state_.anchor == MENU_ANCHOR_BUBBLE_BELOW) {
-      if (state_.anchor == MENU_ANCHOR_BUBBLE_ABOVE)
+    if (state_.anchor == MenuAnchorPosition::kBubbleAbove ||
+        state_.anchor == MenuAnchorPosition::kBubbleBelow) {
+      if (state_.anchor == MenuAnchorPosition::kBubbleAbove)
         y = anchor_bounds.y() - menu_size.height() + kBubbleTipSizeTopBottom;
       else
         y = anchor_bounds.bottom() - kBubbleTipSizeTopBottom;
@@ -2373,9 +2373,9 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
                              monitor_bounds.right() - menu_size.width());
       submenu->GetScrollViewContainer()->SetBubbleArrowOffset(
           menu_size.width() / 2 - x + x_old);
-    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_LEFT ||
-               state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT) {
-      if (state_.anchor == MENU_ANCHOR_BUBBLE_RIGHT)
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft ||
+               state_.anchor == MenuAnchorPosition::kBubbleRight) {
+      if (state_.anchor == MenuAnchorPosition::kBubbleRight)
         x = anchor_bounds.right() - kBubbleTipSizeLeftRight;
       else
         x = anchor_bounds.x() - menu_size.width() + kBubbleTipSizeLeftRight;
@@ -2386,7 +2386,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
                              monitor_bounds.bottom() - menu_size.height());
       submenu->GetScrollViewContainer()->SetBubbleArrowOffset(
           menu_size.height() / 2 - y + y_old);
-    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE) {
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableAbove) {
       // Align the left edges of the menu and anchor, and the bottom of the menu
       // with the top of the anchor.
       x = std::max(monitor_bounds.x(),
@@ -2405,7 +2405,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         y = anchor_bounds.bottom() - border_and_shadow_insets.top() +
             menu_config.touchable_anchor_offset;
       }
-    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT) {
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableLeft) {
       // Align the right of the menu with the left of the anchor, and the top of
       // the menu with the top of the anchor.
       x = anchor_bounds.x() - menu_size.width() +
@@ -2425,7 +2425,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         if (y < monitor_bounds.y())
           y = monitor_bounds.y();
       }
-    } else if (state_.anchor == MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT) {
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleTouchableRight) {
       // Align the left of the menu with the right of the anchor, and the top of
       // the menu with the top of the anchor.
       x = anchor_bounds.right() - border_and_shadow_insets.left() +

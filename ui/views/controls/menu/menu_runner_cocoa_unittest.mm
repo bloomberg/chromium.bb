@@ -148,8 +148,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
                          base::Unretained(this), std::move(callback)));
     }
 
-    runner_->RunMenuAt(parent_, nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                       MenuRunner::CONTEXT_MENU);
+    runner_->RunMenuAt(parent_, nullptr, gfx::Rect(),
+                       MenuAnchorPosition::kTopLeft, MenuRunner::CONTEXT_MENU);
     MaybeRunAsync();
   }
 
@@ -168,7 +168,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
       menu_->set_menu_open_callback(std::move(callback));
     }
 
-    runner_->RunMenuAt(parent_, nullptr, anchor, MENU_ANCHOR_TOPLEFT,
+    runner_->RunMenuAt(parent_, nullptr, anchor, MenuAnchorPosition::kTopLeft,
                        MenuRunner::COMBOBOX);
     MaybeRunAsync();
   }
