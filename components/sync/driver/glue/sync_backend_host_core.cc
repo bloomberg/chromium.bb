@@ -248,6 +248,34 @@ void SyncBackendHostCore::DoOnInvalidatorStateChange(InvalidatorState state) {
   sync_manager_->SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
 }
 
+bool SyncBackendHostCore::ShouldIgnoreRedundantInvalidation(
+    const Invalidation& invalidation,
+    ModelType type) {
+  bool fcm_invalidation =
+      (base::FeatureList::IsEnabled(
+           invalidation::switches::kFCMInvalidations) &&
+       base::FeatureList::IsEnabled(
+           invalidation::switches::kFCMInvalidationsForSyncDontCheckVersion));
+  bool redundant_invalidation = false;
+  auto last_invalidation = last_invalidation_versions_.find(type);
+  if (!invalidation.is_unknown_version() &&
+      last_invalidation != last_invalidation_versions_.end() &&
+      invalidation.version() <= last_invalidation->second) {
+    DVLOG(1) << "Ignoring redundant invalidation for "
+             << ModelTypeToString(type) << " with version "
+             << invalidation.version() << ", last seen version was "
+             << last_invalidation->second;
+    redundant_invalidation = true;
+    UMA_HISTOGRAM_ENUMERATION("Sync.RedundantInvalidationPerModelType", type,
+                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Sync.NonRedundantInvalidationPerModelType", type,
+                              static_cast<int>(syncer::MODEL_TYPE_COUNT));
+  }
+
+  return !fcm_invalidation && redundant_invalidation;
+}
+
 void SyncBackendHostCore::DoOnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -264,16 +292,10 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
       SingleObjectInvalidationSet invalidation_set =
           invalidation_map.ForObject(object_id);
       for (Invalidation invalidation : invalidation_set) {
-        auto last_invalidation = last_invalidation_versions_.find(type);
-        if (!invalidation.is_unknown_version() &&
-            last_invalidation != last_invalidation_versions_.end() &&
-            invalidation.version() <= last_invalidation->second) {
-          DVLOG(1) << "Ignoring redundant invalidation for "
-                   << ModelTypeToString(type) << " with version "
-                   << invalidation.version() << ", last seen version was "
-                   << last_invalidation->second;
+        if (ShouldIgnoreRedundantInvalidation(invalidation, type)) {
           continue;
         }
+
         if (!is_grouped && !invalidation.is_unknown_version()) {
           UMA_HISTOGRAM_ENUMERATION("Sync.NonGroupedInvalidationKnownVersion",
                                     ModelTypeToHistogramInt(type),

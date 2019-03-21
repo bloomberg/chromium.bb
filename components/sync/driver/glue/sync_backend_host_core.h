@@ -18,6 +18,7 @@
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/system_encryptor.h"
@@ -181,6 +182,11 @@ class SyncBackendHostCore
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
 
   ~SyncBackendHostCore() override;
+
+  // For the olg tango based invalidations method returns true if the
+  // invalidation has version lower than last seen version for this datatype.
+  bool ShouldIgnoreRedundantInvalidation(const Invalidation& invalidation,
+                                         ModelType Type);
 
   // Invoked when initialization of syncapi is complete and we can start
   // our timer.
