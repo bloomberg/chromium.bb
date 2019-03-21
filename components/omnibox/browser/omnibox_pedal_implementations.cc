@@ -45,6 +45,28 @@ OmniboxPedalClearBrowsingData::OmniboxPedalClearBrowsingData()
               "clear chrome cache",
               "history clear",
               "history clear chrome",
+          },
+          {
+              SynonymGroup(false,
+                           {
+                               "google chrome",
+                               "browser",
+                               "chrome",
+                           }),
+              SynonymGroup(true,
+                           {
+                               "delete",
+                               "remove",
+                               "erase",
+                               "clear",
+                               "wipe",
+                           }),
+              SynonymGroup(true,
+                           {
+                               "history",
+                               "cache",
+                               "data",
+                           }),
           }) {}
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
@@ -82,6 +104,28 @@ class OmniboxPedalChangeSearchEngine : public OmniboxPedal {
                 "change search chrome",
                 "switch chrome search engine",
                 "switch search engine",
+            },
+            {
+                SynonymGroup(false,
+                             {
+                                 "google chrome",
+                                 "browser",
+                                 "chrome",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "choose",
+                                 "change",
+                                 "switch",
+                                 "select",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "standard search engine",
+                                 "default search engine",
+                                 "search engine",
+                                 "search",
+                             }),
             }) {}
 };
 
@@ -105,6 +149,25 @@ class OmniboxPedalManagePasswords : public OmniboxPedal {
                 "find saved passwords",
                 "where does chrome store passwords",
                 "how to see passwords in chrome",
+            },
+            {
+                SynonymGroup(false,
+                             {
+                                 "google chrome",
+                                 "browser",
+                                 "chrome",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "manager",
+                                 "manage",
+                                 "update",
+                                 "change",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "passwords",
+                             }),
             }) {}
 };
 
@@ -131,6 +194,25 @@ class OmniboxPedalChangeHomePage : public OmniboxPedal {
                 "how to change home page on chrome",
                 "how to change home page in chrome",
                 "change chrome home",
+            },
+            {
+                SynonymGroup(false,
+                             {
+                                 "google chrome",
+                                 "browser",
+                                 "chrome",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "change",
+                                 "choose",
+                                 "set",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "home page",
+                                 "homepage",
+                             }),
             }) {}
 };
 
@@ -154,6 +236,24 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
                 "chrome credit cards",
                 "get to chrome credit cards",
                 "chrome credit saved",
+            },
+            {
+                SynonymGroup(false,
+                             {
+                                 "google chrome",
+                                 "browser",
+                                 "chrome",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "update",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "credit card",
+                                 "card info",
+                                 "cards",
+                             }),
             }) {}
 };
 
@@ -171,6 +271,34 @@ class OmniboxPedalLaunchIncognito : public OmniboxPedal {
             {
                 "what is incognito",
                 "what's incognito mode",
+            },
+            {
+                SynonymGroup(false,
+                             {
+                                 "google chrome",
+                                 "browser",
+                                 "chrome",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "launch",
+                                 "start",
+                                 "enter",
+                                 "open",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "incognito window",
+                                 "incognito mode",
+                                 "private window",
+                                 "incognito tab",
+                                 "private mode",
+                                 "dark window",
+                                 "private tab",
+                                 "incognito",
+                                 "dark mode",
+                                 "dark tab",
+                             }),
             }) {}
 
   void Execute(ExecutionContext& context) const override {
@@ -198,6 +326,25 @@ class OmniboxPedalTranslate : public OmniboxPedal {
                 "translate in chrome",
                 "translate on page",
                 "translate language chrome",
+            },
+            {
+                SynonymGroup(false,
+                             {
+                                 "google chrome",
+                                 "browser",
+                                 "chrome",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "change language",
+                                 "translate",
+                             }),
+                SynonymGroup(true,
+                             {
+                                 "this page",
+                                 "page",
+                                 "this",
+                             }),
             }) {}
 
   void Execute(ExecutionContext& context) const override {
@@ -221,6 +368,20 @@ OmniboxPedalUpdateChrome::OmniboxPedalUpdateChrome()
               "update google chrome",
               "update chrome",
               "update chrome browser",
+          },
+          {
+              SynonymGroup(true,
+                           {
+                               "google chrome",
+                               "browser",
+                               "chrome",
+                           }),
+              SynonymGroup(true,
+                           {
+                               "upgrade",
+                               "install",
+                               "update",
+                           }),
           }) {}
 
 void OmniboxPedalUpdateChrome::Execute(ExecutionContext& context) const {
@@ -234,20 +395,18 @@ bool OmniboxPedalUpdateChrome::IsReadyToTrigger(
 
 // =============================================================================
 
-std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>>
-GetPedalImplementations() {
-  std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>> pedals;
-  const auto add = [&](OmniboxPedalId id, OmniboxPedal* pedal) {
-    pedals.insert({id, std::unique_ptr<OmniboxPedal>(pedal)});
+std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
+  std::vector<std::unique_ptr<OmniboxPedal>> pedals;
+  const auto add = [&](OmniboxPedal* pedal) {
+    pedals.push_back(std::unique_ptr<OmniboxPedal>(pedal));
   };
-  add(OmniboxPedalId::CLEAR_BROWSING_DATA, new OmniboxPedalClearBrowsingData());
-  add(OmniboxPedalId::CHANGE_SEARCH_ENGINE,
-      new OmniboxPedalChangeSearchEngine());
-  add(OmniboxPedalId::MANAGE_PASSWORDS, new OmniboxPedalManagePasswords());
-  add(OmniboxPedalId::CHANGE_HOME_PAGE, new OmniboxPedalChangeHomePage());
-  add(OmniboxPedalId::UPDATE_CREDIT_CARD, new OmniboxPedalUpdateCreditCard());
-  add(OmniboxPedalId::LAUNCH_INCOGNITO, new OmniboxPedalLaunchIncognito());
-  add(OmniboxPedalId::TRANSLATE, new OmniboxPedalTranslate());
-  add(OmniboxPedalId::UPDATE_CHROME, new OmniboxPedalUpdateChrome());
+  add(new OmniboxPedalClearBrowsingData());
+  add(new OmniboxPedalChangeSearchEngine());
+  add(new OmniboxPedalManagePasswords());
+  add(new OmniboxPedalChangeHomePage());
+  add(new OmniboxPedalUpdateCreditCard());
+  add(new OmniboxPedalLaunchIncognito());
+  add(new OmniboxPedalTranslate());
+  add(new OmniboxPedalUpdateChrome());
   return pedals;
 }
