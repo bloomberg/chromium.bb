@@ -876,13 +876,6 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
   }
-  // Zip archiver support.
-  // ID: chrome/common/extensions/extension_constants.h::kZipArchiverExtensionId
-  if (extension_id == "dmboannefpncccogfdikhmhpmdnddgoe") {
-    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
-    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
-    blink::WebRuntimeFeatures::EnableHTMLImports(true);
-  }
   // FilesApp support. crbug.com/924873
   // For Polymer1, we still need v0 APIs.
   // Extensions IDs from src/chrome/browser/chromeos/file_manager/app_id.h.
