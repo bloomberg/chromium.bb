@@ -39,7 +39,7 @@ class WaylandDataDevice {
   WaylandDataDevice(WaylandConnection* connection, wl_data_device* data_device);
   ~WaylandDataDevice();
 
-  void RequestSelectionData(const std::string& mime_type);
+  bool RequestSelectionData(const std::string& mime_type);
 
   // Requests the data to the platform when Chromium gets drag-and-drop started
   // by others. Once reading the data from platform is done, |callback| should

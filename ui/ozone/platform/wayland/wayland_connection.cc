@@ -270,7 +270,8 @@ void WaylandConnection::RequestClipboardData(
 
   DCHECK(data_map);
   data_map_ = data_map;
-  data_device_->RequestSelectionData(mime_type);
+  if (!data_device_->RequestSelectionData(mime_type))
+    SetClipboardData({}, mime_type);
 }
 
 bool WaylandConnection::IsSelectionOwner() {
