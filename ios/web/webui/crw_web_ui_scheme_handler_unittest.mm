@@ -75,6 +75,10 @@ class CRWWebUISchemeManagerTest : public WebTest {
     WebUIIOSControllerFactory::RegisterFactory(&factory_);
   }
 
+  ~CRWWebUISchemeManagerTest() override {
+    WebUIIOSControllerFactory::DeregisterFactory(&factory_);
+  }
+
  protected:
   CRWWebUISchemeHandler* CreateSchemeHandler() API_AVAILABLE(ios(11.0)) {
     return [[CRWWebUISchemeHandler alloc]

@@ -26,6 +26,14 @@ void WebUIIOSControllerFactory::RegisterFactory(
   GetGlobalFactories().push_back(factory);
 }
 
+void WebUIIOSControllerFactory::DeregisterFactory(
+    WebUIIOSControllerFactory* factory) {
+  std::vector<WebUIIOSControllerFactory*>& factories = GetGlobalFactories();
+  auto position = std::find(factories.begin(), factories.end(), factory);
+  if (position != factories.end())
+    factories.erase(position);
+}
+
 WebUIIOSControllerFactoryRegistry*
 WebUIIOSControllerFactoryRegistry::GetInstance() {
   static base::NoDestructor<WebUIIOSControllerFactoryRegistry> instance;

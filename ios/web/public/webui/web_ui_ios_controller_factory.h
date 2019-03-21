@@ -24,6 +24,9 @@ class WebUIIOSControllerFactory {
   // Call to register a factory.
   static void RegisterFactory(WebUIIOSControllerFactory* factory);
 
+  // Call to deregister a factory.
+  static void DeregisterFactory(WebUIIOSControllerFactory* factory);
+
   // Returns whether |url| has an associated WebUI URL controller.
   virtual bool HasWebUIIOSControllerForURL(const GURL& url) const = 0;
 
