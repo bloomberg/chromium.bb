@@ -749,6 +749,7 @@ TEST_F(DesktopWindowTreeHostMusTest, MinimizeActivate) {
   EXPECT_TRUE(widget->IsActive());
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_FALSE(widget->IsMinimized());
+  EXPECT_TRUE(widget->GetNativeWindow()->GetHost()->compositor()->IsVisible());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, MaximizeMinimizeRestore) {

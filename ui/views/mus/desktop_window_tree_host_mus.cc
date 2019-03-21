@@ -294,6 +294,8 @@ void DesktopWindowTreeHostMus::RestoreToPreminimizedState() {
   window_tree_host_window_observer_->set_is_waiting_for_restore(true);
   base::AutoReset<bool> setter(&is_updating_window_visibility_, true);
   window()->Show();
+  if (compositor())
+    compositor()->SetVisible(true);
 }
 
 void DesktopWindowTreeHostMus::OnWindowTreeHostWindowVisibilityChanged(
