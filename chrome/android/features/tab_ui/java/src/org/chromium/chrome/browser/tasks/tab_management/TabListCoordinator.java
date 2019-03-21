@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
@@ -46,20 +48,22 @@ public class TabListCoordinator implements Destroyable {
     private final SimpleRecyclerViewMcpBase mModelChangeProcessor;
     private final TabListMediator mMediator;
     private final TabListRecyclerView mRecyclerView;
+    private final @TabListMode int mMode;
 
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, @NonNull ViewGroup parentView,
             boolean attachToParent) {
         TabListModel tabListModel = new TabListModel();
+        mMode = mode;
 
         RecyclerViewAdapter adapter;
-        if (mode == TabListMode.GRID) {
+        if (mMode == TabListMode.GRID) {
             SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey> mcp =
                     new SimpleRecyclerViewMcpBase<>(
                             null, TabGridViewBinder::onBindViewHolder, tabListModel);
             adapter = new RecyclerViewAdapter<>(mcp, TabGridViewHolder::create);
             mModelChangeProcessor = mcp;
-        } else if (mode == TabListMode.STRIP) {
+        } else if (mMode == TabListMode.STRIP) {
             SimpleRecyclerViewMcpBase<PropertyModel, TabStripViewHolder, PropertyKey> mcp =
                     new SimpleRecyclerViewMcpBase<>(
                             null, TabStripViewBinder::onBindViewHolder, tabListModel);
@@ -81,9 +85,9 @@ public class TabListCoordinator implements Destroyable {
 
         mRecyclerView.setAdapter(adapter);
 
-        if (mode == TabListMode.GRID) {
+        if (mMode == TabListMode.GRID) {
             mRecyclerView.setLayoutManager(new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT));
-        } else if (mode == TabListMode.STRIP) {
+        } else if (mMode == TabListMode.STRIP) {
             mRecyclerView.setLayoutManager(
                     new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
         }
@@ -108,6 +112,11 @@ public class TabListCoordinator implements Destroyable {
      */
     public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
         mMediator.resetWithListOfTabs(tabs);
+
+        if (mMode == TabListMode.STRIP && tabs != null && tabs.size() > 1) {
+            TabGroupUtils.maybeShowIPH(
+                    FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE, mRecyclerView);
+        }
     }
 
     /**
