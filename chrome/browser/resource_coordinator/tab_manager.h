@@ -53,20 +53,7 @@ class TabManagerDelegate;
 #endif
 class TabManagerStatsCollector;
 
-// The TabManager periodically updates (see
-// |kAdjustmentIntervalSeconds| in the source) the status of renderers
-// which are then used by the algorithm embedded here for priority in being
-// killed upon OOM conditions.
-//
-// The algorithm used favors killing tabs that are not active, not in an active
-// window, not in a visible window, not pinned, and have been idle for longest,
-// in that order of priority.
-//
-// On Chrome OS (via the delegate), the kernel (via /proc/<pid>/oom_score_adj)
-// will be informed of each renderer's score, which is based on the status, so
-// in case Chrome is not able to relieve the pressure quickly enough and the
-// kernel is forced to kill processes, it will be able to do so using the same
-// algorithm as the one used here.
+// TabManager is responsible for triggering tab lifecycle state transitions.
 //
 // The TabManager also delays background tabs' navigation when needed in order
 // to improve users' experience with the foreground tab.
@@ -258,10 +245,6 @@ class TabManager : public LifecycleUnitObserver,
   // Returns true if the |url| represents an internal Chrome web UI page that
   // can be easily reloaded and hence makes a good choice to discard.
   static bool IsInternalPage(const GURL& url);
-
-  // Callback for when |update_timer_| fires. Takes care of executing the tasks
-  // that need to be run periodically (see comment in implementation).
-  void UpdateTimerCallback();
 
   // Makes a request to the WebContents at the specified index to freeze its
   // page.
@@ -466,9 +449,6 @@ class TabManager : public LifecycleUnitObserver,
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
 #if defined(OS_CHROMEOS)
-  // Timer to periodically make OOM adjustments on ChromeOS.
-  base::RepeatingTimer update_timer_;
-
   std::unique_ptr<TabManagerDelegate> delegate_;
 #endif
 
