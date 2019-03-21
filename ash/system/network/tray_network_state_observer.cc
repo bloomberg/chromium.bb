@@ -25,6 +25,12 @@ bool IsWifiEnabled() {
       chromeos::NetworkTypePattern::WiFi());
 }
 
+bool IsMobileEnabled() {
+  return NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::Cellular() |
+      chromeos::NetworkTypePattern::Tether());
+}
+
 }  // namespace
 
 namespace ash {
@@ -78,11 +84,17 @@ void TrayNetworkStateObserver::DevicePropertiesUpdated(
 }
 
 void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {
-  bool old_state = wifi_enabled_;
+  bool old_wifi_state = wifi_enabled_;
   wifi_enabled_ = IsWifiEnabled();
 
-  // Update immediately when wifi network changed from enabled->disabled.
-  if (old_state && !wifi_enabled_) {
+  bool old_mobile_state = mobile_enabled_;
+  mobile_enabled_ = IsMobileEnabled();
+
+  // Update immediately when Wi-Fi and/or Mobile have been turned on or off.
+  // This ensures that the UI for settings and quick settings stays in sync; see
+  // https://crbug.com/917325.
+  if (old_wifi_state != wifi_enabled_ || old_mobile_state != mobile_enabled_) {
+    timer_.Stop();
     SendNetworkStateChanged(notify_a11y);
     return;
   }
