@@ -76,10 +76,6 @@ const base::Feature kAutofillEnableAccountWalletStorageUpload{
 const base::Feature kAutofillEnableCompanyName{
     "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the iframe messaging is enabled for autofill on iOS.
-const base::Feature kAutofillEnableIFrameSupportOniOS{
-    "AutofillEnableIFrameSupportOniOS", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, autofill server will override field types with rater
 // consensus data before returning to client.
 const base::Feature kAutofillOverrideWithRaterConsensus{

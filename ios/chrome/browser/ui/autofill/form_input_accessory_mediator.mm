@@ -10,7 +10,6 @@
 #import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -279,10 +278,8 @@
     return;
   }
 
-  // Return early and reset if messaging is enabled but frame is missing or
-  // can't call JS.
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled() &&
-      (!frame || !frame->CanCallJavaScriptFunction())) {
+  // Return early and reset if frame is missing or can't call JS.
+  if (!frame || !frame->CanCallJavaScriptFunction()) {
     [self reset];
     return;
   }
@@ -294,8 +291,7 @@
   if (frame) {
     frameID = base::SysUTF8ToNSString(frame->GetFrameId());
   }
-  DCHECK(frameID.length ||
-         !autofill::switches::IsAutofillIFrameMessagingEnabled());
+  DCHECK(frameID.length);
 
   [self.formInputAccessoryHandler setLastFocusFormActivityWebFrameID:frameID];
   [self synchronizeNavigationControls];

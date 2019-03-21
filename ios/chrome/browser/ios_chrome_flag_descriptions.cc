@@ -419,11 +419,6 @@ const char kWebClearBrowsingDataName[] = "Web-API for browsing data";
 const char kWebClearBrowsingDataDescription[] =
     "When enabled the Clear Browsing Data feature is using the web API.";
 
-const char kWebFrameMessagingName[] = "Web Frame Messaging";
-const char kWebFrameMessagingDescription[] =
-    "When enabled, API will be injected into webpages to allow sending messages"
-    " directly to any frame of a webpage.";
-
 const char kStorePendingItemInContextName[] =
     "Store pending item in NavigationContext";
 const char kStorePendingItemInContextDescription[] =

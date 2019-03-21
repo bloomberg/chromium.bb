@@ -27,7 +27,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -579,8 +578,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   if (!base::ios::IsRunningOnOrLater(11, 3, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iOS < 11.3");
   }
-  GREYAssert(base::FeatureList::IsEnabled(web::features::kWebFrameMessaging),
-             @"Frame Messaging must be enabled for this Test Case");
 
   const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
   [ChromeEarlGrey loadURL:URL];

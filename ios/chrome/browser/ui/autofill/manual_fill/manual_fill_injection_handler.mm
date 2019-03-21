@@ -13,7 +13,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -134,13 +133,11 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
       autofill::IsContextSecureForWebState(webState);
   self.lastFocusedElementPasswordField = params.field_type == "password";
   self.lastFocusedElementIdentifier = params.field_identifier;
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    DCHECK(frame);
-    self.lastFocusedElementFrameIdentifier = frame->GetFrameId();
-    const GURL frameSecureOrigin = frame->GetSecurityOrigin();
-    if (!frameSecureOrigin.SchemeIsCryptographic()) {
-      self.lastFocusedElementSecure = NO;
-    }
+  DCHECK(frame);
+  self.lastFocusedElementFrameIdentifier = frame->GetFrameId();
+  const GURL frameSecureOrigin = frame->GetSecurityOrigin();
+  if (!frameSecureOrigin.SchemeIsCryptographic()) {
+    self.lastFocusedElementSecure = NO;
   }
 }
 
@@ -168,41 +165,28 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 
 // Injects the passed string to the active field and jumps to the next field.
 - (void)fillLastSelectedFieldWithString:(NSString*)string {
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    web::WebState* activeWebState = self.webStateList->GetActiveWebState();
-    if (!activeWebState) {
-      return;
-    }
-    web::WebFrame* activeWebFrame = web::GetWebFrameWithId(
-        activeWebState, self.lastFocusedElementFrameIdentifier);
-    if (!activeWebFrame || !activeWebFrame->CanCallJavaScriptFunction()) {
-      return;
-    }
-
-    base::DictionaryValue data = base::DictionaryValue();
-    data.SetString("identifier", self.lastFocusedElementIdentifier);
-    data.SetString("value", base::SysNSStringToUTF16(string));
-    std::vector<base::Value> parameters;
-    parameters.push_back(std::move(data));
-
-    activeWebFrame->CallJavaScriptFunction(
-        "autofill.fillActiveFormField", parameters,
-        base::BindOnce(^(const base::Value*) {
-          [self jumpToNextField];
-        }),
-        base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
+  web::WebState* activeWebState = self.webStateList->GetActiveWebState();
+  if (!activeWebState) {
     return;
   }
-  // Frame messaging is disabled, use the old injection reciever.
-  NSString* javaScriptQuery =
-      [NSString stringWithFormat:
-                    @"__gCrWeb.fill.setInputElementValue(\"%@\", "
-                    @"document.activeElement);",
-                    string];
-  [self.injectionReceiver executeJavaScript:javaScriptQuery
-                          completionHandler:^(id, NSError*) {
-                            [self jumpToNextField];
-                          }];
+  web::WebFrame* activeWebFrame = web::GetWebFrameWithId(
+      activeWebState, self.lastFocusedElementFrameIdentifier);
+  if (!activeWebFrame || !activeWebFrame->CanCallJavaScriptFunction()) {
+    return;
+  }
+
+  base::DictionaryValue data = base::DictionaryValue();
+  data.SetString("identifier", self.lastFocusedElementIdentifier);
+  data.SetString("value", base::SysNSStringToUTF16(string));
+  std::vector<base::Value> parameters;
+  parameters.push_back(std::move(data));
+
+  activeWebFrame->CallJavaScriptFunction(
+      "autofill.fillActiveFormField", parameters,
+      base::BindOnce(^(const base::Value*) {
+        [self jumpToNextField];
+      }),
+      base::TimeDelta::FromSeconds(kJavaScriptExecutionTimeoutInSeconds));
 }
 
 // Attempts to jump to the next field in the current form.
