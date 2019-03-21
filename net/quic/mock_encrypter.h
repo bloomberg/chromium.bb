@@ -27,6 +27,7 @@ class MockEncrypter : public quic::QuicEncrypter {
   // QuicEncrypter implementation
   bool SetKey(quic::QuicStringPiece key) override;
   bool SetNoncePrefix(quic::QuicStringPiece nonce_prefix) override;
+  bool SetHeaderProtectionKey(quic::QuicStringPiece key) override;
   bool SetIV(quic::QuicStringPiece iv) override;
   bool EncryptPacket(uint64_t packet_number,
                      quic::QuicStringPiece associated_data,
@@ -34,6 +35,8 @@ class MockEncrypter : public quic::QuicEncrypter {
                      char* output,
                      size_t* output_length,
                      size_t max_output_length) override;
+  std::string GenerateHeaderProtectionMask(
+      quic::QuicStringPiece sample) override;
   size_t GetKeySize() const override;
   size_t GetNoncePrefixSize() const override;
   size_t GetIVSize() const override;
