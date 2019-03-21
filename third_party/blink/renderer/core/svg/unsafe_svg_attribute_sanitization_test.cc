@@ -71,6 +71,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
 
   SystemClipboard::GetInstance().WriteHTML(
       html_to_paste, BlankURL(), "", SystemClipboard::kCannotSmartReplace);
+  SystemClipboard::GetInstance().CommitWrite();
   // Run all tasks in a message loop to allow asynchronous clipboard writing
   // to happen before reading from it synchronously.
   test::RunPendingTasks();

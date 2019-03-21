@@ -264,6 +264,7 @@ String ReadClipboard() {
 
 void ClearClipboardBuffer() {
   SystemClipboard::GetInstance().WritePlainText(String(""));
+  SystemClipboard::GetInstance().CommitWrite();
   EXPECT_EQ(String(""), ReadClipboard());
 }
 

@@ -10602,6 +10602,7 @@ TEST_F(WebFrameTest, CopyImageDocument) {
 
   // Clear clipboard data
   SystemClipboard::GetInstance().WritePlainText("");
+  SystemClipboard::GetInstance().CommitWrite();
 }
 
 class CallbackOrderingWebFrameClient
