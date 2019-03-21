@@ -458,8 +458,6 @@ public class AwContents implements SmartClipProvider {
     // when in this state.
     private boolean mTemporarilyDetached;
 
-    private Handler mHandler;
-
     // True when this AwContents has been destroyed.
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed;
@@ -893,7 +891,6 @@ public class AwContents implements SmartClipProvider {
             mContainerView = containerView;
             mContainerView.setWillNotDraw(false);
 
-            mHandler = new Handler();
             mContext = context;
             mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
             mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
@@ -1430,7 +1427,7 @@ public class AwContents implements SmartClipProvider {
         }
         mIsNoOperation = true;
         mIsDestroyed = true;
-        mHandler.post(() -> destroyNatives());
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> destroyNatives());
     }
 
     /**
@@ -2596,7 +2593,7 @@ public class AwContents implements SmartClipProvider {
                 // application callback is executed without any native code on the stack. This
                 // so that any exception thrown by the application callback won't have to be
                 // propagated through a native call stack.
-                mHandler.post(() -> callback.onResult(jsonResult));
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(jsonResult));
             };
         }
 
@@ -2839,7 +2836,7 @@ public class AwContents implements SmartClipProvider {
         // To prevent this flip of CVC visibility, post the task to update CVC
         // visibility during attach, detach and window visibility change.
         mIsUpdateVisibilityTaskPending = true;
-        mHandler.post(mUpdateVisibilityRunnable);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, mUpdateVisibilityRunnable);
     }
 
     private void updateWebContentsVisibility() {
@@ -3175,7 +3172,7 @@ public class AwContents implements SmartClipProvider {
         if (isDestroyedOrNoOperation(NO_WARN)) return;
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
-        mHandler.post(() -> callback.onComplete(requestId));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onComplete(requestId));
     }
 
     // Called as a result of nativeUpdateLastHitTestData.
