@@ -117,6 +117,9 @@ class ToolbarButton : public views::LabelButton,
   // Sets |layout_inset_delta_|, see comment there.
   void SetLayoutInsetDelta(const gfx::Insets& insets);
 
+  static constexpr int kDefaultIconSize = 16;
+  static constexpr int kDefaultTouchableIconSize = 24;
+
  private:
   friend test::ToolbarButtonTestApi;
 

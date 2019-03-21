@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -148,6 +149,13 @@ bool ExtensionActionPlatformDelegateViews::CanHandleAccelerators() const {
 
 void ExtensionActionPlatformDelegateViews::UnregisterCommand(
     bool only_if_removed) {
+  if (!GetDelegateViews()) {
+    // The delegate can currently be null in the extensions menu.
+    // TODO(pbos): Remove this when the menu implementation is more
+    // complete.
+    DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+    return;
+  }
   views::FocusManager* focus_manager =
       GetDelegateViews()->GetFocusManagerForAccelerator();
   if (!focus_manager || !action_keybinding_.get())

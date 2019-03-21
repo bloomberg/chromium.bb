@@ -32632,6 +32632,7 @@ from previous Chrome versions.
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-799931058" label="UseMultiloginEndpoint:disabled"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>
+  <int value="-797520931" label="ExtensionsToolbarMenu:disabled"/>
   <int value="-797310986" label="CSSFragmentIdentifiers:disabled"/>
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-793921836" label="ShowAllDialogsWithViewsToolkit:disabled"/>
@@ -33565,6 +33566,7 @@ from previous Chrome versions.
   <int value="739938466"
       label="WebPaymentsPerMethodCanMakePaymentQuota:disabled"/>
   <int value="740056959" label="ImeServiceConnectable:enabled"/>
+  <int value="740619684" label="ExtensionsToolbarMenu:enabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746765012" label="AutofillEnableToolbarStatusChip:disabled"/>

@@ -4214,6 +4214,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.
       </message>
 
+      <!-- Extensions Menu bubble -->
+      <message name="IDS_EXTENSIONS_MENU_TITLE" desc="Title of the Extensions Menu">
+        Extensions
+      </message>
+
       <!-- Settings API bubble -->
       <message name="IDS_EXTENSIONS_SETTINGS_API_TITLE_HOME_PAGE_BUBBLE" desc="Title of a bubble warning users that an extension has overridden their home page setting">
         Is this the home page you were expecting?
@@ -4995,6 +5000,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
+      </message>
+      <message name="IDS_TOOLTIP_EXTENSIONS_BUTTON" desc="The tooltip for the extensions button">
+        Extensions
       </message>
       <if expr="is_macosx">
         <message name="IDS_TOOLTIP_CLOSE_TAB" desc="The tooltip for the close tab button">

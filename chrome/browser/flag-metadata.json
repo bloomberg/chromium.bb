@@ -2037,6 +2037,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "extensions-toolbar-menu",
+    "owners": [ "//extensions/OWNERS", "pbos" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "extensions-on-chrome-urls",
     "owners": [ "//extensions/OWNERS" ],
     // This enables the use of extensions on chrome:// URLs. This is useful for
