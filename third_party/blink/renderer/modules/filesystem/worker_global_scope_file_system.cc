@@ -53,9 +53,11 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
     V8FileSystemCallback* success_callback,
     V8ErrorCallback* error_callback) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
-    DOMFileSystem::ReportError(&worker,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
@@ -65,16 +67,13 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
   mojom::blink::FileSystemType file_system_type =
       static_cast<mojom::blink::FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
-    DOMFileSystem::ReportError(&worker,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   auto success_callback_wrapper =
       AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
-  auto error_callback_wrapper =
-      AsyncCallbackHelper::ErrorCallback(error_callback);
 
   LocalFileSystem::From(worker)->RequestFileSystem(
       &worker, file_system_type, size,
@@ -133,10 +132,12 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
     V8ErrorCallback* error_callback) {
   KURL completed_url = worker.CompleteURL(url);
   ExecutionContext* secure_context = worker.GetExecutionContext();
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem() ||
       !secure_context->GetSecurityOrigin()->CanRequest(completed_url)) {
-    DOMFileSystem::ReportError(&worker,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_SECURITY);
     return;
   } else if (secure_context->GetSecurityOrigin()->IsLocal()) {
@@ -144,16 +145,13 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
   }
 
   if (!completed_url.IsValid()) {
-    DOMFileSystem::ReportError(&worker,
-                               ScriptErrorCallback::Wrap(error_callback),
+    DOMFileSystem::ReportError(&worker, std::move(error_callback_wrapper),
                                base::File::FILE_ERROR_INVALID_URL);
     return;
   }
 
   auto success_callback_wrapper =
       AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
-  auto error_callback_wrapper =
-      AsyncCallbackHelper::ErrorCallback(error_callback);
 
   LocalFileSystem::From(worker)->ResolveURL(
       &worker, completed_url,

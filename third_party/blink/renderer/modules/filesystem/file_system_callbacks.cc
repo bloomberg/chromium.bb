@@ -54,13 +54,9 @@
 
 namespace blink {
 
-FileSystemCallbacksBase::FileSystemCallbacksBase(
-    ErrorCallbackBase* error_callback,
-    DOMFileSystemBase* file_system,
-    ExecutionContext* context)
-    : error_callback_(error_callback),
-      file_system_(file_system),
-      execution_context_(context) {
+FileSystemCallbacksBase::FileSystemCallbacksBase(DOMFileSystemBase* file_system,
+                                                 ExecutionContext* context)
+    : file_system_(file_system), execution_context_(context) {
   DCHECK(execution_context_);
 
   if (file_system_)
@@ -72,45 +68,6 @@ FileSystemCallbacksBase::~FileSystemCallbacksBase() {
     file_system_->RemovePendingCallbacks();
 }
 
-// ScriptErrorCallback --------------------------------------------------------
-
-// static
-ScriptErrorCallback* ScriptErrorCallback::Wrap(V8ErrorCallback* callback) {
-  // DOMFileSystem operations take an optional (nullable) callback. If a
-  // script callback was not passed, don't bother creating a dummy wrapper
-  // and checking during invoke().
-  if (!callback)
-    return nullptr;
-  return MakeGarbageCollected<ScriptErrorCallback>(callback);
-}
-
-void ScriptErrorCallback::Trace(blink::Visitor* visitor) {
-  ErrorCallbackBase::Trace(visitor);
-  visitor->Trace(callback_);
-}
-
-void ScriptErrorCallback::Invoke(base::File::Error error) {
-  callback_->InvokeAndReportException(nullptr,
-                                      file_error::CreateDOMException(error));
-}
-
-ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
-    : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-// PromiseErrorCallback -------------------------------------------------------
-
-PromiseErrorCallback::PromiseErrorCallback(ScriptPromiseResolver* resolver)
-    : resolver_(resolver) {}
-
-void PromiseErrorCallback::Trace(Visitor* visitor) {
-  ErrorCallbackBase::Trace(visitor);
-  visitor->Trace(resolver_);
-}
-
-void PromiseErrorCallback::Invoke(base::File::Error error) {
-  resolver_->Reject(file_error::CreateDOMException(error));
-}
-
 // EntryCallbacks -------------------------------------------------------------
 
 EntryCallbacks::EntryCallbacks(SuccessCallback success_callback,
@@ -119,7 +76,7 @@ EntryCallbacks::EntryCallbacks(SuccessCallback success_callback,
                                DOMFileSystemBase* file_system,
                                const String& expected_path,
                                bool is_directory)
-    : FileSystemCallbacksBase(/*error_callback=*/nullptr, file_system, context),
+    : FileSystemCallbacksBase(file_system, context),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)),
       expected_path_(expected_path),
@@ -151,9 +108,7 @@ EntriesCallbacks::EntriesCallbacks(const SuccessCallback& success_callback,
                                    ExecutionContext* context,
                                    DirectoryReaderBase* directory_reader,
                                    const String& base_path)
-    : FileSystemCallbacksBase(/*error_callback =*/nullptr,
-                              directory_reader->Filesystem(),
-                              context),
+    : FileSystemCallbacksBase(directory_reader->Filesystem(), context),
       success_callback_(success_callback),
       error_callback_(std::move(error_callback)),
       directory_reader_(directory_reader),
@@ -199,9 +154,9 @@ FileSystemCallbacks::FileSystemCallbacks(SuccessCallback success_callback,
                                          ErrorCallback error_callback,
                                          ExecutionContext* context,
                                          mojom::blink::FileSystemType type)
-    : FileSystemCallbacksBase(/*error_callback=*/nullptr,
-                              /*file_system=*/nullptr,
-                              context),
+    : FileSystemCallbacksBase(
+          /*file_system=*/nullptr,
+          context),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)),
       type_(type) {}
@@ -228,9 +183,9 @@ void FileSystemCallbacks::DidFail(base::File::Error error) {
 ResolveURICallbacks::ResolveURICallbacks(SuccessCallback success_callback,
                                          ErrorCallback error_callback,
                                          ExecutionContext* context)
-    : FileSystemCallbacksBase(/*error_callback=*/nullptr,
-                              /*file_system=*/nullptr,
-                              context),
+    : FileSystemCallbacksBase(
+          /*file_system=*/nullptr,
+          context),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)) {
   DCHECK(success_callback_);
@@ -274,7 +229,7 @@ MetadataCallbacks::MetadataCallbacks(SuccessCallback success_callback,
                                      ErrorCallback error_callback,
                                      ExecutionContext* context,
                                      DOMFileSystemBase* file_system)
-    : FileSystemCallbacksBase(/*error_callback=*/nullptr, file_system, context),
+    : FileSystemCallbacksBase(file_system, context),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)) {}
 
@@ -298,9 +253,9 @@ FileWriterCallbacks::FileWriterCallbacks(FileWriterBase* file_writer,
                                          SuccessCallback success_callback,
                                          ErrorCallback error_callback,
                                          ExecutionContext* context)
-    : FileSystemCallbacksBase(/*error_callback =*/nullptr,
-                              /*file_system =*/nullptr,
-                              context),
+    : FileSystemCallbacksBase(
+          /*file_system =*/nullptr,
+          context),
       file_writer_(file_writer),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)) {}
@@ -329,7 +284,7 @@ SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem,
                                            SuccessCallback success_callback,
                                            ErrorCallback error_callback,
                                            ExecutionContext* context)
-    : FileSystemCallbacksBase(/*error_callback=*/nullptr, filesystem, context),
+    : FileSystemCallbacksBase(filesystem, context),
       name_(name),
       url_(url),
       success_callback_(std::move(success_callback)),
@@ -365,9 +320,7 @@ VoidCallbacks::VoidCallbacks(SuccessCallback success_callback,
                              ErrorCallback error_callback,
                              ExecutionContext* context,
                              DOMFileSystemBase* file_system)
-    : FileSystemCallbacksBase(/*error_callback =*/nullptr,
-                              file_system,
-                              context),
+    : FileSystemCallbacksBase(file_system, context),
       success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)) {}
 

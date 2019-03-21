@@ -60,28 +60,14 @@ class File;
 class FileMetadata;
 class FileWriterBase;
 class Metadata;
-class ScriptPromiseResolver;
-
-// Passed to DOMFileSystem implementations that may report errors. Subclasses
-// may capture the error for throwing on return to script (for synchronous APIs)
-// or call an actual script callback (for asynchronous APIs).
-class ErrorCallbackBase : public GarbageCollectedFinalized<ErrorCallbackBase> {
- public:
-  virtual ~ErrorCallbackBase() {}
-  virtual void Trace(blink::Visitor* visitor) {}
-  virtual void Invoke(base::File::Error error) = 0;
-};
 
 class FileSystemCallbacksBase {
  public:
   virtual ~FileSystemCallbacksBase();
 
  protected:
-  FileSystemCallbacksBase(ErrorCallbackBase*,
-                          DOMFileSystemBase*,
-                          ExecutionContext*);
+  FileSystemCallbacksBase(DOMFileSystemBase*, ExecutionContext*);
 
-  Persistent<ErrorCallbackBase> error_callback_;
   Persistent<DOMFileSystemBase> file_system_;
   Persistent<ExecutionContext> execution_context_;
   int async_operation_id_;
@@ -102,31 +88,6 @@ class SnapshotFileCallbackBase {
 };
 
 // Subclasses ----------------------------------------------------------------
-
-// Wraps a script-provided callback for use in DOMFileSystem operations.
-class ScriptErrorCallback final : public ErrorCallbackBase {
- public:
-  static ScriptErrorCallback* Wrap(V8ErrorCallback*);
-
-  explicit ScriptErrorCallback(V8ErrorCallback*);
-  ~ScriptErrorCallback() override {}
-  void Trace(blink::Visitor*) override;
-
-  void Invoke(base::File::Error error) override;
-
- private:
-  Member<V8PersistentCallbackInterface<V8ErrorCallback>> callback_;
-};
-
-class PromiseErrorCallback final : public ErrorCallbackBase {
- public:
-  explicit PromiseErrorCallback(ScriptPromiseResolver*);
-  void Trace(Visitor*) override;
-  void Invoke(base::File::Error error) override;
-
- private:
-  Member<ScriptPromiseResolver> resolver_;
-};
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
  public:
