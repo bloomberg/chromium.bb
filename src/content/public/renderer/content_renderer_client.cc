@@ -294,4 +294,12 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
   return true;
 }
 
+bool ContentRendererClient::Dispatch(IPC::Message* msg) {
+  return false;
+}
+
+bool ContentRendererClient::BindFrameSinkProvider(mojom::FrameSinkProviderRequest request) {
+  return false;
+}
+
 }  // namespace content

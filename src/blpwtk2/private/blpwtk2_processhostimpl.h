@@ -190,6 +190,8 @@ class ProcessHostImpl final : public mojom::ProcessHost
 
 
     // patch section: renderer ui
+    void registerNativeViewForComposition(unsigned int view) override;
+    void unregisterNativeViewForComposition(unsigned int view) override;
 
 
 

@@ -92,6 +92,11 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
         // could be NULL. If it returns false, the content layer will create
         // the plugin.
 
+    bool Dispatch(IPC::Message *msg) override;
+
+    bool BindFrameSinkProvider(
+        content::mojom::FrameSinkProviderRequest request) override;
+
   private:
     // service_manager::Service:
     void OnBindInterface(const service_manager::BindSourceInfo& source,
