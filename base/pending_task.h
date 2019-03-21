@@ -54,9 +54,10 @@ struct BASE_EXPORT PendingTask {
   // if the task hasn't been inserted in a sequence yet.
   TimeTicks queue_time;
 
-  // Chain of up-to-four symbols of the parent tasks which led to this one being
-  // posted.
-  std::array<const void*, 4> task_backtrace = {};
+  // Chain of symbols of the parent tasks which led to this one being posted.
+  static constexpr size_t kTaskBacktraceLength = 4;
+  std::array<const void*, kTaskBacktraceLength> task_backtrace = {};
+  bool task_backtrace_overflow = false;
 
   // Secondary sort key for run time.
   int sequence_num = 0;
