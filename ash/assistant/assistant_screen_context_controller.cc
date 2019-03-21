@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
@@ -169,6 +170,13 @@ void AssistantScreenContextController::RequestScreenshot(
     const gfx::Rect& rect,
     mojom::AssistantScreenContextController::RequestScreenshotCallback
         callback) {
+  // http://crbug.com/941276
+  // We need to avoid requesting screenshot in known situations that will break.
+  if (Shell::Get()->overview_controller()->IsSelecting() ||
+      Shell::Get()->overview_controller()->IsCompletingShutdownAnimations()) {
+    std::move(callback).Run(std::vector<uint8_t>());
+    return;
+  }
   aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner =
