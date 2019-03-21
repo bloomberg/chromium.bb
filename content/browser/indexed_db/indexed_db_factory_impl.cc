@@ -134,7 +134,7 @@ IndexedDBFactoryImpl::~IndexedDBFactoryImpl() {
 
 void IndexedDBFactoryImpl::RemoveDatabaseFromMaps(
     const IndexedDBDatabase::Identifier& identifier) {
-  const auto& it = database_map_.find(identifier);
+  auto it = database_map_.find(identifier);
   DCHECK(it != database_map_.end());
   IndexedDBDatabase* database = it->second;
   database_map_.erase(it);
@@ -165,8 +165,10 @@ void IndexedDBFactoryImpl::ReleaseDatabase(
 
 void IndexedDBFactoryImpl::ReleaseBackingStore(const Origin& origin,
                                                bool immediate) {
+  if (!base::ContainsKey(backing_store_map_, origin))
+    return;
   if (immediate) {
-    const auto& it = backing_stores_with_active_blobs_.find(origin);
+    auto it = backing_stores_with_active_blobs_.find(origin);
     if (it != backing_stores_with_active_blobs_.end()) {
       it->second->active_blob_registry()->ForceShutdown();
       backing_stores_with_active_blobs_.erase(it);
@@ -201,6 +203,8 @@ void IndexedDBFactoryImpl::ReleaseBackingStore(const Origin& origin,
 }
 
 void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {
+  if (!base::ContainsKey(backing_store_map_, origin))
+    return;
   // Another reference may have been created since the maybe-close was posted,
   // so it is necessary to check again.
   if (!HasLastBackingStoreReference(origin))
@@ -267,7 +271,12 @@ void IndexedDBFactoryImpl::MaybeStartPreCloseTasks(const Origin& origin) {
 }
 
 void IndexedDBFactoryImpl::MaybeCloseBackingStore(const Origin& origin) {
-  backing_store_map_[origin]->SetPreCloseTaskList(nullptr);
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end())
+    return;
+
+  IndexedDBBackingStore* backing_store = it->second.get();
+  backing_store->SetPreCloseTaskList(nullptr);
   // Another reference may have opened since the maybe-close was posted, so it
   // is necessary to check again.
   if (HasLastBackingStoreReference(origin))
@@ -275,11 +284,12 @@ void IndexedDBFactoryImpl::MaybeCloseBackingStore(const Origin& origin) {
 }
 
 void IndexedDBFactoryImpl::CloseBackingStore(const Origin& origin) {
-  const auto& it = backing_store_map_.find(origin);
-  DCHECK(it != backing_store_map_.end());
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end())
+    return;
   // Stop the timer and pre close tasks (if they are running) - this may happen
   // if the timer was started and then a forced close occurs.
-  scoped_refptr<IndexedDBBackingStore>& backing_store = it->second;
+  IndexedDBBackingStore* backing_store = it->second.get();
   backing_store->close_timer()->Stop();
   backing_store->SetPreCloseTaskList(nullptr);
 
@@ -291,24 +301,20 @@ void IndexedDBFactoryImpl::CloseBackingStore(const Origin& origin) {
 
 bool IndexedDBFactoryImpl::HasLastBackingStoreReference(
     const Origin& origin) const {
-  IndexedDBBackingStore* ptr;
-  {
-    // Scope so that the implicit scoped_refptr<> is freed.
-    const auto& it = backing_store_map_.find(origin);
-    DCHECK(it != backing_store_map_.end());
-    ptr = it->second.get();
-  }
-  return ptr->HasOneRef();
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end())
+    return false;
+  return it->second->HasOneRef();
 }
 
 leveldb::Status IndexedDBFactoryImpl::AbortTransactions(const Origin& origin) {
-  const scoped_refptr<IndexedDBBackingStore>& backing_store =
-      backing_store_map_[origin];
-  if (!backing_store) {
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end()) {
     return leveldb::Status::IOError(
         "Internal error opening backing store for "
         "indexedDB.abortTransactions.");
   }
+  IndexedDBBackingStore* backing_store = it->second.get();
 
   leveldb::Status get_names_status;
   IndexedDBMetadataCoding metadata_coding;
@@ -374,9 +380,9 @@ void IndexedDBFactoryImpl::ContextDestroyed() {
   // context (which nominally owns this factory) is destroyed during thread
   // termination the timers must be stopped so that this factory and the
   // stores can be disposed of.
-  for (const auto& it : backing_store_map_) {
-    it.second->close_timer()->Stop();
-    it.second->SetPreCloseTaskList(nullptr);
+  for (const auto& origin_backing_store_pair : backing_store_map_) {
+    origin_backing_store_pair.second->close_timer()->Stop();
+    origin_backing_store_pair.second->SetPreCloseTaskList(nullptr);
   }
   backing_store_map_.clear();
   backing_stores_with_active_blobs_.clear();
@@ -389,13 +395,13 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(const Origin& origin,
     return;
   if (blobs_outstanding) {
     DCHECK(!backing_stores_with_active_blobs_.count(origin));
-    const auto& it = backing_store_map_.find(origin);
+    auto it = backing_store_map_.find(origin);
     if (it != backing_store_map_.end())
       backing_stores_with_active_blobs_.insert(*it);
     else
       DCHECK(false);
   } else {
-    const auto& it = backing_stores_with_active_blobs_.find(origin);
+    auto it = backing_stores_with_active_blobs_.find(origin);
     if (it != backing_stores_with_active_blobs_.end()) {
       backing_stores_with_active_blobs_.erase(it);
       ReleaseBackingStore(origin, false /* immediate */);
@@ -498,7 +504,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     bool force_close) {
   IDB_TRACE("IndexedDBFactoryImpl::DeleteDatabase");
   IndexedDBDatabase::Identifier unique_identifier(origin, name);
-  const auto& it = database_map_.find(unique_identifier);
+  auto it = database_map_.find(unique_identifier);
   if (it != database_map_.end()) {
     // If there are any connections to the database, directly delete the
     // database.
@@ -594,14 +600,14 @@ void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
     base::OnceCallback<void(leveldb::Status)> callback,
     const Origin& origin) {
   IDB_TRACE("IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase");
-  const scoped_refptr<IndexedDBBackingStore>& backing_store =
-      backing_store_map_[origin];
-  if (!backing_store) {
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end()) {
     std::move(callback).Run(leveldb::Status::IOError(
         "Internal error opening backing store for "
         "indexedDB.abortTransactionsAndCompactDatabase."));
     return;
   }
+  IndexedDBBackingStore* backing_store = it->second.get();
   leveldb::Status status = AbortTransactions(origin);
   backing_store->Compact();
   std::move(callback).Run(status);
@@ -611,7 +617,7 @@ void IndexedDBFactoryImpl::AbortTransactionsForDatabase(
     base::OnceCallback<void(leveldb::Status)> callback,
     const Origin& origin) {
   IDB_TRACE("IndexedDBFactoryImpl::AbortTransactionsForDatabase");
-  if (!backing_store_map_[origin]) {
+  if (!base::ContainsKey(backing_store_map_, origin)) {
     std::move(callback).Run(
         leveldb::Status::IOError("Internal error opening backing store for "
                                  "indexedDB.abortTransactionsForDatabase."));
@@ -669,7 +675,7 @@ bool IndexedDBFactoryImpl::IsBackingStoreOpen(const Origin& origin) const {
 
 bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
     const Origin& origin) const {
-  const auto& it = backing_store_map_.find(origin);
+  auto it = backing_store_map_.find(origin);
   if (it == backing_store_map_.end())
     return false;
   return it->second->close_timer()->IsRunning() ||
@@ -682,7 +688,7 @@ std::tuple<scoped_refptr<IndexedDBBackingStore>,
            bool /* disk_full */>
 IndexedDBFactoryImpl::OpenBackingStore(const Origin& origin,
                                        const base::FilePath& data_directory) {
-  const auto& it2 = backing_store_map_.find(origin);
+  auto it2 = backing_store_map_.find(origin);
   scoped_refptr<IndexedDBBackingStore> backing_store;
   if (it2 != backing_store_map_.end()) {
     // Grab a refptr so the completion of the preclose task list doesn't close
@@ -834,12 +840,12 @@ size_t IndexedDBFactoryImpl::GetConnectionCount(const Origin& origin) const {
 }
 
 int64_t IndexedDBFactoryImpl::GetInMemoryDBSize(const Origin& origin) const {
-  const auto& it = backing_store_map_.find(origin);
+  auto it = backing_store_map_.find(origin);
   // Origin won't be present in map if it has been deleted.
   if (it == backing_store_map_.end())
     return 0;
 
-  const scoped_refptr<IndexedDBBackingStore>& backing_store = it->second;
+  IndexedDBBackingStore* backing_store = it->second.get();
   int64_t level_db_size = 0;
   leveldb::Status s =
       GetDBSizeFromEnv(backing_store->db()->env(), "/", &level_db_size);
@@ -851,10 +857,10 @@ int64_t IndexedDBFactoryImpl::GetInMemoryDBSize(const Origin& origin) const {
 
 base::Time IndexedDBFactoryImpl::GetLastModified(
     const url::Origin& origin) const {
-  const auto& it = backing_store_map_.find(origin);
-  DCHECK(it != backing_store_map_.end());
-
-  const scoped_refptr<IndexedDBBackingStore>& backing_store = it->second;
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end())
+    return base::Time();
+  IndexedDBBackingStore* backing_store = it->second.get();
   return backing_store->db()->LastModified();
 }
 
