@@ -12,6 +12,7 @@ enum class PageActionIconType {
   kLocalCardMigration,
   kManagePasswords,
   kPwaInstall,
+  kSaveCard,
   kTranslate,
   kZoom,
 };

@@ -60,6 +60,7 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
         page_action_icons_.push_back(zoom_view_);
         break;
       case PageActionIconType::kLocalCardMigration:
+      case PageActionIconType::kSaveCard:
         NOTREACHED();
         break;
     }
@@ -98,6 +99,7 @@ PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
     case PageActionIconType::kZoom:
       return zoom_view_;
     case PageActionIconType::kLocalCardMigration:
+    case PageActionIconType::kSaveCard:
       NOTREACHED();
       return nullptr;
   }

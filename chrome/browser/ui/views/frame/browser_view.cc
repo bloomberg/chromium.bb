@@ -1316,41 +1316,57 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
                                bookmark_bar_view_.get());
 }
 
+// TODO(crbug.com/932818): Clean up this two functions and add helper for shared
+// code.
 autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
     bool user_gesture) {
-  LocationBarView* location_bar = GetLocationBarView();
-  PageActionIconView* card_view = location_bar->save_credit_card_icon_view();
-
   autofill::BubbleType bubble_type = controller->GetBubbleType();
-  autofill::SaveCardBubbleViews* bubble = nullptr;
+  PageActionIconView* icon_view = nullptr;
+  views::View* anchor_view = nullptr;
 
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip)) {
+    // Icon will be shown in the status chip when feature is enabled. The anchor
+    // view for the bubble is the status chip container.
+    ToolbarPageActionIconContainerView* toolbar_page_action_container =
+        toolbar_->toolbar_page_action_container();
+    icon_view = toolbar_page_action_container->GetIconView(
+        PageActionIconType::kSaveCard);
+    anchor_view = toolbar_page_action_container;
+  } else {
+    // Otherwise the bubble is anchored to the credit card icon in the location
+    // bar. This will be removed when the feature is fully enabled.
+    LocationBarView* location_bar = GetLocationBarView();
+    icon_view = location_bar->save_credit_card_icon_view();
+    anchor_view = location_bar;
+  }
+
+  autofill::SaveCardBubbleViews* bubble = nullptr;
   switch (bubble_type) {
     case autofill::BubbleType::LOCAL_SAVE:
     case autofill::BubbleType::UPLOAD_SAVE:
-      bubble = new autofill::SaveCardOfferBubbleViews(
-          location_bar, gfx::Point(), web_contents, controller);
+      bubble = new autofill::SaveCardOfferBubbleViews(anchor_view, gfx::Point(),
+                                                      web_contents, controller);
       break;
     case autofill::BubbleType::SIGN_IN_PROMO:
       bubble = new autofill::SaveCardSignInPromoBubbleViews(
-          location_bar, gfx::Point(), web_contents, controller);
+          anchor_view, gfx::Point(), web_contents, controller);
       break;
     case autofill::BubbleType::MANAGE_CARDS:
       bubble = new autofill::SaveCardManageCardsBubbleViews(
-          location_bar, gfx::Point(), web_contents, controller);
+          anchor_view, gfx::Point(), web_contents, controller);
       break;
     case autofill::BubbleType::INACTIVE:
       break;
   }
-
   DCHECK(bubble);
 
-  if (card_view)
-    bubble->SetHighlightedButton(card_view);
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
 
   views::BubbleDialogDelegateView::CreateBubble(bubble);
-
   bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                             : autofill::SaveCardBubbleViews::AUTOMATIC);
   return bubble;

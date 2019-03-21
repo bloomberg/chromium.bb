@@ -69,14 +69,14 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
 
   view_state_ = LocalCardMigrationDialogState::kOffered;
   // Need to create the icon first otherwise the dialog will not be shown.
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
   start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
   migratable_credit_cards_ = migratable_credit_cards;
   user_email_ = user_email;
   local_card_migration_dialog_->ShowDialog();
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 
   AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
@@ -102,7 +102,7 @@ void LocalCardMigrationDialogControllerImpl::UpdateCreditCardIcon(
       break;
     }
   }
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
@@ -112,7 +112,7 @@ void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
   local_card_migration_dialog_->ShowDialog();
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
 
@@ -122,7 +122,7 @@ void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
 
   local_card_migration_dialog_ =
       CreateLocalCardMigrationErrorDialogView(this, web_contents());
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
   local_card_migration_dialog_->ShowDialog();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
@@ -243,7 +243,7 @@ void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_ = nullptr;
 
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
 }
 
 bool LocalCardMigrationDialogControllerImpl::AllCardsInvalid() const {
@@ -271,6 +271,11 @@ void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_POPUP,
       ui::PAGE_TRANSITION_LINK, false));
+}
+
+void LocalCardMigrationDialogControllerImpl::UpdateLocalCardMigrationIcon() {
+  ::autofill::UpdateCreditCardIcon(PageActionIconType::kLocalCardMigration,
+                                   web_contents());
 }
 
 bool LocalCardMigrationDialogControllerImpl::HasFailedCard() const {

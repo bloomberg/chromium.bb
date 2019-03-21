@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_UI_UTIL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_UI_UTIL_H_
 
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "content/public/browser/web_contents.h"
 
 namespace autofill {
@@ -13,8 +14,9 @@ namespace autofill {
 // ToolbarPageActionContainerView once the status chip is fully
 // launched.
 
-// Update the state of local card migration icon view.
-void UpdateLocalCardMigrationIcon(content::WebContents* web_contents);
+// Update the state of credit card icon.
+void UpdateCreditCardIcon(PageActionIconType icon_type,
+                          content::WebContents* web_contents);
 
 }  // namespace autofill
 

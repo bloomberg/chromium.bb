@@ -151,8 +151,7 @@ class SaveCardBubbleControllerImpl
   // Displays the omnibox icon without popping up the offer-to-save bubble.
   void ShowIconOnly();
 
-  // Update the visibility and toggled state of the Omnibox save card icon.
-  void UpdateIcon();
+  void UpdateSaveCardIcon();
 
   void OpenUrl(const GURL& url);
 

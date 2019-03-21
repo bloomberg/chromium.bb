@@ -16,13 +16,23 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
     : ToolbarIconContainerView(), browser_(browser) {
   local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
       command_updater, browser, this,
-      // TODO(932818): The font list and the icon color may not be what we want
-      // here. Put placeholders for now.
+      // TODO(crbug.com/932818): The font list and the icon color may not be
+      // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
                             views::style::STYLE_PRIMARY));
   local_card_migration_icon_view_->Init();
   local_card_migration_icon_view_->SetVisible(false);
   AddChildView(local_card_migration_icon_view_);
+
+  save_card_icon_view_ = new autofill::SaveCardIconView(
+      command_updater, browser, this,
+      // TODO(crbug.com/932818): The font list and the icon color may not be
+      // what we want here. Put placeholders for now.
+      views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
+                            views::style::STYLE_PRIMARY));
+  save_card_icon_view_->Init();
+  save_card_icon_view_->SetVisible(false);
+  AddChildView(save_card_icon_view_);
 }
 
 ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
@@ -31,6 +41,9 @@ ToolbarPageActionIconContainerView::~ToolbarPageActionIconContainerView() =
 void ToolbarPageActionIconContainerView::UpdateAllIcons() {
   if (local_card_migration_icon_view_)
     local_card_migration_icon_view_->Update();
+
+  if (save_card_icon_view_)
+    save_card_icon_view_->Update();
 }
 
 PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
@@ -38,7 +51,10 @@ PageActionIconView* ToolbarPageActionIconContainerView::GetIconView(
   switch (icon_type) {
     case PageActionIconType::kLocalCardMigration:
       return local_card_migration_icon_view_;
+    case PageActionIconType::kSaveCard:
+      return save_card_icon_view_;
     default:
+      NOTREACHED();
       return nullptr;
   }
 }

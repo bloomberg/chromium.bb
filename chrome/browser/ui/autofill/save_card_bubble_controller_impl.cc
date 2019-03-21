@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/autofill/autofill_ui_util.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/autofill/save_card_ui.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -325,7 +327,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
     case BubbleType::LOCAL_SAVE:
       DCHECK(!local_save_card_prompt_callback_.is_null());
       // Show an animated card saved confirmation message next time
-      // UpdateIcon() is called.
+      // UpdateSaveCardIcon() is called.
       can_animate_ = base::FeatureList::IsEnabled(
           features::kAutofillSaveCardSignInAfterLocalSave);
 
@@ -422,14 +424,14 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed() {
   // reopening the bubble will show the card management bubble.
   if (current_bubble_type_ == BubbleType::SIGN_IN_PROMO)
     current_bubble_type_ = BubbleType::MANAGE_CARDS;
-  UpdateIcon();
+  UpdateSaveCardIcon();
   if (observer_for_testing_)
     observer_for_testing_->OnBubbleClosed();
 }
 
 void SaveCardBubbleControllerImpl::OnAnimationEnded() {
-  // Do not repeat the animation next time UpdateIcon() is called, unless
-  // explicitly set somewhere else.
+  // Do not repeat the animation next time UpdateSaveCardIcon() is called,
+  // unless explicitly set somewhere else.
   can_animate_ = false;
 
   // We do not want to show the promo if the user clicked on the icon and the
@@ -484,7 +486,7 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
     save_card_bubble_view_->Hide();
     OnBubbleClosed();
   } else {
-    UpdateIcon();
+    UpdateSaveCardIcon();
   }
 
   if (previous_bubble_type == BubbleType::LOCAL_SAVE ||
@@ -544,7 +546,7 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
 
   // Need to create location bar icon before bubble, otherwise bubble will be
   // unanchored.
-  UpdateIcon();
+  UpdateSaveCardIcon();
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   save_card_bubble_view_ = browser->window()->ShowSaveCreditCardBubble(
@@ -553,7 +555,7 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
 
   // Update icon after creating |save_card_bubble_view_| so that icon will show
   // its "toggled on" state.
-  UpdateIcon();
+  UpdateSaveCardIcon();
 
   bubble_shown_timestamp_ = AutofillClock::Now();
 
@@ -594,7 +596,7 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
 
   // Show the icon only. The bubble can still be displayed if the user
   // explicitly clicks the icon.
-  UpdateIcon();
+  UpdateSaveCardIcon();
 
   bubble_shown_timestamp_ = AutofillClock::Now();
 
@@ -615,12 +617,9 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
   }
 }
 
-void SaveCardBubbleControllerImpl::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (!browser)
-    return;
-  LocationBar* location_bar = browser->window()->GetLocationBar();
-  location_bar->UpdateSaveCreditCardIcon();
+void SaveCardBubbleControllerImpl::UpdateSaveCardIcon() {
+  ::autofill::UpdateCreditCardIcon(PageActionIconType::kSaveCard,
+                                   web_contents());
 }
 
 void SaveCardBubbleControllerImpl::OpenUrl(const GURL& url) {

@@ -16,7 +16,8 @@
 
 namespace autofill {
 
-void UpdateLocalCardMigrationIcon(content::WebContents* web_contents) {
+void UpdateCreditCardIcon(PageActionIconType icon_type,
+                          content::WebContents* web_contents) {
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
@@ -31,15 +32,27 @@ void UpdateLocalCardMigrationIcon(content::WebContents* web_contents) {
     if (!toolbar_page_action_container)
       return;
 
-    toolbar_page_action_container->UpdatePageActionIcon(
-        PageActionIconType::kLocalCardMigration);
+    toolbar_page_action_container->UpdatePageActionIcon(icon_type);
   } else {
     // Otherwise the icon will be in the LocationBar.
     LocationBar* location_bar = browser->window()->GetLocationBar();
     if (!location_bar)
       return;
 
-    location_bar->UpdateLocalCardMigrationIcon();
+    switch (icon_type) {
+      case PageActionIconType::kLocalCardMigration:
+        location_bar->UpdateLocalCardMigrationIcon();
+        break;
+      case PageActionIconType::kSaveCard:
+        location_bar->UpdateSaveCreditCardIcon();
+        break;
+      case PageActionIconType::kFind:
+      case PageActionIconType::kManagePasswords:
+      case PageActionIconType::kPwaInstall:
+      case PageActionIconType::kTranslate:
+      case PageActionIconType::kZoom:
+        NOTREACHED();
+    }
   }
 #endif
 }

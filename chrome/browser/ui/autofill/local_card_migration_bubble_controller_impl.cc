@@ -101,7 +101,7 @@ void LocalCardMigrationBubbleControllerImpl::OnCancelButtonClicked() {
 
 void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
   local_card_migration_bubble_ = nullptr;
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
   if (should_add_strikes_on_bubble_close_ &&
       base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
@@ -142,7 +142,7 @@ void LocalCardMigrationBubbleControllerImpl::DidFinishNavigation(
     local_card_migration_bubble_->Hide();
     OnBubbleClosed();
   } else {
-    UpdateLocalCardMigrationIcon(web_contents());
+    UpdateLocalCardMigrationIcon();
   }
 
   AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
@@ -170,18 +170,23 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
 
   // Update the visibility and toggled state of the credit card icon in either
   // Location bar or in Status Chip.
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   local_card_migration_bubble_ =
       browser->window()->ShowLocalCardMigrationBubble(web_contents(), this,
                                                       is_reshow_);
   DCHECK(local_card_migration_bubble_);
-  UpdateLocalCardMigrationIcon(web_contents());
+  UpdateLocalCardMigrationIcon();
   timer_.reset(new base::ElapsedTimer());
 
   AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, is_reshow_);
+}
+
+void LocalCardMigrationBubbleControllerImpl::UpdateLocalCardMigrationIcon() {
+  ::autofill::UpdateCreditCardIcon(PageActionIconType::kLocalCardMigration,
+                                   web_contents());
 }
 
 void LocalCardMigrationBubbleControllerImpl::AddStrikesForBubbleClose() {
