@@ -269,9 +269,15 @@ Polymer({
         element = subPage.$$('#networkList');
       }
     } else if (this.detailType_) {
-      element = this.$$('network-summary')
-                    .$$(`#${this.detailType_}`)
-                    .$$('.subpage-arrow button');
+      const rowForDetailType =
+          this.$$('network-summary').$$(`#${this.detailType_}`);
+
+      // Note: It is possible that the row is no longer present in the DOM
+      // (e.g., when a Cellular dongle is unplugged or when Instant Tethering
+      // becomes unavailable due to the Bluetooth controller disconnecting).
+      if (rowForDetailType) {
+        element = rowForDetailType.$$('.subpage-arrow button');
+      }
     }
     if (element) {
       this.focusConfig_.set(oldRoute.path, element);
@@ -400,6 +406,17 @@ Polymer({
 
     if (this.managedNetworkAvailable != managedNetworkAvailable) {
       this.managedNetworkAvailable = managedNetworkAvailable;
+    }
+
+    if (this.detailType_ && !this.deviceStates[this.detailType_]) {
+      // If the device type associated with the current network has been
+      // removed (e.g., due to unplugging a Cellular dongle), the details page,
+      // if visible, displays controls which are no longer functional. If this
+      // case occurs, close the details page.
+      const detailPage = this.$$('settings-internet-detail-page');
+      if (detailPage) {
+        detailPage.close();
+      }
     }
   },
 
