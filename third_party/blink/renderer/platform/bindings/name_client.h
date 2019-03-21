@@ -16,12 +16,12 @@ namespace blink {
 class PLATFORM_EXPORT NameClient {
  public:
   static constexpr bool HideInternalName() {
-#if BUILDFLAG(FULL_HEAP_SNAPSHOTS) && \
+#if BUILDFLAG(RAW_HEAP_SNAPSHOTS) && \
     (defined(COMPILER_GCC) || defined(__clang__))
     return false;
 #else
     return true;
-#endif  // BUILDFLAG(FULL_HEAP_SNAPSHOTS)
+#endif  // BUILDFLAG(RAW_HEAP_SNAPSHOTS)
   }
 
   NameClient() = default;
