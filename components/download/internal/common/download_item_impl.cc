@@ -1601,7 +1601,8 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
 #if defined(OS_ANDROID)
     // For content URIs, target file path is the same as the current path.
     if (full_path.IsContentUri()) {
-      SetDisplayName(GetTargetFilePath().BaseName());
+      if (display_name_.empty())
+        SetDisplayName(GetTargetFilePath().BaseName());
       destination_info_.target_path = full_path;
     }
 #endif  // defined(OS_ANDROID)
