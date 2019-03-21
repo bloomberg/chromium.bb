@@ -63,7 +63,18 @@ static const CGFloat kChipVerticalMargin = 4;
                   : UIColor.cr_manualFillChipColor;
 }
 
+- (void)setEnabled:(BOOL)enabled {
+  [super setEnabled:enabled];
+  self.backgroundView.hidden = !enabled;
+  self.contentEdgeInsets = enabled ? [self chipEdgeInsets] : UIEdgeInsetsZero;
+}
+
 #pragma mark - Private
+
+- (UIEdgeInsets)chipEdgeInsets {
+  return UIEdgeInsetsMake(kChipVerticalPadding, kChipHorizontalPadding,
+                          kChipVerticalPadding, kChipHorizontalPadding);
+}
 
 - (void)initializeStyling {
   _backgroundView = [[UIView alloc] init];
@@ -95,9 +106,7 @@ static const CGFloat kChipVerticalMargin = 4;
   DCHECK(boldFontDescriptor);
   self.titleLabel.font = [UIFont fontWithDescriptor:boldFontDescriptor size:0];
 
-  self.contentEdgeInsets =
-      UIEdgeInsetsMake(kChipVerticalPadding, kChipHorizontalPadding,
-                       kChipVerticalPadding, kChipHorizontalPadding);
+  self.contentEdgeInsets = [self chipEdgeInsets];
 }
 
 @end
