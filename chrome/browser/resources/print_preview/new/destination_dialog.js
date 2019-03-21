@@ -99,6 +99,11 @@ Polymer({
         assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
   },
 
+  /** @override */
+  detached: function() {
+    this.tracker_.removeAll();
+  },
+
   /**
    * @param {!KeyboardEvent} e Event containing the key
    * @private

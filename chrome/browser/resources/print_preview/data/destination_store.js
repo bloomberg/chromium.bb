@@ -454,6 +454,11 @@ cr.define('print_preview', function() {
       this.selectFinalFallbackDestination_();
     }
 
+    /** Removes all events being tracked from the tracker. */
+    resetTracker() {
+      this.tracker_.removeAll();
+    }
+
     /**
      * Attempts to fetch capabilities of the destination identified by
      * |serializedDestination|.

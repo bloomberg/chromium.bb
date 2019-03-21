@@ -53,6 +53,11 @@ Polymer({
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
+  /** @override */
+  detached: function() {
+    this.tracker_.removeAll();
+  },
+
   /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */
   setCloudPrintInterface: function(cloudPrintInterface) {
     this.tracker_.add(
