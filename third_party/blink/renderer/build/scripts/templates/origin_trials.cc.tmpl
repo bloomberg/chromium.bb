@@ -52,11 +52,10 @@ const Vector<OriginTrialFeature>& origin_trials::FeaturesForTrial(const String& 
 bool origin_trials::{{feature.name}}Enabled(const ExecutionContext* executionContext) {
   if (RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
     return true;
-{%- for depends_on in feature.depends_on %}
+{% for depends_on in feature.depends_on %}
   if (!RuntimeEnabledFeatures::{{depends_on}}Enabled())
     return false;
-{%- endfor %}
-
+{% endfor %}
   const OriginTrialContext* context = OriginTrialContext::From(executionContext);
   if (!context) return false;
   if (context->IsFeatureEnabled(OriginTrialFeature::k{{feature.name}}))
