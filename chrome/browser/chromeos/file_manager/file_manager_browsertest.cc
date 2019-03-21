@@ -982,6 +982,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metadata, /* metadata.js */
     FilesAppBrowserTest,
     ::testing::Values(
+        TestCase("metadataDocumentsProvider").EnableDocumentsProvider(),
         TestCase("metadataDownloads"),
         TestCase("metadataDownloads").EnableMyFilesVolume(),
         TestCase("metadataDrive").DisableDriveFs(),

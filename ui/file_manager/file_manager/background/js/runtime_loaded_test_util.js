@@ -826,6 +826,28 @@ test.util.sync.getMetadataStats = contentWindow => {
 };
 
 /**
+ * Calls the metadata model to get the selected file entries in the file
+ * list and try to get their metadata properties.
+ *
+ * @param {Array<String>} properties Content metadata properties to get.
+ * @param {function(*)} callback Callback with metadata results returned.
+ * @suppress {missingProperties} getContentMetadata isn't visible in the
+ * background window.
+ */
+test.util.async.getContentMetadata = (contentWindow, properties, callback) => {
+  const entries =
+      contentWindow.fileManager.directoryModel.getSelectedEntries_();
+
+  assert(entries.length > 0);
+  const metaPromise =
+      contentWindow.fileManager.metadataModel.get(entries, properties);
+  // Wait for the promise to resolve
+  metaPromise.then(resultsList => {
+    callback(resultsList);
+  });
+};
+
+/**
  * Returns true when FileManager has finished loading, by checking the attribute
  * "loaded" on its root element.
  */

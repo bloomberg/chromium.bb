@@ -118,6 +118,14 @@ MultiMetadataProvider.prototype.get = function(requests) {
           contentRequests,
           contentPropertyNames.concat(fallbackContentPropertyNames));
     }
+    // We need to discard content requests when using a documents provider
+    // since the content sniffing code can't resolve the file path in the
+    // MediaGallery API. See crbug.com/942417
+    if (volumeInfo &&
+        volumeInfo.volumeType ===
+            VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER) {
+      contentRequests.length = 0;
+    }
   });
 
   const get = (provider, inRequests) => {
