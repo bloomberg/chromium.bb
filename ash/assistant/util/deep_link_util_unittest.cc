@@ -314,43 +314,50 @@ TEST_F(DeepLinkUnitTest, GetAssistantUrl) {
       // OK: Top-level lists.
 
       {CreateTestCase(DeepLinkType::kLists, /*id=*/base::nullopt),
-       GURL("https://assistant.google.com/lists/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/lists/"
+            "mainview?hl=en-US&source=Assistant")},
 
       {CreateTestCase(DeepLinkType::kLists, /*id=*/std::string()),
-       GURL("https://assistant.google.com/lists/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/lists/"
+            "mainview?hl=en-US&source=Assistant")},
 
       // OK: List by |id|.
 
       {CreateTestCase(DeepLinkType::kLists, /*id=*/"123456"),
-       GURL("https://assistant.google.com/lists/list/123456?hl=en-US")},
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?hl=en-US&source=Assistant")},
 
       // OK: Top-level notes.
 
       {CreateTestCase(DeepLinkType::kNotes, /*id=*/base::nullopt),
        GURL("https://assistant.google.com/lists/"
-            "mainview?note_tap=true&hl=en-US")},
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
 
       {CreateTestCase(DeepLinkType::kNotes, /*id=*/std::string()),
        GURL("https://assistant.google.com/lists/"
-            "mainview?note_tap=true&hl=en-US")},
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
 
       // OK: Note by |id|.
 
       {CreateTestCase(DeepLinkType::kNotes, /*id=*/"123456"),
-       GURL("https://assistant.google.com/lists/note/123456?hl=en-US")},
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?hl=en-US&source=Assistant")},
 
       // OK: Top-level reminders.
 
       {CreateTestCase(DeepLinkType::kReminders, /*id=*/base::nullopt),
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
 
       {CreateTestCase(DeepLinkType::kReminders, /*id=*/std::string()),
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
 
       // OK: Reminder by |id|.
 
       {CreateTestCase(DeepLinkType::kReminders, /*id=*/"123456"),
-       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/id/"
+            "123456?hl=en-US&source=Assistant")},
 
       // IGNORE: Deep links of other types.
 
@@ -430,22 +437,27 @@ TEST_F(DeepLinkUnitTest, GetChromeSettingsUrl) {
 TEST_F(DeepLinkUnitTest, GetWebUrl) {
   const std::map<std::string, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep links.
-      {"googleassistant://lists",
-       GURL("https://assistant.google.com/lists/mainview?hl=en-US")},
-      {"googleassistant://notes", GURL("https://assistant.google.com/lists/"
-                                       "mainview?note_tap=true&hl=en-US")},
+      {"googleassistant://lists", GURL("https://assistant.google.com/lists/"
+                                       "mainview?hl=en-US&source=Assistant")},
+      {"googleassistant://notes",
+       GURL("https://assistant.google.com/lists/"
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
       {"googleassistant://reminders",
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
       {"googleassistant://settings",
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
       // OK: Parameterized deep links.
       {"googleassistant://lists?id=123456",
-       GURL("https://assistant.google.com/lists/list/123456?hl=en-US")},
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?hl=en-US&source=Assistant")},
       {"googleassistant://notes?id=123456",
-       GURL("https://assistant.google.com/lists/note/123456?hl=en-US")},
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?hl=en-US&source=Assistant")},
       {"googleassistant://reminders?id=123456",
-       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/id/"
+            "123456?hl=en-US&source=Assistant")},
       {"googleassistant://settings?param=true",
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
@@ -504,21 +516,26 @@ TEST_F(DeepLinkUnitTest, GetWebUrlByType) {
   const std::map<TestCase, base::Optional<GURL>> test_cases = {
       // OK: Supported web deep link types.
       {CreateTestCase(DeepLinkType::kLists),
-       GURL("https://assistant.google.com/lists/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/lists/"
+            "mainview?hl=en-US&source=Assistant")},
       {CreateTestCaseWithParam(DeepLinkType::kLists,
                                std::make_pair("id", "123456")),
-       GURL("https://assistant.google.com/lists/list/123456?hl=en-US")},
+       GURL("https://assistant.google.com/lists/list/"
+            "123456?hl=en-US&source=Assistant")},
       {CreateTestCase(DeepLinkType::kNotes),
        GURL("https://assistant.google.com/lists/"
-            "mainview?note_tap=true&hl=en-US")},
+            "mainview?note_tap=true&hl=en-US&source=Assistant")},
       {CreateTestCaseWithParam(DeepLinkType::kNotes,
                                std::make_pair("id", "123456")),
-       GURL("https://assistant.google.com/lists/note/123456?hl=en-US")},
+       GURL("https://assistant.google.com/lists/note/"
+            "123456?hl=en-US&source=Assistant")},
       {CreateTestCase(DeepLinkType::kReminders),
-       GURL("https://assistant.google.com/reminders/mainview?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/"
+            "mainview?hl=en-US&source=Assistant")},
       {CreateTestCaseWithParam(DeepLinkType::kReminders,
                                std::make_pair("id", "123456")),
-       GURL("https://assistant.google.com/reminders/id/123456?hl=en-US")},
+       GURL("https://assistant.google.com/reminders/id/"
+            "123456?hl=en-US&source=Assistant")},
       {CreateTestCase(DeepLinkType::kSettings),
        GURL("https://assistant.google.com/settings/mainpage?hl=en-US")},
 
