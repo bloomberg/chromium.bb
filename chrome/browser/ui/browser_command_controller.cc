@@ -77,7 +77,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 #endif
@@ -1275,7 +1275,8 @@ void NonWhitelistedCommandsAreDisabled(CommandUpdaterImpl* command_updater) {
 }  // namespace
 
 void BrowserCommandController::UpdateCommandsForLockedFullscreenMode() {
-  bool is_locked_fullscreen = ash::IsWindowTrustedPinned(browser_->window());
+  bool is_locked_fullscreen =
+      platform_util::IsBrowserLockedFullscreen(browser_);
   // Sanity check to make sure this function is called only on state change.
   DCHECK_NE(is_locked_fullscreen, is_locked_fullscreen_);
   if (is_locked_fullscreen == is_locked_fullscreen_)

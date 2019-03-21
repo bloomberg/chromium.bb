@@ -35,7 +35,6 @@
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "chromeos/constants/chromeos_switches.h"

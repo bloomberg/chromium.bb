@@ -4,7 +4,8 @@
 
 #include "chrome/browser/platform_util.h"
 
-#include "ash/public/cpp/window_pin_type.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -124,16 +125,14 @@ void OpenExternal(Profile* profile, const GURL& url) {
 }
 
 bool IsBrowserLockedFullscreen(const Browser* browser) {
-  // TODO(isandrk): Roll the IsUsingWindowService logic into
-  // ash::IsWindowTrustedPinned, get rid of the IsWindowTrustedPinned override,
-  // and refactor callsites of the IsWindowTrustedPinned override to use this
-  // function instead.
   aura::Window* window = browser->window()->GetNativeWindow();
   // |window| can be nullptr inside of unit tests.
   if (!window)
     return false;
-  return ash::IsWindowTrustedPinned(
-      features::IsUsingWindowService() ? window->GetRootWindow() : window);
+  if (features::IsUsingWindowService())
+    window = window->GetRootWindow();
+  return window->GetProperty(ash::kWindowPinTypeKey) ==
+         ash::mojom::WindowPinType::TRUSTED_PINNED;
 }
 
 }  // namespace platform_util

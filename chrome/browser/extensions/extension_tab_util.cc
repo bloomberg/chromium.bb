@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -48,10 +49,6 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
-#endif
 
 using content::NavigationEntry;
 using content::WebContents;
@@ -453,10 +450,8 @@ ExtensionTabUtil::CreateWindowValueForExtension(
     window_state = tabs_constants::kShowStateValueMinimized;
   } else if (window->IsFullscreen()) {
     window_state = tabs_constants::kShowStateValueFullscreen;
-#if defined(OS_CHROMEOS)
-    if (ash::IsWindowTrustedPinned(window))
+    if (platform_util::IsBrowserLockedFullscreen(&browser))
       window_state = tabs_constants::kShowStateValueLockedFullscreen;
-#endif
   } else if (window->IsMaximized()) {
     window_state = tabs_constants::kShowStateValueMaximized;
   } else {

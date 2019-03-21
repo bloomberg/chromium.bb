@@ -33,6 +33,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -165,7 +166,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
@@ -2731,15 +2731,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   const bool should_stay_in_immersive =
       !fullscreen &&
       immersive_mode_controller_->ShouldStayImmersiveAfterExitingFullscreen();
-  bool is_locked_fullscreen = false;
-#if defined(OS_CHROMEOS)
-  is_locked_fullscreen = ash::IsWindowTrustedPinned(
-      features::IsUsingWindowService() ? GetNativeWindow()->GetRootWindow()
-                                       : GetNativeWindow());
-#endif
   // Never use immersive in locked fullscreen as it allows the user to exit the
   // locked mode.
-  if (is_locked_fullscreen) {
+  if (platform_util::IsBrowserLockedFullscreen(browser_.get())) {
     immersive_mode_controller_->SetEnabled(false);
   } else if (ShouldUseImmersiveFullscreenForUrl(url) &&
              !should_stay_in_immersive) {
