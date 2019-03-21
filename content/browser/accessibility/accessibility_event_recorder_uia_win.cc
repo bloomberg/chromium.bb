@@ -168,7 +168,6 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
   // remaining events to our owner.
   {
     base::AutoLock lock{on_event_lock_};
-    CHECK_LE(event_logs_.size(), 2u);
     if (event_logs_.size() == 1) {
       // Only received events on a single thread... perhaps the bug was fixed?
       // Forward all events.
@@ -202,6 +201,27 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
         owner_->OnEvent(*it1++);
       while (it2 < events_thread2.end())
         owner_->OnEvent(*it2++);
+    } else {
+      // Typically we'll get events on exactly two threads (one directly from
+      // UIA, the second from RPC), but sometimes RPC will split its events
+      // across different threads.
+      //
+      // Unfortunately, there is no robust method of eliminating duplicates in
+      // this case.  Tests with intentional duplicates could run afoul of this
+      // logic in rare scenarios; it is recommended that intentionally
+      // duplicated events be avoided in tests, when possible.
+      std::vector<std::string> combined;
+      for (auto&& log : event_logs_)
+        combined.insert(combined.end(), log.second.begin(), log.second.end());
+      std::sort(combined.begin(), combined.end());
+
+      std::string last_event;
+      for (auto&& event : combined) {
+        if (last_event != event)
+          owner_->OnEvent(last_event = event);
+        else
+          last_event = {};
+      }
     }
   }
 
