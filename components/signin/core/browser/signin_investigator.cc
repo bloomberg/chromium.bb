@@ -17,7 +17,7 @@ namespace {
 void LogSigninScenario(InvestigatedScenario scenario) {
   UMA_HISTOGRAM_ENUMERATION(
       "Signin.InvestigatedScenario", static_cast<int>(scenario),
-      static_cast<int>(InvestigatedScenario::HISTOGRAM_COUNT));
+      static_cast<int>(InvestigatedScenario::NUM_ENTRIES));
 }
 }  // namespace
 

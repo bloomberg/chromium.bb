@@ -1286,9 +1286,6 @@ jint AwContents::GetEffectivePriority(
       return static_cast<jint>(RendererPriority::LOW);
     case content::ChildProcessImportance::IMPORTANT:
       return static_cast<jint>(RendererPriority::HIGH);
-    case content::ChildProcessImportance::COUNT:
-      NOTREACHED();
-      return 0;
   }
   NOTREACHED();
   return 0;
