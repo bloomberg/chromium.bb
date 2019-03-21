@@ -299,13 +299,13 @@ const int kLocationAuthorizationStatusCount = 4;
   [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
 
   // When the NTP and fakebox are visible, make the fakebox animates into place
-  // before focusing the omnibox.webState
+  // before focusing the omnibox.
   if (IsVisibleURLNewTabPage([self webState]) &&
       !self.browserState->IsOffTheRecord()) {
     [self.viewController.dispatcher focusFakebox];
   } else {
     [self.omniboxCoordinator focusOmnibox];
-    [self.omniboxPopupCoordinator openPopup];
+    [self.omniboxPopupCoordinator presentShortcutsIfNecessary];
   }
 }
 
@@ -315,7 +315,7 @@ const int kLocationAuthorizationStatusCount = 4;
   }
   self.isCancellingOmniboxEdit = YES;
   [self.omniboxCoordinator endEditing];
-  [self.omniboxPopupCoordinator closePopup];
+  [self.omniboxPopupCoordinator dismissShortcuts];
   self.isCancellingOmniboxEdit = NO;
 }
 

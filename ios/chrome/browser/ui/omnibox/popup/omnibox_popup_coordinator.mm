@@ -92,7 +92,7 @@
   return self.mediator.isOpen;
 }
 
-- (void)openPopup {
+- (void)presentShortcutsIfNecessary {
   // Initialize the shortcuts feature when necessary.
   if (base::FeatureList::IsEnabled(
           omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
@@ -117,14 +117,14 @@
     self.popupViewController.shortcutsEnabled = YES;
   }
 
-  [self.mediator.presenter updateHeight];
-  self.mediator.open = YES;
+  [self.mediator.presenter updatePopup];
+  self.mediator.open = self.mediator.presenter.isOpen;
 }
 
-- (void)closePopup {
-  self.mediator.open = NO;
+- (void)dismissShortcuts {
   self.popupViewController.shortcutsEnabled = NO;
-  [self.mediator.presenter collapse];
+  [self.mediator.presenter updatePopup];
+  self.mediator.open = self.mediator.presenter.isOpen;
 }
 
 #pragma mark - Property accessor

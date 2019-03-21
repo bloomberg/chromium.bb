@@ -58,14 +58,6 @@
   self.hasResults = !_currentResult.empty();
 
   [self.consumer updateMatches:[self wrappedMatches] withAnimation:animation];
-
-  BOOL shortcutsEnabled = base::FeatureList::IsEnabled(
-      omnibox::kOmniboxPopupShortcutIconsInZeroState);
-  BOOL isNTP = IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState());
-
-  if (!self.hasResults && (!shortcutsEnabled || isNTP)) {
-    [self.presenter collapse];
-  }
 }
 
 - (NSArray<id<AutocompleteSuggestion>>*)wrappedMatches {
@@ -98,9 +90,7 @@
   }
   self.open = !result.empty();
 
-  if (self.open) {
-    [self.presenter updateHeight];
-  }
+  [self.presenter updatePopup];
 }
 
 - (void)setTextAlignment:(NSTextAlignment)alignment {
