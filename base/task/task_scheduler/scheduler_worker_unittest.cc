@@ -177,7 +177,8 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<int> {
       }
 
       // Create a Sequence with TasksPerSequence() Tasks.
-      scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(TaskTraits());
+      scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
+          TaskTraits(), nullptr, TaskSourceExecutionMode::kParallel);
       Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
       for (int i = 0; i < outer_->TasksPerSequence(); ++i) {
         Task task(FROM_HERE,
@@ -445,8 +446,10 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
     }
 
     controls_->work_requested_ = true;
-    scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(TaskTraits(
-        WithBaseSyncPrimitives(), TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
+    scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
+        TaskTraits(WithBaseSyncPrimitives(),
+                   TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+        nullptr, TaskSourceExecutionMode::kParallel);
     Task task(
         FROM_HERE,
         BindOnce(

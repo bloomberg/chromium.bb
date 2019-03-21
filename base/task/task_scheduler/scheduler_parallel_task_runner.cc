@@ -25,7 +25,8 @@ bool SchedulerParallelTaskRunner::PostDelayedTask(const Location& from_here,
     return false;
 
   // Post the task as part of a one-off single-task Sequence.
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits_, this);
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
+      traits_, this, TaskSourceExecutionMode::kParallel);
 
   {
     AutoSchedulerLock auto_lock(lock_);

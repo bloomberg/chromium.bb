@@ -159,8 +159,10 @@ bool TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
                                                   TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
-  return PostTaskWithSequence(Task(from_here, std::move(task), delay),
-                              MakeRefCounted<Sequence>(new_traits));
+  return PostTaskWithSequence(
+      Task(from_here, std::move(task), delay),
+      MakeRefCounted<Sequence>(new_traits, nullptr,
+                               TaskSourceExecutionMode::kParallel));
 }
 
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(
@@ -262,6 +264,9 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
     GetWorkerPoolForTraits(traits)->PostTaskWithSequenceNow(
         std::move(task), std::move(sequence_and_transaction));
   } else {
+    // It's safe to take a ref on this pointer since the caller must have a ref
+    // to the TaskRunner in order to post.
+    scoped_refptr<TaskRunner> task_runner = sequence->task_runner();
     delayed_task_manager_.AddDelayedTask(
         std::move(task),
         BindOnce(
@@ -275,7 +280,8 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
                   ->PostTaskWithSequenceNow(
                       std::move(task), std::move(sequence_and_transaction));
             },
-            std::move(sequence), Unretained(this)));
+            std::move(sequence), Unretained(this)),
+        std::move(task_runner));
   }
 
   return true;

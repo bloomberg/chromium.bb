@@ -33,9 +33,12 @@ namespace internal {
 
 namespace {
 
-constexpr char kParallelExecutionMode[] = "parallel";
-constexpr char kSequencedExecutionMode[] = "sequenced";
-constexpr char kSingleThreadExecutionMode[] = "single thread";
+constexpr const char* kExecutionModeString[] = {"parallel", "sequenced",
+                                                "single thread"};
+static_assert(
+    size(kExecutionModeString) ==
+        static_cast<size_t>(TaskSourceExecutionMode::kMax) + 1,
+    "Array kExecutionModeString is out of sync with TaskSourceExecutionMode.");
 
 // An immutable copy of a scheduler task's info required by tracing.
 class TaskTracingInfo : public trace_event::ConvertableToTraceFormat {
@@ -64,7 +67,7 @@ void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
   dict.SetString("task_priority",
                  base::TaskPriorityToString(task_traits_.priority()));
   dict.SetString("execution_mode", execution_mode_);
-  if (execution_mode_ != kParallelExecutionMode)
+  if (sequence_token_.IsValid())
     dict.SetInteger("sequence_token", sequence_token_.ToInternalValue());
 
   std::string tmp;
@@ -609,29 +612,33 @@ void TaskTracker::RunOrSkipTask(Task task,
     // Set up TaskRunnerHandle as expected for the scope of the task.
     Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
     Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
-    DCHECK(!task.sequenced_task_runner_ref ||
-           !task.single_thread_task_runner_ref);
-    if (task.sequenced_task_runner_ref) {
-      sequenced_task_runner_handle.emplace(task.sequenced_task_runner_ref);
-    } else if (task.single_thread_task_runner_ref) {
-      single_thread_task_runner_handle.emplace(
-          task.single_thread_task_runner_ref);
+    switch (sequence->execution_mode()) {
+      case TaskSourceExecutionMode::kParallel:
+        break;
+      case TaskSourceExecutionMode::kSequenced:
+        DCHECK(sequence->task_runner());
+        sequenced_task_runner_handle.emplace(
+            static_cast<SequencedTaskRunner*>(sequence->task_runner()));
+        break;
+      case TaskSourceExecutionMode::kSingleThread:
+        DCHECK(sequence->task_runner());
+        single_thread_task_runner_handle.emplace(
+            static_cast<SingleThreadTaskRunner*>(sequence->task_runner()));
+        break;
     }
 
     if (can_run_task) {
       TRACE_TASK_EXECUTION("TaskScheduler_RunTask", task);
 
-      const char* const execution_mode =
-          task.single_thread_task_runner_ref
-              ? kSingleThreadExecutionMode
-              : (task.sequenced_task_runner_ref ? kSequencedExecutionMode
-                                                : kParallelExecutionMode);
       // TODO(gab): In a better world this would be tacked on as an extra arg
       // to the trace event generated above. This is not possible however until
       // http://crbug.com/652692 is resolved.
       TRACE_EVENT1("task_scheduler", "TaskScheduler_TaskInfo", "task_info",
-                   std::make_unique<TaskTracingInfo>(traits, execution_mode,
-                                                     environment.token));
+                   std::make_unique<TaskTracingInfo>(
+                       traits,
+                       kExecutionModeString[static_cast<size_t>(
+                           sequence->execution_mode())],
+                       environment.token));
 
       RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);
     }
