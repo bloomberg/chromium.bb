@@ -44,6 +44,7 @@ namespace identity {
 
 class AccountsMutator;
 class AccountsCookieMutator;
+class IdentityTestEnvironment;
 class DiagnosticsProvider;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
@@ -520,6 +521,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/889902): Delete this when conversion is done.
   friend SigninManagerAndroid;
 
+  // Temporary access to getters (e.g. GetTokenService()).
+  // TODO(https://crbug.com/944127): Remove this friendship by
+  // extending identity_test_utils.h as needed.
+  friend IdentityTestEnvironment;
+
   // IdentityManagerTest reaches into IdentityManager internals in
   // order to drive its behavior.
   // TODO(https://crbug.com/943135): Find a better way to accomplish this.
@@ -539,6 +545,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   SigninManagerBase* GetSigninManager();
   ProfileOAuth2TokenService* GetTokenService();
   AccountTrackerService* GetAccountTrackerService();
+  AccountFetcherService* GetAccountFetcherService();
   GaiaCookieManagerService* GetGaiaCookieManagerService();
 
   // Populates and returns an AccountInfo object corresponding to |account_id|,
