@@ -48,8 +48,8 @@ CanvasColorParams::CanvasColorParams(const SkImageInfo& info)
     : CanvasColorParams(info.refColorSpace(), info.colorType()) {}
 
 bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
-  return color_space_ == kSRGBCanvasColorSpace &&
-         pixel_format_ == kRGBA8CanvasPixelFormat;
+  // Part of larger effort to remove ColorSpaceXformCanvas (reed)
+  return false;
 }
 
 std::unique_ptr<cc::PaintCanvas> CanvasColorParams::WrapCanvas(

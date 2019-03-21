@@ -1233,8 +1233,6 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
   auto color_params = CanvasColorParams(kSRGBCanvasColorSpace,
                                         kRGBA8CanvasPixelFormat, kOpaque);
-  ASSERT_TRUE(color_params.NeedsSkColorSpaceXformCanvas());
-
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
