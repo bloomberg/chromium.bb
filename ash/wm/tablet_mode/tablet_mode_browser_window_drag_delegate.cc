@@ -11,7 +11,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -42,29 +42,6 @@ constexpr float kSourceWindowScale = 0.85;
 // Threshold of the fling velocity to keep the dragged window as a new separate
 // window after drag ends and do not try to merge it back into source window.
 constexpr float kFlingToStayAsNewWindowThreshold = 2000.f;
-
-// The color and opacity of the screen shield.
-constexpr SkColor kShieldColor = SkColorSetARGB(255, 0, 0, 0);
-
-// The base color which is mixed with the dark muted color from wallpaper to
-// form the shield widgets color.
-constexpr SkColor kShieldBaseColor = SkColorSetARGB(179, 0, 0, 0);
-
-// Returns the shield color that is used to darken the background.
-SkColor GetShieldColor() {
-  SkColor shield_color = kShieldColor;
-  // Extract the dark muted color from the wallpaper and mix it with
-  // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
-  // could not be extracted.
-  SkColor dark_muted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile());
-  if (dark_muted_color != ash::kInvalidWallpaperColor) {
-    shield_color =
-        color_utils::GetResultingPaintColor(kShieldBaseColor, dark_muted_color);
-  }
-  return shield_color;
-}
 
 // The class to observe the source window's bounds change animation. It's used
 // to prevent the dragged window to merge back into the source window during
@@ -173,25 +150,14 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     // Hide the home launcher if it's enabled during dragging.
     Shell::Get()->home_screen_controller()->OnWindowDragStarted();
 
-    // TODO: Do dimming and blurring in wallpaper to avoid creating another
-    // fullscreen widget. Blurs the wallpaper background.
-    RootWindowController::ForWindow(root_window)
-        ->wallpaper_widget_controller()
-        ->SetWallpaperBlur(kWallpaperBlurSigma);
-
-    // Darken the background.
-    shield_widget_ = CreateBackgroundWidget(
-        root_window, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
-        SK_ColorTRANSPARENT, /*initial_opacity*/ 1.f, /*parent=*/nullptr,
-        /*stack_on_top=*/true, /*accept_events=*/false);
-    aura::Window* widget_window = shield_widget_->GetNativeWindow();
-    const gfx::Rect bounds = widget_window->parent()->bounds();
-    widget_window->SetBounds(bounds);
-    views::View* shield_view = new views::View();
-    shield_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    shield_view->layer()->SetColor(GetShieldColor());
-    shield_view->layer()->SetOpacity(kShieldOpacity);
-    shield_widget_->SetContentsView(shield_view);
+    // Blurs the wallpaper background.
+    auto* wallpaper_view = RootWindowController::ForWindow(root_window)
+                               ->wallpaper_widget_controller()
+                               ->wallpaper_view();
+    if (wallpaper_view) {
+      wallpaper_view->RepaintBlurAndOpacity(kWallpaperBlurSigma,
+                                            kShieldOpacity);
+    }
   }
 
   ~WindowsHider() override {
@@ -216,12 +182,12 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     Shell::Get()->home_screen_controller()->OnWindowDragEnded();
 
     // Clears the background wallpaper blur.
-    RootWindowController::ForWindow(dragged_window_->GetRootWindow())
-        ->wallpaper_widget_controller()
-        ->SetWallpaperBlur(kWallpaperClearBlurSigma);
-
-    // Clears the background darken widget.
-    shield_widget_.reset();
+    auto* wallpaper_view =
+        RootWindowController::ForWindow(dragged_window_->GetRootWindow())
+            ->wallpaper_widget_controller()
+            ->wallpaper_view();
+    if (wallpaper_view)
+      wallpaper_view->RepaintBlurAndOpacity(kWallpaperClearBlurSigma, 1.f);
   }
 
   // aura::WindowObserver:
@@ -246,10 +212,6 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
   // The currently dragged window. Guaranteed to be non-nullptr during the
   // lifetime of |this|.
   aura::Window* dragged_window_;
-
-  // A shield that darkens the entire background during dragging. It should
-  // have the same effect as in overview.
-  std::unique_ptr<views::Widget> shield_widget_;
 
   // Maintains the map between windows and their visibilities. All windows
   // except the dragged window and the source window should stay hidden during
