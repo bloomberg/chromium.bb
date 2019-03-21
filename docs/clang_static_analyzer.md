@@ -20,7 +20,7 @@ for more background information.
 
 ## Save some time, look at the buildbot logs!
 
-We run static analysis builds continously, all day long on FYI buildbots.
+We run static analysis builds continuously, all day long on FYI buildbots.
 You can save yourself some time by first inspecting their build logs for errors
 before running your own analysis builds. You will probably need to Ctrl-F the
 logs to find any issues for the specific files you're interested in.
