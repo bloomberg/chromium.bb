@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"

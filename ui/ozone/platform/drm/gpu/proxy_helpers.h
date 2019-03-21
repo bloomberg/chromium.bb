@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_PROXY_HELPERS_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_PROXY_HELPERS_H_
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"

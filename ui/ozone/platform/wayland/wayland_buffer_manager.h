@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_BUFFER_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/containers/flat_map.h"

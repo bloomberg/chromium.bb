@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_WINDOW_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_WINDOW_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

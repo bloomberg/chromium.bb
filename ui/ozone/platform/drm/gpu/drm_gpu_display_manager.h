@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_DISPLAY_MANAGER_H_
 
 #include <stdint.h>
-
 #include <memory>
 #include <vector>
 

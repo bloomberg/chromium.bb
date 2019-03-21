@@ -4,6 +4,7 @@
 
 #include <text-input-unstable-v1-server-protocol.h>
 #include <wayland-server.h>
+#include <memory>
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"

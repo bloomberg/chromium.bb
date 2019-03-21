@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"

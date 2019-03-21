@@ -6,6 +6,7 @@
 #define UI_OZONE_DEMO_VULKAN_OVERLAY_RENDERER_H_
 
 #include <vulkan/vulkan.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

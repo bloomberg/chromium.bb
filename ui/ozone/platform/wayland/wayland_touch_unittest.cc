@@ -4,6 +4,7 @@
 
 #include <linux/input.h>
 #include <wayland-server.h>
+#include <memory>
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

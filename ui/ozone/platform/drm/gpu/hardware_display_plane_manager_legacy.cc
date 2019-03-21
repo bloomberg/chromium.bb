@@ -6,6 +6,8 @@
 
 #include <errno.h>
 #include <sync/sync.h>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/posix/eintr_wrapper.h"

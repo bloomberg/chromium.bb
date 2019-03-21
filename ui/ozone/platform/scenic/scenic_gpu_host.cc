@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 
 #include <inttypes.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"

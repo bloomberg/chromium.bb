@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v6.h"
 
 #include <xdg-shell-unstable-v6-client-protocol.h>
+#include <memory>
 
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"

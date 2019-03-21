@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_WINDOW_H_
 
+#include <memory>
 #include <set>
 #include <vector>
 

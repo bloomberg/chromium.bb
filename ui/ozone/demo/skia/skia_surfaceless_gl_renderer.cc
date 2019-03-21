@@ -5,6 +5,8 @@
 #include "ui/ozone/demo/skia/skia_surfaceless_gl_renderer.h"
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

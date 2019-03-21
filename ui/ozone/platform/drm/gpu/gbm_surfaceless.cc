@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

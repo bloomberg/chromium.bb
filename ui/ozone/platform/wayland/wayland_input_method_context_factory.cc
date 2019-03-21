@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_input_method_context_factory.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_input_method_context.h"

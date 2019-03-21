@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
 #include <gbm.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

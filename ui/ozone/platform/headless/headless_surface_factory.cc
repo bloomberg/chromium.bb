@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/headless/headless_surface_factory.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"

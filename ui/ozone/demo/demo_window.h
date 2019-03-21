@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_DEMO_DEMO_WINDOW_H_
 #define UI_OZONE_DEMO_DEMO_WINDOW_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

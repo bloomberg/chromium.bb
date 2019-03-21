@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drmMode.h>
+#include <memory>
 
 #include "base/files/platform_file.h"
 #include "base/logging.h"

@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_POINTER_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_POINTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"

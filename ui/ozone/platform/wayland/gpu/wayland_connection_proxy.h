@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"

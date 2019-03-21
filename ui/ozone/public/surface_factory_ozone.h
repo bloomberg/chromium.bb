@@ -6,7 +6,6 @@
 #define UI_OZONE_PUBLIC_SURFACE_FACTORY_OZONE_H_
 
 #include <stdint.h>
-
 #include <memory>
 #include <vector>
 

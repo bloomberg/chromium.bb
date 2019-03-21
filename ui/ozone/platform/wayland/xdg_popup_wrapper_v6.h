@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_XDG_POPUP_WRAPPER_V6_H_
 #define UI_OZONE_PLATFORM_WAYLAND_XDG_POPUP_WRAPPER_V6_H_
 
+#include <memory>
+
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper.h"
 
 namespace ui {

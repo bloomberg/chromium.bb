@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_DEMO_GL_RENDERER_H_
 #define UI_OZONE_DEMO_GL_RENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

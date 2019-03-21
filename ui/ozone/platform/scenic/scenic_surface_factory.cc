@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 
 #include <lib/zx/event.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"

@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
+#include <memory>
 
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"

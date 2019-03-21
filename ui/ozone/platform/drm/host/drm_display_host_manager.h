@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_MANAGER_H_
 
 #include <stdint.h>
-
 #include <map>
 #include <memory>
 

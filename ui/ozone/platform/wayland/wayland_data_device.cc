@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/wayland_data_device.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"

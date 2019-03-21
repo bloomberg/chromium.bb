@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <iostream>
+#include <memory>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
