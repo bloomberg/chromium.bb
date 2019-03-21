@@ -82,7 +82,7 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
     if (HasAuthError(service())) {
       return true;
     }
-    if (service()->passphrase_required_reason_for_test() ==
+    if (service()->GetPassphraseRequiredReasonForTest() ==
         syncer::REASON_DECRYPTION) {
       LOG(FATAL)
           << "A passphrase is required for decryption but was not provided. "
@@ -598,7 +598,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << snap.model_neutral_state().num_updates_downloaded_total
        << ", passphrase_required_reason: "
        << syncer::PassphraseRequiredReasonToString(
-              service()->passphrase_required_reason_for_test())
+              service()->GetPassphraseRequiredReasonForTest())
        << ", notifications_enabled: " << status.notifications_enabled
        << ", service_is_active: " << service()->IsSyncFeatureActive();
   } else {

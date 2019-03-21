@@ -1892,7 +1892,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(IsEncryptionComplete(0));
   ASSERT_TRUE(IsEncryptionComplete(1));
-  ASSERT_TRUE(GetSyncService(1)->IsPassphraseRequired());
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->IsPassphraseRequired());
 
   // Client 0 adds bookmarks between the first two and between the second two.
   ASSERT_NE(nullptr, AddURL(0, 1, IndexedURLTitle(3), GURL(IndexedURL(3))));
