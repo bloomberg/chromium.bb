@@ -155,15 +155,6 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
 
 class ImageLoader::Task {
  public:
-  static std::unique_ptr<Task> Create(
-      ImageLoader* loader,
-      const KURL& request_url,
-      UpdateFromElementBehavior update_behavior,
-      network::mojom::ReferrerPolicy referrer_policy) {
-    return std::make_unique<Task>(loader, request_url, update_behavior,
-                                  referrer_policy);
-  }
-
   Task(ImageLoader* loader,
        const KURL& request_url,
        UpdateFromElementBehavior update_behavior,
@@ -449,8 +440,8 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
     const KURL& request_url,
     UpdateFromElementBehavior update_behavior,
     network::mojom::ReferrerPolicy referrer_policy) {
-  std::unique_ptr<Task> task =
-      Task::Create(this, request_url, update_behavior, referrer_policy);
+  auto task = std::make_unique<Task>(this, request_url, update_behavior,
+                                     referrer_policy);
   pending_task_ = task->GetWeakPtr();
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));

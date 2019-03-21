@@ -148,8 +148,7 @@ TEST_F(CSSVariableResolverTest, ParseEnvVariable_WhenNested_WillFallback) {
 TEST_F(CSSVariableResolverTest, NoResolutionWithoutVar) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -166,8 +165,7 @@ TEST_F(CSSVariableResolverTest, NoResolutionWithoutVar) {
 TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -201,8 +199,7 @@ TEST_F(CSSVariableResolverTest, VarNeedsResolution) {
 TEST_F(CSSVariableResolverTest, UrlNeedsResolution) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   EXPECT_FALSE(inherited_variables->NeedsResolution());
   EXPECT_FALSE(non_inherited_variables->NeedsResolution());
@@ -219,8 +216,7 @@ TEST_F(CSSVariableResolverTest, UrlNeedsResolution) {
 TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
   scoped_refptr<StyleInheritedVariables> inherited_variables =
       StyleInheritedVariables::Create();
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   const auto* prop = CreateCustomProperty("var(--x)");
 
@@ -348,8 +344,7 @@ TEST_F(CSSVariableResolverTest, RemoveVariableInheritedViaRoot) {
 }
 
 TEST_F(CSSVariableResolverTest, RemoveNonInheritedVariable) {
-  std::unique_ptr<StyleNonInheritedVariables> non_inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto non_inherited_variables = std::make_unique<StyleNonInheritedVariables>();
 
   AtomicString name("--prop");
   const auto* prop = CreateCustomProperty("test");
@@ -375,8 +370,7 @@ TEST_F(CSSVariableResolverTest, DontCrashWhenSettingInheritedNullVariable) {
 }
 
 TEST_F(CSSVariableResolverTest, DontCrashWhenSettingNonInheritedNullVariable) {
-  std::unique_ptr<StyleNonInheritedVariables> inherited_variables =
-      StyleNonInheritedVariables::Create();
+  auto inherited_variables = std::make_unique<StyleNonInheritedVariables>();
   AtomicString name("--test");
   inherited_variables->SetVariable(name, nullptr);
   inherited_variables->SetRegisteredVariable(name, nullptr);
