@@ -89,15 +89,21 @@ cr.define('cr.ui', () => {
       }
       this.setMenuAsAnimating_(menu, true /* animating */);
 
-      const player = menu.animate([{
-        opacity: 1,
-        offset: 0
-      }, {
-        opacity: 0,
-        offset: 1
-      }], 300);
+      const player = menu.animate(
+          [
+            {
+              opacity: 1,
+              offset: 0,
+            },
+            {
+              opacity: 0,
+              offset: 1,
+            },
+          ],
+          300);
 
-      player.addEventListener('finish',
+      player.addEventListener(
+          'finish',
           this.setMenuAsAnimating_.bind(this, menu, false /* not animating */));
     },
 
@@ -149,8 +155,8 @@ cr.define('cr.ui', () => {
         return this.hidden_;
       }
 
-      return Object.getOwnPropertyDescriptor(
-          HTMLElement.prototype, 'hidden').get.call(this);
+      return Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden')
+          .get.call(this);
     },
 
     /**
@@ -164,8 +170,8 @@ cr.define('cr.ui', () => {
         return;
       }
 
-      Object.getOwnPropertyDescriptor(
-          HTMLElement.prototype, 'hidden').set.call(this, value);
+      Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden')
+          .set.call(this, value);
     },
 
     /**
@@ -198,6 +204,6 @@ cr.define('cr.ui', () => {
   };
 
   return {
-    FilesMenuItem: FilesMenuItem
+    FilesMenuItem: FilesMenuItem,
   };
 });

@@ -248,7 +248,9 @@ filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handleTap = function(e, index, eventType) {
-  const sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
+  const sm = /**
+                @type {!FileListSelectionModel|!FileListSingleSelectionModel}
+                  */
       (this.selectionModel);
   if (eventType == FileTapHandler.TapEvent.TWO_FINGER_TAP) {
     // Prepare to open the context menu in the same manner as the right click.
@@ -346,13 +348,15 @@ filelist.handleTap = function(e, index, eventType) {
  * @this {cr.ui.ListSelectionController}
  */
 filelist.handlePointerDownUp = function(e, index) {
-  const sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
-           (this.selectionModel);
+  const sm = /**
+                @type {!FileListSelectionModel|!FileListSingleSelectionModel}
+                  */
+      (this.selectionModel);
   const anchorIndex = sm.anchorIndex;
   const isDown = (e.type == 'mousedown');
 
   const isTargetCheckmark = e.target.classList.contains('detail-checkmark') ||
-                          e.target.classList.contains('checkmark');
+      e.target.classList.contains('checkmark');
   // If multiple selection is allowed and the checkmark is clicked without
   // modifiers(Ctrl/Shift), the click should toggle the item's selection.
   // (i.e. same behavior as Ctrl+Click)
@@ -458,8 +462,10 @@ filelist.handleKeyDown = function(e) {
     return;
   }
 
-  const sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
-           (this.selectionModel);
+  const sm = /**
+                @type {!FileListSelectionModel|!FileListSingleSelectionModel}
+                  */
+      (this.selectionModel);
   let newIndex = -1;
   const leadIndex = sm.leadIndex;
   let prevent = true;

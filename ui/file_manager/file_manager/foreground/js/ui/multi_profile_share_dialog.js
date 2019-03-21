@@ -72,20 +72,18 @@ MultiProfileShareDialog.prototype = {
  * @return {!Promise} Promise fulfilled with the result of dialog. If the dialog
  *     is already opened, it returns null.
  */
-MultiProfileShareDialog.prototype.showMultiProfileShareDialog =
-    function(plural) {
+MultiProfileShareDialog.prototype.showMultiProfileShareDialog = function(
+    plural) {
   return this.currentProfileId_.then(currentProfileId => {
     return new Promise((fulfill, reject) => {
       this.shareTypeSelect_.selectedIndex = 0;
       this.mailLabel_.textContent = currentProfileId;
       const result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
           this,
-          str(plural ?
-              'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :
-              'MULTI_PROFILE_SHARE_DIALOG_TITLE'),
-          str(plural ?
-              'MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL' :
-              'MULTI_PROFILE_SHARE_DIALOG_MESSAGE'),
+          str(plural ? 'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :
+                       'MULTI_PROFILE_SHARE_DIALOG_TITLE'),
+          str(plural ? 'MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL' :
+                       'MULTI_PROFILE_SHARE_DIALOG_MESSAGE'),
           () => {
             fulfill(this.shareTypeSelect_.value);
           },

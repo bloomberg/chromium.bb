@@ -51,12 +51,15 @@ CommandButton.prototype.getCommand = function() {
  */
 CommandButton.prototype.setCommand = function(command) {
   if (this.command_) {
-    this.command_.removeEventListener('labelChange',
-                                      /** @type {EventListener} */ (this));
-    this.command_.removeEventListener('disabledChange',
-                                      /** @type {EventListener} */ (this));
-    this.command_.removeEventListener('hiddenChange',
-                                      /** @type {EventListener} */ (this));
+    this.command_.removeEventListener(
+        'labelChange',
+        /** @type {EventListener} */ (this));
+    this.command_.removeEventListener(
+        'disabledChange',
+        /** @type {EventListener} */ (this));
+    this.command_.removeEventListener(
+        'hiddenChange',
+        /** @type {EventListener} */ (this));
   }
 
   if (typeof command == 'string') {
@@ -76,12 +79,15 @@ CommandButton.prototype.setCommand = function(command) {
     this.disabled = command.disabled;
     this.hidden = command.hidden;
 
-    this.command_.addEventListener('labelChange',
-                                   /** @type {EventListener} */ (this));
-    this.command_.addEventListener('disabledChange',
-                                   /** @type {EventListener} */ (this));
-    this.command_.addEventListener('hiddenChange',
-                                   /** @type {EventListener} */ (this));
+    this.command_.addEventListener(
+        'labelChange',
+        /** @type {EventListener} */ (this));
+    this.command_.addEventListener(
+        'disabledChange',
+        /** @type {EventListener} */ (this));
+    this.command_.addEventListener(
+        'hiddenChange',
+        /** @type {EventListener} */ (this));
   }
 };
 
@@ -144,12 +150,10 @@ CommandButton.prototype.handleEvent = function(e) {
  * Whether the button is disabled or not.
  * @type {boolean}
  */
-cr.defineProperty(CommandButton, 'disabled',
-                  cr.PropertyKind.BOOL_ATTR);
+cr.defineProperty(CommandButton, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
 /**
  * Whether the button is hidden or not.
  * @type {boolean}
  */
-cr.defineProperty(CommandButton, 'hidden',
-                  cr.PropertyKind.BOOL_ATTR);
+cr.defineProperty(CommandButton, 'hidden', cr.PropertyKind.BOOL_ATTR);

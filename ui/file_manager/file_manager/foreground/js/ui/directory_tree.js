@@ -106,22 +106,23 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
  * @param {boolean} isRootEntry Whether the entry selected was a root entry.
  * @return
  */
-DirectoryItemTreeBaseMethods.recordUMASelectedEntry = (e, rootType, isRootEntry) => {
-  const expandIconSelected = e.target.classList.contains('expand-icon');
-  let metricName = 'Location.OnEntrySelected.TopLevel';
-  if (!expandIconSelected && isRootEntry) {
-    metricName = 'Location.OnEntrySelected.TopLevel';
-  } else if (!expandIconSelected && !isRootEntry) {
-    metricName = 'Location.OnEntrySelected.NonTopLevel';
-  } else if (expandIconSelected && isRootEntry) {
-    metricName = 'Location.OnEntryExpandedOrCollapsed.TopLevel';
-  } else if (expandIconSelected && !isRootEntry) {
-    metricName = 'Location.OnEntryExpandedOrCollapsed.NonTopLevel';
-  }
+DirectoryItemTreeBaseMethods.recordUMASelectedEntry =
+    (e, rootType, isRootEntry) => {
+      const expandIconSelected = e.target.classList.contains('expand-icon');
+      let metricName = 'Location.OnEntrySelected.TopLevel';
+      if (!expandIconSelected && isRootEntry) {
+        metricName = 'Location.OnEntrySelected.TopLevel';
+      } else if (!expandIconSelected && !isRootEntry) {
+        metricName = 'Location.OnEntrySelected.NonTopLevel';
+      } else if (expandIconSelected && isRootEntry) {
+        metricName = 'Location.OnEntryExpandedOrCollapsed.TopLevel';
+      } else if (expandIconSelected && !isRootEntry) {
+        metricName = 'Location.OnEntryExpandedOrCollapsed.NonTopLevel';
+      }
 
-  metrics.recordEnum(
-      metricName, rootType, VolumeManagerCommon.RootTypesForUMA);
-};
+      metrics.recordEnum(
+          metricName, rootType, VolumeManagerCommon.RootTypesForUMA);
+    };
 
 Object.freeze(DirectoryItemTreeBaseMethods);
 
@@ -421,7 +422,7 @@ DirectoryItem.prototype.scrollIntoViewIfNeeded = opt_unused => {};
  * @override
  */
 DirectoryItem.prototype.remove = function(child) {
-  this.lastElementChild.removeChild(/** @type {!cr.ui.TreeItem} */(child));
+  this.lastElementChild.removeChild(/** @type {!cr.ui.TreeItem} */ (child));
   if (this.items.length == 0) {
     this.hasChildren = false;
   }
@@ -616,8 +617,7 @@ DirectoryItem.prototype.selectByEntry = function(entry) {
 
   // If the entry doesn't exist, updates sub directories and tries again.
   this.updateSubDirectories(
-      false /* recursive */,
-      this.searchAndSelectByEntry.bind(this, entry));
+      false /* recursive */, this.searchAndSelectByEntry.bind(this, entry));
 };
 
 /**
@@ -1064,12 +1064,10 @@ VolumeItem.prototype.activate = function() {
     this.updateSubDirectories(false);
   };
 
-  this.volumeInfo_.resolveDisplayRoot(
-      onEntryResolved,
-      () => {
-        // Error, the display root is not available. It may happen on Drive.
-        this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
-      });
+  this.volumeInfo_.resolveDisplayRoot(onEntryResolved, () => {
+    // Error, the display root is not available. It may happen on Drive.
+    this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
+  });
 };
 
 /**
@@ -1085,8 +1083,7 @@ VolumeItem.prototype.setupIcon_ = (icon, volumeInfo) => {
   if (backgroundImage !== 'none') {
     // The icon div is not yet added to DOM, therefore it is impossible to
     // use style.backgroundImage.
-    icon.setAttribute(
-        'style', 'background-image: ' + backgroundImage);
+    icon.setAttribute('style', 'background-image: ' + backgroundImage);
   }
   icon.setAttribute('volume-type-icon', volumeInfo.volumeType);
   if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
@@ -1137,12 +1134,12 @@ DriveVolumeItem.prototype = {
   __proto__: VolumeItem.prototype,
   // Overrides the property 'expanded' to prevent Drive volume from shrinking.
   get expanded() {
-    return Object.getOwnPropertyDescriptor(
-        cr.ui.TreeItem.prototype, 'expanded').get.call(this);
+    return Object.getOwnPropertyDescriptor(cr.ui.TreeItem.prototype, 'expanded')
+        .get.call(this);
   },
   set expanded(b) {
-    Object.getOwnPropertyDescriptor(
-        cr.ui.TreeItem.prototype, 'expanded').set.call(this, b);
+    Object.getOwnPropertyDescriptor(cr.ui.TreeItem.prototype, 'expanded')
+        .set.call(this, b);
     // When Google Drive is expanded while it is selected, select the My Drive.
     if (b) {
       if (this.selected && this.entry) {
@@ -1581,9 +1578,7 @@ ShortcutItem.prototype.activate = function() {
   // For shortcuts we already have an Entry, but it has to be resolved again
   // in case, it points to a non-existing directory.
   window.webkitResolveLocalFileSystemURL(
-      this.entry.toURL(),
-      onEntryResolved,
-      () => {
+      this.entry.toURL(), onEntryResolved, () => {
         // Error, the entry can't be re-resolved. It may happen for shortcuts
         // which targets got removed after resolving the Entry during
         // initialization.
@@ -1680,9 +1675,10 @@ FakeItem.prototype.activate = function() {
  * FakeItem doesn't really have sub-directories, it's defined here only to have
  * the same API of other Items on this file.
  */
-FakeItem.prototype.updateSubDirectories = (recursive, opt_successCallback, opt_errorCallback) => {
-  return opt_successCallback && opt_successCallback();
-};
+FakeItem.prototype.updateSubDirectories =
+    (recursive, opt_successCallback, opt_errorCallback) => {
+      return opt_successCallback && opt_successCallback();
+    };
 
 /**
  * FakeItem doesn't really have shared status/icon so we define here as no-op.
@@ -1710,19 +1706,14 @@ function DirectoryTree() {}
  * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
-DirectoryTree.decorate = (
-  el,
-  directoryModel,
-  volumeManager,
-  metadataModel,
-  fileOperationManager,
-  fakeEntriesVisible
-) => {
-  el.__proto__ = DirectoryTree.prototype;
-  /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
-      directoryModel, volumeManager, metadataModel, fileOperationManager,
-      fakeEntriesVisible);
-};
+DirectoryTree.decorate =
+    (el, directoryModel, volumeManager, metadataModel, fileOperationManager,
+     fakeEntriesVisible) => {
+      el.__proto__ = DirectoryTree.prototype;
+      /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
+          directoryModel, volumeManager, metadataModel, fileOperationManager,
+          fakeEntriesVisible);
+    };
 
 DirectoryTree.prototype = {
   __proto__: cr.ui.Tree.prototype,
@@ -1871,7 +1862,7 @@ DirectoryTree.prototype.updateAndSelectNewDirectory = function(
 
   let addAt = 0;
   while (addAt < parentItem.items.length &&
-      parentItem.items[addAt].entry.name < newDirectory.name) {
+         parentItem.items[addAt].entry.name < newDirectory.name) {
     addAt++;
   }
 
@@ -2004,15 +1995,14 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
   this.models_ = [];
 
   this.fileFilter_ = this.directoryModel_.getFileFilter();
-  this.fileFilter_.addEventListener('changed',
-                                    this.onFilterChanged_.bind(this));
+  this.fileFilter_.addEventListener(
+      'changed', this.onFilterChanged_.bind(this));
 
-  this.directoryModel_.addEventListener('directory-changed',
-      this.onCurrentDirectoryChanged_.bind(this));
+  this.directoryModel_.addEventListener(
+      'directory-changed', this.onCurrentDirectoryChanged_.bind(this));
 
   util.addEventListenerToBackgroundComponent(
-      fileOperationManager,
-      'entries-changed',
+      fileOperationManager, 'entries-changed',
       this.onEntriesChanged_.bind(this));
 
   this.addEventListener('click', (event) => {
@@ -2052,13 +2042,13 @@ DirectoryTree.prototype.onEntriesChanged_ = function(event) {
   switch (event.kind) {
     case util.EntryChangedKind.CREATED:
       // Handle as change event of parent entry.
-      Promise.all(
-          directories.map((directory) =>
-            new Promise(directory.getParent.bind(directory))))
+      Promise
+          .all(directories.map(
+              (directory) => new Promise(directory.getParent.bind(directory))))
           .then((parentDirectories) => {
-        parentDirectories.forEach((parentDirectory) =>
-            this.updateTreeByEntry_(parentDirectory));
-      });
+            parentDirectories.forEach(
+                (parentDirectory) => this.updateTreeByEntry_(parentDirectory));
+          });
       break;
     case util.EntryChangedKind.DELETED:
       directories.forEach((directory) => this.updateTreeByEntry_(directory));
@@ -2170,7 +2160,8 @@ DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
  * @private
  */
 DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
-  entry.getDirectory(entry.fullPath, {create: false},
+  entry.getDirectory(
+      entry.fullPath, {create: false},
       () => {
         // If entry exists.
         // e.g. /a/b is deleted while watching /a.
@@ -2186,27 +2177,29 @@ DirectoryTree.prototype.updateTreeByEntry_ = function(entry) {
         // it.
         // e.g. /a/b is deleted while watching /a/b. Try to update /a in this
         //     case.
-        entry.getParent((parentEntry) => {
-          this.updateTreeByEntry_(parentEntry);
-        }, (error) => {
-          // If it fails to get parent, update the subtree by volume.
-          // e.g. /a/b is deleted while watching /a/b/c. getParent of /a/b/c
-          //     fails in this case. We falls back to volume update.
-          //
-          // TODO(yawano): Try to get parent path also in this case by
-          //     manipulating path string.
-          const volumeInfo = this.volumeManager.getVolumeInfo(entry);
-          if (!volumeInfo) {
-            return;
-          }
+        entry.getParent(
+            (parentEntry) => {
+              this.updateTreeByEntry_(parentEntry);
+            },
+            (error) => {
+              // If it fails to get parent, update the subtree by volume.
+              // e.g. /a/b is deleted while watching /a/b/c. getParent of /a/b/c
+              //     fails in this case. We falls back to volume update.
+              //
+              // TODO(yawano): Try to get parent path also in this case by
+              //     manipulating path string.
+              const volumeInfo = this.volumeManager.getVolumeInfo(entry);
+              if (!volumeInfo) {
+                return;
+              }
 
-          for (let i = 0; i < this.items.length; i++) {
-            if (this.items[i] instanceof VolumeItem &&
-                this.items[i].volumeInfo === volumeInfo) {
-              this.items[i].updateSubDirectories(true /* recursive */);
-            }
-          }
-        });
+              for (let i = 0; i < this.items.length; i++) {
+                if (this.items[i] instanceof VolumeItem &&
+                    this.items[i].volumeInfo === volumeInfo) {
+                  this.items[i].updateSubDirectories(true /* recursive */);
+                }
+              }
+            });
       });
 };
 
