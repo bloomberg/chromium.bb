@@ -18,6 +18,7 @@ import java.util.Set;
  * @param <T> The interface of the module/
  */
 public class Module<T> {
+    private static final Set<String> sInstantiatedModuleNames = new HashSet<>();
     private static final Set<String> sModulesUninstalledForTesting = new HashSet<>();
     private final String mName;
     private final Class<T> mInterfaceClass;
@@ -27,8 +28,9 @@ public class Module<T> {
     /** Forces a module to appear uninstalled. */
     @VisibleForTesting
     public static void setForceUninstalled(String moduleName) {
-        // TODO(crbug.com/944223): Make sure that this is not set after the module API has been
-        // used.
+        // We should not be uninstalling anything after the module API has been used for a
+        // particular module.
+        assert !sInstantiatedModuleNames.contains(moduleName);
         sModulesUninstalledForTesting.add(moduleName);
     }
 
@@ -44,6 +46,7 @@ public class Module<T> {
         mName = name;
         mInterfaceClass = interfaceClass;
         mImplClassName = implClassName;
+        sInstantiatedModuleNames.add(name);
     }
 
     /** Returns true if the module is currently installed and can be accessed. */
