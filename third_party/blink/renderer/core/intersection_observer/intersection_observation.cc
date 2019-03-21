@@ -56,7 +56,7 @@ void IntersectionObservation::Compute(unsigned flags) {
     // If we're tracking visibility, and we don't have occlusion information
     // from our parent frame, then postpone computing intersections until a
     // later lifecycle when the occlusion information is known.
-    if (occlusion_state == kUnknownOcclusionState)
+    if (occlusion_state == FrameOcclusionState::kUnknown)
       return;
   }
   last_run_time_ = timestamp;

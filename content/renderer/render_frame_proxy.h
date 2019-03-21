@@ -337,7 +337,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   gfx::Rect last_intersection_rect_;
   gfx::Rect last_compositor_visible_rect_;
-  blink::FrameOcclusionState last_occlusion_state_;
+  blink::FrameOcclusionState last_occlusion_state_ =
+      blink::FrameOcclusionState::kUnknown;
 
 #if defined(USE_AURA)
   std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;

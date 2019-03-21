@@ -155,8 +155,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
                           blink::mojom::FrameVisibility::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
-                              blink::kUnknownOcclusionState,
-                              blink::kMaxOcclusionState)
+                              blink::FrameOcclusionState::kUnknown,
+                              blink::FrameOcclusionState::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)

@@ -602,7 +602,9 @@ class UpdateViewportIntersectionMessageFilter
 
   gfx::Rect GetCompositingRect() const { return compositing_rect_; }
   gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
-  bool GetOccludedOrObscured() const { return occluded_or_obscured_; }
+  blink::FrameOcclusionState GetOcclusionState() const {
+    return occlusion_state_;
+  }
 
   void Wait() {
     DCHECK(!run_loop_);
@@ -622,9 +624,10 @@ class UpdateViewportIntersectionMessageFilter
  private:
   ~UpdateViewportIntersectionMessageFilter() override {}
 
-  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
-                                    const gfx::Rect& compositing_rect,
-                                    bool occluded_or_obscured) {
+  void OnUpdateViewportIntersection(
+      const gfx::Rect& viewport_intersection,
+      const gfx::Rect& compositing_rect,
+      blink::FrameOcclusionState occlusion_state) {
     // The message is going to be posted to UI thread after
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
@@ -634,25 +637,26 @@ class UpdateViewportIntersectionMessageFilter
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionPostOnIO,
                        this, viewport_intersection, compositing_rect,
-                       occluded_or_obscured));
+                       occlusion_state));
   }
   void OnUpdateViewportIntersectionPostOnIO(
       const gfx::Rect& viewport_intersection,
       const gfx::Rect& compositing_rect,
-      bool occluded_or_obscured) {
+      blink::FrameOcclusionState occlusion_state) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionOnUI,
                        this, viewport_intersection, compositing_rect,
-                       occluded_or_obscured));
+                       occlusion_state));
   }
-  void OnUpdateViewportIntersectionOnUI(const gfx::Rect& viewport_intersection,
-                                        const gfx::Rect& compositing_rect,
-                                        bool occluded_or_obscured) {
+  void OnUpdateViewportIntersectionOnUI(
+      const gfx::Rect& viewport_intersection,
+      const gfx::Rect& compositing_rect,
+      blink::FrameOcclusionState occlusion_state) {
     viewport_intersection_ = viewport_intersection;
     compositing_rect_ = compositing_rect;
-    occluded_or_obscured_ = occluded_or_obscured;
+    occlusion_state_ = occlusion_state;
     msg_received_ = true;
     if (run_loop_)
       run_loop_->Quit();
@@ -661,7 +665,8 @@ class UpdateViewportIntersectionMessageFilter
   bool msg_received_;
   gfx::Rect compositing_rect_;
   gfx::Rect viewport_intersection_;
-  bool occluded_or_obscured_ = false;
+  blink::FrameOcclusionState occlusion_state_ =
+      blink::FrameOcclusionState::kUnknown;
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
 };
 

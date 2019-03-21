@@ -223,8 +223,7 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
       // TODO(samans): Investigate if it is safe to delay creation of this
       // object until a FrameSinkId is provided.
       parent_local_surface_id_allocator_(
-          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()),
-      last_occlusion_state_(blink::kUnknownOcclusionState) {
+          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()) {
   std::pair<RoutingIDProxyMap::iterator, bool> result =
       g_routing_id_proxy_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
