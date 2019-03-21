@@ -142,6 +142,13 @@ function setupEventListeners() {
       $('feed-process-scope-details').open = true;
     });
   });
+
+  $('load-feed-histograms').addEventListener('click', function() {
+    pageHandler.getFeedHistograms().then(response => {
+      $('feed-histograms-log').textContent = response.log;
+      $('feed-histograms-details').open = true;
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
