@@ -25,6 +25,7 @@ import java.util.List;
  */
 public class TabGroupUiCoordinator
         implements Destroyable, TabGroupUiMediator.ResetHandler, TabGroupUi {
+    public final static String COMPONENT_NAME = "TabStrip";
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
     private TabGridSheetCoordinator mTabGridSheetCoordinator;
@@ -55,7 +56,7 @@ public class TabGroupUiCoordinator
         TabContentManager tabContentManager = activity.getTabContentManager();
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                 mContext, tabModelSelector, tabContentManager,
-                mTabStripToolbarCoordinator.getTabListContainerView(), true);
+                mTabStripToolbarCoordinator.getTabListContainerView(), true, COMPONENT_NAME);
 
         mTabGridSheetCoordinator = new TabGridSheetCoordinator(mContext,
                 activity.getBottomSheetController(), tabModelSelector, tabContentManager, activity);

@@ -24,6 +24,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
@@ -336,10 +337,22 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         boolean createdSuccessfully = tabCreator.createTabWithWebContents(mTab,
                 webContents, mTab.getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND, url);
         boolean success = tabCreator.createsTabsAsynchronously() || createdSuccessfully;
-        if (success && disposition == WindowOpenDisposition.NEW_POPUP) {
-            PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
-            auditor.notifyAuditEvent(mTab.getApplicationContext(),
-                    AuditEvent.OPEN_POPUP_URL_SUCCESS, url, "");
+
+        if (success) {
+            if (disposition == WindowOpenDisposition.NEW_FOREGROUND_TAB) {
+                if (mTab.getTabModelSelector()
+                                .getTabModelFilterProvider()
+                                .getCurrentTabModelFilter()
+                                .getRelatedTabList(mTab.getId())
+                                .size()
+                        == 2) {
+                    RecordUserAction.record("TabGroup.Created.DeveloperRequestedNewTab");
+                }
+            } else if (disposition == WindowOpenDisposition.NEW_POPUP) {
+                PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
+                auditor.notifyAuditEvent(
+                        mTab.getApplicationContext(), AuditEvent.OPEN_POPUP_URL_SUCCESS, url, "");
+            }
         }
 
         return success;

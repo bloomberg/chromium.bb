@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.text.TextPaint;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
@@ -45,6 +46,7 @@ public class LayoutTabGroupCreationButton {
             tabModelSelector.openNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                     TabLaunchType.FROM_CHROME_UI, parentTab,
                     tabModelSelector.isIncognitoSelected());
+            RecordUserAction.record("TabGroup.Created.TabSwitcher");
         };
 
         mCreateGroupButton = new CompositorButton(context, buttonBitmap.getWidth() * pxToDp,

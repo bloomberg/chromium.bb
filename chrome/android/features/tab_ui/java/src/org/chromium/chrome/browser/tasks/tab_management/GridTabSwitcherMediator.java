@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -137,6 +138,7 @@ class GridTabSwitcherMediator
                             - INITIAL_SCROLL_INDEX_OFFSET,
                     0);
             mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
+            RecordUserAction.record("MobileToolbarShowStackView");
         }
 
         mContainerViewModel.set(IS_VISIBLE, isVisible);

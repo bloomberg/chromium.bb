@@ -10000,6 +10000,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="LinkOpenedInNewTab">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>Users long pressed and opened in new tab.</description>
+</action>
+
 <action name="LoadURL">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -12534,11 +12540,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabReturnedToCurrentTab">
-  <owner>rlanday@chromium.org</owner>
-  <description>
-    User in the Android tab switcher returned to the tab that was active when
-    the tab switcher was opened.
-  </description>
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>Users returned to the tab that was active.</description>
 </action>
 
 <action name="MobileTabStripCloseTab">
@@ -20201,6 +20205,30 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TabGroup.Created">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>Users created a new tab group.</description>
+</action>
+
+<action name="TabGroup.ExpandedFromStrip">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Users tapped &quot;^&quot; button on the tab strip, causing tab group bottom
+    sheet to be shown.
+  </description>
+</action>
+
+<action name="TabGroup.MinimizedFromGrid">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Users tapped &quot;v&quot; button on tab group bottom sheet toolbar, causing
+    tab group bottom sheet to be hidden.
+  </description>
+</action>
+
 <action name="Tablet.WindowDrag.OpenedOverview">
   <owner>minch@chromium.org</owner>
   <description>
@@ -21535,6 +21563,59 @@ should be able to be added at any place in this file.
   <suffix name="LeftClick" label="Left click action."/>
   <suffix name="RightClick" label="Right click action."/>
   <affected-action name="Accessibility.Autoclick"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="DeveloperRequestedNewTab"
+      label="Users tapped on a link with a target=_blank"/>
+  <suffix name="OpenInNewTab"
+      label="Users long pressed a link and opened in new tab."/>
+  <suffix name="TabSwitcher"
+      label="Users tapped the 'Create group' button in TabSwitcher."/>
+  <affected-action name="TabGroup.Created"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="GridTabSwitcher"
+      label="Users switched tabs from the grid layout TabSwitcher."/>
+  <suffix name="TabGridSheet"
+      label="Users switched tabs from the tab group in the bottom sheet
+             switcher."/>
+  <suffix name="TabStrip" label="Users switched tabs from the tab strip."/>
+  <affected-action name="MobileTabSwitched"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="TabGridSheet"
+      label="Users tapped '+' button on the tab group bottom sheet toolbar
+             causes a new tab to be created in the group."/>
+  <suffix name="TabStrip"
+      label="Users tapped '+' button on the tab strip, causing a new tab to
+             be created in the group."/>
+  <affected-action name="MobileNewTabOpened"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="GridTabSwitcher"
+      label="Users tapped 'x' button on the tab in grid layout TabSwitcher,
+             causing a tab to be closed."/>
+  <suffix name="TabGridSheet"
+      label="Users tapped 'x' button on the tab in tab group bottom sheet,
+             causing a tab to be closed in the group."/>
+  <suffix name="TabStrip"
+      label="Users tapped the currently selected tab's favicon on the tab
+             strip, causing a tab to be closed in the group."/>
+  <affected-action name="MobileTabClosed"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="GridTabSwitcher"
+      label="Users tapped the currently selected tab in grid layout
+             TabSwitcher."/>
+  <suffix name="TabGridSheet"
+      label="Users tapped the currently selected tab in tab group bottom
+             sheet."/>
+  <affected-action name="MobileTabReturnedToCurrentTab"/>
 </action-suffix>
 
 </actions>

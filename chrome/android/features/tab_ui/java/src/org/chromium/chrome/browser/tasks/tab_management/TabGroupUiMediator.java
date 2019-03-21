@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -120,6 +121,7 @@ public class TabGroupUiMediator implements Destroyable {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             if (currentTab == null) return;
             mResetHandler.resetSheetWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
+            RecordUserAction.record("TabGroup.ExpandedFromStrip");
         });
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {
             Tab currentTab = mTabModelSelector.getCurrentTab();
@@ -133,6 +135,7 @@ public class TabGroupUiMediator implements Destroyable {
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                             TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
+            RecordUserAction.record("MobileNewTabOpened" + TabGroupUiCoordinator.COMPONENT_NAME);
         });
     }
 

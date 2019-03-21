@@ -170,6 +170,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     @Override
     public void onOpenInNewTab(String url, Referrer referrer) {
         RecordUserAction.record("MobileNewTabOpened");
+        RecordUserAction.record("LinkOpenedInNewTab");
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
         mTab.getTabModelSelector().openNewTab(

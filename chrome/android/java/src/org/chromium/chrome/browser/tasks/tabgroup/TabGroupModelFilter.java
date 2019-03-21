@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.tasks.tabgroup;
 
 import android.support.annotation.NonNull;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -132,6 +134,10 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         int groupId = tab.getRootId();
         if (mGroupIdToGroupMap.containsKey(groupId)) {
+            if (tab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                    && mGroupIdToGroupMap.get(groupId).size() == 1) {
+                RecordUserAction.record("TabGroup.Created.OpenInNewTab");
+            }
             mGroupIdToGroupMap.get(groupId).addTab(tab.getId());
         } else {
             TabGroup tabGroup = new TabGroup(tab.getRootId());

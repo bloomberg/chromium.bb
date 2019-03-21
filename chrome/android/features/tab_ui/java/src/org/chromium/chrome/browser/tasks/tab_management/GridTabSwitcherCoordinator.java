@@ -28,6 +28,7 @@ import java.util.List;
  */
 public class GridTabSwitcherCoordinator
         implements Destroyable, GridTabSwitcher, GridTabSwitcherMediator.ResetHandler {
+    private final static String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabListCoordinator mTabGridCoordinator;
@@ -40,7 +41,7 @@ public class GridTabSwitcherCoordinator
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager, compositorViewHolder, true);
+                tabModelSelector, tabContentManager, compositorViewHolder, true, COMPONENT_NAME);
 
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
