@@ -72,6 +72,7 @@ XRWebGLLayer* XRWebGLLayer::Create(
   bool want_depth_buffer = initializer->depth();
   bool want_stencil_buffer = initializer->stencil();
   bool want_alpha_channel = initializer->alpha();
+  bool ignore_depth_values = initializer->ignoreDepthValues();
 
   double framebuffer_scale = 1.0;
 
@@ -109,21 +110,23 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  return MakeGarbageCollected<XRWebGLLayer>(session, webgl_context,
-                                            std::move(drawing_buffer),
-                                            framebuffer, framebuffer_scale);
+  return MakeGarbageCollected<XRWebGLLayer>(
+      session, webgl_context, std::move(drawing_buffer), framebuffer,
+      framebuffer_scale, ignore_depth_values);
 }
 
 XRWebGLLayer::XRWebGLLayer(XRSession* session,
                            WebGLRenderingContextBase* webgl_context,
                            scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer,
                            WebGLFramebuffer* framebuffer,
-                           double framebuffer_scale)
+                           double framebuffer_scale,
+                           bool ignore_depth_values)
     : XRLayer(session, kXRWebGLLayerType),
       webgl_context_(webgl_context),
       drawing_buffer_(std::move(drawing_buffer)),
       framebuffer_(framebuffer),
-      framebuffer_scale_(framebuffer_scale) {
+      framebuffer_scale_(framebuffer_scale),
+      ignore_depth_values_(ignore_depth_values) {
   DCHECK(drawing_buffer_);
   // If the contents need mirroring, indicate that to the drawing buffer.
   if (session->immersive() && session->outputContext() && session->External()) {

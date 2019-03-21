@@ -10599,6 +10599,7 @@ interface XRWebGLLayer : XRLayer
     getter framebuffer
     getter framebufferHeight
     getter framebufferWidth
+    getter ignoreDepthValues
     getter stencil
     method constructor
     method getViewport
