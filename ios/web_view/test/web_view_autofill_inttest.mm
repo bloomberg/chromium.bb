@@ -64,12 +64,7 @@ NSString* const kTestFormHtml =
 // Tests autofill features in CWVWebViews.
 class WebViewAutofillTest : public WebViewInttestBase {
  protected:
-  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {
-    // Adds a dummy superview to |web_view_| so that WebState visiblity gets
-    // updated.
-    dummy_super_view_ = [[UIView alloc] init];
-    [dummy_super_view_ addSubview:web_view_];
-  }
+  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {}
 
   bool LoadTestPage() WARN_UNUSED_RESULT {
     std::string html = base::SysNSStringToUTF8(kTestFormHtml);
