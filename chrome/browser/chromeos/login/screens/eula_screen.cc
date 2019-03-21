@@ -20,7 +20,6 @@ namespace {
 
 constexpr const char kUserActionAcceptButtonClicked[] = "accept-button";
 constexpr const char kUserActionBackButtonClicked[] = "back-button";
-constexpr const char kContextKeyUsageStatsEnabled[] = "usageStatsEnabled";
 
 // Reflects the value of usage statistics reporting checkbox shown in eula
 // UI. The value is expected to survive EulaScreen res-hows within a single
@@ -72,6 +71,10 @@ void EulaScreen::InitiatePasswordFetch() {
   }
 }
 
+void EulaScreen::SetUsageStatsEnabled(bool enabled) {
+  g_usage_statistics_reporting_enabled = enabled;
+}
+
 bool EulaScreen::IsUsageStatsEnabled() const {
   return g_usage_statistics_reporting_enabled;
 }
@@ -105,14 +108,6 @@ void EulaScreen::OnUserAction(const std::string& action_id) {
     exit_callback_.Run(Result::BACK);
   } else {
     BaseScreen::OnUserAction(action_id);
-  }
-}
-
-void EulaScreen::OnContextKeyUpdated(
-    const ::login::ScreenContext::KeyType& key) {
-  if (key == kContextKeyUsageStatsEnabled) {
-    g_usage_statistics_reporting_enabled =
-        context_.GetBoolean(kContextKeyUsageStatsEnabled);
   }
 }
 
