@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/open_in_controller.h"
+#import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -16,7 +16,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/open_in_controller_testing.h"
+#import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -79,7 +79,7 @@ bool HasValidPdfAtUrl(NSURL* _Nullable url) {
 
 }  // anonymous namespace
 
-@interface OpenInController ()<CRWWebViewScrollViewProxyObserver> {
+@interface OpenInController () <CRWWebViewScrollViewProxyObserver> {
   // AlertCoordinator for showing an alert if no applications were found to open
   // the current document.
   AlertCoordinator* _alertCoordinator;
@@ -552,8 +552,8 @@ class OpenInControllerBridge
                                                 base::BlockingType::WILL_BLOCK);
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
-  NSArray* documentFiles =
-      [fileManager contentsOfDirectoryAtPath:tempDirPath error:&error];
+  NSArray* documentFiles = [fileManager contentsOfDirectoryAtPath:tempDirPath
+                                                            error:&error];
   if (!documentFiles) {
     DLOG(ERROR) << "Failed to get content of directory at path: "
                 << base::SysNSStringToUTF8([error description]);

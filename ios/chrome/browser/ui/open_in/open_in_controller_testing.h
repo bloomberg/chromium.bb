@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OPEN_IN_CONTROLLER_TESTING_H_
-#define IOS_CHROME_BROWSER_UI_OPEN_IN_CONTROLLER_TESTING_H_
+#ifndef IOS_CHROME_BROWSER_UI_OPEN_IN_OPEN_IN_CONTROLLER_TESTING_H_
+#define IOS_CHROME_BROWSER_UI_OPEN_IN_OPEN_IN_CONTROLLER_TESTING_H_
 
 @interface OpenInController (TestingAditions)
 - (NSString*)suggestedFilename;
@@ -12,4 +12,4 @@
     (UIDocumentInteractionController*)controller;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OPEN_IN_CONTROLLER_TESTING_H_
+#endif  // IOS_CHROME_BROWSER_UI_OPEN_IN_OPEN_IN_CONTROLLER_TESTING_H_
