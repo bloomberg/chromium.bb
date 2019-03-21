@@ -245,6 +245,7 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
 }
 
 void StyleEngine::SetNeedsActiveStyleUpdate(TreeScope& tree_scope) {
+  DCHECK(tree_scope.RootNode().isConnected());
   if (GetDocument().IsActive() || !IsMaster())
     MarkTreeScopeDirty(tree_scope);
 }
@@ -317,6 +318,9 @@ void StyleEngine::AdoptedStyleSheetsWillChange(
   for (unsigned i = index; i < new_sheets_count; ++i) {
     new_sheets[i]->AddedAdoptedToTreeScope(tree_scope);
   }
+
+  if (!tree_scope.RootNode().isConnected())
+    return;
 
   if (new_sheets_count) {
     EnsureStyleSheetCollectionFor(tree_scope);
