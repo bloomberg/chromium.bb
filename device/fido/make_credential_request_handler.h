@@ -83,7 +83,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
                       base::Optional<pin::TokenResponse> response);
 
   State state_ = State::kWaitingForTouch;
-  CtapMakeCredentialRequest request_parameter_;
+  CtapMakeCredentialRequest request_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
   // authenticator_ points to the authenticator that will be used for this
   // operation. It's only set after the user touches an authenticator to select
