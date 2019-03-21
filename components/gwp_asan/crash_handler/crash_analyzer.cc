@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -26,6 +27,7 @@
 namespace gwp_asan {
 namespace internal {
 
+using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
 using GwpAsanCrashAnalysisResult = CrashAnalyzer::GwpAsanCrashAnalysisResult;
 
 GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
@@ -112,32 +114,55 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   if (!exception_addr)
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
 
-  uintptr_t slot_address;
-  auto ret = valid_state.GetMetadataForAddress(exception_addr, &slot_address);
-  if (ret == AllocatorState::GetMetadataReturnType::kErrorBadSlot) {
-    DLOG(ERROR) << "Allocator computed a bad slot index!";
-    return GwpAsanCrashAnalysisResult::kErrorBadSlot;
-  }
-  if (ret == AllocatorState::GetMetadataReturnType::kUnrelatedCrash)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
-
-  SlotMetadata metadata;
-  if (!memory.Read(slot_address, sizeof(metadata), &metadata)) {
-    DLOG(ERROR) << "Failed to read SlotMetadata from process.";
+  // Read the allocator's entire metadata array.
+  auto metadata_arr = std::make_unique<AllocatorState::SlotMetadata[]>(
+      valid_state.num_metadata);
+  if (!memory.Read(
+          valid_state.metadata_addr,
+          sizeof(AllocatorState::SlotMetadata) * valid_state.num_metadata,
+          metadata_arr.get())) {
+    DLOG(ERROR) << "Failed to read metadata from process.";
     return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
   }
 
-  AllocatorState::ErrorType error =
-      valid_state.GetErrorType(exception_addr, metadata.alloc.trace_collected,
-                               metadata.dealloc.trace_collected);
-  proto->set_error_type(static_cast<Crash_ErrorType>(error));
-  proto->set_allocation_address(metadata.alloc_ptr);
-  proto->set_allocation_size(metadata.alloc_size);
-  if (metadata.alloc.tid != base::kInvalidThreadId || metadata.alloc.trace_len)
-    ReadAllocationInfo(metadata.alloc, proto->mutable_allocation());
-  if (metadata.dealloc.tid != base::kInvalidThreadId ||
-      metadata.dealloc.trace_len)
-    ReadAllocationInfo(metadata.dealloc, proto->mutable_deallocation());
+  AllocatorState::MetadataIdx metadata_idx;
+  auto ret = valid_state.GetMetadataForAddress(
+      exception_addr, metadata_arr.get(), &metadata_idx);
+  if (ret == GetMetadataReturnType::kErrorBadSlot) {
+    DLOG(ERROR) << "Allocator computed a bad slot index!";
+    return GwpAsanCrashAnalysisResult::kErrorBadSlot;
+  }
+  if (ret == GetMetadataReturnType::kErrorBadMetadataIndex) {
+    DLOG(ERROR) << "Allocator state held a bad metadata index!";
+    return GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex;
+  }
+  if (ret == GetMetadataReturnType::kErrorOutdatedMetadataIndex) {
+    DLOG(ERROR) << "Metadata index was outdated!";
+    return GwpAsanCrashAnalysisResult::kErrorOutdatedMetadataIndex;
+  }
+  if (ret == GetMetadataReturnType::kUnrelatedCrash)
+    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
+
+  bool missing_metadata =
+      (ret == GetMetadataReturnType::kGwpAsanCrashWithMissingMetadata);
+  proto->set_missing_metadata(missing_metadata);
+
+  if (!missing_metadata) {
+    SlotMetadata& metadata = metadata_arr[metadata_idx];
+    AllocatorState::ErrorType error =
+        valid_state.GetErrorType(exception_addr, metadata.alloc.trace_collected,
+                                 metadata.dealloc.trace_collected);
+    proto->set_error_type(static_cast<Crash_ErrorType>(error));
+    proto->set_allocation_address(metadata.alloc_ptr);
+    proto->set_allocation_size(metadata.alloc_size);
+    if (metadata.alloc.tid != base::kInvalidThreadId ||
+        metadata.alloc.trace_len)
+      ReadAllocationInfo(metadata.alloc, proto->mutable_allocation());
+    if (metadata.dealloc.tid != base::kInvalidThreadId ||
+        metadata.dealloc.trace_len)
+      ReadAllocationInfo(metadata.dealloc, proto->mutable_deallocation());
+  }
+
   proto->set_region_start(valid_state.pages_base_addr);
   proto->set_region_size(valid_state.pages_end_addr -
                          valid_state.pages_base_addr);
