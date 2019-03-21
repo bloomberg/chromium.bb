@@ -62,8 +62,9 @@ FunctionParallel.prototype.nextStep_ = function() {
  * @param {...} var_args Arguments to be passed to all the steps.
  */
 FunctionParallel.prototype.start = function(var_args) {
-  this.logger.vlog('Starting [' + this.steps_.length + '] parallel tasks ' +
-                   'with ' + arguments.length + ' argument(s)');
+  this.logger.vlog(
+      'Starting [' + this.steps_.length + '] parallel tasks ' +
+      'with ' + arguments.length + ' argument(s)');
   if (this.logger.verbose) {
     for (let j = 0; j < arguments.length; j++) {
       this.logger.vlog(arguments[j]);
