@@ -1594,10 +1594,6 @@ bool AppsGridView::IsUnderOEMFolder() {
 }
 
 void AppsGridView::HandleKeyboardAppMovement(ui::KeyboardCode key_code) {
-  // TODO(newcomer): Support app movement via key in folders.
-  if (folder_delegate_)
-    return;
-
   DCHECK(selected_view_);
   const GridIndex target_index = GetTargetGridIndexForKeyboardMove(key_code);
 
@@ -2630,8 +2626,11 @@ GridIndex AppsGridView::GetTargetGridIndexForKeyboardMove(
                                    ((key_code == backward) ? -1 : 1);
 
     // A forward move on the last item in |view_model_| should result in page
-    // creation
+    // creation.
     if (target_model_index == view_model_.view_size()) {
+      // If the move is within a folder, do not allow page creation.
+      if (folder_delegate_)
+        return source_index;
       // If |source_index| is the last item in the grid on a page by itself,
       // moving right to a new page should be a no-op.
       if (view_structure_.items_on_page(source_index.page) == 1)
@@ -2642,7 +2641,8 @@ GridIndex AppsGridView::GetTargetGridIndexForKeyboardMove(
     target_index = GetIndexOfView(
         static_cast<const AppListItemView*>(GetItemViewAt(std::min(
             std::max(0, target_model_index), view_model_.view_size() - 1))));
-    if (key_code == backward && target_index.page < source_index.page &&
+    if (!folder_delegate_ && key_code == backward &&
+        target_index.page < source_index.page &&
         !view_structure_.IsFullPage(target_index.page)) {
       // Apps swap positions if the target page is the same as the
       // destination page, or the target page is full. If the page is not
@@ -2669,22 +2669,32 @@ GridIndex AppsGridView::GetTargetGridIndexForKeyboardMove(
   } else if (target_row > (GetItemsNumOfPage(target_page) - 1) / cols_) {
     // The app will move to the first row of the next page.
     ++target_page;
-    if (target_page >= view_structure_.total_pages()) {
-      // If |source_index| page only has one item, moving down to a new page
-      // should be a no-op.
-      if (view_structure_.items_on_page(source_index.page) == 1)
+    if (folder_delegate_) {
+      if (target_page >= pagination_model_.total_pages())
         return source_index;
-      return GridIndex(target_page, 0);
+    } else {
+      if (target_page >= view_structure_.total_pages()) {
+        // If |source_index| page only has one item, moving down to a new page
+        // should be a no-op.
+        if (view_structure_.items_on_page(source_index.page) == 1)
+          return source_index;
+        return GridIndex(target_page, 0);
+      }
     }
     target_row = 0;
+  }
+
+  // The ideal slot shares a column with |source_index|.
+  const int ideal_slot = target_row * cols_ + source_index.slot % cols_;
+  if (folder_delegate_) {
+    return GridIndex(target_page,
+                     std::min(GetItemsNumOfPage(target_page) - 1, ideal_slot));
   }
 
   // If the app is being moved to a new page there is 1 extra slot available.
   const int last_slot_in_target_page =
       view_structure_.items_on_page(target_page) -
       (source_index.page != target_page ? 0 : 1);
-  // The ideal slot shares a column with |source_index|.
-  const int ideal_slot = target_row * cols_ + source_index.slot % cols_;
   return GridIndex(target_page, std::min(last_slot_in_target_page, ideal_slot));
 }
 
@@ -2699,9 +2709,10 @@ void AppsGridView::MoveAppListItemViewForKeyboardMove(
   const GridIndex original_selected_view_index =
       GetIndexOfView(original_selected_view);
   // Moving an AppListItemView is either a swap within the origin page, a swap
-  // to a full page, or a dump to a page with room.
+  // to a full page, or a dump to a page with room. A move within a folder is
+  // always a swap because there are no gaps.
   const bool swap_items =
-      view_structure_.IsFullPage(target_index.page) ||
+      folder_delegate_ || view_structure_.IsFullPage(target_index.page) ||
       target_index.page == original_selected_view_index.page;
 
   AppListItemView* target_view = GetViewAtIndex(target_index);
@@ -2709,22 +2720,28 @@ void AppsGridView::MoveAppListItemViewForKeyboardMove(
   // the initial move. Clearing the overflow when |target_index| is on a full
   // page results in the last item being pushed to the next page.
   MoveItemInModel(selected_view_, target_index, !swap_items /*clear_overflow*/);
-  view_structure_.SaveToMetadata();
+  if (!folder_delegate_)
+    view_structure_.SaveToMetadata();
 
   if (swap_items) {
     DCHECK(target_view);
     MoveItemInModel(target_view, original_selected_view_index);
-    view_structure_.SaveToMetadata();
+    if (!folder_delegate_)
+      view_structure_.SaveToMetadata();
   }
 
-  // Update |pagination_model_| because the move could have resulted in a
-  // page getting collapsed or created.
-  if (view_structure_.total_pages() != pagination_model_.total_pages())
-    pagination_model_.SetTotalPages(view_structure_.total_pages());
-
-  pagination_model_.SelectPage(
-      std::min(view_structure_.total_pages() - 1, target_index.page),
-      false /*animate*/);
+  int target_page = target_index.page;
+  if (!folder_delegate_) {
+    // Update |pagination_model_| because the move could have resulted in a
+    // page getting collapsed or created.
+    if (view_structure_.total_pages() != pagination_model_.total_pages()) {
+      pagination_model_.SetTotalPages(view_structure_.total_pages());
+    }
+    // |target_page| may change due to a page collapsing.
+    target_page =
+        std::min(pagination_model_.total_pages() - 1, target_index.page);
+  }
+  pagination_model_.SelectPage(target_page, false /*animate*/);
   SetSelectedView(original_selected_view);
   Layout();
 
