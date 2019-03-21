@@ -1445,7 +1445,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   const AppListButton* app_list_button = shelf_view_->GetAppListButton();
 
   // Make sure we're not showing the app list.
-  EXPECT_FALSE(app_list_button->is_showing_app_list())
+  EXPECT_FALSE(app_list_button->IsShowingAppList())
       << "We should not be showing the app list";
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
