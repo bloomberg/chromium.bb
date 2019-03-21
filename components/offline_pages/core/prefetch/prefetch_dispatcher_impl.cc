@@ -59,10 +59,11 @@ void DeleteBackgroundTaskHelper(std::unique_ptr<PrefetchBackgroundTask> task) {
 }
 
 PrefetchURL SuggestionToPrefetchURL(PrefetchSuggestion suggestion) {
-  PrefetchURL result(suggestion.article_url.spec(), suggestion.article_url,
-                     base::UTF8ToUTF16(suggestion.article_title));
-  result.thumbnail_url = suggestion.thumbnail_url;
-  return result;
+  return PrefetchURL(suggestion.article_url.spec(), suggestion.article_url,
+                     base::UTF8ToUTF16(suggestion.article_title),
+                     suggestion.thumbnail_url, suggestion.favicon_url,
+                     suggestion.article_snippet,
+                     suggestion.article_attribution);
 }
 
 }  // namespace
