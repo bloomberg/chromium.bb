@@ -11,7 +11,6 @@
     <color name="input_underline_error_color">#D32F2F</color>
     <color name="explanation_text_color">#909090</color>
     <color name="text_highlight_color">#C6DAFC</color>
-    <color name="error_text_color">@color/default_red</color>
 
     <!-- Control colors for toggles, checkboxes, ratio buttons, list item highlight, and accent.
          Note that these should NOT be used for icon tint. -->
@@ -26,9 +25,6 @@
     <color name="dark_action_bar_color">#263238</color>
     <color name="dark_status_bar_color">#161E21</color>
     <color name="modal_dialog_scrim_color">@color/black_alpha_65</color>
-
-    <color name="default_red">@color/default_red_dark</color>
-    <color name="default_green">@color/default_green_dark</color>
 
     <!-- Modern color palette -->
     <color name="black_alpha_11">#1D000000</color>

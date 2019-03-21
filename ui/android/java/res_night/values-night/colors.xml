@@ -30,4 +30,8 @@
 
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/modern_blue_300</color>
+
+    <!-- Other colors -->
+    <color name="default_red">@color/default_red_light</color>
+    <color name="default_green">@color/default_green_light</color>
 </resources>

@@ -15,6 +15,7 @@
     <!-- Text color for clickable text. -->
     <color name="default_text_color_link">@color/modern_blue_600</color>
     <color name="disabled_text_color">@color/black_alpha_38</color>
+    <color name="error_text_color">@color/default_red</color>
 
     <!-- Common icon colors for drawables. -->
     <color name="default_icon_color" tools:ignore="UnusedResources">
@@ -62,5 +63,9 @@
 
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/modern_blue_600</color>
+
+    <!-- Other colors -->
+    <color name="default_red">@color/default_red_dark</color>
+    <color name="default_green" tools:ignore="UnusedResources">@color/default_green_dark</color>
 </resources>
 
