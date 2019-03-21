@@ -2239,7 +2239,6 @@ enum WebFeature {
   kRTCStatsRelativePacketArrivalDelay = 2827,
 
   // The above items are available in M74 branch.
-  kFlexboxWithOverflowFlexItemIntrinsicSize = 2828,
   kCSSSelectorHostContextInSnapshotProfile = 2829,
   kCSSSelectorHostContextInLiveProfile = 2830,
   kImportMap = 2831,
