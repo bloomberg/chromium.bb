@@ -8,9 +8,8 @@
 #include <map>
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/conflicts/module_info_win.h"
@@ -51,11 +50,8 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   static constexpr base::TimeDelta kIdleTimeout =
       base::TimeDelta::FromSeconds(10);
 
-  // A ModuleDatabase is by default bound to a provided sequenced task runner.
-  // All calls must be made in the context of this task runner, unless
-  // otherwise noted. For calls from other contexts this task runner is used to
-  // bounce the call when appropriate.
-  explicit ModuleDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  // Creates the ModuleDatabase. Lives on the sequence where it is created.
+  ModuleDatabase();
   ~ModuleDatabase() override;
 
   // Retrieves the singleton global instance of the ModuleDatabase.
@@ -77,8 +73,7 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // the last 10 seconds.
   bool IsIdle();
 
-  // Indicates that a new registered shell extension was found. Must be called
-  // in the same sequence as |task_runner_|.
+  // Indicates that a new registered shell extension was found.
   void OnShellExtensionEnumerated(const base::FilePath& path,
                                   uint32_t size_of_image,
                                   uint32_t time_date_stamp);
@@ -86,8 +81,7 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // Indicates that all shell extensions have been enumerated.
   void OnShellExtensionEnumerationFinished();
 
-  // Indicates that a new registered input method editor was found. Must be
-  // called in the same sequence as |task_runner_|.
+  // Indicates that a new registered input method editor was found.
   void OnImeEnumerated(const base::FilePath& path,
                        uint32_t size_of_image,
                        uint32_t time_date_stamp);
@@ -129,8 +123,6 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // called once for all modules that are already loaded before returning to the
   // caller. In addition, if the ModuleDatabase is currently idle,
   // OnModuleDatabaseIdle() will also be invoked.
-  // Must be called in the same sequence as |task_runner_|, and all
-  // notifications will be sent on that same task runner.
   //
   // ModuleDatabaseEventSource:
   void AddObserver(ModuleDatabaseObserver* observer) override;
@@ -229,9 +221,6 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   void OnThirdPartyBlockingPolicyChanged();
 #endif
 
-  // The task runner to which this object is bound.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
   // A map of all known modules.
   ModuleMap modules_;
 
@@ -265,6 +254,8 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
 
   // Records metrics on third-party modules.
   ThirdPartyMetricsRecorder third_party_metrics_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ModuleDatabase);
 };
