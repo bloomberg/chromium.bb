@@ -396,7 +396,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const;
 
   // Forwarded from the RootView so that the widget can do any cleanup.
-  void ViewHierarchyChanged(const View::ViewHierarchyChangedDetails& details);
+  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details);
 
   // Called right before changing the widget's parent NativeView to do any
   // cleanup.

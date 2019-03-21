@@ -62,7 +62,7 @@ class LockView : public views::WidgetDelegateView,
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       unlock_button_->RequestFocus();
   }

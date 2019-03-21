@@ -181,7 +181,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // views::View overrides:
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
   static HungRendererDialogView* g_instance_;
 

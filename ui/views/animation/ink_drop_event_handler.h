@@ -17,9 +17,9 @@ class ScopedTargetHandler;
 }  // namespace ui
 
 namespace views {
-class View;
 class InkDrop;
 enum class InkDropState;
+struct ViewHierarchyChangedDetails;
 
 // This class handles ink-drop changes due to events on its host.
 class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
@@ -55,6 +55,9 @@ class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
 
   // ViewObserver:
   void OnViewVisibilityChanged(View* observed_view) override;
+  void OnViewHierarchyChanged(
+      View* observed_view,
+      const ViewHierarchyChangedDetails& details) override;
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewFocused(View* observed_view) override;
   void OnViewBlurred(View* observed_view) override;

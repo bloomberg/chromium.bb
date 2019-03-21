@@ -255,7 +255,7 @@ class BrowserActionsContainer : public views::View,
  protected:
   // Overridden from views::View:
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:

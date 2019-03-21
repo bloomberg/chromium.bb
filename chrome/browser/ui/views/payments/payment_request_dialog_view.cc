@@ -477,7 +477,7 @@ gfx::Size PaymentRequestDialogView::CalculatePreferredSize() const {
 }
 
 void PaymentRequestDialogView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (being_closed_)
     return;
 

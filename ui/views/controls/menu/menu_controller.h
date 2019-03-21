@@ -172,7 +172,7 @@ class VIEWS_EXPORT MenuController
   void OnTouchEvent(SubmenuView* source, ui::TouchEvent* event);
   View* GetTooltipHandlerForPoint(SubmenuView* source, const gfx::Point& point);
   void ViewHierarchyChanged(SubmenuView* source,
-                            const View::ViewHierarchyChangedDetails& details);
+                            const ViewHierarchyChangedDetails& details);
 
   bool GetDropFormats(SubmenuView* source,
                       int* formats,

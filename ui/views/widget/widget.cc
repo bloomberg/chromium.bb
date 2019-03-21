@@ -427,8 +427,7 @@ bool Widget::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const {
   return false;
 }
 
-void Widget::ViewHierarchyChanged(
-    const View::ViewHierarchyChangedDetails& details) {
+void Widget::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
   if (!details.is_add) {
     if (details.child == dragged_view_)
       dragged_view_ = nullptr;

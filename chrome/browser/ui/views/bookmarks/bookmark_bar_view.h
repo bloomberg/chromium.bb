@@ -159,7 +159,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;

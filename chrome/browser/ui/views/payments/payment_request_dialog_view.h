@@ -189,7 +189,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // views::View
   gfx::Size CalculatePreferredSize() const override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
   // Non-owned reference to the PaymentRequest that initiated this dialog. Since
   // the PaymentRequest object always outlives this one, the pointer should

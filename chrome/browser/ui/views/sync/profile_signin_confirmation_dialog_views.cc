@@ -147,7 +147,7 @@ ui::ModalType ProfileSigninConfirmationDialogViews::GetModalType() const {
 }
 
 void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);
   if (!details.is_add || details.child != this)
     return;

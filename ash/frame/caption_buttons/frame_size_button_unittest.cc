@@ -54,7 +54,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       caption_button_container_ = new FrameCaptionButtonContainerView(
           GetWidget(), &caption_controller_);

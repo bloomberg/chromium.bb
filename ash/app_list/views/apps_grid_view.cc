@@ -962,7 +962,7 @@ bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void AppsGridView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (!details.is_add && details.parent == this) {
     // The view being delete should not have reference in |view_model_|.
     CHECK_EQ(-1, view_model_.GetIndexOfView(details.child));

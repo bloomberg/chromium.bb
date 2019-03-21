@@ -37,7 +37,7 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(View* child) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void Layout() override;
 
  private:

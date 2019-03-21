@@ -96,7 +96,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
  private:
   // Overridden from views::View:
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     views::DialogDelegateView::ViewHierarchyChanged(details);
     if (details.is_add && details.child == this)
       GetFocusManager()->AdvanceFocus(false);

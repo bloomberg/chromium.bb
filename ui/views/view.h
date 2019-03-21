@@ -89,6 +89,35 @@ class RootView;
 class ScopedChildrenLock;
 }  // namespace internal
 
+// Struct used to describe how a View hierarchy has changed. See
+// View::ViewHierarchyChanged.
+// TODO(pbos): Move to a separate view_hierarchy_changed_details.h header.
+struct VIEWS_EXPORT ViewHierarchyChangedDetails {
+  ViewHierarchyChangedDetails()
+      : ViewHierarchyChangedDetails(false, nullptr, nullptr, nullptr) {}
+
+  ViewHierarchyChangedDetails(bool is_add,
+                              View* parent,
+                              View* child,
+                              View* move_view)
+      : is_add(is_add), parent(parent), child(child), move_view(move_view) {}
+
+  bool is_add;
+  // New parent if |is_add| is true, old parent if |is_add| is false.
+  View* parent;
+  // The view being added or removed.
+  View* child;
+  // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
+  // existing parent, then a notification for the remove is sent first,
+  // followed by one for the add.  This case can be distinguished by a
+  // non-NULL |move_view|.
+  // For the remove part of move, |move_view| is the new parent of the View
+  // being removed.
+  // For the add part of move, |move_view| is the old parent of the View being
+  // added.
+  View* move_view;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // View class
@@ -133,35 +162,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
     // Use when the View is focusable only during accessibility mode.
     ACCESSIBLE_ONLY,
-  };
-
-  struct ViewHierarchyChangedDetails {
-    ViewHierarchyChangedDetails()
-        : is_add(false), parent(nullptr), child(nullptr), move_view(nullptr) {}
-
-    ViewHierarchyChangedDetails(bool is_add,
-                                View* parent,
-                                View* child,
-                                View* move_view)
-        : is_add(is_add),
-          parent(parent),
-          child(child),
-          move_view(move_view) {}
-
-    bool is_add;
-    // New parent if |is_add| is true, old parent if |is_add| is false.
-    View* parent;
-    // The view being added or removed.
-    View* child;
-    // If this is a move (reparent), meaning AddChildViewAt() is invoked with an
-    // existing parent, then a notification for the remove is sent first,
-    // followed by one for the add.  This case can be distinguished by a
-    // non-NULL |move_view|.
-    // For the remove part of move, |move_view| is the new parent of the View
-    // being removed.
-    // For the add part of move, |move_view| is the old parent of the View being
-    // added.
-    View* move_view;
   };
 
   // During paint, the origin of each view in physical pixel is calculated by

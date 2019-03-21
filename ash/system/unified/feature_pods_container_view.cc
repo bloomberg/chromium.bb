@@ -85,7 +85,7 @@ void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
 }
 
 void FeaturePodsContainerView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   UpdateChildVisibility();
 }
 

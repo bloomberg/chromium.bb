@@ -457,7 +457,7 @@ void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
 }
 
 void TrayBubbleView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
     details.parent->SetPaintToLayer();
     details.parent->layer()->SetMasksToBounds(true);

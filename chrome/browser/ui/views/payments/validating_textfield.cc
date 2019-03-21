@@ -27,7 +27,7 @@ void ValidatingTextfield::OnBlur() {
 }
 
 void ValidatingTextfield::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (details.child == this && !details.is_add)
     being_removed_ = true;
 }

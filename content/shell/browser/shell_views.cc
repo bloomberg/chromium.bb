@@ -266,7 +266,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     return gfx::Size();
   }
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this) {
       InitShellWindow();
     }

@@ -2103,6 +2103,9 @@ void View::ViewHierarchyChangedImpl(
   }
 
   ViewHierarchyChanged(details);
+  for (ViewObserver& observer : observers_)
+    observer.OnViewHierarchyChanged(this, details);
+
   details.parent->needs_layout_ = true;
 }
 

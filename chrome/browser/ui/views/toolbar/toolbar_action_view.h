@@ -105,7 +105,7 @@ class ToolbarActionView : public views::MenuButton,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnDragDone() override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
