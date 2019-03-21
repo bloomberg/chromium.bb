@@ -11,16 +11,11 @@
 
 namespace performance_manager {
 
-FrameNodeImpl::FrameNodeImpl(const resource_coordinator::CoordinationUnitID& id,
-                             Graph* graph)
-    : CoordinationUnitInterface(id, graph),
+FrameNodeImpl::FrameNodeImpl(Graph* graph)
+    : CoordinationUnitInterface(graph),
       parent_frame_node_(nullptr),
       page_node_(nullptr),
       process_node_(nullptr) {
-  for (size_t i = 0; i < base::size(intervention_policy_); ++i)
-    intervention_policy_[i] =
-        resource_coordinator::mojom::InterventionPolicy::kUnknown;
-
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -177,9 +172,18 @@ void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
   }
 }
 
-void FrameNodeImpl::BeforeDestroyed() {
+void FrameNodeImpl::JoinGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NodeBase::BeforeDestroyed();
+  for (size_t i = 0; i < base::size(intervention_policy_); ++i)
+    intervention_policy_[i] =
+        resource_coordinator::mojom::InterventionPolicy::kUnknown;
+
+  NodeBase::JoinGraph();
+}
+
+void FrameNodeImpl::LeaveGraph() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NodeBase::LeaveGraph();
 
   if (parent_frame_node_)
     parent_frame_node_->RemoveChildFrame(this);

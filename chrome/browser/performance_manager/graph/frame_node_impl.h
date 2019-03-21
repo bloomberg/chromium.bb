@@ -29,8 +29,7 @@ class FrameNodeImpl
     return resource_coordinator::CoordinationUnitType::kFrame;
   }
 
-  FrameNodeImpl(const resource_coordinator::CoordinationUnitID& id,
-                Graph* graph);
+  explicit FrameNodeImpl(Graph* graph);
   ~FrameNodeImpl() override;
 
   // FrameNode implementation.
@@ -74,7 +73,8 @@ class FrameNodeImpl
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
-  void BeforeDestroyed() override;
+  void JoinGraph() override;
+  void LeaveGraph() override;
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;

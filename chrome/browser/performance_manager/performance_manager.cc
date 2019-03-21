@@ -99,9 +99,7 @@ void PerformanceManager::PostBindInterface(
 
 template <typename NodeType>
 std::unique_ptr<NodeType> PerformanceManager::CreateNodeImpl() {
-  resource_coordinator::CoordinationUnitID id(
-      NodeType::Type(), resource_coordinator::CoordinationUnitID::RANDOM_ID);
-  std::unique_ptr<NodeType> new_node = std::make_unique<NodeType>(id, &graph_);
+  std::unique_ptr<NodeType> new_node = std::make_unique<NodeType>(&graph_);
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Graph::AddNewNode, base::Unretained(&graph_),
                                 base::Unretained(new_node.get())));

@@ -25,8 +25,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
     return resource_coordinator::CoordinationUnitType::kPage;
   }
 
-  PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
-               Graph* graph);
+  explicit PageNodeImpl(Graph* graph);
   ~PageNodeImpl() override;
 
   void AddFrame(FrameNodeImpl* frame_node);
@@ -125,7 +124,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
  private:
   friend class FrameNodeImpl;
 
-  void BeforeDestroyed() override;
+  void JoinGraph() override;
+  void LeaveGraph() override;
 
   void set_page_almost_idle(bool page_almost_idle);
 

@@ -28,14 +28,17 @@ class Graph;
 // NodeBase implements shared functionality among different types of
 // coordination units. A specific type of coordination unit will derive from
 // this class and can override shared funtionality when needed.
+// All node classes allow construction on one sequence and subsequent use from
+// another sequence.
+// All methods not documented otherwise are single-threaded.
 class NodeBase {
  public:
-  NodeBase(const resource_coordinator::CoordinationUnitID& id, Graph* graph);
+  NodeBase(resource_coordinator::CoordinationUnitType type, Graph* graph);
   virtual ~NodeBase();
 
-  virtual void BeforeDestroyed();
   void AddObserver(GraphObserver* observer);
   void RemoveObserver(GraphObserver* observer);
+
   bool GetProperty(
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t* result) const;
@@ -43,8 +46,9 @@ class NodeBase {
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t default_value) const;
 
-  // May be called on any thread.
+  // May be called on any sequence.
   const resource_coordinator::CoordinationUnitID& id() const { return id_; }
+  // May be called on any sequence.
   Graph* graph() const { return graph_; }
 
   const base::ObserverList<GraphObserver>::Unchecked& observers() const {
@@ -61,6 +65,15 @@ class NodeBase {
   }
 
  protected:
+  friend class Graph;
+
+  // Called just before joining |graph_|, a good opportunity to initialize
+  // node state.
+  virtual void JoinGraph();
+  // Called just before leaving |graph_|, a good opportunity to uninitialize
+  // node state.
+  virtual void LeaveGraph();
+
   // Returns true if |other_node| is in the same graph.
   bool NodeInGraph(const NodeBase* other_node) const;
 
@@ -104,9 +117,7 @@ class NodeBase {
 template <class NodeClass>
 class TypedNodeBase : public NodeBase {
  public:
-  TypedNodeBase(const resource_coordinator::CoordinationUnitID& id,
-                Graph* graph)
-      : NodeBase(id, graph) {}
+  explicit TypedNodeBase(Graph* graph) : NodeBase(NodeClass::Type(), graph) {}
 
   static const NodeClass* FromNodeBase(const NodeBase* cu) {
     DCHECK(cu->id().type == NodeClass::Type());
@@ -135,9 +146,8 @@ template <class NodeClass, class MojoInterfaceClass, class MojoRequestClass>
 class CoordinationUnitInterface : public TypedNodeBase<NodeClass>,
                                   public MojoInterfaceClass {
  public:
-  CoordinationUnitInterface(const resource_coordinator::CoordinationUnitID& id,
-                            Graph* graph)
-      : TypedNodeBase<NodeClass>(id, graph) {}
+  explicit CoordinationUnitInterface(Graph* graph)
+      : TypedNodeBase<NodeClass>(graph) {}
 
   ~CoordinationUnitInterface() override = default;
 

@@ -37,8 +37,7 @@ class ProcessNodeImpl
     return resource_coordinator::CoordinationUnitType::kProcess;
   }
 
-  ProcessNodeImpl(const resource_coordinator::CoordinationUnitID& id,
-                  Graph* graph);
+  explicit ProcessNodeImpl(Graph* graph);
   ~ProcessNodeImpl() override;
 
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
@@ -80,7 +79,7 @@ class ProcessNodeImpl
       resource_coordinator::mojom::LifecycleState old_state);
 
  private:
-  void BeforeDestroyed() override;
+  void LeaveGraph() override;
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
