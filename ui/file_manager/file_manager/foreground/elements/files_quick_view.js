@@ -182,7 +182,7 @@ var FilesQuickView = Polymer({
    * @private
    */
   audioUrl_: function(contentUrl, type) {
-    return this.isAudio_(type) ? contentUrl : "";
+    return this.isAudio_(type) ? contentUrl : '';
   },
 
   /**
