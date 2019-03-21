@@ -118,6 +118,16 @@ template("chrome_public_common_apk_or_module_tmpl") {
   target(_target_type, target_name) {
     forward_variables_from(invoker, "*")
 
+    if (_is_trichrome) {
+      min_sdk_version = 28
+    } else if (_is_monochrome) {
+      min_sdk_version = 24
+    } else if (_is_modern) {
+      min_sdk_version = 21
+    } else {
+      min_sdk_version = 19
+    }
+
     resource_blacklist_regex = "[/-]xxxhdpi[/-]"
 
     # Exception rationale in https://crbug.com/691733.
@@ -342,7 +352,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       }
       alternative_android_sdk_dep = webview_framework_dep
       app_as_shared_lib = true
-      min_sdk_version = 24
       _pak_prefix = "monochrome"
     }
     if (is_trichrome) {
@@ -359,7 +368,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       if (android_64bit_target_cpu && build_apk_secondary_abi) {
         secondary_native_lib_placeholders = [ "libdummy.so" ]
       }
-      min_sdk_version = 28
       _pak_prefix = "trichrome_chrome"
     }
 
