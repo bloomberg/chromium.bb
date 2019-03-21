@@ -230,13 +230,16 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return kDefaultColorNTPLink;
     case COLOR_NTP_HEADER:
       return SkColorSetRGB(0x96, 0x96, 0x96);
-    case COLOR_BUTTON_BACKGROUND:
+    case COLOR_CONTROL_BUTTON_BACKGROUND:
       return SK_ColorTRANSPARENT;
+    case COLOR_TOOLBAR_BUTTON_ICON:
+      // If color is not explicitly specified, it should be calculated from
+      // TINT_BUTTONS.
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
 
     // Properties not stored in theme pack.
     case COLOR_TAB_CLOSE_BUTTON_ACTIVE:
-    case COLOR_TOOLBAR_BUTTON_ICON:
-      return gfx::kChromeIconGrey;
     case COLOR_TAB_CLOSE_BUTTON_INACTIVE:
     case COLOR_TAB_ALERT_AUDIO:
       return gfx::kChromeIconGrey;
