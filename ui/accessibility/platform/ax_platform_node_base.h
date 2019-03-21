@@ -307,6 +307,42 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // embedded element character.
   void UpdateComputedHypertext();
 
+  // Selection helper functions.
+  // The following functions retrieve the endpoints of the current selection.
+  // First they check for a local selection found on the current control, e.g.
+  // when querying the selection on a textarea.
+  // If not found they retrieve the global selection found on the current frame.
+  int GetSelectionAnchor();
+  int GetSelectionFocus();
+
+  // Retrieves the selection offsets in the way required by the IA2 APIs.
+  // selection_start and selection_end are -1 when there is no selection active
+  // on this object.
+  // The greatest of the two offsets is one past the last character of the
+  // selection.)
+  void GetSelectionOffsets(int* selection_start, int* selection_end);
+
+  // Returns the hyperlink at the given text position, or nullptr if no
+  // hyperlink can be found.
+  AXPlatformNodeBase* GetHyperlinkFromHypertextOffset(int offset);
+
+  // Functions for retrieving offsets for hyperlinks and hypertext.
+  // Return -1 in case of failure.
+  int32_t GetHyperlinkIndexFromChild(AXPlatformNodeBase* child);
+  int32_t GetHypertextOffsetFromHyperlinkIndex(int32_t hyperlink_index);
+  int32_t GetHypertextOffsetFromChild(AXPlatformNodeBase* child);
+  int32_t GetHypertextOffsetFromDescendant(AXPlatformNodeBase* descendant);
+
+  // If the selection endpoint is either equal to or an ancestor of this object,
+  // returns endpoint_offset.
+  // If the selection endpoint is a descendant of this object, returns its
+  // offset. Otherwise, returns either 0 or the length of the hypertext
+  // depending on the direction of the selection.
+  // Returns -1 in case of unexpected failure, e.g. the selection endpoint
+  // cannot be found in the accessibility tree.
+  int GetHypertextOffsetFromEndpoint(AXPlatformNodeBase* endpoint_object,
+                                     int endpoint_offset);
+
   int32_t GetPosInSet() const;
   int32_t GetSetSize() const;
 
