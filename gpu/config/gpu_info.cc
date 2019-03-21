@@ -67,6 +67,8 @@ const char* ImageDecodeAcceleratorSubsamplingToString(
       return "4:2:0";
     case gpu::ImageDecodeAcceleratorSubsampling::k422:
       return "4:2:2";
+    case gpu::ImageDecodeAcceleratorSubsampling::k444:
+      return "4:4:4";
   }
 }
 
