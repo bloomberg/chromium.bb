@@ -62,28 +62,6 @@ contenteditable. However, a proper fix would be to make the last line scroll
 completely, taking the padding into account. We haven't gotten around to this
 yet.
 
-### bugfix/deleteBackspace (Shezan Baig; D32947240, D38514960) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdeleteBackspace)\]
-This branch consists of multiple fixes that were merged together:
-*   **backspaceIntoTable (D32947240)**  
-    Open [this link](repros/backspaceIntoTable.html) in Chrome, and put the
-    cursor between 'T' and 'e' in "Testing", and hit backspace twice. The
-    rest of the text will go into the last cell.
-*   **backspaceOutOfLIInCell (D38514960)**  
-    Open [this link](repros/backspaceOutOfLIInCell.html) in Chrome, and try
-    to backspace out of the list-item inside the table cell.
-*   **nonemptycellbackspace**  
-    Open [this link](repros/nonemptycellbackspace.html) in Chrome, and put
-    the cursor in the beginning of the second or third cell and start
-    backspacing. Note that the issue does not happen when the cell is empty.  
-    _Note that this has been fixed upstream since the `28.0.1500.95` snapshot._
-*   **nonemptycelldelete**  
-    Open [this link](repros/nonemptycelldelete.html) in Chrome, and put the
-    cursor at the end of the first cell, after the 'c' and start deleting.
-    The table in the next cell will be highlighted on the first press, and
-    deleted on the second press. Note that the issue does not happen when the
-    cell is empty.  
-    _Note that this has been fixed upstream since the `28.0.1500.95` snapshot._
-
 ### bugfix/doubleMouseWheel (Imran Haider) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdoubleMouseWheel)\]
 Open [this link](repros/mousewheel.html) in blpwtk2\_shell. Note that this
 issue does not reproduce in Chrome because it requires a specific HWND
