@@ -273,8 +273,8 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   installable_manager_->RecordAddToHomescreenNoTimeout();
 
   bool webapk_compatible =
-      (data.error_code == NO_ERROR_DETECTED && data.valid_manifest &&
-       data.has_worker && AreWebManifestUrlsWebApkCompatible(*data.manifest) &&
+      (data.errors.empty() && data.valid_manifest && data.has_worker &&
+       AreWebManifestUrlsWebApkCompatible(*data.manifest) &&
        ChromeWebApkHost::CanInstallWebApk());
   observer_->OnUserTitleAvailable(
       webapk_compatible ? shortcut_info_.name : shortcut_info_.user_title,

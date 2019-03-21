@@ -1822,6 +1822,7 @@ Unknown properties are collapsed to zero. -->
       label="No gesture associated with call to prompt (removed Aug 2018)"/>
   <int value="33" label="Waiting for native data"/>
   <int value="34" label="App install dialog shown"/>
+  <int value="35" label="Cannot check service worker for null start URL"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">

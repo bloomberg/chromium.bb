@@ -319,10 +319,9 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
     return;
   }
 
-  for_installable_site_ =
-      data.error_code == NO_ERROR_DETECTED && !shortcut_app_requested_
-          ? web_app::ForInstallableSite::kYes
-          : web_app::ForInstallableSite::kNo;
+  for_installable_site_ = data.errors.empty() && !shortcut_app_requested_
+                              ? web_app::ForInstallableSite::kYes
+                              : web_app::ForInstallableSite::kNo;
 
   web_app::UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
                                         for_installable_site_);

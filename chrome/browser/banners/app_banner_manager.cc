@@ -317,8 +317,8 @@ bool AppBannerManager::IsWebAppConsideredInstalled(
 
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   UpdateState(State::ACTIVE);
-  if (data.error_code != NO_ERROR_DETECTED) {
-    Stop(data.error_code);
+  if (!data.errors.empty()) {
+    Stop(data.errors[0]);
     return;
   }
 
@@ -359,15 +359,15 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
-  SetInstallable(data.error_code == NO_ERROR_DETECTED
-                     ? Installable::INSTALLABLE_YES
-                     : Installable::INSTALLABLE_NO);
+  auto error = data.errors.empty() ? NO_ERROR_DETECTED : data.errors[0];
+  SetInstallable(error == NO_ERROR_DETECTED ? Installable::INSTALLABLE_YES
+                                            : Installable::INSTALLABLE_NO);
 
-  if (data.error_code != NO_ERROR_DETECTED) {
-    if (data.error_code == NO_MATCHING_SERVICE_WORKER)
+  if (error != NO_ERROR_DETECTED) {
+    if (error == NO_MATCHING_SERVICE_WORKER)
       TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
 
-    Stop(data.error_code);
+    Stop(error);
     return;
   }
 

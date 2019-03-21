@@ -138,7 +138,7 @@ void WebAppDataRetriever::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
 
-  const bool is_installable = data.error_code == NO_ERROR_DETECTED;
+  const bool is_installable = data.errors.empty();
 
   std::move(callback).Run(*data.manifest, is_installable);
 }

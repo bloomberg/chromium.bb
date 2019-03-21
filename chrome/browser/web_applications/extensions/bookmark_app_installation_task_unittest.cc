@@ -66,8 +66,8 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
   void CompleteInstallableCheck() {
     blink::Manifest manifest;
     InstallableData data = {
-        NO_MANIFEST, GURL(), &manifest, GURL(), nullptr,
-        false,       GURL(), nullptr,   false,  false,
+        {NO_MANIFEST}, GURL(), &manifest, GURL(), nullptr,
+        false,         GURL(), nullptr,   false,  false,
     };
     BookmarkAppHelper::OnDidPerformInstallableCheck(data);
   }

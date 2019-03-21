@@ -144,7 +144,7 @@ class TestInstallableManager : public InstallableManager {
     } else if (params.valid_manifest && params.has_worker) {
       if (!IsManifestValidForWebApp(manifest_,
                                     true /* check_webapp_manifest_display */)) {
-        code = valid_manifest_->error;
+        code = valid_manifest_->errors.at(0);
         is_installable = false;
       } else if (!is_installable_) {
         code = NOT_OFFLINE_CAPABLE;
@@ -168,7 +168,10 @@ class TestInstallableManager : public InstallableManager {
     if (params.valid_manifest && params.has_worker && is_installable)
       ResolveMetrics(params, is_installable);
 
-    callback.Run({code, GURL(kDefaultManifestUrl), &manifest_,
+    std::vector<InstallableStatusCode> errors;
+    if (code != NO_ERROR_DETECTED)
+      errors.push_back(code);
+    callback.Run({std::move(errors), GURL(kDefaultManifestUrl), &manifest_,
                   params.valid_primary_icon ? primary_icon_url_ : GURL(),
                   params.valid_primary_icon ? primary_icon_.get() : nullptr,
                   params.prefer_maskable_icon,

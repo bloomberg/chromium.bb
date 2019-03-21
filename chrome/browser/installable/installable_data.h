@@ -5,31 +5,35 @@
 #ifndef CHROME_BROWSER_INSTALLABLE_INSTALLABLE_DATA_H_
 #define CHROME_BROWSER_INSTALLABLE_INSTALLABLE_DATA_H_
 
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/macros.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 // This struct is passed to an InstallableCallback when the InstallableManager
-// has finished working. Each reference is owned by InstallableManager, and
+// has finished working. Each pointer is owned by InstallableManager, and
 // callers should copy any objects which they wish to use later. Non-requested
 // fields will be set to null, empty, or false.
 struct InstallableData {
-  InstallableData(InstallableStatusCode error_code,
-                  GURL manifest_url,
+  InstallableData(std::vector<InstallableStatusCode> errors,
+                  const GURL& manifest_url,
                   const blink::Manifest* manifest,
-                  GURL primary_icon_url,
+                  const GURL& primary_icon_url,
                   const SkBitmap* primary_icon,
                   bool has_maskable_primary_icon,
-                  GURL badge_icon_url,
+                  const GURL& badge_icon_url,
                   const SkBitmap* badge_icon,
                   bool valid_manifest,
                   bool has_worker);
-  InstallableData(const InstallableData&);
   ~InstallableData();
 
-  // NO_ERROR_DETECTED if there were no issues.
-  const InstallableStatusCode error_code = NO_ERROR_DETECTED;
+  // Empty if there were no issues. Otherwise contains all errors encountered
+  // while InstallableManager was working.
+  std::vector<InstallableStatusCode> errors;
 
   // Empty if the site has no <link rel="manifest"> tag.
   const GURL manifest_url;
@@ -42,9 +46,7 @@ struct InstallableData {
 
   // nullptr if the most appropriate primary icon couldn't be determined or
   // downloaded. The underlying primary icon is owned by the InstallableManager;
-  // clients must copy the bitmap if they want to to use it. If
-  // valid_primary_icon was true and a primary icon could not be retrieved, the
-  // reason will be in error_code.
+  // clients must copy the bitmap if they want to to use it.
   const SkBitmap* primary_icon;
 
   // Whether the primary icon had the 'maskable' purpose, meaningless if no
@@ -67,9 +69,11 @@ struct InstallableData {
   // error_code.
   const bool valid_manifest = false;
 
-  // true if the site has a service worker with a fetch handler. If has_worker
-  // was true and the site isn't installable, the reason will be in error_code.
+  // true if the site has a service worker with a fetch handler.
   const bool has_worker = false;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InstallableData);
 };
 
 using InstallableCallback = base::Callback<void(const InstallableData&)>;
