@@ -323,7 +323,6 @@ SpdySessionDependencies::SpdySessionDependencies(
     std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
     : host_resolver(std::make_unique<MockCachingHostResolver>()),
       cert_verifier(std::make_unique<MockCertVerifier>()),
-      channel_id_service(nullptr),
       transport_security_state(std::make_unique<TransportSecurityState>()),
       cert_transparency_verifier(std::make_unique<DoNothingCTVerifier>()),
       ct_policy_enforcer(std::make_unique<DefaultCTPolicyEnforcer>()),
@@ -405,7 +404,6 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.client_socket_factory = session_deps->socket_factory.get();
   context.host_resolver = session_deps->GetHostResolver();
   context.cert_verifier = session_deps->cert_verifier.get();
-  context.channel_id_service = session_deps->channel_id_service.get();
   context.transport_security_state =
       session_deps->transport_security_state.get();
   context.cert_transparency_verifier =

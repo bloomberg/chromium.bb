@@ -423,7 +423,7 @@ class SSLServerSocketTest : public PlatformTest,
 
     HostPortPair host_and_pair("unittest", 0);
     SSLClientSocketContext context(
-        cert_verifier_.get(), nullptr, transport_security_state_.get(),
+        cert_verifier_.get(), transport_security_state_.get(),
         ct_verifier_.get(), ct_policy_enforcer_.get(),
         ssl_client_session_cache_.get());
 

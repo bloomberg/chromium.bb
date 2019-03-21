@@ -85,16 +85,6 @@ class FailingSSLClientSocket : public SSLClientSocket {
   void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) const override {}
 
-  ChannelIDService* GetChannelIDService() const override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  crypto::ECPrivateKey* GetChannelIDKey() const override {
-    NOTREACHED();
-    return nullptr;
-  }
-
   void ApplySocketTag(const net::SocketTag& tag) override {}
 
   // SSLSocket implementation:

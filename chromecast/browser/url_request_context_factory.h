@@ -18,6 +18,7 @@ class FilePath;
 }
 
 namespace net {
+class ChannelIDService;
 class CookieStore;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;

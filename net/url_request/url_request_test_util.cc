@@ -141,7 +141,6 @@ void TestURLRequestContext::Init() {
     session_context.http_auth_handler_factory = http_auth_handler_factory();
     session_context.http_server_properties = http_server_properties();
     session_context.net_log = net_log();
-    session_context.channel_id_service = channel_id_service();
 #if BUILDFLAG(ENABLE_REPORTING)
     session_context.network_error_logging_service =
         network_error_logging_service();

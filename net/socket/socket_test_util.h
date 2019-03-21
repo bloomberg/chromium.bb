@@ -69,7 +69,6 @@ enum {
 };
 
 class AsyncSocket;
-class ChannelIDService;
 class MockClientSocket;
 class SSLClientSocket;
 class StreamSocket;
@@ -454,7 +453,6 @@ struct SSLSocketDataProvider {
   // Result for GetSSLCertRequestInfo().
   SSLCertRequestInfo* cert_request_info;
 
-  ChannelIDService* channel_id_service;
   base::Optional<NextProtoVector> next_protos_expected_in_ssl_config;
 
   uint16_t expected_ssl_version_min;
@@ -910,8 +908,6 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   bool GetSSLInfo(SSLInfo* ssl_info) override;
   void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) const override;
-  ChannelIDService* GetChannelIDService() const override;
-  crypto::ECPrivateKey* GetChannelIDKey() const override;
   void ApplySocketTag(const SocketTag& tag) override;
   const NetLogWithSource& NetLog() const override;
   void GetConnectionAttempts(ConnectionAttempts* out) const override;

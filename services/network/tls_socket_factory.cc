@@ -49,7 +49,6 @@ TLSSocketFactory::TLSSocketFactory(
     const net::HttpNetworkSession::Context* http_context)
     : ssl_client_socket_context_(
           url_request_context->cert_verifier(),
-          nullptr, /* TODO(rkn): ChannelIDService is not thread safe. */
           url_request_context->transport_security_state(),
           url_request_context->cert_transparency_verifier(),
           url_request_context->ct_policy_enforcer(),

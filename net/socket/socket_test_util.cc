@@ -323,7 +323,6 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto(kProtoUnknown),
       cert_request_info(nullptr),
-      channel_id_service(nullptr),
       expected_ssl_version_min(kDefaultSSLVersionMin),
       expected_ssl_version_max(kDefaultSSLVersionMax) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_3,
@@ -1568,10 +1567,6 @@ void MockSSLClientSocket::GetSSLCertRequestInfo(
   }
 }
 
-ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
-  return data_->channel_id_service;
-}
-
 int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
                                               bool has_context,
                                               const base::StringPiece& context,
@@ -1579,11 +1574,6 @@ int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
                                               unsigned int outlen) {
   memset(out, 'A', outlen);
   return OK;
-}
-
-crypto::ECPrivateKey* MockSSLClientSocket::GetChannelIDKey() const {
-  NOTREACHED();
-  return nullptr;
 }
 
 void MockSSLClientSocket::RunCallbackAsync(CompletionOnceCallback callback,

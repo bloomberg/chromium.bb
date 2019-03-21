@@ -10,7 +10,6 @@
 #include "crypto/ec_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/socket/ssl_client_socket_impl.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_key_logger.h"
 

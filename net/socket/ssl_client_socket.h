@@ -23,7 +23,6 @@ namespace net {
 
 class CTPolicyEnforcer;
 class CertVerifier;
-class ChannelIDService;
 class CTVerifier;
 class SSLClientSessionCache;
 class SSLKeyLogger;
@@ -34,20 +33,17 @@ class TransportSecurityState;
 struct SSLClientSocketContext {
   SSLClientSocketContext() = default;
   SSLClientSocketContext(CertVerifier* cert_verifier_arg,
-                         ChannelIDService* channel_id_service_arg,
                          TransportSecurityState* transport_security_state_arg,
                          CTVerifier* cert_transparency_verifier_arg,
                          CTPolicyEnforcer* ct_policy_enforcer_arg,
                          SSLClientSessionCache* ssl_client_session_cache_arg)
       : cert_verifier(cert_verifier_arg),
-        channel_id_service(channel_id_service_arg),
         transport_security_state(transport_security_state_arg),
         cert_transparency_verifier(cert_transparency_verifier_arg),
         ct_policy_enforcer(ct_policy_enforcer_arg),
         ssl_client_session_cache(ssl_client_session_cache_arg) {}
 
   CertVerifier* cert_verifier = nullptr;
-  ChannelIDService* channel_id_service = nullptr;
   TransportSecurityState* transport_security_state = nullptr;
   CTVerifier* cert_transparency_verifier = nullptr;
   CTPolicyEnforcer* ct_policy_enforcer = nullptr;

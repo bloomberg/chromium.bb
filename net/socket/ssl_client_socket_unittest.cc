@@ -798,7 +798,6 @@ class SSLClientSocketTest : public PlatformTest,
         ssl_client_session_cache_(
             new SSLClientSessionCache(SSLClientSessionCache::Config())),
         context_(cert_verifier_.get(),
-                 nullptr /* channel_id_service */,
                  transport_security_state_.get(),
                  ct_verifier_.get(),
                  ct_policy_enforcer_.get(),

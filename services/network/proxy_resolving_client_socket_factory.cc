@@ -29,11 +29,6 @@ ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
   session_context.cert_transparency_verifier =
       request_context->cert_transparency_verifier();
   session_context.ct_policy_enforcer = request_context->ct_policy_enforcer();
-  // TODO(rkn): This is NULL because ChannelIDService is not thread safe.
-  // TODO(mmenke):  The above comment makes no sense, as not a single one of
-  // these classes is thread safe. Figure out if the comment's wrong, or if this
-  // entire class is badly broken.
-  session_context.channel_id_service = NULL;
   session_context.proxy_resolution_service =
       request_context->proxy_resolution_service();
   session_context.proxy_delegate = request_context->proxy_delegate();
