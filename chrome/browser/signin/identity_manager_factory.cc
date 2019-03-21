@@ -88,7 +88,6 @@ std::unique_ptr<ConcreteSigninManager> BuildSigninManager(Profile* profile) {
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
       AccountConsistencyModeManager::GetMethodForProfile(profile));
 #endif
-  AccountFetcherServiceFactory::GetForProfile(profile);
   signin_manager->Initialize(g_browser_process->local_state());
   return signin_manager;
 }
