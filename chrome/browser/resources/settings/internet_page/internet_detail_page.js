@@ -217,7 +217,7 @@ Polymer({
     const guid = queryParams.get('guid') || '';
     if (!guid) {
       console.error('No guid specified for page:' + route);
-      this.close_();
+      this.close();
     }
 
     this.shouldShowConfigureWhenNetworkLoaded_ =
@@ -249,8 +249,7 @@ Polymer({
     this.getNetworkDetails_();
   },
 
-  /** @private */
-  close_: function() {
+  close: function() {
     this.guid = '';
     // Delay navigating to allow other subpages to load first.
     requestAnimationFrame(() => settings.navigateToPreviousRoute());
@@ -375,7 +374,7 @@ Polymer({
             'Unexpected networkingPrivate.getManagedProperties error: ' +
             message + ' For: ' + this.guid);
       }
-      this.close_();
+      this.close();
       return;
     }
 
@@ -386,14 +385,14 @@ Polymer({
 
     if (!properties) {
       console.error('No properties for: ' + this.guid);
-      this.close_();
+      this.close();
       return;
     }
 
     // Detail page should not be shown when Arc VPN is not connected.
     if (this.isArcVpn_(properties) && !this.isConnectedState_(properties)) {
       this.guid = '';
-      this.close_();
+      this.close();
     }
 
     this.networkProperties_ = properties;
@@ -411,7 +410,7 @@ Polymer({
       // If |state| is null, the network is no longer visible, close this.
       console.error('Network no longer exists: ' + this.guid);
       this.networkProperties_ = undefined;
-      this.close_();
+      this.close();
       return;
     }
     this.networkProperties_ = {
@@ -850,7 +849,7 @@ Polymer({
   onForgetTap_: function() {
     this.networkingPrivate.forgetNetwork(this.guid);
     // A forgotten network no longer has a valid GUID, close the subpage.
-    this.close_();
+    this.close();
   },
 
   /** @private */
