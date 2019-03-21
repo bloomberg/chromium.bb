@@ -83,7 +83,7 @@ bool CSSOMTypes::IsPropertySupported(CSSPropertyID id) {
   switch (id) {
     case CSSPropertyVariable:
   {% for property in properties if property.typedom_types %}
-    case {{property.property_id}}:
+    case CSSPropertyID::{{property.enum_key}}:
   {% endfor %}
       return true;
     default:
@@ -124,7 +124,7 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
       return value.GetType() == CSSStyleValue::kUnparsedType;
     {% for property in properties if property.typedom_types %}
     {% if property.typedom_types != ['Keyword'] %}
-    case {{property.property_id}}:
+    case CSSPropertyID::{{property.enum_key}}:
       return (
           {% for type in property.typedom_types if type != 'Keyword' %}
           {{ "|| " if not loop.first }}CSSOMTypes::IsCSSStyleValue{{type}}(value)

@@ -47,7 +47,7 @@ class {{property_classname}} final : public {{property.namespace_group}} {
     return "{{property_classname[0].lower() + property_classname[1:]}}";
   }
   {% if property.alias_for == None %}
-  CSSPropertyID PropertyID() const override { return {{property.property_id}}; }
+  CSSPropertyID PropertyID() const override { return CSSPropertyID::{{property.enum_key}}; }
   {%if property.layout_dependent %}
   bool IsLayoutDependentProperty() const override { return true; }
   bool IsLayoutDependent(const ComputedStyle*, LayoutObject*) const override;
