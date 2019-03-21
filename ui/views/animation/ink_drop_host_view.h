@@ -196,8 +196,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
     // InkDropEventHandler:
     InkDrop* GetInkDrop() override;
     bool HasInkDrop() const override;
-    void AnimateInkDrop(InkDropState state,
-                        const ui::LocatedEvent* event) override;
 
     bool SupportsGestureEvents() const override;
 
@@ -205,9 +203,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
     // The host view.
     InkDropHostView* const host_view_;
   };
-
-  // The last user Event to trigger an ink drop ripple animation.
-  std::unique_ptr<ui::LocatedEvent> last_ripple_triggering_event_;
 
   // Defines what type of |ink_drop_| to create.
   InkDropMode ink_drop_mode_ = InkDropMode::OFF;

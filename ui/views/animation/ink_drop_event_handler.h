@@ -34,19 +34,15 @@ class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
 
     virtual bool HasInkDrop() const = 0;
 
-    // Start animating the InkDrop to another target state.
-    // TODO(pbos): Consider moving the implementation of
-    // InkDropHostView::AnimateInkDrop into InkDropEventHandler. In this case
-    // InkDropHostView would forward AnimateInkDrop into
-    // InkDropEventHandler::AnimateInkDrop.
-    virtual void AnimateInkDrop(InkDropState state,
-                                const ui::LocatedEvent* event) = 0;
     // Returns true if gesture events should affect the InkDrop.
     virtual bool SupportsGestureEvents() const = 0;
   };
 
   InkDropEventHandler(View* host_view, Delegate* delegate);
   ~InkDropEventHandler() override;
+
+  void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
+  ui::LocatedEvent* GetLastRippleTriggeringEvent() const;
 
  private:
   // ui::EventHandler:
@@ -70,6 +66,9 @@ class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
 
   // Delegate used to get the InkDrop, etc.
   Delegate* const delegate_;
+
+  // The last user Event to trigger an InkDrop-ripple animation.
+  std::unique_ptr<ui::LocatedEvent> last_ripple_triggering_event_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropEventHandler);
 };

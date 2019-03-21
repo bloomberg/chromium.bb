@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "ui/events/scoped_target_handler.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -22,6 +23,30 @@ InkDropEventHandler::InkDropEventHandler(View* host_view, Delegate* delegate)
 
 InkDropEventHandler::~InkDropEventHandler() {
   host_view_->RemoveObserver(this);
+}
+
+void InkDropEventHandler::AnimateInkDrop(InkDropState state,
+                                         const ui::LocatedEvent* event) {
+#if defined(OS_WIN)
+  // On Windows, don't initiate ink-drops for touch/gesture events.
+  // Additionally, certain event states should dismiss existing ink-drop
+  // animations. If the state is already other than HIDDEN, presumably from
+  // a mouse or keyboard event, then the state should be allowed. Conversely,
+  // if the requested state is ACTIVATED, then it should always be allowed.
+  if (event && (event->IsTouchEvent() || event->IsGestureEvent()) &&
+      delegate_->GetInkDrop()->GetTargetInkDropState() ==
+          InkDropState::HIDDEN &&
+      state != InkDropState::ACTIVATED) {
+    return;
+  }
+#endif
+  last_ripple_triggering_event_.reset(
+      event ? ui::Event::Clone(*event).release()->AsLocatedEvent() : nullptr);
+  delegate_->GetInkDrop()->AnimateToState(state);
+}
+
+ui::LocatedEvent* InkDropEventHandler::GetLastRippleTriggeringEvent() const {
+  return last_ripple_triggering_event_.get();
 }
 
 void InkDropEventHandler::OnGestureEvent(ui::GestureEvent* event) {
@@ -70,7 +95,7 @@ void InkDropEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     // case would prematurely pre-empt these animations.
     return;
   }
-  delegate_->AnimateInkDrop(ink_drop_state, event);
+  AnimateInkDrop(ink_drop_state, event);
 }
 
 void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
