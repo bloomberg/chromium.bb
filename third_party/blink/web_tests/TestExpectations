@@ -5147,8 +5147,7 @@ crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/831673 virtual/binary-for-devtools/http/tests/devtools/reveal-objects.js [ Pass Timeout ]
-# Temporarily superceded to allow Failure for crbug.com/938592.
-#crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
+crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
 crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
@@ -6132,10 +6131,6 @@ crbug.com/943390 [ Win ] virtual/outofblink-cors/http/tests/security/mixedConten
 crbug.com/943388 [ Win ] http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 crbug.com/943388 [ Win ] virtual/binary-for-devtools/http/tests/devtools/network/network-recording-after-reload-with-screenshots-enabled.js [ Pass Failure ]
 
-#Imperceptible gradient changes. Will rebaseline after Skia roll.
-crbug.com/938592 virtual/gpu/fast/canvas/canvas-text-alignment.html [ Pass Failure ]
-crbug.com/938592 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure Timeout ]
-#
 # Trooper 2019-03-19
 crbug.com/941565 external/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Pass Failure ]
 
