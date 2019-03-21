@@ -79,9 +79,6 @@ enum MediaStreamRequestResult {
   NUM_MEDIA_REQUEST_RESULTS
 };
 
-using CameraCalibration =
-    media::VideoCaptureDeviceDescriptor::CameraCalibration;
-
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
 BLINK_COMMON_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
@@ -153,9 +150,6 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
 
   // Id for this capture session. Unique for all sessions of the same type.
   int session_id = kNoId;
-
-  // This field is optional and available only for some camera models.
-  base::Optional<CameraCalibration> camera_calibration;
 
   // This field is optional and available only for display media devices.
   base::Optional<media::mojom::DisplayMediaInformationPtr> display_media_info;

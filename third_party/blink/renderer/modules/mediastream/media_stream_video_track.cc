@@ -448,15 +448,6 @@ void MediaStreamVideoTrack::GetSettings(
   settings.resize_mode = WebString::FromASCII(std::string(
       adapter_settings().target_size() ? WebMediaStreamTrack::kResizeModeRescale
                                        : WebMediaStreamTrack::kResizeModeNone));
-
-  const base::Optional<CameraCalibration> calibration =
-      source_->device().camera_calibration;
-  if (calibration) {
-    settings.depth_near = calibration->depth_near;
-    settings.depth_far = calibration->depth_far;
-    settings.focal_length_x = calibration->focal_length_x;
-    settings.focal_length_y = calibration->focal_length_y;
-  }
   if (source_->device().display_media_info.has_value()) {
     const auto& info = source_->device().display_media_info.value();
     settings.display_surface = ToWebDisplaySurface(info->display_surface);

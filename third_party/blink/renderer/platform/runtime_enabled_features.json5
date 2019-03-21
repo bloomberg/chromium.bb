@@ -791,10 +791,6 @@
       status: {"Android": "stable"},
     },
     {
-      name: "MediaCaptureDepth",
-      status: "experimental",
-    },
-    {
       name: "MediaCaptureDepthVideoKind",
       status: "experimental",
     },
