@@ -138,6 +138,13 @@ enum ChipType {
   // cancel button. Otherwise, buttons of this type work and look like a
   // NORMAL_ACTION.
   CLOSE_ACTION = 5;
+
+  // Chip is a highlighted (blue) action chip.
+  //
+  // The presence of this chip inhibit the addition of an implicit close or
+  // cancel button. Otherwise, buttons of this type work and look like a
+  // HIGHLIGHTED_ACTION.
+  DONE_ACTION = 6;
 }
 
 enum ScriptStatusProto {
