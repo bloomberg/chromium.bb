@@ -18,7 +18,6 @@
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
@@ -120,8 +119,6 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       translate_driver_(
           &web_contents->GetController(),
-          TemplateURLServiceFactory::GetForProfile(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext())),
           UrlLanguageHistogramFactory::GetForBrowserContext(
               web_contents->GetBrowserContext())),
       translate_manager_(new translate::TranslateManager(
