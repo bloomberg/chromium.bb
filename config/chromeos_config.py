@@ -1069,6 +1069,24 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Builds Chrome OS using top-of-tree LLVM',
   )
 
+  # This build config is dedicated to improve code layout of Chrome. It adopts
+  # the Call-Chain Clustering (C3) approach and other techniques to improve
+  # the code layout. It builds Chrome and generates an orderfile as a result.
+  # The orderfile will be uploaded so Chrome in the future production will use
+  # the orderfile to improve code layout.
+  #
+  # This builder is not a toolchain builder, i.e. it won't build all the
+  # toolchain. Instead, it's a release builder. It's put here because it
+  # belongs to the toolchain team.
+
+  site_config.AddTemplate(
+      'orderfile_generate_toolchain',
+      site_config.templates.release,
+      orderfile_generate=True,
+      useflags=config_lib.append_useflags(['orderfile_generate']),
+      description='Build Chrome and generate an orderfile for better layout',
+  )
+
   ### Toolchain waterfall entries.
   ### Toolchain builder configs: 3 architectures {amd64,arm,arm64}
   ###                          x 1 toolchains {llvm-next}
@@ -1195,6 +1213,14 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       boards=['arm64-generic'],
   )
 
+  site_config.Add(
+      'orderfile-generate-toolchain',
+      site_config.templates.orderfile_generate_toolchain,
+      # The board should not matter much, since we are not running
+      # anything on the board.
+      boards=['terra'],
+      # TODO: Add a schedule to start daily or weekly
+  )
 
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):

@@ -999,3 +999,40 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._CollectPGOProfiles()
+
+
+# This stage generates and uploads the orderfile files for Chrome build.
+class GenerateOrderfileStage(generic_stages.BoardSpecificBuilderStage,
+                             generic_stages.ArchivingStageMixin):
+  """Generate and upload the orderfile for the board."""
+
+  category = constants.CI_INFRA_STAGE
+
+  ORDERFILE_TAR = 'chrome.orderfile.tar.xz'
+  ORDERFILE_NAME = 'chrome.orderfile.txt'
+
+  def __init__(self, *args, **kwargs):
+    super(GenerateOrderfileStage, self).__init__(*args, **kwargs)
+    self._upload_queue = multiprocessing.Queue()
+
+  def _GenerateOrderfile(self):
+    """Generate and upload the orderfile for the board."""
+    assert self.archive_path.startswith(self._build_root)
+    chroot_path = os.path.join(self._build_root, 'chroot')
+    orderfile_path = os.path.join(chroot_path, 'build',
+                                  self._current_board, 'opt/google/chrome')
+    orderfile = os.path.join(orderfile_path, self.ORDERFILE_NAME)
+    if not os.path.exists(orderfile):
+      raise Exception('No orderfile generated in the builder.')
+
+    output_path = os.path.join(self._build_root, 'chroot/tmp')
+    target = os.path.join(output_path, self.ORDERFILE_TAR)
+    cros_build_lib.CreateTarball(os.path.relpath(target, orderfile_path),
+                                 cwd=orderfile_path,
+                                 input=[self.ORDERFILE_NAME])
+    orderfile_tarball = os.path.abspath(target)
+    self._upload_queue.put([orderfile_tarball])
+
+  def PerformStage(self):
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      self._GenerateOrderfile()

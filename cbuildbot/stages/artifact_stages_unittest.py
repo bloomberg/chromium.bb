@@ -591,3 +591,51 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
            os.path.join(out_sys_devel, 'profiles')
     self.assertEqual('More than one profile directories are found: %s' % dirs,
                      str(msg.exception))
+
+
+class GenerateOrderfileStageTest(generic_stages_unittest.AbstractStageTestCase,
+                                 cbuildbot_unittest.SimpleBuilderTestCase):
+  """Test GenerateOrderfileStage functionality."""
+
+  RELEASE_TAG = ''
+
+  # pylint: disable=protected-access
+
+  def setUp(self):
+    self._Prepare()
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+    self.buildstore = FakeBuildStore()
+
+  def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
+    return artifact_stages.GenerateOrderfileStage(self._run, self.buildstore,
+                                                  self._current_board)
+
+  def testGenerateOrderfile(self):
+    stage = self.ConstructStage()
+
+    # Check no orderfile generated causes exception
+    with self.assertRaises(Exception) as msg:
+      stage._GenerateOrderfile()
+      self.assertEqual('No orderfile generated in the builder.',
+                       str(msg.exception))
+
+    # Create a dummy orderfile
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    orderfile_path = os.path.abspath(
+        os.path.join(chroot_path, 'build',
+                     self._current_board, 'opt/google/chrome'))
+    os.makedirs(orderfile_path)
+    orderfile = os.path.join(orderfile_path, 'chrome.orderfile.txt')
+    with open(orderfile, 'w') as f:
+      f.write('Empty orderfile')
+
+    # Check uploading tarball
+    self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
+    self.PatchObject(stage._upload_queue, 'put', autospec=True)
+    output_path = os.path.abspath(os.path.join(chroot_path, 'tmp'))
+    os.makedirs(output_path)
+    stage._GenerateOrderfile()
+    target = os.path.join(output_path, stage.ORDERFILE_TAR)
+    stage._upload_queue.put.assert_called_with([target])

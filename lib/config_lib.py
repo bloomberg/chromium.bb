@@ -839,6 +839,10 @@ def DefaultSettings():
       # to run a predetermined set of benchmarks.
       afdo_generate=False,
 
+      # Generate Chrome orderfile. Will build Chrome with C3 ordering and
+      # generate an orderfile for uploading as a result.
+      orderfile_generate=False,
+
       # Generates AFDO data, builds the minimum amount of artifacts and
       # assumes a non-distributed builder (i.e.: the whole process in a single
       # builder).

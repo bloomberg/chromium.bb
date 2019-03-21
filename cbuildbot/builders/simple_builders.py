@@ -222,6 +222,9 @@ class SimpleBuilder(generic_builders.Builder):
     if config.afdo_generate:
       stage_list += [[afdo_stages.AFDODataGenerateStage, board]]
 
+    if config.orderfile_generate:
+      stage_list += [[artifact_stages.GenerateOrderfileStage, board]]
+
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
         [release_stages.SigningStage, board],
