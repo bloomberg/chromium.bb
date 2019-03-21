@@ -21,12 +21,17 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
 
-void CreateOriginId(Profile* profile,
-                    MediaDrmOriginIdManager::ProvisionedOriginIdCB callback) {
+using MediaDrmOriginId = media::MediaDrmStorage::MediaDrmOriginId;
+using OriginIdReadyCB =
+    base::OnceCallback<void(bool success, const MediaDrmOriginId& origin_id)>;
+
+void CreateOriginIdWithMediaDrmOriginIdManager(Profile* profile,
+                                               OriginIdReadyCB callback) {
   // Only need to origin IDs if MediaDrm supports it.
   DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
 
@@ -38,6 +43,16 @@ void CreateOriginId(Profile* profile,
   }
 
   origin_id_manager->GetOriginId(std::move(callback));
+}
+
+void CreateOriginId(OriginIdReadyCB callback) {
+  // Only need to origin IDs if MediaDrm supports it.
+  DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
+
+  auto origin_id = base::UnguessableToken::Create();
+  DVLOG(2) << __func__ << ": origin_id = " << origin_id;
+
+  std::move(callback).Run(true, origin_id);
 }
 
 void AllowEmptyOriginId(content::RenderFrameHost* render_frame_host,
@@ -82,11 +97,18 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
     return;
   }
 
+  // Only use MediaDrmOriginIdManager's preprovisioned origin IDs when feature
+  // kMediaDrmPreprovisioning is enabled.
+  auto get_origin_id_cb =
+      base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioning)
+          ? base::BindRepeating(&CreateOriginIdWithMediaDrmOriginIdManager,
+                                profile)
+          : base::BindRepeating(&CreateOriginId);
+
   // The object will be deleted on connection error, or when the frame navigates
   // away. See FrameServiceBase for details.
   new cdm::MediaDrmStorageImpl(
-      render_frame_host, pref_service,
-      base::BindRepeating(&CreateOriginId, profile),
+      render_frame_host, pref_service, get_origin_id_cb,
       base::BindRepeating(&AllowEmptyOriginId, render_frame_host),
       std::move(request));
 }
