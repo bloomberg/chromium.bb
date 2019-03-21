@@ -194,6 +194,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // and tablet mode is enabled.
   void SetExpandArrowViewVisibility(bool show);
 
+  void NotifySearchBoxBoundsUpdated();
+
   void AddSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
   void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
 

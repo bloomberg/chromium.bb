@@ -365,9 +365,7 @@ void ContentsView::UpdateSearchBox(double progress,
   gfx::Transform transform;
   transform.Scale(scale, scale);
   search_box->GetWidget()->GetNativeView()->SetTransform(transform);
-
-  for (auto& observer : search_box_observers_)
-    observer.OnSearchBoxBoundsUpdated();
+  NotifySearchBoxBoundsUpdated();
 }
 
 void ContentsView::UpdateExpandArrowOpacity(double progress,
@@ -639,6 +637,11 @@ void ContentsView::SetExpandArrowViewVisibility(bool show) {
     return;
 
   expand_arrow_view_->SetVisible(show);
+}
+
+void ContentsView::NotifySearchBoxBoundsUpdated() {
+  for (auto& observer : search_box_observers_)
+    observer.OnSearchBoxBoundsUpdated();
 }
 
 void ContentsView::AddSearchBoxUpdateObserver(
