@@ -56,14 +56,7 @@ const char* ExamplePreferredSizeLabel::kElideBehaviors[] = {
 
 }  // namespace
 
-LabelExample::LabelExample()
-    : ExampleBase("Label"),
-      textfield_(nullptr),
-      alignment_(nullptr),
-      elide_behavior_(nullptr),
-      multiline_(nullptr),
-      shadows_(nullptr),
-      custom_label_(nullptr) {}
+LabelExample::LabelExample() : ExampleBase("Label") {}
 
 LabelExample::~LabelExample() = default;
 

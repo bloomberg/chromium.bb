@@ -121,13 +121,7 @@ class MultilineExample::RenderTextView : public View {
   DISALLOW_COPY_AND_ASSIGN(RenderTextView);
 };
 
-MultilineExample::MultilineExample()
-    : ExampleBase("Multiline RenderText"),
-      render_text_view_(nullptr),
-      label_(nullptr),
-      textfield_(nullptr),
-      label_checkbox_(nullptr),
-      elision_checkbox_(nullptr) {}
+MultilineExample::MultilineExample() : ExampleBase("Multiline RenderText") {}
 
 MultilineExample::~MultilineExample() = default;
 
