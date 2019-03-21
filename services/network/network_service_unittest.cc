@@ -1312,9 +1312,9 @@ class NetworkChangeTest : public testing::Test {
  public:
   NetworkChangeTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-    service_ = NetworkService::CreateForTesting();
-  }
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
+        service_(NetworkService::CreateForTesting()) {}
 
   ~NetworkChangeTest() override {}
 
@@ -1322,12 +1322,13 @@ class NetworkChangeTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> service_;
 };
 
-// mojom:NetworkChangeManager isn't supported on these platforms.
+// mojom:NetworkChangeManager isn't supported on iOS.
 // See the same ifdef in CreateNetworkChangeNotifierIfNeeded.
-#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA) || defined(OS_IOS)
+#if defined(OS_IOS)
 #define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
 #else
 #define MAYBE_NetworkChangeManagerRequest NetworkChangeManagerRequest
@@ -1344,6 +1345,7 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
   NetworkServiceNetworkChangeTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         service_(NetworkService::CreateForTesting(
             test_connector_factory_.RegisterInstance(kNetworkServiceName))) {
     test_connector_factory_.GetDefaultConnector()->BindInterface(
@@ -1354,13 +1356,10 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
 
   mojom::NetworkService* service() { return network_service_.get(); }
 
-  void SimulateNetworkChange() {
-    // This posts a task to simulate a network change notification
-  }
-
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> service_;
 
   mojom::NetworkServicePtr network_service_;
