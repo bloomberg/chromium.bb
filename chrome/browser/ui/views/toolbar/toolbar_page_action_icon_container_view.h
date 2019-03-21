@@ -15,6 +15,7 @@ class CommandUpdater;
 
 namespace autofill {
 class LocalCardMigrationIconView;
+class SaveCardIconView;
 }  // namespace autofill
 
 // A container view for user-account-related PageActionIconViews and the profile
@@ -41,13 +42,18 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
 
-  autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
+  autofill::LocalCardMigrationIconView* local_card_migration_icon_view() const {
     return local_card_migration_icon_view_;
+  }
+
+  autofill::SaveCardIconView* save_card_icon_view() const {
+    return save_card_icon_view_;
   }
 
  private:
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
+  autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
 
   Browser* const browser_;
 

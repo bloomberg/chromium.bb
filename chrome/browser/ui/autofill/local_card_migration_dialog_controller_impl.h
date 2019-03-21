@@ -86,6 +86,8 @@ class LocalCardMigrationDialogControllerImpl
 
   void OpenUrl(const GURL& url);
 
+  void UpdateLocalCardMigrationIcon();
+
   // The dialog is showing cards of which the migration failed. We will show
   // the "Almost done" dialog in this case.
   bool HasFailedCard() const;

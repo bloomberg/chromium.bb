@@ -69,6 +69,8 @@ class LocalCardMigrationBubbleControllerImpl
 
   void ShowBubbleImplementation();
 
+  void UpdateLocalCardMigrationIcon();
+
   // Add strikes for local card migration, to be called on user closing the
   // promo bubble.
   void AddStrikesForBubbleClose();

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -646,10 +647,25 @@ class SaveCardBubbleViewsFullFormBrowserTest
   SaveCardIconView* GetSaveCardIconView() {
     if (!browser())
       return nullptr;
-    LocationBarView* location_bar_view =
-        static_cast<LocationBarView*>(browser()->window()->GetLocationBar());
-    DCHECK(location_bar_view->save_credit_card_icon_view());
-    return location_bar_view->save_credit_card_icon_view();
+
+    SaveCardIconView* icon_view = nullptr;
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableToolbarStatusChip)) {
+      ToolbarPageActionIconContainerView*
+          toolbar_page_action_icon_container_view =
+              static_cast<ToolbarPageActionIconContainerView*>(
+                  browser()->window()->GetToolbarPageActionIconContainer());
+      DCHECK(toolbar_page_action_icon_container_view->save_card_icon_view());
+      icon_view =
+          toolbar_page_action_icon_container_view->save_card_icon_view();
+    } else {
+      LocationBarView* location_bar_view =
+          static_cast<LocationBarView*>(browser()->window()->GetLocationBar());
+      DCHECK(location_bar_view->save_credit_card_icon_view());
+      icon_view = location_bar_view->save_credit_card_icon_view();
+    }
+
+    return icon_view;
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -694,6 +710,25 @@ class SaveCardBubbleViewsFullFormBrowserTest
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViewsFullFormBrowserTest);
+};
+
+// TODO(crbug.com/932818): Remove this class after experiment flag is cleaned
+// up. Otherwise we need it because the toolbar is init-ed before each test is
+// set up. Thus need to enable the feature in the general browsertest SetUp().
+class SaveCardBubbleViewsFullFormBrowserTestForStatusChip
+    : public SaveCardBubbleViewsFullFormBrowserTest {
+ protected:
+  SaveCardBubbleViewsFullFormBrowserTestForStatusChip()
+      : SaveCardBubbleViewsFullFormBrowserTest() {}
+  ~SaveCardBubbleViewsFullFormBrowserTestForStatusChip() override {}
+
+  void SetUp() override {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kAutofillEnableToolbarStatusChip);
+
+    SaveCardBubbleViewsFullFormBrowserTest::SetUp();
+  }
 };
 
 // Tests the local save bubble. Ensures that clicking the [Save] button
@@ -2713,6 +2748,35 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
+}
+
+// Ensures that the credit card icon will show in status chip.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       CreditCardIconShownInStatusChip) {
+  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
+  NavigateTo(kCreditCardUploadForm);
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(GetSaveCardIconView());
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
+}
+
+// Ensures that the clicking on the credit card icon will reshow bubble.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       ClickingOnCreditCardIconInStatusChipReshowsBubble) {
+  ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
+  NavigateTo(kCreditCardUploadForm);
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+
+  ClickOnCloseButton();
+  AddEventObserverToController();
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+  ClickOnView(GetSaveCardIconView());
+  WaitForObservedEvent();
+
+  EXPECT_TRUE(GetSaveCardBubbleViews());
+  EXPECT_TRUE(GetSaveCardBubbleViews()->visible());
 }
 
 }  // namespace autofill
