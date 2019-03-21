@@ -974,15 +974,9 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas() {
       context_flushes.max_draws_before_flush =
           canvas_heuristic_parameters::kMaxDrawsBeforeContextFlush;
     }
-    if (ColorParams().NeedsSkColorSpaceXformCanvas()) {
-      canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
-          GetSkSurface()->getCanvas(), ColorParams().GetSkColorSpace(),
-          canvas_image_provider_.get(), context_flushes);
-    } else {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
           GetSkSurface()->getCanvas(), canvas_image_provider_.get(),
           context_flushes);
-    }
   }
 
   return canvas_.get();
@@ -1090,10 +1084,7 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
-  auto color_space = ColorParams().ColorSpace();
-  if (!ColorParams().NeedsSkColorSpaceXformCanvas()) {
-    color_space = kSRGBCanvasColorSpace;
-  }
+  auto color_space = kSRGBCanvasColorSpace;
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
@@ -1105,10 +1096,7 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
-  auto color_space = ColorParams().ColorSpace();
-  if (!ColorParams().NeedsSkColorSpaceXformCanvas()) {
-    color_space = kSRGBCanvasColorSpace;
-  }
+  auto color_space = kSRGBCanvasColorSpace;
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(

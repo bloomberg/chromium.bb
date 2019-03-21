@@ -143,13 +143,10 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
       PlaybackParams::CustomDataRasterCallback custom_raster_callback);
 
  private:
-  void WrapCanvasInColorSpaceXformCanvas(
-      sk_sp<SkColorSpace> target_color_space);
   void FlushAfterDrawIfNeeded();
 
   SkCanvas* canvas_;
   std::unique_ptr<SkCanvas> owned_;
-  std::unique_ptr<SkCanvas> color_space_xform_canvas_;
   ImageProvider* image_provider_ = nullptr;
 
   const ContextFlushes context_flushes_;

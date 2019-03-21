@@ -13,7 +13,6 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/buffer_types.h"
 
-class SkCanvas;
 class SkSurfaceProps;
 
 namespace cc {
@@ -57,10 +56,6 @@ class PLATFORM_EXPORT CanvasColorParams {
   void SetCanvasPixelFormat(CanvasPixelFormat f) { pixel_format_ = f; }
   void SetOpacityMode(OpacityMode m) { opacity_mode_ = m; }
 
-  // Indicates whether rendering needs to go through an SkColorSpaceXformCanvas
-  // in order to enforce non-gamma-aware pixel math behaviour.
-  bool NeedsSkColorSpaceXformCanvas() const;
-
   // Indicates if pixels in this canvas color settings require any color
   // conversion to be used in the passed canvas color settings.
   bool NeedsColorConversion(const CanvasColorParams&) const;
@@ -70,10 +65,6 @@ class PLATFORM_EXPORT CanvasColorParams {
   // in sRGB (for which we wrap the canvas into a PaintCanvas along with an
   // SkColorSpaceXformCanvas).
   sk_sp<SkColorSpace> GetSkColorSpaceForSkSurfaces() const;
-
-  // Wraps an SkCanvas into a PaintCanvas, along with an SkColorSpaceXformCanvas
-  // if necessary.
-  std::unique_ptr<cc::PaintCanvas> WrapCanvas(SkCanvas*) const;
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;
