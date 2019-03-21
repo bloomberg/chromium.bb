@@ -27,6 +27,7 @@ constexpr char kIdParamKey[] = "id";
 constexpr char kQueryParamKey[] = "q";
 constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
+constexpr char kSourceParamKey[] = "source";
 
 // Supported deep link prefixes. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
@@ -175,9 +176,14 @@ base::Optional<GURL> GetAssistantUrl(DeepLinkType type,
       return base::nullopt;
   }
 
-  return (id && !id.value().empty())
-             ? CreateLocalizedGURL(by_id_url + id.value())
-             : CreateLocalizedGURL(top_level_url);
+  const std::string url =
+      (id && !id.value().empty()) ? (by_id_url + id.value()) : top_level_url;
+
+  // Source is currently assumed to be |Assistant|. If need be, we can make
+  // |source| a deep link parameter in the future.
+  constexpr char kDefaultSource[] = "Assistant";
+  return net::AppendOrReplaceQueryParameter(CreateLocalizedGURL(url),
+                                            kSourceParamKey, kDefaultSource);
 }
 
 GURL GetChromeSettingsUrl(const base::Optional<std::string>& page) {
