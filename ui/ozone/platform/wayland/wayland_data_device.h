@@ -52,8 +52,7 @@ class WaylandDataDevice {
   void DeliverDragData(const std::string& mime_type, std::string* buffer);
   // Starts drag with |data| to be delivered, |operation| supported by the
   // source side initiated the dragging.
-  void StartDrag(const wl_data_source& data_source,
-                 const ui::OSExchangeData& data);
+  void StartDrag(wl_data_source* data_source, const ui::OSExchangeData& data);
   // Resets |source_data_| when the dragging is finished.
   void ResetSourceData();
 
@@ -121,8 +120,10 @@ class WaylandDataDevice {
                                    struct wl_callback* cb,
                                    uint32_t time);
 
-  bool CreateSHMBuffer(const gfx::Size& size);
-  void CreateDragImage(const SkBitmap* bitmap);
+  // Returns the drag icon bitmap and creates and wayland surface to draw it
+  // on, if a valid drag image is present in |data|; otherwise returns null.
+  const SkBitmap* PrepareDragIcon(const OSExchangeData& data);
+  void DrawDragIcon(const SkBitmap* bitmap);
 
   void OnDragDataReceived(const std::string& contents);
 
