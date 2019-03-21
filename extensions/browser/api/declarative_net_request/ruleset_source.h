@@ -60,7 +60,10 @@ class RulesetSource {
   // ruleset.
   static RulesetSource Create(const Extension& extension);
 
-  RulesetSource(base::FilePath json_path, base::FilePath indexed_path);
+  RulesetSource(base::FilePath json_path,
+                base::FilePath indexed_path,
+                size_t id,
+                size_t priority);
   ~RulesetSource();
   RulesetSource(RulesetSource&&);
   RulesetSource& operator=(RulesetSource&&);

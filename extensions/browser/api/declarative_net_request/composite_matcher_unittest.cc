@@ -49,10 +49,9 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   const size_t kSource1ID = 1;
   const size_t kSource1Priority = 1;
   std::unique_ptr<RulesetMatcher> matcher_1;
-  ASSERT_TRUE(CreateVerifiedMatcher({block_rule, redirect_rule_1},
-                                    CreateTemporarySource(), &matcher_1));
-  matcher_1->set_id_for_testing(kSource1ID);
-  matcher_1->set_priority_for_testing(kSource1Priority);
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {block_rule, redirect_rule_1},
+      CreateTemporarySource(kSource1ID, kSource1Priority), &matcher_1));
 
   // Now create a second ruleset matcher.
   const size_t kSource2ID = 2;
@@ -62,10 +61,9 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   TestRule redirect_rule_2 = redirect_rule_1;
   redirect_rule_2.action->redirect_url = std::string("http://ruleset2.com");
   std::unique_ptr<RulesetMatcher> matcher_2;
-  ASSERT_TRUE(CreateVerifiedMatcher({allow_rule, redirect_rule_2},
-                                    CreateTemporarySource(), &matcher_2));
-  matcher_2->set_id_for_testing(kSource2ID);
-  matcher_2->set_priority_for_testing(kSource2Priority);
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {allow_rule, redirect_rule_2},
+      CreateTemporarySource(kSource2ID, kSource2Priority), &matcher_2));
 
   // Create a composite matcher with the two rulesets.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
@@ -96,14 +94,12 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   matcher_1.reset();
   matcher_2.reset();
   matchers.clear();
-  ASSERT_TRUE(CreateVerifiedMatcher({block_rule, redirect_rule_1},
-                                    CreateTemporarySource(), &matcher_1));
-  matcher_1->set_id_for_testing(kSource1ID);
-  matcher_1->set_priority_for_testing(kSource2Priority);
-  ASSERT_TRUE(CreateVerifiedMatcher({allow_rule, redirect_rule_2},
-                                    CreateTemporarySource(), &matcher_2));
-  matcher_2->set_id_for_testing(kSource2ID);
-  matcher_2->set_priority_for_testing(kSource1Priority);
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {block_rule, redirect_rule_1},
+      CreateTemporarySource(kSource1ID, kSource2Priority), &matcher_1));
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {allow_rule, redirect_rule_2},
+      CreateTemporarySource(kSource2ID, kSource1Priority), &matcher_2));
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
   composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
