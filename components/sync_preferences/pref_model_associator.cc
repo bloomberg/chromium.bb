@@ -40,9 +40,9 @@ namespace {
 
 // Enables deleting a pref from Sync if the the user clears it on a client. If
 // this feature is disabled, clearing a pref will cause setting it to the
-// default value instead of deleting it from sync. This has been introduced in
-// M75 as a safety mechanism, should be removed in M76 if no issues are
-// observed.
+// default value instead of deleting it from sync.
+// TODO(crbug.com/943579): This has been introduced in M75 as a safety
+// mechanism, should be removed in M78 if no issues are observed.
 const base::Feature kSyncDeleteClearedPref{"SyncDeleteClearedPrefs",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
