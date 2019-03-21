@@ -203,12 +203,15 @@ class CrostiniSharePathTest : public testing::Test {
     base::ListValue* shared_paths = update.Get();
     shared_paths->Append(std::make_unique<base::Value>(shared_path_.value()));
     volume_downloads_ = file_manager::Volume::CreateForDownloads(root_);
+    crostini_share_path_->RegisterSharedPath(shared_path_,
+                                             kCrostiniDefaultVmName);
   }
 
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_share_path_ = std::make_unique<CrostiniSharePath>(profile());
+    crostini_share_path_->set_no_file_watchers_for_testing();
 
     // Setup for DriveFS.
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -855,6 +858,22 @@ TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessSelfMount) {
                           Success::YES, ""));
   crostini_share_path_->OnVolumeUnmounted(
       chromeos::MountError::MOUNT_ERROR_NONE, *volume_shared_path);
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniSharePathTest, UnshareOnDelete) {
+  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
+  SetUpVolume();
+  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      kCrostiniDefaultVmName);
+  auto volume_shared_path =
+      file_manager::Volume::CreateForDownloads(shared_path_);
+  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
+      base::BindRepeating(&CrostiniSharePathTest::MountEventUnsharePathCallback,
+                          base::Unretained(this), "unshare-on-delete",
+                          shared_path_, Persist::NO, SeneschalClientCalled::YES,
+                          "MyFiles/already-shared", Success::YES, ""));
+  crostini_share_path_->PathDeleted(shared_path_);
   run_loop()->Run();
 }
 
