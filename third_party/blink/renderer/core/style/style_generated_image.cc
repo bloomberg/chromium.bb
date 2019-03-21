@@ -41,7 +41,7 @@ StyleGeneratedImage::StyleGeneratedImage(const CSSImageGeneratorValue& value)
 bool StyleGeneratedImage::IsEqual(const StyleImage& other) const {
   if (!other.IsGeneratedImage())
     return false;
-  const auto& other_generated = ToStyleGeneratedImage(other);
+  const auto& other_generated = To<StyleGeneratedImage>(other);
   return image_generator_value_ == other_generated.image_generator_value_;
 }
 

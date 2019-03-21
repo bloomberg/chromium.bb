@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -73,7 +74,12 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   const bool fixed_size_;
 };
 
-DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleGeneratedImage, IsGeneratedImage());
+template <>
+struct DowncastTraits<StyleGeneratedImage> {
+  static bool AllowFrom(const StyleImage& styleImage) {
+    return styleImage.IsGeneratedImage();
+  }
+};
 
 }  // namespace blink
 #endif
