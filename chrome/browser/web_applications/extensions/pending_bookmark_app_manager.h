@@ -14,18 +14,16 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_uninstaller.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
-#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 class Profile;
 
 namespace content {
-class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -40,8 +38,7 @@ namespace extensions {
 //
 // WebAppProvider creates an instance of this class and manages its
 // lifetime. This class should only be used from the UI thread.
-class PendingBookmarkAppManager final : public web_app::PendingAppManager,
-                                        public content::WebContentsObserver {
+class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  public:
   using WebContentsFactory =
       base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
@@ -66,7 +63,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
                               TaskFactory task_factory);
   void SetUninstallerForTesting(
       std::unique_ptr<BookmarkAppUninstaller> uninstaller);
-  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
  private:
   struct TaskAndCallback;
@@ -84,30 +80,24 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   void CreateWebContentsIfNecessary();
 
+  void OnUrlLoaded(web_app::WebAppUrlLoader::Result result);
+
   void OnInstalled(BookmarkAppInstallationTask::Result result);
 
-  void OnWebContentsLoadTimedOut();
-
   void CurrentInstallationFinished(const base::Optional<std::string>& app_id);
-
-  // WebContentsObserver
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-  void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                   const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
 
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
   std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
   web_app::ExtensionIdsMap extension_ids_map_;
 
+  // unique_ptr so that it can be replaced in tests.
+  std::unique_ptr<web_app::WebAppUrlLoader> url_loader_;
+
   WebContentsFactory web_contents_factory_;
   TaskFactory task_factory_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<base::OneShotTimer> timer_;
 
   std::unique_ptr<TaskAndCallback> current_task_and_callback_;
 

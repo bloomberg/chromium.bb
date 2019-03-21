@@ -34,7 +34,6 @@ namespace {
 const char kFooWebAppUrl[] = "https://foo.example";
 const char kBarWebAppUrl[] = "https://bar.example";
 const char kQuxWebAppUrl[] = "https://qux.example";
-const char kXyzWebAppUrl[] = "https://xyz.example";
 
 const char kWrongUrl[] = "https://foobar.example";
 
@@ -61,13 +60,6 @@ web_app::PendingAppManager::AppInfo GetBarAppInfo() {
 web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
   web_app::PendingAppManager::AppInfo info(
       GURL(kQuxWebAppUrl), web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
-  return info;
-}
-
-web_app::PendingAppManager::AppInfo GetXyzAppInfo() {
-  web_app::PendingAppManager::AppInfo info(
-      GURL(kXyzWebAppUrl), web_app::LaunchContainer::kWindow,
       web_app::InstallSource::kExternalPolicy);
   return info;
 }
@@ -286,6 +278,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   void SuccessfullyLoad(const GURL& url) {
     web_contents_tester_->NavigateAndCommit(url);
     web_contents_tester_->TestDidFinishLoad(url);
+    base::RunLoop().RunUntilIdle();
   }
 
   content::WebContentsTester* web_contents_tester() {
@@ -581,15 +574,6 @@ TEST_F(PendingBookmarkAppManagerTest, Install_ConcurrentCallsSameApp) {
   EXPECT_TRUE(app_installed());
   EXPECT_EQ(GetFooAppInfo(), last_app_info());
   EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
-  ResetResults();
-
-  base::RunLoop().RunUntilIdle();
-
-  // The second installation should succeed even though the app is installed
-  // already.
-  EXPECT_EQ(0u, installation_task_run_count());
-  EXPECT_TRUE(app_installed());
-  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
 }
 
 TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
@@ -845,88 +829,6 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstall) {
   base::RunLoop().RunUntilIdle();
   SuccessfullyLoad(GURL(kBarWebAppUrl));
 
-  EXPECT_EQ(1u, installation_task_run_count());
-  EXPECT_TRUE(app_installed());
-  EXPECT_EQ(GetBarAppInfo(), last_app_info());
-  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
-}
-
-TEST_F(PendingBookmarkAppManagerTest, WebContentsLoadTimedOut) {
-  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
-  auto timer_to_pass = std::make_unique<base::MockOneShotTimer>();
-  auto* timer = timer_to_pass.get();
-
-  pending_app_manager->SetTimerForTesting(std::move(timer_to_pass));
-
-  // Queue an app through Install.
-  pending_app_manager->Install(
-      GetQuxAppInfo(),
-      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
-                     base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that the timer is stopped after a successful load.
-  EXPECT_TRUE(timer->IsRunning());
-  SuccessfullyLoad(GURL(kQuxWebAppUrl));
-  EXPECT_FALSE(timer->IsRunning());
-  EXPECT_EQ(1u, installation_task_run_count());
-  EXPECT_TRUE(app_installed());
-  EXPECT_EQ(GURL(kQuxWebAppUrl), install_callback_url());
-  ResetResults();
-
-  // Queue a different app through Install.
-  pending_app_manager->Install(
-      GetXyzAppInfo(),
-      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
-                     base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-
-  // Fire the timer to simulate a failed load.
-  EXPECT_TRUE(timer->IsRunning());
-  timer->Fire();
-  EXPECT_FALSE(app_installed());
-  EXPECT_EQ(GURL(kXyzWebAppUrl), install_callback_url());
-  ResetResults();
-
-  // Queue two more apps, different from all those before, through InstallApps.
-  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
-  apps_to_install.push_back(GetFooAppInfo());
-  apps_to_install.push_back(GetBarAppInfo());
-
-  pending_app_manager->InstallApps(
-      std::move(apps_to_install),
-      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
-                          base::Unretained(this)));
-
-  base::RunLoop().RunUntilIdle();
-
-  // Fire the timer to simulate a failed load.
-  EXPECT_TRUE(timer->IsRunning());
-  timer->Fire();
-  EXPECT_FALSE(app_installed());
-  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
-  ResetResults();
-
-  base::RunLoop().RunUntilIdle();
-
-  // Fire the timer to simulate a failed load.
-  EXPECT_TRUE(timer->IsRunning());
-  timer->Fire();
-  EXPECT_FALSE(app_installed());
-  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
-  ResetResults();
-
-  // Ensure a successful load after a timer fire works.
-  pending_app_manager->Install(
-      GetBarAppInfo(),
-      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
-                     base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that the timer is stopped after a successful load.
-  EXPECT_TRUE(timer->IsRunning());
-  SuccessfullyLoad(GURL(kBarWebAppUrl));
-  EXPECT_FALSE(timer->IsRunning());
   EXPECT_EQ(1u, installation_task_run_count());
   EXPECT_TRUE(app_installed());
   EXPECT_EQ(GetBarAppInfo(), last_app_info());

@@ -31,6 +31,8 @@ source_set("components") {
     "web_app_shortcut_win.h",
     "web_app_tab_helper_base.cc",
     "web_app_tab_helper_base.h",
+    "web_app_url_loader.cc",
+    "web_app_url_loader.h",
 
     # TODO(nigeltao): move these two files from
     # //chrome/browser/web_applications/components to a stand-alone
@@ -109,5 +111,22 @@ source_set("unit_tests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+
+  sources = [
+    "web_app_url_loader_browsertest.cc",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    "//chrome/browser/web_applications/components",
+    "//chrome/test:test_support",
+    "//chrome/test:test_support_ui",
+    "//net:test_support",
   ]
 }
