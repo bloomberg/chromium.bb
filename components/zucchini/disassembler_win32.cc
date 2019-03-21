@@ -377,11 +377,11 @@ bool DisassemblerWin32<Traits>::ParseAndStoreRel32() {
         image_[{section.file_offset_of_raw_data, section.size_of_raw_data}];
     Abs32GapFinder gap_finder(image_, region, abs32_locations_,
                               Traits::kVAWidth);
-    typename Traits::RelFinder finder(image_);
+    typename Traits::RelFinder finder;
     // Iterate over gaps between abs32 references, to avoid collision.
     for (auto gap = gap_finder.GetNext(); gap.has_value();
          gap = gap_finder.GetNext()) {
-      finder.Reset(gap.value());
+      finder.SetRegion(gap.value());
       // Iterate over heuristically detected rel32 references, validate, and add
       // to |rel32_locations_|.
       for (auto rel32 = finder.GetNext(); rel32.has_value();
