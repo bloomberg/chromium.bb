@@ -111,6 +111,13 @@ Polymer({
         this.updateDropdownDestinations_.bind(this));
   },
 
+  /** @override */
+  detached: function() {
+    this.invitationStore_.resetTracker();
+    this.destinationStore_.resetTracker();
+    this.tracker_.removeAll();
+  },
+
   /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */
   setCloudPrintInterface: function(cloudPrintInterface) {
     [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
