@@ -10343,8 +10343,7 @@
             {
               "os": "Windows-10-15063"
             }
-          ],
-          "shards": 4
+          ]
         },
         "test": "net_unittests"
       },

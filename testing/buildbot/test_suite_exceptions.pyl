@@ -742,16 +742,6 @@
     ],
     'modifications': {
       # chromium.clang
-      'CrWinAsan': {
-        'swarming': {
-          'shards': 4,  # TODO(https://crbug.com/942881): debug, remove.
-        }
-      },
-      'CrWinAsan(dll)': {
-        'swarming': {
-          'shards': 4,  # TODO(https://crbug.com/942881): debug, remove.
-        }
-      },
       'ToTLinuxASan': {
         # TODO(crbug.com/794372): net_unittests is slow under ASan.
         'swarming': {
@@ -804,11 +794,6 @@
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
-        },
-      },
-      'win-asan': {
-        'swarming': {
-          'shards': 4,  # TODO(https://crbug.com/942881): debug, remove.
         },
       },
     },
