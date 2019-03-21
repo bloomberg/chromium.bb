@@ -82,9 +82,9 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
   params.has_worker = true;
   // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
   installable_manager->GetData(
-      params, base::BindRepeating(
-                  &WebAppDataRetriever::OnDidPerformInstallableCheck,
-                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      params,
+      base::BindOnce(&WebAppDataRetriever::OnDidPerformInstallableCheck,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,

@@ -117,8 +117,8 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(
-      params, base::Bind(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
-                         weak_ptr_factory_.GetWeakPtr()));
+      params, base::BindOnce(&WebApkUpdateDataFetcher::OnDidGetInstallableData,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkUpdateDataFetcher::OnDidGetInstallableData(

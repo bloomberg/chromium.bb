@@ -187,8 +187,8 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
 
   installable_manager_->GetData(
       ParamsToPerformManifestAndIconFetch(),
-      base::Bind(&AddToHomescreenDataFetcher::OnDidGetManifestAndIcons,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AddToHomescreenDataFetcher::OnDidGetManifestAndIcons,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AddToHomescreenDataFetcher::StopTimer() {
@@ -259,8 +259,8 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
 
   installable_manager_->GetData(
       ParamsToPerformInstallableCheck(),
-      base::Bind(&AddToHomescreenDataFetcher::OnDidPerformInstallableCheck,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AddToHomescreenDataFetcher::OnDidPerformInstallableCheck,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(

@@ -76,6 +76,6 @@ struct InstallableData {
   DISALLOW_COPY_AND_ASSIGN(InstallableData);
 };
 
-using InstallableCallback = base::Callback<void(const InstallableData&)>;
+using InstallableCallback = base::OnceCallback<void(const InstallableData&)>;
 
 #endif  // CHROME_BROWSER_INSTALLABLE_INSTALLABLE_DATA_H_
