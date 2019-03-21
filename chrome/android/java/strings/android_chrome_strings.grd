@@ -3505,7 +3505,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Print
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_SHARE_ACTIVITY_TITLE" desc="Title of the Send Tab To Self Share activity that will appear in the Android share dialog.">
-        Send to my devices
+        Send to your devices
       </message>
 
       <!-- Omnibox Autocomplete -->
