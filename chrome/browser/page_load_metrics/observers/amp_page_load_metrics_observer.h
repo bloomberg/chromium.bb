@@ -130,7 +130,7 @@ class AMPPageLoadMetricsObserver
 
     // Performance metrics observed in the AMP iframe.
     page_load_metrics::mojom::PageLoadTimingPtr timing;
-    page_load_metrics::mojom::PageRenderDataPtr render_data;
+    page_load_metrics::PageRenderData render_data;
   };
 
   void ProcessMainFrameNavigation(content::NavigationHandle* navigation_handle,

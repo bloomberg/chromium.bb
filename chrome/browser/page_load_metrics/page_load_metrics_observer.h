@@ -126,6 +126,15 @@ struct UserInitiatedInfo {
         user_input_event(user_input_event) {}
 };
 
+// Information about how the page rendered during the browsing session.
+// Derived from the mojom::PageRenderData that is sent via UpdateTiming IPC.
+struct PageRenderData {
+  PageRenderData() : layout_jank_score(0) {}
+
+  // How much visible elements on the page shifted (bit.ly/lsm-explainer).
+  float layout_jank_score;
+};
+
 struct PageLoadExtraInfo {
   PageLoadExtraInfo(
       base::TimeTicks navigation_start,
@@ -141,7 +150,7 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& page_end_time,
       const mojom::PageLoadMetadata& main_frame_metadata,
       const mojom::PageLoadMetadata& subframe_metadata,
-      const mojom::PageRenderData& main_frame_render_data,
+      const PageRenderData& main_frame_render_data,
       ukm::SourceId source_id);
 
   // Simplified version of the constructor, intended for use in tests.
@@ -216,7 +225,7 @@ struct PageLoadExtraInfo {
   // PageLoadMetadata for subframes of the current page load.
   const mojom::PageLoadMetadata subframe_metadata;
 
-  const mojom::PageRenderData main_frame_render_data;
+  const PageRenderData main_frame_render_data;
 
   // UKM SourceId for the current page load.
   const ukm::SourceId source_id;
