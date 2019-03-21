@@ -81,40 +81,42 @@
         controls-managed="{{controlsManaged_}}" destination="[[destination_]]"
         document-settings="[[documentSettings_]]"
         margins="[[margins_]]" page-size="[[pageSize_]]"
-        on-save-sticky-settings="onSaveStickySettings_">
+        on-preview-setting-changed="onPreviewSettingChanged_"
+        on-sticky-setting-changed="onStickySettingChanged_"
+        on-setting-valid-changed="onSettingValidChanged_">
     </print-preview-model>
     <print-preview-document-info id="documentInfo"
         document-settings="{{documentSettings_}}" margins="{{margins_}}"
         page-size="{{pageSize_}}">
     </print-preview-document-info>
-    <div id="sidebar" on-setting-valid-changed="onSettingValidChanged_">
-      <print-preview-header destination="[[destination_]]" state="[[state]]"
-          error-message="[[errorMessage_]]" settings="[[settings]]"
+    <div id="sidebar">
+      <print-preview-header id="header" destination="[[destination_]]"
+          state="[[state]]" settings="[[settings]]"
           managed="[[controlsManaged_]]" on-print-requested="onPrintRequested_"
           on-cancel-requested="onCancelRequested_">
       </print-preview-header>
       <div id="container">
         <print-preview-destination-settings id="destinationSettings"
-            destination="{{destination_}}" settings="{{settings}}"
+            destination="{{destination_}}" settings="[[settings]]"
             destination-state="{{destinationState_}}"
             app-kiosk-mode="[[isInAppKioskMode_]]"
             disabled="[[controlsDisabled_]]"
             available class="settings-section">
         </print-preview-destination-settings>
-        <print-preview-pages-settings settings="{{settings}}"
+        <print-preview-pages-settings settings="[[settings]]"
             page-count="[[documentSettings_.pageCount]]"
             disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.pages.available]]" class="settings-section">
         </print-preview-pages-settings>
-        <print-preview-copies-settings settings="{{settings}}"
+        <print-preview-copies-settings settings="[[settings]]"
             disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.copies.available]]" class="settings-section">
         </print-preview-copies-settings>
-        <print-preview-layout-settings settings="{{settings}}"
+        <print-preview-layout-settings settings="[[settings]]"
             disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.layout.available]]" class="settings-section">
         </print-preview-layout-settings>
-        <print-preview-color-settings settings="{{settings}}"
+        <print-preview-color-settings settings="[[settings]]"
             disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.color.available]]" class="settings-section">
         </print-preview-color-settings>
@@ -126,40 +128,40 @@
         <iron-collapse id="moreSettings"
             opened="[[shouldExpandSettings_(
                 settingsExpandedByUser_, shouldShowMoreSettings_)]]">
-          <print-preview-media-size-settings settings="{{settings}}"
+          <print-preview-media-size-settings settings="[[settings]]"
               capability="[[destination_.capabilities.printer.media_size]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.mediaSize.available]]"
               class="settings-section">
           </print-preview-media-size-settings>
-          <print-preview-pages-per-sheet-settings settings="{{settings}}"
+          <print-preview-pages-per-sheet-settings settings="[[settings]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.pagesPerSheet.available]]"
               class="settings-section">
           </print-preview-pages-per-sheet-settings>
-          <print-preview-margins-settings settings="{{settings}}"
+          <print-preview-margins-settings settings="[[settings]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.margins.available]]"
               class="settings-section">
           </print-preview-margins-settings>
-          <print-preview-dpi-settings settings="{{settings}}"
+          <print-preview-dpi-settings settings="[[settings]]"
               capability="[[destination_.capabilities.printer.dpi]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.dpi.available]]" class="settings-section">
           </print-preview-dpi-settings>
-          <print-preview-scaling-settings settings="{{settings}}"
+          <print-preview-scaling-settings settings="[[settings]]"
               fit-to-page-scaling="[[documentSettings_.fitToPageScaling]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.scaling.available]]"
               class="settings-section">
           </print-preview-scaling-settings>
-          <print-preview-other-options-settings settings="{{settings}}"
+          <print-preview-other-options-settings settings="[[settings]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.otherOptions.available]]"
               class="settings-section">
           </print-preview-other-options-settings>
           <print-preview-advanced-options-settings
-              settings="{{settings}}" destination="[[destination_]]"
+              settings="[[settings]]" destination="[[destination_]]"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.vendorItems.available]]"
               class="settings-section">
@@ -178,8 +180,9 @@
       </div>
     </div>
     <div id="preview-area-container">
-      <print-preview-preview-area id="previewArea" settings="{{settings}}"
+      <print-preview-preview-area id="previewArea" settings="[[settings]]"
           destination="[[destination_]]"
+          destination-state="[[destinationState_]]"
           document-modifiable="[[documentSettings_.isModifiable]]"
           margins="[[margins_]]" page-size="[[pageSize_]]" state="[[state]]"
           measurement-system="[[measurementSystem_]]"

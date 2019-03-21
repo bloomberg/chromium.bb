@@ -28,31 +28,13 @@ cr.define('pages_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       pagesSection = document.createElement('print-preview-pages-settings');
-      pagesSection.settings = {
-        pages: {
-          value: [1],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          key: '',
-        },
-        ranges: {
-          value: [],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          key: '',
-        },
-        pagesPerSheet: {
-          value: 1,
-          unavailableValue: 1,
-          valid: true,
-          available: true,
-          key: '',
-        },
-      };
+      pagesSection.settings = model.settings;
       pagesSection.disabled = false;
+      test_util.fakeDataBind(model, pagesSection, 'settings');
       document.body.appendChild(pagesSection);
     });
 

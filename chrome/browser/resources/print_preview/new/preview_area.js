@@ -36,6 +36,12 @@ Polymer({
     /** @type {print_preview.Destination} */
     destination: Object,
 
+    /** @type {print_preview.DestinationState} */
+    destinationState: {
+      type: Number,
+      observer: 'onDestinationStateChange_',
+    },
+
     documentModifiable: Boolean,
 
     /** @type {print_preview.Margins} */
@@ -48,10 +54,7 @@ Polymer({
     pageSize: Object,
 
     /** @type {!print_preview_new.State} */
-    state: {
-      type: Number,
-      observer: 'onStateChanged_',
-    },
+    state: Number,
 
     /** @private {boolean} Whether the plugin is loaded */
     pluginLoaded_: {
@@ -86,37 +89,17 @@ Polymer({
   },
 
   observers: [
-    'onSettingsChanged_(settings.color.value, settings.cssBackground.value, ' +
-        'settings.fitToPage.value, settings.headerFooter.value, ' +
-        'settings.layout.value, settings.ranges.value, ' +
-        'settings.selectionOnly.value, settings.scaling.value, ' +
-        'settings.rasterize.value, destination)',
-    'onMarginsChanged_(settings.margins.value)',
-    'onCustomScalingChanged_(settings.customScaling.value)',
-    'onCustomMarginsChanged_(settings.customMargins.value)',
-    'onMediaSizeChanged_(settings.mediaSize.value)',
-    'onPagesPerSheetChanged_(settings.pagesPerSheet.value)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
   ],
 
   /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
 
-  /**
-   * @private {?print_preview.MarginsSetting}
-   */
-  lastCustomMargins_: null,
-
-  /**
-   * @private {?print_preview_new.MediaSizeValue}
-   */
-  lastMediaSize_: null,
+  /** @private {?Object} */
+  lastTicket_: null,
 
   /** @private {number} */
   inFlightRequestId_: -1,
-
-  /** @private {boolean} */
-  requestPreviewWhenReady_: false,
 
   /** @private {?print_preview_new.PluginProxy} */
   pluginProxy_: null,
@@ -137,6 +120,26 @@ Polymer({
     }
   },
 
+  /** @private */
+  onDestinationStateChange_: function() {
+    switch (this.destinationState) {
+      case print_preview.DestinationState.INVALID:
+        this.previewState = print_preview_new.PreviewAreaState.INVALID_SETTINGS;
+        break;
+      case print_preview.DestinationState.UNSUPPORTED:
+        this.previewState =
+            print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER;
+        break;
+      // <if expr="chromeos">
+      case print_preview.DestinationState.NO_DESTINATIONS:
+        this.previewState =
+            print_preview_new.PreviewAreaState.NO_DESTINATIONS_FOUND;
+        break;
+      // </if>
+      default:
+        break;
+    }
+  },
 
   /**
    * @return {boolean} Whether the preview is loaded.
@@ -187,46 +190,6 @@ Polymer({
       toElement = toElement.parentElement;
     }
     marginControlContainer.setInvisible(true);
-  },
-
-  /**
-   * @return {boolean} Whether margin settings are valid for the print ticket.
-   * @private
-   */
-  marginsValid_: function() {
-    const type = this.getSettingValue('margins');
-    if (!Object.values(print_preview.ticket_items.MarginsTypeValue)
-             .includes(type)) {
-      // Unrecognized margins type.
-      return false;
-    }
-
-    if (type !== print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
-      return true;
-    }
-
-    const customMargins = this.getSettingValue('customMargins');
-    return customMargins.marginTop !== undefined &&
-        customMargins.marginLeft !== undefined &&
-        customMargins.marginBottom !== undefined &&
-        customMargins.marginRight !== undefined;
-  },
-
-  /** @private */
-  onSettingsChanged_: function() {
-    if (!this.marginsValid_()) {
-      // Log so that we can try to debug how this occurs. See
-      // https://crbug.com/942211
-      console.warn('Trying to request a preview with invalid margins');
-      return;
-    }
-
-    if (this.state !== print_preview_new.State.READY) {
-      this.requestPreviewWhenReady_ = true;
-      return;
-    }
-
-    this.startPreview_();
   },
 
   /** @private */
@@ -331,7 +294,14 @@ Polymer({
   },
 
   /** @private */
-  startPreview_: function() {
+  startPreview: function() {
+    if (!this.hasTicketChanged_() &&
+        this.previewState !==
+            print_preview_new.PreviewAreaState.INVALID_SETTINGS &&
+        this.previewState !==
+            print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER) {
+      return;
+    }
     this.previewState = print_preview_new.PreviewAreaState.LOADING;
     this.documentReady_ = false;
     this.getPreview_().then(
@@ -351,22 +321,6 @@ Polymer({
           }
         });
   },
-
-  /** @private */
-  onStateChanged_: function() {
-    if (this.state == print_preview_new.State.READY &&
-        this.requestPreviewWhenReady_) {
-      this.startPreview_();
-      this.requestPreviewWhenReady_ = false;
-    }
-  },
-
-  // <if expr="chromeos">
-  setNoDestinationsFound: function() {
-    this.previewState =
-        print_preview_new.PreviewAreaState.NO_DESTINATIONS_FOUND;
-  },
-  // </if>
 
   // <if expr="is_macosx">
   /** Set the preview state to display the "opening in preview" message. */
@@ -559,95 +513,168 @@ Polymer({
     this.pluginProxy_.scrollPosition(position.x, position.y);
   },
 
-  /** @private */
-  onMarginsChanged_: function() {
-    const marginsValid = this.marginsValid_();
-    if (marginsValid &&
-        this.getSettingValue('margins') !==
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
-      this.onSettingsChanged_();
-      return;
+  /**
+   * @return {boolean} Whether margin settings are valid for the print ticket.
+   * @private
+   */
+  marginsValid_: function() {
+    const type = this.getSettingValue('margins');
+    if (!Object.values(print_preview.ticket_items.MarginsTypeValue)
+             .includes(type)) {
+      // Unrecognized margins type.
+      return false;
     }
 
-    if (!this.margins) {
-      return;
+    if (type !== print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      return true;
     }
 
-    if (!marginsValid) {
+    const customMargins = this.getSettingValue('customMargins');
+    return customMargins.marginTop !== undefined &&
+        customMargins.marginLeft !== undefined &&
+        customMargins.marginBottom !== undefined &&
+        customMargins.marginRight !== undefined;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasTicketChanged_: function() {
+    if (!this.marginsValid_()) {
       // Log so that we can try to debug how this occurs. See
       // https://crbug.com/942211
-      console.warn('Margins changed to custom with invalid values');
-      return;
+      console.warn('Requested preview with invalid margins');
+      return false;
     }
 
-    const customMargins =
-        /** @type {!print_preview.MarginsSetting} */ (
-            this.getSettingValue('customMargins'));
-    const marginSides =
-        Object.values(print_preview.ticket_items.CustomMarginsOrientation);
-    const customMarginsChanged = marginSides.some(side => {
-      return this.margins.get(side) !==
-          customMargins[print_preview_new.MARGIN_KEY_MAP.get(side)];
-    });
-    if (customMarginsChanged) {
-      this.onSettingsChanged_();
+    if (!this.lastTicket_) {
+      return true;
     }
-    this.lastCustomMargins_ = customMargins;
-  },
 
-  /** @private */
-  onCustomScalingChanged_: function() {
-    // If the scaling value is 100, changing between default and custom scaling
-    // has no effect on the preview ticket. Only regenerate for scaling != 100.
-    if (this.getSettingValue('scaling') !== '100') {
-      this.onSettingsChanged_();
+    const lastTicket = this.lastTicket_;
+
+    // Margins
+    const newMarginsType = this.getSettingValue('margins');
+    if (newMarginsType !== lastTicket.marginsType &&
+        newMarginsType !== print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      return true;
     }
-  },
 
-  /** @private */
-  onCustomMarginsChanged_: function() {
-    const newValue =
-        /** @type {!print_preview.MarginsSetting} */ (
-            this.getSettingValue('customMargins'));
-    if (this.lastCustomMargins_ &&
-        this.lastCustomMargins_.marginTop !== undefined &&
-        this.getSettingValue('margins') ==
-            print_preview.ticket_items.MarginsTypeValue.CUSTOM &&
-        (this.lastCustomMargins_.marginTop != newValue.marginTop ||
-         this.lastCustomMargins_.marginLeft != newValue.marginLeft ||
-         this.lastCustomMargins_.marginRight != newValue.marginRight ||
-         this.lastCustomMargins_.marginBottom != newValue.marginBottom)) {
-      this.onSettingsChanged_();
+    if (newMarginsType === print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      const customMargins =
+          /** @type {!print_preview.MarginsSetting} */ (
+              this.getSettingValue('customMargins'));
+
+      // Change in custom margins values.
+      if (!!lastTicket.marginsCustom &&
+          (lastTicket.marginsCustom.marginTop != customMargins.marginTop ||
+           lastTicket.marginsCustom.marginLeft != customMargins.marginLeft ||
+           lastTicket.marginsCustom.marginRight != customMargins.marginRight ||
+           lastTicket.marginsCustom.marginBottom !=
+               customMargins.marginBottom)) {
+        return true;
+      }
+
+      // Changed to custom margins from a different margins type.
+      if (!this.margins) {
+        // Log so that we can try to debug how this occurs. See
+        // https://crbug.com/942211
+        console.warn('Requested preview with undefined document margins');
+        return false;
+      }
+
+      const customMarginsChanged =
+          Object.values(print_preview.ticket_items.CustomMarginsOrientation)
+              .some(side => {
+                return this.margins.get(side) !==
+                    customMargins[print_preview_new.MARGIN_KEY_MAP.get(side)];
+              });
+      if (customMarginsChanged) {
+        return true;
+      }
     }
-    this.lastCustomMargins_ = newValue;
-  },
 
-  /** @private */
-  onMediaSizeChanged_: function() {
+    // Simple settings: ranges, layout, header/footer, pages per sheet, fit to
+    // page, css background, selection only, rasterize, scaling, dpi
+    if (!areRangesEqual(
+            /** @type {!Array<{from: number, to: number}>} */ (
+                this.getSettingValue('ranges')),
+            lastTicket.pageRange) ||
+        this.getSettingValue('layout') !== lastTicket.landscape ||
+        this.getColorForTicket_() !== lastTicket.color ||
+        this.getSettingValue('headerFooter') !==
+            lastTicket.headerFooterEnabled ||
+        this.getSettingValue('fitToPage') !== lastTicket.fitToPageEnabled ||
+        this.getSettingValue('cssBackground') !==
+            lastTicket.shouldPrintBackgrounds ||
+        this.getSettingValue('selectionOnly') !==
+            lastTicket.shouldPrintSelectionOnly ||
+        this.getSettingValue('rasterize') !== lastTicket.rasterizePDF ||
+        this.getScaleFactorForTicket_() !== lastTicket.scaleFactor) {
+      return true;
+    }
+
+    // Pages per sheet. If margins are non-default, wait for the return to
+    // default margins to trigger a request.
+    if (this.getSettingValue('pagesPerSheet') !== lastTicket.pagesPerSheet &&
+        this.getSettingValue('margins') ===
+            print_preview.ticket_items.MarginsTypeValue.DEFAULT) {
+      return true;
+    }
+
+    // Media size
     const newValue =
         /** @type {!print_preview_new.MediaSizeValue} */ (
             this.getSettingValue('mediaSize'));
-    if (this.lastMediaSize_ &&
-        (newValue.height_microns != this.lastMediaSize_.height_microns ||
-         newValue.width_microns != this.lastMediaSize_.width_microns)) {
-      this.onSettingsChanged_();
+    if (newValue.height_microns != lastTicket.mediaSize.height_microns ||
+        newValue.width_microns != lastTicket.mediaSize.width_microns ||
+        (this.destination.id !== lastTicket.deviceName &&
+         this.getSettingValue('margins') ===
+             print_preview.ticket_items.MarginsTypeValue.MINIMUM)) {
+      return true;
     }
-    this.lastMediaSize_ = newValue;
+
+    // Destination
+    if (this.destination.isPrivet !== lastTicket.printWithPrivet ||
+        this.destination.isExtension !== lastTicket.printWithExtension ||
+        !this.destination.isLocal !== lastTicket.printWithCloudPrint ||
+        (lastTicket.printToPDF &&
+         this.destination.id !==
+             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF)) {
+      return true;
+    }
+
+    return false;
   },
 
-  /** @private */
-  onPagesPerSheetChanged_: function() {
-    const pagesPerSheet =
-        /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
+  /** @return {number} Native color model of the destination. */
+  getColorForTicket_: function() {
+    return this.destination.getNativeColorModel(
+        /** @type {boolean} */ (this.getSettingValue('color')));
+  },
 
-    if (pagesPerSheet == 1 ||
-        this.getSettingValue('margins') ==
-            print_preview.ticket_items.MarginsTypeValue.DEFAULT) {
-      this.onSettingsChanged_();
-    } else {
-      this.setSetting(
-          'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
-    }
+  /** @return {number} Scale factor. */
+  getScaleFactorForTicket_: function() {
+    return this.getSettingValue('customScaling') ?
+        parseInt(this.getSettingValue('scaling'), 10) :
+        100;
+  },
+
+  /**
+   * @param {string} dpiField The field in dpi to retrieve.
+   * @return {number} Field value.
+   */
+  getDpiForTicket_: function(dpiField) {
+    const dpi =
+        /**
+           @type {{horizontal_dpi: (number | undefined),
+                    vertical_dpi: (number | undefined),
+                    vendor_id: (number | undefined)}}
+         */
+        (this.getSettingValue('dpi'));
+    const value = (dpi && dpiField in dpi) ? dpi[dpiField] : 0;
+    return value;
   },
 
   /**
@@ -657,16 +684,11 @@ Polymer({
    */
   getPreview_: function() {
     this.inFlightRequestId_++;
-    const dpi = /** @type {{horizontal_dpi: (number | undefined),
-                            vertical_dpi: (number | undefined),
-                            vendor_id: (number | undefined)}} */ (
-        this.getSettingValue('dpi'));
     const ticket = {
       pageRange: this.getSettingValue('ranges'),
       mediaSize: this.getSettingValue('mediaSize'),
       landscape: this.getSettingValue('layout'),
-      color: this.destination.getNativeColorModel(
-          /** @type {boolean} */ (this.getSettingValue('color'))),
+      color: this.getColorForTicket_(),
       headerFooterEnabled: this.getSettingValue('headerFooter'),
       marginsType: this.getSettingValue('margins'),
       pagesPerSheet: this.getSettingValue('pagesPerSheet'),
@@ -674,9 +696,7 @@ Polymer({
       requestID: this.inFlightRequestId_,
       previewModifiable: this.documentModifiable,
       fitToPageEnabled: this.getSettingValue('fitToPage'),
-      scaleFactor: this.getSettingValue('customScaling') ?
-          parseInt(this.getSettingValue('scaling'), 10) :
-          100,
+      scaleFactor: this.getScaleFactorForTicket_(),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: this.getSettingValue('selectionOnly'),
       // NOTE: Even though the remaining fields don't directly relate to the
@@ -685,8 +705,8 @@ Polymer({
       collate: true,
       copies: 1,
       deviceName: this.destination.id,
-      dpiHorizontal: (dpi && 'horizontal_dpi' in dpi) ? dpi.horizontal_dpi : 0,
-      dpiVertical: (dpi && 'vertical_dpi' in dpi) ? dpi.vertical_dpi : 0,
+      dpiHorizontal: this.getDpiForTicket_('horizontal_dpi'),
+      dpiVertical: this.getDpiForTicket_('vertical_dpi'),
       duplex: this.getSettingValue('duplex') ?
           print_preview_new.DuplexMode.LONG_EDGE :
           print_preview_new.DuplexMode.SIMPLEX,
@@ -707,6 +727,7 @@ Polymer({
         print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
       ticket.marginsCustom = this.getSettingValue('customMargins');
     }
+    this.lastTicket_ = ticket;
 
     this.fire('preview-start', this.inFlightRequestId_);
     return this.nativeLayer_.getPreview(JSON.stringify(ticket));

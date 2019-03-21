@@ -86,8 +86,8 @@ cr.define('model_test', function() {
        *     reset to its default value.
        */
       const testStickySetting = function(setting, field) {
-        let promise = test_util.eventToPromise('save-sticky-settings', model);
-        model.set(`settings.${setting}.value`, stickySettingsChange[field]);
+        let promise = test_util.eventToPromise('sticky-setting-changed', model);
+        model.setSetting(setting, stickySettingsChange[field]);
         return promise.then(
             /**
              * @param {!CustomEvent} e Event containing the serialized settings
@@ -101,9 +101,8 @@ cr.define('model_test', function() {
                 assertDeepEquals(toCompare[settingName], settings[settingName]);
               });
               let restorePromise =
-                  test_util.eventToPromise('save-sticky-settings', model);
-              model.set(
-                  `settings.${setting}.value`, stickySettingsDefault[field]);
+                  test_util.eventToPromise('sticky-setting-changed', model);
+              model.setSetting(setting, stickySettingsDefault[field]);
               return restorePromise;
             });
       };

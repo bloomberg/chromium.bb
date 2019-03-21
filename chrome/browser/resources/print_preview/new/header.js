@@ -53,8 +53,6 @@ Polymer({
       notify: true,
       value: null,
     },
-
-    errorMessage: String,
   },
 
   observers: [
@@ -149,11 +147,6 @@ Polymer({
           this.$$('paper-button.action-button').focus();
         }
         break;
-      case (print_preview_new.State.FATAL_ERROR):
-        this.printButtonEnabled_ = false;
-        this.summary_ = this.errorMessage;
-        this.summaryLabel_ = this.errorMessage;
-        break;
       default:
         this.summary_ = null;
         this.summaryLabel_ = null;
@@ -161,6 +154,13 @@ Polymer({
         break;
     }
     this.lastState_ = this.state;
+  },
+
+  /** @param {string} message The message to display. */
+  setErrorMessage: function(message) {
+    this.printButtonEnabled_ = false;
+    this.summary_ = message;
+    this.summaryLabel_ = message;
   },
 
   /**

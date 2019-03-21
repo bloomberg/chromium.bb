@@ -13,23 +13,16 @@ cr.define('media_size_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       mediaSizeSection =
           document.createElement('print-preview-media-size-settings');
-      mediaSizeSection.settings = {
-        mediaSize: {
-          value: {
-            width_microns: 215900,
-            height_microns: 279400,
-          },
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'mediaSize',
-        },
-      };
+      mediaSizeSection.settings = model.settings;
       mediaSizeSection.capability = mediaSizeCapability;
       mediaSizeSection.disabled = false;
+      model.set('settings.mediaSize.available', true);
+      test_util.fakeDataBind(model, mediaSizeSection, 'settings');
       document.body.appendChild(mediaSizeSection);
     });
 

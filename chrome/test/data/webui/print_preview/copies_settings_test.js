@@ -10,26 +10,13 @@ cr.define('copies_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       copiesSection = document.createElement('print-preview-copies-settings');
-      copiesSection.settings = {
-        copies: {
-          value: '1',
-          unavailableValue: '1',
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-        collate: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-      };
+      copiesSection.settings = model.settings;
       copiesSection.disabled = false;
+      test_util.fakeDataBind(model, copiesSection, 'settings');
       document.body.appendChild(copiesSection);
     });
 

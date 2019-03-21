@@ -249,7 +249,9 @@ cr.define('restore_state_test', function() {
           value: true,
         },
         {
-          section: 'print-preview-advanced-options-settings',
+          // Use the model to set vendor items, because the advanced settings
+          // section doesn't actually set this value in production.
+          section: 'print-preview-model',
           settingName: 'vendorItems',
           key: 'vendorOptions',
           value: {

@@ -56,19 +56,14 @@ cr.define('destination_settings_test', function() {
       nativeLayer.setLocalDestinations(localDestinations);
       cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
 
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       destinationSettings =
           document.createElement('print-preview-destination-settings');
-      destinationSettings.settings = {
-        recentDestinations: {
-          value: [],
-          unavailableValue: [],
-          available: true,
-          valid: true,
-          setByPolicy: false,
-          key: 'recentDestinations',
-        },
-      };
+      destinationSettings.settings = model.settings;
       destinationSettings.disabled = true;
+      test_util.fakeDataBind(model, destinationSettings, 'settings');
       document.body.appendChild(destinationSettings);
     });
 

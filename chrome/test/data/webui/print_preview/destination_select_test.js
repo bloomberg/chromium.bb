@@ -67,9 +67,14 @@ cr.define('destination_select_test', function() {
         cloudPrintInterface.setPrinter(cloudDestination);
       });
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       destinationSettings =
           document.createElement('print-preview-destination-settings');
       destinationSettings.destination = null;
+      destinationSettings.settings = model.settings;
+      test_util.fakeDataBind(model, destinationSettings, 'settings');
       document.body.appendChild(destinationSettings);
       const whenCapabilitiesReady = test_util.eventToPromise(
           print_preview.DestinationStore.EventType
@@ -85,16 +90,7 @@ cr.define('destination_select_test', function() {
       const recentDestinations = initialSettings.serializedAppStateStr ?
           JSON.parse(initialSettings.serializedAppStateStr).recentDestinations :
           [];
-      destinationSettings.settings = {
-        recentDestinations: {
-          value: recentDestinations,
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'recentDestinations',
-        },
-      };
+      destinationSettings.setSetting('recentDestinations', recentDestinations);
       destinationSettings.initDestinationStore(
           initialSettings.printerName,
           initialSettings.serializedDefaultDestinationSelectionRulesStr);

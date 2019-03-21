@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 cr.exportPath('print_preview_new');
+
 /**
  * @typedef {{
  *    version: string,
@@ -67,6 +68,16 @@ print_preview_new.DuplexType = {
   SHORT_EDGE: 'SHORT_EDGE'
 };
 
+cr.define('print_preview.Model', () => {
+  return {
+    /** @private {?PrintPreviewModelElement} */
+    instance_: null,
+
+    /** @return {!PrintPreviewModelElement} */
+    getInstance: () => assert(print_preview.Model.instance_),
+  };
+});
+
 (function() {
 'use strict';
 
@@ -107,8 +118,6 @@ const MINIMUM_HEIGHT_MICRONS = 25400;
 Polymer({
   is: 'print-preview-model',
 
-  behaviors: [SettingsBehavior],
-
   properties: {
     /**
      * Object containing current settings of Print Preview, for use by Polymer
@@ -121,213 +130,6 @@ Polymer({
     settings: {
       type: Object,
       notify: true,
-      value: function() {
-        const value = {
-          pages: {
-            value: [1],
-            unavailableValue: [],
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          copies: {
-            value: '1',
-            unavailableValue: '1',
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          collate: {
-            value: true,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'isCollateEnabled',
-          },
-          layout: {
-            value: false, /* portrait */
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'isLandscapeEnabled',
-          },
-          color: {
-            value: true, /* color */
-            unavailableValue: false,
-            valid: true,
-            available: false,
-            setByPolicy: false,
-            key: 'isColorEnabled',
-          },
-          mediaSize: {
-            value: {},
-            unavailableValue: {
-              width_microns: 215900,
-              height_microns: 279400,
-            },
-            valid: true,
-            available: false,
-            setByPolicy: false,
-            key: 'mediaSize',
-          },
-          margins: {
-            value: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-            unavailableValue:
-                print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'marginsType',
-          },
-          customMargins: {
-            value: {},
-            unavailableValue: {},
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'customMargins',
-          },
-          dpi: {
-            value: {},
-            unavailableValue: {},
-            valid: true,
-            available: false,
-            setByPolicy: false,
-            key: 'dpi',
-          },
-          fitToPage: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'isFitToPageEnabled',
-          },
-          scaling: {
-            value: '100',
-            unavailableValue: '100',
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'scaling',
-          },
-          customScaling: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'customScaling',
-          },
-          duplex: {
-            value: true,
-            unavailableValue: false,
-            valid: true,
-            available: false,
-            setByPolicy: false,
-            key: 'isDuplexEnabled',
-          },
-          cssBackground: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'isCssBackgroundEnabled',
-          },
-          selectionOnly: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          headerFooter: {
-            value: true,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'isHeaderFooterEnabled',
-          },
-          rasterize: {
-            value: false,
-            unavailableValue: false,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          vendorItems: {
-            value: {},
-            unavailableValue: {},
-            valid: true,
-            available: false,
-            setByPolicy: false,
-            key: 'vendorOptions',
-          },
-          pagesPerSheet: {
-            value: 1,
-            unavailableValue: 1,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          // This does not represent a real setting value, and is used only to
-          // expose the availability of the other options settings section.
-          otherOptions: {
-            value: null,
-            unavailableValue: null,
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          // This does not represent a real settings value, but is used to
-          // propagate the correctly formatted ranges for print tickets.
-          ranges: {
-            value: [],
-            unavailableValue: [],
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: '',
-          },
-          recentDestinations: {
-            value: [],
-            unavailableValue: [],
-            valid: true,
-            available: true,
-            setByPolicy: false,
-            key: 'recentDestinations',
-          },
-        };
-        // <if expr="chromeos">
-        value.pin = {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: false,
-          setByPolicy: false,
-          key: 'isPinEnabled',
-        };
-        value.pinValue = {
-          value: '',
-          unavailableValue: '',
-          valid: true,
-          available: false,
-          setByPolicy: false,
-          key: 'pinValue',
-        };
-        // </if>
-        return value;
-      },
     },
 
     controlsManaged: {
@@ -357,15 +159,6 @@ Polymer({
     'updateHeaderFooterAvailable_(' +
         'margins, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value)',
-    'stickySettingsChanged_(' +
-        'settings.collate.value, settings.layout.value, settings.color.value,' +
-        'settings.mediaSize.value, settings.margins.value, ' +
-        'settings.customMargins.value, settings.dpi.value, ' +
-        'settings.fitToPage.value, settings.customScaling.value, ' +
-        'settings.scaling.value, settings.duplex.value, ' +
-        'settings.headerFooter.value, settings.cssBackground.value, ' +
-        'settings.vendorItems.value, settings.recentDestinations.value.*)',
-    'stickySettingsChanged_(settings.pin.value, settings.pinValue.value)',
   ],
 
   /** @private {boolean} */
@@ -380,13 +173,356 @@ Polymer({
   /** @private {?print_preview.Cdd} */
   lastDestinationCapabilities_: null,
 
+  /** @private */
+  initializeSettings_: function() {
+    this.settings = {
+      pages: {
+        value: [1],
+        unavailableValue: [],
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: false,
+      },
+      copies: {
+        value: '1',
+        unavailableValue: '1',
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: false,
+      },
+      collate: {
+        value: true,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'isCollateEnabled',
+        updatesPreview: false,
+      },
+      layout: {
+        value: false, /* portrait */
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'isLandscapeEnabled',
+        updatesPreview: true,
+      },
+      color: {
+        value: true, /* color */
+        unavailableValue: false,
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'isColorEnabled',
+        updatesPreview: true,
+      },
+      mediaSize: {
+        value: {},
+        unavailableValue: {
+          width_microns: 215900,
+          height_microns: 279400,
+        },
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'mediaSize',
+        updatesPreview: true,
+      },
+      margins: {
+        value: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+        unavailableValue: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'marginsType',
+        updatesPreview: true,
+      },
+      customMargins: {
+        value: {},
+        unavailableValue: {},
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'customMargins',
+        updatesPreview: true,
+      },
+      dpi: {
+        value: {},
+        unavailableValue: {},
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'dpi',
+        updatesPreview: false,
+      },
+      fitToPage: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'isFitToPageEnabled',
+        updatesPreview: true,
+      },
+      scaling: {
+        value: '100',
+        unavailableValue: '100',
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'scaling',
+        updatesPreview: true,
+      },
+      customScaling: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'customScaling',
+        updatesPreview: true,
+      },
+      duplex: {
+        value: true,
+        unavailableValue: false,
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'isDuplexEnabled',
+        updatesPreview: false,
+      },
+      cssBackground: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'isCssBackgroundEnabled',
+        updatesPreview: true,
+      },
+      selectionOnly: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: true,
+      },
+      headerFooter: {
+        value: true,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'isHeaderFooterEnabled',
+        updatesPreview: true,
+      },
+      rasterize: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: true,
+      },
+      vendorItems: {
+        value: {},
+        unavailableValue: {},
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'vendorOptions',
+        updatesPreview: false,
+      },
+      pagesPerSheet: {
+        value: 1,
+        unavailableValue: 1,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: true,
+      },
+      // This does not represent a real setting value, and is used only to
+      // expose the availability of the other options settings section.
+      otherOptions: {
+        value: null,
+        unavailableValue: null,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: false,
+      },
+      // This does not represent a real settings value, but is used to
+      // propagate the correctly formatted ranges for print tickets.
+      ranges: {
+        value: [],
+        unavailableValue: [],
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: '',
+        updatesPreview: true,
+      },
+      recentDestinations: {
+        value: [],
+        unavailableValue: [],
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'recentDestinations',
+        updatesPreview: false,
+      },
+      // <if expr="chromeos">
+      pin: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'isPinEnabled',
+        updatesPreview: false,
+      },
+      pinValue: {
+        value: '',
+        unavailableValue: '',
+        valid: true,
+        available: false,
+        setByPolicy: false,
+        key: 'pinValue',
+        updatesPreview: false,
+      },
+      // </if>
+    };
+  },
+
+  /** @override */
+  attached: function() {
+    assert(!print_preview.Model.instance_);
+    print_preview.Model.instance_ = this;
+    this.initializeSettings_();
+  },
+
+  /** @override */
+  detached: function() {
+    print_preview.Model.instance_ = null;
+  },
+
+  /**
+   * @param {string} settingName Name of the setting to get.
+   * @return {print_preview_new.Setting} The setting object.
+   */
+  getSetting: function(settingName) {
+    const setting = /** @type {print_preview_new.Setting} */ (
+        this.get(settingName, this.settings));
+    assert(setting, 'Setting is missing: ' + settingName);
+    return setting;
+  },
+
+  /**
+   * @param {string} settingName Name of the setting to get the value for.
+   * @return {*} The value of the setting, accounting for availability.
+   */
+  getSettingValue: function(settingName) {
+    const setting = this.getSetting(settingName);
+    return setting.available ? setting.value : setting.unavailableValue;
+  },
+
+  /**
+   * Updates settings.settingPath to |value|. Fires a preview-setting-changed
+   * event if the modification results in a change to the value returned by
+   * getSettingValue().
+   * @param {string} settingPath Setting path to set
+   * @param {*} value value to set.
+   * @private
+   */
+  setSettingPath_: function(settingPath, value) {
+    const settingName = settingPath.split('.')[0];
+    const setting = this.getSetting(settingName);
+    const oldValue = this.getSettingValue(settingName);
+    this.set(`settings.${settingPath}`, value);
+    const newValue = this.getSettingValue(settingName);
+    if (newValue !== oldValue && setting.updatesPreview) {
+      this.fire('preview-setting-changed');
+    }
+  },
+
+  /**
+   * Sets settings.settingName.value to |value|, unless updating the setting is
+   * disallowed by enterprise policy. Fires preview-setting-changed and
+   * sticky-setting-changed events if the update impacts the preview or requires
+   * an update to sticky settings.
+   * @param {string} settingName Name of the setting to set
+   * @param {*} value The value to set the setting to.
+   */
+  setSetting: function(settingName, value) {
+    const setting = this.getSetting(settingName);
+    if (setting.setByPolicy) {
+      return;
+    }
+    const fireStickyEvent = setting.value !== value && setting.key;
+    this.setSettingPath_(`${settingName}.value`, value);
+    if (fireStickyEvent && this.initialized_) {
+      this.fire('sticky-setting-changed', this.getStickySettings_());
+    }
+  },
+
+  /**
+   * @param {string} settingName Name of the setting to set
+   * @param {number} start
+   * @param {number} end
+   * @param {*} newValue The value to add (if any).
+   */
+  setSettingSplice: function(settingName, start, end, newValue) {
+    const setting = this.getSetting(settingName);
+    if (setting.setByPolicy) {
+      return;
+    }
+    if (newValue) {
+      this.splice(`settings.${settingName}.value`, start, end, newValue);
+    } else {
+      this.splice(`settings.${settingName}.value`, start, end);
+    }
+    if (setting.key && this.initialized_) {
+      this.fire('sticky-setting-changed', this.getStickySettings_());
+    }
+  },
+
+  /**
+   * Sets the validity of |settingName| to |valid|. If the validity is changed,
+   * fires a setting-valid-changed event.
+   * @param {string} settingName Name of the setting to set
+   * @param {boolean} valid Whether the setting value is currently valid.
+   */
+  setSettingValid: function(settingName, valid) {
+    const setting = this.getSetting(settingName);
+    // Should not set the setting to invalid if it is not available, as there
+    // is no way for the user to change the value in this case.
+    if (!valid) {
+      assert(setting.available, 'Setting is not available: ' + settingName);
+    }
+    const shouldFireEvent = valid != setting.valid;
+    this.set(`settings.${settingName}.valid`, valid);
+    if (shouldFireEvent) {
+      this.fire('setting-valid-changed', valid);
+    }
+  },
+
   /**
    * Updates the availability of the settings sections and values of dpi and
    *     media size settings based on the destination capabilities.
    * @private
    */
   updateSettingsFromDestination_: function() {
-    if (!this.destination) {
+    if (!this.destination || !this.settings) {
       return;
     }
 
@@ -413,25 +549,26 @@ Polymer({
    * @private
    */
   updateSettingsAvailabilityFromDestination_: function(caps) {
-    this.set('settings.copies.available', !!caps && !!caps.copies);
-    this.set('settings.collate.available', !!caps && !!caps.collate);
-    this.set('settings.color.available', this.destination.hasColorCapability);
+    this.setSettingPath_('copies.available', !!caps && !!caps.copies);
+    this.setSettingPath_('collate.available', !!caps && !!caps.collate);
+    this.setSettingPath_(
+        'color.available', this.destination.hasColorCapability);
 
-    this.set(
-        'settings.dpi.available',
+    this.setSettingPath_(
+        'dpi.available',
         !!caps && !!caps.dpi && !!caps.dpi.option &&
             caps.dpi.option.length > 1);
 
-    this.set(
-        'settings.duplex.available',
+    this.setSettingPath_(
+        'duplex.available',
         !!caps && !!caps.duplex && !!caps.duplex.option &&
             caps.duplex.option.some(
                 o => o.type == print_preview_new.DuplexType.LONG_EDGE) &&
             caps.duplex.option.some(
                 o => o.type == print_preview_new.DuplexType.NO_DUPLEX));
 
-    this.set(
-        'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
+    this.setSettingPath_(
+        'vendorItems.available', !!caps && !!caps.vendor_capability);
 
     // <if expr="chromeos">
     const pinSupported = !!caps && !!caps.pin && !!caps.pin.supported &&
@@ -452,20 +589,20 @@ Polymer({
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentSettings.isModifiable ||
          this.documentSettings.hasCssMediaStyles);
-    this.set('settings.fitToPage.unavailableValue', !isSaveAsPDF);
-    this.set(
-        'settings.fitToPage.available',
+    this.setSettingPath_('fitToPage.unavailableValue', !isSaveAsPDF);
+    this.setSettingPath_(
+        'fitToPage.available',
         !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable);
-    this.set('settings.scaling.available', !knownSizeToSaveAsPdf);
+    this.setSettingPath_('scaling.available', !knownSizeToSaveAsPdf);
     const caps = this.destination && this.destination.capabilities ?
         this.destination.capabilities.printer :
         null;
-    this.set(
-        'settings.mediaSize.available',
+    this.setSettingPath_(
+        'mediaSize.available',
         !!caps && !!caps.media_size && !knownSizeToSaveAsPdf);
-    this.set('settings.layout.available', this.isLayoutAvailable_(caps));
-    this.set(
-        'settings.otherOptions.available',
+    this.setSettingPath_('layout.available', this.isLayoutAvailable_(caps));
+    this.setSettingPath_(
+        'otherOptions.available',
         this.settings.duplex.available ||
             this.settings.cssBackground.available ||
             this.settings.selectionOnly.available ||
@@ -475,19 +612,24 @@ Polymer({
 
   /** @private */
   updateSettingsAvailabilityFromDocumentSettings_: function() {
-    this.set('settings.margins.available', this.documentSettings.isModifiable);
-    this.set(
-        'settings.customMargins.available', this.documentSettings.isModifiable);
-    this.set(
-        'settings.cssBackground.available', this.documentSettings.isModifiable);
-    this.set(
-        'settings.selectionOnly.available',
+    if (!this.settings) {
+      return;
+    }
+
+    this.setSettingPath_(
+        'margins.available', this.documentSettings.isModifiable);
+    this.setSettingPath_(
+        'customMargins.available', this.documentSettings.isModifiable);
+    this.setSettingPath_(
+        'cssBackground.available', this.documentSettings.isModifiable);
+    this.setSettingPath_(
+        'selectionOnly.available',
         this.documentSettings.isModifiable &&
             this.documentSettings.hasSelection);
-    this.set(
-        'settings.headerFooter.available', this.isHeaderFooterAvailable_());
-    this.set(
-        'settings.rasterize.available',
+    this.setSettingPath_(
+        'headerFooter.available', this.isHeaderFooterAvailable_());
+    this.setSettingPath_(
+        'rasterize.available',
         !this.documentSettings.isModifiable && !cr.isWindows && !cr.isMac);
 
     if (this.destination) {
@@ -501,8 +643,8 @@ Polymer({
       return;
     }
 
-    this.set(
-        'settings.headerFooter.available', this.isHeaderFooterAvailable_());
+    this.setSettingPath_(
+        'headerFooter.available', this.isHeaderFooterAvailable_());
   },
 
   /**
@@ -607,7 +749,7 @@ Polymer({
       this.setSetting('dpi', matchingOption || defaultOption);
     } else if (
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
-      this.set('settings.dpi.unavailableValue', caps.dpi.option[0]);
+      this.setSettingPath_('dpi.unavailableValue', caps.dpi.option[0]);
     }
 
     if (!this.initialized_ && this.settings.color.available) {
@@ -623,17 +765,17 @@ Polymer({
         (this.destination.id ===
              print_preview.Destination.GooglePromotedId.DOCS ||
          this.destination.type === print_preview.DestinationType.MOBILE)) {
-      this.set('settings.color.unavailableValue', true);
+      this.setSettingPath_('color.unavailableValue', true);
     } else if (
         !this.settings.color.available && caps && caps.color &&
         caps.color.option && caps.color.option.length > 0) {
-      this.set(
-          'settings.color.unavailableValue',
+      this.setSettingPath_(
+          'color.unavailableValue',
           !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
               caps.color.option[0].type));
     } else if (!this.settings.color.available) {
       // if no color capability is reported, assume black and white.
-      this.set('settings.color.unavailableValue', false);
+      this.setSettingPath_('color.unavailableValue', false);
     }
 
     if (!this.initialized_ && this.settings.duplex.available) {
@@ -650,10 +792,10 @@ Polymer({
             o => o.type != print_preview_new.DuplexType.LONG_EDGE)) {
       // If the only option available is long edge, the value should always be
       // true.
-      this.set('settings.duplex.unavailableValue', true);
+      this.setSettingPath_('duplex.unavailableValue', true);
     } else if (!this.settings.duplex.available) {
       // If no duplex capability is reported, assume false.
-      this.set('settings.duplex.unavailableValue', false);
+      this.setSettingPath_('duplex.unavailableValue', false);
     }
 
     if (this.settings.vendorItems.available) {
@@ -763,7 +905,7 @@ Polymer({
     this.initialized_ = true;
     this.updateManaged_();
     this.stickySettings_ = null;
-    this.stickySettingsChanged_();
+    this.fire('sticky-settings-changed', this.getStickySettings_());
   },
 
   // <if expr="chromeos">
@@ -826,12 +968,11 @@ Polymer({
     return this.initialized_;
   },
 
-  /** @private */
-  stickySettingsChanged_: function() {
-    if (!this.initialized_) {
-      return;
-    }
-
+  /**
+   * @return {string} The current serialized settings.
+   * @private
+   */
+  getStickySettings_: function() {
     const serialization = {
       version: 2,
     };
@@ -840,7 +981,8 @@ Polymer({
       const setting = this.get(settingName, this.settings);
       serialization[assert(setting.key)] = setting.value;
     });
-    this.fire('save-sticky-settings', JSON.stringify(serialization));
+
+    return JSON.stringify(serialization);
   },
 
   /**

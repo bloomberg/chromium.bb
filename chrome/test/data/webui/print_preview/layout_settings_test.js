@@ -9,18 +9,13 @@ cr.define('layout_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       layoutSection = document.createElement('print-preview-layout-settings');
-      layoutSection.settings = {
-        layout: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isLandscapeEnabled',
-        },
-      };
+      layoutSection.settings = model.settings;
       layoutSection.disabled = false;
+      test_util.fakeDataBind(model, layoutSection, 'settings');
       document.body.appendChild(layoutSection);
     });
 
@@ -29,7 +24,7 @@ cr.define('layout_settings_test', function() {
       const select = layoutSection.$$('select');
       assertEquals('portrait', select.value);
 
-      layoutSection.set('settings.layout.value', true);
+      layoutSection.setSetting('layout', true);
       await test_util.eventToPromise('process-select-change', layoutSection);
       assertEquals('landscape', select.value);
     });

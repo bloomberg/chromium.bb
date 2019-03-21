@@ -5,13 +5,14 @@
 Polymer({
   is: 'print-preview-advanced-options-settings',
 
-  behaviors: [SettingsBehavior],
-
   properties: {
     disabled: Boolean,
 
     /** @type {!print_preview.Destination} */
     destination: Object,
+
+    /** @type {!print_preview_new.Settings} */
+    settings: Object,
 
     /** @private {boolean} */
     showAdvancedDialog_: {
