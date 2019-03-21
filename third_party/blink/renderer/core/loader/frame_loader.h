@@ -294,13 +294,11 @@ class CORE_EXPORT FrameLoader final {
   Member<DocumentLoader> document_loader_;
   Member<DocumentLoader> provisional_document_loader_;
 
-  bool in_stop_all_loaders_;
   bool in_restore_scroll_;
 
   SandboxFlags forced_sandbox_flags_;
 
   bool dispatching_did_clear_window_object_in_main_world_;
-  bool protect_provisional_loader_;
   bool detached_;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
