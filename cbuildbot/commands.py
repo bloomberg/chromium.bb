@@ -1894,8 +1894,7 @@ def MarkAndroidAsStable(buildroot, tracking_branch, android_package,
     # Android we just unmasked.
     try:
       command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
-      RunBuildScript(buildroot, command, enter_chroot=True,
-                     combine_stdout_stderr=True, capture_output=True)
+      RunBuildScript(buildroot, command, enter_chroot=True)
     except failures_lib.BuildScriptFailure:
       logging.error('Cannot emerge-%s =%s\nIs Android pinned to an older '
                     'version?', board, android_atom)
@@ -1954,7 +1953,7 @@ def MarkChromeAsStable(buildroot,
     try:
       cros_build_lib.RunCommand(
           ['emerge-%s' % board, '-p', '--quiet', '=%s' % chrome_atom],
-          enter_chroot=True, combine_stdout_stderr=True, capture_output=True)
+          enter_chroot=True)
     except cros_build_lib.RunCommandError:
       logging.error('Cannot emerge-%s =%s\nIs Chrome pinned to an older '
                     'version?', board, chrome_atom)
