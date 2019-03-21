@@ -145,6 +145,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
   }
 
   switch (event_type) {
+    case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_AccessKeyPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
       FireWinAccessibilityEvent(IA2_EVENT_ACTIVE_DESCENDANT_CHANGED, node);
       break;
@@ -152,11 +155,57 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireWinAccessibilityEvent(EVENT_SYSTEM_ALERT, node);
       FireUiaAccessibilityEvent(UIA_SystemAlertEventId, node);
       break;
+    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
       break;
+    case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ClassNamePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::COLLAPSED:
+    case ui::AXEventGenerator::Event::EXPANDED:
+      FireUiaPropertyChangedEvent(
+          UIA_ExpandCollapseExpandCollapseStatePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_DescribedByPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FullDescriptionPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
+      // Fire the event on the object where the focus of the selection is.
+      int32_t focus_id = GetTreeData().sel_focus_object_id;
+      BrowserAccessibility* focus_object = GetFromID(focus_id);
+      if (focus_object && focus_object->HasVisibleCaretOrSelection())
+        FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
+      break;
+    }
+    case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_FlowsToPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_LevelPropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
+      break;
+    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_IsDataValidForFormPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_AcceleratorKeyPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::LABELED_BY_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_LabeledByPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::LANGUAGE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_CulturePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
+      FireUiaPropertyChangedEvent(UIA_LiveSettingPropertyId, node);
       break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
@@ -175,50 +224,43 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
       break;
+    case ui::AXEventGenerator::Event::NAME_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_HelpTextPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_PositionInSetPropertyId, node);
+      break;
+    case ui::AXEventGenerator::Event::ROLE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_AriaRolePropertyId, node);
+      break;
     case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
       FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGEND, node);
+      break;
+    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
+      HandleSelectedStateChanged(node);
       break;
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONWITHIN, node);
       break;
-    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
-      // Fire the event on the object where the focus of the selection is.
-      int32_t focus_id = GetTreeData().sel_focus_object_id;
-      BrowserAccessibility* focus_object = GetFromID(focus_id);
-      if (focus_object && focus_object->HasVisibleCaretOrSelection())
-        FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
+    case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_SizeOfSetPropertyId, node);
       break;
-    }
-    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
-      HandleSelectedStateChanged(node);
+    case ui::AXEventGenerator::Event::VALUE_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
       break;
-    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
-      FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
-      break;
-    case ui::AXEventGenerator::Event::EXPANDED:
-    case ui::AXEventGenerator::Event::COLLAPSED:
-      FireUiaPropertyChangedEvent(
-          UIA_ExpandCollapseExpandCollapseStatePropertyId, node);
-      break;
-    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
-      FireUiaPropertyChangedEvent(UIA_FullDescriptionPropertyId, node);
-      break;
-    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
-      FireUiaPropertyChangedEvent(UIA_IsDataValidForFormPropertyId, node);
-      break;
+
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
-    case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
-    case ui::AXEventGenerator::Event::NAME_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
-    case ui::AXEventGenerator::Event::ROLE_CHANGED:
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
-    case ui::AXEventGenerator::Event::VALUE_CHANGED:
       // There are some notifications that aren't meaningful on Windows.
       // It's okay to skip them.
       break;

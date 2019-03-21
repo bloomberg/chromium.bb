@@ -178,6 +178,35 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
   DCHECK_EQ(tree_, tree);
 
   switch (attr) {
+    case ax::mojom::StringAttribute::kAccessKey:
+      AddEvent(node, Event::ACCESS_KEY_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kAriaInvalidValue:
+      AddEvent(node, Event::INVALID_STATUS_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kAutoComplete:
+      AddEvent(node, Event::AUTO_COMPLETE_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kClassName:
+      AddEvent(node, Event::CLASS_NAME_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kDescription:
+      AddEvent(node, Event::DESCRIPTION_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kKeyShortcuts:
+      AddEvent(node, Event::KEY_SHORTCUTS_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kLanguage:
+      AddEvent(node, Event::LANGUAGE_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kLiveStatus:
+      // TODO(accessibility): tree in the midst of updates. Disallow access to
+      // |node|.
+      if (node->data().GetStringAttribute(
+              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
+          node->data().role != ax::mojom::Role::kAlert)
+        AddEvent(node, Event::LIVE_REGION_CREATED);
+      break;
     case ax::mojom::StringAttribute::kName:
       // If the name of the root node changes, we expect OnTreeDataChanged to
       // add a DOCUMENT_TITLE_CHANGED event instead.
@@ -191,25 +220,11 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
         FireLiveRegionEvents(node);
       }
       break;
-    case ax::mojom::StringAttribute::kDescription:
-      AddEvent(node, Event::DESCRIPTION_CHANGED);
+    case ax::mojom::StringAttribute::kPlaceholder:
+      AddEvent(node, Event::PLACEHOLDER_CHANGED);
       break;
     case ax::mojom::StringAttribute::kValue:
       AddEvent(node, Event::VALUE_CHANGED);
-      break;
-    case ax::mojom::StringAttribute::kAriaInvalidValue:
-      AddEvent(node, Event::INVALID_STATUS_CHANGED);
-      break;
-    case ax::mojom::StringAttribute::kLiveStatus:
-      // TODO(accessibility): tree in the midst of updates. Disallow access to
-      // |node|.
-      if (node->data().GetStringAttribute(
-              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
-          node->data().role != ax::mojom::Role::kAlert)
-        AddEvent(node, Event::LIVE_REGION_CREATED);
-      break;
-    case ax::mojom::StringAttribute::kAutoComplete:
-      AddEvent(node, Event::AUTO_COMPLETE_CHANGED);
       break;
     case ax::mojom::StringAttribute::kImageAnnotation:
       // The image annotation is reported as part of the accessible name.
@@ -240,8 +255,14 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kCheckedState:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kHierarchicalLevel:
+      AddEvent(node, Event::HIERARCHICAL_LEVEL_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kInvalidState:
       AddEvent(node, Event::INVALID_STATUS_CHANGED);
+      break;
+    case ax::mojom::IntAttribute::kPosInSet:
+      AddEvent(node, Event::POSITION_IN_SET_CHANGED);
       break;
     case ax::mojom::IntAttribute::kRestriction:
       AddEvent(node, Event::STATE_CHANGED);
@@ -253,6 +274,9 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       // The image annotation is reported as part of the accessible name.
       AddEvent(node, Event::IMAGE_ANNOTATION_CHANGED);
+      break;
+    case ax::mojom::IntAttribute::kSetSize:
+      AddEvent(node, Event::SET_SIZE_CHANGED);
       break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
@@ -300,7 +324,21 @@ void AXEventGenerator::OnIntListAttributeChanged(
     const std::vector<int32_t>& old_value,
     const std::vector<int32_t>& new_value) {
   DCHECK_EQ(tree_, tree);
-  AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+
+  switch (attr) {
+    case ax::mojom::IntListAttribute::kDescribedbyIds:
+      AddEvent(node, Event::DESCRIBED_BY_CHANGED);
+      break;
+    case ax::mojom::IntListAttribute::kFlowtoIds:
+      AddEvent(node, Event::FLOW_TO_CHANGED);
+      break;
+    case ax::mojom::IntListAttribute::kLabelledbyIds:
+      AddEvent(node, Event::LABELED_BY_CHANGED);
+      break;
+    default:
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+  }
 }
 
 void AXEventGenerator::OnTreeDataChanged(AXTree* tree,

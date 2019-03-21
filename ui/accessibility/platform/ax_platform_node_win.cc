@@ -3757,7 +3757,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_ClassNamePropertyId:
       result->vt = VT_BSTR;
-      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kClassName,
                                &result->bstrVal);
       break;
 
