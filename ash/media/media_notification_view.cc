@@ -20,6 +20,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -32,13 +33,29 @@ constexpr int kRightMarginSize = message_center::kNotificationWidth / 5;
 
 // The right padding is 1/3rd the size of the notification when the
 // notification is expanded.
-constexpr int kRightMarginExpandedSize = message_center::kNotificationWidth / 3;
+constexpr int kRightMarginExpandedSize = message_center::kNotificationWidth / 4;
 
 // Dimensions.
-constexpr int kDefaultMarginSize = 16;
-constexpr int kMediaButtonIconSize = 24;
+constexpr int kDefaultMarginSize = 8;
+constexpr int kMediaButtonIconSize = 28;
+constexpr int kTitleArtistLineHeight = 20;
 constexpr double kMediaImageMaxWidthPct = 0.3;
 constexpr double kMediaImageMaxWidthExpandedPct = 0.4;
+constexpr gfx::Size kMediaButtonSize = gfx::Size(36, 36);
+constexpr int kMediaButtonRowSeparator = 8;
+constexpr gfx::Insets kMediaTitleArtistInsets = gfx::Insets(8, 8, 0, 8);
+constexpr gfx::Insets kMediaTitleArtistSingleRowInsets =
+    gfx::Insets(18, 8, 10, 8);
+constexpr gfx::Insets kMediaNotificationMainRowInsets =
+    gfx::Insets(0, kDefaultMarginSize, 14, kRightMarginSize);
+constexpr gfx::Insets kMediaNotificationExpandedMainRowInsets =
+    gfx::Insets(kDefaultMarginSize,
+                kDefaultMarginSize,
+                kDefaultMarginSize,
+                kRightMarginExpandedSize);
+constexpr int kMediaNotificationHeaderTopInset = 6;
+constexpr int kMediaNotificationHeaderRightInset = 6;
+constexpr int kMediaNotificationHeaderInset = 0;
 
 SkColor GetMediaNotificationColor(const views::View& view) {
   return views::style::GetColor(view, views::style::CONTEXT_LABEL,
@@ -72,6 +89,11 @@ MediaNotificationView::MediaNotificationView(
   header_row_->SetAppName(
       message_center::MessageCenter::Get()->GetSystemNotificationAppName());
   header_row_->ClearAppIcon();
+  header_row_->SetProperty(views::kMarginsKey,
+                           new gfx::Insets(kMediaNotificationHeaderTopInset,
+                                           kMediaNotificationHeaderInset,
+                                           kMediaNotificationHeaderInset,
+                                           kMediaNotificationHeaderRightInset));
   AddChildView(header_row_);
 
   // |main_row_| holds the main content of the notification.
@@ -80,12 +102,12 @@ MediaNotificationView::MediaNotificationView(
 
   // |title_artist_row_| contains the title and artist labels.
   title_artist_row_ = new views::View();
-  auto* title_artist_row_layout =
+  title_artist_row_layout_ =
       title_artist_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, gfx::Insets(), 0));
-  title_artist_row_layout->set_main_axis_alignment(
+  title_artist_row_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  title_artist_row_layout->set_cross_axis_alignment(
+  title_artist_row_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   title_artist_row_->SetVisible(false);
   main_row_->AddChildView(title_artist_row_);
@@ -94,26 +116,28 @@ MediaNotificationView::MediaNotificationView(
                                   views::style::STYLE_PRIMARY);
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
   title_label_->SetFontList(base_font_list.Derive(
-      0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::SEMIBOLD));
+      0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
   title_label_->SetVisible(false);
+  title_label_->SetLineHeight(kTitleArtistLineHeight);
   title_artist_row_->AddChildView(title_label_);
 
   artist_label_ =
       new views::Label(base::string16(), views::style::CONTEXT_LABEL,
                        views::style::STYLE_PRIMARY);
   artist_label_->SetVisible(false);
+  artist_label_->SetLineHeight(kTitleArtistLineHeight);
   title_artist_row_->AddChildView(artist_label_);
 
   // |button_row_| contains the buttons for controlling playback.
   button_row_ = new views::View();
   auto* button_row_layout =
       button_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(), 0));
+          views::BoxLayout::kHorizontal, gfx::Insets(),
+          kMediaButtonRowSeparator));
   button_row_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   button_row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  button_row_layout->SetDefaultFlex(1);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   main_row_->AddChildView(button_row_);
 
   CreateMediaButton(vector_icons::kMediaPreviousTrackIcon,
@@ -124,6 +148,7 @@ MediaNotificationView::MediaNotificationView(
   // |play_pause_button_| toggles playback.
   play_pause_button_ = views::CreateVectorToggleImageButton(this);
   play_pause_button_->set_tag(static_cast<int>(MediaSessionAction::kPlay));
+  play_pause_button_->SetPreferredSize(kMediaButtonSize);
   SkColor play_button_color = GetMediaNotificationColor(*play_pause_button_);
   views::SetImageFromVectorIcon(play_pause_button_,
                                 vector_icons::kPlayArrowIcon,
@@ -256,6 +281,13 @@ void MediaNotificationView::UpdateWithMediaMetadata(
 
     artist_label_->SetText(metadata.artist);
     artist_label_->SetVisible(!metadata.artist.empty());
+
+    // If there is only a single row of text then we should use larger insets to
+    // balance out the row.
+    title_artist_row_layout_->set_inside_border_insets(
+        (metadata.title.empty() || metadata.artist.empty())
+            ? kMediaTitleArtistSingleRowInsets
+            : kMediaTitleArtistInsets);
   }
 
   PreferredSizeChanged();
@@ -328,16 +360,12 @@ void MediaNotificationView::UpdateViewForExpandedState() {
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::kVertical,
-            gfx::Insets(kDefaultMarginSize, kDefaultMarginSize,
-                        kDefaultMarginSize, kRightMarginExpandedSize),
-            kDefaultMarginSize))
+            kMediaNotificationExpandedMainRowInsets, kDefaultMarginSize))
         ->SetDefaultFlex(1);
   } else {
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal,
-            gfx::Insets(0, kDefaultMarginSize, kDefaultMarginSize,
-                        kRightMarginSize),
+            views::BoxLayout::kHorizontal, kMediaNotificationMainRowInsets,
             kDefaultMarginSize, true))
         ->SetDefaultFlex(1);
   }
@@ -356,6 +384,7 @@ void MediaNotificationView::CreateMediaButton(const gfx::VectorIcon& icon,
   button->set_tag(static_cast<int>(action));
   views::SetImageFromVectorIcon(button, icon, kMediaButtonIconSize,
                                 GetMediaNotificationColor(*button));
+  button->SetPreferredSize(kMediaButtonSize);
   button_row_->AddChildView(button);
 }
 

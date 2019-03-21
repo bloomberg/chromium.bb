@@ -29,6 +29,7 @@ class NotificationHeaderView;
 }  // namespace message_center
 
 namespace views {
+class BoxLayout;
 class ToggleImageButton;
 class View;
 }  // namespace views
@@ -108,6 +109,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   views::Label* artist_label_ = nullptr;
   views::View* layout_row_ = nullptr;
   views::View* main_row_ = nullptr;
+
+  views::BoxLayout* title_artist_row_layout_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };

@@ -45,6 +45,9 @@ namespace {
 // the image.
 const int kMediaButtonIconSize = 24;
 
+// The title artist row should always have the same height.
+const int kMediaTitleArtistRowExpectedHeight = 48;
+
 const char kTestAppName[] = "app name";
 
 // Checks if the view class name is used by a media button.
@@ -509,6 +512,8 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
 
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   UpdateWithSampleMetadata();
+
+  EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
 
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_Empty) {
@@ -542,6 +547,8 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoArtist) {
   EXPECT_FALSE(artist_label()->visible());
 
   EXPECT_EQ(metadata.title, title_label()->text());
+
+  EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
 
 TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
@@ -559,6 +566,8 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver_NoTitle) {
   EXPECT_TRUE(artist_label()->visible());
 
   EXPECT_EQ(metadata.artist, artist_label()->text());
+
+  EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
 
 TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {

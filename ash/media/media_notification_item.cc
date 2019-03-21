@@ -174,6 +174,9 @@ void MediaNotificationItem::HideNotification() {
 
 void MediaNotificationItem::OnNotificationClicked(
     base::Optional<int> button_id) {
+  if (!button_id)
+    return;
+
   switch (static_cast<MediaSessionAction>(*button_id)) {
     case MediaSessionAction::kPreviousTrack:
       media_controller_ptr_->PreviousTrack();
