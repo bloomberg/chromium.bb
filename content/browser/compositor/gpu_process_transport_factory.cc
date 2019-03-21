@@ -22,6 +22,7 @@
 #include "cc/base/histograms.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -163,7 +164,6 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
     viz::ServerSharedBitmapManager* server_shared_bitmap_manager,
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
-      renderer_settings_(viz::CreateRendererSettings()),
       resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       shared_worker_context_provider_factory_(
@@ -263,10 +263,9 @@ CreateOverlayCandidateValidator(
 
   ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
   DCHECK(ozone_platform);
-  ui::OverlayManagerOzone* overlay_manager =
-      ozone_platform->GetOverlayManager();
+  auto& host_properties = ozone_platform->GetInitializedHostProperties();
   if (!command_line->HasSwitch(switches::kEnableHardwareOverlays) &&
-      overlay_manager->SupportsOverlays()) {
+      host_properties.supports_overlays) {
     enable_overlay_flag = "single-fullscreen,single-on-top,underlay";
   }
   if (!enable_overlay_flag.empty()) {
@@ -561,7 +560,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = std::make_unique<viz::Display>(
-      server_shared_bitmap_manager_, renderer_settings_,
+      server_shared_bitmap_manager_, viz::CreateRendererSettings(),
       compositor->frame_sink_id(), std::move(display_output_surface),
       std::move(scheduler), compositor->task_runner());
   data->display_client =

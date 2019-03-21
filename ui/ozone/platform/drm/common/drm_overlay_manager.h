@@ -26,14 +26,9 @@ class DrmOverlayManager : public OverlayManagerOzone {
   DrmOverlayManager();
   ~DrmOverlayManager() override;
 
-  void set_supports_overlays(bool supports_overlays) {
-    supports_overlays_ = supports_overlays;
-  }
-
   // OverlayManagerOzone:
   std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
-  bool SupportsOverlays() const override;
 
   // Resets the cache of OverlaySurfaceCandidates and if they can be displayed
   // as an overlay. For use when display configuration changes.
@@ -73,9 +68,6 @@ class DrmOverlayManager : public OverlayManagerOzone {
     int request_num = 0;
     std::vector<OverlayStatus> status;
   };
-
-  // Whether we have DRM atomic capabilities and can support HW overlays.
-  bool supports_overlays_ = false;
 
   // List of all OverlaySurfaceCandidate instances which have been requested
   // for validation and/or validated.

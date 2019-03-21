@@ -19,6 +19,7 @@
 
 #if defined(USE_OZONE)
 #include "components/viz/common/switches.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace viz {
@@ -84,11 +85,17 @@ RendererSettings CreateRendererSettings() {
   }
 
 #if defined(USE_OZONE)
-  // TODO(crbug.com/930173): Add the default set of overlay strategies if flag
-  // isn't present but ozone platform supports overlays.
   if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
     renderer_settings.overlay_strategies = ParseOverlayStategies(
         command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays));
+  } else {
+    auto& host_properties =
+        ui::OzonePlatform::GetInstance()->GetInitializedHostProperties();
+    if (host_properties.supports_overlays) {
+      renderer_settings.overlay_strategies = {OverlayStrategy::kFullscreen,
+                                              OverlayStrategy::kSingleOnTop,
+                                              OverlayStrategy::kUnderlay};
+    }
   }
 #endif
 

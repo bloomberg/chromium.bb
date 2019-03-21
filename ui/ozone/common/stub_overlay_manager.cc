@@ -18,8 +18,4 @@ StubOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
   return nullptr;
 }
 
-bool StubOverlayManager::SupportsOverlays() const {
-  return false;
-}
-
 }  // namespace ui
