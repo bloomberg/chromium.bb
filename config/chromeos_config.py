@@ -3981,7 +3981,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
                                            '-debug_fission',
                                            '-thinlto',
                                            '-cfi']),
-      prebuilts=constants.PRIVATE,
+      prebuilts=False,
       archive_build_debug=True,
   )
 
