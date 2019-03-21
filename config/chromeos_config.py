@@ -1967,7 +1967,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'hatch',
       'kalista',
       'kevin',
-      'kevin-arcnext',
       'kevin64',
       'kip',
       'kukui',
@@ -2051,6 +2050,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'coral', # contact: xixuan@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-moblab', # contact: haddowk@ (crbug.com/937344)
+      'kevin-arcnext', # contact: linben@
       'mistral', # contact: roopeshr@
   ])
 
@@ -2127,7 +2127,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'quawks',
       'hana',
       'kevin',
-      'kevin-arcnext',
       'kip',
       'mistral',
       'nocturne',
@@ -2315,7 +2314,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
     ('atlas',         'atlas',         None,               'atlas'),            # Atlas (KBL)
     ('octopus',       None,            None,               'octopus'),          # Octopus (GLK unibuild)
-    (None,            None,            'kevin-arcnext',    'kevin-arcnext'),    # gru + arcnext
     (None,            None,            'caroline-arcnext', 'caroline-arcnext'), # arcnext
     ('nyan_blaze',    None,            None,               'nyan_blaze'),       # Add for Skylab test
     ('scarlet'   ,    None,            None,               'scarlet'),          # scarlet (RK3399 unibuild)
