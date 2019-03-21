@@ -205,7 +205,7 @@ void InfoBarView::OnPaint(gfx::Canvas* canvas) {
 
   if (ShouldDrawSeparator()) {
     const SkColor color =
-        GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
+        GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
     BrowserView::Paint1pxHorizontalLine(canvas, color, GetLocalBounds(), false);
   }
 }
