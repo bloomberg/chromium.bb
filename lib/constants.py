@@ -830,10 +830,16 @@ VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
 MOBLAB_VM_SMOKE_TEST_TYPE = 'moblab_smoke_test'
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
+CHROMEOS_PARTNER_OVERLAY_DIR = 'src/private-overlays/chromeos-partner-overlay/'
+PUBLIC_BINHOST_CONF_DIR = os.path.join(CHROMIUMOS_OVERLAY_DIR,
+                                       'chromeos/binhost')
+PRIVATE_BINHOST_CONF_DIR = os.path.join(CHROMEOS_PARTNER_OVERLAY_DIR,
+                                        'chromeos/binhost')
+
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
                             'chromeos/config/chromeos_version.sh')
-SDK_VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
-                                'chromeos/binhost/host/sdk_version.conf')
+SDK_VERSION_FILE = os.path.join(PUBLIC_BINHOST_CONF_DIR,
+                                'host/sdk_version.conf')
 SDK_GS_BUCKET = 'chromiumos-sdk'
 
 PUBLIC = 'public'

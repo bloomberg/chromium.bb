@@ -367,9 +367,9 @@ class SDKUprevStage(generic_stages.BuilderStage):
     logging.PrintBuildbotStepText(self._version)
 
     if self._run.config.prebuilts == constants.PUBLIC:
-      binhost_conf_dir = prebuilts.PUBLIC_BINHOST_CONF_DIR
+      binhost_conf_dir = constants.PUBLIC_BINHOST_CONF_DIR
     else:
-      binhost_conf_dir = prebuilts.PRIVATE_BINHOST_CONF_DIR
+      binhost_conf_dir = constants.PRIVATE_BINHOST_CONF_DIR
     sdk_conf = os.path.join(self._build_root, binhost_conf_dir, 'host',
                             'sdk_version.conf')
 
