@@ -21,7 +21,8 @@ namespace blink {
 #if !defined(OS_ANDROID)
 
 TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
-  auto dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder_->GetDocument();
   document.body()->SetInnerHTMLFromString(R"HTML(
     <select id="select">

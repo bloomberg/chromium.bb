@@ -107,8 +107,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
 // document from the StyleSheetContents without changing the UseCounter. This
 // test ensures that the new UseCounter is used when doing new parsing work.
 TEST_F(CSSLazyParsingTest, ChangeDocuments) {
-  std::unique_ptr<DummyPageHolder> dummy_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
 
   CSSParserContext* context = CSSParserContext::Create(
@@ -144,8 +143,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   // Ensure no stack references to oilpan objects.
   ThreadState::Current()->CollectAllGarbage();
 
-  std::unique_ptr<DummyPageHolder> dummy_holder2 =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto dummy_holder2 = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder2->GetPage());
   CSSStyleSheet* sheet2 =
       CSSStyleSheet::Create(cached_contents_, dummy_holder2->GetDocument());

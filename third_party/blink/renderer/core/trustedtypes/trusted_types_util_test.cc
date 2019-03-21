@@ -41,8 +41,7 @@ void GetStringFromTrustedTypeThrows(
 
 void GetStringFromTrustedHTMLThrows(
     const StringOrTrustedHTML& string_or_trusted_html) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -59,8 +58,7 @@ void GetStringFromTrustedHTMLThrows(
 
 void GetStringFromTrustedScriptThrows(
     const StringOrTrustedScript& string_or_trusted_script) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -77,8 +75,7 @@ void GetStringFromTrustedScriptThrows(
 
 void GetStringFromTrustedScriptURLThrows(
     const StringOrTrustedScriptURL& string_or_trusted_script_url) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -95,8 +92,7 @@ void GetStringFromTrustedScriptURLThrows(
 
 void GetStringFromTrustedURLThrows(
     const USVStringOrTrustedURL& string_or_trusted_url) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -131,8 +127,7 @@ void GetStringFromTrustedTypeWorks(
 void GetStringFromTrustedHTMLWorks(
     const StringOrTrustedHTML& string_or_trusted_html,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -147,8 +142,7 @@ void GetStringFromTrustedHTMLWorks(
 void GetStringFromTrustedScriptWorks(
     const StringOrTrustedScript& string_or_trusted_script,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -163,8 +157,7 @@ void GetStringFromTrustedScriptWorks(
 void GetStringFromTrustedScriptURLWorks(
     const StringOrTrustedScriptURL& string_or_trusted_script_url,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
@@ -179,8 +172,7 @@ void GetStringFromTrustedScriptURLWorks(
 void GetStringFromTrustedURLWorks(
     const USVStringOrTrustedURL& string_or_trusted_url,
     String expected) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
       "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,

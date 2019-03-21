@@ -21,7 +21,7 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   // Scope cannot be created before BlinkFuzzerTestSupport because it requires
   // that Oilpan be initialized to access blink::ThreadState::Current.
   LEAK_SANITIZER_DISABLED_SCOPE;
-  g_page_holder = DummyPageHolder::Create().release();
+  g_page_holder = std::make_unique<DummyPageHolder>().release();
   return 0;
 }
 

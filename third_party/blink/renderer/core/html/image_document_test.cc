@@ -101,8 +101,8 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
   FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<WindowToViewportScalingChromeClient>();
   page_clients.chrome_client = chrome_client_;
-  dummy_page_holder_ =
-      DummyPageHolder::Create(IntSize(view_width, view_height), &page_clients);
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(
+      IntSize(view_width, view_height), &page_clients);
 
   LocalFrame& frame = dummy_page_holder_->GetFrame();
   frame.GetDocument()->Shutdown();

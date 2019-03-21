@@ -1024,7 +1024,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler, AccessibleFocusShowsControls) {
 
 TEST_F(MediaControlsImplTest,
        RemovingFromDocumentRemovesListenersAndCallbacks) {
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -1056,7 +1056,7 @@ TEST_F(MediaControlsImplTest,
 
 TEST_F(MediaControlsImplTest,
        ReInsertingInDocumentRestoresListenersAndCallbacks) {
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());

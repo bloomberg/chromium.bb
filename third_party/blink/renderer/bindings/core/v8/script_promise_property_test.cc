@@ -102,7 +102,7 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
 class ScriptPromisePropertyTestBase {
  public:
   ScriptPromisePropertyTestBase()
-      : page_(DummyPageHolder::Create(IntSize(1, 1))) {
+      : page_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
     v8::HandleScope handle_scope(GetIsolate());
     other_script_state_ = ScriptState::Create(
         v8::Context::New(GetIsolate()),

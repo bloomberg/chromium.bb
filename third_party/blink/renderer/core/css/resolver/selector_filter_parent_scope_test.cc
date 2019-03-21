@@ -14,7 +14,7 @@ namespace blink {
 class SelectorFilterParentScopeTest : public testing::Test {
  protected:
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   }
 
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }

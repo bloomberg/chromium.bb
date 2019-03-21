@@ -35,7 +35,7 @@ class WindowPerformanceTest : public testing::Test {
     ResetPerformance();
 
     // Create another dummy page holder and pretend this is the iframe.
-    another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
+    another_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(400, 300));
     another_page_holder_->GetDocument().SetURL(KURL("https://iframed.com/bar"));
   }
 
@@ -86,7 +86,7 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void ResetPerformance() {
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
     performance_ =
         WindowPerformance::Create(page_holder_->GetDocument().domWindow());
@@ -158,8 +158,7 @@ TEST_F(WindowPerformanceTest, NavigateAway) {
 // This happens when a page opens a new window and it navigates to a same-origin
 // document.
 TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
 
   WindowPerformance* perf =
       DOMWindowPerformance::performance(*page_holder->GetFrame().DomWindow());

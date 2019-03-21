@@ -22,7 +22,7 @@ PageTestBase::~PageTestBase() = default;
 
 void PageTestBase::SetUp() {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -33,7 +33,7 @@ void PageTestBase::SetUp() {
 
 void PageTestBase::SetUp(IntSize size) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
-  dummy_page_holder_ = DummyPageHolder::Create(size);
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(size);
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -47,7 +47,7 @@ void PageTestBase::SetupPageWithClients(
     LocalFrameClient* local_frame_client,
     FrameSettingOverrideFunction setting_overrider) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
-  dummy_page_holder_ = DummyPageHolder::Create(
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), clients, local_frame_client, setting_overrider);
 
   // Use no-quirks (ake "strict") mode by default.

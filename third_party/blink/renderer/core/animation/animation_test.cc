@@ -63,7 +63,7 @@ class AnimationAnimationTest : public RenderingTest {
   }
 
   void SetUpWithoutStartingTimeline() {
-    page_holder = DummyPageHolder::Create();
+    page_holder = std::make_unique<DummyPageHolder>();
     document = &page_holder->GetDocument();
     document->GetAnimationClock().ResetTimeForTesting();
     timeline = DocumentTimeline::Create(document.Get());

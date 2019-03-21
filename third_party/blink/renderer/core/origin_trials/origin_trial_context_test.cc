@@ -226,7 +226,7 @@ TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated) {
 
 TEST_F(OriginTrialContextTest, FeaturePolicy) {
   // Create a dummy document with an OriginTrialContext.
-  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
+  auto dummy = std::make_unique<DummyPageHolder>();
   Document* document = &dummy->GetDocument();
   OriginTrialContext* context = OriginTrialContext::FromOrCreate(document);
 

@@ -104,7 +104,7 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
       ->SetInnerHTMLFromString("<input type='range' />");
   document_without_frame->AppendChild(html);
 
-  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
   auto& document = page_holder->GetDocument();
   EXPECT_NE(nullptr, document.GetPage());
 

@@ -70,7 +70,7 @@ class StyleEngineTest : public testing::Test {
 };
 
 void StyleEngineTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
 }
 
 void StyleEngineTest::TearDown() {

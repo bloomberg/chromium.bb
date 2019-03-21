@@ -91,7 +91,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     EXPECT_CALL(*mock_media_player, DidLazyLoad)
         .WillRepeatedly(testing::Return(false));
 
-    dummy_page_holder_ = DummyPageHolder::Create(
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(
         IntSize(), nullptr,
         WebMediaStubLocalFrameClient::Create(std::move(mock_media_player)),
         nullptr);

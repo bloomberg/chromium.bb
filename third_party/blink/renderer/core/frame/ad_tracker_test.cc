@@ -107,7 +107,7 @@ class AdTrackerTest : public testing::Test {
 };
 
 void AdTrackerTest::SetUp() {
-  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   page_holder_->GetDocument().SetURL(KURL("https://example.com/foo"));
   ad_tracker_ = MakeGarbageCollected<TestAdTracker>(GetFrame());
   ad_tracker_->SetExecutionContext(&page_holder_->GetDocument());
