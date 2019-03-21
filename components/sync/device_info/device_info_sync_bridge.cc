@@ -497,7 +497,12 @@ int DeviceInfoSyncBridge::CountActiveDevices(const Time now) const {
       base::Time begin = change_processor()->GetEntityCreationTime(pair.first);
       base::Time end =
           change_processor()->GetEntityModificationTime(pair.first);
-      DCHECK_LE(begin, end);
+      // Begin/end timestamps are received from other devices without local
+      // sanitizing, so potentially the timestamps could be malformed, and the
+      // modification time may predate the creation time.
+      if (begin > end) {
+        continue;
+      }
       relevant_events[pair.second->device_type()].emplace(begin, 1);
       relevant_events[pair.second->device_type()].emplace(end, -1);
     }
