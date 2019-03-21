@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "components/account_id/account_id.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -25,6 +26,8 @@ namespace {
 // JoinADDomain() is an exception since it's always guaranteed to be the first
 // call.
 constexpr int kSlowDbusTimeoutMilliseconds = 630 * 1000;
+
+AuthPolicyClient* g_instance = nullptr;
 
 authpolicy::ErrorType GetErrorFromReader(dbus::MessageReader* reader) {
   int32_t int_error;
@@ -174,8 +177,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     bus_ = bus;
     proxy_ = bus_->GetObjectProxy(
         authpolicy::kAuthPolicyServiceName,
@@ -232,13 +234,37 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
 
 }  // namespace
 
-AuthPolicyClient::AuthPolicyClient() = default;
+AuthPolicyClient::AuthPolicyClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-AuthPolicyClient::~AuthPolicyClient() = default;
+AuthPolicyClient::~AuthPolicyClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-AuthPolicyClient* AuthPolicyClient::Create() {
-  return new AuthPolicyClientImpl();
+void AuthPolicyClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new AuthPolicyClientImpl)->Init(bus);
+}
+
+// static
+void AuthPolicyClient::InitializeFake() {
+  if (!FakeAuthPolicyClient::Get())
+    new FakeAuthPolicyClient();
+}
+
+// static
+void AuthPolicyClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+AuthPolicyClient* AuthPolicyClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

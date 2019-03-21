@@ -15,7 +15,6 @@
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
@@ -69,14 +68,12 @@ void PrepareLogin(const std::string& user_principal_name) {
   // Fetch device policy.
   {
     base::RunLoop run_loop;
-    chromeos::DBusThreadManager::Get()
-        ->GetAuthPolicyClient()
-        ->RefreshDevicePolicy(base::BindOnce(
-            [](base::OnceClosure quit_closure, authpolicy::ErrorType error) {
-              EXPECT_EQ(authpolicy::ERROR_NONE, error);
-              std::move(quit_closure).Run();
-            },
-            run_loop.QuitClosure()));
+    AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
+        [](base::OnceClosure quit_closure, authpolicy::ErrorType error) {
+          EXPECT_EQ(authpolicy::ERROR_NONE, error);
+          std::move(quit_closure).Run();
+        },
+        run_loop.QuitClosure()));
     run_loop.Run();
   }
 }

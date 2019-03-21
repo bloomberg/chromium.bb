@@ -26,6 +26,8 @@
 
 namespace em = enterprise_management;
 
+namespace chromeos {
+
 namespace {
 
 constexpr size_t kMaxMachineNameLength = 15;
@@ -33,7 +35,9 @@ constexpr char kInvalidMachineNameCharacters[] = "\\/:*?\"<>|";
 constexpr char kDefaultKerberosCreds[] = "credentials";
 constexpr char kDefaultKerberosConf[] = "configuration";
 
-void OnStorePolicy(chromeos::AuthPolicyClient::RefreshPolicyCallback callback,
+FakeAuthPolicyClient* g_instance = nullptr;
+
+void OnStorePolicy(AuthPolicyClient::RefreshPolicyCallback callback,
                    bool success) {
   const authpolicy::ErrorType error =
       success ? authpolicy::ERROR_NONE : authpolicy::ERROR_STORE_POLICY_FAILED;
@@ -57,13 +61,20 @@ void RunSignalCallback(const std::string& interface_name,
 
 }  // namespace
 
-namespace chromeos {
+FakeAuthPolicyClient::FakeAuthPolicyClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-FakeAuthPolicyClient::FakeAuthPolicyClient() = default;
+FakeAuthPolicyClient::~FakeAuthPolicyClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
-FakeAuthPolicyClient::~FakeAuthPolicyClient() = default;
-
-void FakeAuthPolicyClient::Init(dbus::Bus* bus) {}
+// static
+FakeAuthPolicyClient* FakeAuthPolicyClient::Get() {
+  return g_instance;
+}
 
 void FakeAuthPolicyClient::JoinAdDomain(
     const authpolicy::JoinDomainRequest& request,
@@ -325,8 +336,8 @@ void FakeAuthPolicyClient::StoreDevicePolicy(RefreshPolicyCallback callback) {
   em::PolicyFetchResponse response;
   response.set_policy_data(policy_data.SerializeAsString());
 
-  chromeos::SessionManagerClient* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  SessionManagerClient* session_manager_client =
+      DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StoreDevicePolicy(
       response.SerializeAsString(),
       base::BindOnce(&OnStorePolicy, std::move(callback)));

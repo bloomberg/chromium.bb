@@ -52,6 +52,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
+    AuthPolicyClient::InitializeFake();
     fake_auth_policy_client()->DisableOperationDelayForTesting();
 
     TestingProfile::Builder profile_builder;
@@ -83,8 +84,9 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
   void TearDown() override {
     EXPECT_CALL(*mock_user_manager(), Shutdown());
     profile_.reset();
-    chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    AuthPolicyClient::Shutdown();
+    NetworkHandler::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -94,8 +96,7 @@ class AuthPolicyCredentialsManagerTest : public testing::Test {
     return auth_policy_credentials_manager_;
   }
   chromeos::FakeAuthPolicyClient* fake_auth_policy_client() const {
-    return static_cast<chromeos::FakeAuthPolicyClient*>(
-        chromeos::DBusThreadManager::Get()->GetAuthPolicyClient());
+    return chromeos::FakeAuthPolicyClient::Get();
   }
 
   MockUserManager* mock_user_manager() {

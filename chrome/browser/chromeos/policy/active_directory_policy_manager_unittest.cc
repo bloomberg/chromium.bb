@@ -29,8 +29,6 @@ namespace {
 
 class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
  public:
-  void Init(dbus::Bus* bus) override { NOTIMPLEMENTED(); }
-
   void JoinAdDomain(const authpolicy::JoinDomainRequest& request,
                     int password_fd,
                     JoinCallback callback) override {
@@ -101,16 +99,16 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
 
   // testing::Test overrides:
   void SetUp() override {
-    auto mock_client_unique_ptr = std::make_unique<TestAuthPolicyClient>();
-    mock_client_ = mock_client_unique_ptr.get();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-        std::move(mock_client_unique_ptr));
+    // Base class constructor sets the global instance which will be destroyed
+    // in AuthPolicyClient::Shutdown().
+    mock_client_ = new TestAuthPolicyClient();
   }
 
   void TearDown() override {
     if (mock_external_data_manager())
       EXPECT_CALL(*mock_external_data_manager(), Disconnect());
     policy_manager_->Shutdown();
+    chromeos::AuthPolicyClient::Shutdown();
   }
 
  protected:
@@ -141,7 +139,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
       testing::Mock::VerifyAndClearExpectations(mock_external_data_manager());
   }
 
-  // Owned by DBusThreadManager.
+  // Owned by the AuthPolicyClient global instance.
   TestAuthPolicyClient* mock_client_ = nullptr;
 
   // Used to set FakeUserManager.

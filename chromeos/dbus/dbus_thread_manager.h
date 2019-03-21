@@ -28,7 +28,6 @@ class ArcAppfuseProviderClient;
 class ArcMidisClient;
 class ArcObbMounterClient;
 class ArcOemCryptoClient;
-class AuthPolicyClient;
 class CecServiceClient;
 class CiceroneClient;
 class ConciergeClient;
@@ -126,7 +125,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ArcMidisClient* GetArcMidisClient();
   ArcObbMounterClient* GetArcObbMounterClient();
   ArcOemCryptoClient* GetArcOemCryptoClient();
-  AuthPolicyClient* GetAuthPolicyClient();
   CecServiceClient* GetCecServiceClient();
   CiceroneClient* GetCiceroneClient();
   ConciergeClient* GetConciergeClient();
@@ -191,7 +189,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
-  void SetAuthPolicyClient(std::unique_ptr<AuthPolicyClient> client);
   void SetCiceroneClient(std::unique_ptr<CiceroneClient> client);
   void SetConciergeClient(std::unique_ptr<ConciergeClient> client);
   void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);

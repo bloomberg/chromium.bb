@@ -56,13 +56,11 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 // Check that helper calls RefreshDevicePolicy after JoinAdDomain.
 TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
-  std::unique_ptr<MockAuthPolicyClient> mock_client =
-      std::make_unique<MockAuthPolicyClient>();
-  MockAuthPolicyClient* mock_client_ptr = mock_client.get();
-  DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-      std::move(mock_client));
   DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
       std::make_unique<FakeCryptohomeClient>());
+
+  auto* mock_client = new MockAuthPolicyClient;
+
   AuthPolicyLoginHelper helper;
   helper.set_dm_token(kDMToken);
   helper.JoinAdDomain(std::string(), std::string(),
@@ -73,7 +71,8 @@ TEST(AuthPolicyLoginHelper, JoinFollowedByRefreshDevicePolicy) {
                         EXPECT_EQ(authpolicy::ERROR_NONE, error);
                         EXPECT_TRUE(domain.empty());
                       }));
-  mock_client_ptr->CheckExpectations();
+  mock_client->CheckExpectations();
+  AuthPolicyClient::Shutdown();
 }
 
 }  // namespace chromeos

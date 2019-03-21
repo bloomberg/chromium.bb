@@ -216,9 +216,9 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   ActiveDirectoryJoinTest() = default;
 
   void SetUp() override {
-    DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-        std::make_unique<MockAuthPolicyClient>());
+    mock_auth_policy_client_ = new MockAuthPolicyClient();
     mock_auth_policy_client()->DisableOperationDelayForTesting();
+
     EnterpriseEnrollmentTestBase::SetUp();
   }
 
@@ -372,8 +372,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
 
 
   MockAuthPolicyClient* mock_auth_policy_client() {
-    return static_cast<MockAuthPolicyClient*>(
-        DBusThreadManager::Get()->GetAuthPolicyClient());
+    return mock_auth_policy_client_;
   }
 
   void SetupActiveDirectoryJSNotifications() {
@@ -418,6 +417,9 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   }
 
  private:
+  // Owned by the AuthPolicyClient global instance.
+  MockAuthPolicyClient* mock_auth_policy_client_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
 };
 

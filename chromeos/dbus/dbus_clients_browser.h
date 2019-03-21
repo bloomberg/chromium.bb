@@ -20,7 +20,6 @@ class ArcAppfuseProviderClient;
 class ArcMidisClient;
 class ArcObbMounterClient;
 class ArcOemCryptoClient;
-class AuthPolicyClient;
 class CecServiceClient;
 class CiceroneClient;
 class ConciergeClient;
@@ -58,7 +57,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   std::unique_ptr<ArcMidisClient> arc_midis_client_;
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
   std::unique_ptr<ArcOemCryptoClient> arc_oemcrypto_client_;
-  std::unique_ptr<AuthPolicyClient> auth_policy_client_;
   std::unique_ptr<CecServiceClient> cec_service_client_;
   std::unique_ptr<CiceroneClient> cicerone_client_;
   std::unique_ptr<ConciergeClient> concierge_client_;

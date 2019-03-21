@@ -147,7 +147,7 @@ void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
   authpolicy::AuthenticateUserRequest request;
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
-  chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
+  AuthPolicyClient::Get()->AuthenticateUser(
       request, GetDataReadPipe(password).get(), base::DoNothing());
 }
 
@@ -189,7 +189,7 @@ void AuthPolicyLoginHelper::JoinAdDomain(const std::string& machine_name,
   DCHECK(!dm_token_.empty());
   request.set_dm_token(dm_token_);
 
-  chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->JoinAdDomain(
+  AuthPolicyClient::Get()->JoinAdDomain(
       request, GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyLoginHelper::OnJoinCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -203,7 +203,7 @@ void AuthPolicyLoginHelper::AuthenticateUser(const std::string& username,
   authpolicy::AuthenticateUserRequest request;
   request.set_user_principal_name(username);
   request.set_account_id(object_guid);
-  chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
+  AuthPolicyClient::Get()->AuthenticateUser(
       request, GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyLoginHelper::OnAuthCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -223,11 +223,9 @@ void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
     std::move(callback).Run(error, machine_domain);
     return;
   }
-  chromeos::DBusThreadManager::Get()
-      ->GetAuthPolicyClient()
-      ->RefreshDevicePolicy(base::BindOnce(
-          &AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback,
-          weak_factory_.GetWeakPtr(), std::move(callback), machine_domain));
+  AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
+      &AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback,
+      weak_factory_.GetWeakPtr(), std::move(callback), machine_domain));
 }
 
 void AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback(

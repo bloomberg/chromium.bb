@@ -83,11 +83,11 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
 
-    auto fake_client = std::make_unique<FakeAuthPolicyClient>();
-    fake_auth_policy_client_ = fake_client.get();
-    fake_auth_policy_client_->DisableOperationDelayForTesting();
-    DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-        std::move(fake_client));
+    // This is called before ChromeBrowserMain initializes the fake dbus
+    // clients, and DisableOperationDelayForTesting() needs to be called before
+    // other ChromeBrowserMain initialization occurs.
+    AuthPolicyClient::InitializeFake();
+    FakeAuthPolicyClient::Get()->DisableOperationDelayForTesting();
 
     // Note: FakeCryptohomeClient needs paths to be set to load install attribs.
     active_directory_test_helper::OverridePaths();
@@ -286,7 +286,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     return "document.querySelector('#" + parent_id + "')." + selector;
   }
   FakeAuthPolicyClient* fake_auth_policy_client() {
-    return fake_auth_policy_client_;
+    return FakeAuthPolicyClient::Get();
   }
 
   const std::string test_realm_;
@@ -294,7 +294,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   std::string autocomplete_realm_;
 
  private:
-  FakeAuthPolicyClient* fake_auth_policy_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginTest);
 };

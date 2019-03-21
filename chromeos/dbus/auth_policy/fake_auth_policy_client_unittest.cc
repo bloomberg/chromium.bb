@@ -32,7 +32,9 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   FakeAuthPolicyClientTest() = default;
 
  protected:
-  FakeAuthPolicyClient* authpolicy_client() { return auth_policy_client_ptr_; }
+  FakeAuthPolicyClient* authpolicy_client() {
+    return FakeAuthPolicyClient::Get();
+  }
   FakeSessionManagerClient* session_manager_client() {
     return session_manager_client_ptr_;
   }
@@ -41,15 +43,19 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
     ::testing::Test::SetUp();
     auto session_manager_client = std::make_unique<FakeSessionManagerClient>();
     session_manager_client_ptr_ = session_manager_client.get();
+    // DBusThreadManager::GetSetterForTesting initializes DBusThreadManager.
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::move(session_manager_client));
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::make_unique<FakeCryptohomeClient>());
-    auto auth_policy_client = std::make_unique<FakeAuthPolicyClient>();
-    auth_policy_client_ptr_ = auth_policy_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-        std::move(auth_policy_client));
+
+    AuthPolicyClient::InitializeFake();
     authpolicy_client()->DisableOperationDelayForTesting();
+  }
+
+  void TearDown() override {
+    AuthPolicyClient::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
   void JoinAdDomain(const std::string& machine_name,
@@ -102,7 +108,6 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
   int service_is_available_called_num_ = 0;
 
  private:
-  FakeAuthPolicyClient* auth_policy_client_ptr_;          // not owned.
   FakeSessionManagerClient* session_manager_client_ptr_;  // not owned.
   base::MessageLoop loop_;
 

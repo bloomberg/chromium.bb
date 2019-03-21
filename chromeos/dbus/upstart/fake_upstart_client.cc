@@ -46,17 +46,13 @@ void FakeUpstartClient::StopJob(const std::string& job,
 }
 
 void FakeUpstartClient::StartAuthPolicyService() {
-  static_cast<FakeAuthPolicyClient*>(
-      DBusThreadManager::Get()->GetAuthPolicyClient())
-      ->SetStarted(true);
+  FakeAuthPolicyClient::Get()->SetStarted(true);
 }
 
 void FakeUpstartClient::RestartAuthPolicyService() {
-  FakeAuthPolicyClient* authpolicy_client = static_cast<FakeAuthPolicyClient*>(
-      DBusThreadManager::Get()->GetAuthPolicyClient());
-  DLOG_IF(WARNING, !authpolicy_client->started())
+  DLOG_IF(WARNING, !FakeAuthPolicyClient::Get()->started())
       << "Trying to restart authpolicyd which is not started";
-  authpolicy_client->SetStarted(true);
+  FakeAuthPolicyClient::Get()->SetStarted(true);
 }
 
 void FakeUpstartClient::StartMediaAnalytics(
