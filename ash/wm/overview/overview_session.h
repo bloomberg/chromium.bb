@@ -37,11 +37,11 @@ class Widget;
 
 namespace ash {
 
+class OverviewDelegate;
+class OverviewGrid;
+class OverviewItem;
 class OverviewWindowDragController;
 class SplitViewDragIndicators;
-class OverviewGrid;
-class OverviewDelegate;
-class OverviewItem;
 
 enum class IndicatorState;
 
