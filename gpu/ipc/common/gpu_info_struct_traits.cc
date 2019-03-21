@@ -259,6 +259,8 @@ EnumTraits<gpu::mojom::ImageDecodeAcceleratorSubsampling,
       return gpu::mojom::ImageDecodeAcceleratorSubsampling::k420;
     case gpu::ImageDecodeAcceleratorSubsampling::k422:
       return gpu::mojom::ImageDecodeAcceleratorSubsampling::k422;
+    case gpu::ImageDecodeAcceleratorSubsampling::k444:
+      return gpu::mojom::ImageDecodeAcceleratorSubsampling::k444;
   }
 }
 
@@ -273,6 +275,9 @@ bool EnumTraits<gpu::mojom::ImageDecodeAcceleratorSubsampling,
       return true;
     case gpu::mojom::ImageDecodeAcceleratorSubsampling::k422:
       *out = gpu::ImageDecodeAcceleratorSubsampling::k422;
+      return true;
+    case gpu::mojom::ImageDecodeAcceleratorSubsampling::k444:
+      *out = gpu::ImageDecodeAcceleratorSubsampling::k444;
       return true;
   }
   NOTREACHED() << "Invalid ImageDecodeAcceleratorSubsampling: " << input;

@@ -86,6 +86,7 @@ enum ImageDecodeAcceleratorType {
 enum ImageDecodeAcceleratorSubsampling {
   k420,
   k422,
+  k444,
 };
 
 // gpu::ImageDecodeAcceleratorSupportedProfile

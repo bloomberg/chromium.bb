@@ -122,7 +122,8 @@ enum class ImageDecodeAcceleratorType {
 enum class ImageDecodeAcceleratorSubsampling {
   k420 = 0,
   k422 = 1,
-  kMaxValue = k422,
+  k444 = 2,
+  kMaxValue = k444,
 };
 
 // Specification of an image decoding profile supported by a hardware decoder.
