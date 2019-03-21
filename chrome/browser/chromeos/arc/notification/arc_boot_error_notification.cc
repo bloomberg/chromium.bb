@@ -83,7 +83,8 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
           ash::kNotificationStorageFullIcon,
           message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 // Singleton factory for ArcBootErrorNotificationFactory.

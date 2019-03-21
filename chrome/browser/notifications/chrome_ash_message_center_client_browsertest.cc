@@ -53,14 +53,16 @@ IN_PROC_BROWSER_TEST_F(ChromeAshMessageCenterClientBrowserTest,
 
   auto* display_service =
       NotificationDisplayService::GetForProfile(browser()->profile());
-  display_service->Display(NotificationHandler::Type::TRANSIENT, notification);
+  display_service->Display(NotificationHandler::Type::TRANSIENT, notification,
+                           /*metadata=*/nullptr);
   display_service->Close(NotificationHandler::Type::TRANSIENT,
                          notification.id());
   // The Close callback should be fired asynchronously, so there is no close
   // yet.
   EXPECT_EQ(0, delegate->close_count());
 
-  display_service->Display(NotificationHandler::Type::TRANSIENT, notification);
+  display_service->Display(NotificationHandler::Type::TRANSIENT, notification,
+                           /*metadata=*/nullptr);
   display_service->Close(NotificationHandler::Type::TRANSIENT,
                          notification.id());
   ChromeAshMessageCenterClient::FlushForTesting();

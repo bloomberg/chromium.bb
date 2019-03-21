@@ -47,7 +47,8 @@ void DesktopNotificationHandler::DisplayNewEntry(
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       optional_fields, /*delegate=*/nullptr);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::SEND_TAB_TO_SELF, notification);
+      NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
+      /*metadata=*/nullptr);
 }
 
 void DesktopNotificationHandler::DismissEntries(
@@ -103,7 +104,8 @@ void DesktopNotificationHandler::DisplaySendingConfirmation(
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       message_center::RichNotificationData(), /*delegate=*/nullptr);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::SEND_TAB_TO_SELF, notification);
+      NotificationHandler::Type::SEND_TAB_TO_SELF, notification,
+      /*metadata=*/nullptr);
 }
 
 void DesktopNotificationHandler::DisplayFailureMessage() {

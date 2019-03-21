@@ -319,7 +319,8 @@ void TetherNotificationPresenter::ShowNotification(
     std::unique_ptr<message_center::Notification> notification) {
   showing_notification_id_ = notification->id();
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 void TetherNotificationPresenter::OpenSettingsAndRemoveNotification(

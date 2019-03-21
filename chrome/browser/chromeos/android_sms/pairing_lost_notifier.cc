@@ -125,7 +125,8 @@ void PairingLostNotifier::ShowPairingLostNotification() {
                   &PairingLostNotifier::OnPairingLostNotificationClick,
                   weak_ptr_factory_.GetWeakPtr())),
           ash::kNotificationMessagesIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL));
+          message_center::SystemNotificationWarningLevel::NORMAL),
+      /*metadata=*/nullptr);
 }
 
 void PairingLostNotifier::ClosePairingLostNotificationIfVisible() {

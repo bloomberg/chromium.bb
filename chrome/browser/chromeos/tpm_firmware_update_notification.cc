@@ -86,7 +86,8 @@ void OnAvailableUpdateModes(Profile* profile,
           message_center::SystemNotificationWarningLevel::WARNING);
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 }  // namespace

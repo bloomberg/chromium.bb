@@ -155,7 +155,8 @@ void PlatformNotificationServiceImpl::DisplayNotification(
                                  notification_data, notification_resources);
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationHandler::Type::WEB_NON_PERSISTENT, notification);
+      NotificationHandler::Type::WEB_NON_PERSISTENT, notification,
+      /*metadata=*/nullptr);
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(

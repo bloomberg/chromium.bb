@@ -224,8 +224,8 @@ void CrostiniPackageNotification::UpdateDisplayedNotification() {
 
   NotificationDisplayService* display_service =
       NotificationDisplayService::GetForProfile(profile_);
-  display_service->Display(NotificationHandler::Type::TRANSIENT,
-                           *notification_);
+  display_service->Display(NotificationHandler::Type::TRANSIENT, *notification_,
+                           /*metadata=*/nullptr);
 }
 
 }  // namespace crostini

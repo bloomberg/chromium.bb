@@ -286,7 +286,8 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
 
   // Add the notification.
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
   shown_notifications_.insert(message_id);
 }
 

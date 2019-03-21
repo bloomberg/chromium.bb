@@ -54,7 +54,8 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
           message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 ExtensionInstalledNotification::~ExtensionInstalledNotification() {}

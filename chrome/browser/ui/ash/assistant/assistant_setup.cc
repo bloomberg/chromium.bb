@@ -151,7 +151,8 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
       message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 void AssistantSetup::SyncActivityControlState() {

@@ -1269,7 +1269,8 @@ void ShowSupervisedUserDeprecationNotification(Profile* profile,
   notification->set_priority(message_center::SYSTEM_PRIORITY);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 void UserSessionManager::InitProfilePreferences(

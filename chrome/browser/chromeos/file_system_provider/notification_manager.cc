@@ -113,7 +113,7 @@ void NotificationManager::ShowNotification() {
   notification.SetSystemPriority();
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
 }
 
 void NotificationManager::OnNotificationResult(NotificationResult result) {

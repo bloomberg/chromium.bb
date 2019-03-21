@@ -250,7 +250,8 @@ void DownloadItemNotification::DisablePopup() {
   notification_->set_priority(message_center::LOW_PRIORITY);
   closed_ = false;
   NotificationDisplayServiceFactory::GetForProfile(profile())->Display(
-      NotificationHandler::Type::TRANSIENT, *notification_);
+      NotificationHandler::Type::TRANSIENT, *notification_,
+      /*metadata=*/nullptr);
 }
 
 void DownloadItemNotification::Close(bool by_user) {
@@ -450,7 +451,8 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
   if (display) {
     closed_ = false;
     NotificationDisplayServiceFactory::GetForProfile(profile())->Display(
-        NotificationHandler::Type::TRANSIENT, *notification_);
+        NotificationHandler::Type::TRANSIENT, *notification_,
+        /*metadata=*/nullptr);
   }
 
   if (item_->IsDone() && image_decode_status_ == NOT_STARTED) {

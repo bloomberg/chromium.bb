@@ -152,16 +152,17 @@ void CupsPrintJobNotification::UpdateNotification() {
       print_job_->state() == CupsPrintJob::State::STATE_PAGE_DONE) {
     // If the notification was closed during the printing, prevent showing the
     // following printing progress.
-    if (!closed_in_middle_)
+    if (!closed_in_middle_) {
       display_service->Display(NotificationHandler::Type::TRANSIENT,
-                               *notification_);
+                               *notification_, /*metadata=*/nullptr);
+    }
   } else {
     closed_in_middle_ = false;
     // In order to make sure it pop up, we should delete it before readding it.
     display_service->Close(NotificationHandler::Type::TRANSIENT,
                            notification_id_);
     display_service->Display(NotificationHandler::Type::TRANSIENT,
-                             *notification_);
+                             *notification_, /*metadata=*/nullptr);
   }
 
   // |print_job_| will be deleted by CupsPrintJobManager if the job is finished
