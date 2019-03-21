@@ -305,7 +305,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
                                                       changes);
 
-  if (root_changed &&
+  if (root_changed && IsRootTree() &&
       switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
     // If a fragment root has been created, inform it that the content root has
     // changed.

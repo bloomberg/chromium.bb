@@ -27,6 +27,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/public/browser/notification_service.h"
@@ -44,6 +45,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -3241,6 +3243,59 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                                           result.Receive());
   EXPECT_EQ(VT_BOOL, result.type());
   EXPECT_EQ(VARIANT_FALSE, result.ptr()->boolVal);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIFrameRootNodeChange) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalUIAutomation);
+
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      </html>)HTML");
+
+  // Request an automation element for the legacy window to ensure that the
+  // fragment root is created before the iframe content tree shows up.
+  Microsoft::WRL::ComPtr<IUIAutomation> uia;
+  ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
+                                            CLSCTX_INPROC_SERVER,
+                                            IID_IUIAutomation, &uia));
+
+  RenderWidgetHostViewAura* render_widget_host_view_aura =
+      static_cast<RenderWidgetHostViewAura*>(
+          shell()->web_contents()->GetRenderWidgetHostView());
+  ASSERT_NE(nullptr, render_widget_host_view_aura);
+  HWND hwnd = render_widget_host_view_aura->AccessibilityGetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> root_element;
+  ASSERT_HRESULT_SUCCEEDED(uia->ElementFromHandle(hwnd, &root_element));
+  ASSERT_NE(nullptr, root_element.Get());
+
+  // Insert a new iframe and wait for tree update.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLayoutComplete);
+  ExecuteScript(
+      L"let new_frame = document.createElement('iframe');"
+      L"new_frame.setAttribute('src', 'about:blank');"
+      L"document.body.appendChild(new_frame);");
+  waiter.WaitForNotification();
+
+  // Content root node's parent's child should still be the content root node.
+  Microsoft::WRL::ComPtr<IRawElementProviderFragment> content_root;
+  ASSERT_HRESULT_SUCCEEDED(
+      GetManager()->GetRoot()->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&content_root)));
+
+  Microsoft::WRL::ComPtr<IRawElementProviderFragment> parent;
+  ASSERT_HRESULT_SUCCEEDED(
+      content_root->Navigate(NavigateDirection_Parent, &parent));
+  ASSERT_NE(nullptr, parent.Get());
+
+  Microsoft::WRL::ComPtr<IRawElementProviderFragment> first_child;
+  ASSERT_HRESULT_SUCCEEDED(
+      parent->Navigate(NavigateDirection_FirstChild, &first_child));
+  EXPECT_EQ(content_root.Get(), first_child.Get());
 }
 
 }  // namespace content
