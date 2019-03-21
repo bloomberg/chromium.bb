@@ -34,7 +34,7 @@ gfx::Range ClampRange(gfx::Range range, uint32_t max) {
 // A Label with a clamped preferred width to demonstrate wrapping.
 class PreferredSizeLabel : public Label {
  public:
-  PreferredSizeLabel() : Label() {}
+  PreferredSizeLabel() = default;
   ~PreferredSizeLabel() override = default;
 
   // Label:

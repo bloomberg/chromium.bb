@@ -35,9 +35,7 @@ const char* kAlignments[] = { "Left", "Center", "Right", "Head" };
 // A Label with a clamped preferred width to demonstrate eliding or wrapping.
 class ExamplePreferredSizeLabel : public Label {
  public:
-  ExamplePreferredSizeLabel() : Label() {
-    SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
-  }
+  ExamplePreferredSizeLabel() { SetBorder(CreateSolidBorder(1, SK_ColorGRAY)); }
   ~ExamplePreferredSizeLabel() override = default;
 
   // Label:

@@ -110,8 +110,7 @@ TestMenuControllerDelegate::TestMenuControllerDelegate()
     : on_menu_closed_called_(0),
       on_menu_closed_notify_type_(NOTIFY_DELEGATE),
       on_menu_closed_menu_(nullptr),
-      on_menu_closed_mouse_event_flags_(0),
-      on_menu_closed_callback_() {}
+      on_menu_closed_mouse_event_flags_(0) {}
 
 void TestMenuControllerDelegate::OnMenuClosed(NotifyType type,
                                               MenuItemView* menu,
