@@ -1004,43 +1004,17 @@ android_resources("product_version_resources") {
 java_group("chrome_public_non_pak_assets") {
   deps = [
     "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
-    "//third_party/icu:icu_assets",
   ]
-  if (use_v8_context_snapshot) {
-    deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  } else {
-    deps += [ "//v8:v8_external_startup_data_assets" ]
-  }
 }
 
-# TODO(estevenson): Remove this target once these assets move to
-# trichrome_library_apk.
-if (android_64bit_target_cpu) {
-  android_assets("v8_snapshot_secondary_abi_assets") {
-    _secondary_abi_out_dir =
-        get_label_info("//v8($android_secondary_abi_toolchain)", "root_out_dir")
-    sources = [
-      "$_secondary_abi_out_dir/natives_blob.bin",
-    ]
-    if (use_v8_context_snapshot) {
-      renaming_sources = [ "$_secondary_abi_out_dir/v8_context_snapshot.bin" ]
-      renaming_destinations = [ "v8_context_snapshot_32.bin" ]
-    } else {
-      renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
-      renaming_destinations = [ "snapshot_blob_32.bin" ]
-    }
-    disable_compression = true
+java_group("chrome_public_v8_assets") {
+  if (use_v8_context_snapshot) {
     deps = [
-      "//tools/v8_context_snapshot($android_secondary_abi_toolchain)",
-      "//v8($android_secondary_abi_toolchain)",
+      "//tools/v8_context_snapshot:v8_context_snapshot_assets",
     ]
-  }
-
-  java_group("chrome_public_secondary_abi_non_pak_assets") {
+  } else {
     deps = [
-      ":v8_snapshot_secondary_abi_assets",
-      "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
-      "//third_party/icu:icu_assets",
+      "//v8:v8_external_startup_data_assets",
     ]
   }
 }
@@ -1488,6 +1462,8 @@ _chrome_public_shared_deps = [
   ":chrome_public_apk_resources",
   ":chrome_public_base_module_java",
   ":chrome_public_non_pak_assets",
+  ":chrome_public_v8_assets",
+  "//third_party/icu:icu_assets",
 ]
 
 generate_jni("test_support_jni_headers") {
