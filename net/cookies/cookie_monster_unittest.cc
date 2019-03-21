@@ -119,10 +119,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                             const CookieOptions& options) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListWithOptionsAsync(
-        url, options,
-        base::BindOnce(&GetCookieListCallback::Run,
-                       base::Unretained(&callback)));
+    cm->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();
   }
@@ -133,10 +130,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       const CookieOptions& options) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListWithOptionsAsync(
-        url, options,
-        base::BindOnce(&GetCookieListCallback::Run,
-                       base::Unretained(&callback)));
+    cm->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.excluded_cookies();
   }
@@ -144,10 +138,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   bool SetAllCookies(CookieMonster* cm, const CookieList& list) {
     DCHECK(cm);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
-    cm->SetAllCookiesAsync(
-        list, base::BindOnce(&ResultSavingCookieCallback<
-                                 CanonicalCookie::CookieInclusionStatus>::Run,
-                             base::Unretained(&callback)));
+    cm->SetAllCookiesAsync(list, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
@@ -162,10 +153,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     cm->SetCanonicalCookieAsync(
         CanonicalCookie::Create(url, cookie_line, creation_time,
                                 CookieOptions()),
-        url.scheme(), CookieOptions(),
-        base::BindOnce(&ResultSavingCookieCallback<
-                           CanonicalCookie::CookieInclusionStatus>::Run,
-                       base::Unretained(&callback)));
+        url.scheme(), CookieOptions(), callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
@@ -174,10 +162,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                        const TimeRange& creation_range) {
     DCHECK(cm);
     ResultSavingCookieCallback<uint32_t> callback;
-    cm->DeleteAllCreatedInTimeRangeAsync(
-        creation_range,
-        base::BindRepeating(&ResultSavingCookieCallback<uint32_t>::Run,
-                            base::Unretained(&callback)));
+    cm->DeleteAllCreatedInTimeRangeAsync(creation_range,
+                                         callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -186,10 +172,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                                  CookieDeletionInfo delete_info) {
     DCHECK(cm);
     ResultSavingCookieCallback<uint32_t> callback;
-    cm->DeleteAllMatchingInfoAsync(
-        std::move(delete_info),
-        base::BindOnce(&ResultSavingCookieCallback<uint32_t>::Run,
-                       base::Unretained(&callback)));
+    cm->DeleteAllMatchingInfoAsync(std::move(delete_info),
+                                   callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -2198,16 +2182,11 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
   // Get all cookies task that queues a task to set a cookie when executed.
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  cm->SetCookieWithOptionsAsync(
-      kUrl, "a=b", CookieOptions(),
-      base::BindOnce(&ResultSavingCookieCallback<
-                         CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&set_cookie_callback)));
+  cm->SetCookieWithOptionsAsync(kUrl, "a=b", CookieOptions(),
+                                set_cookie_callback.MakeCallback());
 
   GetCookieListCallback get_cookie_list_callback1;
-  cm->GetAllCookiesAsync(
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback1)));
+  cm->GetAllCookiesAsync(get_cookie_list_callback1.MakeCallback());
 
   // Two load events should have been queued.
   ASSERT_EQ(2u, store->commands().size());
@@ -2235,9 +2214,7 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
 
   // The just set cookie should still be in the store.
   GetCookieListCallback get_cookie_list_callback2;
-  cm->GetAllCookiesAsync(
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback2)));
+  cm->GetAllCookiesAsync(get_cookie_list_callback2.MakeCallback());
   get_cookie_list_callback2.WaitUntilDone();
   EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
 }
@@ -2253,14 +2230,11 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), &net_log_));
 
   ResultSavingCookieCallback<uint32_t> delete_callback;
-  cm->DeleteAllAsync(base::BindOnce(&ResultSavingCookieCallback<uint32_t>::Run,
-                                    base::Unretained(&delete_callback)));
+  cm->DeleteAllAsync(delete_callback.MakeCallback());
 
   GetCookieListCallback get_cookie_list_callback;
-  cm->GetCookieListWithOptionsAsync(
-      kUrl, CookieOptions(),
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback)));
+  cm->GetCookieListWithOptionsAsync(kUrl, CookieOptions(),
+                                    get_cookie_list_callback.MakeCallback());
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2293,22 +2267,15 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(store.get(), &net_log_));
 
   GetCookieListCallback get_cookie_list_callback1;
-  cm->GetAllCookiesAsync(
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback1)));
+  cm->GetAllCookiesAsync(get_cookie_list_callback1.MakeCallback());
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  cm->SetCookieWithOptionsAsync(
-      kUrl, "a=b", CookieOptions(),
-      base::BindOnce(&ResultSavingCookieCallback<
-                         CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&set_cookie_callback)));
+  cm->SetCookieWithOptionsAsync(kUrl, "a=b", CookieOptions(),
+                                set_cookie_callback.MakeCallback());
 
   GetCookieListCallback get_cookie_list_callback2;
-  cm->GetAllCookiesAsync(
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback2)));
+  cm->GetAllCookiesAsync(get_cookie_list_callback2.MakeCallback());
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2354,19 +2321,14 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
       set_cookie_callback;
   cm->GetAllCookiesAsync(base::BindOnce(
       &RunClosureOnCookieListReceived,
-      base::BindOnce(
-          &CookieStore::SetCookieWithOptionsAsync, base::Unretained(cm.get()),
-          kUrl, "a=b", CookieOptions(),
-          base::BindOnce(&ResultSavingCookieCallback<
-                             CanonicalCookie::CookieInclusionStatus>::Run,
-                         base::Unretained(&set_cookie_callback)))));
+      base::BindOnce(&CookieStore::SetCookieWithOptionsAsync,
+                     base::Unretained(cm.get()), kUrl, "a=b", CookieOptions(),
+                     set_cookie_callback.MakeCallback())));
 
   // Get cookie task. Queued before the delete task is executed, so should not
   // see the set cookie.
   GetCookieListCallback get_cookie_list_callback1;
-  cm->GetAllCookiesAsync(
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback1)));
+  cm->GetAllCookiesAsync(get_cookie_list_callback1.MakeCallback());
 
   // Only the main load should have been queued.
   ASSERT_EQ(1u, store->commands().size());
@@ -2386,9 +2348,7 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
 
   // A subsequent get cookies call should see the new cookie.
   GetCookieListCallback get_cookie_list_callback2;
-  cm->GetAllCookiesAsync(
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&get_cookie_list_callback2)));
+  cm->GetAllCookiesAsync(get_cookie_list_callback2.MakeCallback());
   get_cookie_list_callback2.WaitUntilDone();
   EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
 }
@@ -3163,17 +3123,12 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
   cm.SetCanonicalCookieAsync(
       CanonicalCookie::Create(GURL("http://a.com/"), "A=B", base::Time::Now(),
                               CookieOptions()),
-      "http", CookieOptions(),
-      base::BindOnce(&ResultSavingCookieCallback<
-                         CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&callback_set)));
+      "http", CookieOptions(), callback_set.MakeCallback());
 
   // Get cookies for a different URL.
   GetCookieListCallback callback_get;
-  cm.GetCookieListWithOptionsAsync(
-      GURL("http://b.com/"), CookieOptions(),
-      base::BindOnce(&GetCookieListCallback::Run,
-                     base::Unretained(&callback_get)));
+  cm.GetCookieListWithOptionsAsync(GURL("http://b.com/"), CookieOptions(),
+                                   callback_get.MakeCallback());
 
   // Now go through the store commands, and execute individual loads.
   for (const CookieStoreCommand& command : persistent_store->commands()) {
@@ -3246,31 +3201,23 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   auto cookie = CanonicalCookie::Create(url, cookie_line, t1, options);
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_callback_1;
-  cm.SetCanonicalCookieAsync(
-      std::move(cookie), url.scheme(), options,
-      base::BindOnce(&ResultSavingCookieCallback<
-                         CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&set_callback_1)));
+  cm.SetCanonicalCookieAsync(std::move(cookie), url.scheme(), options,
+                             set_callback_1.MakeCallback());
   set_callback_1.WaitUntilDone();
 
   // Overwrite the cookie at |t2|.
   cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_callback_2;
-  cm.SetCanonicalCookieAsync(
-      std::move(cookie), url.scheme(), options,
-      base::BindOnce(&ResultSavingCookieCallback<
-                         CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&set_callback_2)));
+  cm.SetCanonicalCookieAsync(std::move(cookie), url.scheme(), options,
+                             set_callback_2.MakeCallback());
   set_callback_2.WaitUntilDone();
 
   // The second cookie overwrites the first one but it will inherit the creation
   // timestamp |t1|. Test that deleting the new cookie still works.
   cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
   ResultSavingCookieCallback<unsigned int> delete_callback;
-  cm.DeleteCanonicalCookieAsync(
-      *cookie, base::BindOnce(&ResultSavingCookieCallback<unsigned int>::Run,
-                              base::Unretained(&delete_callback)));
+  cm.DeleteCanonicalCookieAsync(*cookie, delete_callback.MakeCallback());
   delete_callback.WaitUntilDone();
   EXPECT_EQ(1U, delete_callback.result());
 }

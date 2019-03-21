@@ -141,9 +141,7 @@ class CookieStoreTest : public testing::Test {
                                     const CookieOptions& options) {
     DCHECK(cs);
     GetCookieListCallback callback;
-    cs->GetCookieListWithOptionsAsync(
-        url, options,
-        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
+    cs->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
     callback.WaitUntilDone();
     return CanonicalCookie::BuildCookieLine(callback.cookies());
   }
@@ -153,9 +151,7 @@ class CookieStoreTest : public testing::Test {
                                       const CookieOptions& options) {
     DCHECK(cs);
     GetCookieListCallback callback;
-    cs->GetCookieListWithOptionsAsync(
-        url, options,
-        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
+    cs->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();
   }
@@ -163,8 +159,7 @@ class CookieStoreTest : public testing::Test {
   CookieList GetAllCookiesForURL(CookieStore* cs, const GURL& url) {
     DCHECK(cs);
     GetCookieListCallback callback;
-    cs->GetAllCookiesForURLAsync(url, base::Bind(&GetCookieListCallback::Run,
-                                                 base::Unretained(&callback)));
+    cs->GetAllCookiesForURLAsync(url, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();
   }
@@ -177,10 +172,7 @@ class CookieStoreTest : public testing::Test {
     options.set_same_site_cookie_context(
         CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     options.set_return_excluded_cookies();
-    cs->GetCookieListWithOptionsAsync(
-        url, options,
-        base::BindOnce(&GetCookieListCallback::Run,
-                       base::Unretained(&callback)));
+    cs->GetCookieListWithOptionsAsync(url, options, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.excluded_cookies();
   }
@@ -188,8 +180,7 @@ class CookieStoreTest : public testing::Test {
   CookieList GetAllCookies(CookieStore* cs) {
     DCHECK(cs);
     GetCookieListCallback callback;
-    cs->GetAllCookiesAsync(
-        base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
+    cs->GetAllCookiesAsync(callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();
   }
@@ -200,11 +191,8 @@ class CookieStoreTest : public testing::Test {
                             const CookieOptions& options) {
     DCHECK(cs);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
-    cs->SetCookieWithOptionsAsync(
-        url, cookie_line, options,
-        base::BindOnce(&ResultSavingCookieCallback<
-                           CanonicalCookie::CookieInclusionStatus>::Run,
-                       base::Unretained(&callback)));
+    cs->SetCookieWithOptionsAsync(url, cookie_line, options,
+                                  callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
@@ -218,11 +206,8 @@ class CookieStoreTest : public testing::Test {
     CookieOptions options;
     if (can_modify_httponly)
       options.set_include_httponly();
-    cs->SetCanonicalCookieAsync(
-        std::move(cookie), std::move(source_scheme), options,
-        base::BindOnce(&ResultSavingCookieCallback<
-                           CanonicalCookie::CookieInclusionStatus>::Run,
-                       base::Unretained(&callback)));
+    cs->SetCanonicalCookieAsync(std::move(cookie), std::move(source_scheme),
+                                options, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
   }
@@ -257,11 +242,8 @@ class CookieStoreTest : public testing::Test {
 
     DCHECK(cs);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
-    cs->SetCookieWithOptionsAsync(
-        url, cookie_line, options,
-        base::BindOnce(&ResultSavingCookieCallback<
-                           CanonicalCookie::CookieInclusionStatus>::Run,
-                       base::Unretained(&callback)));
+    cs->SetCookieWithOptionsAsync(url, cookie_line, options,
+                                  callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -276,11 +258,8 @@ class CookieStoreTest : public testing::Test {
     CookieOptions options;
     if (can_modify_httponly)
       options.set_include_httponly();
-    cs->SetCanonicalCookieAsync(
-        std::move(cookie), std::move(source_scheme), options,
-        base::BindOnce(&ResultSavingCookieCallback<
-                           CanonicalCookie::CookieInclusionStatus>::Run,
-                       base::Unretained(&callback)));
+    cs->SetCanonicalCookieAsync(std::move(cookie), std::move(source_scheme),
+                                options, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -289,9 +268,7 @@ class CookieStoreTest : public testing::Test {
                                  const CanonicalCookie& cookie) {
     DCHECK(cs);
     ResultSavingCookieCallback<uint32_t> callback;
-    cs->DeleteCanonicalCookieAsync(
-        cookie, base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                           base::Unretained(&callback)));
+    cs->DeleteCanonicalCookieAsync(cookie, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -300,10 +277,8 @@ class CookieStoreTest : public testing::Test {
                                     const TimeRange& creation_range) {
     DCHECK(cs);
     ResultSavingCookieCallback<uint32_t> callback;
-    cs->DeleteAllCreatedInTimeRangeAsync(
-        creation_range,
-        base::BindRepeating(&ResultSavingCookieCallback<uint32_t>::Run,
-                            base::Unretained(&callback)));
+    cs->DeleteAllCreatedInTimeRangeAsync(creation_range,
+                                         callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -312,10 +287,8 @@ class CookieStoreTest : public testing::Test {
                                        CookieDeletionInfo delete_info) {
     DCHECK(cs);
     ResultSavingCookieCallback<uint32_t> callback;
-    cs->DeleteAllMatchingInfoAsync(
-        std::move(delete_info),
-        base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                   base::Unretained(&callback)));
+    cs->DeleteAllMatchingInfoAsync(std::move(delete_info),
+                                   callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -323,9 +296,7 @@ class CookieStoreTest : public testing::Test {
   uint32_t DeleteSessionCookies(CookieStore* cs) {
     DCHECK(cs);
     ResultSavingCookieCallback<uint32_t> callback;
-    cs->DeleteSessionCookiesAsync(
-        base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                   base::Unretained(&callback)));
+    cs->DeleteSessionCookiesAsync(callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
@@ -333,8 +304,7 @@ class CookieStoreTest : public testing::Test {
   uint32_t DeleteAll(CookieStore* cs) {
     DCHECK(cs);
     ResultSavingCookieCallback<uint32_t> callback;
-    cs->DeleteAllAsync(base::Bind(&ResultSavingCookieCallback<uint32_t>::Run,
-                                  base::Unretained(&callback)));
+    cs->DeleteAllAsync(callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
   }
