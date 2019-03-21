@@ -33,6 +33,7 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       rotation_(media::VIDEO_ROTATION_0),
       enable_surface_synchronization_(
           ::features::IsSurfaceSynchronizationEnabled()),
+      empty_frame_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -333,9 +334,42 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
     // in the other branch for memory savings.
     if (!is_rendering_)
       SubmitSingleFrame();
-  } else if (!frame_size_.IsEmpty()) {
-    SubmitEmptyFrame();
+  } else {
+    // Post a delayed task to submit an empty frame. We don't do this here,
+    // since there is a race between when we're notified that the player is not
+    // visible, and when auto-PiP starts. In PiP, we'll be set to force submit,
+    // but we're notified after we find out that the page is hidden.  If we
+    // submit an empty frame now, then there will be a flicker in the video
+    // when the empty frame is displayed. By delaying the empty frame, we give
+    // the auto-PiP a chance to start. Note that the empty frame isn't required
+    // for visual correctness; it's just for resource cleanup. We can delay
+    // resource cleanup a little.
+
+    // If there are any in-flight empty frame requests, then cancel them. We
+    // want to wait until any group of state changes stabilizes.
+    empty_frame_weak_ptr_factory_.InvalidateWeakPtrs();
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&VideoFrameSubmitter::SubmitEmptyFrameIfNeeded,
+                       empty_frame_weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(500));
   }
+}
+
+void VideoFrameSubmitter::SubmitEmptyFrameIfNeeded() {
+  // If we are allowed to submit real frames, then don't send a blank frame
+  // since the last real frame might actually be visible.
+  //
+  // We do not actually submit a real frame here, though; that should be done
+  // (if desired) by whatever switched us to ShouldSubmit() mode.
+  if (ShouldSubmit())
+    return;
+
+  // If we don't have a frame size, then we can't send a blank frame.
+  if (frame_size_.IsEmpty())
+    return;
+
+  SubmitEmptyFrame();
 }
 
 bool VideoFrameSubmitter::SubmitFrame(
