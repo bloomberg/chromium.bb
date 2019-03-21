@@ -313,10 +313,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const mojom::CreateViewParams& params);
 
-  void Initialize(mojom::CreateViewParamsPtr params,
-                  RenderWidget::ShowCallback show_callback,
-                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   // Called when Page visibility is changed, to update the View/Page in blink.
   // This is separate from the IPC handlers as tests may call this and need to
   // be able to specify |initial_setting| where IPC handlers do not.
@@ -387,6 +383,15 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   };
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
+
+  // Initialize() is separated out from the constructor because it is possible
+  // to accidentally call virtual functions. All RenderViewImpl creation is
+  // fronted by the Create() method which ensures Initialize() is always called
+  // before any other code can interact with instances of this call.
+  void Initialize(RenderWidget* render_widget,
+                  mojom::CreateViewParamsPtr params,
+                  RenderWidget::ShowCallback show_callback,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // RenderWidgetDelegate implementation ----------------------------------
 
@@ -536,7 +541,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // fullscreen widgets are never contained by this pointer. Child frame
   // local roots are owned by a RenderFrame. The others are owned by the IPC
   // system.
-  RenderWidget* render_widget_;
+  RenderWidget* render_widget_ = nullptr;
 
   // Routing ID that allows us to communicate with the corresponding
   // RenderViewHost in the parent browser process.
