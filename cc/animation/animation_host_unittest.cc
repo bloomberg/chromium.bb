@@ -182,7 +182,7 @@ TEST_F(AnimationHostTest, FastLayerTreeMutatorUpdateTakesEffectInSameFrame) {
   // Emulate behavior in PrepareToDraw. Animation worklet updates are best
   // effort, and the animation tick is deferred until draw to allow time for the
   // updates to arrive.
-  host_impl_->TickWorkletAnimations(base::TimeTicks());
+  host_impl_->TickWorkletAnimations();
 
   TestLayer* layer =
       client_.FindTestLayer(element_id_, ElementListType::ACTIVE);
