@@ -47,7 +47,8 @@ class TestHelperFunction : public ScriptFunction {
 
 class ScriptPromiseResolverTest : public testing::Test {
  public:
-  ScriptPromiseResolverTest() : page_holder_(DummyPageHolder::Create()) {}
+  ScriptPromiseResolverTest()
+      : page_holder_(std::make_unique<DummyPageHolder>()) {}
 
   ~ScriptPromiseResolverTest() override {
     // Execute all pending microtasks

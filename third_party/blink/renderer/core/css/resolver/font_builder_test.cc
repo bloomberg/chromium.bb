@@ -17,7 +17,8 @@ namespace blink {
 
 class FontBuilderTest {
  public:
-  FontBuilderTest() : dummy_(DummyPageHolder::Create(IntSize(800, 600))) {
+  FontBuilderTest()
+      : dummy_(std::make_unique<DummyPageHolder>(IntSize(800, 600))) {
     GetSettings().SetDefaultFontSize(16.0f);
   }
 

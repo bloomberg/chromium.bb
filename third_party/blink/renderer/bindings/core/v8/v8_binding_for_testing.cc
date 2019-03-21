@@ -12,7 +12,7 @@
 namespace blink {
 
 V8TestingScope::V8TestingScope()
-    : holder_(DummyPageHolder::Create()),
+    : holder_(std::make_unique<DummyPageHolder>()),
       handle_scope_(GetIsolate()),
       context_(GetScriptState()->GetContext()),
       context_scope_(GetContext()),

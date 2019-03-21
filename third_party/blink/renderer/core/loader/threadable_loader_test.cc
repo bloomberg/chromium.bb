@@ -159,7 +159,7 @@ enum ThreadableLoaderToTest {
 class ThreadableLoaderTestHelper final {
  public:
   ThreadableLoaderTestHelper()
-      : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {
+      : dummy_page_holder_(std::make_unique<DummyPageHolder>(IntSize(1, 1))) {
     GetDocument().SetURL(KURL("http://fake.url/"));
     GetDocument().SetSecurityOrigin(
         SecurityOrigin::Create(KURL("http://fake.url/")));

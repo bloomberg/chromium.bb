@@ -70,8 +70,7 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
 }
 
 TEST(MixedContentCheckerTest, ContextTypeForInspector) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(1, 1));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(1, 1));
   dummy_page_holder->GetFrame().GetDocument()->SetSecurityOrigin(
       SecurityOrigin::CreateFromString("http://example.test"));
 
@@ -116,8 +115,8 @@ class MixedContentCheckerMockLocalFrameClient : public EmptyLocalFrameClient {
 TEST(MixedContentCheckerTest, HandleCertificateError) {
   MixedContentCheckerMockLocalFrameClient* client =
       MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(IntSize(1, 1), nullptr, client);
 
   KURL main_resource_url(NullURL(), "https://example.test");
   KURL displayed_url(NullURL(), "https://example-displayed.test");
@@ -146,8 +145,8 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
 TEST(MixedContentCheckerTest, DetectMixedForm) {
   MixedContentCheckerMockLocalFrameClient* client =
       MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(IntSize(1, 1), nullptr, client);
 
   KURL main_resource_url(NullURL(), "https://example.test/");
 
@@ -179,8 +178,8 @@ TEST(MixedContentCheckerTest, DetectMixedForm) {
 TEST(MixedContentCheckerTest, DetectMixedFavicon) {
   MixedContentCheckerMockLocalFrameClient* client =
       MakeGarbageCollected<MixedContentCheckerMockLocalFrameClient>();
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(1, 1), nullptr, client);
+  auto dummy_page_holder =
+      std::make_unique<DummyPageHolder>(IntSize(1, 1), nullptr, client);
   dummy_page_holder->GetFrame().GetSettings()->SetAllowRunningOfInsecureContent(
       false);
 

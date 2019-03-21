@@ -228,7 +228,7 @@ class ThreadedWorkletMessagingProxyForTest
 class ThreadedWorkletTest : public testing::Test {
  public:
   void SetUp() override {
-    page_ = DummyPageHolder::Create();
+    page_ = std::make_unique<DummyPageHolder>();
     Document* document = page_->GetFrame().GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));

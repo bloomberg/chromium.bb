@@ -348,7 +348,7 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramSameDocument) {
   const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Allow";
   HistogramTester tester;
   Vector<String> messages;
-  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
+  auto dummy = std::make_unique<DummyPageHolder>();
 
   ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), origin_b_.get(),
                      &messages, test_feature_name_map, &dummy->GetDocument());
@@ -373,8 +373,8 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
   const char* histogram_name = "Blink.UseCounter.FeaturePolicy.Allow";
   HistogramTester tester;
   Vector<String> messages;
-  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
-  std::unique_ptr<DummyPageHolder> dummy2 = DummyPageHolder::Create();
+  auto dummy = std::make_unique<DummyPageHolder>();
+  auto dummy2 = std::make_unique<DummyPageHolder>();
 
   ParseFeaturePolicy("payment; fullscreen", origin_a_.get(), origin_b_.get(),
                      &messages, test_feature_name_map, &dummy->GetDocument());
@@ -657,8 +657,7 @@ TEST_F(FeaturePolicyViolationHistogramTest, PotentialViolation) {
   HistogramTester tester;
   const char* histogram_name =
       "Blink.UseCounter.FeaturePolicy.PotentialViolation";
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
-      DummyPageHolder::Create();
+  auto dummy_page_holder_ = std::make_unique<DummyPageHolder>();
   // Probing feature state should not count.
   dummy_page_holder_->GetDocument().IsFeatureEnabled(
       mojom::FeaturePolicyFeature::kPayment);

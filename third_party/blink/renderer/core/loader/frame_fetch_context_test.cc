@@ -139,7 +139,7 @@ class FrameFetchContextTest : public testing::Test {
   void SetUp() override { RecreateFetchContext(); }
 
   void RecreateFetchContext() {
-    dummy_page_holder = DummyPageHolder::Create(IntSize(500, 500));
+    dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     document = &dummy_page_holder->GetDocument();
     owner = DummyFrameOwner::Create();
@@ -290,7 +290,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     client = MakeGarbageCollected<
         testing::NiceMock<FrameFetchContextMockLocalFrameClient>>();
     dummy_page_holder =
-        DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
+        std::make_unique<DummyPageHolder>(IntSize(500, 500), nullptr, client);
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
     document = &dummy_page_holder->GetDocument();

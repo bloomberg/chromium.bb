@@ -42,7 +42,7 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   v8::V8::SetFlagsFromString(kExposeGC, sizeof(kExposeGC));
   static BlinkFuzzerTestSupport fuzzer_support =
       BlinkFuzzerTestSupport(*argc, *argv);
-  g_page_holder = DummyPageHolder::Create().release();
+  g_page_holder = std::make_unique<DummyPageHolder>().release();
   g_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
   g_blob_info_array = new WebBlobInfoArray();
   g_blob_info_array->emplace_back(WebBlobInfo::BlobForTesting(

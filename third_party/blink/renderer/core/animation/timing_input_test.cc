@@ -30,7 +30,7 @@ class AnimationTimingInputTest : public testing::Test {
                                 bool is_keyframeeffectoptions = true);
 
  private:
-  void SetUp() override { page_holder_ = DummyPageHolder::Create(); }
+  void SetUp() override { page_holder_ = std::make_unique<DummyPageHolder>(); }
 
   Document* GetDocument() const { return &page_holder_->GetDocument(); }
 

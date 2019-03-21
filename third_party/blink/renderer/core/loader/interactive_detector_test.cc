@@ -39,7 +39,7 @@ class InteractiveDetectorTest : public testing::Test {
  public:
   InteractiveDetectorTest() {
     platform_->AdvanceClockSeconds(1);
-    dummy_page_holder_ = DummyPageHolder::Create();
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>();
 
     Document* document = &dummy_page_holder_->GetDocument();
 

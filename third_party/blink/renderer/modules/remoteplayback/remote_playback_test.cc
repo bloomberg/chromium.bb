@@ -79,7 +79,7 @@ class RemotePlaybackTest : public testing::Test,
 TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -110,7 +110,7 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
 TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -144,7 +144,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
 TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -179,7 +179,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
 TEST_F(RemotePlaybackTest, StateChangeEvents) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -224,7 +224,7 @@ TEST_F(RemotePlaybackTest,
        DisableRemotePlaybackRejectsPromptWithInvalidStateError) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -256,7 +256,7 @@ TEST_F(RemotePlaybackTest,
 TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -298,7 +298,7 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
   ScopedRemotePlaybackBackendForTest remote_playback_backend(false);
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -329,7 +329,7 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
   ScopedRemotePlaybackBackendForTest remote_playback_backend(false);
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());
@@ -367,7 +367,7 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
 TEST_F(RemotePlaybackTest, IsListening) {
   V8TestingScope scope;
 
-  auto page_holder = DummyPageHolder::Create();
+  auto page_holder = std::make_unique<DummyPageHolder>();
 
   HTMLMediaElement* element =
       HTMLVideoElement::Create(page_holder->GetDocument());

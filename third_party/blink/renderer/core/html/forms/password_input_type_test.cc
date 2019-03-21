@@ -47,8 +47,7 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
 // Tests that a Mojo message is sent when a password field is edited
 // on the page.
 TEST(PasswordInputTypeTest, DidEditFieldEvent) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().body()->SetInnerHTMLFromString(
       "<input type='password'>");
@@ -69,8 +68,7 @@ TEST(PasswordInputTypeTest, DidEditFieldEvent) {
 // Tests that a Mojo message is not sent when a password field is edited
 // in a secure context.
 TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(2000, 2000));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(2000, 2000));
   MockInsecureInputService mock_service(page_holder->GetFrame());
   page_holder->GetDocument().SetURL(KURL("https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(

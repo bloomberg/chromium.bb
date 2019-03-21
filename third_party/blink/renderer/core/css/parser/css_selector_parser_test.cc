@@ -585,8 +585,7 @@ TEST(CSSSelectorParserTest, ShadowPartAndBeforeAfterPseudoElementValid) {
 }
 
 TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
-  std::unique_ptr<DummyPageHolder> dummy_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Document* doc = &dummy_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
   CSSParserContext* context = CSSParserContext::Create(

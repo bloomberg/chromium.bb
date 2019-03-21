@@ -297,8 +297,7 @@ TEST(CSSPropertyParserTest, IncompleteColor) {
 }
 
 TEST(CSSPropertyParserTest, ClipPathEllipse) {
-  std::unique_ptr<DummyPageHolder> dummy_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto dummy_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Document* doc = &dummy_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
   CSSParserContext* context = CSSParserContext::Create(
@@ -372,8 +371,7 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertyInvalidEntries) {
 }
 
 TEST(CSSPropertyParserTest, GradientUseCount) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
@@ -384,8 +382,7 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
 }
 
 TEST(CSSPropertyParserTest, PaintUseCount) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   document.SetSecureContextStateForTesting(SecureContextState::kSecure);
@@ -397,8 +394,7 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
 }
 
 TEST(CSSPropertyParserTest, CrossFadeUseCount) {
-  std::unique_ptr<DummyPageHolder> dummy_page_holder =
-      DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
@@ -428,7 +424,7 @@ TEST(CSSPropertyParserTest, DropFontfaceDescriptor) {
 class CSSPropertyUseCounterTest : public ::testing::Test {
  public:
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
     Page::InsertOrdinaryPageForTesting(&dummy_page_holder_->GetPage());
     // Use strict mode.
     GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);

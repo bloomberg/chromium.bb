@@ -259,8 +259,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
 }
 
 TEST(MediaQueryEvaluatorTest, Dynamic) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
 
   MediaQueryEvaluator media_query_evaluator(&page_holder->GetFrame());
@@ -270,8 +269,7 @@ TEST(MediaQueryEvaluatorTest, Dynamic) {
 }
 
 TEST(MediaQueryEvaluatorTest, DynamicNoView) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   LocalFrame* frame = &page_holder->GetFrame();
   page_holder.reset();
   ASSERT_EQ(nullptr, frame->View());
@@ -302,8 +300,7 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly) {
 }
 
 TEST(MediaQueryEvaluatorTest, InitialViewport) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
   page_holder->GetFrameView().SetLayoutSizeFixedToFrameSize(false);
   page_holder->GetFrameView().SetInitialViewportSize(IntSize(500, 500));
@@ -316,8 +313,7 @@ TEST(MediaQueryEvaluatorTest, InitialViewport) {
 }
 
 TEST(MediaQueryEvaluatorTest, DynamicImmersive) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
 
   MediaQueryEvaluator media_query_evaluator(&page_holder->GetFrame());

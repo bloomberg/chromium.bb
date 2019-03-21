@@ -255,7 +255,7 @@ TEST(InvalidationSetTest, Backing_GetHashSet) {
 }
 
 TEST(InvalidationSetTest, ClassInvalidatesElement) {
-  auto dummy_page_holder = DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto& document = dummy_page_holder->GetDocument();
   document.body()->SetInnerHTMLFromString("<div id=test class='a b'>");
   document.View()->UpdateAllLifecyclePhases(
@@ -281,7 +281,7 @@ TEST(InvalidationSetTest, ClassInvalidatesElement) {
 }
 
 TEST(InvalidationSetTest, AttributeInvalidatesElement) {
-  auto dummy_page_holder = DummyPageHolder::Create(IntSize(800, 600));
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   auto& document = dummy_page_holder->GetDocument();
   document.body()->SetInnerHTMLFromString("<div id=test a b>");
   document.View()->UpdateAllLifecyclePhases(

@@ -26,7 +26,7 @@ using html_names::kStyleAttr;
 class SnapCoordinatorTest : public testing::Test {
  protected:
   void SetUp() override {
-    page_holder_ = DummyPageHolder::Create();
+    page_holder_ = std::make_unique<DummyPageHolder>();
 
     SetHTML(R"HTML(
       <style>
