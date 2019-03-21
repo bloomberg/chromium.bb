@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
@@ -52,6 +53,9 @@ class AdsPageLoadMetricsObserver
                         bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
+  void OnCpuTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::CpuTiming& timing) override;
   void RecordAdFrameData(FrameTreeNodeId ad_id,
                          bool is_adframe,
                          content::RenderFrameHost* ad_host,
@@ -129,7 +133,7 @@ class AdsPageLoadMetricsObserver
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
   void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);
-
+  void RecordHistogramsForCpuUsage(FrameData::FrameVisibility visibility);
   // Checks to see if a resource is waiting for a navigation with the given
   // |frame_tree_node_id| to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
@@ -178,10 +182,13 @@ class AdsPageLoadMetricsObserver
   bool process_display_state_updates_ = true;
 
   // Time the page was committed.
-  base::Time time_commit_;
+  base::TimeTicks time_commit_;
 
   // Time the page was observed to be interactive.
-  base::Time time_interactive_;
+  base::TimeTicks time_interactive_;
+
+  // Duration before |time_interactive_| during which the page was foregrounded.
+  base::TimeDelta pre_interactive_duration_;
 
   // Total ad bytes loaded by the page since it was observed to be interactive.
   size_t page_ad_bytes_at_interactive_ = 0u;
@@ -191,6 +198,9 @@ class AdsPageLoadMetricsObserver
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
                  subresource_filter::SubresourceFilterObserver>
       subresource_observer_;
+
+  // The tick clock used to get the current time.  Can be replaced by tests.
+  const base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

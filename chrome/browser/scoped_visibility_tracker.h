@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -37,8 +36,6 @@ class ScopedVisibilityTracker {
   base::TimeTicks last_time_shown_;
   base::TimeDelta foreground_duration_;
   bool currently_in_foreground_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedVisibilityTracker);
 };
 
 #endif  // CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_

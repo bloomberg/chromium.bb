@@ -139,6 +139,28 @@ void FrameData::SetDisplayState(bool is_display_none) {
   UpdateFrameVisibility();
 }
 
+void FrameData::UpdateCpuUsage(base::TimeDelta update,
+                               InteractiveStatus interactive) {
+  cpu_by_interactive_period_[static_cast<size_t>(interactive)] += update;
+  cpu_by_activation_period_[static_cast<size_t>(user_activation_status_)] +=
+      update;
+}
+
+base::TimeDelta FrameData::GetInteractiveCpuUsage(
+    InteractiveStatus status) const {
+  return cpu_by_interactive_period_[static_cast<int>(status)];
+}
+
+base::TimeDelta FrameData::GetActivationCpuUsage(
+    UserActivationStatus status) const {
+  return cpu_by_activation_period_[static_cast<int>(status)];
+}
+
+void FrameData::SetReceivedUserActivation(base::TimeDelta foreground_duration) {
+  user_activation_status_ = UserActivationStatus::kReceivedActivation;
+  pre_activation_foreground_duration_ = foreground_duration;
+}
+
 void FrameData::UpdateFrameVisibility() {
   visibility_ =
       !is_display_none_ && frame_size_.GetArea() >= kMinimumVisibleFrameArea

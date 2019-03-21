@@ -194,7 +194,6 @@ PageLoadMetricsObserverDelegate* PageLoadMetricsObserver::GetDelegate() const {
 
 void PageLoadMetricsObserver::SetDelegate(
     PageLoadMetricsObserverDelegate* delegate) {
-  DCHECK(!delegate_);
   delegate_ = delegate;
 }
 
