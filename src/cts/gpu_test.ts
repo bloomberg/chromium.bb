@@ -38,7 +38,7 @@ export class GPUTest extends Fixture {
         type === "c" ? Shaderc.shader_kind.compute : null,
         "a.glsl", "main", opts);
     console.warn(result.GetErrorMessage());
-    return result.GetBinary();
+    return result.GetBinary().slice().buffer;
   }
 
   public async expectContents(src: GPUBuffer, expected: Uint8Array): Promise<void> {
