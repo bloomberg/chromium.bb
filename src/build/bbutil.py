@@ -49,7 +49,7 @@ def getSplitShellOutput(cmd):
   p = shellExec(cmd)
   if p[0] != 0:
     raise Exception("Failed to run command '" + cmd + "': " + p[2])
-  return splitLines(p[1].strip())
+  return p[1].strip().splitlines()
 
 
 def getHEADSha():
