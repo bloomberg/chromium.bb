@@ -483,8 +483,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns the transient user activation state of this frame
   bool HasTransientUserActivation();
 
-  // Consumes and returns the transient user activation state of this frame,
-  // after updating all ancestor/descendant frames.
+  // Consumes and returns the transient user activation state this frame, after
+  // updating all other frames in the frame tree.
   bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
 
   void SetFrameColorOverlay(SkColor color);

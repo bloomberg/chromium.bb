@@ -563,10 +563,8 @@ bool FrameTreeNode::NotifyUserActivation() {
   }
   replication_state_.has_received_user_gesture = true;
 
-  // TODO(mustaq): The following block relaxes UAv2 a bit to make it slightly
-  // closer to the old (v1) model, to address a Hangout regression.  We will
-  // remove this after implementing a mechanism to delegate activation to
-  // subframes (https://crbug.com/728334)
+  // See the "Same-origin Visibility" section in |UserActivationState| class
+  // doc.
   if (base::FeatureList::IsEnabled(features::kUserActivationV2) &&
       base::FeatureList::IsEnabled(
           features::kUserActivationSameOriginVisibility)) {
