@@ -423,9 +423,7 @@ body.check-select #view-button.thumbnail {
 }
 
 #sort-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/sorting_white.png) 1x,
-      url(../images/files/ui/2x/sorting_white.png) 2x);
+  background-image: url(../images/files/ui/sorting_white.svg);
 }
 
 body.check-select #sort-button {
