@@ -240,8 +240,8 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     public int indexOf(Tab tab) {
-        if (tab == null) return TabList.INVALID_TAB_INDEX;
-        return mGroupIdToGroupIndexMap.get(tab.getId());
+        if (tab == null || tab.isIncognito() != isIncognito()) return TabList.INVALID_TAB_INDEX;
+        return mGroupIdToGroupIndexMap.get(tab.getRootId());
     }
 
     @Override
