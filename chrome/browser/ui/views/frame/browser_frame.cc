@@ -81,9 +81,14 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.name = "BrowserFrame";
   params.delegate = browser_view_;
-  if (browser_view_->browser()->is_type_tabbed()) {
+  if (browser_view_->browser()->is_type_tabbed() ||
+      browser_view_->browser()->is_devtools()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
+    // DevTools counts as a popup, but DevToolsWindow::CreateDevToolsBrowser
+    // ensures there is always a size available. Without this, the tools
+    // launch on the wrong display and can have sizing issues when
+    // repositioned to the saved bounds in Widget::SetInitialBounds.
     chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                              &params.bounds,
                                              &params.show_state);

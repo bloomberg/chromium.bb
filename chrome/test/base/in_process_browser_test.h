@@ -42,8 +42,10 @@ class ScopedCOMInitializer;
 }  // namespace base
 
 #if defined(TOOLKIT_VIEWS)
-class AccessibilityChecker;
-#endif
+namespace views {
+class ViewsDelegate;
+}
+#endif  // defined(TOOLKIT_VIEWS)
 
 class Browser;
 class Profile;
@@ -113,6 +115,14 @@ class ScopedBundleSwizzlerMac;
 class InProcessBrowserTest : public content::BrowserTestBase {
  public:
   InProcessBrowserTest();
+#if defined(TOOLKIT_VIEWS)
+  using DelegateCallback =
+      base::OnceCallback<std::unique_ptr<views::ViewsDelegate>()>;
+  // |viewsDelegateCallback| is used for tests that want to use a derived class
+  // of ViewsDelegate to observe or modify things like window placement and
+  // Widget params.
+  explicit InProcessBrowserTest(DelegateCallback viewsDelegateCallback);
+#endif  // defined(TOOLKIT_VIEWS)
   ~InProcessBrowserTest() override;
 
   // Configures everything for an in process browser test, then invokes
@@ -290,7 +300,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  std::unique_ptr<AccessibilityChecker> accessibility_checker_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
 #endif
 };
 
