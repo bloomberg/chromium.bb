@@ -14,6 +14,7 @@ import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.content.browser.UiThreadTaskTraitsImpl;
 
+import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -43,14 +44,18 @@ public class BrowserTaskExecutor implements TaskExecutor {
     @Override
     public SingleThreadTaskRunner createSingleThreadTaskRunner(TaskTraits taskTraits) {
         synchronized (mTaskRunners) {
-            SingleThreadTaskRunner taskRunner = mTaskRunners.get(taskTraits);
-            if (taskRunner != null) return taskRunner;
+            WeakReference<SingleThreadTaskRunner> weakRef = mTaskRunners.get(taskTraits);
+            if (weakRef != null) {
+                SingleThreadTaskRunner taskRunner = weakRef.get();
+                if (taskRunner != null) return taskRunner;
+            }
 
             // TODO(alexclarke): ThreadUtils.getUiThreadHandler shouldn't be in base.
-            taskRunner = new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(),
-                    taskTraits, shouldPrioritizeTraits(taskTraits));
+            SingleThreadTaskRunner taskRunner =
+                    new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(), taskTraits,
+                            shouldPrioritizeTraits(taskTraits));
             taskRunner.disableLifetimeCheck();
-            mTaskRunners.put(taskTraits, taskRunner);
+            mTaskRunners.put(taskTraits, new WeakReference<>(taskRunner));
             return taskRunner;
         }
     }
@@ -99,7 +104,7 @@ public class BrowserTaskExecutor implements TaskExecutor {
     }
 
     @GuardedBy("mTaskRunners")
-    private final WeakHashMap<TaskTraits, SingleThreadTaskRunner> mTaskRunners =
+    private final WeakHashMap<TaskTraits, WeakReference<SingleThreadTaskRunner>> mTaskRunners =
             new WeakHashMap<>();
 
     private static boolean sRegistered;
