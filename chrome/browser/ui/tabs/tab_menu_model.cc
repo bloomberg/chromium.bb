@@ -82,8 +82,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(tab_strip->GetWebContentsAt(index));
   if (send_tab_to_self::ShouldOfferFeature(browser)) {
-    AddItemWithStringId(TabStripModel::CommandSendToMyDevices,
-                        IDS_TAB_CXMENU_SEND_TO_MY_DEVICES);
+    AddItemWithStringId(TabStripModel::CommandSendTabToSelf,
+                        IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItem(TabStripModel::CommandCloseTab,

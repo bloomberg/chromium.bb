@@ -355,7 +355,7 @@ const struct UmaEnumCommandIdPair {
     {99, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE},
     {100, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE},
     {101, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS},
-    {102, -1, IDC_SEND_TO_MY_DEVICES},
+    {102, -1, IDC_SEND_TAB_TO_SELF},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
@@ -1353,8 +1353,8 @@ void RenderViewContextMenu::AppendPageItems() {
   AppendMediaRouterItem();
 
   if (send_tab_to_self::ShouldOfferFeature(GetBrowser())) {
-    menu_model_.AddItemWithStringId(IDC_SEND_TO_MY_DEVICES,
-                                    IDS_CONTENT_CONTEXT_SEND_TO_MY_DEVICES);
+    menu_model_.AddItemWithStringId(IDC_SEND_TAB_TO_SELF,
+                                    IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
   }
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::unique_ptr<translate::TranslatePrefs> prefs(
@@ -1812,7 +1812,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
-    case IDC_SEND_TO_MY_DEVICES:
+    case IDC_SEND_TAB_TO_SELF:
       return true;
     case IDC_CHECK_SPELLING_WHILE_TYPING:
       return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
@@ -2026,7 +2026,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       embedder_web_contents_->OnSavePage();
       break;
 
-    case IDC_SEND_TO_MY_DEVICES:
+    case IDC_SEND_TAB_TO_SELF:
       base::RecordAction(UserMetricsAction("ViewContextMenu_SendToMyDevices"));
       send_tab_to_self::CreateNewEntry(embedder_web_contents_, GetProfile());
       break;

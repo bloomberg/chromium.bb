@@ -1086,7 +1086,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandFocusMode:
       return GetIndicesForCommand(context_index).size() == 1;
 
-    case CommandSendToMyDevices:
+    case CommandSendTabToSelf:
       return true;
 
     case CommandAddToNewGroup:
@@ -1184,7 +1184,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
-    case CommandSendToMyDevices: {
+    case CommandSendTabToSelf: {
       base::RecordAction(UserMetricsAction("TabContextMenu_SendToMyDevices"));
       send_tab_to_self::CreateNewEntry(GetActiveWebContents(), profile_);
       break;
@@ -1293,8 +1293,8 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
     case CommandDuplicate:
       *browser_cmd = IDC_DUPLICATE_TAB;
       break;
-    case CommandSendToMyDevices:
-      *browser_cmd = IDC_SEND_TO_MY_DEVICES;
+    case CommandSendTabToSelf:
+      *browser_cmd = IDC_SEND_TAB_TO_SELF;
       break;
     case CommandCloseTab:
       *browser_cmd = IDC_CLOSE_TAB;
