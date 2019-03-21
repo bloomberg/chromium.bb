@@ -414,6 +414,8 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
     return;
   direct_write_initialized_ = true;
 
+  TRACE_EVENT0("dwrite,fonts", "DWriteFontProxyImpl::InitializeDirectWrite");
+
   mswr::ComPtr<IDWriteFactory> factory;
   gfx::win::CreateDWriteFactory(&factory);
   if (factory == nullptr) {

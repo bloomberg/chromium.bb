@@ -125,7 +125,7 @@ void QueryLinkedFontsFromRegistry(const Font& font,
                         resolved_font.GetFontName().c_str());
   }
 
-  TRACE_EVENT1("ui", "QueryLinkedFontsFromRegistry", "results", logging_str);
+  TRACE_EVENT1("fonts", "QueryLinkedFontsFromRegistry", "results", logging_str);
 }
 
 // CachedFontLinkSettings is a singleton cache of the Windows font settings
@@ -170,7 +170,7 @@ const std::vector<Font>* CachedFontLinkSettings::GetLinkedFonts(
   if (it != cached_linked_fonts_.end())
     return &it->second;
 
-  TRACE_EVENT1("ui", "CachedFontLinkSettings::GetLinkedFonts", "font_name",
+  TRACE_EVENT1("fonts", "CachedFontLinkSettings::GetLinkedFonts", "font_name",
                font_name);
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER(
@@ -292,6 +292,7 @@ void ParseFontFamilyString(const std::string& family,
 }  // namespace internal
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFonts");
   std::string font_family = font.GetFontName();
   CachedFontLinkSettings* font_link = CachedFontLinkSettings::GetInstance();
   // GetLinkedFonts doesn't care about the font size, so we always pass 10.
@@ -302,6 +303,7 @@ bool GetFallbackFont(const Font& font,
                      const base::char16* text,
                      int text_length,
                      Font* result) {
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
   // Creating a DirectWrite font fallback can be expensive. It's ok in the
   // browser process because we can use the shared system fallback, but in the
   // renderer this can cause hangs. Code that needs font fallback in the
