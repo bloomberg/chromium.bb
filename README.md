@@ -19,66 +19,6 @@ still gets rendered within the pills. But when the user types, the text
 (correctly) gets inserted outside the pills. Also, the caret is rendered
 outside the contenteditable div if there is no text after the pills.
 
-### bugfix/cleartypecanvas (Shezan Baig; D32281407; upstream: [86776](https://bugs.webkit.org/show_bug.cgi?id=86776)) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Fcleartypecanvas)\]
-Open [this link](repros/cleartypecanvas) in Chrome, and notice that the
-canvas element does not use ClearType fonts even though
-`subpixel-antialiased` is used.
-
-Note that when painting to an `ImageBuffer`, Chromium disables ClearType even
-if it is the default on the system. However, in our case, we are explicitly
-requesting it in the document, so this change makes Chromium honor the
-`-webkit-font-smoothing` setting if it is requested explicitly.
-
-Note that there are two distinct changes introduced by this branch:
-*   The `-webkit-font-smoothing` setting has no effect in Windows for Skia.
-    This is the change that is being tracked upstream by WebKit bug
-    [86776](https://bugs.webkit.org/show_bug.cgi?id=86776).
-*   Don't disable ClearType on `ImageBuffer` if it was explicitly requested.
-    This is not yet being tracked upstream.
-
-
-### bugfix/cursorContext (Shezan Baig; D35952365) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FcursorContext)\]
-It is somewhat hard to reproduce, the window height needs to be just about
-right.
-
-Open [this link](repros/cursorContext.html) in Chrome, and hit Enter until
-the cursor is at the last possible line where the scrollbar does not appear.
-Make sure there is just enough space for about half a line more.
-
-Now keep typing on this line, letting it word-wrap which causes the scrollbar
-to appear. Keep doing this for a few lines. You will notice that on some
-lines (usually the second or the third, then every alternating line after
-that), the scrollbar does not scroll down completely.
-
-In our product, there is an overlay around the RTE of about a couple of
-pixels. The purpose of the padding on the contenteditable was to prevent this
-overlay from covering the text. However, since the bottom of the text was
-right against the border of the `content-editable`, this was causing the
-descent of some characters to be obscured.
-
-We "fixed" this in this branch by inflating the reveal rect by about half the
-cursor height, showing more "context" when moving up and down in a scrollable
-contenteditable. However, a proper fix would be to make the last line scroll
-completely, taking the padding into account. We haven't gotten around to this
-yet.
-
-### bugfix/doubleMouseWheel (Imran Haider) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdoubleMouseWheel)\]
-Open [this link](repros/mousewheel.html) in blpwtk2\_shell. Note that this
-issue does not reproduce in Chrome because it requires a specific HWND
-structure, which is only used in blpwtk2\_shell.
-
-NOTE: Starting in chromium 45, this issue no longer occurs in blpwtk2\_shell,
-but does occur in other applications. **TODO: Update the test to reproduce
-the issue in blpwtk2\_shell.**
-
-### bugfix/dragSelectionExtent (Shezan Baig) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FdragSelectionExtent)\]
-Open the following pages in Chrome and follow the instructions. The selection
-extent jumps around in non-intuitive ways. This branch changes how the
-selection is extended when dragging with the mouse to be more intuitive.
-*   [This link](repros/dragSelectionExtent1.html)
-*   [This link](repros/dragSelectionExtent2.html)
-*   [This link](repros/dragSelectionExtent3.html)
-
 Open [this link](repros/emptycellcaret.html) in Chrome, and put the caret
 inside an empty table cell. The caret's `y-position` is outside the
 `table-cell`.
@@ -86,11 +26,6 @@ inside an empty table cell. The caret's `y-position` is outside the
 ### bugfix/empty-new-line-selection (Shezan Baig; upstream: [568663](https://code.google.com/p/chromium/issues/detail?id=568663)) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FemptyNewlineSelection)\]
 Open [this link](repros/tableEditing.html) in Chrome, and try to select an
 empty line. The line-ending is not highlighted.
-
-### bugfix/flexboxStretchAlignment (Shezan Baig) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FflexboxStretchAlignment)\]
-Open [this link](repros/flexboxStretchAlignment1.html) in Chrome. The green
-box should be 80% the height of the blue box, with a minimum height of 300px.
-But in Chrome, the green box height is always 300px.
 
 ### bugfix/listify-spans (Shezan Baig; D37507315) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FlistifySpans)\]
 Open [this link](repros/listifySpans.html) in Chrome. The second and third
@@ -113,17 +48,6 @@ caused by 'mouseenter' and 'mousleave' events firing. Now drag another window
 so that it partially overlaps the Chrome window. Move the mouse from the
 Chrome window to the overlapping window; the box should turn red, but it
 doesn't.
-
-### bugfix/removeSpellingMarker (Tianyin Zhang; D38695085) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FremoveSpellingMarker)\]
-Open [this link](repros/removeSpellingMarker.html) in chrome, place the
-cursor inside the contenteditable and make sure some mispelling markers show
-up. Then click on the button to switch the contenteditable to false. Note
-that the misspelling markers aren't removed.
-
-### bugfix/singleCellDelete (Shezan Baig; D37576223) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FsingleCellDelete)\]
-Open [this link](repros/singleCellDelete.html) in Chrome, and delete the text
-in the single table cell. The entire table will get deleted, but we only
-expect the text inside the cell to be deleted.
 
 ### bugfix/stale-tooltip (Shezan Baig; upstream: [84375](https://bugs.webkit.org/show_bug.cgi?id=84375)) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Ftooltip_refresh)\]
 Open [this link](repros/tooltip_refresh.html) in Chrome. Each line has a
