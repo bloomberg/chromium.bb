@@ -52,20 +52,8 @@ public class FreIntentCreator {
                     associatedAppNameForLightweightFre, intentToLaunchAfterFreComplete,
                     requiresBroadcast);
         } else {
-            Intent freIntent = createGenericFirstRunIntent(
+            return createGenericFirstRunIntent(
                     caller, fromIntent, intentToLaunchAfterFreComplete, requiresBroadcast);
-
-            if (shouldSwitchToTabbedMode(caller)) {
-                freIntent.setClass(caller, TabbedModeFirstRunActivity.class);
-
-                // We switched to TabbedModeFRE. We need to disable animation on the original
-                // intent, to make transition seamless.
-                intentToLaunchAfterFreComplete = new Intent(intentToLaunchAfterFreComplete);
-                intentToLaunchAfterFreComplete.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                addPendingIntent(
-                        caller, freIntent, intentToLaunchAfterFreComplete, requiresBroadcast);
-            }
-            return freIntent;
         }
     }
 
@@ -100,14 +88,24 @@ public class FreIntentCreator {
      */
     private static Intent createGenericFirstRunIntent(Context context, Intent fromIntent,
             Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
+        final Class<?> activityClass;
+        if (shouldSwitchToTabbedMode(context)) {
+            activityClass = TabbedModeFirstRunActivity.class;
+
+            // Going to launch TabbedModeFRE. Have to disable animation on the intent launched after
+            // the FRE is completed to make the transition seamless.
+            intentToLaunchAfterFreComplete = new Intent(intentToLaunchAfterFreComplete);
+            intentToLaunchAfterFreComplete.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        } else {
+            activityClass = FirstRunActivity.class;
+        }
+
         Intent intent = new Intent();
-        intent.setClassName(context, FirstRunActivity.class.getName());
+        intent.setClass(context, activityClass);
         intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON,
                 TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN));
         intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT,
                 LaunchIntentDispatcher.isCustomTabIntent(fromIntent));
-        addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
-
         // Copy extras bundle from intent which was used to launch Chrome. Copying the extras
         // enables the FirstRunActivity to locate the associated CustomTabsSession (if there
         // is one) and to notify the connection of whether the FirstRunActivity was completed.
@@ -116,6 +114,8 @@ public class FreIntentCreator {
             Bundle copiedFromExtras = new Bundle(fromIntentExtras);
             intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_EXTRAS, copiedFromExtras);
         }
+
+        addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
 
         return intent;
     }
