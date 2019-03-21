@@ -73,6 +73,9 @@ interface VoiceInteractionObserver {
   // Called when assistant feature allowed state has changed.
   OnAssistantFeatureAllowedChanged(AssistantAllowedState state);
 
+  // Called when Google Play Store is enabled/disabled.
+  OnArcPlayStoreEnabledChanged(bool enabled);
+
   // Called when locale is changed in pref. The locale is in the format can be
   // "en-US" or simply "en". When locale is not set in pref, it returns empty
   // string.
@@ -114,6 +117,9 @@ interface VoiceInteractionController {
 
   // Called when the launch with mic open state is changed.
   NotifyLaunchWithMicOpen(bool launch_with_mic_open);
+
+  // Called when Google Play Store is enabled/disabled.
+  NotifyArcPlayStoreEnabledChanged(bool enabled);
 
   // Add an observer.
   AddObserver(VoiceInteractionObserver observer);

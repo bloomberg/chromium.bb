@@ -236,6 +236,12 @@ void AssistantManagerServiceImpl::EnableHotword(bool enable) {
   }
 }
 
+void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
+  // Both LibAssistant and Chrome threads may access |display_connection_|.
+  // |display_connection_| is thread safe.
+  display_connection_->SetArcPlayStoreEnabled(enable);
+}
+
 AssistantSettingsManager*
 AssistantManagerServiceImpl::GetAssistantSettingsManager() {
   return assistant_settings_manager_.get();
@@ -911,6 +917,11 @@ void AssistantManagerServiceImpl::OnStartFinished() {
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::RegisterFallbackMediaHandler,
                      weak_factory_.GetWeakPtr()));
+
+  if (service_->assistant_state()->arc_play_store_enabled().has_value()) {
+    SetArcPlayStoreEnabled(
+        service_->assistant_state()->arc_play_store_enabled().value());
+  }
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingStarted() {

@@ -130,6 +130,20 @@ void VoiceInteractionController::NotifyLaunchWithMicOpen(
   launch_with_mic_open_ = launch_with_mic_open;
 }
 
+void VoiceInteractionController::NotifyArcPlayStoreEnabledChanged(
+    bool enabled) {
+  if (arc_play_store_enabled_ == enabled)
+    return;
+
+  arc_play_store_enabled_ = enabled;
+
+  observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnArcPlayStoreEnabledChanged(enabled);
+  });
+  for (auto& observer : local_observers_)
+    observer.OnArcPlayStoreEnabledChanged(enabled);
+}
+
 void VoiceInteractionController::AddObserver(
     mojom::VoiceInteractionObserverPtr observer) {
   InitObserver(observer.get());
@@ -165,6 +179,8 @@ void VoiceInteractionController::InitObserver(
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
     observer->OnLocaleChanged(locale_.value());
+  if (arc_play_store_enabled_.has_value())
+    observer->OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
 }
 
 void VoiceInteractionController::FlushForTesting() {

@@ -105,6 +105,7 @@ class AssistantManagerServiceImpl
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
   void EnableHotword(bool enable) override;
+  void SetArcPlayStoreEnabled(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
 
   // mojom::Assistant overrides:

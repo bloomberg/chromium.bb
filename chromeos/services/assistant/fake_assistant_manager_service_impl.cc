@@ -34,6 +34,8 @@ void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
 
 void FakeAssistantManagerServiceImpl::EnableHotword(bool enable) {}
 
+void FakeAssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enabled) {}
+
 AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
     const {
   return state_;

@@ -53,28 +53,39 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   const base::Optional<std::string>& locale() const { return locale_; }
 
+  const base::Optional<bool>& arc_play_store_enabled() const {
+    return arc_play_store_enabled_;
+  }
+
  protected:
   base::Optional<mojom::VoiceInteractionState> voice_interaction_state_;
 
-  // Whether voice interaction is enabled in system settings.
+  // Whether voice interaction is enabled in system settings. nullopt if the
+  // data is not available yet.
   base::Optional<bool> settings_enabled_;
 
-  // The status of the user's consent.
+  // The status of the user's consent. nullopt if the data is not available yet.
   base::Optional<mojom::ConsentStatus> consent_status_;
 
-  // Whether screen context is enabled.
+  // Whether screen context is enabled. nullopt if the data is not available
+  // yet.
   base::Optional<bool> context_enabled_;
 
   // Whether hotword listening is enabled.
   base::Optional<bool> hotword_enabled_;
 
-  // Whether hotword listening is always on/only with power source.
+  // Whether hotword listening is always on/only with power source. nullopt
+  // if the data is not available yet.
   base::Optional<bool> hotword_always_on_;
 
   // Whether voice interaction feature is allowed or disallowed for what reason.
+  // nullopt if the data is not available yet.
   base::Optional<mojom::AssistantAllowedState> allowed_state_;
 
   base::Optional<std::string> locale_;
+
+  // Whether play store is enabled. nullopt if the data is not available yet.
+  base::Optional<bool> arc_play_store_enabled_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantStateBase);
