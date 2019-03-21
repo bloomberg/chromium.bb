@@ -448,13 +448,13 @@ void DOMFileSystemBase::GetDirectory(
 void DOMFileSystemBase::ReadDirectory(
     DirectoryReaderBase* reader,
     const String& path,
-    EntriesCallbacks::OnDidGetEntriesCallback* success_callback,
-    ErrorCallbackBase* error_callback,
+    const EntriesCallbacks::SuccessCallback& success_callback,
+    EntriesCallbacks::ErrorCallback error_callback,
     SynchronousType synchronous_type) {
   DCHECK(DOMFilePath::IsAbsolute(path));
 
   auto callbacks = std::make_unique<EntriesCallbacks>(
-      success_callback, error_callback, context_, reader, path);
+      success_callback, std::move(error_callback), context_, reader, path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   const KURL& url = CreateFileSystemURL(path);
   if (synchronous_type == kSynchronous) {

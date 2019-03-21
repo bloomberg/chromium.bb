@@ -61,9 +61,6 @@ class DirectoryReader : public DirectoryReaderBase {
   void Trace(blink::Visitor*) override;
 
  private:
-  class EntriesCallbackHelper;
-  class ErrorCallbackHelper;
-
   void AddEntries(const EntryHeapVector& entries);
 
   void OnError(base::File::Error error);

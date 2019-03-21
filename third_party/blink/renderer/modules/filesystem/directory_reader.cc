@@ -47,73 +47,38 @@ void RunEntriesCallback(
 
 }  // namespace
 
-class DirectoryReader::EntriesCallbackHelper final
-    : public EntriesCallbacks::OnDidGetEntriesCallback {
- public:
-  static EntriesCallbackHelper* Create(DirectoryReader* reader) {
-    return MakeGarbageCollected<EntriesCallbackHelper>(reader);
-  }
-
-  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(reader_);
-    EntriesCallbacks::OnDidGetEntriesCallback::Trace(visitor);
-  }
-
-  void OnSuccess(EntryHeapVector* entries) override {
-    reader_->AddEntries(*entries);
-  }
-
- private:
-  // FIXME: This Member keeps the reader alive until all of the readDirectory
-  // results are received. crbug.com/350285
-  Member<DirectoryReader> reader_;
-};
-
-class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
- public:
-  static ErrorCallbackHelper* Create(DirectoryReader* reader) {
-    return MakeGarbageCollected<ErrorCallbackHelper>(reader);
-  }
-
-  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
-  void Invoke(base::File::Error error) override { reader_->OnError(error); }
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(reader_);
-    ErrorCallbackBase::Trace(visitor);
-  }
-
- private:
-  Member<DirectoryReader> reader_;
-};
-
 DirectoryReader::DirectoryReader(DOMFileSystemBase* file_system,
                                  const String& full_path)
     : DirectoryReaderBase(file_system, full_path), is_reading_(false) {}
 
 void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
                                   V8ErrorCallback* error_callback) {
+  auto success_callback_wrapper = WTF::BindRepeating(
+      [](DirectoryReader* persistent_reader, EntryHeapVector* entries) {
+        persistent_reader->AddEntries(*entries);
+      },
+      WrapPersistentIfNeeded(this));
+
   if (!is_reading_) {
     is_reading_ = true;
-    Filesystem()->ReadDirectory(this, full_path_,
-                                EntriesCallbackHelper::Create(this),
-                                ErrorCallbackHelper::Create(this));
+    Filesystem()->ReadDirectory(
+        this, full_path_, success_callback_wrapper,
+        WTF::Bind(&DirectoryReader::OnError, WrapPersistentIfNeeded(this)));
   }
 
   if (error_ != base::File::FILE_OK) {
-    Filesystem()->ReportError(ScriptErrorCallback::Wrap(error_callback),
-                              error_);
+    Filesystem()->ReportError(
+        WTF::Bind(&DirectoryReader::OnError, WrapPersistentIfNeeded(this)),
+        error_);
     return;
   }
 
   if (entries_callback_) {
     // Non-null entries_callback_ means multiple readEntries() calls are made
     // concurrently. We don't allow doing it.
-    Filesystem()->ReportError(ScriptErrorCallback::Wrap(error_callback),
-                              base::File::FILE_ERROR_FAILED);
+    Filesystem()->ReportError(
+        WTF::Bind(&DirectoryReader::OnError, WrapPersistentIfNeeded(this)),
+        base::File::FILE_ERROR_FAILED);
     return;
   }
 
