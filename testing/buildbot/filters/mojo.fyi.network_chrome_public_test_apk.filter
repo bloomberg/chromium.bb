@@ -18,9 +18,6 @@
 # http://crbug.com/941856
 -org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testActivateWebApk
 
-# http://crbug.com/941858
--org.chromium.chrome.browser.payments.PaymentRequestUpdateWithTest.testUpdateWithShippingOptions
-
 # http://crbug.com/943829
 -org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTest.testStartAndAccept
 -org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetViewTest.testRemovingTabDeletesItsView
