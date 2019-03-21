@@ -311,7 +311,7 @@ void WaylandConnection::StartDrag(const ui::OSExchangeData& data,
     dragdrop_data_source_ = data_device_manager_->CreateSource();
   dragdrop_data_source_->Offer(data);
   dragdrop_data_source_->SetAction(operation);
-  data_device_->StartDrag(*(dragdrop_data_source_->data_source()), data);
+  data_device_->StartDrag(dragdrop_data_source_->data_source(), data);
 }
 
 void WaylandConnection::FinishDragSession(uint32_t dnd_action,

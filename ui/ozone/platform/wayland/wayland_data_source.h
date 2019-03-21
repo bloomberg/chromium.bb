@@ -48,7 +48,7 @@ class WaylandDataSource {
   void SetAction(int operation);
   void SetDragData(const DragDataMap& data_map);
 
-  const wl_data_source* data_source() const { return data_source_.get(); }
+  wl_data_source* data_source() const { return data_source_.get(); }
 
  private:
   static void OnTarget(void* data,

@@ -150,23 +150,20 @@ void WaylandDataDevice::DeliverDragData(const std::string& mime_type,
   }
 }
 
-void WaylandDataDevice::StartDrag(const wl_data_source& data_source,
+void WaylandDataDevice::StartDrag(wl_data_source* data_source,
                                   const ui::OSExchangeData& data) {
+  DCHECK(data_source);
   WaylandWindow* window = connection_->GetCurrentFocusedWindow();
   if (!window) {
     LOG(ERROR) << "Failed to get focused window.";
     return;
   }
-
-  wl_surface* surface = window->surface();
-  const SkBitmap* icon = data.provider().GetDragImage().bitmap();
-  if (icon && !icon->empty())
-    CreateDragImage(icon);
-
+  const SkBitmap* icon = PrepareDragIcon(data);
   source_data_ = std::make_unique<ui::OSExchangeData>(data.provider().Clone());
-  wl_data_device_start_drag(data_device_.get(),
-                            const_cast<wl_data_source*>(&data_source), surface,
+  wl_data_device_start_drag(data_device_.get(), data_source, window->surface(),
                             icon_surface_.get(), connection_->serial());
+  if (icon)
+    DrawDragIcon(icon);
   connection_->ScheduleFlush();
 }
 
@@ -376,22 +373,32 @@ void WaylandDataDevice::DeferredReadCallback(void* data,
   data_device->deferred_read_callback_.reset();
 }
 
-void WaylandDataDevice::CreateDragImage(const SkBitmap* bitmap) {
-  DCHECK(bitmap);
-  gfx::Size size(bitmap->width(), bitmap->height());
+const SkBitmap* WaylandDataDevice::PrepareDragIcon(const OSExchangeData& data) {
+  const SkBitmap* icon_bitmap = data.provider().GetDragImage().bitmap();
+  if (!icon_bitmap || icon_bitmap->empty())
+    return nullptr;
+  icon_surface_.reset(wl_compositor_create_surface(connection_->compositor()));
+  DCHECK(icon_surface_);
+  return icon_bitmap;
+}
+
+void WaylandDataDevice::DrawDragIcon(const SkBitmap* icon_bitmap) {
+  DCHECK(icon_bitmap);
+  DCHECK(!icon_bitmap->empty());
+  gfx::Size size(icon_bitmap->width(), icon_bitmap->height());
 
   if (size != icon_buffer_size_) {
     wl_buffer* buffer =
         wl::CreateSHMBuffer(size, shared_memory_.get(), connection_->shm());
-    if (!buffer)
+    if (!buffer) {
+      LOG(ERROR) << "Failed to create drag icon buffer.";
       return;
-
+    }
     buffer_.reset(buffer);
     icon_buffer_size_ = size;
   }
-  wl::DrawBitmapToSHMB(icon_buffer_size_, *shared_memory_, *bitmap);
+  wl::DrawBitmapToSHMB(icon_buffer_size_, *shared_memory_, *icon_bitmap);
 
-  icon_surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   wl_surface_attach(icon_surface_.get(), buffer_.get(), 0, 0);
   wl_surface_damage(icon_surface_.get(), 0, 0, icon_buffer_size_.width(),
                     icon_buffer_size_.height());
