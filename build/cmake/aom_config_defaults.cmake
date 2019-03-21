@@ -137,7 +137,7 @@ set_aom_config_var(CONFIG_COLLECT_COMPONENT_TIMING 0 NUMBER
 # TODO(urvang): Consider removing flat GF structure if and when pyramid
 # structure is generic enough to handle all cases, and performs equally well /
 # better.
-set_aom_config_var(CONFIG_FLAT_GF_STRUCTURE_ALLOWED 1 NUMBER
+set_aom_config_var(CONFIG_FLAT_GF_STRUCTURE_ALLOWED 0 NUMBER
                    "AV1 experiment flag.")
 #
 # Variables in this section control optional features of the build system.

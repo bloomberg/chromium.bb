@@ -23,7 +23,7 @@ static const struct GFMaxPyrHeightTestParam {
 } kTestParams[] = {
   { 1, 35.0 },
   { 2, 35.75 },
-  { 3, 36.0 },
+  { 3, 35.85 },
   { 4, 36.0 },
 };
 
