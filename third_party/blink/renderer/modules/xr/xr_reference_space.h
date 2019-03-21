@@ -32,7 +32,7 @@ class XRReferenceSpace : public XRSpace {
 
   XRRigidTransform* originOffset() const { return origin_offset_; }
   void setOriginOffset(XRRigidTransform*);
-  TransformationMatrix OriginOffsetMatrix() override;
+  TransformationMatrix InverseOriginOffsetMatrix() override;
 
   void Trace(blink::Visitor*) override;
 
