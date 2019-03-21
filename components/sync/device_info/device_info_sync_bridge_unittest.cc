@@ -829,6 +829,36 @@ TEST_F(DeviceInfoSyncBridgeTest,
   EXPECT_EQ(4, bridge()->CountActiveDevices());
 }
 
+TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevicesWithMalformedTimestamps) {
+  InitializeAndPump();
+  // Local device.
+  ASSERT_EQ(1, bridge()->CountActiveDevices());
+
+  const DeviceInfoSpecifics specifics1 = CreateSpecifics(1);
+  const DeviceInfoSpecifics specifics2 = CreateSpecifics(2);
+
+  // Time ranges are overlapping.
+  ON_CALL(*processor(), GetEntityCreationTime(specifics1.cache_guid()))
+      .WillByDefault(
+          Return(base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(1)));
+  ON_CALL(*processor(), GetEntityModificationTime(specifics1.cache_guid()))
+      .WillByDefault(
+          Return(base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(4)));
+  ON_CALL(*processor(), GetEntityCreationTime(specifics2.cache_guid()))
+      .WillByDefault(
+          Return(base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(3)));
+  ON_CALL(*processor(), GetEntityModificationTime(specifics2.cache_guid()))
+      .WillByDefault(
+          Return(base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(2)));
+
+  // With two devices, the local device gets ignored because it doesn't overlap.
+  bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
+                             EntityAddList({specifics1, specifics2}));
+
+  ASSERT_EQ(3u, bridge()->GetAllDeviceInfo().size());
+  EXPECT_EQ(1, bridge()->CountActiveDevices());
+}
+
 TEST_F(DeviceInfoSyncBridgeTest, MultipleOnProviderInitialized) {
   EXPECT_CALL(*processor(), ModelReadyToSync(_)).Times(0);
   set_provider(std::make_unique<LocalDeviceInfoProviderMock>());
