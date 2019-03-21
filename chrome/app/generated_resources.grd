@@ -4734,17 +4734,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_ABOUT_BROWSER_SWITCH_TITLE" desc="about:browser-switch page title">
           Legacy Browser Support
         </message>
-        <message name="IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE" desc="Shown while waiting for an alternative browser to open">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE_UNKNOWN_BROWSER" desc="Shown while waiting for an alternative browser to open, when the browser name is not auto-detected">
           Opening in alternative browser now
         </message>
-        <message name="IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE" desc="Error message shown when we fail to open the alternative browser">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE_KNOWN_BROWSER" desc="Shown while waiting for an alternative browser to open, when the browser name is auto-detected">
+          Opening in <ph name="ALTERNATIVE_BROWSER_NAME">$1<ex>Internet Explorer</ex></ph> now
+        </message>
+        <message name="IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE_UNKNOWN_BROWSER" desc="Error message shown when we fail to open the alternative browser, when the browser name is not auto-detected">
           The alternative browser could not be opened
         </message>
-        <message name="IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE" desc="Shown while waiting for an alternative browser to open, with a countdown timer">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE_KNOWN_BROWSER" desc="Error message shown when we fail to open the alternative browser, when the browser name is auto-detected">
+          <ph name="ALTERNATIVE_BROWSER_NAME">$1<ex>Internet Explorer</ex></ph> could not be opened
+        </message>
+        <message name="IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE_UNKNOWN_BROWSER" desc="Shown while waiting for an alternative browser to open, with a countdown timer, when the browser name is not auto-detected">
           Opening in alternative browser in <ph name="COUNTDOWN_SECONDS">$1<ex>5</ex></ph> seconds
         </message>
-        <message name="IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR" desc="Generic error message when we don't know why we failed to open the alternative browser">
+        <message name="IDS_ABOUT_BROWSER_SWITCH_COUNTDOWN_TITLE_KNOWN_BROWSER" desc="Shown while waiting for an alternative browser to open, with a countdown timer, when the browser name is auto-detected">
+          Opening in <ph name="ALTERNATIVE_BROWSER_NAME">$2<ex>Internet Explorer</ex></ph> in <ph name="COUNTDOWN_SECONDS">$1<ex>5</ex></ph> seconds
+        </message>
+        <message name="IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR_UNKNOWN_BROWSER" desc="Generic error message when we don't know why we failed to open the alternative browser, when the browser name is not auto-detected">
           <ph name="URL">$1<ex>ftp://example.com/</ex></ph> could not be open in an alternative browser. Please contact your system administrator.
+        </message>
+        <message name="IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR_KNOWN_BROWSER" desc="Generic error message when we don't know why we failed to open the alternative browser, when the browser name is auto-detected">
+          <ph name="URL">$1<ex>ftp://example.com/</ex></ph> could not be open in <ph name="ALTERNATIVE_BROWSER_NAME">$2<ex>Internet Explorer</ex></ph>. Please contact your system administrator.
         </message>
         <message name="IDS_ABOUT_BROWSER_SWITCH_PROTOCOL_ERROR" desc="Specific error message when we failed to open the alternative browser, because the URL is not one of http://, https:// or file://">
           Only http, https and file protocols are supported for browser redirects.
