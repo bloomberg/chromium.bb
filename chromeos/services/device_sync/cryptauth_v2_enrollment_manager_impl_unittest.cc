@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/base64url.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -51,17 +52,20 @@ const char kFakeV1PrivateKey[] = "private_key_v1";
 const char kFakeV2PublicKey[] = "public_key_v2";
 const char kFakeV2PrivateKey[] = "private_key_v2";
 
-const base::TimeDelta kFakeRefreshPeriod = base::TimeDelta::FromMilliseconds(
-    cryptauthv2::kTestClientDirectiveCheckinDelayMillis);
-const base::TimeDelta kFakeRetryPeriod = base::TimeDelta::FromMilliseconds(
-    cryptauthv2::kTestClientDirectiveRetryPeriodMillis);
-const base::Time kFakeLastEnrollmentTime = base::Time::UnixEpoch();
-const base::Time kFakeTimeAfterRefreshPeriod = kFakeLastEnrollmentTime +
-                                               kFakeRefreshPeriod +
-                                               base::TimeDelta::FromSeconds(1);
-const base::Time kFakeTimeBeforeRefreshPeriod = kFakeLastEnrollmentTime +
-                                                kFakeRefreshPeriod -
-                                                base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kFakeRefreshPeriod =
+    base::TimeDelta::FromMilliseconds(2592000000);
+constexpr base::TimeDelta kFakeRetryPeriod =
+    base::TimeDelta::FromMilliseconds(43200000);
+
+const cryptauthv2::PolicyReference& GetClientDirectivePolicyReferenceForTest() {
+  static const base::NoDestructor<cryptauthv2::PolicyReference>
+      policy_reference([] {
+        return cryptauthv2::BuildPolicyReference("policy_reference_name",
+                                                 1 /* version */);
+      }());
+
+  return *policy_reference;
+}
 
 // A child of FakeCryptAuthEnrollmentScheduler that sets scheduler parameters
 // based on the latest enrollment result.
@@ -123,6 +127,11 @@ class FakeNetworkAwareEnrollmentSchedulerFactory
         std::make_unique<FakeCryptAuthEnrollmentSchedulerWithResultHandling>(
             delegate, clock_);
     instance_ = instance.get();
+
+    // Fix the scheduler's ClientDirective PolicyReference to test that it is
+    // passed to the enroller properly.
+    instance->set_client_directive_policy_reference(
+        GetClientDirectivePolicyReferenceForTest());
 
     if (initial_num_consecutive_failures_) {
       instance->set_num_consecutive_failures(
@@ -197,6 +206,8 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
     NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
 
+    test_clock_.SetNow(base::Time::UnixEpoch());
+
     CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(
         test_pref_service_.registry());
     CryptAuthKeyRegistryImpl::RegisterPrefs(test_pref_service_.registry());
@@ -218,14 +229,22 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
 
   // testing::Test:
   void TearDown() override {
-    if (enrollment_manager())
-      enrollment_manager()->RemoveObserver(this);
+    if (enrollment_manager_)
+      enrollment_manager_->RemoveObserver(this);
 
     NetworkAwareEnrollmentScheduler::Factory::SetFactoryForTesting(nullptr);
     CryptAuthV2EnrollerImpl::Factory::SetFactoryForTesting(nullptr);
 
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
+  }
+
+  // CryptAuthEnrollmentManager::Observer:
+  void OnEnrollmentStarted() override {
+    ++num_enrollment_started_notifications_;
+  }
+  void OnEnrollmentFinished(bool success) override {
+    observer_enrollment_finished_success_list_.push_back(success);
   }
 
   void AddV1UserKeyPairToV1Prefs(const std::string& public_key,
@@ -250,16 +269,6 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
         num_consecutive_failures);
   }
 
-  // CryptAuthEnrollmentManager::Observer:
-  void OnEnrollmentStarted() override {
-    ++num_enrollment_started_notifications_;
-
-    enrollment_finished_success_ = base::nullopt;
-  }
-  void OnEnrollmentFinished(bool success) override {
-    enrollment_finished_success_ = success;
-  }
-
   void CreateEnrollmentManager() {
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
@@ -270,13 +279,146 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
             &mock_client_factory_, &fake_gcm_manager_, &test_pref_service_,
             &test_clock_, std::move(mock_timer));
 
-    enrollment_manager()->AddObserver(this);
+    enrollment_manager_->AddObserver(this);
+  }
+
+  void RequestEnrollmentThroughGcm() {
+    fake_gcm_manager_.PushReenrollMessage();
   }
 
   void VerifyEnrollmentManagerObserversNotifiedOfStart(
       size_t expected_num_enrollment_started_notifications) {
     EXPECT_EQ(expected_num_enrollment_started_notifications,
               num_enrollment_started_notifications_);
+  }
+
+  void CompleteGcmRegistration(bool success) {
+    EXPECT_TRUE(fake_gcm_manager_.GetRegistrationId().empty());
+
+    if (success) {
+      fake_gcm_manager_.CompleteRegistration(
+          cryptauthv2::kTestGcmRegistrationId);
+    } else {
+      // An empty registration ID is interpreted as an error by
+      // FakeCryptAuthGCMManager.
+      fake_gcm_manager_.CompleteRegistration(std::string());
+    }
+  }
+
+  void HandleGetClientAppMetadataRequest(bool success) {
+    EXPECT_GT(fake_client_app_metadata_provider_.metadata_requests().size(),
+              0u);
+    EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
+              fake_client_app_metadata_provider_.metadata_requests()
+                  .back()
+                  .gcm_registration_id);
+
+    if (success) {
+      std::move(fake_client_app_metadata_provider_.metadata_requests()
+                    .back()
+                    .callback)
+          .Run(cryptauthv2::GetClientAppMetadataForTest());
+      return;
+    }
+
+    std::move(
+        fake_client_app_metadata_provider_.metadata_requests().back().callback)
+        .Run(base::nullopt /* client_app_metadata */);
+  }
+
+  void FinishEnrollmentAttempt(
+      size_t expected_enroller_instance_index,
+      const cryptauthv2::ClientMetadata::InvocationReason&
+          expected_invocation_reason,
+      const CryptAuthEnrollmentResult& enrollment_result) {
+    EXPECT_TRUE(enrollment_manager_->IsEnrollmentInProgress());
+
+    // A valid GCM registration ID and valid ClientAppMetadata must exist before
+    // the enroller can be invoked.
+    EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
+              fake_gcm_manager_.GetRegistrationId());
+    EXPECT_GT(fake_client_app_metadata_provider_.metadata_requests().size(),
+              0u);
+
+    // Only the most recently created enroller is valid.
+    EXPECT_EQ(fake_enroller_factory_->created_instances().size() - 1,
+              expected_enroller_instance_index);
+    FakeCryptAuthV2Enroller* enroller =
+        fake_enroller_factory_
+            ->created_instances()[expected_enroller_instance_index];
+
+    VerifyEnrollerData(enroller, expected_invocation_reason);
+
+    enroller->FinishAttempt(enrollment_result);
+
+    EXPECT_FALSE(enrollment_manager_->IsEnrollmentInProgress());
+
+    cryptauthv2::ClientMetadata::InvocationReason expected_persisted_reason =
+        enrollment_manager_->IsRecoveringFromFailure()
+            ? expected_invocation_reason
+            : cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED;
+    VerifyPersistedFailureRecoveryInvocationReason(expected_persisted_reason);
+  }
+
+  void VerifyEnrollmentResults(
+      const std::vector<CryptAuthEnrollmentResult>& expected_results) {
+    VerifyResultsSentToEnrollmentManagerObservers(expected_results);
+    VerifyResultsSentToEnrollmentScheduler(expected_results);
+  }
+
+  CryptAuthKeyRegistry* key_registry() { return key_registry_.get(); }
+
+  FakeCryptAuthEnrollmentSchedulerWithResultHandling*
+  fake_enrollment_scheduler() {
+    return fake_enrollment_scheduler_factory_->instance();
+  }
+
+  base::SimpleTestClock* test_clock() { return &test_clock_; }
+
+  base::MockOneShotTimer* mock_timer() { return mock_timer_; }
+
+  CryptAuthEnrollmentManager* enrollment_manager() {
+    return enrollment_manager_.get();
+  }
+
+ private:
+  void VerifyEnrollerData(FakeCryptAuthV2Enroller* enroller,
+                          const cryptauthv2::ClientMetadata::InvocationReason&
+                              expected_invocation_reason) {
+    EXPECT_TRUE(enroller->was_enroll_called());
+
+    EXPECT_EQ(cryptauthv2::BuildClientMetadata(
+                  fake_enrollment_scheduler()
+                      ->GetNumConsecutiveFailures() /* retry_count */,
+                  expected_invocation_reason)
+                  .SerializeAsString(),
+              enroller->client_metadata()->SerializeAsString());
+
+    EXPECT_EQ(cryptauthv2::GetClientAppMetadataForTest().SerializeAsString(),
+              enroller->client_app_metadata()->SerializeAsString());
+
+    EXPECT_EQ(
+        GetClientDirectivePolicyReferenceForTest().SerializeAsString(),
+        (*enroller->client_directive_policy_reference())->SerializeAsString());
+  }
+
+  void VerifyResultsSentToEnrollmentManagerObservers(
+      const std::vector<CryptAuthEnrollmentResult>
+          expected_enrollment_results) {
+    ASSERT_EQ(expected_enrollment_results.size(),
+              observer_enrollment_finished_success_list_.size());
+
+    for (size_t i = 0; i < expected_enrollment_results.size(); ++i) {
+      EXPECT_EQ(expected_enrollment_results[i].IsSuccess(),
+                observer_enrollment_finished_success_list_[i]);
+    }
+  }
+
+  void VerifyResultsSentToEnrollmentScheduler(
+      const std::vector<CryptAuthEnrollmentResult>
+          expected_enrollment_results) {
+    EXPECT_EQ(expected_enrollment_results,
+              fake_enrollment_scheduler()->handled_enrollment_results());
   }
 
   void VerifyPersistedFailureRecoveryInvocationReason(
@@ -289,57 +431,11 @@ class DeviceSyncCryptAuthV2EnrollmentManagerImplTest
                 prefs::kCryptAuthEnrollmentFailureRecoveryInvocationReason)));
   }
 
-  void VerifyEnrollmentResult(
-      const CryptAuthEnrollmentResult& expected_result) {
-    VerifyResultSentToEnrollmentManagerObservers(expected_result.IsSuccess());
-    EXPECT_EQ(expected_result,
-              fake_enrollment_scheduler()->handled_enrollment_results().back());
-  }
-
-  TestingPrefServiceSimple* test_pref_service() { return &test_pref_service_; }
-
-  CryptAuthKeyRegistry* key_registry() { return key_registry_.get(); }
-
-  FakeCryptAuthEnrollmentSchedulerWithResultHandling*
-  fake_enrollment_scheduler() {
-    return fake_enrollment_scheduler_factory_->instance();
-  }
-
-  FakeCryptAuthGCMManager* fake_gcm_manager() { return &fake_gcm_manager_; }
-
-  base::SimpleTestClock* test_clock() { return &test_clock_; }
-
-  base::MockOneShotTimer* mock_timer() { return mock_timer_; }
-
-  FakeClientAppMetadataProvider* fake_client_app_metadata_provider() {
-    return &fake_client_app_metadata_provider_;
-  }
-
-  MockCryptAuthClientFactory* mock_client_factory() {
-    return &mock_client_factory_;
-  }
-
-  FakeCryptAuthV2Enroller* fake_enroller(size_t index = 0u) {
-    // Only the most recently created enroller is valid.
-    EXPECT_EQ(fake_enroller_factory_->created_instances().size() - 1, index);
-
-    return fake_enroller_factory_->created_instances()[index];
-  }
-
-  CryptAuthEnrollmentManager* enrollment_manager() {
-    return enrollment_manager_.get();
-  }
-
- private:
-  void VerifyResultSentToEnrollmentManagerObservers(bool success) {
-    EXPECT_EQ(success, enrollment_finished_success_);
-  }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   size_t num_enrollment_started_notifications_ = 0;
-  base::Optional<bool> enrollment_finished_success_ = base::nullopt;
   size_t num_consecutive_failures_ = 0;
+  std::vector<bool> observer_enrollment_finished_success_list_;
 
   TestingPrefServiceSimple test_pref_service_;
   FakeClientAppMetadataProvider fake_client_app_metadata_provider_;
@@ -365,52 +461,27 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
 
   // The user has never enrolled with v1 or v2 and has not registered with GCM.
   EXPECT_TRUE(key_registry()->enrolled_key_bundles().empty());
-  EXPECT_TRUE(fake_gcm_manager()->GetRegistrationId().empty());
   EXPECT_TRUE(enrollment_manager()->GetLastEnrollmentTime().is_null());
   EXPECT_FALSE(enrollment_manager()->IsEnrollmentValid());
 
-  cryptauthv2::PolicyReference expected_policy_reference =
-      cryptauthv2::BuildPolicyReference("expected_policy_reference_name",
-                                        1 /* version */);
-  fake_enrollment_scheduler()->set_client_directive_policy_reference(
-      expected_policy_reference);
   fake_enrollment_scheduler()->RequestEnrollmentNow();
   EXPECT_TRUE(enrollment_manager()->IsEnrollmentInProgress());
   VerifyEnrollmentManagerObserversNotifiedOfStart(
       1 /* expected_num_enrollment_started_notifications */);
 
-  fake_gcm_manager()->CompleteRegistration(cryptauthv2::kTestGcmRegistrationId);
-
-  EXPECT_EQ(1u,
-            fake_client_app_metadata_provider()->metadata_requests().size());
-  EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
-            fake_client_app_metadata_provider()
-                ->metadata_requests()[0]
-                .gcm_registration_id);
-  std::move(
-      fake_client_app_metadata_provider()->metadata_requests()[0].callback)
-      .Run(cryptauthv2::GetClientAppMetadataForTest());
-
-  EXPECT_TRUE(fake_enroller()->was_enroll_called());
-  EXPECT_EQ(
-      cryptauthv2::BuildClientMetadata(
-          0 /* retry_count */,
-          cryptauthv2::ClientMetadata::INITIALIZATION /* invocation_reason */)
-          .SerializeAsString(),
-      fake_enroller()->client_metadata()->SerializeAsString());
-  EXPECT_EQ(cryptauthv2::GetClientAppMetadataForTest().SerializeAsString(),
-            fake_enroller()->client_app_metadata()->SerializeAsString());
-  EXPECT_EQ(expected_policy_reference.SerializeAsString(),
-            (*fake_enroller()->client_directive_policy_reference())
-                ->SerializeAsString());
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(true /* success */);
 
   CryptAuthEnrollmentResult expected_enrollment_result(
       CryptAuthEnrollmentResult::ResultCode::kSuccessNewKeysEnrolled,
       cryptauthv2::GetClientDirectiveForTest());
-  fake_enroller()->FinishAttempt(expected_enrollment_result);
-  EXPECT_FALSE(enrollment_manager()->IsEnrollmentInProgress());
 
-  VerifyEnrollmentResult(expected_enrollment_result);
+  FinishEnrollmentAttempt(0u /* expected_enroller_instance_index */,
+                          cryptauthv2::ClientMetadata::
+                              INITIALIZATION /* expected_invocation_reason */,
+                          expected_enrollment_result);
+
+  VerifyEnrollmentResults({expected_enrollment_result});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GcmRegistrationFailed) {
@@ -418,13 +489,11 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GcmRegistrationFailed) {
   enrollment_manager()->Start();
   fake_enrollment_scheduler()->RequestEnrollmentNow();
 
-  // An empty registration ID is interpreted as an error by
-  // FakeCryptAuthGCMManager.
-  fake_gcm_manager()->CompleteRegistration(std::string() /* registration_id */);
+  CompleteGcmRegistration(false /* success */);
 
-  VerifyEnrollmentResult(CryptAuthEnrollmentResult(
+  VerifyEnrollmentResults({CryptAuthEnrollmentResult(
       CryptAuthEnrollmentResult::ResultCode::kErrorGcmRegistrationFailed,
-      base::nullopt /* client_directive */));
+      base::nullopt /* client_directive */)});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GcmRegistrationTimeout) {
@@ -436,10 +505,10 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GcmRegistrationTimeout) {
   EXPECT_TRUE(mock_timer()->IsRunning());
   mock_timer()->Fire();
 
-  VerifyEnrollmentResult(
-      CryptAuthEnrollmentResult(CryptAuthEnrollmentResult::ResultCode::
-                                    kErrorTimeoutWaitingForGcmRegistration,
-                                base::nullopt /* client_directive */));
+  VerifyEnrollmentResults(
+      {CryptAuthEnrollmentResult(CryptAuthEnrollmentResult::ResultCode::
+                                     kErrorTimeoutWaitingForGcmRegistration,
+                                 base::nullopt /* client_directive */)});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
@@ -447,16 +516,12 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   CreateEnrollmentManager();
   enrollment_manager()->Start();
   fake_enrollment_scheduler()->RequestEnrollmentNow();
-  fake_gcm_manager()->CompleteRegistration(cryptauthv2::kTestGcmRegistrationId);
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(false /* success */);
 
-  // A failed metadata retrieval will return base::nullopt.
-  std::move(
-      fake_client_app_metadata_provider()->metadata_requests()[0].callback)
-      .Run(base::nullopt /* client_app_metadata */);
-
-  VerifyEnrollmentResult(CryptAuthEnrollmentResult(
+  VerifyEnrollmentResults({CryptAuthEnrollmentResult(
       CryptAuthEnrollmentResult::ResultCode::kErrorClientAppMetadataFetchFailed,
-      base::nullopt /* client_directive */));
+      base::nullopt /* client_directive */)});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
@@ -464,16 +529,16 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   CreateEnrollmentManager();
   enrollment_manager()->Start();
   fake_enrollment_scheduler()->RequestEnrollmentNow();
-  fake_gcm_manager()->CompleteRegistration(cryptauthv2::kTestGcmRegistrationId);
+  CompleteGcmRegistration(true /* success */);
 
   // Timeout waiting for ClientAppMetadata.
   EXPECT_TRUE(mock_timer()->IsRunning());
   mock_timer()->Fire();
 
-  VerifyEnrollmentResult(
-      CryptAuthEnrollmentResult(CryptAuthEnrollmentResult::ResultCode::
-                                    kErrorTimeoutWaitingForClientAppMetadata,
-                                base::nullopt /* client_directive */));
+  VerifyEnrollmentResults(
+      {CryptAuthEnrollmentResult(CryptAuthEnrollmentResult::ResultCode::
+                                     kErrorTimeoutWaitingForClientAppMetadata,
+                                 base::nullopt /* client_directive */)});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, ForcedEnrollment) {
@@ -487,15 +552,17 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, ForcedEnrollment) {
       1 /* expected_num_enrollment_started_notifications */);
 
   // Simulate a failed enrollment attempt due to CryptAuth server overload.
-  fake_gcm_manager()->CompleteRegistration(cryptauthv2::kTestGcmRegistrationId);
-  std::move(
-      fake_client_app_metadata_provider()->metadata_requests()[0].callback)
-      .Run(cryptauthv2::GetClientAppMetadataForTest());
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(true /* success */);
   CryptAuthEnrollmentResult expected_enrollment_result(
       CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
       base::nullopt /* client_directive */);
-  fake_enroller()->FinishAttempt(expected_enrollment_result);
-  VerifyEnrollmentResult(expected_enrollment_result);
+  FinishEnrollmentAttempt(0u /* expected_enroller_instance_index */,
+                          cryptauthv2::ClientMetadata::
+                              FEATURE_TOGGLED /* expected_invocation_reason */,
+                          expected_enrollment_result);
+
+  VerifyEnrollmentResults({expected_enrollment_result});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
@@ -504,25 +571,29 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   enrollment_manager()->Start();
 
   // The user has already enrolled and is due for a refresh.
-  base::Time expected_last_enrollment_time = kFakeLastEnrollmentTime;
+  base::Time expected_last_enrollment_time = test_clock()->Now();
   fake_enrollment_scheduler()->set_last_successful_enrollment_time(
       expected_last_enrollment_time);
   fake_enrollment_scheduler()->set_refresh_period(kFakeRefreshPeriod);
-  test_clock()->SetNow(kFakeTimeAfterRefreshPeriod);
+
+  // Set clock after refresh period.
+  test_clock()->SetNow(test_clock()->Now() + kFakeRefreshPeriod +
+                       base::TimeDelta::FromSeconds(1));
+
   base::TimeDelta expected_time_to_next_attempt =
       base::TimeDelta::FromSeconds(0);
   fake_enrollment_scheduler()->set_time_to_next_enrollment_request(
       expected_time_to_next_attempt);
-  cryptauthv2::ClientMetadata::InvocationReason expected_invocation_reason =
-      cryptauthv2::ClientMetadata::PERIODIC;
 
   EXPECT_EQ(expected_last_enrollment_time,
             enrollment_manager()->GetLastEnrollmentTime());
   EXPECT_FALSE(enrollment_manager()->IsEnrollmentValid());
   EXPECT_EQ(expected_time_to_next_attempt,
             enrollment_manager()->GetTimeToNextAttempt());
-  EXPECT_FALSE(enrollment_manager()->IsEnrollmentInProgress());
   EXPECT_FALSE(enrollment_manager()->IsRecoveringFromFailure());
+
+  cryptauthv2::ClientMetadata::InvocationReason expected_invocation_reason =
+      cryptauthv2::ClientMetadata::PERIODIC;
 
   // First enrollment attempt fails.
   // Note: User does not yet have a GCM registration ID or ClientAppMetadata.
@@ -530,26 +601,19 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   EXPECT_TRUE(enrollment_manager()->IsEnrollmentInProgress());
   VerifyEnrollmentManagerObserversNotifiedOfStart(
       1 /* expected_num_enrollment_started_notifications */);
-  fake_gcm_manager()->CompleteRegistration(cryptauthv2::kTestGcmRegistrationId);
-  std::move(
-      fake_client_app_metadata_provider()->metadata_requests()[0].callback)
-      .Run(cryptauthv2::GetClientAppMetadataForTest());
-  EXPECT_EQ(cryptauthv2::BuildClientMetadata(0 /* retry_count */,
-                                             expected_invocation_reason)
-                .SerializeAsString(),
-            fake_enroller()->client_metadata()->SerializeAsString());
 
-  CryptAuthEnrollmentResult expected_enrollment_result(
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(true /* success */);
+
+  CryptAuthEnrollmentResult first_expected_enrollment_result(
       CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
       base::nullopt /* client_directive */);
-  fake_enroller()->FinishAttempt(expected_enrollment_result);
-  EXPECT_FALSE(enrollment_manager()->IsEnrollmentInProgress());
-  VerifyEnrollmentResult(expected_enrollment_result);
 
-  // The initial invocation reason is persisted for reuse in subsequent failure
-  // recovery attempts.
-  VerifyPersistedFailureRecoveryInvocationReason(
-      cryptauthv2::ClientMetadata::PERIODIC);
+  FinishEnrollmentAttempt(0u /* expected_enroller_instance_index */,
+                          expected_invocation_reason,
+                          first_expected_enrollment_result);
+
+  EXPECT_EQ(kFakeRetryPeriod, enrollment_manager()->GetTimeToNextAttempt());
 
   // Second (successful) enrollment attempt bypasses GCM registration and
   // ClientAppMetadata fetch because they were performed during the failed
@@ -558,27 +622,18 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   VerifyEnrollmentManagerObserversNotifiedOfStart(
       2 /* expected_num_enrollment_started_notifications */);
   EXPECT_TRUE(enrollment_manager()->IsRecoveringFromFailure());
-  expected_invocation_reason = cryptauthv2::ClientMetadata::PERIODIC;
-  EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
-            fake_gcm_manager()->GetRegistrationId());
-  EXPECT_EQ(1u,
-            fake_client_app_metadata_provider()->metadata_requests().size());
-  EXPECT_EQ(
-      cryptauthv2::BuildClientMetadata(1 /* retry_count */,
-                                       expected_invocation_reason)
-          .SerializeAsString(),
-      fake_enroller(1u /* index */)->client_metadata()->SerializeAsString());
 
-  expected_enrollment_result = CryptAuthEnrollmentResult(
-      CryptAuthEnrollmentResult::ResultCode::kSuccessNoNewKeysNeeded,
-      cryptauthv2::GetClientDirectiveForTest());
-  fake_enroller(1u /* index */)->FinishAttempt(expected_enrollment_result);
-  VerifyEnrollmentResult(expected_enrollment_result);
+  CryptAuthEnrollmentResult second_expected_enrollment_result =
+      CryptAuthEnrollmentResult(
+          CryptAuthEnrollmentResult::ResultCode::kSuccessNoNewKeysNeeded,
+          cryptauthv2::GetClientDirectiveForTest());
 
-  // The persisted invocation reason to be used for failure recovery is cleared
-  // after a successful enrollment attempt.
-  VerifyPersistedFailureRecoveryInvocationReason(
-      cryptauthv2::ClientMetadata::INVOCATION_REASON_UNSPECIFIED);
+  FinishEnrollmentAttempt(1u /* expected_enroller_instance_index */,
+                          expected_invocation_reason,
+                          second_expected_enrollment_result);
+
+  VerifyEnrollmentResults(
+      {first_expected_enrollment_result, second_expected_enrollment_result});
 
   EXPECT_EQ(test_clock()->Now(), enrollment_manager()->GetLastEnrollmentTime());
   EXPECT_TRUE(enrollment_manager()->IsEnrollmentValid());
@@ -591,7 +646,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   CreateEnrollmentManager();
   enrollment_manager()->Start();
 
-  fake_gcm_manager()->PushReenrollMessage();
+  RequestEnrollmentThroughGcm();
   EXPECT_TRUE(enrollment_manager()->IsEnrollmentInProgress());
 }
 
@@ -633,16 +688,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
                                   CryptAuthKeyBundle::Name::kUserKeyPair));
 
   // A legacy v1 user key pair should overwrite any existing v2 user key pair
-  // when the enrollment manager is constructed. This can happen in the
-  // following rollback-->rollforward scenario:
-  //   - User never enrolled with v1
-  //   - User enrolls with v2, storing v2 user key pair locally in key registry
-  //     and in CryptAuth backend database
-  //   - Chromium rolls back to v1 enrollment flow
-  //   - User enrolls with v1, storing the v1 user key pair in prefs (not key
-  //     registry) and overwriting the v2 key in the CryptAuth backend database
-  //   - Chromium rolls forward to v2 enrollment flow, with different user key
-  //     pairs stored in v1 prefs and the v2 key registry.
+  // when the enrollment manager is constructed.
   CreateEnrollmentManager();
 
   EXPECT_EQ(
@@ -666,6 +712,70 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GetUserKeyPair) {
                    kCryptAuthFixedUserKeyPairHandle));
   EXPECT_EQ(kFakeV2PublicKey, enrollment_manager()->GetUserPublicKey());
   EXPECT_EQ(kFakeV2PrivateKey, enrollment_manager()->GetUserPrivateKey());
+}
+
+TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
+       MultipleEnrollmentAttempts) {
+  CreateEnrollmentManager();
+  enrollment_manager()->Start();
+
+  std::vector<cryptauthv2::ClientMetadata::InvocationReason>
+      expected_invocation_reasons;
+  std::vector<CryptAuthEnrollmentResult> expected_enrollment_results;
+
+  // Successfully enroll for the first time.
+  expected_invocation_reasons.push_back(
+      cryptauthv2::ClientMetadata::INITIALIZATION);
+  expected_enrollment_results.emplace_back(
+      CryptAuthEnrollmentResult::ResultCode::kSuccessNewKeysEnrolled,
+      cryptauthv2::GetClientDirectiveForTest());
+  fake_enrollment_scheduler()->RequestEnrollmentNow();
+  VerifyEnrollmentManagerObserversNotifiedOfStart(
+      1 /* expected_num_enrollment_started_notifications */);
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(true /* success */);
+  FinishEnrollmentAttempt(0u /* expected_enroller_instance_index */,
+                          expected_invocation_reasons.back(),
+                          expected_enrollment_results.back());
+
+  // Fail periodic refresh twice due to overloaded CryptAuth server.
+  test_clock()->SetNow(test_clock()->Now() + kFakeRefreshPeriod +
+                       base::TimeDelta::FromSeconds(1));
+  expected_invocation_reasons.push_back(cryptauthv2::ClientMetadata::PERIODIC);
+  expected_enrollment_results.emplace_back(
+      CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
+      cryptauthv2::GetClientDirectiveForTest());
+  fake_enrollment_scheduler()->RequestEnrollmentNow();
+  VerifyEnrollmentManagerObserversNotifiedOfStart(
+      2 /* expected_num_enrollment_started_notifications */);
+  FinishEnrollmentAttempt(1u /* expected_enroller_instance_index */,
+                          expected_invocation_reasons.back(),
+                          expected_enrollment_results.back());
+
+  expected_invocation_reasons.push_back(cryptauthv2::ClientMetadata::PERIODIC);
+  expected_enrollment_results.emplace_back(
+      CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
+      base::nullopt /* client_directive */);
+  fake_enrollment_scheduler()->RequestEnrollmentNow();
+  VerifyEnrollmentManagerObserversNotifiedOfStart(
+      3 /* expected_num_enrollment_started_notifications */);
+  FinishEnrollmentAttempt(2u /* expected_enroller_instance_index */,
+                          expected_invocation_reasons.back(),
+                          expected_enrollment_results.back());
+
+  // While waiting for retry, force a manual enrollment that succeeds.
+  expected_invocation_reasons.push_back(cryptauthv2::ClientMetadata::MANUAL);
+  expected_enrollment_results.emplace_back(
+      CryptAuthEnrollmentResult::ResultCode::kSuccessNoNewKeysNeeded,
+      base::nullopt /* client_directive */);
+  enrollment_manager()->ForceEnrollmentNow(cryptauth::INVOCATION_REASON_MANUAL);
+  VerifyEnrollmentManagerObserversNotifiedOfStart(
+      4 /* expected_num_enrollment_started_notifications */);
+  FinishEnrollmentAttempt(3u /* expected_enroller_instance_index */,
+                          expected_invocation_reasons.back(),
+                          expected_enrollment_results.back());
+
+  VerifyEnrollmentResults(expected_enrollment_results);
 }
 
 }  // namespace device_sync
