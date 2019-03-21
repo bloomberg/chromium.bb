@@ -10,11 +10,16 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
 
 namespace ws {
 namespace mojom {
@@ -97,6 +102,10 @@ class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+#if defined(OS_WIN)
+  base::win::ScopedCOMInitializer com_initializer_;
+#endif
 
   // Only used for mus, initially set to this, but may be reset.
   WindowTreeClientDelegate* window_tree_client_delegate_;

@@ -9,10 +9,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
-#endif
-
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
 #include <memory>
 
@@ -47,10 +43,6 @@ class ViewsTestSuite : public base::TestSuite {
   // On Chrome OS, aura::Env is set up in individual test fixtures, most notably
   // ViewsTestBase.
   std::unique_ptr<aura::Env> env_;
-#endif
-
-#if defined(OS_WIN)
-  base::win::ScopedCOMInitializer com_initializer_;
 #endif
 
   int argc_;
