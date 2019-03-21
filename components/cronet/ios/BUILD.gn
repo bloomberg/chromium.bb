@@ -304,6 +304,8 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
       "//components/cronet/ios:cronet_framework",
       "--gn-out-dir",
       ".",
+      "--target-os",
+      "ios",
     ]
   }
 
