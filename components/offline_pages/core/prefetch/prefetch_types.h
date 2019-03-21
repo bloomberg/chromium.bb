@@ -214,6 +214,13 @@ struct PrefetchURL {
   PrefetchURL(const std::string& id,
               const GURL& url,
               const base::string16& title);
+  PrefetchURL(const std::string& id,
+              const GURL& url,
+              const base::string16& title,
+              const GURL& thumbnail_url,
+              const GURL& favicon_url,
+              const std::string& snippet,
+              const std::string& attribution);
   ~PrefetchURL();
   PrefetchURL(const PrefetchURL& other);
 
@@ -232,6 +239,15 @@ struct PrefetchURL {
   // URL for a thumbnail that represents the page. May be empty if no thumbnail
   // is available.
   GURL thumbnail_url;
+
+  // URL for page's favicon.
+  GURL favicon_url;
+
+  // Article snippet.
+  std::string snippet;
+
+  // Identifies the page's publisher.
+  std::string attribution;
 };
 
 // Result of a completed download.
