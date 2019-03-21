@@ -130,22 +130,6 @@ class PromiseErrorCallback final : public ErrorCallbackBase {
 
 class EntryCallbacks final : public FileSystemCallbacksBase {
  public:
-  // TODO(tonikitoo,mek): This class is not being effectively by EntryCallbacks
-  // anymore. However, it still being referenced by ResolveURICallbacks and
-  // sync_callback_helper.h. Remove it when all classes have switched to simple
-  // success/error callbacks implementation, and there is no reference to it in
-  // sync_callback_helper.h and in ResolveURICallbacks anymore.
-  class OnDidGetEntryCallback
-      : public GarbageCollectedFinalized<OnDidGetEntryCallback> {
-   public:
-    virtual ~OnDidGetEntryCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(Entry*) = 0;
-
-   protected:
-    OnDidGetEntryCallback() = default;
-  };
-
   using SuccessCallback = base::OnceCallback<void(Entry*)>;
   using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
 
@@ -208,21 +192,6 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
 
 class FileSystemCallbacks final : public FileSystemCallbacksBase {
  public:
-  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
-  // Remove it when all classes have switched to simple success/error callbacks
-  // implementation, and there is no reference to it in sync_callback_helper.h
-  // anymore.
-  class OnDidOpenFileSystemCallback
-      : public GarbageCollectedFinalized<OnDidOpenFileSystemCallback> {
-   public:
-    virtual ~OnDidOpenFileSystemCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(DOMFileSystem*) = 0;
-
-   protected:
-    OnDidOpenFileSystemCallback() = default;
-  };
-
   using SuccessCallback = base::OnceCallback<void(DOMFileSystem*)>;
   using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
 
@@ -270,21 +239,6 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
   using SuccessCallback = base::OnceCallback<void(Metadata* metadata)>;
   using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
 
-  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
-  // Remove it when all classes have switched to simple success/error callbacks
-  // implementation, and there is no reference to it in sync_callback_helper.h
-  // anymore.
-  class OnDidReadMetadataCallback
-      : public GarbageCollectedFinalized<OnDidReadMetadataCallback> {
-   public:
-    virtual ~OnDidReadMetadataCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(Metadata*) = 0;
-
-   protected:
-    OnDidReadMetadataCallback() = default;
-  };
-
   MetadataCallbacks(SuccessCallback,
                     ErrorCallback,
                     ExecutionContext*,
@@ -303,21 +257,6 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
 
 class FileWriterCallbacks final : public FileSystemCallbacksBase {
  public:
-  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
-  // Remove it when all classes have switched to simple success/error callbacks
-  // implementation, and there is no reference to it in sync_callback_helper.h
-  // anymore.
-  class OnDidCreateFileWriterCallback
-      : public GarbageCollectedFinalized<OnDidCreateFileWriterCallback> {
-   public:
-    virtual ~OnDidCreateFileWriterCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(FileWriterBase*) = 0;
-
-   protected:
-    OnDidCreateFileWriterCallback() = default;
-  };
-
   using SuccessCallback = base::OnceCallback<void(FileWriterBase* file_writer)>;
   using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
 
@@ -392,21 +331,6 @@ class SnapshotFileCallback final : public SnapshotFileCallbackBase,
 
 class VoidCallbacks final : public FileSystemCallbacksBase {
  public:
-  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
-  // Remove it when all classes have switched to simple success/error callbacks
-  // implementation, and there is no reference to it in sync_callback_helper.h
-  // anymore.
-  class OnDidSucceedCallback
-      : public GarbageCollectedFinalized<OnDidSucceedCallback> {
-   public:
-    virtual ~OnDidSucceedCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
-    virtual void OnSuccess(ExecutionContext* dummy_arg_for_sync_helper) = 0;
-
-   protected:
-    OnDidSucceedCallback() = default;
-  };
-
   using SuccessCallback = base::OnceCallback<void()>;
   using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
 
