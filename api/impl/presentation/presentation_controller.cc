@@ -159,10 +159,6 @@ ProtocolConnection* Controller::GetConnectionRequestGroupStream(
   return nullptr;
 }
 
-uint64_t Controller::GetNextRequestId() {
-  return next_request_id_++;
-}
-
 void Controller::OnError(ServiceListenerError) {}
 void Controller::OnMetrics(ServiceListener::Metrics) {}
 

@@ -147,9 +147,6 @@ class Controller final : public ServiceListener::Observer {
       const std::string& service_id,
       std::unique_ptr<ProtocolConnection> stream);
 
-  // TODO(btolsch): By endpoint.
-  uint64_t GetNextRequestId();
-
   void OnConnectionDestroyed(Connection* connection);
 
  private:
@@ -193,7 +190,6 @@ class Controller final : public ServiceListener::Observer {
   void OnError(ServiceListenerError) override;
   void OnMetrics(ServiceListener::Metrics) override;
 
-  uint64_t next_request_id_ = 1;
   std::map<std::string, uint64_t> next_connection_id_;
 
   std::map<std::string, ControlledPresentation> presentations_;

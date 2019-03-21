@@ -38,6 +38,13 @@ void MoveVectorSegment(std::vector<std::string>::iterator first,
     target->emplace(std::move(*it));
 }
 
+uint64_t GetNextRequestId(const uint64_t endpoint_id) {
+  return NetworkServiceManager::Get()
+      ->GetProtocolConnectionClient()
+      ->endpoint_request_ids()
+      ->GetNextRequestId(endpoint_id);
+}
+
 }  // namespace
 
 UrlAvailabilityRequester::UrlAvailabilityRequester(
@@ -198,7 +205,7 @@ void UrlAvailabilityRequester::ReceiverRequester::RequestUrlAvailabilities(
     std::vector<std::string> urls) {
   if (urls.empty())
     return;
-  uint64_t request_id = next_request_id++;
+  const uint64_t request_id = GetNextRequestId(endpoint_id);
   ErrorOr<uint64_t> watch_id_or_error(0);
   if (!connection || (watch_id_or_error = SendRequest(request_id, urls))) {
     request_by_id.emplace(request_id,
@@ -311,7 +318,7 @@ void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedRequests(
       watch_by_id.erase(request.watch_id);
   }
   if (!still_observed_urls.empty()) {
-    uint64_t new_request_id = next_request_id++;
+    const uint64_t new_request_id = GetNextRequestId(endpoint_id);
     ErrorOr<uint64_t> watch_id_or_error(0);
     std::vector<std::string> urls;
     urls.reserve(still_observed_urls.size());

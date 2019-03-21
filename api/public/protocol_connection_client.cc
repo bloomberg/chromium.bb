@@ -34,7 +34,9 @@ ProtocolConnectionClient::ConnectRequest::operator=(ConnectRequest&& other) {
 ProtocolConnectionClient::ProtocolConnectionClient(
     MessageDemuxer* demuxer,
     ProtocolConnectionServiceObserver* observer)
-    : demuxer_(demuxer), observer_(observer) {}
+    : demuxer_(demuxer),
+      endpoint_request_ids_(EndpointRequestIds::Role::kClient),
+      observer_(observer) {}
 
 ProtocolConnectionClient::~ProtocolConnectionClient() = default;
 

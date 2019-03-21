@@ -41,8 +41,11 @@ bool QuicClient::Stop() {
 
 void QuicClient::RunTasks() {
   connection_factory_->RunTasks();
-  for (auto& entry : connections_)
+  for (auto& entry : connections_) {
     entry.second.delegate->DestroyClosedStreams();
+    if (!entry.second.delegate->has_streams())
+      entry.second.connection->Close();
+  }
 
   for (auto& entry : delete_connections_)
     connections_.erase(entry);
@@ -132,6 +135,11 @@ void QuicClient::OnConnectionClosed(uint64_t endpoint_id,
     return;
 
   delete_connections_.emplace_back(connection_entry);
+
+  // TODO(issue/42): If we reset request IDs when a connection is closed, we
+  // might end up re-using request IDs when a new connection is created to the
+  // same endpoint.
+  endpoint_request_ids_.ResetRequestId(endpoint_id);
 }
 
 void QuicClient::OnDataReceived(uint64_t endpoint_id,
@@ -197,6 +205,7 @@ void QuicClient::CloseAllConnections() {
   connections_.clear();
   endpoint_map_.clear();
   next_endpoint_id_ = 0;
+  endpoint_request_ids_.Reset();
   for (auto& request : request_map_) {
     request.second.second->OnConnectionFailed(request.first);
   }

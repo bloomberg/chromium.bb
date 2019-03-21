@@ -98,6 +98,8 @@ class ServiceConnectionDelegate final : public QuicConnection::Delegate,
 
   const IPEndpoint& endpoint() const { return endpoint_; }
 
+  bool has_streams() const { return !streams_.empty(); }
+
   // QuicConnection::Delegate overrides.
   void OnCryptoHandshakeComplete(uint64_t connection_id) override;
   void OnIncomingStream(uint64_t connection_id,

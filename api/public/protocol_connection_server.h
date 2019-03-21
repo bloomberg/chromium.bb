@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "api/public/endpoint_request_ids.h"
 #include "api/public/message_demuxer.h"
 #include "api/public/protocol_connection.h"
 #include "api/public/server_config.h"
@@ -74,6 +75,8 @@ class ProtocolConnectionServer {
 
   MessageDemuxer* message_demuxer() const { return demuxer_; }
 
+  EndpointRequestIds* endpoint_request_ids() { return &endpoint_request_ids_; }
+
   // Returns the current state of the listener.
   State state() const { return state_; }
 
@@ -87,6 +90,7 @@ class ProtocolConnectionServer {
   State state_ = State::kStopped;
   Error last_error_;
   MessageDemuxer* const demuxer_;
+  EndpointRequestIds endpoint_request_ids_;
   Observer* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolConnectionServer);

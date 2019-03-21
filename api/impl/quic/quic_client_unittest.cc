@@ -89,17 +89,17 @@ class QuicClientTest : public ::testing::Test {
         mock_message_callback,
         OnStreamMessage(0, connection->id(),
                         msgs::Type::kPresentationConnectionMessage, _, _, _))
-        .WillOnce(Invoke([&decode_result, &received_message](
-                             uint64_t endpoint_id, uint64_t connection_id,
-                             msgs::Type message_type, const uint8_t* buffer,
-                             size_t buffer_size,
-                             platform::Clock::time_point now) {
-          decode_result = msgs::DecodePresentationConnectionMessage(
-              buffer, buffer_size, &received_message);
-          if (decode_result < 0)
-            return ErrorOr<size_t>(Error::Code::kCborParsing);
-          return ErrorOr<size_t>(decode_result);
-        }));
+        .WillOnce(
+            Invoke([&decode_result, &received_message](
+                       uint64_t endpoint_id, uint64_t connection_id,
+                       msgs::Type message_type, const uint8_t* buffer,
+                       size_t buffer_size, platform::Clock::time_point now) {
+              decode_result = msgs::DecodePresentationConnectionMessage(
+                  buffer, buffer_size, &received_message);
+              if (decode_result < 0)
+                return ErrorOr<size_t>(Error::Code::kCborParsing);
+              return ErrorOr<size_t>(decode_result);
+            }));
     quic_bridge_.RunTasksUntilIdle();
 
     ASSERT_GT(decode_result, 0);
@@ -228,6 +228,35 @@ TEST_F(QuicClientTest, States) {
   EXPECT_FALSE(request);
   connection2 = client_->CreateProtocolConnection(1);
   EXPECT_FALSE(connection2);
+}
+
+TEST_F(QuicClientTest, RequestIds) {
+  client_->Start();
+
+  EXPECT_CALL(quic_bridge_.mock_server_observer, OnIncomingConnectionMock(_))
+      .WillOnce(Invoke([](std::unique_ptr<ProtocolConnection>& connection) {
+        connection->CloseWriteEnd();
+      }));
+  std::unique_ptr<ProtocolConnection> connection;
+  ConnectionCallback connection_callback(&connection);
+  ProtocolConnectionClient::ConnectRequest request =
+      client_->Connect(quic_bridge_.kReceiverEndpoint, &connection_callback);
+  ASSERT_TRUE(request);
+
+  quic_bridge_.RunTasksUntilIdle();
+  ASSERT_TRUE(connection);
+
+  const uint64_t endpoint_id = connection->endpoint_id();
+  EXPECT_EQ(0u, client_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
+  EXPECT_EQ(2u, client_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
+
+  connection->CloseWriteEnd();
+  connection.reset();
+  quic_bridge_.RunTasksUntilIdle();
+  EXPECT_EQ(0u, client_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
+
+  client_->Stop();
+  EXPECT_EQ(0u, client_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
 }
 
 }  // namespace openscreen

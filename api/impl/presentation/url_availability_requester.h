@@ -121,10 +121,6 @@ class UrlAvailabilityRequester {
 
     UrlAvailabilityRequester* const listener;
 
-    // TODO(btolsch): Probably need to make this part of a per-receiver global
-    // object so requests of all types are consistent.
-    uint64_t next_request_id = 1;
-
     uint64_t next_watch_id = 1;
 
     const std::string service_id;

@@ -92,17 +92,17 @@ class QuicServerTest : public Test {
     EXPECT_CALL(mock_message_callback,
                 OnStreamMessage(
                     0, _, msgs::Type::kPresentationConnectionMessage, _, _, _))
-        .WillOnce(Invoke([&decode_result, &received_message](
-                             uint64_t endpoint_id, uint64_t connection_id,
-                             msgs::Type message_type, const uint8_t* buffer,
-                             size_t buffer_size,
-                             platform::Clock::time_point now) {
-          decode_result = msgs::DecodePresentationConnectionMessage(
-              buffer, buffer_size, &received_message);
-          if (decode_result < 0)
-            return ErrorOr<size_t>(Error::Code::kCborParsing);
-          return ErrorOr<size_t>(decode_result);
-        }));
+        .WillOnce(
+            Invoke([&decode_result, &received_message](
+                       uint64_t endpoint_id, uint64_t connection_id,
+                       msgs::Type message_type, const uint8_t* buffer,
+                       size_t buffer_size, platform::Clock::time_point now) {
+              decode_result = msgs::DecodePresentationConnectionMessage(
+                  buffer, buffer_size, &received_message);
+              if (decode_result < 0)
+                return ErrorOr<size_t>(Error::Code::kCborParsing);
+              return ErrorOr<size_t>(decode_result);
+            }));
     quic_bridge_.RunTasksUntilIdle();
 
     ASSERT_GT(decode_result, 0);
@@ -179,6 +179,23 @@ TEST_F(QuicServerTest, States) {
 
   EXPECT_CALL(quic_bridge_.mock_server_observer, OnStopped());
   EXPECT_TRUE(server_->Stop());
+}
+
+TEST_F(QuicServerTest, RequestIds) {
+  std::unique_ptr<ProtocolConnection> connection = ExpectIncomingConnection();
+  ASSERT_TRUE(connection);
+
+  uint64_t endpoint_id = connection->endpoint_id();
+  EXPECT_EQ(1u, server_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
+  EXPECT_EQ(3u, server_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
+
+  connection->CloseWriteEnd();
+  connection.reset();
+  quic_bridge_.RunTasksUntilIdle();
+  EXPECT_EQ(5u, server_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
+
+  server_->Stop();
+  EXPECT_EQ(1u, server_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
 }
 
 }  // namespace openscreen

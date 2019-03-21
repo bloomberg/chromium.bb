@@ -8,7 +8,9 @@ namespace openscreen {
 
 ProtocolConnectionServer::ProtocolConnectionServer(MessageDemuxer* demuxer,
                                                    Observer* observer)
-    : demuxer_(demuxer), observer_(observer) {}
+    : demuxer_(demuxer),
+      endpoint_request_ids_(EndpointRequestIds::Role::kServer),
+      observer_(observer) {}
 
 ProtocolConnectionServer::~ProtocolConnectionServer() = default;
 

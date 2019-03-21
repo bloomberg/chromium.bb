@@ -16,6 +16,7 @@ std::unique_ptr<QuicProtocolConnection> QuicProtocolConnection::FromExisting(
     QuicConnection* connection,
     ServiceConnectionDelegate* delegate,
     uint64_t endpoint_id) {
+  OSP_VLOG << "QUIC stream created for endpoint " << endpoint_id;
   std::unique_ptr<QuicStream> stream = connection->MakeOutgoingStream(delegate);
   auto pc = std::make_unique<QuicProtocolConnection>(owner, endpoint_id,
                                                      stream->id());
@@ -94,11 +95,14 @@ void ServiceConnectionDelegate::DestroyClosedStreams() {
 void ServiceConnectionDelegate::OnCryptoHandshakeComplete(
     uint64_t connection_id) {
   endpoint_id_ = parent_->OnCryptoHandshakeComplete(this, connection_id);
+  OSP_VLOG << "QUIC connection handshake complete for endpoint "
+           << endpoint_id_;
 }
 
 void ServiceConnectionDelegate::OnIncomingStream(
     uint64_t connection_id,
     std::unique_ptr<QuicStream> stream) {
+  OSP_VLOG << "Incoming QUIC stream from endpoint " << endpoint_id_;
   pending_connection_->set_stream(stream.get());
   AddStreamPair(
       ServiceStreamPair(std::move(stream), pending_connection_.get()));
@@ -106,6 +110,7 @@ void ServiceConnectionDelegate::OnIncomingStream(
 }
 
 void ServiceConnectionDelegate::OnConnectionClosed(uint64_t connection_id) {
+  OSP_VLOG << "QUIC connection closed for endpoint " << endpoint_id_;
   parent_->OnConnectionClosed(endpoint_id_, connection_id);
 }
 
@@ -130,6 +135,7 @@ void ServiceConnectionDelegate::OnReceived(QuicStream* stream,
 }
 
 void ServiceConnectionDelegate::OnClose(uint64_t stream_id) {
+  OSP_VLOG << "QUIC stream closed for endpoint " << endpoint_id_;
   auto stream_entry = streams_.find(stream_id);
   if (stream_entry == streams_.end())
     return;

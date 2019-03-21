@@ -376,6 +376,8 @@ void HandleReceiverCommand(absl::string_view command,
                            ReceiverDelegate& delegate,
                            NetworkServiceManager* manager) {
   if (command == "avail") {
+    // TODO(btolsch): This toggle only works sometimes.  This may be down to a
+    // missing good-bye message or improper client-side caching.
     ServicePublisher* publisher = manager->GetMdnsServicePublisher();
 
     if (publisher->state() == ServicePublisher::State::kSuspended) {
