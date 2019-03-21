@@ -14,7 +14,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -24,6 +23,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for {@link IncognitoTabLauncher}.
@@ -80,7 +80,7 @@ public class IncognitoTabLauncherTest {
         // ApplicationStatus internally, which ignores Tasks and tracks all Chrome Activities.
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> context.startActivity(intent));
+        TestThreadUtils.runOnUiThreadBlocking(() -> context.startActivity(intent));
 
         return ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
     }

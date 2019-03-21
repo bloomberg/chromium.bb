@@ -11,7 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
@@ -19,6 +18,7 @@ import org.chromium.chrome.test.util.SadTabRule;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.mock.MockRenderFrameHost;
 import org.chromium.content_public.browser.test.mock.MockWebContents;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 
@@ -36,7 +36,8 @@ public class ShareMenuActionHandlerTest {
     @Test
     @SmallTest
     public void testShouldFetchCanonicalUrl() throws ExecutionException {
-        MockUrlTab mockTab = ThreadUtils.runOnUiThreadBlocking(() -> { return new MockUrlTab(); });
+        MockUrlTab mockTab =
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return new MockUrlTab(); });
         MockWebContents mockWebContents = new MockWebContents();
         MockRenderFrameHost mockRenderFrameHost = new MockRenderFrameHost();
         mSadTabRule.setTab(mockTab);

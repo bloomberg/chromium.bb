@@ -80,8 +80,7 @@ public class WebappSplashScreenThemeColorTest {
         }
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> TabTestUtils.simulateChangeThemeColor(
+                () -> TabTestUtils.simulateChangeThemeColor(
                                 mActivityTestRule.getActivity().getActivityTab(), baseColor));
 
         // Waits for theme-color to change so the test doesn't rely on system timing.

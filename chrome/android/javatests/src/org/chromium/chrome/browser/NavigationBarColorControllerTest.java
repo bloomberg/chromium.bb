@@ -20,13 +20,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** Tests for the NavigationBarColorController.  */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -56,13 +56,13 @@ public class NavigationBarColorControllerTest {
         assertEquals("Navigation bar should be white before entering overview mode.",
                 mLightNavigationColor, mWindow.getNavigationBarColor());
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
 
         assertEquals("Navigation bar should be white in overview mode.", mLightNavigationColor,
                 mWindow.getNavigationBarColor());
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().hideOverview(false));
 
         assertEquals("Navigation bar should be white after exiting overview mode.",

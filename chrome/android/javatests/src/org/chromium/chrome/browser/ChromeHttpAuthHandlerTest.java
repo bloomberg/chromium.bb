@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -25,6 +24,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -97,7 +97,7 @@ public class ChromeHttpAuthHandlerTest {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         // If the first tab was closed due to OOM, then just exit the test.
-        if (ThreadUtils.runOnUiThreadBlocking(
+        if (TestThreadUtils.runOnUiThreadBlocking(
                     () -> firstTab.isClosing() || SadTab.isShowing(firstTab))) {
             return;
         }
@@ -116,13 +116,13 @@ public class ChromeHttpAuthHandlerTest {
             handlerRef.set(handler);
             handlerCallback.notifyCalled();
         };
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeHttpAuthHandler.setTestCreationCallback(callback); });
 
         String url = mTestServer.getURL("/auth-basic");
         ChromeTabUtils.loadUrlOnUiThread(tab, url);
         handlerCallback.waitForCallback();
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> { ChromeHttpAuthHandler.setTestCreationCallback(null); });
         return handlerRef.get();
     }

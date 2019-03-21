@@ -205,8 +205,7 @@ public class DownloadActivityTest {
         spaceDisplayCallCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         final OfflineItem deletedPage = StubbedProvider.createOfflineItem(3, "20151021 07:28");
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> mStubbedProvider.getOfflineContentProvider().observer.onItemRemoved(
+                () -> mStubbedProvider.getOfflineContentProvider().observer.onItemRemoved(
                                 deletedPage.id));
         mAdapterObserver.onChangedCallback.waitForCallback(callCount, 2);
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(spaceDisplayCallCount);
@@ -278,8 +277,7 @@ public class DownloadActivityTest {
                 0, mStubbedProvider.getOfflineContentProvider().deleteItemCallback.getCallCount());
         int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> Assert.assertTrue(
+                () -> Assert.assertTrue(
                                 mUi.getDownloadManagerToolbarForTests()
                                         .getMenu()
                                         .performIdentifierAction(
@@ -372,8 +370,7 @@ public class DownloadActivityTest {
         // Click the delete button.
         callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> Assert.assertTrue(
+                () -> Assert.assertTrue(
                                 mUi.getDownloadManagerToolbarForTests()
                                         .getMenu()
                                         .performIdentifierAction(
@@ -512,8 +509,7 @@ public class DownloadActivityTest {
         // Click the delete button.
         callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> Assert.assertTrue(
+                () -> Assert.assertTrue(
                                 mUi.getDownloadManagerToolbarForTests()
                                         .getMenu()
                                         .performIdentifierAction(

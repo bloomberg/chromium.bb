@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -46,6 +45,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.net.HttpURLConnection;
@@ -319,22 +319,19 @@ public class InfoBarTest {
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testDataReductionPromoInfoBar() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse("Data Reduction Proxy enabled",
-                        DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
-                // Fake the FRE or second run promo being shown in M51.
-                DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
-                ContextUtils.getAppSharedPreferences()
-                        .edit()
-                        .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, M51_VERSION)
-                        .apply();
-                // Add an infobar.
-                Assert.assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
-                        "http://google.com", false, false, HttpURLConnection.HTTP_OK));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse("Data Reduction Proxy enabled",
+                    DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
+            // Fake the FRE or second run promo being shown in M51.
+            DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, M51_VERSION)
+                    .apply();
+            // Add an infobar.
+            Assert.assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
+                    "http://google.com", false, false, HttpURLConnection.HTTP_OK));
         });
 
         waitUntilDataReductionPromoInfoBarAppears();
@@ -344,30 +341,23 @@ public class InfoBarTest {
         Assert.assertTrue("InfoBar does not have secondary button",
                 InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                InfoBarUtil.clickPrimaryButton(infoBars.get(0));
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> InfoBarUtil.clickPrimaryButton(infoBars.get(0)));
 
         // The renderer should have been killed and the infobar removed.
         InfoBarUtil.waitUntilNoInfoBarsExist(mActivityTestRule.getInfoBars());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue("Data Reduction Proxy not enabled",
-                        DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
-                // Turn Data Saver off so the promo can be reshown.
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mActivityTestRule.getActivity(), false);
-                // Try to add an infobar. Infobar should not be added since it has already been
-                // shown.
-                Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
-                        "http://google.com", false, false, HttpURLConnection.HTTP_OK));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue("Data Reduction Proxy not enabled",
+                    DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
+            // Turn Data Saver off so the promo can be reshown.
+            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                    mActivityTestRule.getActivity(), false);
+            // Try to add an infobar. Infobar should not be added since it has already been
+            // shown.
+            Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
+                    "http://google.com", false, false, HttpURLConnection.HTTP_OK));
         });
     }
 
@@ -381,22 +371,19 @@ public class InfoBarTest {
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testDataReductionPromoInfoBarDismissed() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse("Data Reduction Proxy enabled",
-                        DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
-                // Fake the first run experience or second run promo being shown in M51.
-                DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
-                ContextUtils.getAppSharedPreferences()
-                        .edit()
-                        .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, M51_VERSION)
-                        .apply();
-                // Add an infobar.
-                Assert.assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
-                        "http://google.com", false, false, HttpURLConnection.HTTP_OK));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse("Data Reduction Proxy enabled",
+                    DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
+            // Fake the first run experience or second run promo being shown in M51.
+            DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, M51_VERSION)
+                    .apply();
+            // Add an infobar.
+            Assert.assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
+                    "http://google.com", false, false, HttpURLConnection.HTTP_OK));
         });
 
         waitUntilDataReductionPromoInfoBarAppears();
@@ -406,27 +393,20 @@ public class InfoBarTest {
         Assert.assertTrue("InfoBar does not have secondary button",
                 InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                InfoBarUtil.clickSecondaryButton(infoBars.get(0));
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> InfoBarUtil.clickSecondaryButton(infoBars.get(0)));
 
         // The renderer should have been killed and the infobar removed.
         InfoBarUtil.waitUntilNoInfoBarsExist(mActivityTestRule.getInfoBars());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse("Data Reduction Proxy enabled",
-                        DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
-                // Try to add an infobar. Infobar should not be added since the user clicked
-                // dismiss.
-                Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
-                        mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
-                        "http://google.com", false, false, HttpURLConnection.HTTP_OK));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse("Data Reduction Proxy enabled",
+                    DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
+            // Try to add an infobar. Infobar should not be added since the user clicked
+            // dismiss.
+            Assert.assertFalse(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getWebContents(),
+                    "http://google.com", false, false, HttpURLConnection.HTTP_OK));
         });
     }
 

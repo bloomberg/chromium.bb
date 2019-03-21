@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -30,6 +29,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.MenuSourceType;
 
@@ -97,7 +97,7 @@ public class TabularContextMenuUiTest {
                                           .inflate(R.layout.tabular_context_menu, null);
         final TabularContextMenuViewPager pager =
                 (TabularContextMenuViewPager) tabularContextMenu.findViewById(R.id.custom_pager);
-        View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+        View view = TestThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
                 return dialog.initPagerView(mActivityTestRule.getActivity(),
@@ -129,7 +129,7 @@ public class TabularContextMenuUiTest {
                                           .inflate(R.layout.tabular_context_menu, null);
         final TabularContextMenuViewPager pager =
                 (TabularContextMenuViewPager) tabularContextMenu.findViewById(R.id.custom_pager);
-        View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+        View view = TestThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
                 return dialog.initPagerView(mActivityTestRule.getActivity(),
@@ -152,7 +152,7 @@ public class TabularContextMenuUiTest {
                         new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
         final String createdUrl = "http://google.com";
         final String expectedUrlWithFormatUrlForDisplayOmitHTTPScheme = "google.com";
-        View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+        View view = TestThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
                 return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
@@ -177,7 +177,7 @@ public class TabularContextMenuUiTest {
                 CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
                         new ChromeContextMenuItem(Item.CALL),
                         new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
-        View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+        View view = TestThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
                 return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
@@ -198,7 +198,7 @@ public class TabularContextMenuUiTest {
                 CollectionUtil.newArrayList(new ChromeContextMenuItem(Item.ADD_TO_CONTACTS),
                         new ChromeContextMenuItem(Item.CALL),
                         new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
-        View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+        View view = TestThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
                 return dialog.createContextMenuPageUi(mActivityTestRule.getActivity(),
@@ -213,12 +213,7 @@ public class TabularContextMenuUiTest {
         Assert.assertEquals("Expected a different number of default maximum lines.",
                 expectedMaxLines, actualMaxLines);
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                headerTextView.callOnClick();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> headerTextView.callOnClick());
 
         expectedMaxLines = Integer.MAX_VALUE;
         actualMaxLines = headerTextView.getMaxLines();

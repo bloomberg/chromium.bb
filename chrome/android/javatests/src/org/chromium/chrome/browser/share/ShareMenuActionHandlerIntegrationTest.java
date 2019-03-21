@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.share.ShareMenuActionHandler.ShareMenuActionD
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
@@ -108,7 +108,7 @@ public class ShareMenuActionHandlerIntegrationTest {
     private ShareParams triggerShare() throws InterruptedException, TimeoutException {
         final CallbackHelper helper = new CallbackHelper();
         final AtomicReference<ShareParams> paramsRef = new AtomicReference<>();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ShareMenuActionDelegate delegate = new ShareMenuActionDelegate() {
                 @Override
                 void share(ShareParams params) {

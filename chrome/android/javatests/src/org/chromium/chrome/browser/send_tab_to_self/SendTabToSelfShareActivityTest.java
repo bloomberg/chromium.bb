@@ -14,7 +14,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -26,6 +25,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.components.sync.ModelType;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.HashSet;
@@ -53,12 +53,9 @@ public class SendTabToSelfShareActivityTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTab = mActivityTestRule.getActivity().getActivityTab();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService.overrideForTests(new FakeProfileSyncService());
-                mProfileSyncService = (FakeProfileSyncService) ProfileSyncService.get();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ProfileSyncService.overrideForTests(new FakeProfileSyncService());
+            mProfileSyncService = (FakeProfileSyncService) ProfileSyncService.get();
         });
     }
 
@@ -77,13 +74,10 @@ public class SendTabToSelfShareActivityTest {
         setChosenTypes(ModelType.SEND_TAB_TO_SELF);
         mProfileSyncService.setNumberOfSyncedDevices(2);
         loadUrlInTab(TEST_PAGE);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                boolean result = SendTabToSelfShareActivity.featureIsAvailable(mTab);
-                Assert.assertTrue(
-                        "SendTabToSelfShareActivity disabled because of unsupported type", result);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean result = SendTabToSelfShareActivity.featureIsAvailable(mTab);
+            Assert.assertTrue(
+                    "SendTabToSelfShareActivity disabled because of unsupported type", result);
         });
     }
 
@@ -138,12 +132,9 @@ public class SendTabToSelfShareActivityTest {
     }
 
     private void assertFeatureIsDisabled(final String errorMessage) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                boolean result = SendTabToSelfShareActivity.featureIsAvailable(mTab);
-                Assert.assertFalse(errorMessage, result);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean result = SendTabToSelfShareActivity.featureIsAvailable(mTab);
+            Assert.assertFalse(errorMessage, result);
         });
     }
 

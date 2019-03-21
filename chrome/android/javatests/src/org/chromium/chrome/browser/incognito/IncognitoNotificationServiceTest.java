@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -33,6 +32,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -47,13 +47,10 @@ public class IncognitoNotificationServiceTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private void createTabOnUiThread() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getTabCreator(true).createNewTab(
-                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mActivityTestRule.getActivity().getTabCreator(true).createNewTab(
+                                new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI,
+                                null));
     }
 
     private void sendClearIncognitoIntent() throws CanceledException {
@@ -84,8 +81,8 @@ public class IncognitoNotificationServiceTest {
             }
         }));
 
-        final Profile incognitoProfile = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Profile>() {
+        final Profile incognitoProfile =
+                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Profile>() {
                     @Override
                     public Profile call() throws Exception {
                         return mActivityTestRule.getActivity()
@@ -94,12 +91,9 @@ public class IncognitoNotificationServiceTest {
                                 .getProfile();
                     }
                 });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(incognitoProfile.isOffTheRecord());
-                Assert.assertTrue(incognitoProfile.isNativeInitialized());
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(incognitoProfile.isOffTheRecord());
+            Assert.assertTrue(incognitoProfile.isNativeInitialized());
         });
 
         sendClearIncognitoIntent();
@@ -197,11 +191,7 @@ public class IncognitoNotificationServiceTest {
             }
         }));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertFalse(LibraryLoader.getInstance().isInitialized()));
     }
 }

@@ -443,8 +443,7 @@ public class ManualFillingIntegrationTest {
         // Create a simple, persistent snackbar and verify it's displayed.
         SnackbarManager manager = mActivityTestRule.getActivity().getSnackbarManager();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                ()
-                        -> manager.showSnackbar(Snackbar.make(kSnackbarText,
+                () -> manager.showSnackbar(Snackbar.make(kSnackbarText,
                                 new SnackbarManager.SnackbarController() {},
                                 Snackbar.TYPE_PERSISTENT, Snackbar.UMA_TEST_SNACKBAR)));
         CriteriaHelper.pollUiThread(manager::isShowing);

@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
@@ -31,6 +30,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -55,7 +55,7 @@ public class WarmupManagerTest {
         mContext = InstrumentationRegistry.getInstrumentation()
                            .getTargetContext()
                            .getApplicationContext();
-        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
@@ -67,7 +67,7 @@ public class WarmupManagerTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> mWarmupManager.destroySpareWebContents());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mWarmupManager.destroySpareWebContents());
     }
 
     @Test
@@ -230,8 +230,7 @@ public class WarmupManagerTest {
 
             final String url = server.getURL("/hello_world.html");
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                    ()
-                            -> mWarmupManager.maybePreconnectUrlAndSubResources(
+                    () -> mWarmupManager.maybePreconnectUrlAndSubResources(
                                     Profile.getLastUsedProfile(), url));
             if (!connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
                 // Starts at -1.

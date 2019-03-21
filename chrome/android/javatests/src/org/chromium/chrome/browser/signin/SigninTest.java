@@ -42,6 +42,7 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 
 /**
@@ -221,7 +222,7 @@ public class SigninTest {
         mContext = InstrumentationRegistry.getTargetContext();
         final TestSignInAllowedObserver signinAllowedObserver = new TestSignInAllowedObserver();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // This call initializes the ChromeSigninController to use our test context.
             ChromeSigninController.get();
 
@@ -258,7 +259,7 @@ public class SigninTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mBookmarks.removeObserver(mTestBookmarkModelObserver);
 
             mSigninManager.removeSignInStateObserver(mTestSignInObserver);
@@ -279,7 +280,7 @@ public class SigninTest {
         SigninTestUtil.addTestAccount();
         signInToSingleAccount();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Verify that the account isn't managed.
             Assert.assertNull(mSigninManager.getManagementDomain());
 
@@ -302,7 +303,7 @@ public class SigninTest {
         // Sign out now.
         signOut();
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Verify that the profile data hasn't been wiped when signing out of a normal
             // account. We check that by looking for the test bookmark from setUp().
             Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
@@ -322,7 +323,7 @@ public class SigninTest {
                 AccountSigninActivity.class.getName(), null, false);
 
         // Click sign in.
-        ThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(prefActivity));
+        TestThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(prefActivity));
 
         // Pick the mock account.
         AccountSigninActivity signinActivity =
@@ -340,7 +341,8 @@ public class SigninTest {
         // Sync doesn't actually start up until we finish the sync setup. This usually happens
         // in the resume of the Main activity, but we forcefully do this here.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.get().setFirstSetupComplete());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ProfileSyncService.get().setFirstSetupComplete());
         prefActivity.finish();
 
         // Verify that signin succeeded.
@@ -360,7 +362,7 @@ public class SigninTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Click on the signout button.
-        ThreadUtils.runOnUiThreadBlocking(() -> clickSignOut(prefActivity));
+        TestThreadUtils.runOnUiThreadBlocking(() -> clickSignOut(prefActivity));
 
         // Accept the warning dialog.
         acceptAlertDialogWithTag(prefActivity, AccountManagementFragment.SIGN_OUT_DIALOG_TAG);

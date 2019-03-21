@@ -17,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -29,6 +28,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.SelectFileDialog;
 
@@ -96,7 +96,7 @@ public class SelectFileDialogTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityWithURL(DATA_URL);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivityWindowAndroidForTest =
                     new ActivityWindowAndroidForTest(mActivityTestRule.getActivity());
             SelectFileDialog.setWindowAndroidForTests(mActivityWindowAndroidForTest);
@@ -187,9 +187,9 @@ public class SelectFileDialogTest {
     }
 
     private void resetActivityWindowAndroidForTest() {
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityWindowAndroidForTest.lastCallback.onIntentCompleted(
-                        mActivityWindowAndroidForTest, Activity.RESULT_CANCELED, null));
+                                mActivityWindowAndroidForTest, Activity.RESULT_CANCELED, null));
         mActivityWindowAndroidForTest.lastCallback = null;
         mActivityWindowAndroidForTest.lastIntent = null;
     }

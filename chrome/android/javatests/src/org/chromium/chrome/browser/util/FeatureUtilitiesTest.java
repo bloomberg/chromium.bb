@@ -20,13 +20,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,15 +125,12 @@ public class FeatureUtilitiesTest {
     private static boolean isRecognitionIntentPresent(
             final IntentTestMockContext context, final boolean useCachedResult) {
         // Context can only be queried on a UI Thread.
-        return ThreadUtils.runOnUiThreadBlockingNoException(
-            new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return FeatureUtilities.isRecognitionIntentPresent(
-                            context,
-                            useCachedResult);
-                }
-            });
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return FeatureUtilities.isRecognitionIntentPresent(context, useCachedResult);
+            }
+        });
     }
 
     private void setUpAccountManager(String accountType) {
