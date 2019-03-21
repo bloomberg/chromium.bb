@@ -53,12 +53,7 @@ class MessageView {
 
   MessageView(MessageView&& other) { *this = std::move(other); }
 
-  MessageView& operator=(MessageView&& other) {
-    message_ = std::move(other.message_);
-    offset_ = other.offset_;
-    handles_ = std::move(other.handles_);
-    return *this;
-  }
+  MessageView& operator=(MessageView&& other) = default;
 
   ~MessageView() {}
 
