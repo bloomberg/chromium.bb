@@ -362,6 +362,10 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
        {mojom::FeaturePolicyFeature::kFormSubmission,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForAll,
                             mojom::PolicyValueType::kBool)},
+       // kFrobulate is a test only feature.
+       {mojom::FeaturePolicyFeature::kFrobulate,
+        FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
+                            mojom::PolicyValueType::kBool)},
        {mojom::FeaturePolicyFeature::kFullscreen,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
                             mojom::PolicyValueType::kBool)},
@@ -453,10 +457,6 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
                             mojom::PolicyValueType::kBool)},
        {mojom::FeaturePolicyFeature::kWebVr,
-        FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
-                            mojom::PolicyValueType::kBool)},
-       // kFrobulate is a test only feature.
-       {mojom::FeaturePolicyFeature::kFrobulate,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
                             mojom::PolicyValueType::kBool)}});
   return *default_feature_list;
