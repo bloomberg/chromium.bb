@@ -22,12 +22,6 @@ var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
 
-var jsLastError = bindingUtil ? undefined : require('lastError');
-function hasLastError() {
-  return bindingUtil ?
-      bindingUtil.hasLastError() : jsLastError.hasError(chrome);
-}
-
 /**
  * A namespace to export utility functions to other files in automation.
  */
@@ -121,7 +115,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     var params = { tabID: tabID };
     automationInternal.enableTab(params,
         function onEnable(id) {
-          if (hasLastError()) {
+          if (bindingUtil.hasLastError()) {
             callback();
             return;
           }
@@ -136,7 +130,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       desktopTree = AutomationRootNode.get(desktopId);
     if (!desktopTree) {
       automationInternal.enableDesktop(function(treeId) {
-        if (hasLastError()) {
+        if (bindingUtil.hasLastError()) {
           AutomationRootNode.destroy(treeId);
           desktopId = undefined;
           callback();

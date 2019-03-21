@@ -8,12 +8,9 @@ var downloadsInternal =
     getInternalApi ?
         getInternalApi('downloadsInternal') :
         require('binding').Binding.create('downloadsInternal').generate();
-var registerArgumentMassager = bindingUtil ?
-    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
-    require('event_bindings').registerArgumentMassager;
 
-registerArgumentMassager('downloads.onDeterminingFilename',
-                         function(args, dispatch) {
+bindingUtil.registerEventArgumentMassager('downloads.onDeterminingFilename',
+                                          function(args, dispatch) {
   var downloadItem = args[0];
   // Copy the id so that extensions can't change it.
   var downloadId = downloadItem.id;

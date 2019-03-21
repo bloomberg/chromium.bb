@@ -4,14 +4,8 @@
 
 // Custom binding for the ttsEngine API.
 
-var registerArgumentMassager = bindingUtil ?
-    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
-    require('event_bindings').registerArgumentMassager;
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
-
-registerArgumentMassager('ttsEngine.onSpeak', function(args, dispatch) {
+bindingUtil.registerEventArgumentMassager('ttsEngine.onSpeak',
+                                          function(args, dispatch) {
   var text = args[0];
   var options = args[1];
   var requestId = args[2];
@@ -33,8 +27,7 @@ apiBridge.registerCustomHook(function(api) {
         break;
       }
     }
-    sendRequest(
-        'ttsEngine.updateVoices', [voices],
-        bindingUtil ? undefined : this.definition.parameters, undefined);
+    bindingUtil.sendRequest(
+        'ttsEngine.updateVoices', [voices], undefined, undefined);
   });
 }.bind(this));

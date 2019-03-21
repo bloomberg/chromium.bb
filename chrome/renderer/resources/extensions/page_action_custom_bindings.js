@@ -5,18 +5,14 @@
 // Custom binding for the pageAction API.
 
 var setIcon = require('setIcon').setIcon;
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
 
 apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, $Function.bind(function(args) {
-      sendRequest('pageAction.setIcon', [args, callback],
-                  bindingUtil ? undefined : this.definition.parameters,
-                  undefined);
+      bindingUtil.sendRequest('pageAction.setIcon', [args, callback],
+                              undefined, undefined);
     }, this));
   });
 });

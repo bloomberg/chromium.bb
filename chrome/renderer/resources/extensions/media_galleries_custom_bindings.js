@@ -6,9 +6,6 @@
 
 var blobNatives = requireNative('blob_natives');
 var mediaGalleriesNatives = requireNative('mediaGalleries');
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
 
 var blobsAwaitingMetadata = {};
 var mediaGalleriesMetadata = {};
@@ -102,7 +99,8 @@ apiBridge.registerCustomHook(function(bindingsAPI, extensionId) {
       customCallback: $Function.bind(getMetadataCallback, null, blobUuid),
     };
 
-    sendRequest('mediaGalleries.getMetadata', [blobUuid, options, callback],
-                bindingUtil ? undefined : this.definition.parameters, optArgs);
+    bindingUtil.sendRequest(
+        'mediaGalleries.getMetadata', [blobUuid, options, callback],
+        undefined, optArgs);
   });
 });
