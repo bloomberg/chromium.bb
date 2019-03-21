@@ -97,6 +97,14 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
   loop_runner_ = std::make_unique<base::RunLoop>();
 }
 
+void AccessibilityNotificationWaiter::WaitForNotificationWithTimeout(
+    base::TimeDelta timeout) {
+  base::OneShotTimer quit_timer;
+  quit_timer.Start(FROM_HERE, timeout, loop_runner_->QuitWhenIdleClosure());
+
+  WaitForNotification();
+}
+
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
   static base::NoDestructor<ui::AXTree> empty_tree;
   const ui::AXTree* tree = frame_host_->GetAXTreeForTesting();
@@ -116,6 +124,8 @@ void AccessibilityNotificationWaiter::OnAccessibilityEvent(
     int event_target_id) {
   if (IsAboutBlank())
     return;
+
+  LOG(INFO) << "OnAccessibilityEvent " << event_type;
 
   if (event_to_wait_for_ == ax::mojom::Event::kNone ||
       event_to_wait_for_ == event_type) {
