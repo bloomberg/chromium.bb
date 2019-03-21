@@ -77,19 +77,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
 
-  // Returns the preferred size of the shelf for the target visibility state.
-  gfx::Size GetPreferredSize();
-
-  // Stops any animations and sets the bounds of the shelf and status widgets.
-  void LayoutShelfAndUpdateBounds();
-
   // Stops any animations, sets the bounds of the shelf and status widgets, and
   // changes the work area
   void LayoutShelf();
-
-  // Returns shelf visibility state based on current value of auto hide
-  // behavior setting.
-  ShelfVisibilityState CalculateShelfVisibility();
 
   // Updates the visibility state.
   void UpdateVisibilityState();
@@ -112,11 +102,6 @@ class ASH_EXPORT ShelfLayoutManager
   // appropriate. Returns true if the gesture has been handled and it should not
   // be processed any further, false otherwise.
   bool ProcessGestureEvent(const ui::GestureEvent& event_in_screen);
-
-  // Returns true if a maximized or fullscreen window is being dragged from the
-  // top of the display or from the caption area. Note currently for this case
-  // it's only allowed in tablet mode, not in laptop mode.
-  bool IsDraggingWindowFromTopOrCaptionArea() const;
 
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
@@ -206,10 +191,6 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
   int accessibility_panel_height() const { return accessibility_panel_height_; }
   int docked_magnifier_height() const { return docked_magnifier_height_; }
-  ShelfWidget* shelf_widget() { return shelf_widget_; }
-
-  // Returns whether background blur is enabled.
-  bool IsBackgroundBlurEnabled() { return is_background_blur_enabled_; }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -279,6 +260,13 @@ class ASH_EXPORT ShelfLayoutManager
   // Sets the visibility of the shelf to |state|.
   void SetState(ShelfVisibilityState visibility_state);
 
+  // Returns shelf visibility state based on current value of auto hide
+  // behavior setting.
+  ShelfVisibilityState CalculateShelfVisibility();
+
+  // Stops any animations and sets the bounds of the shelf and status widgets.
+  void LayoutShelfAndUpdateBounds();
+
   // Updates the bounds and opacity of the shelf and status widgets.
   // If |observer| is specified, it will be called back when the animations, if
   // any, are complete.
@@ -288,6 +276,11 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Returns whether the virtual keyboard is currently being shown.
   bool IsKeyboardShown() const;
+
+  // Returns true if a maximized or fullscreen window is being dragged from the
+  // top of the display or from the caption area. Note currently for this case
+  // it's only allowed in tablet mode, not in laptop mode.
+  bool IsDraggingWindowFromTopOrCaptionArea() const;
 
   // Stops any animations and progresses them to the end.
   void StopAnimating();

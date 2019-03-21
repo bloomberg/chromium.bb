@@ -247,43 +247,6 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
                 rect.height()));
 }
 
-gfx::Size ShelfLayoutManager::GetPreferredSize() {
-  TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
-  return target_bounds.shelf_bounds.size();
-}
-
-void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
-  TargetBounds target_bounds;
-  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
-  UpdateBoundsAndOpacity(target_bounds, false, nullptr);
-
-  // Update insets in ShelfWindowTargeter when shelf bounds change.
-  for (auto& observer : observers_)
-    observer.WillChangeVisibilityState(visibility_state());
-}
-
-void ShelfLayoutManager::LayoutShelf() {
-  // The ShelfWidget may be partially closed (no native widget) during shutdown
-  // so skip layout.
-  if (in_shutdown_)
-    return;
-
-  LayoutShelfAndUpdateBounds();
-}
-
-ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
-  switch (shelf_->auto_hide_behavior()) {
-    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
-      return SHELF_AUTO_HIDE;
-    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
-      return SHELF_VISIBLE;
-    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
-      return SHELF_HIDDEN;
-  }
-  return SHELF_VISIBLE;
-}
-
 void ShelfLayoutManager::UpdateVisibilityState() {
   // Bail out early after shelf is destroyed.
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
@@ -457,27 +420,6 @@ bool ShelfLayoutManager::ProcessGestureEvent(
   return false;
 }
 
-bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
-  // Currently dragging maximized or fullscreen window from the top or the
-  // caption area is only allowed in tablet mode.
-  if (!IsTabletModeEnabled())
-    return false;
-
-  // TODO(minch): Check active window directly if removed search field
-  // in overview mode. http://crbug.com/866679
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  for (auto* window : windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_state && window_state->is_dragged() &&
-        (window_state->IsMaximized() || window_state->IsFullscreen()) &&
-        (window_state->drag_details()->window_component == HTCLIENT ||
-         window_state->drag_details()->window_component == HTCAPTION)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;
@@ -540,7 +482,7 @@ void ShelfLayoutManager::MaybeUpdateShelfBackground(AnimationChangeType type) {
 }
 
 bool ShelfLayoutManager::ShouldBlurShelfBackground() {
-  return IsBackgroundBlurEnabled() &&
+  return is_background_blur_enabled_ &&
          shelf_background_type_ == SHELF_BACKGROUND_DEFAULT &&
          state_.session_state == session_manager::SessionState::ACTIVE;
 }
@@ -806,6 +748,37 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   }
 }
 
+ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
+  switch (shelf_->auto_hide_behavior()) {
+    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      return SHELF_AUTO_HIDE;
+    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      return SHELF_VISIBLE;
+    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+      return SHELF_HIDDEN;
+  }
+  return SHELF_VISIBLE;
+}
+
+void ShelfLayoutManager::LayoutShelfAndUpdateBounds() {
+  TargetBounds target_bounds;
+  CalculateTargetBoundsAndUpdateWorkArea(&target_bounds);
+  UpdateBoundsAndOpacity(target_bounds, false, nullptr);
+
+  // Update insets in ShelfWindowTargeter when shelf bounds change.
+  for (auto& observer : observers_)
+    observer.WillChangeVisibilityState(visibility_state());
+}
+
+void ShelfLayoutManager::LayoutShelf() {
+  // The ShelfWidget may be partially closed (no native widget) during shutdown
+  // so skip layout.
+  if (in_shutdown_)
+    return;
+
+  LayoutShelfAndUpdateBounds();
+}
+
 void ShelfLayoutManager::UpdateBoundsAndOpacity(
     const TargetBounds& target_bounds,
     bool animate,
@@ -895,6 +868,27 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
 
 bool ShelfLayoutManager::IsKeyboardShown() const {
   return !keyboard_displaced_bounds_.IsEmpty();
+}
+
+bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
+  // Currently dragging maximized or fullscreen window from the top or the
+  // caption area is only allowed in tablet mode.
+  if (!IsTabletModeEnabled())
+    return false;
+
+  // TODO(minch): Check active window directly if removed search field
+  // in overview mode. http://crbug.com/866679
+  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  for (auto* window : windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (window_state && window_state->is_dragged() &&
+        (window_state->IsMaximized() || window_state->IsFullscreen()) &&
+        (window_state->drag_details()->window_component == HTCLIENT ||
+         window_state->drag_details()->window_component == HTCAPTION)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void ShelfLayoutManager::StopAnimating() {
