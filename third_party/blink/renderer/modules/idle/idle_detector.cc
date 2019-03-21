@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/modules/idle/idle_detector.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/modules/idle/idle_manager.mojom-blink.h"
+#include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/idle/idle_options.h"
 #include "third_party/blink/renderer/modules/idle/idle_state.h"
