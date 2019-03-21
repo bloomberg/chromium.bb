@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -768,7 +769,10 @@ void Controller::RenderProcessGone(base::TerminationStatus status) {
 
 void Controller::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
-  if (NeedsUI()) {
+  if (NeedsUI() &&
+      base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry)) {
+    // Show UI again when re-focused in case the web contents moved activity.
+    // This is only enabled when tab-switching is enabled.
     client_->ShowUI();
   }
 }
@@ -791,6 +795,22 @@ void Controller::SetPaymentRequestOptions(
 
   payment_request_options_ = std::move(options);
   GetUiController()->OnPaymentRequestChanged(payment_request_options_.get());
+}
+
+void Controller::CancelPaymentRequest() {
+  if (!payment_request_options_)
+    return;
+
+  auto callback = std::move(payment_request_options_->callback);
+  SetPaymentRequestOptions(nullptr);
+
+  if (!callback) {
+    NOTREACHED();
+    return;
+  }
+  auto result = std::make_unique<PaymentInformation>();
+  result->succeed = false;
+  std::move(callback).Run(std::move(result));
 }
 
 ElementArea* Controller::touchable_element_area() {

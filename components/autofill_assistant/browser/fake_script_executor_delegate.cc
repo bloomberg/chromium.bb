@@ -85,4 +85,7 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
     std::unique_ptr<PaymentRequestOptions> options) {
   payment_request_options_ = std::move(options);
 }
+
+void FakeScriptExecutorDelegate::CancelPaymentRequest() {}
+
 }  // namespace autofill_assistant

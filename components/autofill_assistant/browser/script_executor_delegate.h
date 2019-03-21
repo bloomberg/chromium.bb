@@ -54,6 +54,7 @@ class ScriptExecutorDelegate {
   virtual void ClearInfoBox() = 0;
   virtual void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) = 0;
+  virtual void CancelPaymentRequest() = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
