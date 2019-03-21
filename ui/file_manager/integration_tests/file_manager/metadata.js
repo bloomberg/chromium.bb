@@ -340,4 +340,44 @@ testcase.metadataTeamDrives = async () => {
   chrome.test.assertEq(0, metadataStats.invalidateCount);
 };
 
+/**
+ *  Tests that fetching content metadata from a DocumentsProvider completes.
+ */
+testcase.metadataDocumentsProvider = async () => {
+  const documentsProviderVolumeQuery =
+      '[has-children="true"] [volume-type-icon="documents_provider"]';
+
+  // Open Files app.
+  const appId = await openNewWindow(RootPath.DOWNLOADS);
+
+  // Add files to the DocumentsProvider volume.
+  await addEntries(['documents_provider'], BASIC_LOCAL_ENTRY_SET);
+
+  // Wait for the DocumentsProvider volume to mount.
+  await remoteCall.waitForElement(appId, documentsProviderVolumeQuery);
+
+  // Click to open the DocumentsProvider volume.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [documentsProviderVolumeQuery]),
+      'fakeMouseClick failed');
+
+  // Check: the DocumentsProvider files should appear in the file list.
+  const files = TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
+
+  // Select file hello.txt in the file list.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'selectFile', appId, [ENTRIES.hello.nameText]),
+      'selectFile failed');
+
+  // Check that a request for content metadata completes.
+  const result = await await remoteCall.callRemoteTestUtil(
+      'getContentMetadata', appId, [['mediaMimeType']]);
+
+  // Check nothing in the result was returned.
+  chrome.test.checkDeepEq([], result);
+};
+
 })();
