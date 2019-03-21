@@ -103,9 +103,7 @@ class Connection {
   ~Connection();
 
   // Returns the ID and URL of this presentation.
-  const PresentationInfo& get_presentation_info() const {
-    return presentation_;
-  }
+  const PresentationInfo& presentation_info() const { return presentation_; }
 
   Role role() const { return role_; }
   State state() const { return state_; }

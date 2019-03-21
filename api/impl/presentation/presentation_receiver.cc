@@ -374,7 +374,7 @@ Error Receiver::OnPresentationStarted(const std::string& presentation_id,
 Error Receiver::OnConnectionCreated(uint64_t request_id,
                                     Connection* connection,
                                     ResponseResult result) {
-  const auto presentation_id = connection->get_presentation_info().id;
+  const auto presentation_id = connection->presentation_info().id;
 
   ErrorOr<QueuedResponseIterator> connection_response =
       GetQueuedResponse(presentation_id, request_id);
@@ -441,7 +441,7 @@ Error Receiver::OnPresentationTerminated(const std::string& presentation_id,
 
 void Receiver::OnConnectionDestroyed(Connection* connection) {
   auto presentation_entry =
-      started_presentations_.find(connection->get_presentation_info().id);
+      started_presentations_.find(connection->presentation_info().id);
   if (presentation_entry == started_presentations_.end())
     return;
 

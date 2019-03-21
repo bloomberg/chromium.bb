@@ -109,7 +109,8 @@ class MdnsResponderServiceTest : public ::testing::Test {
         kTestServiceName, kTestServiceProtocol,
         std::move(mdns_responder_factory), std::move(platform_service));
     service_listener_ =
-        std::make_unique<ServiceListenerImpl>(&observer_, mdns_service_.get());
+        std::make_unique<ServiceListenerImpl>(mdns_service_.get());
+    service_listener_->AddObserver(&observer_);
 
     mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
                                     kTestPort, {}, {{"model", "shifty"}});

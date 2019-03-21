@@ -16,6 +16,7 @@ source_set("impl") {
     "presentation/presentation_common.cc",
     "presentation/presentation_common.h",
     "presentation/presentation_connection.cc",
+    "presentation/presentation_controller.cc",
     "presentation/presentation_receiver.cc",
     "presentation/url_availability_requester.cc",
     "presentation/url_availability_requester.h",

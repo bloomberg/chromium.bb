@@ -5,6 +5,8 @@
 #ifndef API_IMPL_SERVICE_LISTENER_IMPL_H_
 #define API_IMPL_SERVICE_LISTENER_IMPL_H_
 
+#include <vector>
+
 #include "api/impl/receiver_list.h"
 #include "api/public/service_info.h"
 #include "api/public/service_listener.h"
@@ -36,10 +38,8 @@ class ServiceListenerImpl final : public ServiceListener,
     ServiceListenerImpl* listener_ = nullptr;
   };
 
-  // |observer| is optional.  If it is provided, it will receive appropriate
-  // notifications about this ServiceListener.  |delegate| is required and is
-  // used to implement state transitions.
-  ServiceListenerImpl(Observer* observer, Delegate* delegate);
+  // |delegate| is used to implement state transitions.
+  explicit ServiceListenerImpl(Delegate* delegate);
   ~ServiceListenerImpl() override;
 
   // Called by |delegate_| when there are updates to the available receivers.
@@ -59,6 +59,9 @@ class ServiceListenerImpl final : public ServiceListener,
   bool Resume() override;
   bool SearchNow() override;
 
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
   const std::vector<ServiceInfo>& GetReceivers() const override;
 
  private:
@@ -66,9 +69,9 @@ class ServiceListenerImpl final : public ServiceListener,
   // kStopping which are done automatically).
   void SetState(State state);
 
-  // Notifies |observer_| if the transition to |state_| is one that is watched
-  // by the observer interface.
-  void MaybeNotifyObserver();
+  // Notifies each observer in |observers_| if the transition to |state_| is one
+  // that is watched by the observer interface.
+  void MaybeNotifyObservers();
 
   Delegate* const delegate_;
   ReceiverList receiver_list_;

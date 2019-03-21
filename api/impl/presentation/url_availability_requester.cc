@@ -36,8 +36,8 @@ void MoveVectorSegment(std::vector<std::string>::iterator first,
 
 }  // namespace
 
-UrlAvailabilityRequester::UrlAvailabilityRequester(std::unique_ptr<Clock> clock)
-    : clock_(std::move(clock)) {}
+UrlAvailabilityRequester::UrlAvailabilityRequester(Clock* clock)
+    : clock_(clock) {}
 
 UrlAvailabilityRequester::~UrlAvailabilityRequester() = default;
 
@@ -58,6 +58,8 @@ void UrlAvailabilityRequester::RemoveObserverUrls(
   std::set<std::string> unobserved_urls;
   for (const auto& url : urls) {
     auto observer_entry = observers_by_url_.find(url);
+    if (observer_entry == observers_by_url_.end())
+      continue;
     auto& observers = observer_entry->second;
     observers.erase(std::remove(observers.begin(), observers.end(), observer),
                     observers.end());

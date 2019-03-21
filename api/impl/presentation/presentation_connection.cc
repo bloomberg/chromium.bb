@@ -216,17 +216,17 @@ ConnectionManager::ConnectionManager(MessageDemuxer* demuxer) {
 }
 
 void ConnectionManager::AddConnection(Connection* connection) {
-  auto emplace_result = connections_.emplace(
-      std::make_pair(connection->get_presentation_info().id,
-                     connection->connection_id()),
-      connection);
+  auto emplace_result =
+      connections_.emplace(std::make_pair(connection->presentation_info().id,
+                                          connection->connection_id()),
+                           connection);
 
   OSP_DCHECK(emplace_result.second);
 }
 
 void ConnectionManager::RemoveConnection(Connection* connection) {
   auto entry = connections_.find(std::make_pair(
-      connection->get_presentation_info().id, connection->connection_id()));
+      connection->presentation_info().id, connection->connection_id()));
   if (entry != connections_.end()) {
     connections_.erase(entry);
   }

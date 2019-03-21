@@ -30,7 +30,7 @@ namespace presentation {
 // given URL.
 class UrlAvailabilityRequester {
  public:
-  explicit UrlAvailabilityRequester(std::unique_ptr<Clock> clock);
+  explicit UrlAvailabilityRequester(Clock* clock);
   ~UrlAvailabilityRequester();
 
   // Adds a persistent availability request for |urls| to all known receivers.
@@ -144,7 +144,7 @@ class UrlAvailabilityRequester {
         known_availability_by_url;
   };
 
-  std::unique_ptr<Clock> clock_;
+  Clock* const clock_;
 
   std::map<std::string, std::vector<ReceiverObserver*>> observers_by_url_;
 

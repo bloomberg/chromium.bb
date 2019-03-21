@@ -85,7 +85,8 @@ std::unique_ptr<ServiceListener> InternalServices::CreateListener(
     ServiceListener::Observer* observer) {
   auto* services = ReferenceSingleton();
   auto listener =
-      std::make_unique<ServiceListenerImpl>(observer, &services->mdns_service_);
+      std::make_unique<ServiceListenerImpl>(&services->mdns_service_);
+  listener->AddObserver(observer);
   listener->SetDestructionCallback(&InternalServices::DereferenceSingleton,
                                    services);
   return listener;

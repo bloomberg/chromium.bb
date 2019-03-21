@@ -26,6 +26,7 @@ source_set("api_unittests") {
   sources = [
     "impl/mdns_responder_service_unittest.cc",
     "impl/presentation/presentation_connection_unittest.cc",
+    "impl/presentation/presentation_controller_unittest.cc",
     "impl/presentation/presentation_receiver_unittest.cc",
     "impl/presentation/url_availability_requester_unittest.cc",
     "impl/quic/quic_client_unittest.cc",
@@ -42,6 +43,7 @@ source_set("api_unittests") {
     "impl/quic:test_support",
     "impl/testing",
     "impl/testing:fakes_unittests",
+    "public:test_support",
     "//third_party/abseil",
     "//third_party/googletest:gmock",
     "//third_party/googletest:gtest",

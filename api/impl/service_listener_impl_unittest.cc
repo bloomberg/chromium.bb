@@ -55,8 +55,7 @@ class MockMdnsDelegate final : public ServiceListenerImpl::Delegate {
 class ServiceListenerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    service_listener_ =
-        std::make_unique<ServiceListenerImpl>(nullptr, &mock_delegate_);
+    service_listener_ = std::make_unique<ServiceListenerImpl>(&mock_delegate_);
   }
 
   MockMdnsDelegate mock_delegate_;
@@ -235,70 +234,68 @@ TEST_F(ServiceListenerImplTest, SuspendWhileSearching) {
 
 TEST_F(ServiceListenerImplTest, ObserveTransitions) {
   MockObserver observer;
-  MockMdnsDelegate mock_delegate;
-  service_listener_ =
-      std::make_unique<ServiceListenerImpl>(&observer, &mock_delegate);
+  service_listener_->AddObserver(&observer);
 
   service_listener_->Start();
   Expectation start_from_stopped = EXPECT_CALL(observer, OnStarted());
-  mock_delegate.SetState(State::kRunning);
+  mock_delegate_.SetState(State::kRunning);
 
   service_listener_->SearchNow();
   Expectation search_from_running =
       EXPECT_CALL(observer, OnSearching()).After(start_from_stopped);
-  mock_delegate.SetState(State::kSearching);
+  mock_delegate_.SetState(State::kSearching);
   EXPECT_CALL(observer, OnStarted());
-  mock_delegate.SetState(State::kRunning);
+  mock_delegate_.SetState(State::kRunning);
 
   service_listener_->Suspend();
   Expectation suspend_from_running =
       EXPECT_CALL(observer, OnSuspended()).After(search_from_running);
-  mock_delegate.SetState(State::kSuspended);
+  mock_delegate_.SetState(State::kSuspended);
 
   service_listener_->SearchNow();
   Expectation search_from_suspended =
       EXPECT_CALL(observer, OnSearching()).After(suspend_from_running);
-  mock_delegate.SetState(State::kSearching);
+  mock_delegate_.SetState(State::kSearching);
   EXPECT_CALL(observer, OnSuspended());
-  mock_delegate.SetState(State::kSuspended);
+  mock_delegate_.SetState(State::kSuspended);
 
   service_listener_->Resume();
   Expectation resume_from_suspended =
       EXPECT_CALL(observer, OnStarted()).After(suspend_from_running);
-  mock_delegate.SetState(State::kRunning);
+  mock_delegate_.SetState(State::kRunning);
 
   service_listener_->Stop();
   Expectation stop =
       EXPECT_CALL(observer, OnStopped()).After(resume_from_suspended);
-  mock_delegate.SetState(State::kStopped);
+  mock_delegate_.SetState(State::kStopped);
 
   service_listener_->StartAndSuspend();
   EXPECT_CALL(observer, OnSuspended()).After(stop);
-  mock_delegate.SetState(State::kSuspended);
+  mock_delegate_.SetState(State::kSuspended);
+  service_listener_->RemoveObserver(&observer);
 }
 
 TEST_F(ServiceListenerImplTest, ObserveFromSearching) {
   MockObserver observer;
-  MockMdnsDelegate mock_delegate;
-  service_listener_ =
-      std::make_unique<ServiceListenerImpl>(&observer, &mock_delegate);
+  service_listener_->AddObserver(&observer);
 
   service_listener_->Start();
-  mock_delegate.SetState(State::kRunning);
+  mock_delegate_.SetState(State::kRunning);
 
   service_listener_->SearchNow();
-  mock_delegate.SetState(State::kSearching);
+  mock_delegate_.SetState(State::kSearching);
 
   service_listener_->Suspend();
   EXPECT_CALL(observer, OnSuspended());
-  mock_delegate.SetState(State::kSuspended);
+  mock_delegate_.SetState(State::kSuspended);
 
   EXPECT_TRUE(service_listener_->SearchNow());
-  mock_delegate.SetState(State::kSearching);
+  mock_delegate_.SetState(State::kSearching);
 
   service_listener_->Resume();
   EXPECT_CALL(observer, OnStarted());
-  mock_delegate.SetState(State::kRunning);
+  mock_delegate_.SetState(State::kRunning);
+  service_listener_->RemoveObserver(&observer);
 }
 
 TEST_F(ServiceListenerImplTest, ReceiverObserverPassThrough) {
@@ -311,9 +308,7 @@ TEST_F(ServiceListenerImplTest, ReceiverObserverPassThrough) {
   const ServiceInfo receiver1_alt_name{
       "id1", "name1 alt", 1, {{192, 168, 1, 10}, 12345}, {}};
   MockObserver observer;
-  MockMdnsDelegate mock_delegate;
-  service_listener_ =
-      std::make_unique<ServiceListenerImpl>(&observer, &mock_delegate);
+  service_listener_->AddObserver(&observer);
 
   EXPECT_CALL(observer, OnReceiverAdded(receiver1));
   service_listener_->OnReceiverAdded(receiver1);
@@ -349,6 +344,42 @@ TEST_F(ServiceListenerImplTest, ReceiverObserverPassThrough) {
 
   EXPECT_CALL(observer, OnAllReceiversRemoved()).Times(0);
   service_listener_->OnAllReceiversRemoved();
+  service_listener_->RemoveObserver(&observer);
+}
+
+TEST_F(ServiceListenerImplTest, MultipleObservers) {
+  MockObserver observer1;
+  MockObserver observer2;
+  service_listener_->AddObserver(&observer1);
+
+  service_listener_->Start();
+  EXPECT_CALL(observer1, OnStarted());
+  EXPECT_CALL(observer2, OnStarted()).Times(0);
+  mock_delegate_.SetState(State::kRunning);
+
+  service_listener_->AddObserver(&observer2);
+
+  service_listener_->SearchNow();
+  EXPECT_CALL(observer1, OnSearching());
+  EXPECT_CALL(observer2, OnSearching());
+  mock_delegate_.SetState(State::kSearching);
+  EXPECT_CALL(observer1, OnStarted());
+  EXPECT_CALL(observer2, OnStarted());
+  mock_delegate_.SetState(State::kRunning);
+
+  service_listener_->RemoveObserver(&observer1);
+
+  service_listener_->Suspend();
+  EXPECT_CALL(observer1, OnSuspended()).Times(0);
+  EXPECT_CALL(observer2, OnSuspended());
+  mock_delegate_.SetState(State::kSuspended);
+
+  service_listener_->RemoveObserver(&observer2);
+
+  service_listener_->Resume();
+  EXPECT_CALL(observer1, OnStarted()).Times(0);
+  EXPECT_CALL(observer2, OnStarted()).Times(0);
+  mock_delegate_.SetState(State::kRunning);
 }
 
 }  // namespace openscreen

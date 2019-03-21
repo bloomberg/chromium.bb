@@ -67,38 +67,6 @@ void SignalThings() {
   OSP_LOG << "signal handlers setup" << std::endl << "pid: " << getpid();
 }
 
-class AutoMessage final
-    : public ProtocolConnectionClient::ConnectionRequestCallback {
- public:
-  ~AutoMessage() override = default;
-
-  void TakeRequest(ProtocolConnectionClient::ConnectRequest&& request) {
-    request_ = std::move(request);
-  }
-
-  void OnConnectionOpened(
-      uint64_t request_id,
-      std::unique_ptr<ProtocolConnection> connection) override {
-    request_ = ProtocolConnectionClient::ConnectRequest();
-    msgs::CborEncodeBuffer buffer;
-    msgs::PresentationConnectionMessage message;
-    message.connection_id = 0;
-    message.presentation_id = "qD0wuy6EIwQFfIEe9BKl";
-    message.message.which = decltype(message.message.which)::kString;
-    new (&message.message.str) std::string("message from client");
-    if (msgs::EncodePresentationConnectionMessage(message, &buffer))
-      connection->Write(buffer.data(), buffer.size());
-    connection->CloseWriteEnd();
-  }
-
-  void OnConnectionFailed(uint64_t request_id) override {
-    request_ = ProtocolConnectionClient::ConnectRequest();
-  }
-
- private:
-  ProtocolConnectionClient::ConnectRequest request_;
-};
-
 class ListenerObserver final : public ServiceListener::Observer {
  public:
   ~ListenerObserver() override = default;
@@ -109,12 +77,6 @@ class ListenerObserver final : public ServiceListener::Observer {
 
   void OnReceiverAdded(const ServiceInfo& info) override {
     OSP_LOG << "found! " << info.friendly_name;
-    if (!auto_message_) {
-      auto_message_ = std::make_unique<AutoMessage>();
-      auto_message_->TakeRequest(
-          NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
-              info.v4_endpoint, auto_message_.get()));
-    }
   }
   void OnReceiverChanged(const ServiceInfo& info) override {
     OSP_LOG << "changed! " << info.friendly_name;
@@ -125,9 +87,38 @@ class ListenerObserver final : public ServiceListener::Observer {
   void OnAllReceiversRemoved() override { OSP_LOG << "all removed!"; }
   void OnError(ServiceListenerError) override {}
   void OnMetrics(ServiceListener::Metrics) override {}
+};
 
- private:
-  std::unique_ptr<AutoMessage> auto_message_;
+std::string SanitizeServiceId(absl::string_view service_id) {
+  std::string safe_service_id(service_id);
+  for (auto& c : safe_service_id) {
+    if (c < ' ' || c > '~') {
+      c = '.';
+    }
+  }
+  return safe_service_id;
+}
+
+class ReceiverObserver final : public presentation::ReceiverObserver {
+ public:
+  ~ReceiverObserver() override = default;
+
+  void OnRequestFailed(const std::string& presentation_url,
+                       const std::string& service_id) override {
+    std::string safe_service_id = SanitizeServiceId(service_id);
+    OSP_LOG_WARN << "request failed: (" << presentation_url << ", "
+                 << safe_service_id << ")";
+  }
+  void OnReceiverAvailable(const std::string& presentation_url,
+                           const std::string& service_id) override {
+    std::string safe_service_id = SanitizeServiceId(service_id);
+    OSP_LOG << "available! " << safe_service_id;
+  }
+  void OnReceiverUnavailable(const std::string& presentation_url,
+                             const std::string& service_id) override {
+    std::string safe_service_id = SanitizeServiceId(service_id);
+    OSP_LOG << "unavailable! " << safe_service_id;
+  }
 };
 
 class PublisherObserver final : public ServicePublisher::Observer {
@@ -260,7 +251,7 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
                              uint64_t source_id) override {
     connection = std::make_unique<presentation::Connection>(
         presentation::Connection::PresentationInfo{
-            id, connection->get_presentation_info().url},
+            id, connection->presentation_info().url},
         presentation::Connection::Role::kReceiver, &cd);
     cd.connection = connection.get();
     presentation::Receiver::Get()->OnConnectionCreated(
@@ -278,6 +269,75 @@ class ReceiverDelegate final : public presentation::ReceiverDelegate {
   ReceiverConnectionDelegate cd;
 };
 
+struct CommandLineSplit {
+  absl::string_view command;
+  absl::string_view argument_tail;
+};
+
+CommandLineSplit SeparateCommandFromArguments(absl::string_view line) {
+  size_t split_index = line.find_first_of(' ');
+  absl::string_view command = line.substr(0, split_index);
+  absl::string_view argument_tail = split_index < line.size()
+                                        ? line.substr(split_index)
+                                        : absl::string_view();
+  return {command, argument_tail};
+}
+
+struct CommandWaitResult {
+  bool done;
+  CommandLineSplit command_line;
+};
+
+CommandWaitResult WaitForCommand(pollfd* pollfd) {
+  NetworkServiceManager* network_service = NetworkServiceManager::Get();
+  while (poll(pollfd, 1, 10) >= 0) {
+    if (g_done) {
+      return {true};
+    }
+    network_service->RunEventLoopOnce();
+
+    if (pollfd->revents == 0) {
+      continue;
+    } else if (pollfd->revents & (POLLERR | POLLHUP)) {
+      return {true};
+    }
+
+    std::string line;
+    if (!std::getline(std::cin, line)) {
+      return {true};
+    }
+
+    CommandWaitResult result;
+    result.command_line = SeparateCommandFromArguments(line);
+    return result;
+  }
+  return {true};
+}
+
+void RunControllerPollLoop(presentation::Controller* controller) {
+  ReceiverObserver receiver_observer;
+  presentation::Controller::ReceiverWatch watch;
+
+  pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
+
+  do {
+    write(STDOUT_FILENO, "$ ", 2);
+
+    CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
+    if (command_result.done) {
+      break;
+    }
+
+    if (command_result.command_line.command == "avail") {
+      watch = controller->RegisterReceiverWatch(
+          {std::string(command_result.command_line.argument_tail)},
+          &receiver_observer);
+    }
+  } while (true);
+
+  watch = presentation::Controller::ReceiverWatch();
+}
+
 void ListenerDemo() {
   SignalThings();
 
@@ -293,16 +353,18 @@ void ListenerDemo() {
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
+  PlatformClock clock;
+  auto controller = std::make_unique<presentation::Controller>(&clock);
 
   network_service->GetMdnsServiceListener()->Start();
   network_service->GetProtocolConnectionClient()->Start();
 
-  while (!g_done) {
-    network_service->RunEventLoopOnce();
-  }
+  RunControllerPollLoop(controller.get());
 
   network_service->GetMdnsServiceListener()->Stop();
   network_service->GetProtocolConnectionClient()->Stop();
+
+  controller.reset();
 
   NetworkServiceManager::Dispose();
 }
@@ -335,34 +397,19 @@ void HandleReceiverCommand(absl::string_view command,
 void RunReceiverPollLoop(pollfd& file_descriptor,
                          NetworkServiceManager* manager,
                          ReceiverDelegate& delegate) {
-  write(STDOUT_FILENO, "$ ", 2);
-
-  while (poll(&file_descriptor, 1, 10) >= 0) {
-    if (g_done) {
-      break;
-    }
-
-    manager->RunEventLoopOnce();
-
-    if (file_descriptor.revents == 0) {
-      continue;
-    } else if (file_descriptor.revents & (POLLERR | POLLHUP)) {
-      break;
-    }
-
-    std::string line;
-    if (!std::getline(std::cin, line)) {
-      break;
-    }
-
-    std::size_t split_index = line.find_first_of(' ');
-    absl::string_view line_view(line);
-
-    HandleReceiverCommand(line_view.substr(0, split_index),
-                          line_view.substr(split_index), delegate, manager);
-
+  pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
+  do {
     write(STDOUT_FILENO, "$ ", 2);
-  }
+
+    CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
+    if (command_result.done) {
+      break;
+    }
+
+    HandleReceiverCommand(command_result.command_line.command,
+                          command_result.command_line.argument_tail, delegate,
+                          manager);
+  } while (true);
 }
 
 void CleanupPublisherDemo(NetworkServiceManager* manager) {

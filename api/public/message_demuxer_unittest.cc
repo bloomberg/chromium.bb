@@ -4,6 +4,7 @@
 
 #include "api/public/message_demuxer.h"
 
+#include "api/public/testing/message_demuxer_test_support.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "third_party/tinycbor/src/src/cbor.h"
@@ -13,19 +14,6 @@ namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
-
-class MockMessageCallback final : public MessageDemuxer::MessageCallback {
- public:
-  ~MockMessageCallback() override = default;
-
-  MOCK_METHOD6(OnStreamMessage,
-               ErrorOr<size_t>(uint64_t endpoint_id,
-                               uint64_t connection_id,
-                               msgs::Type message_type,
-                               const uint8_t* buffer,
-                               size_t buffer_size,
-                               platform::TimeDelta now));
-};
 
 ErrorOr<size_t> ConvertDecodeResult(ssize_t result) {
   if (result < 0) {

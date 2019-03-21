@@ -13,6 +13,7 @@
 #include "api/impl/testing/fake_clock.h"
 #include "api/public/network_service_manager.h"
 #include "api/public/protocol_connection_server.h"
+#include "api/public/testing/message_demuxer_test_support.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -22,19 +23,6 @@ namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
-
-class MockMessageCallback final : public MessageDemuxer::MessageCallback {
- public:
-  ~MockMessageCallback() override = default;
-
-  MOCK_METHOD6(OnStreamMessage,
-               ErrorOr<size_t>(uint64_t endpoint_id,
-                               uint64_t connection_id,
-                               msgs::Type message_type,
-                               const uint8_t* buffer,
-                               size_t buffer_size,
-                               platform::TimeDelta now));
-};
 
 class MockConnectionDelegate final : public Connection::Delegate {
  public:

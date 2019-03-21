@@ -43,3 +43,10 @@ source_set("api") {
     "//platform",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "testing/message_demuxer_test_support.h",
+  ]
+}

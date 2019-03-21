@@ -52,8 +52,8 @@ void ServiceListenerImpl::Delegate::SetListenerImpl(
   listener_ = listener;
 }
 
-ServiceListenerImpl::ServiceListenerImpl(Observer* observer, Delegate* delegate)
-    : ServiceListener(observer), delegate_(delegate) {
+ServiceListenerImpl::ServiceListenerImpl(Delegate* delegate)
+    : delegate_(delegate) {
   delegate_->SetListenerImpl(this);
 }
 
@@ -61,32 +61,43 @@ ServiceListenerImpl::~ServiceListenerImpl() = default;
 
 void ServiceListenerImpl::OnReceiverAdded(const ServiceInfo& info) {
   receiver_list_.OnReceiverAdded(info);
-  if (observer_)
-    observer_->OnReceiverAdded(info);
+  for (auto* observer : observers_) {
+    observer->OnReceiverAdded(info);
+  }
 }
 
 void ServiceListenerImpl::OnReceiverChanged(const ServiceInfo& info) {
   const Error changed_error = receiver_list_.OnReceiverChanged(info);
-  if (changed_error.ok() && observer_)
-    observer_->OnReceiverChanged(info);
+  if (changed_error.ok()) {
+    for (auto* observer : observers_) {
+      observer->OnReceiverChanged(info);
+    }
+  }
 }
 
 void ServiceListenerImpl::OnReceiverRemoved(const ServiceInfo& info) {
   const Error removed_error = receiver_list_.OnReceiverRemoved(info);
-  if (removed_error.ok() && observer_)
-    observer_->OnReceiverRemoved(info);
+  if (removed_error.ok()) {
+    for (auto* observer : observers_) {
+      observer->OnReceiverRemoved(info);
+    }
+  }
 }
 
 void ServiceListenerImpl::OnAllReceiversRemoved() {
   const Error removed_all_error = receiver_list_.OnAllReceiversRemoved();
-  if (removed_all_error.ok() && observer_)
-    observer_->OnAllReceiversRemoved();
+  if (removed_all_error.ok()) {
+    for (auto* observer : observers_) {
+      observer->OnAllReceiversRemoved();
+    }
+  }
 }
 
 void ServiceListenerImpl::OnError(ServiceListenerError error) {
   last_error_ = error;
-  if (observer_)
-    observer_->OnError(error);
+  for (auto* observer : observers_) {
+    observer->OnError(error);
+  }
 }
 
 bool ServiceListenerImpl::Start() {
@@ -139,6 +150,18 @@ bool ServiceListenerImpl::SearchNow() {
   return true;
 }
 
+void ServiceListenerImpl::AddObserver(Observer* observer) {
+  OSP_DCHECK(observer);
+  observers_.push_back(observer);
+}
+
+void ServiceListenerImpl::RemoveObserver(Observer* observer) {
+  // TODO(btolsch): Consider writing an ObserverList in base/ for things like
+  // CHECK()ing that the list is empty on destruction.
+  observers_.erase(std::remove(observers_.begin(), observers_.end(), observer),
+                   observers_.end());
+}
+
 const std::vector<ServiceInfo>& ServiceListenerImpl::GetReceivers() const {
   return receiver_list_.receivers();
 }
@@ -146,24 +169,33 @@ const std::vector<ServiceInfo>& ServiceListenerImpl::GetReceivers() const {
 void ServiceListenerImpl::SetState(State state) {
   OSP_DCHECK(IsTransitionValid(state_, state));
   state_ = state;
-  if (observer_)
-    MaybeNotifyObserver();
+  if (!observers_.empty()) {
+    MaybeNotifyObservers();
+  }
 }
 
-void ServiceListenerImpl::MaybeNotifyObserver() {
-  OSP_DCHECK(observer_);
+void ServiceListenerImpl::MaybeNotifyObservers() {
+  OSP_DCHECK(!observers_.empty());
   switch (state_) {
     case State::kRunning:
-      observer_->OnStarted();
+      for (auto* observer : observers_) {
+        observer->OnStarted();
+      }
       break;
     case State::kStopped:
-      observer_->OnStopped();
+      for (auto* observer : observers_) {
+        observer->OnStopped();
+      }
       break;
     case State::kSuspended:
-      observer_->OnSuspended();
+      for (auto* observer : observers_) {
+        observer->OnSuspended();
+      }
       break;
     case State::kSearching:
-      observer_->OnSearching();
+      for (auto* observer : observers_) {
+        observer->OnSearching();
+      }
       break;
     default:
       break;
