@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.vr;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.module_installer.Module;
 import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
 
 import java.util.ArrayList;
@@ -85,15 +83,6 @@ public class VrModuleProvider implements ModuleInstallUi.FailureUiListener {
 
     public static void onExitVr() {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
-    }
-
-    @VisibleForTesting
-    public static void setAlwaysUseFallbackDelegate(boolean useFallbackDelegate) {
-        // TODO(crbug.com/944216): Remove this method and call Module.setForceUninstalled("vr")
-        // directly once we change the restriction checking code to use the Daydream API directly so
-        // that a delegate provider doesn't get created during pre-test setup.
-        sDelegateProvider = null;
-        Module.setForceUninstalled("vr");
     }
 
     /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
