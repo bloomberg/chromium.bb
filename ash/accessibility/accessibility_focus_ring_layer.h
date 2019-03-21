@@ -37,6 +37,7 @@ class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
 
   void DrawGlowFocusRing(ui::PaintRecorder& recorder, cc::PaintFlags& flags);
   void DrawSolidFocusRing(ui::PaintRecorder& recorder, cc::PaintFlags& flags);
+  void DrawDashedFocusRing(ui::PaintRecorder& recorder, cc::PaintFlags& flags);
 
   // The outline of the current focus ring.
   AccessibilityFocusRing ring_;
