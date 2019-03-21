@@ -162,9 +162,9 @@ class NestedCallbackTester {
       : manager_(manager), params_(params), quit_closure_(quit_closure) {}
 
   void Run() {
-    manager_->GetData(params_,
-                      base::Bind(&NestedCallbackTester::OnDidFinishFirstCheck,
-                                 base::Unretained(this)));
+    manager_->GetData(
+        params_, base::BindOnce(&NestedCallbackTester::OnDidFinishFirstCheck,
+                                base::Unretained(this)));
   }
 
   void OnDidFinishFirstCheck(const InstallableData& data) {
@@ -177,9 +177,9 @@ class NestedCallbackTester {
     valid_manifest_ = data.valid_manifest;
     has_worker_ = data.has_worker;
 
-    manager_->GetData(params_,
-                      base::Bind(&NestedCallbackTester::OnDidFinishSecondCheck,
-                                 base::Unretained(this)));
+    manager_->GetData(
+        params_, base::BindOnce(&NestedCallbackTester::OnDidFinishSecondCheck,
+                                base::Unretained(this)));
   }
 
   void OnDidFinishSecondCheck(const InstallableData& data) {
@@ -242,9 +242,9 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
                              CallbackTester* tester,
                              const InstallableParams& params) {
     InstallableManager* manager = GetManager(browser);
-    manager->GetData(params,
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester)));
+    manager->GetData(
+        params, base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                               base::Unretained(tester)));
   }
 
   InstallableManager* GetManager(Browser* browser) {
@@ -949,9 +949,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     // Set up a GetData call which will not record an installable metric to
     // ensure we wait until the previous check has finished.
-    manager->GetData(GetManifestParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetManifestParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     run_loop.Run();
 
     ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -980,9 +981,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     // Set up a GetData call which will not record an installable metric to
     // ensure we wait until the previous check has finished.
-    manager->GetData(GetManifestParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetManifestParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     run_loop.Run();
 
     ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -1085,9 +1087,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     ui_test_utils::NavigateToURL(browser(), test_url);
 
     // Kick off fetching the data. This should block on waiting for a worker.
-    manager->GetData(GetWebAppParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetWebAppParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     sw_run_loop.Run();
   }
 
@@ -1113,9 +1116,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     base::RunLoop run_loop;
     std::unique_ptr<CallbackTester> nested_tester(
         new CallbackTester(run_loop.QuitClosure()));
-    manager->GetData(GetPrimaryIconParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(nested_tester.get())));
+    manager->GetData(
+        GetPrimaryIconParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(nested_tester.get())));
     run_loop.Run();
 
     EXPECT_FALSE(nested_tester->manifest().IsEmpty());
@@ -1179,8 +1183,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
   // Kick off fetching the data. This should block on waiting for a worker.
   manager->GetData(GetWebAppParams(),
-                   base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                              base::Unretained(tester.get())));
+                   base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                                  base::Unretained(tester.get())));
   sw_run_loop.Run();
 
   // We should now be waiting for the service worker.
@@ -1228,9 +1232,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     ui_test_utils::NavigateToURL(browser(), test_url);
 
     // Kick off fetching the data. This should block on waiting for a worker.
-    manager->GetData(GetWebAppParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetWebAppParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     sw_run_loop.Run();
   }
 
@@ -1284,9 +1289,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     InstallableParams params = GetWebAppParams();
     params.wait_for_worker = false;
-    manager->GetData(params,
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        params, base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                               base::Unretained(tester.get())));
     tester_run_loop.Run();
 
     // We should have returned with an error.
@@ -1303,9 +1308,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
         new CallbackTester(tester_run_loop.QuitClosure()));
 
     InstallableParams params = GetWebAppParams();
-    manager->GetData(params,
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        params, base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                               base::Unretained(tester.get())));
     sw_run_loop.Run();
 
     EXPECT_TRUE(content::ExecuteScript(
@@ -1495,9 +1500,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     std::unique_ptr<CallbackTester> tester(
         new CallbackTester(run_loop.QuitClosure()));
 
-    manager->GetData(GetWebAppParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetWebAppParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     run_loop.Run();
 
     EXPECT_TRUE(tester->manifest().IsEmpty());
@@ -1523,9 +1529,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     std::unique_ptr<CallbackTester> tester(
         new CallbackTester(run_loop.QuitClosure()));
 
-    manager->GetData(GetWebAppParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetWebAppParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     run_loop.Run();
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
@@ -1555,9 +1562,10 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     std::unique_ptr<CallbackTester> tester(
         new CallbackTester(run_loop.QuitClosure()));
 
-    manager->GetData(GetWebAppParams(),
-                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                                base::Unretained(tester.get())));
+    manager->GetData(
+        GetWebAppParams(),
+        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
+                       base::Unretained(tester.get())));
     run_loop.Run();
 
     EXPECT_FALSE(tester->manifest().IsEmpty());

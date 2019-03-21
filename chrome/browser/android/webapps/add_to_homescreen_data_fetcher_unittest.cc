@@ -133,7 +133,7 @@ class TestInstallableManager : public InstallableManager {
   // data fetcher. We manually call the metrics logging method which is normally
   // called by the superclass method.
   void GetData(const InstallableParams& params,
-               const InstallableCallback& callback) override {
+               InstallableCallback callback) override {
     metrics_->Start();
 
     InstallableStatusCode code = NO_ERROR_DETECTED;
@@ -159,8 +159,8 @@ class TestInstallableManager : public InstallableManager {
       // and isn't called (corresponding to InstallableManager finishing work
       // after the timeout, and when it never finishes at all).
       queued_metrics_callback_ =
-          base::Bind(&InstallableManager::ResolveMetrics,
-                     base::Unretained(this), params, is_installable);
+          base::BindOnce(&InstallableManager::ResolveMetrics,
+                         base::Unretained(this), params, is_installable);
       return;
     }
 
@@ -171,14 +171,15 @@ class TestInstallableManager : public InstallableManager {
     std::vector<InstallableStatusCode> errors;
     if (code != NO_ERROR_DETECTED)
       errors.push_back(code);
-    callback.Run({std::move(errors), GURL(kDefaultManifestUrl), &manifest_,
-                  params.valid_primary_icon ? primary_icon_url_ : GURL(),
-                  params.valid_primary_icon ? primary_icon_.get() : nullptr,
-                  params.prefer_maskable_icon,
-                  params.valid_badge_icon ? badge_icon_url_ : GURL(),
-                  params.valid_badge_icon ? badge_icon_.get() : nullptr,
-                  params.valid_manifest ? is_installable : false,
-                  params.has_worker ? is_installable : false});
+    std::move(callback).Run(
+        {std::move(errors), GURL(kDefaultManifestUrl), &manifest_,
+         params.valid_primary_icon ? primary_icon_url_ : GURL(),
+         params.valid_primary_icon ? primary_icon_.get() : nullptr,
+         params.prefer_maskable_icon,
+         params.valid_badge_icon ? badge_icon_url_ : GURL(),
+         params.valid_badge_icon ? badge_icon_.get() : nullptr,
+         params.valid_manifest ? is_installable : false,
+         params.has_worker ? is_installable : false});
   }
 
   void SetInstallable(bool is_installable) { is_installable_ = is_installable; }

@@ -296,8 +296,9 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
       // Do not wait for a service worker if it doesn't exist.
       params.has_worker = !bypass_service_worker_check_;
       installable_manager_->GetData(
-          params, base::Bind(&BookmarkAppHelper::OnDidPerformInstallableCheck,
-                             weak_factory_.GetWeakPtr()));
+          params,
+          base::BindOnce(&BookmarkAppHelper::OnDidPerformInstallableCheck,
+                         weak_factory_.GetWeakPtr()));
     }
   } else {
     for_installable_site_ = web_app::ForInstallableSite::kNo;

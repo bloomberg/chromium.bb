@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -40,18 +39,17 @@ class InstallableManager
   static int GetMinimumIconSizeInPx();
 
   // Get the installable data, fetching the resources specified in |params|.
-  // |callback| is invoked synchronously (i.e. no via PostTask on the UI thread
+  // |callback| is invoked synchronously (i.e. not via PostTask on the UI thread
   // when the data is ready; the synchronous execution ensures that the
   // references |callback| receives in its InstallableData argument are valid.
   //
-  // Clients must be prepared for |callback| to not ever be invoked. For
-  // instance, if installability checking is requested, this method will wait
-  // until the site registers a service worker (and hence not invoke |callback|
-  // at all if a service worker is never registered).
+  // |callback| may never be invoked if |params.wait_for_worker| is true, or if
+  // the user navigates the page before fetching is complete.
   //
-  // Calls requesting data that is already fetched will return the cached data.
+  // Calls requesting data that has already been fetched will return the cached
+  // data.
   virtual void GetData(const InstallableParams& params,
-                       const InstallableCallback& callback);
+                       InstallableCallback callback);
 
   // Called via AppBannerManagerAndroid to record metrics on how often the
   // installable check is completed when the menu or add to homescreen menu item
@@ -183,7 +181,7 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
-  void RunCallback(const InstallableTask& task,
+  void RunCallback(InstallableTask task,
                    std::vector<InstallableStatusCode> errors);
   void WorkOnTask();
 

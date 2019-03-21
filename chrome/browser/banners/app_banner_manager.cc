@@ -191,7 +191,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   UpdateState(State::FETCHING_MANIFEST);
   manager_->GetData(
       ParamsToGetManifest(),
-      base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
+      base::BindOnce(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
 }
 
 void AppBannerManager::OnInstall(bool is_native,
@@ -348,9 +348,10 @@ void AppBannerManager::PerformInstallableCheck() {
 
   // Fetch and verify the other required information.
   UpdateState(State::PENDING_INSTALLABLE_CHECK);
-  manager_->GetData(ParamsToPerformInstallableCheck(),
-                    base::Bind(&AppBannerManager::OnDidPerformInstallableCheck,
-                               GetWeakPtr()));
+  manager_->GetData(
+      ParamsToPerformInstallableCheck(),
+      base::BindOnce(&AppBannerManager::OnDidPerformInstallableCheck,
+                     GetWeakPtr()));
 }
 
 void AppBannerManager::OnDidPerformInstallableCheck(

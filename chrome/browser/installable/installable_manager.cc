@@ -4,6 +4,8 @@
 
 #include "chrome/browser/installable/installable_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
@@ -185,7 +187,7 @@ int InstallableManager::GetMinimumIconSizeInPx() {
 }
 
 void InstallableManager::GetData(const InstallableParams& params,
-                                 const InstallableCallback& callback) {
+                                 InstallableCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (IsParamsForPwaCheck(params))
@@ -194,7 +196,7 @@ void InstallableManager::GetData(const InstallableParams& params,
   // Return immediately if we're already working on a task. The new task will be
   // looked at once the current task is finished.
   bool was_active = task_queue_.HasCurrent();
-  task_queue_.Add({params, callback});
+  task_queue_.Add({params, std::move(callback)});
   if (was_active)
     return;
 
@@ -406,7 +408,7 @@ void InstallableManager::SetManifestDependentTasksComplete() {
 }
 
 void InstallableManager::RunCallback(
-    const InstallableTask& task,
+    InstallableTask task,
     std::vector<InstallableStatusCode> errors) {
   const InstallableParams& params = task.params;
   IconProperty null_icon;
@@ -429,18 +431,21 @@ void InstallableManager::RunCallback(
       worker_->has_worker,
   };
 
-  task.callback.Run(data);
+  std::move(task.callback).Run(data);
 }
 
 void InstallableManager::WorkOnTask() {
-  const InstallableTask& task = task_queue_.Current();
-  const InstallableParams& params = task.params;
+  if (!task_queue_.HasCurrent())
+    return;
+
+  const InstallableParams& params = task_queue_.Current().params;
 
   auto errors = GetErrors(params);
   bool check_passed = errors.empty();
   if ((!check_passed && !params.is_debug_mode) || IsComplete(params)) {
+    auto task = std::move(task_queue_.Current());
     ResolveMetrics(params, check_passed);
-    RunCallback(task, std::move(errors));
+    RunCallback(std::move(task), std::move(errors));
 
     // Sites can always register a service worker after we finish checking, so
     // don't cache a missing service worker error to ensure we always check
@@ -449,10 +454,7 @@ void InstallableManager::WorkOnTask() {
       worker_ = std::make_unique<ServiceWorkerProperty>();
 
     task_queue_.Next();
-
-    if (task_queue_.HasCurrent())
-      WorkOnTask();
-
+    WorkOnTask();
     return;
   }
 
@@ -504,8 +506,8 @@ void InstallableManager::FetchManifest() {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
 
-  web_contents->GetManifest(base::Bind(&InstallableManager::OnDidGetManifest,
-                                       weak_factory_.GetWeakPtr()));
+  web_contents->GetManifest(base::BindOnce(
+      &InstallableManager::OnDidGetManifest, weak_factory_.GetWeakPtr()));
 }
 
 void InstallableManager::OnDidGetManifest(const GURL& manifest_url,
@@ -589,8 +591,8 @@ void InstallableManager::CheckServiceWorker() {
   // Check to see if there is a service worker for the manifest's start url.
   service_worker_context_->CheckHasServiceWorker(
       manifest().start_url,
-      base::Bind(&InstallableManager::OnDidCheckHasServiceWorker,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&InstallableManager::OnDidCheckHasServiceWorker,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void InstallableManager::OnDidCheckHasServiceWorker(
@@ -614,9 +616,7 @@ void InstallableManager::OnDidCheckHasServiceWorker(
         task.params.wait_for_worker = false;
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
-        if (task_queue_.HasCurrent())
-          WorkOnTask();
-
+        WorkOnTask();
         return;
       }
       worker_->has_worker = false;
@@ -694,8 +694,7 @@ void InstallableManager::OnRegistrationCompleted(const GURL& pattern) {
   if (was_active)
     return;  // If the pipeline was already running, we don't restart it.
 
-  if (task_queue_.HasCurrent())
-    WorkOnTask();
+  WorkOnTask();
 }
 
 void InstallableManager::DidFinishNavigation(

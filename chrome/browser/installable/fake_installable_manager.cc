@@ -19,14 +19,14 @@ FakeInstallableManager::FakeInstallableManager(
 FakeInstallableManager::~FakeInstallableManager() {}
 
 void FakeInstallableManager::GetData(const InstallableParams& params,
-                                     const InstallableCallback& callback) {
+                                     InstallableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakeInstallableManager::RunCallback,
-                                base::Unretained(this), callback));
+                                base::Unretained(this), std::move(callback)));
 }
 
-void FakeInstallableManager::RunCallback(const InstallableCallback& callback) {
-  callback.Run(*data_);
+void FakeInstallableManager::RunCallback(InstallableCallback callback) {
+  std::move(callback).Run(*data_);
 }
 
 // static
