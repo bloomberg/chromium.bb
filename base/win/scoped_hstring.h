@@ -35,7 +35,7 @@ namespace win {
 // One-time Initialization for ScopedHString:
 //
 //   bool success = ScopedHString::ResolveCoreWinRTStringDelayload();
-//   if (!success) {
+//   if (success) {
 //     // ScopeHString can be used.
 //   } else {
 //     // Handle error.
