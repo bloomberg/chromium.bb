@@ -257,10 +257,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                     openerRenderFrameId, frameName, targetUrl, newWebContents);
         }
         // The URL can't be taken from the WebContents if it's paused.  Save it for later.
-        // TODO(crbug.com/758186): Remove after debugging.
-        if (mWebContentsUrlMapping.containsKey(newWebContents)) {
-            Log.e(TAG, "Duplicate mWebContentsUrlMapping key");
-        }
         assert !mWebContentsUrlMapping.containsKey(newWebContents);
         mWebContentsUrlMapping.put(newWebContents, targetUrl);
 
@@ -309,10 +305,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     @CalledByNative
     public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
-        // TODO(crbug.com/758186): Remove after debugging.
-        if (!mWebContentsUrlMapping.containsKey(webContents)) {
-            Log.e(TAG, "Missing mWebContentsUrlMapping key");
-        }
         assert mWebContentsUrlMapping.containsKey(webContents);
 
         TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
