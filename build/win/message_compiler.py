@@ -67,7 +67,7 @@ def main():
     # we use the 2017 Fall Creator's Update by default.
     mc_help = subprocess.check_output(['mc.exe', '/?'], env=env_dict,
                                       stderr=subprocess.STDOUT, shell=True)
-    version = re.search(b'Message Compiler\s+Version (\S+)', mc_help).group(1)
+    version = re.search(br'Message Compiler\s+Version (\S+)', mc_help).group(1)
     if version != '10.0.15063':
       return
 
