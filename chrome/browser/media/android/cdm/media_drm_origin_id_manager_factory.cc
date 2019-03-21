@@ -54,5 +54,6 @@ bool MediaDrmOriginIdManagerFactory::ServiceIsCreatedWithBrowserContext()
   // pre-provisioning at startup. Creation will end up calling
   // GetBrowserContextToUse() above which returns NULL for incognito contexts,
   // and thus no instance will be created for them.
-  return base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup);
+  return base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioning) &&
+         base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup);
 }
