@@ -45,9 +45,9 @@ SSLClientSocketContext CreateClientSocketContext(
     const HttpNetworkSession::Context& context,
     SSLClientSessionCache* ssl_client_session_cache) {
   return SSLClientSocketContext(
-      context.cert_verifier, context.channel_id_service,
-      context.transport_security_state, context.cert_transparency_verifier,
-      context.ct_policy_enforcer, ssl_client_session_cache);
+      context.cert_verifier, context.transport_security_state,
+      context.cert_transparency_verifier, context.ct_policy_enforcer,
+      ssl_client_session_cache);
 }
 
 }  // unnamed namespace
@@ -146,7 +146,6 @@ HttpNetworkSession::Context::Context()
     : client_socket_factory(nullptr),
       host_resolver(nullptr),
       cert_verifier(nullptr),
-      channel_id_service(nullptr),
       transport_security_state(nullptr),
       cert_transparency_verifier(nullptr),
       ct_policy_enforcer(nullptr),

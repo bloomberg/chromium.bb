@@ -208,7 +208,6 @@ struct SpdySessionDependencies {
   // For using a HostResolver not derived from MockHostResolverBase.
   std::unique_ptr<HostResolver> alternate_host_resolver;
   std::unique_ptr<CertVerifier> cert_verifier;
-  std::unique_ptr<ChannelIDService> channel_id_service;
   std::unique_ptr<TransportSecurityState> transport_security_state;
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer;

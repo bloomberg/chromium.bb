@@ -30,7 +30,6 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
@@ -131,9 +130,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
     session_context_.ssl_config_service = ssl_config_service_.get();
     session_context_.http_auth_handler_factory = auth_handler_factory_.get();
     session_context_.http_server_properties = &http_server_properties_;
-    channel_id_service_.reset(
-        new ChannelIDService(new DefaultChannelIDStore(nullptr)));
-    session_context_.channel_id_service = channel_id_service_.get();
 
     CertVerifyResult verify_result;
     verify_result.verified_cert =
@@ -237,7 +233,6 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   std::unique_ptr<MockHostResolver> host_resolver_impl_;
   MappedHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
-  std::unique_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
