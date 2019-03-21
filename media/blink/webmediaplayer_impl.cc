@@ -383,7 +383,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->SetStringProperty("surface_layer_mode", surface_layer_mode_name);
 
   if (params->initial_cdm())
-    SetCdm(params->initial_cdm());
+    SetCdmInternal(params->initial_cdm());
 
   // Report a false "EncrytpedEvent" here as a baseline.
   RecordEncryptedEvent(false);
@@ -408,7 +408,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (set_cdm_result_) {
-    DVLOG(2) << "Resolve pending SetCdm() when media player is destroyed.";
+    DVLOG(2)
+        << "Resolve pending SetCdmInternal() when media player is destroyed.";
     set_cdm_result_->Complete();
     set_cdm_result_.reset();
   }
@@ -1342,19 +1343,7 @@ void WebMediaPlayerImpl::SetContentDecryptionModule(
   DCHECK(!set_cdm_result_);
   set_cdm_result_.reset(new blink::WebContentDecryptionModuleResult(result));
 
-  // Recreate the watch time reporter if necessary.
-  const bool was_encrypted = is_encrypted_;
-  is_encrypted_ = true;
-  if (!was_encrypted) {
-    media_metrics_provider_->SetIsEME();
-    if (watch_time_reporter_)
-      CreateWatchTimeReporter();
-  }
-
-  // For now MediaCapabilities only handles clear content.
-  video_decode_stats_reporter_.reset();
-
-  SetCdm(cdm);
+  SetCdmInternal(cdm);
 }
 
 void WebMediaPlayerImpl::OnEncryptedMediaInitData(
@@ -1414,9 +1403,23 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   }
 }
 
-void WebMediaPlayerImpl::SetCdm(blink::WebContentDecryptionModule* cdm) {
+void WebMediaPlayerImpl::SetCdmInternal(
+    blink::WebContentDecryptionModule* cdm) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(cdm);
+
+  const bool was_encrypted = is_encrypted_;
+  is_encrypted_ = true;
+
+  // Recreate the watch time reporter if necessary.
+  if (!was_encrypted) {
+    media_metrics_provider_->SetIsEME();
+    if (watch_time_reporter_)
+      CreateWatchTimeReporter();
+  }
+
+  // For now MediaCapabilities only handles clear content.
+  video_decode_stats_reporter_.reset();
 
   auto cdm_context_ref =
       ToWebContentDecryptionModuleImpl(cdm)->GetCdmContextRef();
