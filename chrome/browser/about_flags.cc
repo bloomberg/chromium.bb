@@ -1554,8 +1554,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-suggestions-with-substring-match",
      flag_descriptions::kSuggestionsWithSubStringMatchName,
      flag_descriptions::kSuggestionsWithSubStringMatchDescription, kOsAll,
-     SINGLE_VALUE_TYPE(
-         autofill::switches::kEnableSuggestionsWithSubstringMatch)},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillTokenPrefixMatching)},
     {"lcd-text-aa", flag_descriptions::kLcdTextName,
      flag_descriptions::kLcdTextDescription, kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,

@@ -76,6 +76,7 @@ extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
+extern const base::Feature kAutofillTokenPrefixMatching;
 extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;

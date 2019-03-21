@@ -294,6 +294,11 @@ const base::Feature kAutofillProfileClientValidation{
 const base::Feature kAutofillSuppressDisusedCreditCards{
     "AutofillSuppressDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether Autofill should search prefixes of all words/tokens when
+// filtering profiles, or only on prefixes of the whole string.
+const base::Feature kAutofillTokenPrefixMatching{
+    "AutofillTokenPrefixMatching", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 

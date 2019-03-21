@@ -2797,9 +2797,8 @@ class GetFormValuesTest : public testing::TestWithParam<GetFormValuesTestCase> {
 };
 
 TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   auto test_case = GetParam();
   SCOPED_TRACE(testing::Message()
