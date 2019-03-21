@@ -91,17 +91,17 @@ class ScreenTimeController
   // is locked.
   void ForceScreenLockByPolicy();
 
-  // Enables and updates the content of the time limits message in the lock
-  // screen.
+  // Enables the time limits message in the lock screen and performs tasks that
+  // need to run after the screen is locked.
   // |active_policy|: Which policy is locking the device, only valid when
   //                  |visible| is true.
   // |next_unlock_time|: When user will be able to unlock the screen, only valid
   //                     when |visible| is true.
-  void EnableTimeLimitsMessage(usage_time_limit::ActivePolicies active_policy,
-                               base::Time next_unlock_time);
+  void OnScreenLockByPolicy(usage_time_limit::ActivePolicies active_policy,
+                            base::Time next_unlock_time);
 
   // Disables the time limits message in the lock screen.
-  void DisableTimeLimitsMessage();
+  void OnScreenLockByPolicyEnd();
 
   // Converts the active policy to its equivalent on the ash enum.
   base::Optional<ash::mojom::AuthDisabledReason> ConvertLockReason(
