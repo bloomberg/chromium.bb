@@ -18,8 +18,9 @@
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{addUsers}</div>
       <div slot="body">
-        <cr-input id="addUserInput" label="$i18n{addUsersEmail}" autofocus
-            on-input="validate_" invalid="[[!isValid_]]">
+        <cr-input id="addUserInput" label="$i18n{addUsersEmail}"
+            invalid="[[shouldShowError_(isEmail_, isEmpty_)]]"
+            on-value-changed="onInput_" autofocus>
         </cr-input>
       </div>
       <div slot="button-container">
@@ -27,7 +28,7 @@
           $i18n{cancel}
         </paper-button>
         <paper-button on-click="addUser_" class="action-button"
-            disabled$="[[!isValid_]]">
+            disabled$="[[!canAddUser_(isEmail_, isEmpty_)]]">
           $i18n{add}
         </paper-button>
       </div>
