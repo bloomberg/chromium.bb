@@ -27,8 +27,7 @@ class ReceivingUiHandler {
   // Dismiss any UI associated with this entry.
   // Entry object is owned by the the model and should not be
   // modified by any implementors of this class.
-  // TODO(crbug.com/935719): Figure out whether we need to pass the entire entry
-  // or we can pass a smaller subset of information.
+  // TODO(crbug.com/944591): Pass a string at a time instead.
   virtual void DismissEntries(const std::vector<std::string>& guids) = 0;
 };
 
