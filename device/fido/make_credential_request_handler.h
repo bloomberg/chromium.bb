@@ -68,6 +68,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       FidoAuthenticator* authenticator,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response);
+  void HandleTouch(FidoAuthenticator* authenticator);
   void OnHavePIN(std::string pin);
   void OnRetriesResponse(CtapDeviceResponseCode status,
                          base::Optional<pin::RetriesResponse> response);
