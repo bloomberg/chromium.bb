@@ -54,6 +54,28 @@ class NavigationManager {
      */
     this.visitingScopeAsActionable_ = false;
 
+    /**
+     * @private {chrome.accessibilityPrivate.FocusRingInfo}
+     */
+    this.primaryFocusRing_ = {
+      id: SAConstants.PRIMARY_FOCUS_ID,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.SOLID,
+      color: SAConstants.PRIMARY_FOCUS_COLOR,
+      secondaryColor: SAConstants.SECONDARY_FOCUS_COLOR
+    };
+
+    /**
+     * @private {chrome.accessibilityPrivate.FocusRingInfo}
+     */
+    this.scopeFocusRing_ = {
+      id: SAConstants.SCOPE_FOCUS_ID,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.DASHED,
+      color: SAConstants.PRIMARY_FOCUS_COLOR,
+      secondaryColor: SAConstants.SECONDARY_FOCUS_COLOR
+    };
+
     this.init_();
   }
 
@@ -201,7 +223,7 @@ class NavigationManager {
         this.scope_ = this.scopeStack_.pop();
       } while (!this.scope_.role && this.scopeStack_.length > 0);
 
-      this.updateFocusRing_();
+      this.updateFocusRings_();
       return;
     }
 
@@ -286,7 +308,7 @@ class NavigationManager {
 
     // In case the node that gained focus is not a subtreeLeaf.
     if (SwitchAccessPredicate.isInteresting(this.node_, this.scope_))
-      this.updateFocusRing_();
+      this.updateFocusRings_();
     else
       this.moveForward();
   }
@@ -313,12 +335,7 @@ class NavigationManager {
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
 
-    chrome.accessibilityPrivate.setFocusRings([{
-      id: SAConstants.PRIMARY_FOCUS,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.GLOW,
-      color: NavigationManager.Color.LEAF
-    }]);
+    this.clearFocusRings_();
 
     // Current node not invalid until after treeChange callback, so move to
     // valid node after callback. Delay added to prevent moving to another
@@ -351,7 +368,7 @@ class NavigationManager {
    */
   setCurrentNode_(node) {
     this.node_ = node;
-    this.updateFocusRing_();
+    this.updateFocusRings_();
   }
 
   /**
@@ -361,7 +378,7 @@ class NavigationManager {
     this.node_ = this.scope_;
     this.visitingScopeAsActionable_ = true;
 
-    this.updateFocusRing_(NavigationManager.Color.LEAF);
+    this.updateFocusRings_();
   }
 
   /**
@@ -392,27 +409,32 @@ class NavigationManager {
   }
 
   /**
-   * Set the focus ring for the current node and determine the color for it.
-   *
-   * @param {NavigationManager.Color=} opt_color
+   * Set the focus rings for the current node and scope.
    * @private
    */
-  updateFocusRing_(opt_color) {
-    let color;
-    if (this.node_ === this.scope_)
-      color = NavigationManager.Color.SCOPE;
-    else if (SwitchAccessPredicate.isGroup(this.node_, this.scope_))
-      color = NavigationManager.Color.GROUP;
-    else
-      color = NavigationManager.Color.LEAF;
+  updateFocusRings_() {
+    const focusRect = this.node_.location;
+    let scopeRect = this.scope_.location;
 
-    color = opt_color || color;
-    chrome.accessibilityPrivate.setFocusRings([{
-      id: SAConstants.PRIMARY_FOCUS,
-      rects: [this.node_.location],
-      type: chrome.accessibilityPrivate.FocusType.GLOW,
-      color: color
-    }]);
+    // TODO(anastasi): Make adjustments to scope rect so it draws entirely
+    // outside the focus rect.
+
+    this.primaryFocusRing_.rects = [focusRect];
+    this.scopeFocusRing_.rects = [scopeRect];
+
+    chrome.accessibilityPrivate.setFocusRings(
+        [this.primaryFocusRing_, this.scopeFocusRing_]);
+  }
+
+  /**
+   * Clears all focus rings.
+   * @private
+   */
+  clearFocusRings_() {
+    this.primaryFocusRing_.rects = [];
+    this.scopeFocusRing_.rects = [];
+    chrome.accessibilityPrivate.setFocusRings(
+        [this.primaryFocusRing_, this.scopeFocusRing_]);
   }
 
   /**
@@ -572,19 +594,6 @@ class NavigationManager {
       this.printDebugNode_(child, indent + 2, displayMode);
   }
 }
-
-/**
- * Highlight colors for the focus ring to distinguish between different types
- * of nodes.
- *
- * @enum {string}
- * @const
- */
-NavigationManager.Color = {
-  SCOPE: '#de742f',  // dark orange
-  GROUP: '#ffbb33',  // light orange
-  LEAF: '#78e428'    // light green
-};
 
 /**
  * Display modes for debugging tree.

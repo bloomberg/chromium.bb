@@ -34,7 +34,7 @@ const SAConstants = {
    * @type {string}
    * @const
    */
-  PRIMARY_FOCUS: 'primary',
+  PRIMARY_FOCUS_ID: 'primary',
 
   /**
    * The ID used for the focus ring around the current scope.
@@ -42,7 +42,30 @@ const SAConstants = {
    * @type {string}
    * @const
    */
-  SCOPE_FOCUS: 'scope',
+  SCOPE_FOCUS_ID: 'scope',
+
+  /**
+   * The inner color of the focus rings.
+   * @type {string}
+   * @const
+   */
+  PRIMARY_FOCUS_COLOR: '#8ab4f8',
+
+  /**
+   * The outer color of the focus rings.
+   * Temporarily does not match spec, as alpha is not yet configurable.
+   * TODO(anastasi): Set alpha as specified in the spec.
+   * @type {string}
+   * @const
+   */
+  SECONDARY_FOCUS_COLOR: '#aaa',
+
+  /**
+   * The amount of space (in px) needed to fit a focus ring around an element.
+   * @type {number}
+   * @const
+   */
+  FOCUS_RING_BUFFER: 4,
 
   /**
    * Actions available in the Switch Access Menu.
