@@ -2794,7 +2794,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   // This test simulates a scenario where RenderWidgetHostViewAura::SetSize
   // is not called again after its window is added to the root window.
   // Ensure that we still get a legacy HWND for accessibility.
-
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -2806,13 +2805,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   // RenderWidgetHostViewAura with a null parent view.
   web_contents_view_aura->set_init_rwhv_with_null_parent_for_testing(true);
 
-  // Navigate to a new page and wait for the accessibility tree to load.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
+  // Enable accessibility.
+  AccessibilityNotificationWaiter waiter(web_contents, ui::kAXModeComplete,
                                          ax::mojom::Event::kLoadComplete);
+
+  // Navigate to a new page.
   NavigateToURL(shell(), embedded_test_server()->GetURL(
                              "/accessibility/html/article.html"));
-  waiter.WaitForNotification();
 
   // At this point the root of the accessibility tree shouldn't have an HWND
   // because we never gave a parent window to the RWHVA.
@@ -2825,6 +2824,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   // an HWND for accessibility now.
   web_contents_view->GetNativeView()->AddChild(
       web_contents->GetRenderWidgetHostView()->GetNativeView());
+  // The load event will only fire after the page is attached.
+  waiter.WaitForNotification();
   ASSERT_NE(nullptr, manager->GetParentHWND());
 }
 

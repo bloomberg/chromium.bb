@@ -2588,7 +2588,8 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
       // changed event must be fired. This ensures the AT is notified that the
       // selected state has changed, so that it does not read "unselected" as
       // the user navigates through the items.
-      AXObjectCache().HandleAriaSelectedChanged(active_descendant->GetNode());
+      AXObjectCache().HandleAriaSelectedChangedWithCleanLayout(
+          active_descendant->GetNode());
     }
 
     // Mark this node dirty. AXEventGenerator will automatically infer

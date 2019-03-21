@@ -1938,10 +1938,8 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
              main_frame_manager->GetRoot(), name)) {
     AccessibilityNotificationWaiter accessibility_waiter(
         main_frame, ax::mojom::Event::kNone);
-    for (FrameTreeNode* node : frame_tree->Nodes()) {
-      accessibility_waiter.ListenToAdditionalFrame(
-          node->current_frame_host());
-    }
+    for (FrameTreeNode* node : frame_tree->Nodes())
+      accessibility_waiter.ListenToAdditionalFrame(node->current_frame_host());
 
     content::BrowserPluginGuestManager* guest_manager =
         web_contents_impl->GetBrowserContext()->GetGuestManager();
@@ -1951,7 +1949,10 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                       &accessibility_waiter));
     }
 
-    accessibility_waiter.WaitForNotification();
+    // This loop is racy, so check after a timeout in case the notification came
+    // in while we were resetting the AccessibilityNotificationWaiter.
+    accessibility_waiter.WaitForNotificationWithTimeout(
+        base::TimeDelta::FromMilliseconds(200));
     main_frame_manager = main_frame->browser_accessibility_manager();
   }
 }

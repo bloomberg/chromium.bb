@@ -58,6 +58,10 @@ class CORE_EXPORT AXObjectCache
 
   virtual void Dispose() = 0;
 
+  // Register/remove popups
+  virtual void InitializePopup(Document* document) = 0;
+  virtual void DisposePopup(Document* document) = 0;
+
   virtual void SelectionChanged(Node*) = 0;
   virtual void ChildrenChanged(Node*) = 0;
   virtual void ChildrenChanged(LayoutObject*) = 0;
@@ -86,7 +90,8 @@ class CORE_EXPORT AXObjectCache
   virtual void UpdateCacheAfterNodeIsAttached(Node*) = 0;
   virtual void DidInsertChildrenOfNode(Node*) = 0;
 
-  virtual void HandleAttributeChanged(const QualifiedName& attr_name,
+  // Returns true if the AXObjectCache cares about this attribute
+  virtual bool HandleAttributeChanged(const QualifiedName& attr_name,
                                       Element*) = 0;
   virtual void HandleFocusedUIElementChanged(Node* old_focused_node,
                                              Node* new_focused_node) = 0;

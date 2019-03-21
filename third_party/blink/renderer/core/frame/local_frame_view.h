@@ -117,8 +117,8 @@ class CORE_EXPORT LocalFrameView final
       : public GarbageCollectedMixin {
    public:
     // These are called when the lifecycle updates start/finish.
-    virtual void WillStartLifecycleUpdate() = 0;
-    virtual void DidFinishLifecycleUpdate() = 0;
+    virtual void WillStartLifecycleUpdate(const LocalFrameView&) = 0;
+    virtual void DidFinishLifecycleUpdate(const LocalFrameView&) = 0;
   };
 
   static LocalFrameView* Create(LocalFrame&);
