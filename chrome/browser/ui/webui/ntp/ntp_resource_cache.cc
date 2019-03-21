@@ -138,10 +138,7 @@ std::string GetNewTabBackgroundTilingCSS(
 NTPResourceCache::NTPResourceCache(Profile* profile)
     : profile_(profile),
       is_swipe_tracking_from_scroll_events_enabled_(false),
-      dark_mode_observer_(
-          ui::NativeTheme::GetInstanceForNativeUi(),
-          base::BindRepeating(&NTPResourceCache::OnDarkModeChanged,
-                              base::Unretained(this))) {
+      theme_observer_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
@@ -158,7 +155,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
 
-  dark_mode_observer_.Start();
+  theme_observer_.Add(ui::NativeTheme::GetInstanceForNativeUi());
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -239,7 +236,8 @@ void NTPResourceCache::Observe(int type,
   Invalidate();
 }
 
-void NTPResourceCache::OnDarkModeChanged(bool /*dark_mode*/) {
+void NTPResourceCache::OnNativeThemeUpdated(ui::NativeTheme* updated_theme) {
+  DCHECK_EQ(updated_theme, ui::NativeTheme::GetInstanceForNativeUi());
   Invalidate();
 }
 
@@ -594,8 +592,8 @@ void NTPResourceCache::CreateNewTabCSS() {
 
 void NTPResourceCache::SetDarkKey(base::Value* dict) {
   DCHECK(dict && dict->is_dict());
-  bool enabled = base::FeatureList::IsEnabled(features::kWebUIDarkMode);
-  dict->SetKey(
-      "dark",
-      base::Value(enabled && dark_mode_observer_.InDarkMode() ? "dark" : ""));
+  bool use_dark =
+      base::FeatureList::IsEnabled(features::kWebUIDarkMode) &&
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled();
+  dict->SetKey("dark", base::Value(use_dark ? "dark" : ""));
 }
