@@ -10,6 +10,7 @@
 namespace views {
 
 class View;
+struct ViewHierarchyChangedDetails;
 
 // ViewObserver is used to observe changes to a View. The first argument to all
 // ViewObserver functions is the View the observer was added to.
@@ -33,6 +34,11 @@ class VIEWS_EXPORT ViewObserver {
 
   // Called when the bounds of |observed_view| change.
   virtual void OnViewBoundsChanged(View* observed_view) {}
+
+  // Called when View::ViewHierarchyChanged() is called.
+  virtual void OnViewHierarchyChanged(
+      View* observed_view,
+      const ViewHierarchyChangedDetails& details) {}
 
   // Called when a child is reordered among its siblings, specifically
   // View::ReorderChildView() is called on |observed_view|.

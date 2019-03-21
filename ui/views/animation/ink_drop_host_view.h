@@ -127,10 +127,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Called after a new InkDrop instance is created.
   virtual void OnInkDropCreated() {}
 
-  // View:
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
-
   // Returns an InkDropImpl suitable for use with a square ink drop.
   // TODO(pbos): Rename to CreateDefaultSquareInkDropImpl.
   std::unique_ptr<InkDropImpl> CreateDefaultInkDropImpl();

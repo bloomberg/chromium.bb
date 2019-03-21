@@ -113,7 +113,7 @@ class SheetView : public views::View, public views::FocusTraversable {
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (!details.is_add && details.child == first_focusable_)
       first_focusable_ = nullptr;
   }

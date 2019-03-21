@@ -66,7 +66,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   // views::View:
   gfx::Size GetMinimumSize() const override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
  private:
   friend class CollectedCookiesViewsTest;

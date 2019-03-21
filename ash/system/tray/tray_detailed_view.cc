@@ -143,7 +143,7 @@ class ScrollContentsView : public views::View {
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (!details.is_add && details.parent == this) {
       headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
                                     [details](const Header& header) {

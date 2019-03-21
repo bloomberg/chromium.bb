@@ -929,7 +929,7 @@ View* MenuController::GetTooltipHandlerForPoint(SubmenuView* source,
 
 void MenuController::ViewHierarchyChanged(
     SubmenuView* source,
-    const View::ViewHierarchyChangedDetails& details) {
+    const ViewHierarchyChangedDetails& details) {
   if (!details.is_add) {
     // If the current mouse handler is removed, remove it as the handler.
     if (details.child == current_mouse_event_target_) {

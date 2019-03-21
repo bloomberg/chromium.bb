@@ -98,7 +98,7 @@ class PageActionIconView : public IconLabelBubbleView {
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void OnThemeChanged() override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;

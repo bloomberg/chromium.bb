@@ -2328,7 +2328,7 @@ void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void BrowserView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (details.child != this)
     return;
 

@@ -192,7 +192,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Overridden from views::View.
   void ChildPreferredSizeChanged(View* child) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
  private:
   // This reroutes receiving key events to the TrayBubbleView passed in the

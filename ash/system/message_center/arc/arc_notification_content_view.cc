@@ -583,7 +583,7 @@ void ArcNotificationContentView::RemovedFromWidget() {
 }
 
 void ArcNotificationContentView::ViewHierarchyChanged(
-    const views::View::ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   views::Widget* widget = GetWidget();
 
   if (!details.is_add) {

@@ -26,7 +26,7 @@ class ValidatingCombobox : public views::Combobox,
   void OnBlur() override;
   // Used to keep track of our own destruction.
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
   // Called when the combobox contents is changed. May do validation.
   void OnContentsChanged();

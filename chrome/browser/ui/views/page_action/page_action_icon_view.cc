@@ -144,7 +144,7 @@ bool PageActionIconView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void PageActionIconView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this && GetNativeTheme())
     UpdateIconImage();

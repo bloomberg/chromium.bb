@@ -251,7 +251,7 @@ class InfobarView : public views::View {
   }
 
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       Init();
   }
@@ -381,7 +381,7 @@ gfx::Size CollectedCookiesViews::GetMinimumSize() const {
 }
 
 void CollectedCookiesViews::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   views::DialogDelegateView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this)
     Init();

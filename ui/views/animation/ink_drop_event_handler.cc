@@ -98,6 +98,19 @@ void InkDropEventHandler::OnViewVisibilityChanged(View* observed_view) {
   }
 }
 
+void InkDropEventHandler::OnViewHierarchyChanged(
+    View* observed_view,
+    const ViewHierarchyChangedDetails& details) {
+  DCHECK_EQ(host_view_, observed_view);
+  // If we're being removed hide the ink-drop so if we're highlighted now the
+  // highlight won't be active if we're added back again.
+  if (!details.is_add && details.child == host_view_ &&
+      delegate_->HasInkDrop()) {
+    delegate_->GetInkDrop()->SnapToHidden();
+    delegate_->GetInkDrop()->SetHovered(false);
+  }
+}
+
 void InkDropEventHandler::OnViewBoundsChanged(View* observed_view) {
   DCHECK_EQ(host_view_, observed_view);
   if (delegate_->HasInkDrop())

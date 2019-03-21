@@ -758,7 +758,7 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserActionsContainer::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (!toolbar_actions_bar_->enabled())
     return;
 

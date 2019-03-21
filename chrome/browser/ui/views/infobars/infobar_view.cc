@@ -190,7 +190,7 @@ gfx::Size InfoBarView::CalculatePreferredSize() const {
 }
 
 void InfoBarView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
 
   // Anything that needs to happen once after all subclasses add their children.

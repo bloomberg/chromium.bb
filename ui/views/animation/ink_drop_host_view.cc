@@ -136,19 +136,6 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
   GetInkDrop()->AnimateToState(state);
 }
 
-void InkDropHostView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  // If we're being removed hide the ink-drop so if we're highlighted now the
-  // highlight won't be active if we're added back again.
-  // TODO(pbos): Consider adding this to the ViewObserver model so that we can
-  // observe when the host gets removed.
-  if (!details.is_add && details.child == this && ink_drop_) {
-    GetInkDrop()->SnapToHidden();
-    GetInkDrop()->SetHovered(false);
-  }
-  View::ViewHierarchyChanged(details);
-}
-
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
   auto ink_drop = std::make_unique<InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(

@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   views::FocusTraversable* GetFocusTraversable() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void SizeToContents() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;

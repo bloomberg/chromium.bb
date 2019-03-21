@@ -307,7 +307,7 @@ void AssistantContainerView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void AssistantContainerView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   // Do nothing. We override this method to prevent a super class implementation
   // from taking effect which would otherwise cause ChromeVox to read the entire
   // Assistant view hierarchy.

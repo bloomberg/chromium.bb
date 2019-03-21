@@ -118,7 +118,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   // views::View implementation.
   void Layout() override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnFocus() override;

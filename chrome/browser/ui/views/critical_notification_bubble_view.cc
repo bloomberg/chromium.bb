@@ -148,7 +148,7 @@ void CriticalNotificationBubbleView::GetAccessibleNodeData(
 }
 
 void CriticalNotificationBubbleView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }

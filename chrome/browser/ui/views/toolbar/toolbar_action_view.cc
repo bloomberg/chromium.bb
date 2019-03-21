@@ -263,7 +263,7 @@ void ToolbarActionView::OnDragDone() {
 }
 
 void ToolbarActionView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (details.is_add && !called_register_command_ && GetFocusManager()) {
     view_controller_->RegisterCommand();
     called_register_command_ = true;
