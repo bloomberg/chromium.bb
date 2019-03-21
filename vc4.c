@@ -6,6 +6,7 @@
 
 #ifdef DRV_VC4
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -49,7 +50,7 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VC4_CREATE_BO, &bo_create);
 	if (ret) {
 		drv_log("DRM_IOCTL_VC4_GEM_CREATE failed (size=%zu)\n", bo->total_size);
-		return ret;
+		return -errno;
 	}
 
 	for (plane = 0; plane < bo->num_planes; plane++)

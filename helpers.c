@@ -290,7 +290,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
 	if (ret) {
 		drv_log("DRM_IOCTL_MODE_CREATE_DUMB failed (%d, %d)\n", bo->drv->fd, errno);
-		return ret;
+		return -errno;
 	}
 
 	drv_bo_from_format(bo, create_dumb.pitch, height, format);
@@ -313,7 +313,7 @@ int drv_dumb_bo_destroy(struct bo *bo)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
 	if (ret) {
 		drv_log("DRM_IOCTL_MODE_DESTROY_DUMB failed (handle=%x)\n", bo->handles[0].u32);
-		return ret;
+		return -errno;
 	}
 
 	return 0;
@@ -340,7 +340,7 @@ int drv_gem_bo_destroy(struct bo *bo)
 		if (ret) {
 			drv_log("DRM_IOCTL_GEM_CLOSE failed (handle=%x) error %d\n",
 				bo->handles[plane].u32, ret);
-			error = ret;
+			error = -errno;
 		}
 	}
 
@@ -370,7 +370,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 			 */
 			bo->num_planes = plane;
 			drv_gem_bo_destroy(bo);
-			return ret;
+			return -errno;
 		}
 
 		bo->handles[plane].u32 = prime_handle.handle;

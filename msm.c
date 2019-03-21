@@ -204,7 +204,7 @@ static int msm_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t he
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MSM_GEM_NEW, &req);
 	if (ret) {
 		drv_log("DRM_IOCTL_MSM_GEM_NEW failed with %s\n", strerror(errno));
-		return ret;
+		return -errno;
 	}
 
 	/*

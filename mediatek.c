@@ -7,6 +7,7 @@
 #ifdef DRV_MEDIATEK
 
 // clang-format off
+#include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <stdio.h>
@@ -81,7 +82,7 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
 		drv_log("DRM_IOCTL_MTK_GEM_CREATE failed (size=%llu)\n", gem_create.size);
-		return ret;
+		return -errno;
 	}
 
 	for (plane = 0; plane < bo->num_planes; plane++)

@@ -111,6 +111,7 @@ static int virtio_virgl_bo_create(struct bo *bo, uint32_t width, uint32_t height
 		if (ret) {
 			drv_log("DRM_IOCTL_VIRTGPU_RESOURCE_CREATE failed with %s\n",
 				strerror(errno));
+			ret = -errno;
 			goto fail;
 		}
 
@@ -251,7 +252,7 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST, &xfer);
 	if (ret) {
 		drv_log("DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST failed with %s\n", strerror(errno));
-		return ret;
+		return -errno;
 	}
 
 	return 0;
@@ -280,7 +281,7 @@ static int virtio_gpu_bo_flush(struct bo *bo, struct mapping *mapping)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_TO_HOST, &xfer);
 	if (ret) {
 		drv_log("DRM_IOCTL_VIRTGPU_TRANSFER_TO_HOST failed with %s\n", strerror(errno));
-		return ret;
+		return -errno;
 	}
 
 	return 0;

@@ -7,6 +7,7 @@
 #ifdef DRV_TEGRA
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -229,7 +230,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint3
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_CREATE, &gem_create);
 	if (ret) {
 		drv_log("DRM_IOCTL_TEGRA_GEM_CREATE failed (size=%zu)\n", size);
-		return ret;
+		return -errno;
 	}
 
 	bo->handles[0].u32 = gem_create.handle;
@@ -276,7 +277,7 @@ static int tegra_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_GET_TILING, &gem_get_tiling);
 	if (ret) {
 		drv_gem_bo_destroy(bo);
-		return ret;
+		return -errno;
 	}
 
 	/* NOTE(djmk): we only know about one tiled format, so if our drmIoctl call tells us we are
