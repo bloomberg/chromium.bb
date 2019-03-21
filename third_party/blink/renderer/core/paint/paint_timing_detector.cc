@@ -62,18 +62,6 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
 
 // static
 void PaintTimingDetector::NotifyImagePaint(
-    const Node* node,
-    const PropertyTreeState& current_paint_chunk_properties) {
-  if (!node)
-    return;
-  LayoutObject* object = node->GetLayoutObject();
-  if (!object)
-    return;
-  NotifyImagePaint(*object, current_paint_chunk_properties);
-}
-
-// static
-void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
@@ -82,18 +70,6 @@ void PaintTimingDetector::NotifyImagePaint(
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
       object, current_paint_chunk_properties);
-}
-
-// static
-void PaintTimingDetector::NotifyTextPaint(
-    const Node* node,
-    const PropertyTreeState& current_paint_chunk_properties) {
-  if (!node)
-    return;
-  LayoutObject* object = node->GetLayoutObject();
-  if (!object)
-    return;
-  NotifyTextPaint(*object, current_paint_chunk_properties);
 }
 
 // static
