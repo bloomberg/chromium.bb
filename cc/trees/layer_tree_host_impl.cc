@@ -1328,8 +1328,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   // an animation worklet is asked to produce its output at the beginning of the
   // frame along side other animations but its output arrives asynchronously so
   // we tick worklet animations and apply that output here instead.
-  base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
-  mutator_host_->TickWorkletAnimations(monotonic_time);
+  mutator_host_->TickWorkletAnimations();
 
   bool ok = active_tree_->UpdateDrawProperties();
   DCHECK(ok) << "UpdateDrawProperties failed during draw";

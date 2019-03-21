@@ -413,8 +413,8 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
   TickMutator(monotonic_time, scroll_tree, true /* is_active_tree */);
 }
 
-void AnimationHost::TickWorkletAnimations(base::TimeTicks monotonic_time) {
-  TickAnimationsIf(ticking_animations_, monotonic_time,
+void AnimationHost::TickWorkletAnimations() {
+  TickAnimationsIf(ticking_animations_, base::TimeTicks(),
                    [](const Animation& animation) {
                      return animation.IsWorkletAnimation();
                    });
