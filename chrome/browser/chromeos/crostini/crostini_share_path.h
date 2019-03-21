@@ -5,13 +5,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
 
+#include <map>
+#include <memory>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "base/observer_list.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chromeos/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -19,10 +25,20 @@ class Profile;
 
 namespace crostini {
 
+struct SharedPathInfo {
+  explicit SharedPathInfo(const std::string& vm_name);
+  SharedPathInfo(SharedPathInfo&&);
+  ~SharedPathInfo();
+
+  std::unique_ptr<base::FilePathWatcher> watcher;
+  std::set<std::string> vm_names;
+};
+
 // Handles sharing and unsharing paths from the Chrome OS host to the crostini
 // VM via seneschal.
 class CrostiniSharePath : public KeyedService,
-                          public file_manager::VolumeManagerObserver {
+                          public file_manager::VolumeManagerObserver,
+                          public drivefs::DriveFsHostObserver {
  public:
   using SharePathCallback =
       base::OnceCallback<void(const base::FilePath&, bool, std::string)>;
@@ -89,6 +105,25 @@ class CrostiniSharePath : public KeyedService,
   void OnVolumeUnmounted(chromeos::MountError error_code,
                          const file_manager::Volume& volume) override;
 
+  // drivefs::DriveFsHostObserver
+  void OnFilesChanged(
+      const std::vector<drivefs::mojom::FileChange>& changes) override;
+
+  // Registers |path| as shared with |vm_name|.  Adds a FilePathWatcher to
+  // detect when the path has been deleted.  If the path is deleted, we unshare
+  // the path, and remove it from prefs if it was persisted.
+  // Visible for testing.
+  void RegisterSharedPath(const base::FilePath& path,
+                          const std::string& vm_name);
+
+  // Runs on UI Thread to handle when a path is deleted.
+  // Visible for testing.
+  void PathDeleted(const base::FilePath& path);
+
+  // Don't run file watchers for tests.
+  void set_no_file_watchers_for_testing() {
+    no_file_watchers_for_testing_ = true;
+  }
   // Allow seneschal callback for mount events to be overridden for testing.
   void set_mount_event_seneschal_callback_for_testing(
       MountEventSeneschalCallback callback) {
@@ -106,12 +141,26 @@ class CrostiniSharePath : public KeyedService,
       const base::FilePath& path,
       base::OnceCallback<void(bool, std::string)> callback);
 
+  void StartFileWatcher(const base::FilePath& path);
+
+  // Callback for FilePathWatcher.
+  void OnFileChanged(const base::FilePath& path, bool error);
+
+  // Runs on IO Thread to check if a path is deleted.
+  void CheckIfPathDeletedOnIOThread(const base::FilePath& path);
+
+  // Returns info for specified path or nullptr if not found.
+  SharedPathInfo* FindSharedPathInfo(const base::FilePath& path);
+
   Profile* profile_;
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   bool first_for_session_ = true;
 
   // Allow callback for mount event to be overidden for testing.
   MountEventSeneschalCallback mount_event_seneschal_callback_;
   base::ObserverList<Observer>::Unchecked observers_;
+  std::map<base::FilePath, SharedPathInfo> shared_paths_;
+  bool no_file_watchers_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniSharePath);
 };  // class
