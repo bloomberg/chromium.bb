@@ -2427,6 +2427,8 @@ jumbo_source_set("browser") {
       "speech/speech_recognizer_impl.h",
 
       # Most webauth code is non-Android
+      "webauth/authenticator_common.cc",
+      "webauth/authenticator_common.h",
       "webauth/authenticator_impl.cc",
       "webauth/authenticator_impl.h",
       "webauth/authenticator_type_converters.cc",

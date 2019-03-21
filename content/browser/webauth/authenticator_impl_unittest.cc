@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
+#include "content/browser/webauth/authenticator_common.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
@@ -351,8 +352,9 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
   AuthenticatorPtr ConnectToAuthenticator(
       service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer) {
-    authenticator_impl_.reset(
-        new AuthenticatorImpl(main_rfh(), connector, std::move(timer)));
+    authenticator_impl_.reset(new AuthenticatorImpl(
+        main_rfh(), std::make_unique<AuthenticatorCommon>(main_rfh(), connector,
+                                                          std::move(timer))));
     AuthenticatorPtr authenticator;
     authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
     return authenticator;
@@ -382,7 +384,7 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
   }
 
   std::string GetTestClientDataJSON(std::string type) {
-    return AuthenticatorImpl::SerializeCollectedClientDataToJson(
+    return AuthenticatorCommon::SerializeCollectedClientDataToJson(
         std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes());
   }
 
@@ -406,7 +408,14 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
 
   bool SupportsTransportProtocol(::device::FidoTransportProtocol protocol) {
     return base::ContainsKey(
-        authenticator_impl_->enabled_transports_for_testing(), protocol);
+        authenticator_impl_->get_authenticator_common_for_testing()
+            ->enabled_transports_for_testing(),
+        protocol);
+  }
+
+  void SetTransports(base::flat_set<device::FidoTransportProtocol> transports) {
+    authenticator_impl_->get_authenticator_common_for_testing()
+        ->set_transports_for_testing(transports);
   }
 
   void EnableFeature(const base::Feature& feature) {
@@ -832,8 +841,7 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
       base::Time::Now(), base::TimeTicks::Now());
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  authenticator_impl_->set_transports_for_testing(
-      device::GetAllTransportProtocols());
+  SetTransports(device::GetAllTransportProtocols());
   SetUpMockBluetooth();
 
   for (const bool is_cryptotoken_request : {false, true}) {
@@ -2143,22 +2151,22 @@ class MockAuthenticatorRequestDelegateObserver
   DISALLOW_COPY_AND_ASSIGN(MockAuthenticatorRequestDelegateObserver);
 };
 
-// Fake test construct that shares all other behavior with AuthenticatorImpl
+// Fake test construct that shares all other behavior with AuthenticatorCommon
 // except that:
-//  - FakeAuthenticatorImpl does not trigger UI activity.
+//  - FakeAuthenticatorCommon does not trigger UI activity.
 //  - MockAuthenticatorRequestDelegateObserver is injected to
 //  |request_delegate_|
 //    instead of ChromeAuthenticatorRequestDelegate.
-class FakeAuthenticatorImpl : public AuthenticatorImpl {
+class FakeAuthenticatorCommon : public AuthenticatorCommon {
  public:
-  explicit FakeAuthenticatorImpl(
+  explicit FakeAuthenticatorCommon(
       RenderFrameHost* render_frame_host,
       service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer,
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> mock_delegate)
-      : AuthenticatorImpl(render_frame_host, connector, std::move(timer)),
+      : AuthenticatorCommon(render_frame_host, connector, std::move(timer)),
         mock_delegate_(std::move(mock_delegate)) {}
-  ~FakeAuthenticatorImpl() override = default;
+  ~FakeAuthenticatorCommon() override = default;
 
   void UpdateRequestDelegate() override {
     DCHECK(mock_delegate_);
@@ -2186,8 +2194,10 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       service_manager::Connector* connector,
       std::unique_ptr<base::OneShotTimer> timer) {
-    authenticator_impl_.reset(new FakeAuthenticatorImpl(
-        main_rfh(), connector, std::move(timer), std::move(delegate)));
+    authenticator_impl_.reset(new AuthenticatorImpl(
+        main_rfh(),
+        std::make_unique<FakeAuthenticatorCommon>(
+            main_rfh(), connector, std::move(timer), std::move(delegate))));
     AuthenticatorPtr authenticator;
     authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
     return authenticator;
@@ -2213,7 +2223,7 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
   }
 
  protected:
-  std::unique_ptr<FakeAuthenticatorImpl> authenticator_impl_;
+  std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 };
 
 TEST_F(AuthenticatorImplRequestDelegateTest,
