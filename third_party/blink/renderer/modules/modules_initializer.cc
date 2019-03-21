@@ -175,7 +175,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ProvideUserMediaTo(
       frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
   ProvideIndexedDBClientTo(frame, IndexedDBClient::Create(frame));
-  ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
+  ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
   NavigatorContentUtils::ProvideTo(
       *frame.DomWindow()->navigator(),
       NavigatorContentUtilsClient::Create(web_frame));
@@ -190,8 +190,8 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
     WorkerClients& worker_clients) const {
-  ::blink::ProvideLocalFileSystemToWorker(&worker_clients,
-                                          LocalFileSystemClient::Create());
+  ::blink::ProvideLocalFileSystemToWorker(
+      &worker_clients, std::make_unique<LocalFileSystemClient>());
 }
 
 void ModulesInitializer::ProvideIndexedDBClientToWorker(

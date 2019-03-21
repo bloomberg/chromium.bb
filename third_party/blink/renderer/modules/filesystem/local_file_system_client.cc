@@ -44,11 +44,6 @@
 
 namespace blink {
 
-std::unique_ptr<FileSystemClient> LocalFileSystemClient::Create() {
-  return base::WrapUnique(
-      static_cast<FileSystemClient*>(new LocalFileSystemClient()));
-}
-
 LocalFileSystemClient::~LocalFileSystemClient() = default;
 
 bool LocalFileSystemClient::RequestFileSystemAccessSync(
