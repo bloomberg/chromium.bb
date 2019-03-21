@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1006017844123154345">Åbn på nettet</translation>
-<translation id="1023450834687746199">Du har ryddet data for <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Tilføjer <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Fra websites</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">mislykkedes</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
 <translation id="2784212955220061919">Chrome indlæser sider hurtigere og bruger op til 60 procent mindre data i Lite-tilstand. Googles skyteknologi optimerer de sider, du besøger.</translation>
-<translation id="2785336755839207516"><ph name="APP_NAME" /> blev afinstalleret.</translation>
 <translation id="2803478378562657435">Viser gemte adgangskoder og valgmuligheder for adgangskoder</translation>
 <translation id="2810645512293415242">Forenklet side, der sparer data og indlæses hurtigere.</translation>
 <translation id="281504910091592009">Se og administrer gemte adgangskoder på din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Valgmuligheder</translation>
-<translation id="3814315701645566481">Vil du rydde data for <ph name="URL" />?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
 <translation id="3819562311292413223">Download artikler til dig</translation>
 <translation id="3822502789641063741">Vil du rydde websitelagerpladsen?</translation>

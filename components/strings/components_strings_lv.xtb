@@ -247,7 +247,6 @@
 <translation id="2270484714375784793">Tālruņa numurs</translation>
 <translation id="2283340219607151381">Saglabāt un aizpildīt adreses</translation>
 <translation id="2292556288342944218">Piekļuve internetam ir bloķēta</translation>
-<translation id="2294558542833290837">Saite, ko sākotnēji atvērāt, ir neparasta</translation>
 <translation id="2297722699537546652">B5 (aploksne)</translation>
 <translation id="2310021320168182093">Chou2 (aploksne)</translation>
 <translation id="2316887270356262533">Tiks atbrīvots mazāk nekā 1 MB. Dažas vietnes nākamajā apmeklējumā var ielādēt lēnāk.</translation>
@@ -489,7 +488,6 @@
 <translation id="3658742229777143148">Pārskatīšana</translation>
 <translation id="366077651725703012">Kredītkartes informācijas atjaunināšana</translation>
 <translation id="3676592649209844519">Ierīces ID:</translation>
-<translation id="3677008721441257057">Vai jūs domājāt &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Pieprasījumu nevarēja parakstīt.</translation>
 <translation id="3678529606614285348">Atvērt lapu jaunā inkognito režīma logā (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">Avāriju pārskats tverts: <ph name="CRASH_TIME" />; augšupielādēts: <ph name="UPLOAD_TIME" /></translation>
@@ -1400,7 +1398,6 @@ Papildu informācija:
 <translation id="894185898663964645">Administrators ir konfigurējis pielāgotus saknes sertifikātus, kas, iespējams, ļauj administratoram skatīt apmeklēto vietņu saturu.</translation>
 <translation id="8943282376843390568">Laima zaļa</translation>
 <translation id="8957210676456822347">Caurlaides lapas autorizācija</translation>
-<translation id="8966619695390250636">Vai bija domāts?</translation>
 <translation id="8968766641738584599">Saglabāt karti</translation>
 <translation id="8971063699422889582">Servera sertifikātam ir beidzies derīguma termiņš.</translation>
 <translation id="8975012916872825179">Iekļauta tāda informācija kā tālruņa numuri, e-pasta un piegādes adreses</translation>

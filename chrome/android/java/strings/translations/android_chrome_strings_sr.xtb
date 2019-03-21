@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1006017844123154345">Отвори онлајн</translation>
-<translation id="1023450834687746199">Обрисали сте податке за <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Додаје се <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Са веб-сајтова</translation>
 <translation id="1049743911850919806">Без архивирања</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">није успело</translation>
 <translation id="2781151931089541271">Још 1 сек</translation>
 <translation id="2784212955220061919">У Lite режиму Chrome учитава странице брже и користи и до 60 процената мање података. Google клауд технологија оптимизује странице које посећујете.</translation>
-<translation id="2785336755839207516">Деинсталирали сте <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Приказују се сачуване лозинке и опције за лозинке</translation>
 <translation id="2810645512293415242">Страница је поједностављена ради уштеде на подацима и бржег учитавања.</translation>
 <translation id="281504910091592009">Прегледајте сачуване лозинке и управљајте њима на <ph name="BEGIN_LINK" />Google налогу<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Инсталирај</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Промени</translation>
-<translation id="3814315701645566481">Желите ли да обришете податке за <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Избрисана преузимања: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Преузмите чланке за вас</translation>
 <translation id="3822502789641063741">Бришете меморију сајта?</translation>

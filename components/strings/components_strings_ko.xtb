@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">전화번호</translation>
 <translation id="2283340219607151381">주소 저장 및 자동 입력</translation>
 <translation id="2292556288342944218">인터넷 액세스가 차단됨</translation>
-<translation id="2294558542833290837">처음에 열어본 링크가 비정상적입니다.</translation>
 <translation id="2297722699537546652">B5(봉투)</translation>
 <translation id="2310021320168182093">Chou2(봉투)</translation>
 <translation id="2316887270356262533">1MB 미만의 저장용량을 확보합니다. 일부 사이트는 다음 방문 시 로드 속도가 느려질 수 있습니다.</translation>
@@ -497,7 +496,6 @@
 <translation id="3658742229777143148">개정</translation>
 <translation id="366077651725703012">신용카드 정보 업데이트</translation>
 <translation id="3676592649209844519">기기 ID:</translation>
-<translation id="3677008721441257057">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;을(를) 찾으셨나요?</translation>
 <translation id="3678029195006412963">요청을 서명할 수 없음</translation>
 <translation id="3678529606614285348">새 시크릿 창에서 페이지 열기(Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서가 <ph name="UPLOAD_TIME" />에 업로드됨</translation>
@@ -1409,7 +1407,6 @@
 <translation id="894185898663964645">관리자가 맞춤 루트 인증서를 구성했으며, 이로 인해 관리자가 내가 방문하는 웹사이트의 콘텐츠를 볼 수 있습니다.</translation>
 <translation id="8943282376843390568">라임색</translation>
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
-<translation id="8966619695390250636">이 URL을 찾으셨나요?</translation>
 <translation id="8968766641738584599">카드 저장</translation>
 <translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="8975012916872825179">전화번호, 이메일 주소, 배송지 주소 등의 정보를 포함합니다.</translation>

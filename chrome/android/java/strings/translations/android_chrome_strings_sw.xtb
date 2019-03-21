@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1006017844123154345">Fungua Mtandaoni</translation>
-<translation id="1023450834687746199">Umefuta data ya <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Inaongeza <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Kutoka kwenye tovuti</translation>
 <translation id="1049743911850919806">Kichupo fiche</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">imeshindwa</translation>
 <translation id="2781151931089541271">Imesalia sekunde 1</translation>
 <translation id="2784212955220061919">Katika Hali nyepesi, Chrome hupakia kurasa haraka zaidi na huokoa data kwa hadi asilimia 60. Teknolojia ya Wingu la Google huboresha kurasa unazotembelea.</translation>
-<translation id="2785336755839207516">Umeondoa <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Inaonyesha manenosiri yaliyohifadhiwa na chaguo za manenosiri</translation>
 <translation id="2810645512293415242">Ukurasa umerahisishwa ili uokoe data na upakie haraka zaidi.</translation>
 <translation id="281504910091592009">Angalia na udhibiti manenosiri yaliyohifadhiwa kwenye <ph name="BEGIN_LINK" />Akaunti yako ya Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Sakinisha</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Dhibiti</translation>
-<translation id="3814315701645566481">Ungependa kuondoa data ya <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Vipakuliwa <ph name="NUMBER_OF_DOWNLOADS" /> vimefutwa</translation>
 <translation id="3819562311292413223">Pakua makala tunayokupendekezea</translation>
 <translation id="3822502789641063741">Ungependa kufuta hifadhi ya tovuti?</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1006017844123154345">在线打开</translation>
-<translation id="1023450834687746199">您已清除<ph name="APP_NAME" />的数据。</translation>
 <translation id="1036727731225946849">正在添加<ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">来自网站</translation>
 <translation id="1049743911850919806">隐身</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">失败</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
 <translation id="2784212955220061919">在精简模式下，Chrome 可更快速地加载网页，并可节省多达百分之 60 的流量。Google 的云技术会优化您访问的网页。</translation>
-<translation id="2785336755839207516">您已卸载<ph name="APP_NAME" />。</translation>
 <translation id="2803478378562657435">正在显示已保存的密码和密码选项</translation>
 <translation id="2810645512293415242">简化版网页不仅可节省数据流量，还可更快速地进行加载。</translation>
 <translation id="281504910091592009">查看和管理您的 <ph name="BEGIN_LINK" />Google 帐号<ph name="END_LINK" />中保存的密码</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">安装</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3810973564298564668">管理</translation>
-<translation id="3814315701645566481">要清除 <ph name="URL" /> 的相关数据吗？</translation>
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3819562311292413223">下载为您推荐的文章</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>

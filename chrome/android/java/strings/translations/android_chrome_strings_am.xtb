@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1006017844123154345">መስመር ላይ ክፈት</translation>
-<translation id="1023450834687746199">ለ<ph name="APP_NAME" /> ውሂብን አጽድተዋል።</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ን በማከል ላይ...</translation>
 <translation id="1041308826830691739">ከድር ጣቢያዎች</translation>
 <translation id="1049743911850919806">ማንነት የማያሳውቅ</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">አልተሳካም</translation>
 <translation id="2781151931089541271">1 ሰከንድ ይቀራል</translation>
 <translation id="2784212955220061919">በቀላል ሁነታ ላይ Chrome ገጾችን በበለጠ ፍጥነት የሚጭን ሲሆን እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀማል። የGoogle ደመና ቴክኖሎጂ እርስዎ የሚጎበኟቸውን ገጾች ያተባል።</translation>
-<translation id="2785336755839207516"><ph name="APP_NAME" />ን አራግፈዋል።</translation>
 <translation id="2803478378562657435">የተቀመጡ የይለፍ ቃላትን እና የይለፍ ቃል አማራጮችን በማሳየት ላይ</translation>
 <translation id="2810645512293415242">ውሂብን ለመቆጠብ እና በበለጠ ፍጥነት ለመጫን የተቃለለ ገጽ።</translation>
 <translation id="281504910091592009">የተቀመጡ የይለፍ ቃላትን በእርስዎ <ph name="BEGIN_LINK" />Google መለያ<ph name="END_LINK" /> ውስጥ ይመልከቱ እና ያስተዳድሩ</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3810973564298564668">አቀናብር</translation>
-<translation id="3814315701645566481">ለ<ph name="URL" /> ውሂብን ማጽዳት ይፈልጋሉ?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3819562311292413223">ለእርስዎ የሚሆኑ ጽሑፎችን አይውርዱ</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>

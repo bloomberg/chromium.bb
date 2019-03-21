@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">Telefonska številka</translation>
 <translation id="2283340219607151381">Shranjevanje in izpolnjevanje naslovov</translation>
 <translation id="2292556288342944218">Internetni dostop je blokiran</translation>
-<translation id="2294558542833290837">Povezava, ki ste jo prvotno odprli, je nenavadna</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2316887270356262533">Sprosti manj kot 1 MB. Nekatera spletna mesta se bodo ob naslednjem obisku morda počasneje naložila.</translation>
@@ -486,6 +485,7 @@
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Velikost 2</translation>
+<translation id="361438452008624280">Vnos na seznamu »<ph name="LANGUAGE_ID" />«: neznan ali nepodprt jezik.</translation>
 <translation id="3615877443314183785">Vnesite veljaven datum poteka veljavnosti</translation>
 <translation id="36224234498066874">Izbriši podatke brskanja ...</translation>
 <translation id="362276910939193118">Prikaži celotno zgodovino</translation>
@@ -497,7 +497,6 @@
 <translation id="3658742229777143148">Različica</translation>
 <translation id="366077651725703012">Posodobi kreditno kartico</translation>
 <translation id="3676592649209844519">ID naprave:</translation>
-<translation id="3677008721441257057">Ali ste mislili &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Zahteve ni bilo mogoče podpisati</translation>
 <translation id="3678529606614285348">Odpiranje strani v novem oknu brez beleženja zgodovine (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375">Poročilo o zrušitvi je bilo zajeto takrat: <ph name="CRASH_TIME" />, naloženo takrat: <ph name="UPLOAD_TIME" /></translation>
@@ -1390,6 +1389,7 @@ Dodatne podrobnosti:
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8792621596287649091">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chromium priporoča, da spremenite geslo.</translation>
 <translation id="8800988563907321413">Tu so prikazani predlogi v bližini</translation>
+<translation id="8805819170075074995">Vnos na seznamu »<ph name="LANGUAGE_ID" />«: vnos je prezrt, ker je vključen tudi v pravilnik SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="883848425547221593">Drugi zaznamki</translation>
 <translation id="884264119367021077">Naslov za pošiljanje</translation>
@@ -1410,10 +1410,10 @@ Dodatne podrobnosti:
 <translation id="894185898663964645">Skrbnik je konfiguriral korenska potrdila po meri, ki skrbniku morda omogočajo ogled vsebine spletnih mest, ki jih obiščete.</translation>
 <translation id="8943282376843390568">Rumenozelena</translation>
 <translation id="8957210676456822347">Odobritev prestreznega portala</translation>
-<translation id="8966619695390250636">Ali ste morda mislili?</translation>
 <translation id="8968766641738584599">Shrani kartico</translation>
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
 <translation id="8975012916872825179">Vključuje podatke, kot so telefonske številke, e-poštni naslovi in naslovi za pošiljanje</translation>
+<translation id="8975263830901772334">Imena datotek, ki jih natisnete</translation>
 <translation id="8978053250194585037">Google Varno brskanje je nedavno <ph name="BEGIN_LINK" />zaznalo lažno predstavljanje<ph name="END_LINK" /> na spletnem mestu <ph name="SITE" />. Spletna mesta z lažnim predstavljanjem zavajajo ljudi, tako da se izdajajo za druga spletna mesta.</translation>
 <translation id="8983003182662520383">Plačilna sredstva in naslovi z Googlom Pay</translation>
 <translation id="8987927404178983737">Mesec</translation>

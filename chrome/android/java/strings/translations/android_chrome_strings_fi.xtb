@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1006017844123154345">Avaa verkkoversio</translation>
-<translation id="1023450834687746199">Olet poistanut datan sovelluksesta <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Lisätään <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Verkkosivustoilta</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">epäonnistui</translation>
 <translation id="2781151931089541271">1 sekunti jäljellä</translation>
 <translation id="2784212955220061919">Yksinkertaistetussa tilassa Chrome lataa sivuja nopeammin ja käyttää jopa 60 prosenttia vähemmän dataa. Googlen pilviteknologia optimoi sivut, joilla käyt.</translation>
-<translation id="2785336755839207516">Olet poistanut sovelluksen <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Näytetään tallennetut salasanat ja salasana-asetukset</translation>
 <translation id="2810645512293415242">Yksinkertaistettu sivu, joka säästää dataa ja latautuu nopeammin.</translation>
 <translation id="281504910091592009">Katso ja ylläpidä <ph name="BEGIN_LINK" />Google-tilille<ph name="END_LINK" /> tallennettuja salasanoja</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Asenna</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Hallinnoi</translation>
-<translation id="3814315701645566481">Poistetaanko tämä data (<ph name="URL" />)?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> latausta poistettiin.</translation>
 <translation id="3819562311292413223">Lataa sinulle valittuja artikkeleita</translation>
 <translation id="3822502789641063741">Poistetaanko tiedot?</translation>

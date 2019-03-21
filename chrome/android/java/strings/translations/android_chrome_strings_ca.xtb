@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1006017844123154345">Obre en línia</translation>
-<translation id="1023450834687746199">Has esborrat dades de l'aplicació <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">S'està afegint <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De llocs web</translation>
 <translation id="1049743911850919806">Incògnit</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">ha fallat</translation>
 <translation id="2781151931089541271">Queda 1 segon</translation>
 <translation id="2784212955220061919">En el mode bàsic, Chrome carrega les pàgines més ràpidament i utilitza un 60 per cent menys de dades. La tecnologia en núvol de Google optimitza les pàgines que visites.</translation>
-<translation id="2785336755839207516">Has desinstal·lat l'aplicació <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">S'estan mostrant les contrasenyes desades i les opcions de contrasenyes</translation>
 <translation id="2810645512293415242">La pàgina s'ha simplificat per estalviar dades i carregar-se més ràpidament.</translation>
 <translation id="281504910091592009">Consulta i gestiona les contrasenyes desades al <ph name="BEGIN_LINK" />Compte de Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gestiona</translation>
-<translation id="3814315701645566481">Vols esborrar dades de l'URL <ph name="URL" />?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> baixades suprimides</translation>
 <translation id="3819562311292413223">Baixa articles que et poden interessar</translation>
 <translation id="3822502789641063741">Esborrar emmagatz. lloc?</translation>

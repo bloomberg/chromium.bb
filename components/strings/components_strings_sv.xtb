@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2283340219607151381">Spara och fyll i adresser</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
-<translation id="2294558542833290837">Länken som du öppnade först är ovanlig</translation>
 <translation id="2297722699537546652">B5 (kuvert)</translation>
 <translation id="2310021320168182093">Chou2 (kuvert)</translation>
 <translation id="2316887270356262533">Frigör mindre än 1 MB. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
@@ -486,6 +485,7 @@
 <translation id="3592413004129370115">Italian (kuvert)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Storlek 2</translation>
+<translation id="361438452008624280">Listposten <ph name="LANGUAGE_ID" />: Språket är okänt eller stöds inte.</translation>
 <translation id="3615877443314183785">Ange ett giltigt utgångsdatum</translation>
 <translation id="36224234498066874">Rensa webbinformation ...</translation>
 <translation id="362276910939193118">Visa fullständig historik</translation>
@@ -497,7 +497,6 @@
 <translation id="3658742229777143148">Version</translation>
 <translation id="366077651725703012">Uppdatera kreditkortet</translation>
 <translation id="3676592649209844519">Enhets-id:</translation>
-<translation id="3677008721441257057">Menade du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Begäran kunde inte signeras</translation>
 <translation id="3678529606614285348">Öppna sidan i ett nytt inkognitofönster (Ctrl-Skift-N)</translation>
 <translation id="3679803492151881375">Kraschrapporten skapades den <ph name="CRASH_TIME" /> och laddades upp den <ph name="UPLOAD_TIME" /></translation>
@@ -1391,6 +1390,7 @@ Mer information:
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
 <translation id="8792621596287649091">Du kan förlora åtkomsten till kontot på <ph name="ORG_NAME" /> eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="8800988563907321413">Förslag på webbsidor i närheten visas här</translation>
+<translation id="8805819170075074995">Listposten <ph name="LANGUAGE_ID" />: Posten ignorerades eftersom den även ingår i principen SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="883848425547221593">Övriga bokmärken</translation>
 <translation id="884264119367021077">Leveransadress</translation>
@@ -1411,10 +1411,10 @@ Mer information:
 <translation id="894185898663964645">Administratören har konfigurerat anpassade rotcertifikat. Det kan innebära att administratören ser innehållet på de webbplatser du besöker.</translation>
 <translation id="8943282376843390568">Limegrön</translation>
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
-<translation id="8966619695390250636">Menade du?</translation>
 <translation id="8968766641738584599">Spara kortet</translation>
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
 <translation id="8975012916872825179">Gäller uppgifter som telefonnummer, e-postadresser och leveransadresser</translation>
+<translation id="8975263830901772334">Namn på filer du skriver ut</translation>
 <translation id="8978053250194585037"><ph name="BEGIN_LINK" />Nätfiske<ph name="END_LINK" /> upptäcktes nyligen av Google Säker webbsökning på <ph name="SITE" />. Webbplatser som används för nätfiske imiterar andra webbplatser i syfte att lura dig.</translation>
 <translation id="8983003182662520383">Betalningsmetoder och adresser som används med Google Pay</translation>
 <translation id="8987927404178983737">Månad</translation>

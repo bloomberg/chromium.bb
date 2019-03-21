@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1006017844123154345">Abrir en línea</translation>
-<translation id="1023450834687746199">Borraste datos de <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Agregando <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">De sitios web</translation>
 <translation id="1049743911850919806">Incógnito</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">error</translation>
 <translation id="2781151931089541271">1 segundo restante</translation>
 <translation id="2784212955220061919">En el modo lite, Chrome carga las páginas más rápido y usa hasta un 60 por ciento menos de datos. La tecnología de la nube de Google optimiza las páginas que visitas.</translation>
-<translation id="2785336755839207516">Desinstalaste <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Se muestran las contraseñas guardadas y las opciones de contraseña</translation>
 <translation id="2810645512293415242">La página se simplificó para ahorrar datos y acelerar la carga.</translation>
 <translation id="281504910091592009">Ver y administrar las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrar</translation>
-<translation id="3814315701645566481">¿Quieres borrar los datos relacionados con <ph name="URL" />?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas borradas</translation>
 <translation id="3819562311292413223">Descargar artículos para ti</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>

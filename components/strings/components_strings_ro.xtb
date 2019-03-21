@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">Număr telefon</translation>
 <translation id="2283340219607151381">Salvează și completează adresele</translation>
 <translation id="2292556288342944218">Accesul la internet este blocat</translation>
-<translation id="2294558542833290837">Linkul pe care l-ai deschis inițial este neobișnuit</translation>
 <translation id="2297722699537546652">B5 (Plic)</translation>
 <translation id="2310021320168182093">Chou2 (Plic)</translation>
 <translation id="2316887270356262533">Eliberează mai puțin de 1 MB. Este posibil ca unele site-uri să se încarce mai lent la următoarea accesare.</translation>
@@ -497,7 +496,6 @@
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="366077651725703012">Actualizează cardul de credit</translation>
 <translation id="3676592649209844519">ID dispozitiv:</translation>
-<translation id="3677008721441257057">Ai vrut să accesezi &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Solicitarea nu a putut fi semnată</translation>
 <translation id="3678529606614285348">Deschide pagina într-o fereastră incognito nouă (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Raport de blocare creat <ph name="CRASH_TIME" /> și încărcat <ph name="UPLOAD_TIME" /></translation>
@@ -1411,7 +1409,6 @@ Detalii suplimentare:
 <translation id="894185898663964645">Administratorul a configurat certificate rădăcină personalizate, care îi pot permite să vadă conținutul site-urilor pe care le accesezi.</translation>
 <translation id="8943282376843390568">Verde-gălbui</translation>
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
-<translation id="8966619695390250636">Rezultate aproximative</translation>
 <translation id="8968766641738584599">Salvează cardul</translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8975012916872825179">Include informații precum numerele de telefon, adresele de e-mail și adresele de expediere</translation>

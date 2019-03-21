@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
-<translation id="1023450834687746199">داده‌ها را برای <ph name="APP_NAME" /> پاک کردید.</translation>
 <translation id="1036727731225946849">درحال افزودن <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">از وب‌سایت‌ها</translation>
 <translation id="1049743911850919806">ناشناس</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">انجام نشد</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
 <translation id="2784212955220061919">‏در «حالت ساده»، Chrome صفحه‌ها را سریع‌تر بار می‌کند و تا ۶۰ درصد مصرف داده را کاهش می‌دهد. فناوری ابری Google صفحه‌هایی را که بازدید می‌کنید بهینه می‌کند.</translation>
-<translation id="2785336755839207516"><ph name="APP_NAME" /> را حذف نصب کردید.</translation>
 <translation id="2803478378562657435">درحال نمایش گذرواژه‌های ذخیره‌شده و گزینه‌های گذرواژه</translation>
 <translation id="2810645512293415242">صفحه ساده‌شده برای ذخیره داده‌ها و بارگیری با سرعت بیشتر.</translation>
 <translation id="281504910091592009">‏در <ph name="BEGIN_LINK" />حساب Google<ph name="END_LINK" /> خود گذرواژه‌های ذخیره‌شده را مشاهده و مدیریت کنید</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">نصب</translation>
 <translation id="3810838688059735925">فیلم</translation>
 <translation id="3810973564298564668">مدیریت</translation>
-<translation id="3814315701645566481">می‌خواهید داده‌های <ph name="URL" /> را پاک کنید؟</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> بارگیری حذف شد</translation>
 <translation id="3819562311292413223">بارگیری مقاله‌هایی برای شما</translation>
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>

@@ -251,7 +251,6 @@
 <translation id="2270484714375784793">Numero ng telepono</translation>
 <translation id="2283340219607151381">I-save at punan ang mga address</translation>
 <translation id="2292556288342944218">Naka-block ang iyong access sa Internet</translation>
-<translation id="2294558542833290837">Hindi pangkaraniwan ang link na orihinal mong binuksan</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2316887270356262533">Magbabakante ng wala pang 1 MB. Maaaring mag-load nang mas mabagal ang ilang site sa iyong susunod na pagbisita.</translation>
@@ -486,6 +485,7 @@
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Laki 2</translation>
+<translation id="361438452008624280">Listahan ng entry na "<ph name="LANGUAGE_ID" />": Hindi kilala o hindi sinusuportahang wika.</translation>
 <translation id="3615877443314183785">Maglagay ng wastong petsa ng pag-expire</translation>
 <translation id="36224234498066874">I-clear ang Data sa Pag-browse...</translation>
 <translation id="362276910939193118">Ipakita ang Buong History</translation>
@@ -497,7 +497,6 @@
 <translation id="3658742229777143148">Rebisyon</translation>
 <translation id="366077651725703012">I-update ang Credit Card</translation>
 <translation id="3676592649209844519">Device ID:</translation>
-<translation id="3677008721441257057">Ang ibig mo bang sabihin ay &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Hindi malagdaan ang kahilingan</translation>
 <translation id="3678529606614285348">Buksan ang page sa bagong Incognito window (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Nakuha ang ulat ng pag-crash noong <ph name="CRASH_TIME" />, na-upload noong <ph name="UPLOAD_TIME" /></translation>
@@ -1390,6 +1389,7 @@ Mga karagdagang detalye:
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
 <translation id="8792621596287649091">Maaari kang mawalan ng access sa iyong account sa <ph name="ORG_NAME" /> o manakawan ng pagkakakilanlan. Inirerekomenda ng Chromium na palitan ang iyong password ngayon.</translation>
 <translation id="8800988563907321413">Lalabas dito ang iyong mga suhestyon na malapit</translation>
+<translation id="8805819170075074995">Listahan ng entry na "<ph name="LANGUAGE_ID" />": Binalewala ang entry dahil kasama rin ito sa patakarang SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="883848425547221593">Iba Pang Mga Bookmark</translation>
 <translation id="884264119367021077">Shipping address</translation>
@@ -1410,10 +1410,10 @@ Mga karagdagang detalye:
 <translation id="894185898663964645">Ang iyong administrator ay may mga naka-configure na custom na root certificate na maaaring payagan ang administrator na makita ang mga content ng mga website na binibisita mo.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Pagpapahintulot sa Captive Portal</translation>
-<translation id="8966619695390250636">Ang ibig mo bang sabihin ay?</translation>
 <translation id="8968766641738584599">I-save ang card</translation>
 <translation id="8971063699422889582">Nag-expire na ang certificate ng server.</translation>
 <translation id="8975012916872825179">May kasamang impormasyon tulad ng mga numero ng telepono, email address, at address sa pagpapadala</translation>
+<translation id="8975263830901772334">Mga pangalan ng mga file na pini-print mo</translation>
 <translation id="8978053250194585037">May <ph name="BEGIN_LINK" />na-detect na phishing<ph name="END_LINK" /> sa <ph name="SITE" /> kamakailan ang Ligtas na Pag-browse sa Google. Nagpapanggap ang mga phishing site bilang ibang website upang linlangin ka.</translation>
 <translation id="8983003182662520383">Mga Paraan ng Pagbabayad at Address Gamit ang Google Pay</translation>
 <translation id="8987927404178983737">Buwan</translation>

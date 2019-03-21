@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1006017844123154345">Otvori online</translation>
-<translation id="1023450834687746199">Izbrisali ste podatke za aplikaciju <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Dodavanje stavke <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">S web-lokacija</translation>
 <translation id="1049743911850919806">Anonimno</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">nije uspjelo</translation>
 <translation id="2781151931089541271">Još 1 s</translation>
 <translation id="2784212955220061919">U Jednostavnom načinu Chrome učitava stranice brže i smanjuje podatkovni promet do 60 posto. Googleova tehnologija u oblaku optimizira stranice koje posjećujete.</translation>
-<translation id="2785336755839207516">Deinstalirali ste aplikaciju <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Prikazivanje spremljenih zaporki i opcija zaporki</translation>
 <translation id="2810645512293415242">Pojednostavljena stranica štedi podatke i učitava se brže.</translation>
 <translation id="281504910091592009">Spremljene zaporke možete pregledati i upravljati njima na svojem <ph name="BEGIN_LINK" />Google računu<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Instaliraj</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Upravljaj</translation>
-<translation id="3814315701645566481">Želite li izbrisati podatke za <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Izbrisano preuzimanja: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Preuzmite članke za vas</translation>
 <translation id="3822502789641063741">Izbrisati pohranu?</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1006017844123154345">Atidaryti prisijungus</translation>
-<translation id="1023450834687746199">Išvalėte „<ph name="APP_NAME" />“ duomenis.</translation>
 <translation id="1036727731225946849">Pridedamas APK „<ph name="WEBAPK_NAME" />“...</translation>
 <translation id="1041308826830691739">Iš svetainių</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -247,7 +246,6 @@
 <translation id="2779651927720337254">nepavyko</translation>
 <translation id="2781151931089541271">Liko 1 sek.</translation>
 <translation id="2784212955220061919">Kai įjungtas supaprastintasis režimas, sistemoje „Chrome“ puslapiai įkeliami sparčiau ir naudojama iki 60 proc. mažiau duomenų. „Google“ debesies technologija optimizuoja jūsų lankomus puslapius.</translation>
-<translation id="2785336755839207516">Pašalinote „<ph name="APP_NAME" />“.</translation>
 <translation id="2803478378562657435">Rodomi išsaugoti slaptažodžiai ir slaptažodžių parinktys</translation>
 <translation id="2810645512293415242">Supaprastintas puslapis, kad būtų galima saugoti duomenis ir greičiau įkelti.</translation>
 <translation id="281504910091592009">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius <ph name="BEGIN_LINK" />„Google“ paskyroje<ph name="END_LINK" /></translation>
@@ -373,7 +371,6 @@
 <translation id="3789841737615482174">Įdiegti</translation>
 <translation id="3810838688059735925">Vaizdo</translation>
 <translation id="3810973564298564668">Valdyti</translation>
-<translation id="3814315701645566481">Ar norite išvalyti <ph name="URL" /> duomenis?</translation>
 <translation id="3819178904835489326">Ištrinta atsisiuntimų: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Atsisiunčiami jums skirti straipsniai</translation>
 <translation id="3822502789641063741">Išvalyti svet. saugyklą?</translation>

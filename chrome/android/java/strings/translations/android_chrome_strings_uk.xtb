@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1006017844123154345">Відкрити в режимі онлайн</translation>
-<translation id="1023450834687746199">Дані додатка <ph name="APP_NAME" /> видалено.</translation>
 <translation id="1036727731225946849">Додається <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">З веб-сайтів</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
@@ -247,7 +246,6 @@
 <translation id="2779651927720337254">не завантажено</translation>
 <translation id="2781151931089541271">Залишилась 1 с</translation>
 <translation id="2784212955220061919">У спрощеному режимі Chrome завантажує сторінки швидше та використовує на 60 відсотків менше трафіку. Хмарна технологія Google оптимізує сторінки, які ви відвідуєте.</translation>
-<translation id="2785336755839207516">Додаток <ph name="APP_NAME" /> видалено.</translation>
 <translation id="2803478378562657435">Показано збережені паролі та їх параметри</translation>
 <translation id="2810645512293415242">Спрощена сторінка для заощадження трафіку та швидшого завантаження.</translation>
 <translation id="281504910091592009">Переглядайте збережені паролі й керуйте ними в <ph name="BEGIN_LINK" />обліковому записі Google<ph name="END_LINK" /></translation>
@@ -373,7 +371,6 @@
 <translation id="3789841737615482174">Встановити</translation>
 <translation id="3810838688059735925">Відео</translation>
 <translation id="3810973564298564668">Змінити</translation>
-<translation id="3814315701645566481">Очистити дані веб-сторінки <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Видалено завантажених файлів: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Завантажувати статті для вас</translation>
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1006017844123154345">Online megnyitás</translation>
-<translation id="1023450834687746199">Törölte a(z) <ph name="APP_NAME" /> adatait.</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> hozzáadása…</translation>
 <translation id="1041308826830691739">Webhelyekről</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">sikertelen</translation>
 <translation id="2781151931089541271">1 másodperc van hátra</translation>
 <translation id="2784212955220061919">Lite módban a Chrome gyorsabban betölti az oldalakat, és akár 60 százalékkal kisebb adatforgalmat generál. A Google felhőtechnológiája optimalizálja a felkeresett oldalakat.</translation>
-<translation id="2785336755839207516">Eltávolította a(z) <ph name="APP_NAME" /> alkalmazást.</translation>
 <translation id="2803478378562657435">Mentett jelszavak és jelszóbeállítások megjelenítve</translation>
 <translation id="2810645512293415242">Egyszerűsített oldal az alacsonyabb adathasználat és a gyorsabb betöltés érdekében.</translation>
 <translation id="281504910091592009">Mentett jelszavait megtekintheti és kezelheti <ph name="BEGIN_LINK" />Google-fiókjában<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Telepítés</translation>
 <translation id="3810838688059735925">Videó</translation>
 <translation id="3810973564298564668">Szerkesztés</translation>
-<translation id="3814315701645566481">Szeretné törölni a következő URL-lel kapcsolatos adatokat: <ph name="URL" />?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> letöltés törölve</translation>
 <translation id="3819562311292413223">Cikkek Önnek – letöltés</translation>
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="1006017844123154345">Abrir online</translation>
-<translation id="1023450834687746199">Limpou os dados da aplicação <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">A adicionar <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De Websites</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
@@ -224,6 +223,7 @@
 <translation id="2593272815202181319">Monoespaço</translation>
 <translation id="2610239185026711824">Sugerir palavra-passe</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
+<translation id="2613747923081026172">Criar grupo</translation>
 <translation id="2621115761605608342">Permitir JavaScript num site específico.</translation>
 <translation id="2625189173221582860">Palavra-passe copiada</translation>
 <translation id="2631006050119455616">Guardado</translation>
@@ -246,7 +246,6 @@
 <translation id="2779651927720337254">falhou</translation>
 <translation id="2781151931089541271">Falta 1 segundo</translation>
 <translation id="2784212955220061919">No Modo Lite, o Chrome carrega páginas mais rapidamente e utiliza até menos 60 por cento de dados. A tecnologia na nuvem da Google otimiza as páginas visitadas.</translation>
-<translation id="2785336755839207516">Desinstalou a aplicação <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">A mostrar palavras-passe guardadas e opções de palavra-passe</translation>
 <translation id="2810645512293415242">Página simplificada para poupar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Veja e faça a gestão das palavras-passe guardadas na sua <ph name="BEGIN_LINK" />Conta Google<ph name="END_LINK" />.</translation>
@@ -372,7 +371,6 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gerir</translation>
-<translation id="3814315701645566481">Pretende limpar os dados de <ph name="URL" />?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> transferências eliminadas</translation>
 <translation id="3819562311292413223">Transferir artigos para si</translation>
 <translation id="3822502789641063741">Limpar armazenamento do site?</translation>
@@ -883,7 +881,9 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Cartão SD não encontrado. Alguns dos seus ficheiros poderão estar em falta.</translation>
+<translation id="7479104141328977413">Gestão de separadores</translation>
 <translation id="7481312909269577407">Avançar</translation>
+<translation id="7482697587265222445">Separador enviado para os dispositivos</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostrar palavras-passe</translation>
 <translation id="7494974237137038751">dados guardados</translation>

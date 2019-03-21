@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1006017844123154345">Otvoriť online</translation>
-<translation id="1023450834687746199">Vymazali ste údaje aplikácie <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Pridáva sa <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webov</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">neúspešné</translation>
 <translation id="2781151931089541271">Zostáva: 1 s</translation>
 <translation id="2784212955220061919">V zjednodušenom režime načítava Chrome stránky rýchlejšie a využíva až o 60 percent menej dát. Navštevované stránky optimalizuje cloudová technológia Googlu.</translation>
-<translation id="2785336755839207516">Odinštalovali ste aplikáciu <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Zobrazujú sa uložené heslá a možnosti hesiel</translation>
 <translation id="2810645512293415242">Zjednodušená stránka vám pomôže ušetriť dáta a zrýchliť načítavanie.</translation>
 <translation id="281504910091592009">Zobrazenie a správa uložených hesiel v <ph name="BEGIN_LINK" />účte Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Inštalovať</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Spravovať</translation>
-<translation id="3814315701645566481">Chcete vymazať údaje o webovej adrese <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Počet odstránených stiahnutých súborov: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Sťahovať články pre vás</translation>
 <translation id="3822502789641063741">Vymazať úložisko webu?</translation>

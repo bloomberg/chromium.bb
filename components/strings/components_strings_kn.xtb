@@ -250,7 +250,6 @@
 <translation id="2270484714375784793">ಫೋನ್ ಸಂಖ್ಯೆ</translation>
 <translation id="2283340219607151381">ವಿಳಾಸಗಳನ್ನು ಉಳಿಸಿ ಮತ್ತು ಭರ್ತಿ ಮಾಡಿ</translation>
 <translation id="2292556288342944218">ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪ್ರವೇಶ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
-<translation id="2294558542833290837">ನೀವು ಮೂಲತಃ ತೆರೆದಿರುವ ಲಿಂಕ್ ಅಸಹಜವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2316887270356262533">1 MB ಕ್ಕಿಂತ ಕಡಿಮೆ ಇರುವುದನ್ನು ತೆಗೆದುಹಾಕಿ. ನಿಮ್ಮ ನಂತರದ ಭೇಟಿಯ ಸಮಯದಲ್ಲಿ ಕೆಲವು ಸೈಟ್‌ಗಳು ನಿಧಾನವಾಗಿ ಲೋಡ್ ಆಗಬಹುದು.</translation>
@@ -482,6 +481,7 @@
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">ಗಾತ್ರ 2</translation>
+<translation id="361438452008624280">ಪಟ್ಟಿ ನಮೂದು "<ph name="LANGUAGE_ID" />": ಅಪರಿಚಿತ ಭಾಷೆ ಅಥವಾ ಬೆಂಬಲವಿಲ್ಲದ ಭಾಷೆ.</translation>
 <translation id="3615877443314183785">ಮಾನ್ಯವಾದ ಅವಧಿ-ಮುಕ್ತಾಯ ದಿನಾಂಕವನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="36224234498066874">ಬ್ರೌಸ್ ಆಗುತ್ತಿರುವ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ...</translation>
 <translation id="362276910939193118">ಪೂರ್ಣ ಇತಿಹಾಸ ತೋರಿಸಿ</translation>
@@ -492,7 +492,6 @@
 <translation id="3658742229777143148">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="366077651725703012">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="3676592649209844519">ಸಾಧನದ ಐಡಿ:</translation>
-<translation id="3677008721441257057">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ಎಂಬುದು ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥವೇ?</translation>
 <translation id="3678029195006412963">ವಿನಂತಿಗೆ ಸಹಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="3678529606614285348">ಪುಟವನ್ನು ಹೊಸ ಅದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> ನಲ್ಲಿ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ, <ph name="UPLOAD_TIME" /> ಸಮಯಕ್ಕೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -1384,6 +1383,7 @@
 <translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="8792621596287649091">ನಿಮ್ಮ <ph name="ORG_NAME" /> ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="8800988563907321413">ನಿಮ್ಮ ಸಮೀಪದ ವೆಬ್ ಪುಟದ ಸಲಹೆಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
+<translation id="8805819170075074995">ಪಟ್ಟಿ ನಮೂದು "<ph name="LANGUAGE_ID" />": ಈ ನಮೂದನ್ನು SpellcheckLanguage ಕಾರ್ಯನೀತಿಯಲ್ಲಿ ಸಹ ಸೇರಿಸಿರುವ ಕಾರಣ, ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="883848425547221593">ಇತರ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು:</translation>
 <translation id="884264119367021077">ಶಿಪ್ಪಿಂಗ್‌ ವಿಳಾಸ</translation>
@@ -1404,10 +1404,10 @@
 <translation id="894185898663964645">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಕಸ್ಟಮ್ ರೂಟ್ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ, ಇದರಿಂದಾಗಿ ನೀವು ಭೇಟಿ ನೀಡುವ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿನ ವಿಷಯಗಳನ್ನು ನಿರ್ವಾಹಕರು ನೋಡಬಹುದು.</translation>
 <translation id="8943282376843390568">ನಿಂಬೆ ಹಳದಿ</translation>
 <translation id="8957210676456822347">ಕ್ಯಾಪ್ಟಿವ್ ಪೋರ್ಟಲ್ ದೃಢೀಕರಣ</translation>
-<translation id="8966619695390250636">ನೀವು ಹುಡುಕಿದ್ದು ಇದನ್ನೇ?</translation>
 <translation id="8968766641738584599">ಕಾರ್ಡ್‌ ಉಳಿಸಿ</translation>
 <translation id="8971063699422889582">ಸರ್ವರ್‌ನ ಪ್ರಕಮಾಣಪತ್ರದ ಅವಧಿ ಮುಕ್ತಾಯಗೊಂಡಿದೆ.</translation>
 <translation id="8975012916872825179">ಫೋನ್ ಸಂಖ್ಯೆಗಳು, ಇಮೇಲ್ ವಿಳಾಸಗಳು ಮತ್ತು ಶಿಪ್ಪಿಂಗ್ ವಿಳಾಸಗಳಂತಹ ಮಾಹಿತಿಯನ್ನು ಒಳಗೊಂಡಿರುತ್ತದೆ</translation>
+<translation id="8975263830901772334">ನೀವು ಮುದ್ರಿಸುವ ಫೈಲ್‌ಗಳ ಹೆಸರು</translation>
 <translation id="8978053250194585037">Google ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಇತ್ತೀಚೆಗೆ <ph name="SITE" /> ನಲ್ಲಿ <ph name="BEGIN_LINK" />ಫಿಶಿಂಗ್ ಪತ್ತೆಹಚ್ಚಿದೆ<ph name="END_LINK" />. ಫಿಶಿಂಗ್ ಸೈಟ್‌ಗಳು ನಿಮ್ಮನ್ನು ಮೋಸಗೊಳಿಸಲು ಇತರ ಸೈಟ್‌ಗಳಂತೆ ನಟಿಸುತ್ತವೆ.</translation>
 <translation id="8983003182662520383">Google Pay ಅನ್ನು ಬಳಸುವ ಪಾವತಿ ವಿಧಾನಗಳು ಮತ್ತು ವಿಳಾಸಗಳು</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>

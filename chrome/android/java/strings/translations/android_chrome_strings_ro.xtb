@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1006017844123154345">Deschide online</translation>
-<translation id="1023450834687746199">Ai șters datele aplicației <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Se adaugă <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De la site-uri</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">nereușită</translation>
 <translation id="2781151931089541271">1 sec. rămasă</translation>
 <translation id="2784212955220061919">În modul Lite, Chrome încarcă mai repede paginile și folosește cu până la 60 de procente mai puține date. Tehnologia Google cloud optimizează paginile pe care le vizitezi.</translation>
-<translation id="2785336755839207516">Ai dezinstalat <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Se afișează parolele salvate și opțiunile pentru parole</translation>
 <translation id="2810645512293415242">Pagină simplificată pentru economie de date și încărcare mai rapidă.</translation>
 <translation id="281504910091592009">Vezi și gestionează parolele salvate în <ph name="BEGIN_LINK" />Contul Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Instalează</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Gestionează</translation>
-<translation id="3814315701645566481">Dorești să ștergi datele pentru <ph name="URL" />?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descărcări șterse</translation>
 <translation id="3819562311292413223">Descarcă articole pentru tine</translation>
 <translation id="3822502789641063741">Ștergi stocarea site-urilor?</translation>

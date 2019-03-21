@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1006017844123154345">Открыть в Интернете</translation>
-<translation id="1023450834687746199">Данные приложения "<ph name="APP_NAME" />" удалены</translation>
 <translation id="1036727731225946849">Добавление файла "<ph name="WEBAPK_NAME" />"…</translation>
 <translation id="1041308826830691739">От сайтов</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">ошибка</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
 <translation id="2784212955220061919">В упрощенном режиме Chrome быстрее загружает страницы и экономит до 60 процентов трафика. Страницы, на которые вы заходите, оптимизируются с помощью технологий Google.</translation>
-<translation id="2785336755839207516">Приложение "<ph name="APP_NAME" />" удалено</translation>
 <translation id="2803478378562657435">На экране показаны сохраненные пароли и настройки паролей</translation>
 <translation id="2810645512293415242">Страница была открыта в упрощенном виде, чтобы уменьшить объем трафика и время загрузки.</translation>
 <translation id="281504910091592009">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />Аккаунт Google<ph name="END_LINK" /></translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Установить</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
-<translation id="3814315701645566481">Удалить данные страницы <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3819562311292413223">Скачивать статьи для вас</translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>

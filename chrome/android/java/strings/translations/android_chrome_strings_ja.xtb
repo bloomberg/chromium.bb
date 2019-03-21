@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
-<translation id="1023450834687746199"><ph name="APP_NAME" /> のデータを消去しました。</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> を追加しています...</translation>
 <translation id="1041308826830691739">ウェブサイトから</translation>
 <translation id="1049743911850919806">シークレット モード</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">失敗</translation>
 <translation id="2781151931089541271">残り 1 秒</translation>
 <translation id="2784212955220061919">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60 パーセント抑えることができます。Google のクラウド技術により、アクセス先のページが最適化されます。</translation>
-<translation id="2785336755839207516"><ph name="APP_NAME" /> をアンインストールしました。</translation>
 <translation id="2803478378562657435">保存したパスワードとパスワードのオプションを表示しています</translation>
 <translation id="2810645512293415242">簡易版ページを使用してデータの保存と読み込みを高速化します。</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />での保存パスワードの表示と管理</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">インストール</translation>
 <translation id="3810838688059735925">動画</translation>
 <translation id="3810973564298564668">管理</translation>
-<translation id="3814315701645566481"><ph name="URL" /> のデータを消去してもよろしいですか？</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
 <translation id="3819562311292413223">おすすめの記事をダウンロード</translation>
 <translation id="3822502789641063741">サイトのストレージを消去しますか？</translation>

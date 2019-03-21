@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="1006017844123154345">İnternet'te aç</translation>
-<translation id="1023450834687746199"><ph name="APP_NAME" /> uygulamasına ait verileri temizlediniz.</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ekleniyor...</translation>
 <translation id="1041308826830691739">Web sitelerinden</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
@@ -246,7 +245,6 @@
 <translation id="2779651927720337254">başarısız</translation>
 <translation id="2781151931089541271">1 sn. kaldı</translation>
 <translation id="2784212955220061919">Chrome, Basit modda sayfaları daha hızlı yükler ve yüzde 60'a kadar daha az veri kullanır. Google'ın bulut teknolojisi, ziyaret ettiğiniz sayfaları optimize eder.</translation>
-<translation id="2785336755839207516"><ph name="APP_NAME" /> uygulamasının yüklemesini kaldırdınız.</translation>
 <translation id="2803478378562657435">Kayıtlı şifreler ve şifre seçenekleri gösteriliyor</translation>
 <translation id="2810645512293415242">Veriden tasarruf etmek ve daha hızlı yüklemek için basitleştirilmiş sayfa.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google Hesabınızdaki<ph name="END_LINK" /> kayıtlı şifrelerinizi görüntüleyin ve yönetin.</translation>
@@ -372,7 +370,6 @@
 <translation id="3789841737615482174">Yükle</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Yönet</translation>
-<translation id="3814315701645566481"><ph name="URL" /> ile ilgili verileri silmek ister misiniz?</translation>
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
 <translation id="3819562311292413223">Sizin için seçilmiş makaleleri indirin</translation>
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>

@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1006017844123154345">Ava veebis</translation>
-<translation id="1023450834687746199">Olete kustutanud rakenduse <ph name="APP_NAME" /> andmed.</translation>
 <translation id="1036727731225946849">APK <ph name="WEBAPK_NAME" /> lisamine …</translation>
 <translation id="1041308826830691739">Veebisaitidelt</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -247,7 +246,6 @@
 <translation id="2779651927720337254">ebaõnnestus</translation>
 <translation id="2781151931089541271">Jäänud on 1 sekund</translation>
 <translation id="2784212955220061919">Lihtsustatud režiimis laadib Chrome lehti kiiremini ja kasutab kuni 60 protsenti vähem andmemahtu. Google'i pilvetehnoloogia optimeerib külastatavaid lehti.</translation>
-<translation id="2785336755839207516">Olete desinstallinud rakenduse <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Kuvatud on salvestatud paroolid ja paroolivalikud</translation>
 <translation id="2810645512293415242">Lihtsustatud leht andmemahu säästmiseks ja laadimise kiirendamiseks.</translation>
 <translation id="281504910091592009">Vaadake ja hallake salvestatud paroole oma <ph name="BEGIN_LINK" />Google'i kontol<ph name="END_LINK" /></translation>
@@ -373,7 +371,6 @@
 <translation id="3789841737615482174">Installi</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Halda</translation>
-<translation id="3814315701645566481">Kas soovite kustutada aadressiga <ph name="URL" /> seotud andmed?</translation>
 <translation id="3819178904835489326">Tuvastati <ph name="NUMBER_OF_DOWNLOADS" /> allalaadimist</translation>
 <translation id="3819562311292413223">Teile soovitatud artiklite allalaadimine</translation>
 <translation id="3822502789641063741">Kas tühj. saidi salvestusruum?</translation>
