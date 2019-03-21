@@ -10,20 +10,15 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 
 namespace extensions {
 
 namespace {
-
-const int kSecondsToWaitForWebContentsLoad = 30;
 
 std::unique_ptr<content::WebContents> WebContentsCreateWrapper(
     Profile* profile) {
@@ -58,9 +53,9 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
       uninstaller_(
           std::make_unique<BookmarkAppUninstaller>(profile_, registrar_)),
       extension_ids_map_(profile->GetPrefs()),
+      url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
-      task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)),
-      timer_(std::make_unique<base::OneShotTimer>()) {}
+      task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
 
 PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 
@@ -120,11 +115,6 @@ void PendingBookmarkAppManager::SetFactoriesForTesting(
 void PendingBookmarkAppManager::SetUninstallerForTesting(
     std::unique_ptr<BookmarkAppUninstaller> uninstaller) {
   uninstaller_ = std::move(uninstaller);
-}
-
-void PendingBookmarkAppManager::SetTimerForTesting(
-    std::unique_ptr<base::OneShotTimer> timer) {
-  timer_ = std::move(timer);
 }
 
 base::Optional<bool> PendingBookmarkAppManager::IsExtensionPresentAndInstalled(
@@ -190,16 +180,11 @@ void PendingBookmarkAppManager::StartInstallationTask(
   current_task_and_callback_ = std::move(task);
 
   CreateWebContentsIfNecessary();
-  Observe(web_contents_.get());
 
-  content::NavigationController::LoadURLParams load_params(
-      current_task_and_callback_->task->app_info().url);
-  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
-  web_contents_->GetController().LoadURLWithParams(load_params);
-  timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kSecondsToWaitForWebContentsLoad),
-      base::BindOnce(&PendingBookmarkAppManager::OnWebContentsLoadTimedOut,
-                     weak_ptr_factory_.GetWeakPtr()));
+  url_loader_->LoadUrl(current_task_and_callback_->task->app_info().url,
+                       web_contents_.get(),
+                       base::BindOnce(&PendingBookmarkAppManager::OnUrlLoaded,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
@@ -210,26 +195,34 @@ void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
   BookmarkAppInstallationTask::CreateTabHelpers(web_contents_.get());
 }
 
+void PendingBookmarkAppManager::OnUrlLoaded(
+    web_app::WebAppUrlLoader::Result result) {
+  if (result != web_app::WebAppUrlLoader::Result::kUrlLoaded) {
+    CurrentInstallationFinished(base::nullopt);
+    return;
+  }
+
+  current_task_and_callback_->task->Install(
+      web_contents_.get(),
+      base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
+                     // Safe because the installation task will not run its
+                     // callback after being deleted and this class owns the
+                     // task.
+                     base::Unretained(this)));
+}
+
 void PendingBookmarkAppManager::OnInstalled(
     BookmarkAppInstallationTask::Result result) {
   CurrentInstallationFinished(result.app_id);
 }
 
-void PendingBookmarkAppManager::OnWebContentsLoadTimedOut() {
-  web_contents_->Stop();
-  LOG(ERROR) << "Error installing "
-             << current_task_and_callback_->task->app_info().url.spec();
-  LOG(ERROR) << "  page took too long to load.";
-  Observe(nullptr);
-  CurrentInstallationFinished(base::nullopt);
-}
-
 void PendingBookmarkAppManager::CurrentInstallationFinished(
     const base::Optional<std::string>& app_id) {
-  // Post a task to avoid reentrancy issues e.g. adding a WebContentsObserver
-  // while a previous observer call is being executed. Post a task before
+  // Post a task to avoid InstallableManager crashing and do so before
   // running the callback in case the callback tries to install another
   // app.
+  // TODO(crbug.com/943848): Run next installation synchronously once
+  // InstallableManager is fixed.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
@@ -243,49 +236,6 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
   task_and_callback.swap(current_task_and_callback_);
   std::move(task_and_callback->callback)
       .Run(task_and_callback->task->app_info().url, install_result_code);
-}
-
-void PendingBookmarkAppManager::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  timer_->Stop();
-  if (web_contents_->GetMainFrame() != render_frame_host) {
-    return;
-  }
-
-  if (validated_url != current_task_and_callback_->task->app_info().url) {
-    LOG(ERROR) << "Error installing "
-               << current_task_and_callback_->task->app_info().url.spec();
-    LOG(ERROR) << "  page redirected to " << validated_url.spec();
-    CurrentInstallationFinished(base::nullopt);
-    return;
-  }
-
-  Observe(nullptr);
-  current_task_and_callback_->task->Install(
-      web_contents_.get(),
-      base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
-                     // Safe because the installation task will not run its
-                     // callback after being deleted and this class owns the
-                     // task.
-                     base::Unretained(this)));
-}
-
-void PendingBookmarkAppManager::DidFailLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
-  timer_->Stop();
-  if (web_contents_->GetMainFrame() != render_frame_host) {
-    return;
-  }
-
-  LOG(ERROR) << "Error installing "
-             << current_task_and_callback_->task->app_info().url.spec();
-  LOG(ERROR) << "  page failed to load.";
-  Observe(nullptr);
-  CurrentInstallationFinished(base::nullopt);
 }
 
 }  // namespace extensions
