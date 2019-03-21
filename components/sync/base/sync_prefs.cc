@@ -201,9 +201,8 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  pref_service_->ClearPref(prefs::kSyncCacheGuid);
-  pref_service_->ClearPref(prefs::kSyncBirthday);
-  pref_service_->ClearPref(prefs::kSyncBagOfChips);
+  ClearDirectoryConsistencyPreferences();
+
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncPollIntervalSeconds);
@@ -222,6 +221,13 @@ void SyncPrefs::ClearPreferences() {
   // enable Sync again, they start off with their previous settings by default.
   // We do however require going through first-time setup again.
   pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
+}
+
+void SyncPrefs::ClearDirectoryConsistencyPreferences() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->ClearPref(prefs::kSyncCacheGuid);
+  pref_service_->ClearPref(prefs::kSyncBirthday);
+  pref_service_->ClearPref(prefs::kSyncBagOfChips);
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {

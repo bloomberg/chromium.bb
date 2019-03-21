@@ -77,6 +77,13 @@ class SyncPrefs : public CryptoSyncPrefs,
   // types.
   void ClearPreferences();
 
+  // Clears only the subset of preferences that are redundant with the sync
+  // directory and used only for verifying consistency with prefs.
+  // TODO(crbug.com/923285): Remove this function and instead rely solely on
+  // ClearPreferences() once investigations are finalized are we understand the
+  // source of discrepancies for UMA Sync.DirectoryVsPrefsConsistency.
+  void ClearDirectoryConsistencyPreferences();
+
   // Getters and setters for global sync prefs.
 
   bool IsFirstSetupComplete() const;
