@@ -92,8 +92,8 @@ class MODULES_EXPORT DOMFileSystem final
                     FileWriterCallbacks::SuccessCallback,
                     FileWriterCallbacks::ErrorCallback);
   void CreateFile(const FileEntry*,
-                  SnapshotFileCallback::OnDidCreateSnapshotFileCallback*,
-                  ErrorCallbackBase*);
+                  SnapshotFileCallback::SuccessCallback,
+                  SnapshotFileCallback::ErrorCallback);
 
   // Schedule a callback. This should not cross threads (should be called on the
   // same context thread).
