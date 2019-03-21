@@ -1090,6 +1090,7 @@ def _GetRunSkylabSuiteArgs(
   # HACK(pwang): Delete this once better solution is out.
   board = board.replace('-arcnext', '')
   board = board.replace('-arcvm', '')
+  board = board.replace('-kernelnext', '')
   args = ['--build', build, '--board', board]
 
   if model:
@@ -1440,6 +1441,7 @@ def _GetRunSuiteArgs(
   # HACK(pwang): Delete this once better solution is out.
   board = board.replace('-arcnext', '')
   board = board.replace('-arcvm', '')
+  board = board.replace('-kernelnext', '')
   args = ['--build', build, '--board', board]
 
   if model:
