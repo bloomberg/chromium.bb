@@ -446,6 +446,12 @@ Additional details:
   <message name="IDS_POLICY_CONFLICT_DIFF_VALUE" desc="Text explaining that a policy had conflicting sources and values.">
     Warning: More than one source with conflicting values is present for this policy!
   </message>
+  <message name="IDS_POLICY_MIGRATED_OLD_POLICY" desc="Text explaining that a policy is deprecated, and that admins should use the new policy instead">
+    This policy is deprecated. You should use the <ph name="NEW_POLICY">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy instead.
+  </message>
+  <message name="IDS_POLICY_MIGRATED_NEW_POLICY" desc="Text explaining that the policy value was automatically copied from a deprecated policy's value">
+    This policy was automatically copied from the deprecated <ph name="OLD_POLICY">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy. You should use this policy instead.
+  </message>
   <message name="IDS_POLICY_BLOCKED" desc="Text explaining that a policy is blocked, therefore ignored.">
     This policy is blocked, its value will be ignored.
   </message>
