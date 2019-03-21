@@ -196,7 +196,7 @@ TEST_F(AppServiceImplTest, PubSub) {
     pub0.load_icon_s_key = "-";
     pub1.load_icon_s_key = "-";
     pub2.load_icon_s_key = "-";
-    auto icon_key = apps::mojom::IconKey::New(app_type, 0, "o", 0);
+    auto icon_key = apps::mojom::IconKey::New(app_type, 0, "o", 0, 0);
     constexpr bool allow_placeholder_icon = false;
     impl.LoadIcon(
         std::move(icon_key), apps::mojom::IconCompression::kUncompressed,

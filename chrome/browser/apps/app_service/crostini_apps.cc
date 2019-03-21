@@ -87,11 +87,11 @@ void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                          static_cast<IconEffects>(icon_key->icon_effects)));
       return;
 
-    } else if ((icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
-      int resource_id = static_cast<int>(icon_key->u_key);
+    } else if (icon_key->resource_id !=
+               apps::mojom::IconKey::kInvalidResourceId) {
       constexpr bool is_placeholder_icon = false;
-      LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                           is_placeholder_icon,
+      LoadIconFromResource(icon_compression, size_hint_in_dip,
+                           icon_key->resource_id, is_placeholder_icon,
                            static_cast<IconEffects>(icon_key->icon_effects),
                            std::move(callback));
       return;
@@ -233,8 +233,8 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // should be showable even before the user has installed their first Crostini
   // app and before bringing up an Crostini VM for the first time.
   if (app_id == crostini::kCrostiniTerminalId) {
-    return apps::mojom::IconKey::New(apps::mojom::AppType::kCrostini,
-                                     IDR_LOGO_CROSTINI_TERMINAL, std::string(),
+    return apps::mojom::IconKey::New(apps::mojom::AppType::kCrostini, 0,
+                                     std::string(), IDR_LOGO_CROSTINI_TERMINAL,
                                      icon_effects);
   }
 

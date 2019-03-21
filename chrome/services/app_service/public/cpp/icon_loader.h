@@ -79,6 +79,7 @@ class IconLoader {
     apps::mojom::AppType app_type_;
     std::string s_key_;
     uint64_t u_key_;
+    int32_t resource_id_;
     uint32_t icon_effects_;
     // Other fields.
     apps::mojom::IconCompression icon_compression_;
@@ -89,6 +90,8 @@ class IconLoader {
         apps::mojom::IconCompression icon_compression,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon);
+
+    Key(const Key& other);
 
     bool operator<(const Key& that) const;
   };

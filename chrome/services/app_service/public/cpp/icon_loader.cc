@@ -25,10 +25,13 @@ IconLoader::Key::Key(const apps::mojom::IconKey& icon_key,
     : app_type_(icon_key.app_type),
       s_key_(icon_key.s_key),
       u_key_(icon_key.u_key),
+      resource_id_(icon_key.resource_id),
       icon_effects_(icon_key.icon_effects),
       icon_compression_(icon_compression),
       size_hint_in_dip_(size_hint_in_dip),
       allow_placeholder_icon_(allow_placeholder_icon) {}
+
+IconLoader::Key::Key(const Key& other) = default;
 
 bool IconLoader::Key::operator<(const Key& that) const {
   if (this->app_type_ != that.app_type_) {
@@ -36,6 +39,9 @@ bool IconLoader::Key::operator<(const Key& that) const {
   }
   if (this->u_key_ != that.u_key_) {
     return this->u_key_ < that.u_key_;
+  }
+  if (this->resource_id_ != that.resource_id_) {
+    return this->resource_id_ < that.resource_id_;
   }
   if (this->icon_effects_ != that.icon_effects_) {
     return this->icon_effects_ < that.icon_effects_;
