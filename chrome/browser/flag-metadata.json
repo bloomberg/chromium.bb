@@ -989,7 +989,7 @@
   },
   {
     "name": "enable-credit-card-assist",
-    // "owners": [ "your-team" ],
+    "owners": [ "ftirelo", "gogerald" ],
     "expiry_milestone": 76
   },
   {
