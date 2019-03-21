@@ -87,8 +87,12 @@ DirectoryEntrySync* DirectoryEntrySync::getDirectory(
 
 void DirectoryEntrySync::removeRecursively(ExceptionState& exception_state) {
   auto* sync_helper = MakeGarbageCollected<VoidCallbacksSyncHelper>();
-  file_system_->RemoveRecursively(this, nullptr,
-                                  sync_helper->GetErrorCallback(),
+
+  auto error_callback_wrapper = WTF::Bind(&VoidCallbacksSyncHelper::OnError,
+                                          WrapPersistentIfNeeded(sync_helper));
+
+  file_system_->RemoveRecursively(this, VoidCallbacks::SuccessCallback(),
+                                  std::move(error_callback_wrapper),
                                   DOMFileSystemBase::kSynchronous);
   sync_helper->GetResultOrThrow(exception_state);
 }

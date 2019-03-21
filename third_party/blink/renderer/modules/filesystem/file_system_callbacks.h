@@ -392,6 +392,10 @@ class SnapshotFileCallback final : public SnapshotFileCallbackBase,
 
 class VoidCallbacks final : public FileSystemCallbacksBase {
  public:
+  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
+  // Remove it when all classes have switched to simple success/error callbacks
+  // implementation, and there is no reference to it in sync_callback_helper.h
+  // anymore.
   class OnDidSucceedCallback
       : public GarbageCollectedFinalized<OnDidSucceedCallback> {
    public:
@@ -403,35 +407,11 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
     OnDidSucceedCallback() = default;
   };
 
-  class OnDidSucceedV8Impl : public OnDidSucceedCallback {
-   public:
-    static OnDidSucceedV8Impl* Create(V8VoidCallback* callback) {
-      return callback ? MakeGarbageCollected<OnDidSucceedV8Impl>(callback)
-                      : nullptr;
-    }
+  using SuccessCallback = base::OnceCallback<void()>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
 
-    OnDidSucceedV8Impl(V8VoidCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-    void Trace(blink::Visitor*) override;
-    void OnSuccess(ExecutionContext* dummy_arg_for_sync_helper) override;
-
-   private:
-    Member<V8PersistentCallbackInterface<V8VoidCallback>> callback_;
-  };
-
-  class OnDidSucceedPromiseImpl : public OnDidSucceedCallback {
-   public:
-    OnDidSucceedPromiseImpl(ScriptPromiseResolver*);
-    void Trace(Visitor*) override;
-    void OnSuccess(ExecutionContext*) override;
-
-   private:
-    Member<ScriptPromiseResolver> resolver_;
-  };
-
-  VoidCallbacks(OnDidSucceedCallback*,
-                ErrorCallbackBase*,
+  VoidCallbacks(SuccessCallback,
+                ErrorCallback,
                 ExecutionContext*,
                 DOMFileSystemBase*);
 
@@ -442,7 +422,8 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  Persistent<OnDidSucceedCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
 };
 
 }  // namespace blink

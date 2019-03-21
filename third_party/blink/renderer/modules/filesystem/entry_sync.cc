@@ -100,7 +100,12 @@ EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
 
 void EntrySync::remove(ExceptionState& exception_state) const {
   auto* sync_helper = MakeGarbageCollected<VoidCallbacksSyncHelper>();
-  file_system_->Remove(this, nullptr, sync_helper->GetErrorCallback(),
+
+  auto error_callback_wrapper = WTF::Bind(&VoidCallbacksSyncHelper::OnError,
+                                          WrapPersistentIfNeeded(sync_helper));
+
+  file_system_->Remove(this, VoidCallbacks::SuccessCallback(),
+                       std::move(error_callback_wrapper),
                        DOMFileSystemBase::kSynchronous);
   sync_helper->GetResultOrThrow(exception_state);
 }

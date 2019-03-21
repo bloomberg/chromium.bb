@@ -62,10 +62,13 @@ ScriptPromise FileSystemBaseHandle::copyTo(ScriptState* script_state,
 ScriptPromise FileSystemBaseHandle::remove(ScriptState* script_state) {
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  filesystem()->Remove(
-      this,
-      MakeGarbageCollected<VoidCallbacks::OnDidSucceedPromiseImpl>(resolver),
-      MakeGarbageCollected<PromiseErrorCallback>(resolver));
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::VoidSuccessPromise(resolver);
+  auto error_callback_wrapper = AsyncCallbackHelper::ErrorPromise(resolver);
+
+  filesystem()->Remove(this, std::move(success_callback_wrapper),
+                       std::move(error_callback_wrapper));
   return result;
 }
 

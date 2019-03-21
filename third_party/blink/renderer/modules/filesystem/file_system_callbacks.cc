@@ -368,48 +368,28 @@ void SnapshotFileCallback::DidFail(base::File::Error error) {
 
 // VoidCallbacks --------------------------------------------------------------
 
-void VoidCallbacks::OnDidSucceedV8Impl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(callback_);
-  OnDidSucceedCallback::Trace(visitor);
-}
-
-void VoidCallbacks::OnDidSucceedV8Impl::OnSuccess(
-    ExecutionContext* dummy_arg_for_sync_helper) {
-  callback_->InvokeAndReportException(nullptr);
-}
-
-VoidCallbacks::OnDidSucceedPromiseImpl::OnDidSucceedPromiseImpl(
-    ScriptPromiseResolver* resolver)
-    : resolver_(resolver) {}
-
-void VoidCallbacks::OnDidSucceedPromiseImpl::Trace(Visitor* visitor) {
-  OnDidSucceedCallback::Trace(visitor);
-  visitor->Trace(resolver_);
-}
-
-void VoidCallbacks::OnDidSucceedPromiseImpl::OnSuccess(ExecutionContext*) {
-  resolver_->Resolve();
-}
-
-VoidCallbacks::VoidCallbacks(OnDidSucceedCallback* success_callback,
-                             ErrorCallbackBase* error_callback,
+VoidCallbacks::VoidCallbacks(SuccessCallback success_callback,
+                             ErrorCallback error_callback,
                              ExecutionContext* context,
                              DOMFileSystemBase* file_system)
-    : FileSystemCallbacksBase(error_callback, file_system, context),
-      success_callback_(success_callback) {}
+    : FileSystemCallbacksBase(/*error_callback =*/nullptr,
+                              file_system,
+                              context),
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 void VoidCallbacks::DidSucceed() {
   if (!success_callback_)
     return;
 
-  success_callback_.Release()->OnSuccess(execution_context_.Get());
+  std::move(success_callback_).Run();
 }
 
 void VoidCallbacks::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 }  // namespace blink

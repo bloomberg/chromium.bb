@@ -69,6 +69,26 @@ class AsyncCallbackHelper {
         },
         WrapPersistentIfNeeded(resolver));
   }
+
+  // The two methods below are not templetized, to be used exclusively for
+  // VoidCallbacks.
+  static base::OnceCallback<void()> VoidSuccessCallback(
+      V8VoidCallback* success_callback) {
+    auto success_callback_wrapper = WTF::Bind(
+        [](V8PersistentCallbackInterface<V8VoidCallback>* persistent_callback) {
+          persistent_callback->InvokeAndReportException(nullptr);
+        },
+        WrapPersistentIfNeeded(
+            ToV8PersistentCallbackInterface(success_callback)));
+    return success_callback_wrapper;
+  }
+
+  static base::OnceCallback<void()> VoidSuccessPromise(
+      ScriptPromiseResolver* resolver) {
+    return WTF::Bind(
+        [](ScriptPromiseResolver* resolver) { resolver->Resolve(); },
+        WrapPersistentIfNeeded(resolver));
+  }
 };
 
 }  // namespace blink
