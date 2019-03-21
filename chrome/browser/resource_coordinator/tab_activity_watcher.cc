@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/window_activity_watcher.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -415,7 +414,7 @@ class TabActivityWatcher::WebContentsData
 
     // For window features.
     tab_ranker::WindowFeatures window =
-        WindowActivityWatcher::CreateWindowFeatures(browser);
+        TabMetricsLogger::CreateWindowFeatures(browser);
     tab.window_is_active = window.is_active;
     tab.window_show_state = window.show_state;
     tab.window_tab_count = window.tab_count;
@@ -512,10 +511,6 @@ TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
       browser_tab_strip_tracker_(this, this, this) {
   browser_tab_strip_tracker_.Init();
-
-  // TabMetrics UKMs reference WindowMetrics UKM entries, so ensure the
-  // WindowActivityWatcher is initialized.
-  WindowActivityWatcher::GetInstance();
 }
 
 TabActivityWatcher::~TabActivityWatcher() = default;

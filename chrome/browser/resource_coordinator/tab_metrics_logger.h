@@ -22,6 +22,7 @@ class WebContents;
 
 namespace tab_ranker {
 struct TabFeatures;
+struct WindowFeatures;
 }  // namespace tab_ranker
 
 // Logs metrics for a tab and its WebContents when requested.
@@ -99,6 +100,10 @@ class TabMetricsLogger {
       const Browser* browser,
       const TabMetrics& tab_metrics,
       base::TimeDelta inactive_duration);
+
+  // Returns a populated WindowFeatures for the browser.
+  static tab_ranker::WindowFeatures CreateWindowFeatures(
+      const Browser* browser);
 
   void set_query_id(int64_t query_id) { query_id_ = query_id; }
 
