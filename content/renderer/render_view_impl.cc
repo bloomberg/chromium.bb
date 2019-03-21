@@ -464,22 +464,7 @@ cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                                const mojom::CreateViewParams& params)
-    : render_widget_([compositor_deps, &params] {
-        // TODO(https://crbug.com/545684): This is a transitor hack
-        // until the creation of RenderWidget is taken out of the constructor.
-        auto render_widget = RenderWidget::CreateForFrame(
-            params.main_frame_widget_routing_id, compositor_deps,
-            params.visual_properties.screen_info,
-            params.visual_properties.display_mode,
-            /*is_frozen=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
-            params.hidden, params.never_visible,
-            /*widget_request=*/nullptr);
-        // The lifetime |render_widget_| is handled manually for the
-        // mainframe widget. The matching Release() is in Initialize().
-        render_widget->AddRef();
-        return render_widget.get();
-      }()),
-      routing_id_(params.view_id),
+    : routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
       webkit_preferences_(params.web_preferences),
@@ -487,21 +472,24 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       weak_ptr_factory_(this) {
   DCHECK(!session_storage_namespace_id_.empty())
       << "Session storage namespace must be populated.";
+  // Please put all logic in RenderViewImpl::Initialize().
+}
 
+void RenderViewImpl::Initialize(
+    RenderWidget* render_widget,
+    mojom::CreateViewParamsPtr params,
+    RenderWidget::ShowCallback show_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // RenderView used to inherit from RenderWidget. Creating a delegate
   // interface and explicitly passing ownership of ourselves to the
   // RenderWidget preserves the lifetime semantics. This is a stepping
   // stone to having RenderWidget creation taken out of the RenderViewImpl
   // constructor. See the corresponding explicit reset() of the delegate
   // in the ~RenderWidget(). Also, I hate inheritance.
+  render_widget_ = render_widget;
   GetWidget()->set_delegate(base::WrapUnique(this));
   RenderThread::Get()->AddRoute(routing_id_, this);
-}
 
-void RenderViewImpl::Initialize(
-    mojom::CreateViewParamsPtr params,
-    RenderWidget::ShowCallback show_callback,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if defined(OS_ANDROID)
   bool has_show_callback = !!show_callback;
 #endif
@@ -515,13 +503,13 @@ void RenderViewImpl::Initialize(
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
 
-  // The GetWidget->Init() call causes an AddRef() to itself meaning that
-  // IPC system has taken conceptual ownership of the object. RenderView
-  // can and must now manually Release() the RenderWidget to balance out the
-  // extra refcount it had been using to preserve the RenderWidget from
-  // construction to initialization.
+  // Note: The GetWidget->Init() call causes an AddRef() to itself meaning that
+  // IPC system has taken conceptual ownership of the object. Though it is
+  // tempting to have RenderView retain the RenderWidget(), this lifecycle
+  // only requires single ownership and adding scoped_refptr<RenderWidget>
+  // muddies this unnecessarily -- especially since this RenderWidget should
+  // ultimately be own by the main frame.
   GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
-  GetWidget()->Release();
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -1040,13 +1028,27 @@ RenderViewImpl* RenderViewImpl::Create(
   DCHECK(params->view_id != MSG_ROUTING_NONE);
   DCHECK(params->main_frame_widget_routing_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view;
-  if (g_create_render_view_impl)
-    render_view = g_create_render_view_impl(compositor_deps, *params);
-  else
-    render_view = new RenderViewImpl(compositor_deps, *params);
 
-  render_view->Initialize(std::move(params), std::move(show_callback),
-                          std::move(task_runner));
+  auto render_widget = RenderWidget::CreateForFrame(
+      params->main_frame_widget_routing_id, compositor_deps,
+      params->visual_properties.screen_info,
+      params->visual_properties.display_mode,
+      /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
+      params->hidden, params->never_visible,
+      /*widget_request=*/nullptr);
+
+  if (g_create_render_view_impl) {
+    render_view = g_create_render_view_impl(compositor_deps, *params);
+  } else {
+    render_view = new RenderViewImpl(compositor_deps, *params);
+  }
+
+  // After this call, the |render_widget| will be self-owning.
+  //
+  // TODO(http://crbug.com/419087): This refcoutning is messy. get the
+  // RenderWidget initialization out of the render_view::Initialize() function.
+  render_view->Initialize(render_widget.get(), std::move(params),
+                          std::move(show_callback), std::move(task_runner));
   return render_view;
 }
 
