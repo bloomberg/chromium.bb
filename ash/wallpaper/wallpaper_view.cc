@@ -107,7 +107,8 @@ SkColor GetWallpaperDarkenColor() {
 ////////////////////////////////////////////////////////////////////////////////
 // WallpaperView, public:
 
-WallpaperView::WallpaperView() {
+WallpaperView::WallpaperView(int blur, float opacity)
+    : repaint_blur_(blur), repaint_opacity_(opacity) {
   set_context_menu_controller(this);
 }
 
@@ -266,6 +267,8 @@ void WallpaperView::DrawWallpaper(const gfx::ImageSkia& wallpaper,
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int container_id,
+                                     int blur,
+                                     float opacity,
                                      WallpaperView** out_wallpaper_view) {
   WallpaperController* controller = Shell::Get()->wallpaper_controller();
 
@@ -277,7 +280,8 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window->GetChildById(container_id);
   wallpaper_widget->Init(params);
-  WallpaperView* wallpaper_view = new WallpaperView();  // Owned by views.
+  // Owned by views.
+  WallpaperView* wallpaper_view = new WallpaperView(blur, opacity);
   wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
