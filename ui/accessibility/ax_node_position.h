@@ -18,6 +18,8 @@
 
 namespace ui {
 
+// AXNodePosition includes implementations of AXPosition methods which require
+// knowledge of the AXPosition AXNodeType (which is unknown by AXPosition).
 class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
  public:
   AXNodePosition();
@@ -38,7 +40,6 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   int AnchorIndexInParent() const override;
   void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
   AXNode* GetNodeInTree(AXTreeID tree_id, int32_t node_id) const override;
-  int MaxTextOffset() const override;
   bool IsInWhiteSpace() const override;
   std::vector<int32_t> GetWordStartOffsets() const override;
   std::vector<int32_t> GetWordEndOffsets() const override;

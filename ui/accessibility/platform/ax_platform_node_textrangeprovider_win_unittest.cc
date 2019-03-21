@@ -328,8 +328,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       TextPatternRangeEndpoint_Start, &result));
   EXPECT_EQ(1, result);
 
-  // Compare the endpoints of "some text" and "more text". "more text" comes
-  // after "some text", so the endpoints of "some text" precede those of
+  // Compare the endpoints of "some text" and "more text". The position at the
+  // end of "some text" is logically equivalent to the position at the start of
   // "more text".
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
       TextPatternRangeEndpoint_Start, more_text_range_provider.Get(),
@@ -339,13 +339,15 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
       TextPatternRangeEndpoint_End, more_text_range_provider.Get(),
       TextPatternRangeEndpoint_Start, &result));
-  EXPECT_EQ(-1, result);
+  EXPECT_EQ(0, result);
 
-  // Compare the endpoints of "some text" with those of the entire document.
+  // Compare the endpoints of "some text" with those of the entire document. The
+  // position at the start of "some text" is logically equivalent to the
+  // position at the start of the document.
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
       TextPatternRangeEndpoint_Start, document_text_range_provider.Get(),
       TextPatternRangeEndpoint_Start, &result));
-  EXPECT_EQ(1, result);
+  EXPECT_EQ(0, result);
 
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
       TextPatternRangeEndpoint_End, document_text_range_provider.Get(),

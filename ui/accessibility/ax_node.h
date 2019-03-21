@@ -69,7 +69,11 @@ class AX_EXPORT AXNode final {
   int GetUnignoredIndexInParent() const;
 
   // Returns true if the node has any of the text related roles.
-  bool IsTextNode() const;
+  bool IsText() const;
+
+  // Returns true if the node has any line break related roles or is the child a
+  // node with line break related roles.
+  bool IsLineBreak() const;
 
   // Set the node's accessibility data. This may be done during initialization
   // or later when the node data changes.

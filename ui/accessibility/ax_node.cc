@@ -86,10 +86,16 @@ int AXNode::GetUnignoredIndexInParent() const {
   return 0;
 }
 
-bool AXNode::IsTextNode() const {
+bool AXNode::IsText() const {
   return data().role == ax::mojom::Role::kStaticText ||
          data().role == ax::mojom::Role::kLineBreak ||
          data().role == ax::mojom::Role::kInlineTextBox;
+}
+
+bool AXNode::IsLineBreak() const {
+  return data().role == ax::mojom::Role::kLineBreak ||
+         (IsText() && parent() &&
+          parent()->data().role == ax::mojom::Role::kLineBreak);
 }
 
 void AXNode::SetData(const AXNodeData& src) {

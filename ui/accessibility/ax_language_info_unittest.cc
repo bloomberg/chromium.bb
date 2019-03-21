@@ -363,21 +363,21 @@ TEST(AXLanguageInfoTest, LanguageDetectionBasic) {
 
   {
     AXNode* node3 = tree.GetFromId(3);
-    EXPECT_TRUE(node3->IsTextNode());
+    EXPECT_TRUE(node3->IsText());
     EXPECT_NE(node3->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node3->GetLanguage(), "fr");
   }
 
   {
     AXNode* node4 = tree.GetFromId(4);
-    EXPECT_TRUE(node4->IsTextNode());
+    EXPECT_TRUE(node4->IsText());
     EXPECT_NE(node4->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node4->GetLanguage(), "en");
   }
 
   {
     AXNode* node5 = tree.GetFromId(5);
-    EXPECT_TRUE(node5->IsTextNode());
+    EXPECT_TRUE(node5->IsText());
     EXPECT_NE(node5->GetLanguageInfo(), nullptr);
     EXPECT_EQ(node5->GetLanguage(), "de");
   }
@@ -476,7 +476,7 @@ TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
 
   {
     AXNode* node3 = tree.GetFromId(3);
-    EXPECT_TRUE(node3->IsTextNode());
+    EXPECT_TRUE(node3->IsText());
     ASSERT_NE(node3->GetLanguageInfo(), nullptr);
     ASSERT_GT(node3->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
     ASSERT_EQ(node3->GetLanguageInfo()->detected_languages[0], "fr");
@@ -486,7 +486,7 @@ TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
 
   {
     AXNode* node4 = tree.GetFromId(4);
-    EXPECT_TRUE(node4->IsTextNode());
+    EXPECT_TRUE(node4->IsText());
     ASSERT_NE(node4->GetLanguageInfo(), nullptr);
     ASSERT_GT(node4->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
     ASSERT_EQ(node4->GetLanguageInfo()->detected_languages[0], "en");
@@ -496,7 +496,7 @@ TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
 
   {
     AXNode* node5 = tree.GetFromId(5);
-    EXPECT_TRUE(node5->IsTextNode());
+    EXPECT_TRUE(node5->IsText());
     ASSERT_NE(node5->GetLanguageInfo(), nullptr);
     ASSERT_GT(node5->GetLanguageInfo()->detected_languages.size(), (unsigned)0);
     ASSERT_EQ(node5->GetLanguageInfo()->detected_languages[0], "de");
