@@ -36,7 +36,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
-#import "ios/chrome/browser/ui/table_view/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -91,8 +91,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefChangeRegistrar _prefChangeRegistrarApplicationContext;
 
   // Updatable Items
-  SettingsDetailItem* _handoffDetailItem;
-  SettingsDetailItem* _sendUsageDetailItem;
+  TableViewDetailIconItem* _handoffDetailItem;
+  TableViewDetailIconItem* _sendUsageDetailItem;
   SettingsSwitchItem* _sendUsageToggleSwitchItem;
 }
 
@@ -299,11 +299,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return _sendUsageToggleSwitchItem;
 }
 
-- (SettingsDetailItem*)detailItemWithType:(NSInteger)type
-                                  titleId:(NSInteger)titleId
-                               detailText:(NSString*)detailText {
-  SettingsDetailItem* detailItem =
-      [[SettingsDetailItem alloc] initWithType:type];
+- (TableViewDetailIconItem*)detailItemWithType:(NSInteger)type
+                                       titleId:(NSInteger)titleId
+                                    detailText:(NSString*)detailText {
+  TableViewDetailIconItem* detailItem =
+      [[TableViewDetailIconItem alloc] initWithType:type];
   detailItem.text = l10n_util::GetNSString(titleId);
   detailItem.detailText = detailText;
   detailItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;

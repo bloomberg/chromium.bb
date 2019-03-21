@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -174,18 +174,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:noDetailTextItem
       toSectionWithIdentifier:SectionIdentifierText];
 
-  SettingsDetailItem* settingsDetailItem =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  settingsDetailItem.text = @"Settings cells";
-  settingsDetailItem.detailText = @"Short";
-  [model addItem:settingsDetailItem
-      toSectionWithIdentifier:SectionIdentifierText];
+  TableViewDetailIconItem* detailIconItem =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItem.text = @"Detail Icon Item Cell";
+  detailIconItem.iconImageName = @"settings_article_suggestions";
+  detailIconItem.detailText = @"Short";
+  [model addItem:detailIconItem toSectionWithIdentifier:SectionIdentifierText];
 
-  SettingsDetailItem* settingsDetailItemLong =
-      [[SettingsDetailItem alloc] initWithType:ItemTypeTextSettingsDetail];
-  settingsDetailItemLong.text = @"Very long text eating the other detail label";
-  settingsDetailItemLong.detailText = @"A bit less short";
-  [model addItem:settingsDetailItemLong
+  TableViewDetailIconItem* detailIconItemLong =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeTextSettingsDetail];
+  detailIconItemLong.text = @"Very long text eating the other detail label";
+  detailIconItemLong.detailText = @"A bit less short";
+  [model addItem:detailIconItemLong
       toSectionWithIdentifier:SectionIdentifierText];
 
   // SectionIdentifierSettings.

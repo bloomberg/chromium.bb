@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/table_view/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 
 #include <algorithm>
 
@@ -30,7 +30,7 @@ const CGFloat kMinTextWidthRatio = 0.75f;
 const CGFloat kMinDetailTextWidthRatio = 0.25f;
 }  // namespace
 
-@implementation SettingsDetailItem
+@implementation TableViewDetailIconItem
 
 @synthesize iconImageName = _iconImageName;
 @synthesize text = _text;
@@ -39,7 +39,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SettingsDetailCell class];
+    self.cellClass = [TableViewDetailIconCell class];
     _cellBackgroundColor = [UIColor whiteColor];
   }
   return self;
@@ -47,7 +47,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
 #pragma mark TableViewItem
 
-- (void)configureCell:(SettingsDetailCell*)cell
+- (void)configureCell:(TableViewDetailIconCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
@@ -64,9 +64,9 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
 @end
 
-#pragma mark - SettingsDetailCell
+#pragma mark - TableViewDetailIconCell
 
-@interface SettingsDetailCell ()
+@interface TableViewDetailIconCell ()
 
 // When they are activated, the labels are on one line.
 // They conflict with the accessibilityConstraints.
@@ -78,7 +78,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 
 @end
 
-@implementation SettingsDetailCell {
+@implementation TableViewDetailIconCell {
   UIImageView* _iconImageView;
   UILayoutGuide* _labelContainerGuide;
   NSLayoutConstraint* _iconHiddenConstraint;
