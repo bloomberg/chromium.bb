@@ -103,8 +103,8 @@ class Shell : public WebContentsDelegate,
       const gfx::Size& initial_size,
       scoped_refptr<SessionStorageNamespace> session_storage_namespace);
 
-  // Returns the Shell object corresponding to the given RenderViewHost.
-  static Shell* FromRenderViewHost(RenderViewHost* rvh);
+  // Returns the Shell object corresponding to the given WebContents.
+  static Shell* FromWebContents(WebContents* web_contents);
 
   // Returns the currently open windows.
   static std::vector<Shell*>& windows() { return windows_; }

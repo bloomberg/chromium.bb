@@ -14561,9 +14561,9 @@ class InnerWebContentsAttachTest
       // Need user gesture for 'beforeunload' to fire.
       PrepContentsForBeforeUnloadTest(web_contents);
       // Simulate user choosing to stay on the page after beforeunload fired.
-      SetShouldProceedOnBeforeUnload(
-          Shell::FromRenderViewHost(web_contents->GetRenderViewHost()),
-          true /* always_proceed */, proceed_through_beforeunload);
+      SetShouldProceedOnBeforeUnload(Shell::FromWebContents(web_contents),
+                                     true /* always_proceed */,
+                                     proceed_through_beforeunload);
       RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback =
           base::BindOnce(&PrepareFrameJob::OnPrepare, base::Unretained(this));
       original_render_frame_host->PrepareForInnerWebContentsAttach(
