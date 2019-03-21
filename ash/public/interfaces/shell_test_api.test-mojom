@@ -33,4 +33,9 @@ interface ShellTestApi {
 
   // Set the minimum velocity to cause fling gesture.
   SetMinFlingVelocity(float velocity);
+
+  // Runs the callback when the WindowTreeHost of the primary display is no
+  // longer holding pointer events. See
+  // |aura::WindowTreeHost::holding_pointer_moves_| for details.
+  WaitForNoPointerHoldLock() => ();
 };

@@ -248,6 +248,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // observers of the change.
   virtual void SetNativeWindowOcclusionState(Window::OcclusionState state);
 
+  bool holding_pointer_moves() const { return holding_pointer_moves_; }
+
  protected:
   friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.

@@ -4,6 +4,7 @@
 
 #include "ash/shell_test_api.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
@@ -16,13 +17,56 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/ws/window_service_owner.h"
+#include "base/run_loop.h"
 #include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ash {
+namespace {
+
+// Wait for a WindowTreeHost to no longer be holding pointer events.
+class PointerMoveLoopWaiter : public ui::CompositorObserver {
+ public:
+  explicit PointerMoveLoopWaiter(aura::WindowTreeHost* window_tree_host)
+      : window_tree_host_(window_tree_host) {
+    window_tree_host_->compositor()->AddObserver(this);
+  }
+
+  ~PointerMoveLoopWaiter() override {
+    window_tree_host_->compositor()->RemoveObserver(this);
+  }
+
+  void Wait() {
+    // Use a while loop as it's possible for releasing the lock to trigger
+    // processing events, which again grabs the lock.
+    while (window_tree_host_->holding_pointer_moves()) {
+      run_loop_ = std::make_unique<base::RunLoop>(
+          base::RunLoop::Type::kNestableTasksAllowed);
+      run_loop_->Run();
+      run_loop_.reset();
+    }
+  }
+
+  // ui::CompositorObserver:
+  void OnCompositingEnded(ui::Compositor* compositor) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+ private:
+  aura::WindowTreeHost* window_tree_host_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
+};
+
+}  // namespace
 
 ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
 
@@ -129,6 +173,15 @@ void ShellTestApi::AddRemoveDisplay() {
 
 void ShellTestApi::SetMinFlingVelocity(float velocity) {
   ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
+}
+
+void ShellTestApi::WaitForNoPointerHoldLock(
+    WaitForNoPointerHoldLockCallback callback) {
+  aura::WindowTreeHost* primary_host =
+      Shell::GetPrimaryRootWindowController()->GetHost();
+  if (primary_host->holding_pointer_moves())
+    PointerMoveLoopWaiter(primary_host).Wait();
+  std::move(callback).Run();
 }
 
 }  // namespace ash
