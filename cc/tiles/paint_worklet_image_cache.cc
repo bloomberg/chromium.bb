@@ -71,7 +71,8 @@ void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
   // slow Paint function.
   // TODO(xidachen): ensure that the canvas operations in the PaintRecord
   // matches the PaintGeneratedImage::Draw.
-  sk_sp<PaintRecord> record = painter_->Paint();
+  sk_sp<PaintRecord> record =
+      painter_->Paint(paint_image.paint_worklet_input());
   {
     base::AutoLock hold(records_lock_);
     // It is possible for two or more threads to both pass through the first

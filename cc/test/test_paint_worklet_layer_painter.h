@@ -10,12 +10,14 @@
 
 namespace cc {
 
+class PaintWorkletInput;
+
 class TestPaintWorkletLayerPainter : public PaintWorkletLayerPainter {
  public:
   TestPaintWorkletLayerPainter();
   ~TestPaintWorkletLayerPainter() override;
 
-  sk_sp<PaintRecord> Paint() override;
+  sk_sp<PaintRecord> Paint(PaintWorkletInput*) override;
 };
 
 }  // namespace cc
