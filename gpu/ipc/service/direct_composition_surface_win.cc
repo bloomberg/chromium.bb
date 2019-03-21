@@ -598,6 +598,8 @@ class DCLayerTree::SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
   Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
 
+  Microsoft::WRL::ComPtr<ID3D11Query> video_processor_blt_query_;
+
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };
 
@@ -761,8 +763,13 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
   }
 
   static crash_reporter::CrashKeyString<32> texture_size_key(
-      "video-texture-size");
+      "dynamic-texture-size");
   texture_size_key.Set(texture_size.ToString());
+
+  static crash_reporter::CrashKeyString<2> first_use_key(
+      "dynamic-texture-first-use");
+  bool first_use = !staging_texture_ || (staging_texture_size_ != texture_size);
+  first_use_key.Set(first_use ? "1" : "0");
 
   if (!staging_texture_ || (staging_texture_size_ != texture_size)) {
     staging_texture_.Reset();
@@ -792,10 +799,20 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
     DCHECK(staging_texture_);
     staging_texture_size_ = texture_size;
   }
+
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
   // TODO(crbug.com/890227): Temporary CHECK for debugging.
   CHECK(context);
+
+  static crash_reporter::CrashKeyString<2> in_use_key("dynamic-texture-in-use");
+  if (video_processor_blt_query_) {
+    BOOL result = FALSE;
+    HRESULT hr = context->GetData(video_processor_blt_query_.Get(), &result,
+                                  sizeof(BOOL), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+    in_use_key.Set(SUCCEEDED(hr) && result ? "0" : "1");
+  }
+
   D3D11_MAPPED_SUBRESOURCE mapped_resource;
   HRESULT hr = context->Map(staging_texture_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
                             0, &mapped_resource);
@@ -1454,6 +1471,20 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     if (FAILED(hr)) {
       DLOG(ERROR) << "VideoProcessorBlt failed with error 0x" << std::hex << hr;
       return false;
+    }
+
+    // TODO(crbug.com/890227): Temporary query for debugging.
+    D3D11_QUERY_DESC query_desc = {};
+    query_desc.Query = D3D11_QUERY_EVENT;
+    query_desc.MiscFlags = 0;
+    hr = d3d11_device_->CreateQuery(&query_desc, &video_processor_blt_query_);
+    if (SUCCEEDED(hr)) {
+      Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+      d3d11_device_->GetImmediateContext(&context);
+      DCHECK(context);
+      context->End(video_processor_blt_query_.Get());
+    } else {
+      DLOG(ERROR) << "CreateQuery failed with error 0x" << std::hex << hr;
     }
   }
 
