@@ -36,14 +36,14 @@ chrome.test.runTests([
   // Get the info for the tab that was automatically created.
   function testTabQueryInitial() {
     queryTabUtil({currentWindow: true}, function(tabs) {
-        chrome.test.assertEq(1, tabs.length);
-        tabProps.push({id: tabs[0].id, url: tabs[0].url});
-        chrome.test.succeed();
+      chrome.test.assertEq(1, tabs.length);
+      tabProps.push({id: tabs[0].id, url: tabs[0].url});
+      chrome.test.succeed();
     });
   },
   // Create a new tab.
   function testTabCreate1() {
-    var expectedUrl = 'chrome://newtab/';
+    var expectedUrl = 'chrome://version/';
     createTabUtil(expectedUrl, function(tabData) {
       chrome.test.assertEq(expectedUrl, tabData.url);
       tabProps.push(tabData);
