@@ -200,7 +200,7 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
-  if (!icon_key.is_null() && !icon_key->app_id.empty()) {
+  if (icon_key) {
     // Treat the Play Store as a special case, loading an icon defined by a
     // resource instead of asking the Android VM (or the cache of previous
     // responses from the Android VM). Presumably this is for bootstrapping:

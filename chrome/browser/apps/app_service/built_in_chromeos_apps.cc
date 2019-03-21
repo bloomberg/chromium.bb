@@ -39,7 +39,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   }
 
   app->icon_key = apps::mojom::IconKey::New(
-      apps::mojom::AppType::kBuiltIn, std::string(), 0,
+      apps::mojom::AppType::kBuiltIn, internal_app.app_id, 0,
       internal_app.icon_resource_id, apps::IconEffects::kNone);
 
   app->last_launch_time = base::Time();
@@ -117,7 +117,7 @@ void BuiltInChromeOsApps::LoadIcon(
     bool allow_placeholder_icon,
     LoadIconCallback callback) {
   constexpr bool is_placeholder_icon = false;
-  if (!icon_key.is_null() &&
+  if (icon_key &&
       (icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId)) {
     LoadIconFromResource(icon_compression, size_hint_in_dip,
                          icon_key->resource_id, is_placeholder_icon,
