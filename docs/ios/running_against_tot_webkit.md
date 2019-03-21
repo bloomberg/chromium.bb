@@ -61,7 +61,7 @@ ninja -C out/Debug-iphonesimulator webkit
 ```
 
 The WebKit build output can be found at
-`out/Debug-iphonesimulator/obj/ios/third_aparty/webkit/`.
+`out/Debug-iphonesimulator/obj/ios/third_party/webkit/`.
 
 ### Speeding up clean builds by building WebKit first
 
@@ -97,6 +97,6 @@ environment variable to the directory containing the WebKit build output.  This
 is usually easiest to do in the Xcode UI.
 
 ```
-DYLD_FRAMEWORK_PATH = /path/to/out/Debug-iphonesimulator/obj/ios/third_party/webkit/
+DYLD_FRAMEWORK_PATH = /path/to/out/Debug-iphonesimulator/obj/ios/third_party/webkit/Debug-iphonesimulator/
 ```
 
