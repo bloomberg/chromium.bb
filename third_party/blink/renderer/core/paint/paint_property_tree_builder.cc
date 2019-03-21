@@ -624,6 +624,10 @@ static bool NeedsTransform(const LayoutObject& object,
       object.StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden)
     return true;
 
+  // TODO(crbug.com/900241): Currently kDirectReasonsForTransformProperty
+  // includes all will-change compositing hints including opacity. This is
+  // needed to avoid creating/deleting transform nodes on start/end of an
+  // opacity animation. https://crbug.com/942681
   if (direct_compositing_reasons &
       CompositingReason::kDirectReasonsForTransformProperty)
     return true;
@@ -739,10 +743,18 @@ static bool NeedsClipPathClip(const LayoutObject& object) {
 static CompositingReasons CompositingReasonsForEffectProperty() {
   // TODO(crbug.com/900241): See the comment in compositing_reasons.h about
   // the bug for the reason of this.
-  return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-                 RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-             ? CompositingReason::kDirectReasonsForEffectProperty
-             : CompositingReason::kActiveOpacityAnimation;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    return CompositingReason::kDirectReasonsForEffectProperty;
+  }
+  // We also need to create effect node if the transform node is created for
+  // will-change to avoid raster invalidation (caused by otherwise a created/
+  // deleted effect node) when we start/stop a transform animation.
+  // https://crbug.com/942681
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    return CompositingReason::kDirectReasonsForEffectProperty |
+           CompositingReason::kWillChangeCompositingHint;
+  }
+  return CompositingReason::kActiveOpacityAnimation;
 }
 
 static bool NeedsEffect(const LayoutObject& object,
@@ -1037,10 +1049,18 @@ static bool NeedsLinkHighlightEffect(const LayoutObject& object) {
 static CompositingReasons CompositingReasonsForFilterProperty() {
   // TODO(crbug.com/900241): See the comment in compositing_reasons.h about
   // the bug for the reason of this.
-  return RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-                 RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-             ? CompositingReason::kDirectReasonsForFilterProperty
-             : CompositingReason::kActiveFilterAnimation;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    return CompositingReason::kDirectReasonsForFilterProperty;
+  }
+  // We also need to create filter node if the transform node is created for
+  // will-change to avoid raster invalidation (caused by otherwise a created/
+  // deleted filter node) when we start/stop a transform/opacity animation.
+  // https://crbug.com/942681
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    return CompositingReason::kDirectReasonsForFilterProperty |
+           CompositingReason::kWillChangeCompositingHint;
+  }
+  return CompositingReason::kActiveFilterAnimation;
 }
 
 static bool NeedsFilter(const LayoutObject& object,
@@ -1101,7 +1121,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // On the other hand, "B" should not be clipped because the overflow clip
       // is not in its containing block chain, but as the filter output will be
       // clipped, so a blurred "B" may still be invisible.
-      state.output_clip = context_.current.clip;
+      if (!state.filter.IsEmpty())
+        state.output_clip = context_.current.clip;
 
       // TODO(trchen): A filter may contain spatial operations such that an
       // output pixel may depend on an input pixel outside of the output clip.
@@ -1132,10 +1153,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
   if (properties_->Filter()) {
     context_.current_effect = properties_->Filter();
     // TODO(trchen): Change input clip to expansion hint once implemented.
-    const ClipPaintPropertyNode* input_clip =
-        properties_->Filter()->OutputClip();
-    context_.current.clip = context_.absolute_position.clip =
-        context_.fixed_position.clip = input_clip;
+    if (const auto* input_clip = properties_->Filter()->OutputClip()) {
+      DCHECK_EQ(input_clip, context_.current.clip);
+      context_.absolute_position.clip = context_.fixed_position.clip =
+          input_clip;
+    }
   }
 }
 

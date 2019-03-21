@@ -378,6 +378,11 @@ Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]
 Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [ Failure ]
 
+# Extra raster invalidation on start/end of animation. Caused by animation
+# element id namespaces
+crbug.com/900241 paint/invalidation/animation/opacity-animation.html [ Failure ]
+crbug.com/900241 paint/invalidation/animation/transform-animation.html [ Failure ]
+
 # These tests have additional hit test rects. These may correct and simply due
 # to different layerization decisions, but this needs investigation.
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Failure ]
