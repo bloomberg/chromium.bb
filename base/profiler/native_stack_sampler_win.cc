@@ -80,54 +80,63 @@ const TEB* GetThreadEnvironmentBlock(HANDLE thread_handle) {
   return basic_info.Teb;
 }
 
-#if defined(_WIN64)
 // If the value at |pointer| points to the original stack, rewrite it to point
 // to the corresponding location in the copied stack.
-void RewritePointerIfInOriginalStack(uintptr_t top,
-                                     uintptr_t bottom,
-                                     void* stack_copy,
-                                     const void** pointer) {
-  const auto value = reinterpret_cast<uintptr_t>(*pointer);
-  if (value >= bottom && value < top) {
-    *pointer = reinterpret_cast<const void*>(
-        static_cast<unsigned char*>(stack_copy) + (value - bottom));
-  }
-}
-#endif
+//
+// IMPORTANT NOTE: This function is invoked while the target thread is
+// suspended so it must not do any allocation from the default heap, including
+// indirectly via use of DCHECK/CHECK or other logging statements. Otherwise
+// this code can deadlock on heap locks in the default heap acquired by the
+// target thread before it was suspended.
+uintptr_t RewritePointerIfInOriginalStack(
+    const uintptr_t* original_stack_bottom,
+    const uintptr_t* original_stack_top,
+    const uintptr_t* stack_copy_bottom,
+    uintptr_t pointer) {
+  auto original_stack_bottom_uint =
+      reinterpret_cast<uintptr_t>(original_stack_bottom);
+  auto original_stack_top_uint =
+      reinterpret_cast<uintptr_t>(original_stack_top);
+  auto stack_copy_bottom_uint = reinterpret_cast<uintptr_t>(stack_copy_bottom);
 
-void CopyMemoryFromStack(void* to, const void* from, size_t length)
-    NO_SANITIZE("address") {
-#if defined(ADDRESS_SANITIZER)
-  // The following loop is an inlined version of memcpy. The code must be
-  // inlined to avoid instrumentation when using ASAN (memory sanitizer). The
-  // stack profiler is generating false positive when walking the stack.
-  for (size_t pos = 0; pos < length; ++pos)
-    reinterpret_cast<char*>(to)[pos] = reinterpret_cast<const char*>(from)[pos];
-#else
-  std::memcpy(to, from, length);
-#endif
+  if (pointer < original_stack_bottom_uint ||
+      pointer >= original_stack_top_uint)
+    return pointer;
+
+  return stack_copy_bottom_uint + (pointer - original_stack_bottom_uint);
 }
 
-// Rewrites possible pointers to locations within the stack to point to the
-// corresponding locations in the copy, and rewrites the non-volatile registers
-// in |context| likewise. This is necessary to handle stack frames with dynamic
-// stack allocation, where a pointer to the beginning of the dynamic allocation
-// area is stored on the stack and/or in a non-volatile register.
+// Copies the stack to a buffer while rewriting possible pointers to locations
+// within the stack to point to the corresponding locations in the copy. This is
+// necessary to handle stack frames with dynamic stack allocation, where a
+// pointer to the beginning of the dynamic allocation area is stored on the
+// stack and/or in a non-volatile register.
 //
 // Eager rewriting of anything that looks like a pointer to the stack, as done
 // in this function, does not adversely affect the stack unwinding. The only
 // other values on the stack the unwinding depends on are return addresses,
 // which should not point within the stack memory. The rewriting is guaranteed
 // to catch all pointers because the stacks are guaranteed by the ABI to be
-// sizeof(void*) aligned.
+// sizeof(uintptr_t*) aligned.
 //
-// Note: this function must not access memory in the original stack as it may
-// have been changed or deallocated by this point. This is why |top| and
-// |bottom| are passed as uintptr_t.
-void RewritePointersToStackMemory(uintptr_t top,
-                                  uintptr_t bottom,
-                                  CONTEXT* context,
-                                  void* stack_copy) {
+// IMPORTANT NOTE: This function is invoked while the target thread is
+// suspended so it must not do any allocation from the default heap, including
+// indirectly via use of DCHECK/CHECK or other logging statements. Otherwise
+// this code can deadlock on heap locks in the default heap acquired by the
+// target thread before it was suspended.
+void CopyStackContentsAndRewritePointers(const uintptr_t* original_stack_bottom,
+                                         const uintptr_t* original_stack_top,
+                                         uintptr_t* stack_copy_bottom,
+                                         CONTEXT* thread_context)
+    NO_SANITIZE("address") {
+  const uintptr_t* src = original_stack_bottom;
+  uintptr_t* dst = stack_copy_bottom;
+  for (; src < original_stack_top; ++src, ++dst) {
+    *dst = RewritePointerIfInOriginalStack(
+        original_stack_bottom, original_stack_top, stack_copy_bottom, *src);
+  }
+
+  // Rewrite pointers in the context.
 #if defined(ARCH_CPU_64_BITS)
   DWORD64 CONTEXT::*const nonvolatile_registers[] = {
 #if defined(ARCH_CPU_X86_64)
@@ -142,19 +151,11 @@ void RewritePointersToStackMemory(uintptr_t top,
 #endif
   };
 
-  // Rewrite pointers in the context.
-  for (size_t i = 0; i < size(nonvolatile_registers); ++i) {
-    DWORD64* const reg = &(context->*nonvolatile_registers[i]);
-    RewritePointerIfInOriginalStack(top, bottom, stack_copy,
-                                    reinterpret_cast<const void**>(reg));
+  for (auto reg_field : nonvolatile_registers) {
+    DWORD64* const reg = &(thread_context->*reg_field);
+    *reg = RewritePointerIfInOriginalStack(
+        original_stack_bottom, original_stack_top, stack_copy_bottom, *reg);
   }
-
-  // Rewrite pointers on the stack.
-  const void** start = reinterpret_cast<const void**>(stack_copy);
-  const void** end = reinterpret_cast<const void**>(
-      reinterpret_cast<char*>(stack_copy) + (top - bottom));
-  for (const void** loc = start; loc < end; ++loc)
-    RewritePointerIfInOriginalStack(top, bottom, stack_copy, loc);
 #endif
 }
 
@@ -339,50 +340,42 @@ bool NativeStackSamplerWin::CopyStack(HANDLE thread_handle,
                                       StackBuffer* stack_buffer,
                                       ProfileBuilder* profile_builder,
                                       CONTEXT* thread_context) {
-  // The stack bounds are saved to uintptr_ts for use outside
-  // ScopedSuspendThread, as the thread's memory is not safe to dereference
-  // beyond that point.
-  const auto top = reinterpret_cast<uintptr_t>(base_address);
-  uintptr_t bottom = 0u;
-
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
+               "SuspendThread");
   {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
-                 "SuspendThread");
-    {
-      ScopedSuspendThread suspend_thread(thread_handle);
+    ScopedSuspendThread suspend_thread(thread_handle);
 
-      if (!suspend_thread.was_successful())
-        return false;
+    if (!suspend_thread.was_successful())
+      return false;
 
-      if (!::GetThreadContext(thread_handle, thread_context))
-        return false;
+    if (!::GetThreadContext(thread_handle, thread_context))
+      return false;
+
+    const uintptr_t top = reinterpret_cast<uintptr_t>(base_address);
 
 #if defined(ARCH_CPU_X86_64)
-      bottom = thread_context->Rsp;
+    const uintptr_t bottom = thread_context->Rsp;
 #elif defined(ARCH_CPU_ARM64)
-      bottom = thread_context->Sp;
+    const uintptr_t bottom = thread_context->Sp;
 #else
-      bottom = thread_context->Esp;
+    const uintptr_t bottom = thread_context->Esp;
 #endif
 
-      if ((top - bottom) > stack_buffer->size())
-        return false;
+    if ((top - bottom) > stack_buffer->size())
+      return false;
 
-      // Dereferencing a pointer in the guard page in a thread that doesn't own
-      // the stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a
-      // crash. This occurs very rarely, but reliably over the population.
-      if (PointsToGuardPage(bottom))
-        return false;
+    // Dereferencing a pointer in the guard page in a thread that doesn't own
+    // the stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a
+    // crash. This occurs very rarely, but reliably over the population.
+    if (PointsToGuardPage(bottom))
+      return false;
 
-      profile_builder->RecordMetadata();
+    profile_builder->RecordMetadata();
 
-      CopyMemoryFromStack(stack_buffer->buffer(),
-                          reinterpret_cast<const void*>(bottom), top - bottom);
-    }
+    CopyStackContentsAndRewritePointers(
+        reinterpret_cast<uintptr_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
+        reinterpret_cast<uintptr_t*>(stack_buffer->buffer()), thread_context);
   }
-
-  RewritePointersToStackMemory(top, bottom, thread_context,
-                               stack_buffer->buffer());
 
   return true;
 }
