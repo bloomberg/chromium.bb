@@ -230,9 +230,9 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
                  const_cast<ContentData*>(style->GetContentData());
              content_data; content_data = content_data->Next()) {
           if (content_data->IsImage()) {
-            StyleImage* image = ToImageContentData(content_data)->GetImage();
+            StyleImage* image = To<ImageContentData>(content_data)->GetImage();
             if (image->IsPendingImage()) {
-              ToImageContentData(content_data)
+              To<ImageContentData>(content_data)
                   ->SetImage(
                       LoadPendingImage(style, To<StylePendingImage>(image),
                                        FetchParameters::kAllowPlaceholder));

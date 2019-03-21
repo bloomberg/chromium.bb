@@ -195,7 +195,7 @@ void Content::ApplyValue(StyleResolverState& state,
         string = To<CSSStringValue>(*item).Value();
       }
       if (prev_content && prev_content->IsText()) {
-        TextContentData* text_content = ToTextContentData(prev_content);
+        TextContentData* text_content = To<TextContentData>(prev_content);
         text_content->SetText(text_content->GetText() + string);
         continue;
       }
