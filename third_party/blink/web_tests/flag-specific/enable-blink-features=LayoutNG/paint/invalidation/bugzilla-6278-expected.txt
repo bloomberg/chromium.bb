@@ -84,52 +84,52 @@
         },
         {
           "object": "NGPhysicalTextFragment 'Curabitur pretium, quam quis semper'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Phasellus vehicula, sem at posuere'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Quisque eu nulla non nisi molestie'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'ac, laoreet non, suscipit sed, sapien.'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'accumsan. Etiam tellus urna, laoreet'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'malesuada, est libero feugiat libero,'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'nec ullamcorper lacus ante vulputate'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'pede.'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'vehicula, augue nibh molestie nisl,'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'vel fringilla orci nibh sed neque.'",
-          "rect": [10, 138, 234, 199],
+          "rect": [10, 138, 235, 199],
           "reason": "geometry"
         },
         {
