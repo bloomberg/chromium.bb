@@ -263,6 +263,8 @@ void OverlayProcessor::UpdateDamageRect(
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
   for (const OverlayCandidate& overlay : *candidates) {
+    bool has_damage = false;
+
     if (overlay.plane_z_order >= 0) {
       const gfx::Rect overlay_display_rect =
           ToEnclosedRect(overlay.display_rect);
@@ -301,7 +303,7 @@ void OverlayProcessor::UpdateDamageRect(
           overlay.is_unoccluded && !previous_frame_underlay_was_unoccluded;
       bool always_unoccluded =
           overlay.is_unoccluded && previous_frame_underlay_was_unoccluded;
-      bool has_damage = std::any_of(
+      has_damage = std::any_of(
           quad_list->begin(), quad_list->end(), [](const auto& quad) {
             bool solid_opaque_tranparent =
                 !quad->ShouldDrawWithBlending() &&
@@ -318,6 +320,12 @@ void OverlayProcessor::UpdateDamageRect(
         damage_rect->Subtract(this_frame_underlay_rect);
       }
       previous_frame_underlay_was_unoccluded_ = overlay.is_unoccluded;
+    }
+
+    if (overlay.plane_z_order) {
+      RecordOverlayDamageRectHistograms(
+          (overlay.plane_z_order > 0), has_damage, damage_rect->IsEmpty(),
+          false /* occluding_damage_equal_to_damage_rect */);
     }
   }
 
