@@ -110,10 +110,6 @@ class ThemeProperties {
     // shelf.
     COLOR_TOOLBAR_VERTICAL_SEPARATOR,
 
-    // Colors used for the detached (NTP) bookmark bar.
-    COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
-    COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,
-
     // Color used for various 'shelves' and 'bars'.
     COLOR_DOWNLOAD_SHELF,
     COLOR_INFOBAR,

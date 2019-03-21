@@ -836,8 +836,6 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
-  // Separates the detached bookmark bar from the NTP.
-  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] = tab_border;
 
   colors_[ThemeProperties::COLOR_NTP_BACKGROUND] =
       native_theme_->GetSystemColor(
@@ -911,9 +909,6 @@ void GtkUi::UpdateColors() {
 
     color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
     color_map[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
-
-    color_map[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] =
-        tab_color;
 
     const SkColor background_tab_text_color =
         GetFgColor(header_selector + " GtkLabel.title");

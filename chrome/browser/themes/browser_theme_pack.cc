@@ -265,7 +265,6 @@ constexpr int kNonOverwritableColorTable[] = {
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
-    TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     TP::COLOR_INFOBAR,
     TP::COLOR_DOWNLOAD_SHELF,
     TP::COLOR_STATUS_BUBBLE,
@@ -1373,7 +1372,6 @@ void BrowserThemePack::SetToolbarRelatedColors() {
   // was introduced).
   SkColor toolbar_color;
   if (GetColor(TP::COLOR_TOOLBAR, &toolbar_color)) {
-    SetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND, toolbar_color);
     SetColor(TP::COLOR_INFOBAR, toolbar_color);
     SetColor(TP::COLOR_DOWNLOAD_SHELF, toolbar_color);
     SetColor(TP::COLOR_STATUS_BUBBLE, toolbar_color);

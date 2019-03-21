@@ -1011,19 +1011,15 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagation) {
                           pack.get());
 
   SkColor infobar_color;
-  SkColor bookmark_bar_color;
   SkColor download_shelf_color;
   SkColor status_bubble_color;
 
   EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
-                             &bookmark_bar_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
 
   constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
   EXPECT_EQ(infobar_color, kExpectedColor);
-  EXPECT_EQ(infobar_color, bookmark_bar_color);
   EXPECT_EQ(infobar_color, download_shelf_color);
   EXPECT_EQ(infobar_color, status_bubble_color);
 }
@@ -1036,19 +1032,15 @@ TEST_F(BrowserThemePackTest, TestToolbarColorPropagationNoImage) {
   BuildTestExtensionTheme("theme_test_toolbar_color_no_image", pack.get());
 
   SkColor infobar_color;
-  SkColor bookmark_bar_color;
   SkColor download_shelf_color;
   SkColor status_bubble_color;
 
   EXPECT_TRUE(pack->GetColor(TP::COLOR_INFOBAR, &infobar_color));
-  EXPECT_TRUE(pack->GetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
-                             &bookmark_bar_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_DOWNLOAD_SHELF, &download_shelf_color));
   EXPECT_TRUE(pack->GetColor(TP::COLOR_STATUS_BUBBLE, &status_bubble_color));
 
   constexpr SkColor kExpectedColor = SkColorSetRGB(0, 255, 0);
   EXPECT_EQ(infobar_color, kExpectedColor);
-  EXPECT_EQ(infobar_color, bookmark_bar_color);
   EXPECT_EQ(infobar_color, download_shelf_color);
   EXPECT_EQ(infobar_color, status_bubble_color);
 }
