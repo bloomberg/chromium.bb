@@ -202,7 +202,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   int crop_x = 0;
   int crop_y = 0;
-  libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
+  libyuv::FourCC fourcc_format = libyuv::FOURCC_ANY;
+  gfx::ColorSpace color_space;
 
   bool flip = false;
   switch (format.pixel_format) {
@@ -210,27 +211,27 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       break;
     case PIXEL_FORMAT_I420:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_I420;
+      fourcc_format = libyuv::FOURCC_I420;
       break;
     case PIXEL_FORMAT_YV12:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_YV12;
+      fourcc_format = libyuv::FOURCC_YV12;
       break;
     case PIXEL_FORMAT_NV12:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_NV12;
+      fourcc_format = libyuv::FOURCC_NV12;
       break;
     case PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_NV21;
+      fourcc_format = libyuv::FOURCC_NV21;
       break;
     case PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_YUY2;
+      fourcc_format = libyuv::FOURCC_YUY2;
       break;
     case PIXEL_FORMAT_UYVY:
       DCHECK(!chopped_width && !chopped_height);
-      origin_colorspace = libyuv::FOURCC_UYVY;
+      fourcc_format = libyuv::FOURCC_UYVY;
       break;
     case PIXEL_FORMAT_RGB24:
 // Linux RGB24 defines red at lowest byte address,
@@ -238,9 +239,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 // Windows RGB24 defines blue at lowest byte,
 // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd407253
 #if defined(OS_LINUX)
-      origin_colorspace = libyuv::FOURCC_RAW;
+      fourcc_format = libyuv::FOURCC_RAW;
 #elif defined(OS_WIN)
-      origin_colorspace = libyuv::FOURCC_24BG;
+      fourcc_format = libyuv::FOURCC_24BG;
 #else
       NOTREACHED() << "RGB24 is only available in Linux and Windows platforms";
 #endif
@@ -251,6 +252,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       // that vertical flipping is needed.
       flip = true;
 #endif
+      // We don't actually know, for sure, what the source color space is. It's
+      // probably safe to assume its sRGB, though, and so it would be valid to
+      // assume libyuv::ConvertToI420() is going to produce results in Rec601
+      // (or very close to it).
+      color_space = gfx::ColorSpace::CreateREC601();
       break;
     case PIXEL_FORMAT_RGB32:
 // Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows
@@ -260,10 +266,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       FALLTHROUGH;
 #endif
     case PIXEL_FORMAT_ARGB:
-      origin_colorspace = libyuv::FOURCC_ARGB;
+      fourcc_format = libyuv::FOURCC_ARGB;
+      color_space = gfx::ColorSpace::CreateREC601();
       break;
     case PIXEL_FORMAT_MJPEG:
-      origin_colorspace = libyuv::FOURCC_MJPG;
+      fourcc_format = libyuv::FOURCC_MJPG;
       break;
     default:
       NOTREACHED();
@@ -289,12 +296,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     }
   }
 
+  // libyuv::ConvertToI420 use Rec601 to convert RGB to YUV.
   if (libyuv::ConvertToI420(
           data, length, y_plane_data, yplane_stride, u_plane_data,
           uv_plane_stride, v_plane_data, uv_plane_stride, crop_x, crop_y,
           format.frame_size.width(),
           (flip ? -1 : 1) * format.frame_size.height(), new_unrotated_width,
-          new_unrotated_height, rotation_mode, origin_colorspace) != 0) {
+          new_unrotated_height, rotation_mode, fourcc_format) != 0) {
     DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
                   << VideoPixelFormatToString(format.pixel_format);
     receiver_->OnFrameDropped(
@@ -304,8 +312,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   const VideoCaptureFormat output_format =
       VideoCaptureFormat(dimensions, format.frame_rate, PIXEL_FORMAT_I420);
-  OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
-                           timestamp);
+  OnIncomingCapturedBufferExt(std::move(buffer), output_format, color_space,
+                              reference_time, timestamp, gfx::Rect(dimensions),
+                              VideoFrameMetadata());
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
@@ -443,14 +452,15 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
-  OnIncomingCapturedBufferExt(std::move(buffer), format, reference_time,
-                              timestamp, gfx::Rect(format.frame_size),
-                              VideoFrameMetadata());
+  OnIncomingCapturedBufferExt(
+      std::move(buffer), format, gfx::ColorSpace(), reference_time, timestamp,
+      gfx::Rect(format.frame_size), VideoFrameMetadata());
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
     Buffer buffer,
     const VideoCaptureFormat& format,
+    const gfx::ColorSpace& color_space,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
     gfx::Rect visible_rect,
@@ -465,6 +475,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
   mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
   info->timestamp = timestamp;
   info->pixel_format = format.pixel_format;
+  info->color_space = color_space;
   info->coded_size = format.frame_size;
   info->visible_rect = visible_rect;
   info->metadata = metadata.GetInternalValues().Clone();

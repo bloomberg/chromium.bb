@@ -309,7 +309,7 @@ class VideoCaptureDeviceTest
     ON_CALL(*result, OnError(_, _, _)).WillByDefault(Invoke(DumpError));
     EXPECT_CALL(*result, ReserveOutputBuffer(_, _, _, _)).Times(0);
     EXPECT_CALL(*result, DoOnIncomingCapturedBuffer(_, _, _, _)).Times(0);
-    EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
+    EXPECT_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _, _))
         .Times(0);
     ON_CALL(*result, OnIncomingCapturedData(_, _, _, _, _, _, _))
         .WillByDefault(
