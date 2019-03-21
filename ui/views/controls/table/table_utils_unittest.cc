@@ -63,8 +63,8 @@ TEST(TableUtilsTest, SetWidthHonored) {
 TEST(TableUtilsTest, LastColumnGetsAllSpace) {
   TestTableModel model(4);
   std::vector<TableColumn> columns;
-  columns.push_back(ui::TableColumn());
-  columns.push_back(ui::TableColumn());
+  columns.emplace_back();
+  columns.emplace_back();
   gfx::FontList font_list;
   std::vector<int> result(CalculateTableColumnSizes(
       500, 0, font_list, font_list, 0, 0, columns, &model));
@@ -78,9 +78,9 @@ TEST(TableUtilsTest, LastColumnGetsAllSpace) {
 TEST(TableUtilsTest, SingleResizableColumn) {
   TestTableModel model(4);
   std::vector<TableColumn> columns;
-  columns.push_back(ui::TableColumn());
-  columns.push_back(ui::TableColumn());
-  columns.push_back(ui::TableColumn());
+  columns.emplace_back();
+  columns.emplace_back();
+  columns.emplace_back();
   columns[2].percent = 1.0f;
   gfx::FontList font_list;
   std::vector<int> result(CalculateTableColumnSizes(

@@ -128,9 +128,9 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   // Skia counts the number of pixels outside the mask area whereas
   // gfx::ShadowValue counts together the number of pixels inside and outside
   // the mask bounds.
-  shadows.push_back(gfx::ShadowValue(
+  shadows.emplace_back(
       gfx::Vector2d(0, kYOffset), 2 * kSkiaBlurRadius,
-      SkColorSetA(shadow_color, is_dark_mode ? 0x7F : shadow_alpha)));
+      SkColorSetA(shadow_color, is_dark_mode ? 0x7F : shadow_alpha));
   const SkColor fill_color =
       SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
   return std::make_unique<InkDropHighlight>(

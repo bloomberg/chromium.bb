@@ -142,9 +142,8 @@ class MenuModelBase : public ui::MenuModel {
 class SubmenuModel : public MenuModelBase {
  public:
   SubmenuModel() : MenuModelBase(kSubmenuIdBase) {
-    items_.push_back(
-        Item(TYPE_COMMAND, "submenu item 0", nullptr, false, true));
-    items_.push_back(Item(TYPE_COMMAND, "submenu item 1", nullptr));
+    items_.emplace_back(TYPE_COMMAND, "submenu item 0", nullptr, false, true);
+    items_.emplace_back(TYPE_COMMAND, "submenu item 1", nullptr);
   }
 
   ~SubmenuModel() override = default;
@@ -156,8 +155,8 @@ class SubmenuModel : public MenuModelBase {
 class ActionableSubmenuModel : public MenuModelBase {
  public:
   ActionableSubmenuModel() : MenuModelBase(kActionableSubmenuIdBase) {
-    items_.push_back(Item(TYPE_COMMAND, "actionable submenu item 0", nullptr));
-    items_.push_back(Item(TYPE_COMMAND, "actionable submenu item 1", nullptr));
+    items_.emplace_back(TYPE_COMMAND, "actionable submenu item 0", nullptr);
+    items_.emplace_back(TYPE_COMMAND, "actionable submenu item 1", nullptr);
   }
   ~ActionableSubmenuModel() override = default;
 
@@ -171,13 +170,13 @@ class RootModel : public MenuModelBase {
     submenu_model_ = std::make_unique<SubmenuModel>();
     actionable_submenu_model_ = std::make_unique<ActionableSubmenuModel>();
 
-    items_.push_back(Item(TYPE_COMMAND, "command 0", nullptr, false, false));
-    items_.push_back(Item(TYPE_CHECK, "check 1", nullptr));
-    items_.push_back(Item(TYPE_SEPARATOR, "", nullptr));
-    items_.push_back(Item(TYPE_SUBMENU, "submenu 3", submenu_model_.get()));
-    items_.push_back(Item(TYPE_RADIO, "radio 4", nullptr));
-    items_.push_back(Item(TYPE_ACTIONABLE_SUBMENU, "actionable 5",
-                          actionable_submenu_model_.get()));
+    items_.emplace_back(TYPE_COMMAND, "command 0", nullptr, false, false);
+    items_.emplace_back(TYPE_CHECK, "check 1", nullptr);
+    items_.emplace_back(TYPE_SEPARATOR, "", nullptr);
+    items_.emplace_back(TYPE_SUBMENU, "submenu 3", submenu_model_.get());
+    items_.emplace_back(TYPE_RADIO, "radio 4", nullptr);
+    items_.emplace_back(TYPE_ACTIONABLE_SUBMENU, "actionable 5",
+                        actionable_submenu_model_.get());
   }
 
   ~RootModel() override = default;

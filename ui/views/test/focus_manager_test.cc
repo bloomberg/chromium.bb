@@ -104,7 +104,7 @@ TestFocusChangeListener::~TestFocusChangeListener() = default;
 
 void TestFocusChangeListener::OnWillChangeFocus(View* focused_before,
                                                 View* focused_now) {
-  focus_changes_.push_back(ViewPair(focused_before, focused_now));
+  focus_changes_.emplace_back(focused_before, focused_now);
 }
 void TestFocusChangeListener::OnDidChangeFocus(View* focused_before,
                                                View* focused_now) {
