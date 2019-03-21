@@ -9,10 +9,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
-#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace cc {
 
@@ -36,26 +33,7 @@ SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  const SkSurfaceProps& props)
     : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
 
-SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
-                                 sk_sp<SkColorSpace> target_color_space,
-                                 ImageProvider* image_provider,
-                                 ContextFlushes context_flushes)
-    : canvas_(canvas),
-      image_provider_(image_provider),
-      context_flushes_(context_flushes) {
-  WrapCanvasInColorSpaceXformCanvas(target_color_space);
-}
-
 SkiaPaintCanvas::~SkiaPaintCanvas() = default;
-
-void SkiaPaintCanvas::WrapCanvasInColorSpaceXformCanvas(
-    sk_sp<SkColorSpace> target_color_space) {
-  if (target_color_space) {
-    color_space_xform_canvas_ =
-        SkCreateColorSpaceXformCanvas(canvas_, target_color_space);
-    canvas_ = color_space_xform_canvas_.get();
-  }
-}
 
 SkImageInfo SkiaPaintCanvas::imageInfo() const {
   return canvas_->imageInfo();
