@@ -2976,6 +2976,28 @@
             ]
         }
     ],
+    "NetUnusedIdleSocketTimeout": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_300_seconds_20190314",
+                    "params": {
+                        "unused_idle_socket_timeout_seconds": "300"
+                    },
+                    "enable_features": [
+                        "NetUnusedIdleSocketTimeout"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetworkQualityEstimator": [
         {
             "platforms": [
