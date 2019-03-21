@@ -1042,8 +1042,8 @@ void PeopleHandler::PushSyncPrefs() {
                   service->GetUserSettings()->IsPassphraseRequired());
 
   // To distinguish between PassphraseType::FROZEN_IMPLICIT_PASSPHRASE and
-  // PassphraseType::CUSTOM_PASSPHRASE
-  // we only set passphraseTypeIsCustom for PassphraseType::CUSTOM_PASSPHRASE.
+  // PassphraseType::CUSTOM_PASSPHRASE we only set passphraseTypeIsCustom for
+  // PassphraseType::CUSTOM_PASSPHRASE.
   args.SetBoolean("passphraseTypeIsCustom",
                   service->GetUserSettings()->GetPassphraseType() ==
                       syncer::PassphraseType::CUSTOM_PASSPHRASE);
@@ -1082,7 +1082,11 @@ void PeopleHandler::PushSyncPrefs() {
                        GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
         break;
     }
-  } else if (passphrase_type == syncer::PassphraseType::CUSTOM_PASSPHRASE) {
+  } else if (syncer::IsExplicitPassphrase(passphrase_type)) {
+    args.SetString("enterPassphraseBody",
+                   GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY));
+    args.SetString("enterGooglePassphraseBody",
+                   GetStringUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY));
     args.SetString("fullEncryptionBody",
                    GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
   }

@@ -1047,6 +1047,7 @@ TEST_F(PeopleHandlerTest, ShowSetupOldGaiaPassphraseRequired) {
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "passphraseRequired", true);
   CheckBool(dictionary, "passphraseTypeIsCustom", false);
+  EXPECT_TRUE(dictionary->FindKey("enterPassphraseBody"));
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
@@ -1063,6 +1064,7 @@ TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "passphraseRequired", true);
   CheckBool(dictionary, "passphraseTypeIsCustom", true);
+  EXPECT_TRUE(dictionary->FindKey("enterPassphraseBody"));
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupEncryptAll) {
