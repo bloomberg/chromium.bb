@@ -33,6 +33,27 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
   }
 };
 
+OnboardingWelcomeAppChooserTest = class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/shared/app_chooser.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'app_chooser_test.js',
+      'test_nux_app_proxy.js',
+      'test_metrics_proxy.js',
+      'test_bookmark_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeAppChooserTest', 'All', function() {
+  mocha.run();
+});
+
 OnboardingWelcomeEmailChooserTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
