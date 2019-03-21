@@ -24,7 +24,9 @@
  */
 
 // https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
-enum GamepadHand {
+[
+    OriginTrialEnabled=WebXRGamepadSupport
+] enum GamepadHand {
   "left",
   "right"
 };
