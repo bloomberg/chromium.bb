@@ -153,11 +153,11 @@ const char kAutofillProfileServerValidationName[] =
 const char kAutofillProfileServerValidationDescription[] =
     "Allows autofill to use server side validation";
 
-const char kAutofillShowFullDisclosureLabelName[] =
-    "Autofill Show Full Disclosure Label";
-const char kAutofillShowFullDisclosureLabelDescription[] =
-    "When enabled, the Autofill dropdown's labels are displayed in the full "
-    "disclosure format.";
+const char kAutofillUseImprovedLabelDisambiguationName[] =
+    "Autofill Uses Improved Label Disambiguation";
+const char kAutofillUseImprovedLabelDisambiguationDescription[] =
+    "When enabled, the Autofill dropdown's suggestions' labels are displayed "
+    "using the improved disambiguation format.";
 
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";

@@ -4055,10 +4055,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(signin::kMiceFeature)},
 #endif  // defined(OS_ANDROID)
 
-    {"autofill-show-full-disclosure-label",
-     flag_descriptions::kAutofillShowFullDisclosureLabelName,
-     flag_descriptions::kAutofillShowFullDisclosureLabelDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillShowFullDisclosureLabel)},
+    {"autofill-use-improved-label-disambiguation",
+     flag_descriptions::kAutofillUseImprovedLabelDisambiguationName,
+     flag_descriptions::kAutofillUseImprovedLabelDisambiguationDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUseImprovedLabelDisambiguation)},
 
 #if defined(OS_CHROMEOS)
     {"ash-notification-stacking-bar-redesign",
