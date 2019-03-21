@@ -389,9 +389,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // Block until the next accessibility notification in any frame.
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(
-        main_frame, ax::mojom::Event::kNone);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      accessibility_waiter.ListenToAdditionalFrame(node->current_frame_host());
+        web_contents, ui::AXMode(), ax::mojom::Event::kNone);
     accessibility_waiter.WaitForNotification();
   }
 

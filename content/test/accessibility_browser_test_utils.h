@@ -36,16 +36,10 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   AccessibilityNotificationWaiter(WebContents* web_contents,
                                   ui::AXMode accessibility_mode,
                                   ax::mojom::Event event);
-  AccessibilityNotificationWaiter(RenderFrameHostImpl* frame_host,
-                                  ax::mojom::Event event);
   AccessibilityNotificationWaiter(WebContents* web_contents,
                                   ui::AXMode accessibility_mode,
                                   ui::AXEventGenerator::Event event);
-  AccessibilityNotificationWaiter(RenderFrameHostImpl* frame_host,
-                                  ui::AXEventGenerator::Event event);
   ~AccessibilityNotificationWaiter() override;
-
-  void ListenToAdditionalFrame(RenderFrameHostImpl* frame_host);
 
   // Blocks until the specific accessibility notification registered in
   // AccessibilityNotificationWaiter is received. Ignores notifications for
@@ -71,6 +65,17 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
                               RenderFrameHost* new_host) override;
 
  private:
+  // Listen to all frames within the frame tree of this WebContents.
+  void ListenToAllFrames(WebContents* web_contents);
+
+  // Called when iterating over guest web contents so we can listen to
+  // all frames within guests.
+  bool ListenToGuestWebContents(WebContents* web_contents);
+
+  // Bind either the OnAccessibilityEvent or OnGeneratedEvent callback
+  // for a given frame within the WebContent's frame tree.
+  void ListenToFrame(RenderFrameHostImpl* frame_host);
+
   // Helper to bind the OnAccessibilityEvent callback
   void BindOnAccessibilityEvent(RenderFrameHostImpl* frame_host);
 
@@ -91,7 +96,6 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   // GetAXTree() is about the page with the url "about:blank".
   bool IsAboutBlank();
 
-  RenderFrameHostImpl* frame_host_ = nullptr;
   base::Optional<ax::mojom::Event> event_to_wait_for_;
   base::Optional<ui::AXEventGenerator::Event> generated_event_to_wait_for_;
   std::unique_ptr<base::RunLoop> loop_runner_;
