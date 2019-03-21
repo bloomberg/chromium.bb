@@ -14,10 +14,7 @@ if (current_cpu == "arm") {
 }
 
 declare_args() {
-  # TODO: send a PSA out to tell people to switch to blink_symbol_level
-  # and remove this.
-  # If true, doesn't compile debug symbols into webcore reducing the
-  # size of the binary and increasing the speed of gdb.
+  # DEPRECATED: Use blink_symbol_level=0. https://crbug.com/943869
   remove_webcore_debug_symbols = false
 
   # How many symbols to include in the build of blink. This affects
@@ -85,6 +82,9 @@ assert(
     "blink_symbol_level and remove_webcore_debug_symbols cannot both be set.")
 
 if (remove_webcore_debug_symbols) {
+  print("warning: The GN arg 'remove_webcore_debug_symbols' is deprecated and")
+  print("warning: will be removed April 15, 2019. Please change your args.gn")
+  print("warning: to use 'blink_symbol_level = 0'. https://crbug.com/943869")
   blink_symbol_level = 0
 }
 
