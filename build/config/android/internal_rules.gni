@@ -1115,7 +1115,7 @@ if (enable_java_templates) {
     _proguarding_with_r8 =
         _proguard_enabled && (!defined(invoker.proguard_jar_path) || use_r8)
     _enable_multidex =
-        !defined(invoker.enable_multidex) || invoker.enable_multidex
+        defined(invoker.enable_multidex) && invoker.enable_multidex
     _enable_main_dex_list =
         _enable_multidex &&
         (!defined(invoker.min_sdk_version) || invoker.min_sdk_version < 21)

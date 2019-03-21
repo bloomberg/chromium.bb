@@ -44,13 +44,10 @@ public class ChromiumMultiDexInstaller {
      */
     @VisibleForTesting
     public static void install(Context context) {
-        // No-op on platforms that support multidex natively.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return;
-        }
         // TODO(jbudorick): Back out this version check once support for K & below works.
         // http://crbug.com/512357
-        if (!shouldInstallMultiDex(context)) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
+                && !shouldInstallMultiDex(context)) {
             Log.i(TAG, "Skipping multidex installation: not needed for process.");
         } else {
             MultiDex.install(context);
