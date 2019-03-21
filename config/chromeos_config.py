@@ -644,7 +644,7 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
-      'release',
+      'release_common',
       site_config.templates.full,
       site_config.templates.official,
       site_config.templates.internal,
@@ -691,6 +691,17 @@ def GeneralTemplates(site_config):
           'TOC-Canaries',
   )
 
+  site_config.AddTemplate(
+      'release',
+      site_config.templates.release_common,
+      luci_builder=config_lib.LUCI_BUILDER_RELEASE,
+  )
+
+  site_config.AddTemplate(
+      'factory_firmware',
+      site_config.templates.release_common,
+  )
+
   ### Release AFDO configs.
 
   site_config.AddTemplate(
@@ -733,7 +744,7 @@ def GeneralTemplates(site_config):
 
   site_config.AddTemplate(
       'factory',
-      site_config.templates.release,
+      site_config.templates.factory_firmware,
       display_label=config_lib.DISPLAY_LABEL_FACTORY,
       afdo_use=False,
       chrome_sdk=False,
@@ -760,7 +771,7 @@ def GeneralTemplates(site_config):
   # Requires that you set boards, and workspace_branch.
   site_config.AddTemplate(
       'firmwarebranch',
-      site_config.templates.release,
+      site_config.templates.factory_firmware,
       site_config.templates.workspace,
       display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
       images=[],
