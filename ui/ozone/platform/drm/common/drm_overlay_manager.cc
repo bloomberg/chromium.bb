@@ -36,10 +36,6 @@ DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget widget) {
   return std::make_unique<DrmOverlayCandidates>(this, widget);
 }
 
-bool DrmOverlayManager::SupportsOverlays() const {
-  return supports_overlays_;
-}
-
 void DrmOverlayManager::ResetCache() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   cache_.Clear();

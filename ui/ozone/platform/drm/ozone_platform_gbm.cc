@@ -245,8 +245,8 @@ class OzonePlatformGbm : public OzonePlatform {
     }
 
     display_manager_ = std::make_unique<DrmDisplayHostManager>(
-        adapter, device_manager_.get(), overlay_manager_host.get(),
-        event_factory_ozone_->input_controller());
+        adapter, device_manager_.get(), &host_properties_,
+        overlay_manager_host.get(), event_factory_ozone_->input_controller());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 
     if (using_mojo_) {
@@ -302,6 +302,11 @@ class OzonePlatformGbm : public OzonePlatform {
     }
   }
 
+  const InitializedHostProperties& GetInitializedHostProperties() override {
+    DCHECK(has_initialized_ui());
+    return host_properties_;
+  }
+
   // The DRM thread needs to be started late because we need to wait for the
   // sandbox to start. This entry point in the Ozne API gives platforms
   // flexibility in handing this requirement.
@@ -353,6 +358,7 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
   std::unique_ptr<DrmDisplayHostManager> display_manager_;
   std::unique_ptr<DrmOverlayManager> overlay_manager_;
+  InitializedHostProperties host_properties_;
 
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

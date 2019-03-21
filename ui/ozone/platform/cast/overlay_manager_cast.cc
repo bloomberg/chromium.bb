@@ -29,8 +29,4 @@ OverlayManagerCast::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
   return std::make_unique<OverlayCandidatesCast>();
 }
 
-bool OverlayManagerCast::SupportsOverlays() const {
-  return false;
-}
-
 }  // namespace ui
