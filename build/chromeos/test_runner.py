@@ -194,6 +194,7 @@ class TastTest(RemoteTest):
 
     self._test_cmd += [
         '--deploy',
+        '--mount',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
         '--cmd',
         '--',
@@ -422,6 +423,7 @@ class BrowserSanityTest(RemoteTest):
     # browser, so deploy our locally-built chrome to the device before testing.
     self._test_cmd += [
         '--deploy',
+        '--mount',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
 
@@ -482,6 +484,7 @@ def host_cmd(args, unknown_args):
   if args.deploy_chrome:
     cros_run_test_cmd += [
         '--deploy',
+        '--mount',
         '--build-dir', os.path.abspath(args.path_to_outdir),
     ]
 
