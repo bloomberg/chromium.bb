@@ -225,7 +225,7 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
     return;
   }
 
-  StyleGeneratedImage* gen_image = ToStyleGeneratedImage(style_image);
+  StyleGeneratedImage* gen_image = To<StyleGeneratedImage>(style_image);
   CSSValue* image_css = gen_image->CssValue();
   if (auto* gradient = DynamicTo<cssvalue::CSSGradientValue>(image_css)) {
     BlendWithColorsFromGradient(gradient, colors, found_non_transparent_color,
