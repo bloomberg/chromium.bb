@@ -21,8 +21,7 @@ SendTabToSelfClientService::SendTabToSelfClientService(
   model_ = model;
   model_->AddObserver(this);
 
-  registry_ = ReceivingUiHandlerRegistry::GetInstance();
-  registry_->InstantiatePlatformSpecificHandlers(profile);
+  SetupHandlerRegistry(profile);
 }
 
 SendTabToSelfClientService::~SendTabToSelfClientService() {
@@ -37,8 +36,7 @@ void SendTabToSelfClientService::SendTabToSelfModelLoaded() {
 void SendTabToSelfClientService::EntriesAddedRemotely(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
   for (const SendTabToSelfEntry* entry : new_entries) {
-    for (std::unique_ptr<ReceivingUiHandler>& handler :
-         registry_->GetHandlers()) {
+    for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
       handler->DisplayNewEntry(entry);
     }
   }
@@ -46,10 +44,19 @@ void SendTabToSelfClientService::EntriesAddedRemotely(
 
 void SendTabToSelfClientService::EntriesRemovedRemotely(
     const std::vector<std::string>& guids) {
-  for (std::unique_ptr<ReceivingUiHandler>& handler :
-       registry_->GetHandlers()) {
+  for (const std::unique_ptr<ReceivingUiHandler>& handler : GetHandlers()) {
     handler->DismissEntries(guids);
   }
+}
+
+void SendTabToSelfClientService::SetupHandlerRegistry(Profile* profile) {
+  registry_ = ReceivingUiHandlerRegistry::GetInstance();
+  registry_->InstantiatePlatformSpecificHandlers(profile);
+}
+
+const std::vector<std::unique_ptr<ReceivingUiHandler>>&
+SendTabToSelfClientService::GetHandlers() const {
+  return registry_->GetHandlers();
 }
 
 }  // namespace send_tab_to_self

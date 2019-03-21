@@ -41,8 +41,8 @@ void ReceivingUiHandlerRegistry::InstantiatePlatformSpecificHandlers(
 #endif
 }
 
-std::vector<std::unique_ptr<ReceivingUiHandler>>&
-ReceivingUiHandlerRegistry::GetHandlers() {
+const std::vector<std::unique_ptr<ReceivingUiHandler>>&
+ReceivingUiHandlerRegistry::GetHandlers() const {
   return applicable_handlers_;
 }
 
