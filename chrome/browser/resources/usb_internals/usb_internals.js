@@ -21,19 +21,15 @@ cr.define('usb_internals', function() {
       this.usbManagerTest_ = new device.mojom.UsbDeviceManagerTestProxy;
       pageHandler.bindTestInterface(this.usbManagerTest_.$.createRequest());
 
-      cr.ui.decorate('tabbox', cr.ui.TabBox);
-
-      this.refreshDeviceList();
+      /** @private {devices_page.DevicesPage} */
+      this.devicesPage_ = new devices_page.DevicesPage(this.usbManager_);
 
       $('add-test-device-form').addEventListener('submit', (event) => {
         this.addTestDevice(event);
       });
       this.refreshTestDeviceList();
-    }
 
-    async refreshDeviceList() {
-      const response = await this.usbManager_.getDevices();
-      devices_page.setDevices(response.results);
+      cr.ui.decorate('tabbox', cr.ui.TabBox);
     }
 
     async refreshTestDeviceList() {

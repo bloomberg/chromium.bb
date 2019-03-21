@@ -32,3 +32,76 @@ table.styled-table,
 .action-failure {
   color: red;
 }
+
+/* device page */
+.descriptor-button button {
+  width: 100%;
+}
+
+/* descriptor panel */
+.device-descriptor-panel,
+.configuration-descriptor-panel {
+  display: flex;
+  overflow: auto;
+}
+
+#raw-data,
+#raw-data-tree-view {
+  flex: 1 0;
+}
+
+#raw-data {
+  font-size: 14px;
+  line-height: 250%;
+  white-space: pre;
+}
+
+@media screen and (min-width: 1200px) {
+  #raw-data span:nth-child(16n)::after {
+    content: '\A';
+  }
+}
+
+@media screen and (min-width: 600px) and (max-width: 1199px) {
+  #raw-data span:nth-child(8n)::after {
+    content: '\A';
+  }
+}
+
+@media screen and (min-width: 300px) and (max-width: 599px) {
+  #raw-data span:nth-child(4n)::after {
+    content: '\A';
+  }
+}
+
+@media screen and (min-width: 150px) and (max-width: 299px) {
+  #raw-data span:nth-child(2n)::after {
+    content: '\A';
+  }
+}
+
+#raw-data span {
+  padding-inline-end: .5em;
+  padding-inline-start: .5em;
+}
+
+#raw-data .selected-field {
+  background: red;
+}
+
+#raw-data .hovered-field {
+  background: yellow;
+}
+
+.tree-row.hover {
+  background-color: hsl(214, 91%, 97%);
+  border-color: hsl(214, 91%, 85%);
+  z-index: 1;
+}
+
+error {
+  color: red;
+  display: block;
+  font-size: 16px;
+  padding-inline-start: 20px;
+}
