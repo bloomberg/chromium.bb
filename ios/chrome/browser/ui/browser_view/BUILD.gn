@@ -12,6 +12,8 @@ source_set("browser_view") {
     "browser_view_controller_dependency_factory.mm",
     "browser_view_controller_helper.h",
     "browser_view_controller_helper.mm",
+    "key_commands_provider.h",
+    "key_commands_provider.mm",
   ]
   deps = [
     "//base",
@@ -165,6 +167,7 @@ source_set("unit_tests") {
   sources = [
     "browser_view_controller_helper_unittest.mm",
     "browser_view_controller_unittest.mm",
+    "key_commands_provider_unittest.mm",
   ]
   deps = [
     ":browser_view",
