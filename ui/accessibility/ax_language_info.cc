@@ -117,7 +117,7 @@ void DetectLanguageForSubtree(AXNode* subtree_root, class AXTree* tree) {
 // Detect language for a subtree rooted at the given node
 // will not check feature flag.
 static void DetectLanguageForSubtreeInternal(AXNode* node, class AXTree* tree) {
-  if (node->IsTextNode()) {
+  if (node->IsText()) {
     AXLanguageInfoStats* lang_info_stats = tree->language_info_stats.get();
     AXLanguageInfo* lang_info = node->GetLanguageInfo();
     if (!lang_info) {

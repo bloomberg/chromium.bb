@@ -98,7 +98,7 @@ class AXRange {
     do {
       text += start->GetInnerText();
       start = start->CreateNextTextAnchorPosition();
-    } while (!start->IsNullPosition() && *start <= *end);
+    } while (!start->IsNullPosition() && *start < *end);
 
     if (static_cast<size_t>(start_offset) > text.length())
       return base::string16();

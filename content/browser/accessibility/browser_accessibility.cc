@@ -142,15 +142,11 @@ bool BrowserAccessibility::IsDocument() const {
 }
 
 bool BrowserAccessibility::IsTextOnlyObject() const {
-  return GetRole() == ax::mojom::Role::kStaticText ||
-         GetRole() == ax::mojom::Role::kLineBreak ||
-         GetRole() == ax::mojom::Role::kInlineTextBox;
+  return node_ && node_->IsText();
 }
 
 bool BrowserAccessibility::IsLineBreakObject() const {
-  return GetRole() == ax::mojom::Role::kLineBreak ||
-         (IsTextOnlyObject() && PlatformGetParent() &&
-          PlatformGetParent()->GetRole() == ax::mojom::Role::kLineBreak);
+  return node_ && node_->IsLineBreak();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(

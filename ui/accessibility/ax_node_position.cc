@@ -24,13 +24,23 @@ base::string16 AXNodePosition::GetInnerText() const {
   if (IsNullPosition())
     return base::string16();
 
-  DCHECK(GetAnchor());
+  const AXNode* anchor = GetAnchor();
+  DCHECK(anchor);
   base::string16 value = GetAnchor()->data().GetString16Attribute(
       ax::mojom::StringAttribute::kValue);
   if (!value.empty())
     return value;
-  return GetAnchor()->data().GetString16Attribute(
-      ax::mojom::StringAttribute::kName);
+
+  if (anchor->IsText()) {
+    return anchor->data().GetString16Attribute(
+        ax::mojom::StringAttribute::kName);
+  }
+
+  base::string16 text;
+  for (size_t i = 0, c = AnchorChildCount(); i < c; ++i)
+    text += CreateChildPositionAt(i)->GetInnerText();
+
+  return text;
 }
 
 void AXNodePosition::AnchorChild(int child_index,
@@ -89,22 +99,13 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id, int32_t node_id) const {
   return nullptr;
 }
 
-int AXNodePosition::MaxTextOffset() const {
-  if (IsNullPosition())
-    return INVALID_INDEX;
-  return static_cast<int>(GetInnerText().length());
-}
-
 bool AXNodePosition::IsInWhiteSpace() const {
-  switch (kind()) {
-    case AXPositionKind::NULL_POSITION:
-      return false;
-    case AXPositionKind::TREE_POSITION:
-    case AXPositionKind::TEXT_POSITION:
-      return base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
-  }
-  NOTREACHED();
-  return false;
+  if (IsNullPosition())
+    return false;
+
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreak() ||
+         base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
 }
 
 std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {
