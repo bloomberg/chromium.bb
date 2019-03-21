@@ -118,10 +118,8 @@ ImageOrientation.fromRotationAndScale = transform => {
   // |a c| |s_x 0 | |x|   |a*s_x c*s_y| |x|
   // |b d| | 0 s_y| |y| = |b*s_x d*s_y| |y|
   return new ImageOrientation(
-    orientation.a * scaleX,
-    orientation.b * scaleX,
-    orientation.c * scaleY,
-    orientation.d * scaleY);
+      orientation.a * scaleX, orientation.b * scaleX, orientation.c * scaleY,
+      orientation.d * scaleY);
 };
 
 /**
@@ -136,7 +134,7 @@ ImageOrientation.prototype.getSizeAfterCancelling = function(
   const projectedY = this.b * imageWidth + this.d * imageHeight;
   return {
     width: Math.abs(projectedX),
-    height: Math.abs(projectedY)
+    height: Math.abs(projectedY),
   };
 };
 

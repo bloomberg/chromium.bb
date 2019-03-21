@@ -29,17 +29,14 @@ SimpleImageParser.prototype.__proto__ = ImageParser.prototype;
 SimpleImageParser.prototype.parse = function(
     file, metadata, callback, errorCallback) {
   const self = this;
-  MetadataParser.readFileBytes(
-      file, 0, this.headerSize,
-      (file, br) => {
-        try {
-          self.parseHeader(metadata, br);
-          callback(metadata);
-        } catch (e) {
-          errorCallback(e.toString());
-        }
-      },
-      errorCallback);
+  MetadataParser.readFileBytes(file, 0, this.headerSize, (file, br) => {
+    try {
+      self.parseHeader(metadata, br);
+      callback(metadata);
+    } catch (e) {
+      errorCallback(e.toString());
+    }
+  }, errorCallback);
 };
 
 /**
@@ -60,7 +57,9 @@ function PngParser(parent) {
   SimpleImageParser.call(this, parent, 'png', /\.png$/i, 24);
 }
 
-PngParser.prototype = {__proto__: SimpleImageParser.prototype};
+PngParser.prototype = {
+  __proto__: SimpleImageParser.prototype
+};
 
 /**
  * @override
@@ -96,7 +95,9 @@ function BmpParser(parent) {
   SimpleImageParser.call(this, parent, 'bmp', /\.bmp$/i, 28);
 }
 
-BmpParser.prototype = {__proto__: SimpleImageParser.prototype};
+BmpParser.prototype = {
+  __proto__: SimpleImageParser.prototype
+};
 
 /**
  * @override
@@ -127,7 +128,9 @@ function GifParser(parent) {
   SimpleImageParser.call(this, parent, 'gif', /\.Gif$/i, 10);
 }
 
-GifParser.prototype = {__proto__: SimpleImageParser.prototype};
+GifParser.prototype = {
+  __proto__: SimpleImageParser.prototype
+};
 
 /**
  * @override
@@ -157,7 +160,9 @@ function WebpParser(parent) {
   SimpleImageParser.call(this, parent, 'webp', /\.webp$/i, 30);
 }
 
-WebpParser.prototype = {__proto__: SimpleImageParser.prototype};
+WebpParser.prototype = {
+  __proto__: SimpleImageParser.prototype
+};
 
 /**
  * @override
@@ -183,8 +188,8 @@ WebpParser.prototype.parseHeader = (metadata, br) => {
       br.seek(23);
       const lossySignature = br.readScalar(2) | (br.readScalar(1) << 16);
       if (lossySignature != 0x2a019d) {
-        throw new Error('Invalid VP8 lossy bitstream signature: ' +
-            lossySignature);
+        throw new Error(
+            'Invalid VP8 lossy bitstream signature: ' + lossySignature);
       }
       var dimensionBits = br.readScalar(4);
       metadata.width = dimensionBits & 0x3fff;
@@ -196,8 +201,8 @@ WebpParser.prototype.parseHeader = (metadata, br) => {
       br.seek(20);
       const losslessSignature = br.readScalar(1);
       if (losslessSignature != 0x2f) {
-        throw new Error('Invalid VP8 lossless bitstream signature: ' +
-            losslessSignature);
+        throw new Error(
+            'Invalid VP8 lossless bitstream signature: ' + losslessSignature);
       }
       var dimensionBits = br.readScalar(4);
       metadata.width = (dimensionBits & 0x3fff) + 1;
@@ -229,7 +234,9 @@ function IcoParser(parent) {
   SimpleImageParser.call(this, parent, 'ico', /\.ico$/i, 8);
 }
 
-IcoParser.prototype = {__proto__: SimpleImageParser.prototype};
+IcoParser.prototype = {
+  __proto__: SimpleImageParser.prototype
+};
 
 /**
  * @override

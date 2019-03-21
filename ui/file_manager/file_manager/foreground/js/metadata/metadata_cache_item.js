@@ -29,7 +29,7 @@ MetadataCacheItem.prototype.createRequests = function(names) {
     // Check if the property needs to be updated.
     if (this.properties_[name] &&
         this.properties_[name].state !==
-        MetadataCacheItemPropertyState.INVALIDATED) {
+            MetadataCacheItemPropertyState.INVALIDATED) {
       continue;
     }
     loadRequested.push(name);
@@ -62,7 +62,7 @@ MetadataCacheItem.prototype.startRequests = function(requestId, names) {
  */
 MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
   let changed = false;
-  const object = /** @type {!Object} */(typedObject);
+  const object = /** @type {!Object} */ (typedObject);
   for (let name in object) {
     if (/.Error$/.test(name) && object[name]) {
       object[name.substr(0, name.length - 5)] = undefined;
@@ -77,7 +77,7 @@ MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
     }
     if (requestId < this.properties_[name].requestId ||
         this.properties_[name].state ===
-        MetadataCacheItemPropertyState.FULFILLED) {
+            MetadataCacheItemPropertyState.FULFILLED) {
       continue;
     }
     changed = true;
@@ -110,7 +110,7 @@ MetadataCacheItem.prototype.invalidate = function(requestId) {
  * @return {!MetadataItem}
  */
 MetadataCacheItem.prototype.get = function(names) {
-  const result = /** @type {!Object} */(new MetadataItem());
+  const result = /** @type {!Object} */ (new MetadataItem());
   for (let i = 0; i < names.length; i++) {
     const name = names[i];
     assert(!/Error$/.test(name));
@@ -119,7 +119,7 @@ MetadataCacheItem.prototype.get = function(names) {
       result[name + 'Error'] = this.properties_[name].error;
     }
   }
-  return /** @type {!MetadataItem} */(result);
+  return /** @type {!MetadataItem} */ (result);
 };
 
 /**
@@ -148,7 +148,7 @@ MetadataCacheItem.prototype.hasFreshCache = function(names) {
   for (let i = 0; i < names.length; i++) {
     if (!(this.properties_[names[i]] &&
           this.properties_[names[i]].state ===
-          MetadataCacheItemPropertyState.FULFILLED)) {
+              MetadataCacheItemPropertyState.FULFILLED)) {
       return false;
     }
   }
