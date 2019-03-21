@@ -907,6 +907,30 @@ TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
       element_id_, ElementListType::PENDING, transform_x, transform_y);
 }
 
+TEST_F(AnimationTest, TickingState) {
+  KeyframeEffectId keyframe_effect_id = animation_->NextKeyframeEffectId();
+
+  animation_->AddKeyframeEffect(
+      std::make_unique<KeyframeEffect>(keyframe_effect_id));
+
+  host_->AddAnimationTimeline(timeline_);
+  timeline_->AttachAnimation(animation_);
+
+  const int transform_x = 10;
+  const int transform_y = 20;
+  const double duration = 1.;
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id);
+  AddAnimatedTransformToAnimation(animation_.get(), duration, transform_x,
+                                  transform_y, keyframe_effect_id);
+  KeyframeEffect* keyframe_effect =
+      animation_->GetKeyframeEffectById(keyframe_effect_id);
+  EXPECT_FALSE(keyframe_effect->is_ticking());
+  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  EXPECT_TRUE(keyframe_effect->is_ticking());
+  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+  EXPECT_FALSE(keyframe_effect->is_ticking());
+}
+
 TEST_F(AnimationTest, KeyframeEffectSyncToImplTest) {
   host_->AddAnimationTimeline(timeline_);
   EXPECT_TRUE(timeline_->needs_push_properties());
