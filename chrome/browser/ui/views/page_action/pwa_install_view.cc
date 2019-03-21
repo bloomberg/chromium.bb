@@ -31,7 +31,7 @@ bool PwaInstallView::Update() {
       banners::AppBannerManager::FromWebContents(web_contents);
   DCHECK(manager);
 
-  bool is_installable = manager->IsInstallable();
+  bool is_installable = manager->IsProbablyInstallable();
   bool is_installed =
       web_app::WebAppTabHelperBase::FromWebContents(web_contents)
           ->HasAssociatedApp();
