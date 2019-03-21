@@ -71,4 +71,17 @@ public class BuildConfig {
     // Default value, do not use.
     public static MAYBE_FINAL int R_STRING_PRODUCT_VERSION MAYBE_ZERO;
 #endif
+
+    // Minimum SDK Version supported by this apk.
+    // Be cautious when using this value, as it can happen that older apks get
+    // installed on newer Android version (e.g. when a device goes through a
+    // system upgrade). It is also convenient for developing to have all
+    // features available through a single APK.
+    // However, it's pretty safe to assument that a feature specific to KitKat
+    // will never be needed in an APK with MIN_SDK_VERSION = Oreo.
+#if defined(_MIN_SDK_VERSION)
+    public static MAYBE_FINAL int MIN_SDK_VERSION = _MIN_SDK_VERSION;
+#else
+    public static MAYBE_FINAL int MIN_SDK_VERSION = 1;
+#endif
 }
