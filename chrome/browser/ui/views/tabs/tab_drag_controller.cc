@@ -1921,6 +1921,7 @@ Browser* TabDragController::CreateBrowserForDrag(
   gfx::Rect new_bounds(CalculateDraggedBrowserBounds(source,
                                                      point_in_screen,
                                                      drag_bounds));
+  *drag_offset = point_in_screen - new_bounds.origin();
 
   Profile* profile =
       Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());
