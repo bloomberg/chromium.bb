@@ -8,6 +8,9 @@ yusufo@chromium.org
 
 per-file static_initializers.gni=*
 per-file java_sources.gni=*
+per-file chrome_java_sources.gni=*
+per-file chrome_test_java_sources.gni=*
+per-file chrome_junit_test_java_sources.gni=*
 # For VR Javatest changes
 per-file BUILD.gn=bsheedy@chromium.org
 
