@@ -63,7 +63,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "file_locations_unittest.mm",
-    "key_commands_provider_unittest.mm",
     "native_content_controller_unittest.mm",
     "network_activity_indicator_manager_unittest.mm",
     "page_not_available_controller_unittest.mm",
@@ -222,8 +221,6 @@ source_set("external_files") {
 source_set("ui_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "key_commands_provider.h",
-    "key_commands_provider.mm",
     "page_not_available_controller.h",
     "page_not_available_controller.mm",
   ]
