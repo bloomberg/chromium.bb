@@ -57253,6 +57253,38 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Constant."/>
 </enum>
 
+<enum name="WebRtcEventLoggingApiEnum">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kDeadRph"/>
+  <int value="2" label="kFeatureDisabled"/>
+  <int value="3" label="kIncognito"/>
+  <int value="4" label="kInvalidArguments"/>
+  <int value="5" label="kIllegalSessionId"/>
+  <int value="6" label="kDisabledBrowserContext"/>
+  <int value="7" label="kUnknownOrInvalidPeerConnection"/>
+  <int value="8" label="kAlreadyLogging"/>
+  <int value="9" label="kNoAdditionalLogsAllowed"/>
+  <int value="10" label="kLogPathNotAvailable"/>
+  <int value="11" label="kHistoryPathNotAvailable"/>
+  <int value="12" label="kFileCreationError"/>
+</enum>
+
+<enum name="WebRtcEventLoggingUploadEnum">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kLogFileWriteError"/>
+  <int value="2" label="kActiveLogCancelledDueToCacheClear"/>
+  <int value="3" label="kPendingLogDeletedDueToCacheClear"/>
+  <int value="4" label="kHistoryFileCreationError"/>
+  <int value="5" label="kHistoryFileWriteError"/>
+  <int value="6" label="kLogFileReadError"/>
+  <int value="7" label="kLogFileNameError"/>
+  <int value="8" label="kUploadCancelled"/>
+  <int value="9" label="kUploadFailure"/>
+  <int value="10" label="kIncompletePastUpload"/>
+  <int value="11" label="kExpiredLogFileAtChromeStart"/>
+  <int value="12" label="kExpiredLogFileDuringSession"/>
+</enum>
+
 <enum name="WebRtcH264DecoderImplEvent">
   <int value="0" label="Init"/>
   <int value="1" label="Error"/>
