@@ -623,6 +623,12 @@
           'chrome',
         ],
       },
+      'linux-chromeos-google-rel': {
+        'mixins': ['experimental'],
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
     },
   },
   {
