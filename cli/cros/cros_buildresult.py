@@ -39,10 +39,6 @@ def FetchBuildStatuses(buildstore, options):
     build_status = buildstore.GetBuildStatuses([options.buildbucket_id])[0]
     if build_status:
       return [build_status]
-  elif options.cidb_id:
-    build_status = buildstore.GetBuildStatuses([options.cidb_id])[0]
-    if build_status:
-      return [build_status]
   elif options.build_config:
     start_date = options.start_date or options.date
     end_date = options.end_date or options.date
@@ -104,7 +100,6 @@ def Report(build_statuses):
 
   for build_status in build_statuses:
     result += '\n'.join([
-        'cidb_id: %s' % build_status['id'],
         'buildbucket_id: %s' % build_status['buildbucket_id'],
         'status: %s' % build_status['status'],
         'artifacts_url: %s' % build_status['artifacts_url'],
@@ -131,7 +126,6 @@ def ReportJson(build_statuses):
 
   for build_status in build_statuses:
     report[build_status['buildbucket_id']] = {
-        'cidb_id': build_status['id'],
         'buildbucket_id': build_status['buildbucket_id'],
         'status': build_status['status'],
         'stages': {s['name']: s['status'] for s in build_status['stages']},
@@ -149,7 +143,6 @@ class BuildResultCommand(command.CliCommand):
   EPILOG = """
 Look up a single build result:
   cros buildresult --buildbucket-id 1234567890123
-  cros buildresult --cidb-id 1234
 
 Look up results by build config name:
   cros buildresult --build-config samus-pre-cq
@@ -194,9 +187,8 @@ Note:
     request_group = parser.add_mutually_exclusive_group()
 
     request_group.add_argument(
-        '--buildbucket-id', help='Buildbucket ID of build to look up.')
-    request_group.add_argument(
-        '--cidb-id', help='CIDB ID of the build to look up.')
+        '--buildbucket-id', help='Buildbucket ID of build to look up. '
+        'It is a 19-digit long ID which can be found in Milo or GoldenEye URL.')
     request_group.add_argument(
         '--build-config', help='')
 
