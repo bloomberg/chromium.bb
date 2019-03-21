@@ -228,26 +228,33 @@ std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
   for (const auto& it : other) {
-    const Entry* entry = GetUntrusted(it.first);
-    bool same_value = false;
-    if (!entry) {
-      Set(it.first, it.second.DeepCopy());
-    } else {
-      same_value = entry->value && it.second.value->Equals(entry->value.get());
-      if (it.second.has_higher_priority_than(*entry)) {
-        auto new_policy = it.second.DeepCopy();
-        new_policy.AddConflictingPolicy(*entry);
-        Set(it.first, std::move(new_policy));
-      } else {
-        GetMutableUntrusted(it.first)->AddConflictingPolicy(it.second);
-      }
+    Entry* current_policy = GetMutableUntrusted(it.first);
+    auto other_policy = it.second.DeepCopy();
+
+    if (!current_policy) {
+      Set(it.first, std::move(other_policy));
+      continue;
     }
 
-    if (entry) {
-      GetMutableUntrusted(it.first)->AddError(
-          same_value ? IDS_POLICY_CONFLICT_SAME_VALUE
-                     : IDS_POLICY_CONFLICT_DIFF_VALUE);
+    auto& new_policy = other_policy.has_higher_priority_than(*current_policy)
+                           ? other_policy
+                           : *current_policy;
+    auto& conflict =
+        current_policy == &new_policy ? other_policy : *current_policy;
+
+    bool overwriting_default_policy =
+        new_policy.source != conflict.source &&
+        conflict.source == POLICY_SOURCE_ENTERPRISE_DEFAULT;
+    if (!overwriting_default_policy) {
+      new_policy.AddConflictingPolicy(conflict);
+      new_policy.AddError((current_policy->value &&
+                           it.second.value->Equals(current_policy->value.get()))
+                              ? IDS_POLICY_CONFLICT_SAME_VALUE
+                              : IDS_POLICY_CONFLICT_DIFF_VALUE);
     }
+
+    if (current_policy != &new_policy)
+      Set(it.first, std::move(new_policy));
   }
 }
 
@@ -317,7 +324,8 @@ void PolicyMap::Clear() {
 // static
 bool PolicyMap::MapEntryEquals(const PolicyMap::PolicyMapType::value_type& a,
                                const PolicyMap::PolicyMapType::value_type& b) {
-  return a.first == b.first && a.second.Equals(b.second);
+  bool equals = a.first == b.first && a.second.Equals(b.second);
+  return equals;
 }
 
 void PolicyMap::FilterErase(

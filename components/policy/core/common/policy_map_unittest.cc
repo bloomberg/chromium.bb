@@ -242,7 +242,6 @@ TEST_F(PolicyMapTest, MergeFrom) {
   auto conflicted_policy_1 = a.Get(kTestPolicyName1)->DeepCopy();
   auto conflicted_policy_4 = a.Get(kTestPolicyName4)->DeepCopy();
   auto conflicted_policy_5 = a.Get(kTestPolicyName5)->DeepCopy();
-  auto conflicted_policy_7 = a.Get(kTestPolicyName7)->DeepCopy();
   auto conflicted_policy_8 = b.Get(kTestPolicyName8)->DeepCopy();
 
   a.GetMutable(kTestPolicyName7)->SetBlocked();
@@ -287,8 +286,6 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName7, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(true),
         nullptr);
-  c.GetMutable(kTestPolicyName7)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  c.GetMutable(kTestPolicyName7)->AddConflictingPolicy(conflicted_policy_7);
   c.GetMutable(kTestPolicyName7)->SetBlocked();
 
   c.Set(kTestPolicyName8, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
