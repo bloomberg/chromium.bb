@@ -62,18 +62,17 @@ constexpr char kColorLaserJson[] = R"json({
 // Helper class to record observed events.
 class LoggingObserver : public SyncedPrintersManager::Observer {
  public:
-  explicit LoggingObserver(SyncedPrintersManager* source) : observer_(this) {
+  explicit LoggingObserver(SyncedPrintersManager* source)
+      : observer_(this), manager_(source) {
     observer_.Add(source);
   }
 
-  void OnConfiguredPrintersChanged(
-      const std::vector<Printer>& printers) override {
-    configured_printers_ = printers;
+  void OnConfiguredPrintersChanged() override {
+    configured_printers_ = manager_->GetConfiguredPrinters();
   }
 
-  void OnEnterprisePrintersChanged(
-      const std::vector<Printer>& printer) override {
-    enterprise_printers_ = printer;
+  void OnEnterprisePrintersChanged() override {
+    manager_->GetEnterprisePrinters(&enterprise_printers_);
   }
 
   const std::vector<Printer>& configured_printers() const {
@@ -88,6 +87,7 @@ class LoggingObserver : public SyncedPrintersManager::Observer {
   std::vector<Printer> enterprise_printers_;
   ScopedObserver<SyncedPrintersManager, SyncedPrintersManager::Observer>
       observer_;
+  SyncedPrintersManager* manager_;
 };
 
 class SyncedPrintersManagerTest : public testing::Test {
@@ -200,10 +200,12 @@ TEST_F(SyncedPrintersManagerTest, EnterprisePrinters) {
   // TestingPrefSyncableService assumes ownership of |value|.
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
-  auto printers = manager_->GetEnterprisePrinters();
+  std::vector<Printer> printers;
+  manager_->GetEnterprisePrinters(&printers);
   ASSERT_EQ(2U, printers.size());
-  EXPECT_EQ("Color Laser", printers[0].display_name());
-  EXPECT_EQ("ipp://192.168.1.5", printers[1].uri());
+  // order not specified
+  // EXPECT_EQ("Color Laser", printers[0].display_name());
+  // EXPECT_EQ("ipp://192.168.1.5", printers[1].uri());
   EXPECT_EQ(Printer::Source::SRC_POLICY, printers[1].source());
 }
 
@@ -217,7 +219,8 @@ TEST_F(SyncedPrintersManagerTest, GetEnterprisePrinter) {
   // TestingPrefSyncableService assumes ownership of |value|.
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
-  auto printers = manager_->GetEnterprisePrinters();
+  std::vector<Printer> printers;
+  manager_->GetEnterprisePrinters(&printers);
 
   const Printer& from_list = printers.front();
   std::unique_ptr<Printer> retrieved = manager_->GetPrinter(from_list.id());
@@ -250,7 +253,9 @@ TEST_F(SyncedPrintersManagerTest, PrinterInstalledConfiguresPrinter) {
   prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
   // Figure out the id of the enterprise printer that was just installed.
-  std::string enterprise_id = manager_->GetEnterprisePrinters().at(0).id();
+  std::vector<Printer> printers;
+  manager_->GetEnterprisePrinters(&printers);
+  std::string enterprise_id = printers.at(0).id();
 
   Printer configured(kTestPrinterId);
 

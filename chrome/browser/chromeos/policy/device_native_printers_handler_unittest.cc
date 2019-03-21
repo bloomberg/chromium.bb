@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/chromeos/printing/device_external_printers_factory.h"
-#include "chrome/browser/chromeos/printing/external_printers.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -73,8 +73,9 @@ class DeviceNativePrintersHandlerTest : public testing::Test {
     device_native_printers_handler_ =
         std::make_unique<DeviceNativePrintersHandler>(&policy_service_);
     external_printers_ =
-        chromeos::DeviceExternalPrintersFactory::Get()->GetForDevice();
-    external_printers_->SetAccessMode(chromeos::ExternalPrinters::ALL_ACCESS);
+        chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
+    external_printers_->SetAccessMode(
+        chromeos::BulkPrintersCalculator::ALL_ACCESS);
   }
 
   void TearDown() override { device_native_printers_handler_->Shutdown(); }
@@ -83,7 +84,7 @@ class DeviceNativePrintersHandlerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockPolicyService policy_service_;
   std::unique_ptr<DeviceNativePrintersHandler> device_native_printers_handler_;
-  base::WeakPtr<chromeos::ExternalPrinters> external_printers_;
+  base::WeakPtr<chromeos::BulkPrintersCalculator> external_printers_;
 };
 
 TEST_F(DeviceNativePrintersHandlerTest, OnDataFetched) {
