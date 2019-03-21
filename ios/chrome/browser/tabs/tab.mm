@@ -240,7 +240,7 @@ NSString* const kTabUrlKey = @"url";
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
 
-  [_openInController detachFromWebController];
+  [_openInController detachFromWebState];
   _openInController = nil;
 
   // Cancel any queued dialogs.
@@ -257,7 +257,7 @@ NSString* const kTabUrlKey = @"url";
   if (!_openInController) {
     _openInController = [[OpenInController alloc]
         initWithURLLoaderFactory:_browserState->GetSharedURLLoaderFactory()
-                   webController:self.webController];
+                        webState:self.webState];
     // Previously evicted tabs should be reloaded before this method is called.
     DCHECK(!self.webState->IsEvicted());
     self.webState->GetNavigationManager()->LoadIfNecessary();

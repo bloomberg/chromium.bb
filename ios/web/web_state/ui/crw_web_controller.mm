@@ -269,8 +269,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   BOOL _applyingPageState;
   // Actions to execute once the page load is complete.
   NSMutableArray* _pendingLoadCompleteActions;
-  // UIGestureRecognizers to add to the web view.
-  NSMutableArray* _gestureRecognizers;
   // Flag to say if browsing is enabled.
   BOOL _webUsageEnabled;
   // The controller that tracks long press and check context menu trigger.
@@ -656,7 +654,6 @@ GURL URLEscapedForHistory(const GURL& url) {
         [[CRWJSInjectionReceiver alloc] initWithEvaluator:self];
     _webViewProxy = [[CRWWebViewProxyImpl alloc] initWithWebController:self];
     [[_webViewProxy scrollViewProxy] addObserver:self];
-    _gestureRecognizers = [[NSMutableArray alloc] init];
     _pendingLoadCompleteActions = [[NSMutableArray alloc] init];
     web::BrowserState* browserState = _webStateImpl->GetBrowserState();
     _certVerificationController = [[CRWCertVerificationController alloc]
@@ -1453,22 +1450,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   if ([self.nativeController respondsToSelector:@selector(wasHidden)]) {
     [self.nativeController wasHidden];
   }
-}
-
-- (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer {
-  if ([_gestureRecognizers containsObject:recognizer])
-    return;
-
-  [self.webView addGestureRecognizer:recognizer];
-  [_gestureRecognizers addObject:recognizer];
-}
-
-- (void)removeGestureRecognizerFromWebView:(UIGestureRecognizer*)recognizer {
-  if (![_gestureRecognizers containsObject:recognizer])
-    return;
-
-  [self.webView removeGestureRecognizer:recognizer];
-  [_gestureRecognizers removeObject:recognizer];
 }
 
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
@@ -3862,11 +3843,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                                              browserState:browserState
                                        injectionEvaluator:self
                                                  delegate:self];
-
-    // Add all additional gesture recognizers to the web view.
-    for (UIGestureRecognizer* recognizer in _gestureRecognizers) {
-      [self.webView addGestureRecognizer:recognizer];
-    }
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
     // resize the view to match the container view upon creation.

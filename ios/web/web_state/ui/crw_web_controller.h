@@ -200,11 +200,6 @@ class WebStateImpl;
 // Notifies the CRWWebController that it has been hidden.
 - (void)wasHidden;
 
-// Adds |recognizer| as a gesture recognizer to the web view.
-- (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer;
-// Removes |recognizer| from the web view.
-- (void)removeGestureRecognizerFromWebView:(UIGestureRecognizer*)recognizer;
-
 // Returns the native controller (if any) current mananging the content.
 - (id<CRWNativeContent>)nativeController;
 
