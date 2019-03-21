@@ -116,6 +116,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/test/views/accessibility_checker.h"
+#include "ui/views/views_delegate.h"
 #endif
 
 namespace {
@@ -158,6 +159,16 @@ InProcessBrowserTest::SetUpBrowserFunction*
     InProcessBrowserTest::global_browser_set_up_function_ = nullptr;
 
 InProcessBrowserTest::InProcessBrowserTest()
+#if defined(TOOLKIT_VIEWS)
+    : InProcessBrowserTest(
+          base::BindOnce([]() -> std::unique_ptr<views::ViewsDelegate> {
+            return std::make_unique<AccessibilityChecker>();
+          })) {
+}
+
+InProcessBrowserTest::InProcessBrowserTest(
+    DelegateCallback viewsDelegateCallback)
+#endif  // defined(TOOLKIT_VIEWS)
     : browser_(NULL),
       exit_when_last_browser_closes_(true),
       open_about_blank_on_browser_launch_(true)
@@ -204,7 +215,7 @@ InProcessBrowserTest::InProcessBrowserTest()
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  accessibility_checker_ = std::make_unique<AccessibilityChecker>();
+  views_delegate_ = std::move(viewsDelegateCallback).Run();
 #endif
 }
 

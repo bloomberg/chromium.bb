@@ -73,9 +73,11 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   static gfx::Rect ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds);
 
   // Converts a screen DIP rect to a screen physical rect.
-  // The DPI scale is performed relative to the display nearest to |hwnd|.
-  // If |hwnd| is null, scaling will be performed to the display nearest to
-  // |dip_bounds|.
+  // If |hwnd| is null, scaling will be performed using the DSF of the display
+  // nearest to |dip_bounds|; otherwise, scaling will be performed using the DSF
+  // of the display nearest to |hwnd|.  Thus if an existing HWND is moving to a
+  // different display, it's often more correct to pass null for |hwnd| to get
+  // the new display's scale factor rather than the old one's.
   static gfx::Rect DIPToScreenRect(HWND hwnd, const gfx::Rect& dip_bounds);
 
   // Converts a client physical rect to a client DIP rect.

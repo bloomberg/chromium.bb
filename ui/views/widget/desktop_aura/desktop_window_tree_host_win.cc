@@ -557,6 +557,9 @@ void DesktopWindowTreeHostWin::SetBoundsInPixels(
   window_enlargement_ =
       gfx::Vector2d(new_expanded.width() - expanded.width(),
                     new_expanded.height() - expanded.height());
+  // When |new_expanded| causes the window to be moved to a display with a
+  // different DSF, HWNDMessageHandler::OnDpiChanged() will be called and the
+  // window size will be scaled automatically.
   message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
 }
 
