@@ -38,10 +38,8 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void Register(blink::mojom::SyncRegistrationOptionsPtr options,
                 int64_t sw_registration_id,
                 RegisterCallback callback) override;
-  void DidResolveRegistration(
-      int64_t sw_registration_id,
-      const std::string& tag,
-      blink::mojom::BackgroundSyncType sync_type) override;
+  void DidResolveRegistration(blink::mojom::BackgroundSyncRegistrationInfoPtr
+                                  registration_info) override;
   void GetRegistrations(int64_t sw_registration_id,
                         GetRegistrationsCallback callback) override;
 

@@ -38,11 +38,22 @@ enum BackgroundSyncType {
   PERIODIC,
 };
 
+// Minimum information required to uniquely identify a Background Sync
+// registration.
+struct BackgroundSyncRegistrationInfo {
+  // To be kept in sync with blink.mojom.kInvalidServiceWorkerRegistrationId.
+  int64 service_worker_registration_id = -1;
+
+  // The descriptive 'tag' for the sync registration. It is provided with the
+  // Register() method by the developer.
+  string tag;
+  BackgroundSyncType sync_type;
+};
+
 interface BackgroundSyncService {
   Register(SyncRegistrationOptions options, int64 service_worker_registration_id)
       => (BackgroundSyncError err, SyncRegistrationOptions options);
-  DidResolveRegistration(int64 service_worker_registration_id, string tag,
-                         BackgroundSyncType sync_type);
+  DidResolveRegistration(BackgroundSyncRegistrationInfo registration_info);
   GetRegistrations(int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistrationOptions> registrations);
 };
