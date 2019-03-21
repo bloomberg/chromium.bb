@@ -3297,11 +3297,11 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       }
       if (tx_size != TX_64X64 || !is_high_energy ||
           (sse_diff * 2) < this_rd_stats.sse) {
-        int64_t tx_domain_dist = this_rd_stats.dist;
+        const int64_t tx_domain_dist = this_rd_stats.dist;
         this_rd_stats.dist = dist_block_px_domain(
             cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size);
-        // For high energy blocks, occasionally, the pixel domain distorion
-        // can be artificially low due to clampings at reconstruction stage
+        // For high energy blocks, occasionally, the pixel domain distortion
+        // can be artificially low due to clamping at reconstruction stage
         // even when inverse transform output is hugely different from the
         // actual residue.
         if (is_high_energy && this_rd_stats.dist < tx_domain_dist)
