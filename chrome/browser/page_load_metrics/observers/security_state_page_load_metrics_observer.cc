@@ -26,7 +26,7 @@ const char kEngagementDeltaPrefix[] = "Security.SiteEngagementDelta";
 
 // Navigation histogram prefixes.
 const char kPageEndReasonPrefix[] = "Security.PageEndReason";
-const char kTimeOnPagePrefix[] = "Security.TimeOnPage";
+const char kTimeOnPagePrefix[] = "Security.TimeOnPage2";
 
 // Security level histograms.
 const char kSecurityLevelOnCommit[] = "Security.SecurityLevel.OnCommit";
@@ -176,6 +176,9 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
             kEngagementFinalPrefix, current_security_level_),
         final_engagement_score, 100);
   }
+
+  if (currently_in_foreground_)
+    foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
 
   base::UmaHistogramEnumeration(
       security_state::GetSecurityLevelHistogramName(
