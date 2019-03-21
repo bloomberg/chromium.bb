@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /** A ThemeColorProvider for the app theme (incognito or standard theming). */
 public class AppThemeColorProvider extends ThemeColorProvider implements IncognitoStateObserver {
@@ -39,8 +40,13 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
     /** Whether app is in overview mode. */
     private boolean mIsOverviewVisible;
 
+    /** The activity {@link Context}. */
+    private final Context mActivityContext;
+
     AppThemeColorProvider(Context context) {
         super(context);
+
+        mActivityContext = context;
         mLightPrimaryColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.modern_primary_color);
         mDarkPrimaryColor = ApiCompatibilityUtils.getColor(
@@ -81,8 +87,10 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
         final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
         final boolean isHorizontalTabSwitcherEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+        final boolean isTabGridEnabled =
+                FeatureUtilities.isGridTabSwitcherEnabled(mActivityContext);
         final boolean shouldUseDarkBackground = mIsIncognito
-                && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled
+                && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled
                         || !mIsOverviewVisible);
 
         updatePrimaryColor(shouldUseDarkBackground ? mDarkPrimaryColor : mLightPrimaryColor, false);
