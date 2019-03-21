@@ -384,7 +384,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Sets CdmContext from |cdm| on the pipeline and calls OnCdmAttached()
   // when done.
-  void SetCdm(blink::WebContentDecryptionModule* cdm);
+  void SetCdmInternal(blink::WebContentDecryptionModule* cdm);
 
   // Called when a CDM has been attached to the |pipeline_|.
   void OnCdmAttached(bool success);
