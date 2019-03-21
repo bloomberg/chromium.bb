@@ -76,14 +76,7 @@ class TestInkDropHighlight : public InkDropHighlight {
 
 }  // namespace
 
-TestInkDropHost::TestInkDropHost()
-    : num_ink_drop_layers_added_(0),
-      num_ink_drop_layers_removed_(0),
-      num_ink_drop_ripples_created_(0),
-      num_ink_drop_highlights_created_(0),
-      last_ink_drop_ripple_(nullptr),
-      last_ink_drop_highlight_(nullptr),
-      disable_timers_for_test_(false) {}
+TestInkDropHost::TestInkDropHost() = default;
 
 TestInkDropHost::~TestInkDropHost() = default;
 

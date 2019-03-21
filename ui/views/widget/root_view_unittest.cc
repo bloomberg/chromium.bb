@@ -76,10 +76,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
 // Tracks whether a context menu is shown.
 class TestContextMenuController : public ContextMenuController {
  public:
-  TestContextMenuController()
-      : show_context_menu_calls_(0),
-        menu_source_view_(nullptr),
-        menu_source_type_(ui::MENU_SOURCE_NONE) {}
+  TestContextMenuController() = default;
   ~TestContextMenuController() override = default;
 
   int show_context_menu_calls() const { return show_context_menu_calls_; }
@@ -102,9 +99,9 @@ class TestContextMenuController : public ContextMenuController {
   }
 
  private:
-  int show_context_menu_calls_;
-  View* menu_source_view_;
-  ui::MenuSourceType menu_source_type_;
+  int show_context_menu_calls_ = 0;
+  View* menu_source_view_ = nullptr;
+  ui::MenuSourceType menu_source_type_ = ui::MENU_SOURCE_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
 };

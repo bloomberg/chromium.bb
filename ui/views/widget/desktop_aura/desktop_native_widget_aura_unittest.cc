@@ -375,12 +375,7 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
 // 2. Parent window destroyed which should lead to the child being destroyed.
 class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
  public:
-  DesktopAuraTopLevelWindowTest()
-      : top_level_widget_(nullptr),
-        owned_window_(nullptr),
-        owner_destroyed_(false),
-        owned_window_destroyed_(false),
-        use_async_mode_(true) {}
+  DesktopAuraTopLevelWindowTest() = default;
 
   ~DesktopAuraTopLevelWindowTest() override {
     EXPECT_TRUE(owner_destroyed_);
@@ -466,14 +461,14 @@ class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
 
  private:
   views::Widget widget_;
-  views::Widget* top_level_widget_;
-  aura::Window* owned_window_;
-  bool owner_destroyed_;
-  bool owned_window_destroyed_;
+  views::Widget* top_level_widget_ = nullptr;
+  aura::Window* owned_window_ = nullptr;
+  bool owner_destroyed_ = false;
+  bool owned_window_destroyed_ = false;
   aura::test::TestWindowDelegate child_window_delegate_;
   // This flag controls whether we need to wait for the destruction to complete
   // before finishing the test. Defaults to true.
-  bool use_async_mode_;
+  bool use_async_mode_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopAuraTopLevelWindowTest);
 };

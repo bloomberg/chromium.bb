@@ -35,8 +35,8 @@ class TestInkDrop : public InkDrop {
   void SetShowHighlightOnFocus(bool show_highlight_on_focus) override;
 
  private:
-  InkDropState state_;
-  bool is_hovered_;
+  InkDropState state_ = InkDropState::HIDDEN;
+  bool is_hovered_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDrop);
 };

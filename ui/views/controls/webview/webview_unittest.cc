@@ -104,7 +104,7 @@ class WebViewTestWebContentsObserver : public content::WebContentsObserver {
 // Fakes the fullscreen browser state reported to WebContents and WebView.
 class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
  public:
-  WebViewTestWebContentsDelegate() : is_fullscreened_(false) {}
+  WebViewTestWebContentsDelegate() = default;
   ~WebViewTestWebContentsDelegate() override = default;
 
   void set_is_fullscreened(bool fs) { is_fullscreened_ = fs; }
@@ -116,7 +116,7 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
   }
 
  private:
-  bool is_fullscreened_;
+  bool is_fullscreened_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestWebContentsDelegate);
 };

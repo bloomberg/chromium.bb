@@ -391,14 +391,7 @@ namespace views {
 
 class TextfieldTest : public ViewsTestBase, public TextfieldController {
  public:
-  TextfieldTest()
-      : widget_(nullptr),
-        textfield_(nullptr),
-        model_(nullptr),
-        input_method_(nullptr),
-        on_before_user_action_(0),
-        on_after_user_action_(0),
-        copied_to_clipboard_(ui::CLIPBOARD_TYPE_LAST) {
+  TextfieldTest() {
     input_method_ = new MockInputMethod();
     ui::SetUpInputMethodForTesting(input_method_);
   }
@@ -781,27 +774,27 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   void MoveMouseTo(const gfx::Point& where) { mouse_position_ = where; }
 
   // We need widget to populate wrapper class.
-  Widget* widget_;
+  Widget* widget_ = nullptr;
 
-  TestTextfield* textfield_;
+  TestTextfield* textfield_ = nullptr;
   std::unique_ptr<TextfieldTestApi> test_api_;
-  TextfieldModel* model_;
+  TextfieldModel* model_ = nullptr;
 
   // The string from Controller::ContentsChanged callback.
   base::string16 last_contents_;
 
   // For testing input method related behaviors.
-  MockInputMethod* input_method_;
+  MockInputMethod* input_method_ = nullptr;
 
   // Indicates how many times OnBeforeUserAction() is called.
-  int on_before_user_action_;
+  int on_before_user_action_ = 0;
 
   // Indicates how many times OnAfterUserAction() is called.
-  int on_after_user_action_;
+  int on_after_user_action_ = 0;
 
   // Position of the mouse for synthetic mouse events.
   gfx::Point mouse_position_;
-  ui::ClipboardType copied_to_clipboard_;
+  ui::ClipboardType copied_to_clipboard_ = ui::CLIPBOARD_TYPE_LAST;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
  private:

@@ -19,11 +19,9 @@ template <typename ContextType>
 class TestInkDropAnimationObserverHelper {
  public:
   TestInkDropAnimationObserverHelper()
-      : last_animation_started_ordinal_(-1),
-        last_animation_started_context_(),
-        last_animation_ended_ordinal_(-1),
-        last_animation_ended_context_(),
-        last_animation_ended_reason_(InkDropAnimationEndedReason::SUCCESS) {}
+      : last_animation_started_context_(),
+
+        last_animation_ended_context_() {}
 
   virtual ~TestInkDropAnimationObserverHelper() = default;
 
@@ -166,7 +164,7 @@ class TestInkDropAnimationObserverHelper {
   }
 
   // The ordinal time of the last AnimationStarted() call.
-  int last_animation_started_ordinal_;
+  int last_animation_started_ordinal_ = -1;
 
   // List of contexts for which animation is started.
   std::vector<ContextType> animation_started_contexts_;
@@ -175,7 +173,7 @@ class TestInkDropAnimationObserverHelper {
   ContextType last_animation_started_context_;
 
   // The ordinal time of the last AnimationEnded() call.
-  int last_animation_ended_ordinal_;
+  int last_animation_ended_ordinal_ = -1;
 
   // List of contexts for which animation is ended.
   std::vector<ContextType> animation_ended_contexts_;
@@ -183,7 +181,8 @@ class TestInkDropAnimationObserverHelper {
   // The |context| passed to the last call to AnimationEnded().
   ContextType last_animation_ended_context_;
 
-  InkDropAnimationEndedReason last_animation_ended_reason_;
+  InkDropAnimationEndedReason last_animation_ended_reason_ =
+      InkDropAnimationEndedReason::SUCCESS;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropAnimationObserverHelper);
 };

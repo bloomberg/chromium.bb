@@ -97,7 +97,7 @@ class GestureCaptureView : public View {
 // A view that always processes all mouse events.
 class MouseView : public View {
  public:
-  MouseView() : entered_(0), exited_(0), pressed_(0) {}
+  MouseView() = default;
   ~MouseView() override = default;
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -126,10 +126,10 @@ class MouseView : public View {
   int pressed() const { return pressed_; }
 
  private:
-  int entered_;
-  int exited_;
+  int entered_ = 0;
+  int exited_ = 0;
 
-  int pressed_;
+  int pressed_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MouseView);
 };
@@ -842,8 +842,7 @@ TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
 // window caption by sending fake WM_NCACTIVATE messages.
 class WidgetActivationTest : public Widget {
  public:
-  WidgetActivationTest()
-      : active_(false) {}
+  WidgetActivationTest() = default;
 
   ~WidgetActivationTest() override = default;
 
@@ -855,7 +854,7 @@ class WidgetActivationTest : public Widget {
   bool active() const { return active_; }
 
  private:
-  bool active_;
+  bool active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetActivationTest);
 };
@@ -1537,7 +1536,7 @@ namespace {
 // OnMouseCaptureLost has been invoked for a widget.
 class CaptureLostState {
  public:
-  CaptureLostState() : got_capture_lost_(false) {}
+  CaptureLostState() = default;
 
   bool GetAndClearGotCaptureLost() {
     bool value = got_capture_lost_;
@@ -1548,7 +1547,7 @@ class CaptureLostState {
   void OnMouseCaptureLost() { got_capture_lost_ = true; }
 
  private:
-  bool got_capture_lost_;
+  bool got_capture_lost_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureLostState);
 };
@@ -1775,7 +1774,7 @@ namespace {
 // Widget observer which grabs capture when the widget is activated.
 class CaptureOnActivationObserver : public WidgetObserver {
  public:
-  CaptureOnActivationObserver() : activation_observed_(false) {}
+  CaptureOnActivationObserver() = default;
   ~CaptureOnActivationObserver() override = default;
 
   // WidgetObserver:
@@ -1789,7 +1788,7 @@ class CaptureOnActivationObserver : public WidgetObserver {
   bool activation_observed() const { return activation_observed_; }
 
  private:
-  bool activation_observed_;
+  bool activation_observed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureOnActivationObserver);
 };
@@ -1838,7 +1837,7 @@ namespace {
 // Used to verify OnMouseEvent() has been invoked.
 class MouseEventTrackingWidget : public Widget {
  public:
-  MouseEventTrackingWidget() : got_mouse_event_(false) {}
+  MouseEventTrackingWidget() = default;
   ~MouseEventTrackingWidget() override = default;
 
   bool GetAndClearGotMouseEvent() {
@@ -1854,7 +1853,7 @@ class MouseEventTrackingWidget : public Widget {
   }
 
  private:
-  bool got_mouse_event_;
+  bool got_mouse_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEventTrackingWidget);
 };

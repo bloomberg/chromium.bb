@@ -488,7 +488,7 @@ namespace {
 
 class FocusInAboutToRequestFocusFromTabTraversalView : public View {
  public:
-  FocusInAboutToRequestFocusFromTabTraversalView() : view_to_focus_(nullptr) {}
+  FocusInAboutToRequestFocusFromTabTraversalView() = default;
 
   void set_view_to_focus(View* view) { view_to_focus_ = view; }
 
@@ -497,7 +497,7 @@ class FocusInAboutToRequestFocusFromTabTraversalView : public View {
   }
 
  private:
-  views::View* view_to_focus_;
+  views::View* view_to_focus_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FocusInAboutToRequestFocusFromTabTraversalView);
 };

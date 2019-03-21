@@ -258,8 +258,7 @@ class MaximizeLayoutManager : public TestLayoutManagerBase {
 // OnNativeWidgetSizeChanged that is invoked during Init matters.
 class TestWidget : public views::Widget {
  public:
-  TestWidget() : did_size_change_more_than_once_(false) {
-  }
+  TestWidget() = default;
 
   // Returns true if the size changes to a non-empty size, and then to another
   // size.
@@ -276,7 +275,7 @@ class TestWidget : public views::Widget {
   }
 
  private:
-  bool did_size_change_more_than_once_;
+  bool did_size_change_more_than_once_ = false;
   gfx::Size last_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidget);
@@ -303,7 +302,7 @@ TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
 
 class PropertyTestLayoutManager : public TestLayoutManagerBase {
  public:
-  PropertyTestLayoutManager() : added_(false) {}
+  PropertyTestLayoutManager() = default;
   ~PropertyTestLayoutManager() override = default;
 
   bool added() const { return added_; }
@@ -318,7 +317,7 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
     added_ = true;
   }
 
-  bool added_;
+  bool added_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PropertyTestLayoutManager);
 };
@@ -377,9 +376,7 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
 // View subclass that tracks whether it has gotten a gesture event.
 class GestureTrackingView : public views::View {
  public:
-  GestureTrackingView()
-      : got_gesture_event_(false),
-        consume_gesture_event_(true) {}
+  GestureTrackingView() = default;
 
   void set_consume_gesture_event(bool value) {
     consume_gesture_event_ = value;
@@ -401,10 +398,10 @@ class GestureTrackingView : public views::View {
 
  private:
   // Was OnGestureEvent() invoked?
-  bool got_gesture_event_;
+  bool got_gesture_event_ = false;
 
   // Dictates what OnGestureEvent() returns.
-  bool consume_gesture_event_;
+  bool consume_gesture_event_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(GestureTrackingView);
 };
@@ -603,7 +600,7 @@ TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
 // Used to track calls to WidgetDelegate::OnWidgetMove().
 class MoveTestWidgetDelegate : public WidgetDelegateView {
  public:
-  MoveTestWidgetDelegate() : got_move_(false) {}
+  MoveTestWidgetDelegate() = default;
   ~MoveTestWidgetDelegate() override = default;
 
   void ClearGotMove() { got_move_ = false; }
@@ -613,7 +610,7 @@ class MoveTestWidgetDelegate : public WidgetDelegateView {
   void OnWidgetMove() override { got_move_ = true; }
 
  private:
-  bool got_move_;
+  bool got_move_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MoveTestWidgetDelegate);
 };

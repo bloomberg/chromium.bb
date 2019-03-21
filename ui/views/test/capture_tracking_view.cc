@@ -7,10 +7,7 @@
 namespace views {
 namespace test {
 
-CaptureTrackingView::CaptureTrackingView()
-    : got_press_(false),
-      got_capture_lost_(false) {
-}
+CaptureTrackingView::CaptureTrackingView() = default;
 
 CaptureTrackingView::~CaptureTrackingView() = default;
 

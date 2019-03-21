@@ -21,7 +21,7 @@ namespace views {
 // A derived class of View used for testing purposes.
 class TestingView : public View, public ViewTargeterDelegate {
  public:
-  TestingView() : can_process_events_within_subtree_(true) {}
+  TestingView() = default;
   ~TestingView() override = default;
 
   // Reset all test state.
@@ -43,7 +43,7 @@ class TestingView : public View, public ViewTargeterDelegate {
 
  private:
   // Value to return from CanProcessEventsWithinSubtree().
-  bool can_process_events_within_subtree_;
+  bool can_process_events_within_subtree_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestingView);
 };

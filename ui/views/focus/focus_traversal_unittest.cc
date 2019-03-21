@@ -102,7 +102,7 @@ class DummyComboboxModel : public ui::ComboboxModel {
 // A View that can act as a pane.
 class PaneView : public View, public FocusTraversable {
  public:
-  PaneView() : focus_search_(nullptr) {}
+  PaneView() = default;
 
   // If this method is called, this view will use GetPaneFocusTraversable to
   // have this provided FocusSearch used instead of the default one, allowing
@@ -125,7 +125,7 @@ class PaneView : public View, public FocusTraversable {
   View* GetFocusTraversableParentView() override { return nullptr; }
 
  private:
-  FocusSearch* focus_search_;
+  FocusSearch* focus_search_ = nullptr;
 };
 
 // BorderView is a view containing a native window with its own view hierarchy.
@@ -220,8 +220,8 @@ class FocusTraversalTest : public FocusManagerTest {
     }
   }
 
-  TabbedPane* style_tab_;
-  BorderView* search_border_view_;
+  TabbedPane* style_tab_ = nullptr;
+  BorderView* search_border_view_ = nullptr;
   DummyComboboxModel combobox_model_;
   PaneView* left_container_;
   PaneView* right_container_;
@@ -229,8 +229,7 @@ class FocusTraversalTest : public FocusManagerTest {
   DISALLOW_COPY_AND_ASSIGN(FocusTraversalTest);
 };
 
-FocusTraversalTest::FocusTraversalTest()
-    : style_tab_(nullptr), search_border_view_(nullptr) {}
+FocusTraversalTest::FocusTraversalTest() = default;
 
 FocusTraversalTest::~FocusTraversalTest() = default;
 
