@@ -14,16 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// The multiplier for the base system spacing at the top margin.
-static const CGFloat TopBaseSystemSpacingMultiplier = 0.8;
-
-// The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
-
-}  // namespace
-
 @interface ManualFillActionItem ()
 
 // The action block to be called when the user taps the title.
@@ -114,21 +104,24 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
                            forState:UIControlStateNormal];
   }
   self.action = action;
-
-  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
-  [verticalLeadViews addObject:self.titleButton];
-
-  // When disabled, the label is in 'message' mode, and needs to be centered
-  // differently because it is in the data area rather than in the action area.
-  CGFloat topMultiplier =
-      enabled ? TopBaseSystemSpacingMultiplier : TopSystemSpacingMultiplier;
-  CGFloat bottomMultiplier = enabled ? BottomBaseSystemSpacingMultiplier
-                                     : MiddleSystemSpacingMultiplier;
-
-  self.dynamicConstraints = [[NSMutableArray alloc] init];
-  AppendVerticalConstraintsSpacingForViews(
-      self.dynamicConstraints, verticalLeadViews, self.contentView,
-      topMultiplier, MiddleSystemSpacingMultiplier, bottomMultiplier);
+  if (enabled) {
+    self.dynamicConstraints = [[NSMutableArray alloc] initWithArray:@[
+      [self.contentView.topAnchor
+          constraintEqualToAnchor:self.titleButton.topAnchor],
+      [self.contentView.bottomAnchor
+          constraintEqualToAnchor:self.titleButton.bottomAnchor],
+    ]];
+  } else {
+    self.dynamicConstraints = [[NSMutableArray alloc] initWithArray:@[
+      [self.titleButton.topAnchor
+          constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
+                                         multiplier:1.0],
+      [self.contentView.bottomAnchor
+          constraintEqualToSystemSpacingBelowAnchor:self.titleButton
+                                                        .bottomAnchor
+                                         multiplier:1.0],
+    ]];
+  }
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
