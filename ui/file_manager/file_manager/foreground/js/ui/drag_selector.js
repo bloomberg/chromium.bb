@@ -153,9 +153,9 @@ DragSelector.prototype.onMouseMove_ = function(event) {
 
   // Collect items within the selection rect.
   const currentSelection = (/** @type {DragTarget} */ (this.target_))
-                             .getHitElements(
-                                 borderBounds.left, borderBounds.top,
-                                 borderBounds.width, borderBounds.height);
+                               .getHitElements(
+                                   borderBounds.left, borderBounds.top,
+                                   borderBounds.width, borderBounds.height);
   const pointedElements =
       (/** @type {DragTarget} */ (this.target_)).getHitElements(pos.x, pos.y);
   const leadIndex = pointedElements.length ? pointedElements[0] : -1;

@@ -57,8 +57,8 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
     } else {
       // Make sure each cell has the minumum width. This is necessary when the
       // window size is too small to contain all the columns.
-      this.columns_[i].width = Math.max(FileTableColumnModel.MIN_WIDTH_,
-                                        newPos[i + 1] - newPos[i]);
+      this.columns_[i].width =
+          Math.max(FileTableColumnModel.MIN_WIDTH_, newPos[i + 1] - newPos[i]);
     }
   }
 };
@@ -270,9 +270,7 @@ FileTableColumnModel.ColumnSnapshot = function(columns) {
 FileTableColumnModel.ColumnSnapshot.prototype.setWidth = function(
     index, width) {
   // Skip to resize 'selection' column
-  if (index < 0 ||
-      index >= this.columnPos_.length - 1 ||
-      !this.columnPos_) {
+  if (index < 0 || index >= this.columnPos_.length - 1 || !this.columnPos_) {
     return;
   }
 
@@ -289,10 +287,9 @@ FileTableColumnModel.ColumnSnapshot.prototype.setWidth = function(
   }
   for (let i = index + 1; i < this.columnPos_.length - 1; i++) {
     const posStart = this.columnPos_[index + 1];
-    this.newPos[i] = (posEnd - newPosStart) *
-                (this.columnPos_[i] - posStart) /
-                (posEnd - posStart) +
-                newPosStart;
+    this.newPos[i] = (posEnd - newPosStart) * (this.columnPos_[i] - posStart) /
+            (posEnd - posStart) +
+        newPosStart;
     this.newPos[i] = round(this.newPos[i]);
   }
   this.newPos[index] = this.columnPos_[index];
@@ -323,9 +320,8 @@ FileTableSplitter.prototype.handleSplitterDragStart = function() {
  * @param {number} deltaX Horizontal mouse move offset.
  */
 FileTableSplitter.prototype.handleSplitterDragMove = function(deltaX) {
-  this.table_.columnModel.setWidthAndKeepTotal(this.columnIndex,
-                                               this.columnWidth_ + deltaX,
-                                               true);
+  this.table_.columnModel.setWidthAndKeepTotal(
+      this.columnIndex, this.columnWidth_ + deltaX, true);
 };
 
 /**
@@ -360,141 +356,138 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  * @param {boolean} fullPage True if it's full page File Manager,
  *                           False if a file open/save dialog.
  */
-FileTable.decorate = (self, metadataModel, volumeManager, historyLoader, fullPage) => {
-  cr.ui.Table.decorate(self);
-  self.__proto__ = FileTable.prototype;
-  FileTableList.decorate(self.list);
-  self.list.setOnMergeItems(self.updateHighPriorityRange_.bind(self));
-  self.metadataModel_ = metadataModel;
-  self.volumeManager_ = volumeManager;
-  self.historyLoader_ = historyLoader;
+FileTable.decorate =
+    (self, metadataModel, volumeManager, historyLoader, fullPage) => {
+      cr.ui.Table.decorate(self);
+      self.__proto__ = FileTable.prototype;
+      FileTableList.decorate(self.list);
+      self.list.setOnMergeItems(self.updateHighPriorityRange_.bind(self));
+      self.metadataModel_ = metadataModel;
+      self.volumeManager_ = volumeManager;
+      self.historyLoader_ = historyLoader;
 
-  /** @private {ListThumbnailLoader} */
-  self.listThumbnailLoader_ = null;
+      /** @private {ListThumbnailLoader} */
+      self.listThumbnailLoader_ = null;
 
-  /** @private {number} */
-  self.beginIndex_ = 0;
+      /** @private {number} */
+      self.beginIndex_ = 0;
 
-  /** @private {number} */
-  self.endIndex_ = 0;
+      /** @private {number} */
+      self.endIndex_ = 0;
 
-  /** @private {function(!Event)} */
-  self.onThumbnailLoadedBound_ = self.onThumbnailLoaded_.bind(self);
+      /** @private {function(!Event)} */
+      self.onThumbnailLoadedBound_ = self.onThumbnailLoaded_.bind(self);
 
-  /**
-   * Reflects the visibility of import status in the UI.  Assumption: import
-   * status is only enabled in import-eligible locations.  See
-   * ImportController#onDirectoryChanged.  For this reason, the code in this
-   * class checks if import status is visible, and if so, assumes that all the
-   * files are in an import-eligible location.
-   * TODO(kenobi): Clean this up once import status is queryable from metadata.
-   *
-   * @private {boolean}
-   */
-  self.importStatusVisible_ = true;
+      /**
+       * Reflects the visibility of import status in the UI.  Assumption: import
+       * status is only enabled in import-eligible locations.  See
+       * ImportController#onDirectoryChanged.  For this reason, the code in this
+       * class checks if import status is visible, and if so, assumes that all
+       * the files are in an import-eligible location.
+       * TODO(kenobi): Clean this up once import status is queryable from
+       * metadata.
+       *
+       * @private {boolean}
+       */
+      self.importStatusVisible_ = true;
 
-  /** @private {boolean} */
-  self.useModificationByMeTime_ = false;
+      /** @private {boolean} */
+      self.useModificationByMeTime_ = false;
 
-  const nameColumn = new cr.ui.table.TableColumn(
-      'name', str('NAME_COLUMN_LABEL'), fullPage ? 386 : 324);
-  nameColumn.renderFunction = self.renderName_.bind(self);
+      const nameColumn = new cr.ui.table.TableColumn(
+          'name', str('NAME_COLUMN_LABEL'), fullPage ? 386 : 324);
+      nameColumn.renderFunction = self.renderName_.bind(self);
 
-  const sizeColumn = new cr.ui.table.TableColumn(
-      'size', str('SIZE_COLUMN_LABEL'), 110, true);
-  sizeColumn.renderFunction = self.renderSize_.bind(self);
-  sizeColumn.defaultOrder = 'desc';
+      const sizeColumn = new cr.ui.table.TableColumn(
+          'size', str('SIZE_COLUMN_LABEL'), 110, true);
+      sizeColumn.renderFunction = self.renderSize_.bind(self);
+      sizeColumn.defaultOrder = 'desc';
 
-  const statusColumn = new cr.ui.table.TableColumn(
-      'status', str('STATUS_COLUMN_LABEL'), 60, true);
-  statusColumn.renderFunction = self.renderStatus_.bind(self);
-  statusColumn.visible = self.importStatusVisible_;
+      const statusColumn = new cr.ui.table.TableColumn(
+          'status', str('STATUS_COLUMN_LABEL'), 60, true);
+      statusColumn.renderFunction = self.renderStatus_.bind(self);
+      statusColumn.visible = self.importStatusVisible_;
 
-  const typeColumn = new cr.ui.table.TableColumn(
-      'type', str('TYPE_COLUMN_LABEL'), fullPage ? 110 : 110);
-  typeColumn.renderFunction = self.renderType_.bind(self);
+      const typeColumn = new cr.ui.table.TableColumn(
+          'type', str('TYPE_COLUMN_LABEL'), fullPage ? 110 : 110);
+      typeColumn.renderFunction = self.renderType_.bind(self);
 
-  const modTimeColumn = new cr.ui.table.TableColumn(
-      'modificationTime', str('DATE_COLUMN_LABEL'), fullPage ? 150 : 210);
-  modTimeColumn.renderFunction = self.renderDate_.bind(self);
-  modTimeColumn.defaultOrder = 'desc';
+      const modTimeColumn = new cr.ui.table.TableColumn(
+          'modificationTime', str('DATE_COLUMN_LABEL'), fullPage ? 150 : 210);
+      modTimeColumn.renderFunction = self.renderDate_.bind(self);
+      modTimeColumn.defaultOrder = 'desc';
 
-  const columns = [
-      nameColumn,
-      sizeColumn,
-      statusColumn,
-      typeColumn,
-      modTimeColumn
-  ];
+      const columns =
+          [nameColumn, sizeColumn, statusColumn, typeColumn, modTimeColumn];
 
-  const columnModel = new FileTableColumnModel(columns);
+      const columnModel = new FileTableColumnModel(columns);
 
-  self.columnModel = columnModel;
+      self.columnModel = columnModel;
 
-  self.formatter_ = new FileMetadataFormatter();
+      self.formatter_ = new FileMetadataFormatter();
 
-  const selfAsTable = /** @type {!cr.ui.Table} */ (self);
-  selfAsTable.setRenderFunction(
-      self.renderTableRow_.bind(self, selfAsTable.getRenderFunction()));
+      const selfAsTable = /** @type {!cr.ui.Table} */ (self);
+      selfAsTable.setRenderFunction(
+          self.renderTableRow_.bind(self, selfAsTable.getRenderFunction()));
 
-  // Keep focus on the file list when clicking on the header.
-  selfAsTable.header.addEventListener('mousedown', e => {
-    self.list.focus();
-    e.preventDefault();
-  });
+      // Keep focus on the file list when clicking on the header.
+      selfAsTable.header.addEventListener('mousedown', e => {
+        self.list.focus();
+        e.preventDefault();
+      });
 
-  self.relayoutRateLimiter_ =
-      new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
+      self.relayoutRateLimiter_ =
+          new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
 
-  // Override header#redraw to use FileTableSplitter.
-  /** @this {cr.ui.table.TableHeader} */
-  selfAsTable.header.redraw = function() {
-    this.__proto__.redraw.call(this);
-    // Extend table splitters
-    const splitters = this.querySelectorAll('.table-header-splitter');
-    for (let i = 0; i < splitters.length; i++) {
-      if (splitters[i] instanceof FileTableSplitter) {
-        continue;
-      }
-      FileTableSplitter.decorate(splitters[i]);
-    }
-  };
+      // Override header#redraw to use FileTableSplitter.
+      /** @this {cr.ui.table.TableHeader} */
+      selfAsTable.header.redraw = function() {
+        this.__proto__.redraw.call(this);
+        // Extend table splitters
+        const splitters = this.querySelectorAll('.table-header-splitter');
+        for (let i = 0; i < splitters.length; i++) {
+          if (splitters[i] instanceof FileTableSplitter) {
+            continue;
+          }
+          FileTableSplitter.decorate(splitters[i]);
+        }
+      };
 
-  // Save the last selection. This is used by shouldStartDragSelection.
-  self.list.addEventListener('mousedown', function(e) {
-    this.lastSelection_ = this.selectionModel.selectedIndexes;
-  }.bind(self), true);
-  self.list.addEventListener('touchstart', function(e) {
-    this.lastSelection_ = this.selectionModel.selectedIndexes;
-  }.bind(self), true);
-  self.list.shouldStartDragSelection =
-      self.shouldStartDragSelection_.bind(self);
-  self.list.hasDragHitElement = self.hasDragHitElement_.bind(self);
+      // Save the last selection. This is used by shouldStartDragSelection.
+      self.list.addEventListener('mousedown', function(e) {
+        this.lastSelection_ = this.selectionModel.selectedIndexes;
+      }.bind(self), true);
+      self.list.addEventListener('touchstart', function(e) {
+        this.lastSelection_ = this.selectionModel.selectedIndexes;
+      }.bind(self), true);
+      self.list.shouldStartDragSelection =
+          self.shouldStartDragSelection_.bind(self);
+      self.list.hasDragHitElement = self.hasDragHitElement_.bind(self);
 
-  /**
-   * Obtains the index list of elements that are hit by the point or the
-   * rectangle.
-   *
-   * @param {number} x X coordinate value.
-   * @param {number} y Y coordinate value.
-   * @param {number=} opt_width Width of the coordinate.
-   * @param {number=} opt_height Height of the coordinate.
-   * @return {Array<number>} Index list of hit elements.
-   * @this {cr.ui.List}
-   */
-  self.list.getHitElements = function(x, y, opt_width, opt_height) {
-    const currentSelection = [];
-    const bottom = y + (opt_height || 0);
-    for (let i = 0; i < this.selectionModel_.length; i++) {
-      const itemMetrics = this.getHeightsForIndex(i);
-      if (itemMetrics.top < bottom &&
-          itemMetrics.top + itemMetrics.height >= y) {
-        currentSelection.push(i);
-      }
-    }
-    return currentSelection;
-  };
-};
+      /**
+       * Obtains the index list of elements that are hit by the point or the
+       * rectangle.
+       *
+       * @param {number} x X coordinate value.
+       * @param {number} y Y coordinate value.
+       * @param {number=} opt_width Width of the coordinate.
+       * @param {number=} opt_height Height of the coordinate.
+       * @return {Array<number>} Index list of hit elements.
+       * @this {cr.ui.List}
+       */
+      self.list.getHitElements = function(x, y, opt_width, opt_height) {
+        const currentSelection = [];
+        const bottom = y + (opt_height || 0);
+        for (let i = 0; i < this.selectionModel_.length; i++) {
+          const itemMetrics = this.getHeightsForIndex(i);
+          if (itemMetrics.top < bottom &&
+              itemMetrics.top + itemMetrics.height >= y) {
+            currentSelection.push(i);
+          }
+        }
+        return currentSelection;
+      };
+    };
 
 /**
  * Updates high priority range of list thumbnail loader based on current
@@ -568,8 +561,7 @@ FileTable.prototype.onThumbnailLoaded_ = function(event) {
             assertInstanceof(box, HTMLDivElement), event.dataUrl,
             true /* with animation */);
       } else {
-        this.clearThumbnailImage_(
-            assertInstanceof(box, HTMLDivElement));
+        this.clearThumbnailImage_(assertInstanceof(box, HTMLDivElement));
       }
     }
   }
@@ -593,12 +585,12 @@ FileTable.prototype.fitColumn = function(index) {
   container.style.webkitBoxOrient = 'vertical';
 
   // Select at most MAXIMUM_ROWS_TO_MEASURE items around visible area.
-  const items = this.list.getItemsInViewPort(this.list.scrollTop,
-                                           this.list.clientHeight);
-  const firstIndex = Math.floor(Math.max(0,
-      (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
-  const lastIndex = Math.min(this.dataModel.length,
-                           firstIndex + MAXIMUM_ROWS_TO_MEASURE);
+  const items =
+      this.list.getItemsInViewPort(this.list.scrollTop, this.list.clientHeight);
+  const firstIndex = Math.floor(
+      Math.max(0, (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
+  const lastIndex =
+      Math.min(this.dataModel.length, firstIndex + MAXIMUM_ROWS_TO_MEASURE);
   for (let i = firstIndex; i < lastIndex; i++) {
     const item = this.dataModel.item(i);
     const div = this.ownerDocument.createElement('div');
@@ -744,8 +736,8 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
   const label = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
 
-  const mimeType = this.metadataModel_.getCache([entry],
-      ['contentMimeType'])[0].contentMimeType;
+  const mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+                       .contentMimeType;
   const locationInfo = this.volumeManager_.getLocationInfo(entry);
   const icon = filelist.renderFileTypeIcon(
       this.ownerDocument, entry, locationInfo, mimeType);
@@ -789,8 +781,7 @@ FileTable.prototype.renderSize_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateSize_ = function(div, entry) {
-  const metadata = this.metadataModel_.getCache(
-      [entry], ['size', 'hosted'])[0];
+  const metadata = this.metadataModel_.getCache([entry], ['size', 'hosted'])[0];
   const size = metadata.size;
   const hosted = metadata.hosted;
   div.textContent = this.formatter_.formatSize(size, hosted);
@@ -806,8 +797,8 @@ FileTable.prototype.updateSize_ = function(div, entry) {
  * @private
  */
 FileTable.prototype.renderStatus_ = function(entry, columnId, table) {
-  const div = /** @type {!HTMLDivElement} */ (
-      this.ownerDocument.createElement('div'));
+  const div =
+      /** @type {!HTMLDivElement} */ (this.ownerDocument.createElement('div'));
   div.className = 'status status-icon';
   if (entry) {
     this.updateStatus_(div, entry);
@@ -839,8 +830,8 @@ FileTable.prototype.getImportStatus_ = function(entry, destination) {
           /** @param {!importer.ImportHistory} history */
           history => {
             return Promise.all([
-                history.wasImported(fileEntry, destination),
-                history.wasCopied(fileEntry, destination)
+              history.wasImported(fileEntry, destination),
+              history.wasCopied(fileEntry, destination)
             ]);
           })
       .then(
@@ -864,11 +855,12 @@ FileTable.prototype.getImportStatus_ = function(entry, destination) {
  * @private
  */
 FileTable.prototype.updateStatus_ = function(div, entry) {
-  this.getImportStatus_(entry, importer.Destination.GOOGLE_DRIVE).then(
-      /** @param {string} status */
-      status => {
-        div.setAttribute('file-status-icon', status);
-      });
+  this.getImportStatus_(entry, importer.Destination.GOOGLE_DRIVE)
+      .then(
+          /** @param {string} status */
+          status => {
+            div.setAttribute('file-status-icon', status);
+          });
 };
 
 /**
@@ -885,10 +877,10 @@ FileTable.prototype.renderType_ = function(entry, columnId, table) {
       (this.ownerDocument.createElement('div'));
   div.className = 'type';
 
-  const mimeType = this.metadataModel_.getCache([entry],
-      ['contentMimeType'])[0].contentMimeType;
-  div.textContent = FileListModel.getFileTypeString(
-      FileType.getType(entry, mimeType));
+  const mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+                       .contentMimeType;
+  div.textContent =
+      FileListModel.getFileTypeString(FileType.getType(entry, mimeType));
 
   // For removable partitions, display file system type.
   if (!mimeType && entry.volumeInfo && entry.volumeInfo.diskFileSystemType) {
@@ -1034,7 +1026,8 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
 
   // Set thumbnail if it's already in cache.
   const thumbnailData = this.listThumbnailLoader_ ?
-      this.listThumbnailLoader_.getThumbnailFromCache(entry) : null;
+      this.listThumbnailLoader_.getThumbnailFromCache(entry) :
+      null;
   if (thumbnailData && thumbnailData.dataUrl) {
     this.setThumbnailImage_(
         box, this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl,

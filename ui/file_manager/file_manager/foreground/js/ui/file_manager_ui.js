@@ -97,8 +97,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!cr.filebrowser.DefaultTaskDialog}
    * @const
    */
-  this.defaultTaskPicker =
-      new cr.filebrowser.DefaultTaskDialog(this.element);
+  this.defaultTaskPicker = new cr.filebrowser.DefaultTaskDialog(this.element);
 
   /**
    * Suggest apps dialog.
@@ -128,8 +127,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!cr.ui.Menu}
    * @const
    */
-  this.textContextMenu = util.queryDecoratedElement(
-      '#text-context-menu', cr.ui.Menu);
+  this.textContextMenu =
+      util.queryDecoratedElement('#text-context-menu', cr.ui.Menu);
 
   /**
    * Location line.
@@ -174,8 +173,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!EmptyFolder}
    * @const
    */
-  this.emptyFolder = new EmptyFolder(
-      queryRequiredElement('#empty-folder', this.element));
+  this.emptyFolder =
+      new EmptyFolder(queryRequiredElement('#empty-folder', this.element));
 
   /**
    * Toggle-view button.
@@ -189,8 +188,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!cr.ui.MenuButton}
    * @const
    */
-  this.sortButton = util.queryDecoratedElement(
-      '#sort-button', cr.ui.MenuButton);
+  this.sortButton =
+      util.queryDecoratedElement('#sort-button', cr.ui.MenuButton);
 
   /**
    * Ripple effect of sort button.
@@ -198,8 +197,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.sortButtonToggleRipple =
-      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
-          'files-toggle-ripple', this.sortButton));
+      /** @type {!FilesToggleRipple} */ (
+          queryRequiredElement('files-toggle-ripple', this.sortButton));
 
   /**
    * The button to open gear menu.
@@ -215,8 +214,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.gearButtonToggleRipple =
-      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
-          'files-toggle-ripple', this.gearButton));
+      /** @type {!FilesToggleRipple} */ (
+          queryRequiredElement('files-toggle-ripple', this.gearButton));
 
   /**
    * @type {!GearMenu}
@@ -262,8 +261,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!cr.ui.Menu}
    * @const
    */
-  this.fileContextMenu = util.queryDecoratedElement(
-      '#file-context-menu', cr.ui.Menu);
+  this.fileContextMenu =
+      util.queryDecoratedElement('#file-context-menu', cr.ui.Menu);
 
   /**
    * @type {!HTMLMenuItemElement}
@@ -284,8 +283,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!cr.ui.ComboButton}
    * @const
    */
-  this.taskMenuButton = util.queryDecoratedElement(
-      '#tasks', cr.ui.ComboButton);
+  this.taskMenuButton = util.queryDecoratedElement('#tasks', cr.ui.ComboButton);
   this.taskMenuButton.showMenu = function(shouldSetFocus) {
     // Prevent the empty menu from opening.
     if (!this.menu.length) {
@@ -335,7 +333,8 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @public {!ProvidersMenu}
    * @const
    */
-  this.providersMenu = new ProvidersMenu(providersModel,
+  this.providersMenu = new ProvidersMenu(
+      providersModel,
       util.queryDecoratedElement('#add-new-services-menu', cr.ui.Menu));
 
   /**
@@ -422,8 +421,7 @@ FileManagerUI.prototype.initAdditionalUI = function(table, grid, locationLine) {
   cr.ui.contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
   cr.ui.contextMenuHandler.setContextMenu(table.list, this.fileContextMenu);
   cr.ui.contextMenuHandler.setContextMenu(
-      queryRequiredElement('.drive-welcome.page'),
-      this.fileContextMenu);
+      queryRequiredElement('.drive-welcome.page'), this.fileContextMenu);
 
   // Add handlers.
   document.defaultView.addEventListener('resize', this.relayout.bind(this));
@@ -438,8 +436,9 @@ FileManagerUI.prototype.initUIFocus = function() {
   let targetElement = null;
   if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
     targetElement = this.dialogFooter.filenameInput;
-  } else if (this.listContainer.currentListType !=
-             ListContainer.ListType.UNINITIALIZED) {
+  } else if (
+      this.listContainer.currentListType !=
+      ListContainer.ListType.UNINITIALIZED) {
     targetElement = this.listContainer.currentList;
   }
 
@@ -466,11 +465,12 @@ FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
   // tree has to be notified to adjust its components (e.g. progress bar).
   const relayoutLimiter = new AsyncUtil.RateLimiter(
       directoryTree.relayout.bind(directoryTree), 200);
-  const observer = new MutationObserver(
-      relayoutLimiter.run.bind(relayoutLimiter));
-  observer.observe(this.progressCenterPanel.element,
-                   /** @type {MutationObserverInit} */
-                   ({subtree: true, attributes: true, childList: true}));
+  const observer =
+      new MutationObserver(relayoutLimiter.run.bind(relayoutLimiter));
+  observer.observe(
+      this.progressCenterPanel.element,
+      /** @type {MutationObserverInit} */
+      ({subtree: true, attributes: true, childList: true}));
 };
 
 /**
@@ -495,8 +495,8 @@ FileManagerUI.prototype.attachFilesTooltip = () => {
  * items are decorated as cr.ui.MenuItem.
  */
 FileManagerUI.prototype.decorateFilesMenuItems = () => {
-  const filesMenuItems = document.querySelectorAll(
-      'cr-menu.files-menu > cr-menu-item');
+  const filesMenuItems =
+      document.querySelectorAll('cr-menu.files-menu > cr-menu-item');
 
   for (let i = 0; i < filesMenuItems.length; i++) {
     const filesMenuItem = filesMenuItems[i];
@@ -531,7 +531,7 @@ FileManagerUI.prototype.setCurrentListType = function(listType) {
   this.toggleViewButton.classList.toggle('thumbnail', isListView);
 
   const label = isListView ? str('CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL') :
-                           str('CHANGE_TO_LISTVIEW_BUTTON_LABEL');
+                             str('CHANGE_TO_LISTVIEW_BUTTON_LABEL');
   this.toggleViewButton.setAttribute('aria-label', label);
   this.relayout();
 };
@@ -560,8 +560,8 @@ FileManagerUI.prototype.onExternalLinkClick_ = function(event) {
  * @param {boolean=} opt_resizeNextElement
  * @private
  */
-FileManagerUI.prototype.decorateSplitter_ = function(splitterElement,
-    opt_resizeNextElement) {
+FileManagerUI.prototype.decorateSplitter_ = function(
+    splitterElement, opt_resizeNextElement) {
   const self = this;
   const Splitter = cr.ui.Splitter;
   const customSplitter = cr.ui.define('div');
@@ -607,32 +607,31 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
   if (!entries.length) {
     return;
   }
-  chrome.fileManagerPrivate.getProfiles(
-    (profiles, currentId, displayedId) => {
-      // Find strings.
-      let displayName;
-      for (let i = 0; i < profiles.length; i++) {
-        if (profiles[i].profileId === currentId) {
-          displayName = profiles[i].displayName;
-          break;
-        }
+  chrome.fileManagerPrivate.getProfiles((profiles, currentId, displayedId) => {
+    // Find strings.
+    let displayName;
+    for (let i = 0; i < profiles.length; i++) {
+      if (profiles[i].profileId === currentId) {
+        displayName = profiles[i].displayName;
+        break;
       }
-      if (!displayName) {
-        console.warn('Display name is not found.');
-        return;
-      }
+    }
+    if (!displayName) {
+      console.warn('Display name is not found.');
+      return;
+    }
 
-      const title = entries.length > 1 ?
-          entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
-      const message = strf(entries.length > 1 ?
-                         'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
-                         'OPEN_IN_OTHER_DESKTOP_MESSAGE',
-                         displayName,
-                         currentId);
+    const title = entries.length > 1 ?
+        entries[0].name + '\u2026' /* ellipsis */ :
+        entries[0].name;
+    const message = strf(
+        entries.length > 1 ? 'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
+                             'OPEN_IN_OTHER_DESKTOP_MESSAGE',
+        displayName, currentId);
 
-      // Show the dialog.
-      this.alertDialog.showWithTitle(title, message, null, null, null);
-    });
+    // Show the dialog.
+    this.alertDialog.showWithTitle(title, message, null, null, null);
+  });
 };
 
 /**

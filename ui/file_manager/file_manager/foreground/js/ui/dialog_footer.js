@@ -163,9 +163,11 @@ DialogFooter.prototype.initFileTypeFilter = function(
 
       if (!description) {
         // Convert ['jpg', 'png'] to '*.jpg, *.png'.
-        description = fileType.extensions.map(s => {
-          return '*.' + s;
-        }).join(', ');
+        description = fileType.extensions
+                          .map(s => {
+                            return '*.' + s;
+                          })
+                          .join(', ');
       }
     }
     option.innerText = description;

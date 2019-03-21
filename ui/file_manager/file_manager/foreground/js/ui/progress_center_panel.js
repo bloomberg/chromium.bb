@@ -81,8 +81,8 @@ ProgressCenterItemElement.decorate = element => {
   element = /** @type {ProgressCenterItemElement} */ (element);
   element.state_ = ProgressItemState.PROGRESSING;
   element.track_ = element.querySelector('.progress-track');
-  element.track_.addEventListener('transitionend',
-                                  element.onTransitionEnd_.bind(element));
+  element.track_.addEventListener(
+      'transitionend', element.onTransitionEnd_.bind(element));
   element.cancelTransition_ = null;
   return element;
 };
@@ -125,17 +125,19 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
 
   // Set track width.
   const setWidth = ((nextWidthFrame) => {
-    const currentWidthRate = parseInt(this.track_.style.width, 10);
-    // Prevent assigning the same width to avoid stopping the animation.
-    // animated == false may be intended to cancel the animation, so in that
-    // case, the assignment should be done.
-    if (currentWidthRate === nextWidthFrame && animated) {
-      return;
-    }
-    this.track_.hidden = false;
-    this.track_.style.width = nextWidthFrame + '%';
-    this.track_.classList.toggle('animated', animated);
-  }).bind(null, item.progressRateInPercent);
+                     const currentWidthRate =
+                         parseInt(this.track_.style.width, 10);
+                     // Prevent assigning the same width to avoid stopping the
+                     // animation. animated == false may be intended to cancel
+                     // the animation, so in that case, the assignment should be
+                     // done.
+                     if (currentWidthRate === nextWidthFrame && animated) {
+                       return;
+                     }
+                     this.track_.hidden = false;
+                     this.track_.style.width = nextWidthFrame + '%';
+                     this.track_.classList.toggle('animated', animated);
+                   }).bind(null, item.progressRateInPercent);
 
   if (animated) {
     this.cancelTransition_ =
@@ -167,8 +169,7 @@ ProgressCenterItemElement.prototype.onTransitionEnd_ = function(event) {
   }
   this.track_.classList.remove('animated');
   this.dispatchEvent(new Event(
-      ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT,
-      {bubbles: true}));
+      ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT, {bubbles: true}));
 };
 
 /**
@@ -208,8 +209,8 @@ function ProgressCenterPanel(element) {
    * @type {CSSKeyframesRule}
    * @private
    */
-  this.toggleAnimation_ = ProgressCenterPanel.getToggleAnimation_(
-      element.ownerDocument);
+  this.toggleAnimation_ =
+      ProgressCenterPanel.getToggleAnimation_(element.ownerDocument);
 
   /**
    * Item group for normal priority items.
@@ -230,20 +231,15 @@ function ProgressCenterPanel(element) {
    * @type {Object<string>}
    * @private
    */
-  this.itemQuery_ = Object.preventExtensions({
-    normal: 'li:not(.quiet)',
-    quiet: 'li.quiet'
-  });
+  this.itemQuery_ =
+      Object.preventExtensions({normal: 'li:not(.quiet)', quiet: 'li.quiet'});
 
   /**
    * Timeout IDs of the inactive state of each group.
    * @type {Object<?number>}
    * @private
    */
-  this.timeoutId_ = Object.preventExtensions({
-    normal: null,
-    quiet: null
-  });
+  this.timeoutId_ = Object.preventExtensions({normal: null, quiet: null});
 
   /**
    * Callback to be called with the ID of the progress item when the cancel
@@ -338,7 +334,8 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
  */
 ProgressCenterPanel.prototype.onItemAnimationEnd_ = function(event) {
   const targetGroup = event.target.classList.contains('quiet') ?
-      this.quietItemGroup_ : this.normalItemGroup_;
+      this.quietItemGroup_ :
+      this.normalItemGroup_;
   if (event.target === this.closeView_) {
     targetGroup.completeSummarizedItemAnimation();
   } else {
@@ -384,8 +381,8 @@ ProgressCenterPanel.prototype.updateCloseView_ = function() {
     }
 
     // Update the view state.
-    this.closeView_.update(normalSummarizedItem,
-                           this.normalItemGroup_.isSummarizedAnimated());
+    this.closeView_.update(
+        normalSummarizedItem, this.normalItemGroup_.isSummarizedAnimated());
     this.element_.hidden = false;
     return;
   }
@@ -394,8 +391,8 @@ ProgressCenterPanel.prototype.updateCloseView_ = function() {
   const quietSummarizedItem =
       this.quietItemGroup_.getSummarizedItem(this.normalItemGroup_.numErrors);
   if (quietSummarizedItem) {
-    this.closeView_.update(quietSummarizedItem,
-                           this.quietItemGroup_.isSummarizedAnimated());
+    this.closeView_.update(
+        quietSummarizedItem, this.quietItemGroup_.isSummarizedAnimated());
     this.element_.hidden = false;
     return;
   }

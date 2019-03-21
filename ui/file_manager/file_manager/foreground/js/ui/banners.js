@@ -13,8 +13,7 @@
  * @constructor
  * @extends {cr.EventTarget}
  */
-function Banners(
-    directoryModel, volumeManager, document, showWelcome) {
+function Banners(directoryModel, volumeManager, document, showWelcome) {
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
   this.document_ = assert(document);
@@ -27,14 +26,14 @@ function Banners(
   const handler = this.checkSpaceAndMaybeShowWelcomeBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
   this.directoryModel_.addEventListener('rescan-completed', handler);
-  this.directoryModel_.addEventListener('directory-changed',
-      this.onDirectoryChanged_.bind(this));
+  this.directoryModel_.addEventListener(
+      'directory-changed', this.onDirectoryChanged_.bind(this));
 
   this.unmountedPanel_ = this.document_.querySelector('#unmounted-panel');
   this.volumeManager_.volumeInfoList.addEventListener(
       'splice', this.onVolumeInfoListSplice_.bind(this));
-  this.volumeManager_.addEventListener('drive-connection-changed',
-      this.onDriveConnectionChanged_.bind(this));
+  this.volumeManager_.addEventListener(
+      'drive-connection-changed', this.onDriveConnectionChanged_.bind(this));
 
   chrome.storage.onChanged.addListener(this.onStorageChange_.bind(this));
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
@@ -192,8 +191,8 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
 
   this.showWelcomeBanner_(type);
 
-  const container = queryRequiredElement(
-      '.drive-welcome.' + type, this.document_);
+  const container =
+      queryRequiredElement('.drive-welcome.' + type, this.document_);
   if (container.firstElementChild) {
     return;
   }  // Do not re-create.
@@ -284,7 +283,8 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
 
     const text = this.document_.createElement('div');
     text.className = 'drive-text';
-    text.textContent = strf('DRIVE_SPACE_AVAILABLE_LONG',
+    text.textContent = strf(
+        'DRIVE_SPACE_AVAILABLE_LONG',
         util.bytesToString(opt_sizeStats.remainingSize));
     box.appendChild(text);
 
@@ -301,12 +301,13 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
     close.className = 'banner-close';
     box.appendChild(close);
     close.addEventListener('click', ((total) => {
-      const values = {};
-      values[DRIVE_WARNING_DISMISSED_KEY] = total;
-      chrome.storage.local.set(values);
-      box.hidden = true;
-      this.requestRelayout_(100);
-    }).bind(null, opt_sizeStats.totalSize));
+                                      const values = {};
+                                      values[DRIVE_WARNING_DISMISSED_KEY] =
+                                          total;
+                                      chrome.storage.local.set(values);
+                                      box.hidden = true;
+                                      this.requestRelayout_(100);
+                                    }).bind(null, opt_sizeStats.totalSize));
   }
 
   if (box.hidden != !show) {
@@ -396,7 +397,7 @@ Banners.prototype.isOnCurrentProfileDrive = function() {
     return false;
   }
   return locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE &&
-         locationInfo.volumeInfo.profile.isCurrentProfile;
+      locationInfo.volumeInfo.profile.isCurrentProfile;
 };
 
 /**
@@ -466,8 +467,8 @@ Banners.prototype.isLowSpaceWarningTarget_ = volumeInfo => {
     return false;
   }
   return volumeInfo.profile.isCurrentProfile &&
-         (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
-          volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE);
+      (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+       volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE);
 };
 
 /**
@@ -519,31 +520,30 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
     return;
   }
 
-  chrome.fileManagerPrivate.getSizeStats(
-      volume.volumeId, sizeStats => {
-        const currentVolume = this.volumeManager_.getVolumeInfo(
-            assert(this.directoryModel_.getCurrentDirEntry()));
-        if (volume !== currentVolume) {
-          // This happens when the current directory is moved during requesting
-          // the file system size. Just ignore it.
-          return;
-        }
-        // sizeStats is undefined, if some error occurs.
-        if (!sizeStats || sizeStats.totalSize == 0) {
-          return;
-        }
+  chrome.fileManagerPrivate.getSizeStats(volume.volumeId, sizeStats => {
+    const currentVolume = this.volumeManager_.getVolumeInfo(
+        assert(this.directoryModel_.getCurrentDirEntry()));
+    if (volume !== currentVolume) {
+      // This happens when the current directory is moved during requesting
+      // the file system size. Just ignore it.
+      return;
+    }
+    // sizeStats is undefined, if some error occurs.
+    if (!sizeStats || sizeStats.totalSize == 0) {
+      return;
+    }
 
-        if (volume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS) {
-          // Show the warning banner when the available space is less than 1GB.
-          this.showLowDownloadsSpaceWarning_(
-              sizeStats.remainingSize < DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE);
-        } else {
-          // Show the warning banner when the available space ls less than 10%.
-          const remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
-          this.showLowDriveSpaceWarning_(
-              remainingRatio < DRIVE_SPACE_WARNING_THRESHOLD_RATIO, sizeStats);
-        }
-      });
+    if (volume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS) {
+      // Show the warning banner when the available space is less than 1GB.
+      this.showLowDownloadsSpaceWarning_(
+          sizeStats.remainingSize < DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE);
+    } else {
+      // Show the warning banner when the available space ls less than 10%.
+      const remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
+      this.showLowDriveSpaceWarning_(
+          remainingRatio < DRIVE_SPACE_WARNING_THRESHOLD_RATIO, sizeStats);
+    }
+  });
 };
 
 /**
@@ -648,8 +648,8 @@ Banners.prototype.ensureDriveUnmountedPanelInitialized_ = function() {
 
   create(panel, 'div', 'error', str('DRIVE_CANNOT_REACH'));
 
-  const learnMore = create(panel, 'a', 'learn-more plain-link',
-                         str('DRIVE_LEARN_MORE'));
+  const learnMore =
+      create(panel, 'a', 'learn-more plain-link', str('DRIVE_LEARN_MORE'));
   learnMore.href = str('GOOGLE_DRIVE_ERROR_HELP_URL');
   learnMore.target = '_blank';
 };
@@ -702,8 +702,7 @@ Banners.prototype.updateDriveUnmountedPanel_ = function() {
  */
 Banners.prototype.maybeShowAuthFailBanner_ = function() {
   const connection = this.volumeManager_.getDriveConnectionState();
-  const showDriveNotReachedMessage =
-      this.isOnCurrentProfileDrive() &&
+  const showDriveNotReachedMessage = this.isOnCurrentProfileDrive() &&
       connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
       connection.reason == VolumeManagerCommon.DriveConnectionReason.NOT_READY;
   this.authFailedBanner_.hidden = !showDriveNotReachedMessage;

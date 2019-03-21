@@ -8,7 +8,6 @@
  * This dialog should be used as task picker for file operations.
  */
 cr.define('cr.filebrowser', () => {
-
   /**
    * Creates dialog in DOM tree.
    *
@@ -48,9 +47,7 @@ cr.define('cr.filebrowser', () => {
     };
   }
 
-  DefaultTaskDialog.prototype = {
-    __proto__: FileManagerDialogBase.prototype
-  };
+  DefaultTaskDialog.prototype = {__proto__: FileManagerDialogBase.prototype};
 
   /**
    * Renders item for list.
@@ -92,9 +89,8 @@ cr.define('cr.filebrowser', () => {
    * @param {function(Object)} onSelectedItem Callback which is called when an
    *     item is selected.
    */
-  DefaultTaskDialog.prototype.showDefaultTaskDialog =
-      function(title, message, items, defaultIndex, onSelectedItem) {
-
+  DefaultTaskDialog.prototype.showDefaultTaskDialog = function(
+      title, message, items, defaultIndex, onSelectedItem) {
     this.onSelectedItemCallback_ = onSelectedItem;
 
     const show = FileManagerDialogBase.prototype.showTitleAndTextDialog.call(

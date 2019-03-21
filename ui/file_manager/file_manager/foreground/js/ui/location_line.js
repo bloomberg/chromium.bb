@@ -98,12 +98,12 @@ LocationLine.prototype.getComponents_ = function(entry) {
       displayRootFullPath = '/other';
     }
     displayRootUrl = this.replaceRootName_(displayRootUrl, displayRootFullPath);
-    const sharedWithMeFakeEntry = locationInfo.volumeInfo.fakeEntries[
-        VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
+    const sharedWithMeFakeEntry =
+        locationInfo.volumeInfo
+            .fakeEntries[VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
     components.push(new LocationLine.PathComponent(
         str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
-        sharedWithMeFakeEntry.toURL(),
-        sharedWithMeFakeEntry));
+        sharedWithMeFakeEntry.toURL(), sharedWithMeFakeEntry));
   } else if (
       locationInfo.rootType === VolumeManagerCommon.RootType.SHARED_DRIVE) {
     displayRootUrl = this.replaceRootName_(
@@ -140,7 +140,8 @@ LocationLine.prototype.getComponents_ = function(entry) {
 
   // currentUrl should be without trailing slash.
   let currentUrl = /^.+\/$/.test(displayRootUrl) ?
-      displayRootUrl.slice(0, displayRootUrl.length - 1) : displayRootUrl;
+      displayRootUrl.slice(0, displayRootUrl.length - 1) :
+      displayRootUrl;
 
   // Add directory components to the target path.
   const paths = relativePath.split('/');
@@ -272,8 +273,8 @@ LocationLine.prototype.truncate = function() {
   const lastCrumbSeparatorWidth = lastSeparator.getBoundingClientRect().width;
   // Current directory name may occupy up to 70% of space or even more if the
   // path is short.
-  let maxPathWidth = Math.max(Math.round(containerWidth * 0.3),
-                              containerWidth - currentWidth);
+  let maxPathWidth =
+      Math.max(Math.round(containerWidth * 0.3), containerWidth - currentWidth);
   maxPathWidth = Math.min(pathWidth, maxPathWidth);
 
   const parentCrumb = lastSeparator.previousSibling;
@@ -291,8 +292,8 @@ LocationLine.prototype.truncate = function() {
     // Show sign of hidden crumbs like this:
     // root > some di... > ... > current directory.
     parentCrumb.setAttribute('collapsed', '');
-    collapsedWidth = Math.min(maxPathWidth,
-                              parentCrumb.getBoundingClientRect().width);
+    collapsedWidth =
+        Math.min(maxPathWidth, parentCrumb.getBoundingClientRect().width);
     maxPathWidth -= collapsedWidth;
     if (parentCrumb.getBoundingClientRect().width != collapsedWidth) {
       parentCrumb.style.width = collapsedWidth + 'px';
@@ -318,7 +319,7 @@ LocationLine.prototype.truncate = function() {
         // If the current separator and the following crumb don't fit in the
         // breadcrumbs area, hide remaining separators and crumbs.
         if (pathWidth + item.getBoundingClientRect().width + minCrumbWidth >
-                maxPathWidth) {
+            maxPathWidth) {
           item.setAttribute('hidden', '');
           maxPathWidth = pathWidth;
         } else {
@@ -337,8 +338,8 @@ LocationLine.prototype.truncate = function() {
     }
   }
 
-  currentWidth = Math.min(currentWidth,
-                          containerWidth - pathWidth - collapsedWidth);
+  currentWidth =
+      Math.min(currentWidth, containerWidth - pathWidth - collapsedWidth);
   this.breadcrumbs_.lastChild.style.width =
       (currentWidth - lastCrumbSeparatorWidth) + 'px';
 };

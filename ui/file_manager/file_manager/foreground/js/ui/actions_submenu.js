@@ -51,10 +51,9 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   const remainingActions = {};
   if (actionsModel) {
     const actions = actionsModel.getActions();
-     Object.keys(actions).forEach(
-        key => {
-          remainingActions[key] = actions[key];
-        });
+    Object.keys(actions).forEach(key => {
+      remainingActions[key] = actions[key];
+    });
   }
 
   // First add the sharing item (if available).
@@ -82,15 +81,15 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   // Removing shortcuts is not rendered in the submenu to keep the previous
   // behavior. Shortcuts can be removed in the left nav using the roots menu.
   // TODO(mtomasz): Consider rendering the menu item here for consistency.
-  util.queryDecoratedElement(
-      '#remove-folder-shortcut', cr.ui.Command).canExecuteChange();
+  util.queryDecoratedElement('#remove-folder-shortcut', cr.ui.Command)
+      .canExecuteChange();
 
   // Both save-for-offline and offline-not-necessary are handled by the single
   // #toggle-pinned command.
-  const saveForOfflineAction = remainingActions[
-      ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
-  const offlineNotNecessaryAction = remainingActions[
-      ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
+  const saveForOfflineAction =
+      remainingActions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
+  const offlineNotNecessaryAction =
+      remainingActions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
   if (saveForOfflineAction || offlineNotNecessaryAction) {
     const menuItem = this.addMenuItem_({});
     menuItem.command = '#toggle-pinned';
@@ -98,18 +97,17 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
       delete remainingActions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
     }
     if (offlineNotNecessaryAction) {
-      delete remainingActions[
-        ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY
-      ];
+      delete remainingActions[ActionsModel.CommonActionId
+                                  .OFFLINE_NOT_NECESSARY];
     }
   }
-  util.queryDecoratedElement(
-      '#toggle-pinned', cr.ui.Command).canExecuteChange();
+  util.queryDecoratedElement('#toggle-pinned', cr.ui.Command)
+      .canExecuteChange();
 
   // Process all the rest as custom actions.
   Object.keys(remainingActions).forEach(key => {
     const action = remainingActions[key];
-    const options = { label: action.getTitle() };
+    const options = {label: action.getTitle()};
     const menuItem = this.addMenuItem_(options);
 
     menuItem.addEventListener('activate', () => {

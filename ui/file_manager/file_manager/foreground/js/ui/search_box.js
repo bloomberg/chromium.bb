@@ -37,8 +37,8 @@ function SearchBox(element, searchButton) {
    * @const
    */
   this.searchButtonToggleRipple_ =
-      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
-          'files-toggle-ripple', this.searchButton));
+      /** @type {!FilesToggleRipple} */ (
+          queryRequiredElement('files-toggle-ripple', this.searchButton));
 
   /**
    * Text input of the search box.
@@ -59,18 +59,13 @@ function SearchBox(element, searchButton) {
   this.inputElement.addEventListener('focus', this.onFocus_.bind(this));
   this.inputElement.addEventListener('blur', this.onBlur_.bind(this));
   this.inputElement.ownerDocument.addEventListener(
-      'dragover',
-      this.onDragEnter_.bind(this),
-      true);
+      'dragover', this.onDragEnter_.bind(this), true);
   this.inputElement.ownerDocument.addEventListener(
-      'dragend',
-      this.onDragEnd_.bind(this));
+      'dragend', this.onDragEnd_.bind(this));
   this.searchButton.addEventListener(
-      'click',
-      this.onSearchButtonClick_.bind(this));
+      'click', this.onSearchButtonClick_.bind(this));
   this.clearButton_.addEventListener(
-      'click',
-      this.onClearButtonClick_.bind(this));
+      'click', this.onClearButtonClick_.bind(this));
   const dispatchItemSelect =
       cr.dispatchSimpleEvent.bind(cr, this, SearchBox.EventType.ITEM_SELECT);
   this.autocompleteList.handleEnterKeydown = dispatchItemSelect;

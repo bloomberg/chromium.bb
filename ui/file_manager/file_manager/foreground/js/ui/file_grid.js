@@ -99,8 +99,8 @@ FileGrid.decorate = (element, metadataModel, volumeManager, historyLoader) => {
    * @private {number}
    * @const
    */
-  self.paddingStart_ = parseFloat(
-      isRTL() ? style.paddingRight : style.paddingLeft);
+  self.paddingStart_ =
+      parseFloat(isRTL() ? style.paddingRight : style.paddingLeft);
   /**
    * @private {number}
    * @const
@@ -112,7 +112,7 @@ FileGrid.decorate = (element, metadataModel, volumeManager, historyLoader) => {
  * Grid size.
  * @const {number}
  */
-FileGrid.GridSize = 180; // px
+FileGrid.GridSize = 180;  // px
 
 /**
  * Sets list thumbnail loader.
@@ -164,22 +164,18 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
   if (entry) {
     const box = listItem.querySelector('.img-container');
     if (box) {
-      const mimeType = this.metadataModel_.getCache(
-          [entry], ['contentMimeType'])[0].contentMimeType;
+      const mimeType =
+          this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+              .contentMimeType;
       if (!event.dataUrl) {
-        FileGrid.clearThumbnailImage_(
-            assertInstanceof(box, HTMLDivElement));
+        FileGrid.clearThumbnailImage_(assertInstanceof(box, HTMLDivElement));
         FileGrid.setGenericThumbnail_(
             assertInstanceof(box, HTMLDivElement), entry);
       } else {
         FileGrid.setThumbnailImage_(
-            assertInstanceof(box, HTMLDivElement),
-            entry,
-            assert(event.dataUrl),
-            assert(event.width),
-            assert(event.height),
-            /* should animate */ true,
-            mimeType);
+            assertInstanceof(box, HTMLDivElement), entry, assert(event.dataUrl),
+            assert(event.width), assert(event.height),
+            /* should animate */ true, mimeType);
       }
     }
     listItem.classList.toggle('thumbnail-loaded', !!event.dataUrl);
@@ -209,9 +205,9 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
     // Invisible pinned item could be outside of the
     // [beginIndex, endIndex). Ignore it.
     if (index >= beginIndex && nextIndex < endIndex &&
-        (nextIndex < this.dataModel.getFolderCount()
-            ? nextIndex % columns == 0
-            : (nextIndex - this.dataModel.getFolderCount()) % columns == 0)) {
+        (nextIndex < this.dataModel.getFolderCount() ?
+             nextIndex % columns == 0 :
+             (nextIndex - this.dataModel.getFolderCount()) % columns == 0)) {
       const isFolderSpacer = nextIndex === this.dataModel.getFolderCount();
       if (isSpacer(next)) {
         // Leave the spacer on its place.
@@ -232,7 +228,7 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
 
   function isSpacer(child) {
     return child.classList.contains('spacer') &&
-           child != afterFiller;  // Must not be removed.
+        child != afterFiller;  // Must not be removed.
   }
 
   // Make sure that grid item's selected attribute is updated just after the
@@ -341,24 +337,25 @@ FileGrid.prototype.scrollIndexIntoView = function(index) {
   }
 
   const itemHeight = index < this.dataModel.getFolderCount() ?
-      this.getFolderItemHeight_() : this.getFileItemHeight_();
+      this.getFolderItemHeight_() :
+      this.getFileItemHeight_();
   const scrollTop = this.scrollTop;
   const top = this.getItemTop(index);
   const clientHeight = this.clientHeight;
 
   const computedStyle = window.getComputedStyle(this);
   const paddingY = parseInt(computedStyle.paddingTop, 10) +
-                 parseInt(computedStyle.paddingBottom, 10);
+      parseInt(computedStyle.paddingBottom, 10);
   const availableHeight = clientHeight - paddingY;
 
   const self = this;
   // Function to adjust the tops of viewport and row.
   const scrollToAdjustTop = () => {
-      self.scrollTop = top;
+    self.scrollTop = top;
   };
   // Function to adjust the bottoms of viewport and row.
   const scrollToAdjustBottom = () => {
-      self.scrollTop = top + itemHeight - availableHeight;
+    self.scrollTop = top + itemHeight - availableHeight;
   };
 
   // Check if the entire of given indexed row can be shown in the viewport.
@@ -384,8 +381,8 @@ FileGrid.prototype.getItemsInViewPort = function(scrollTop, clientHeight) {
   const beginRow = this.getRowForListOffset_(scrollTop);
   const endRow = this.getRowForListOffset_(scrollTop + clientHeight - 1) + 1;
   const beginIndex = this.getFirstItemInRow(beginRow);
-  const endIndex = Math.min(this.getFirstItemInRow(endRow),
-                          this.dataModel.length);
+  const endIndex =
+      Math.min(this.getFirstItemInRow(endRow), this.dataModel.length);
   const result = {
     first: beginIndex,
     length: endIndex - beginIndex,
@@ -403,7 +400,7 @@ FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
   const row = this.getItemRow(lastIndex - 1);
   if (row < folderRows) {
     let fillerHeight = (folderRows - 1 - row) * this.getFolderItemHeight_() +
-                       fileRows * this.getFileItemHeight_();
+        fileRows * this.getFileItemHeight_();
     if (fileRows > 0) {
       fillerHeight += this.getSeparatorHeight_();
     }
@@ -511,7 +508,7 @@ FileGrid.prototype.createSelectionController = function(sm) {
  */
 FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
   const urls = util.entriesToURLs(entries);
-  const boxes = /** @type {!NodeList<!HTMLElement>} */(
+  const boxes = /** @type {!NodeList<!HTMLElement>} */ (
       this.querySelectorAll('.img-container'));
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i];
@@ -588,8 +585,8 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
 
   const bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
-  const mimeType = this.metadataModel_.getCache(
-      [entry], ['contentMimeType'])[0].contentMimeType;
+  const mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+                       .contentMimeType;
   const locationInfo = this.volumeManager_.getLocationInfo(entry);
   const detailIcon = filelist.renderFileTypeIcon(
       li.ownerDocument, entry, locationInfo, mimeType);
@@ -614,15 +611,12 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
  * @private
  */
 FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
-  const box = assertInstanceof(li.querySelector('.img-container'),
-                             HTMLDivElement);
-  if (this.importStatusVisible_ &&
-      importer.isEligibleType(entry)) {
-    this.historyLoader_.getHistory().then(
-        FileGrid.applyHistoryBadges_.bind(
-            null,
-            /** @type {!FileEntry} */ (entry),
-            box));
+  const box =
+      assertInstanceof(li.querySelector('.img-container'), HTMLDivElement);
+  if (this.importStatusVisible_ && importer.isEligibleType(entry)) {
+    this.historyLoader_.getHistory().then(FileGrid.applyHistoryBadges_.bind(
+        null,
+        /** @type {!FileEntry} */ (entry), box));
   }
 
   if (entry.isDirectory) {
@@ -633,28 +627,26 @@ FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
   // Set thumbnail if it's already in cache, and the thumbnail data is not
   // empty.
   const thumbnailData = this.listThumbnailLoader_ ?
-      this.listThumbnailLoader_.getThumbnailFromCache(entry) : null;
+      this.listThumbnailLoader_.getThumbnailFromCache(entry) :
+      null;
   if (thumbnailData && thumbnailData.dataUrl) {
-    const mimeType = this.metadataModel_.getCache(
-        [entry], ['contentMimeType'])[0].contentMimeType;
+    const mimeType =
+        this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+            .contentMimeType;
     FileGrid.setThumbnailImage_(
-        box,
-        entry,
-        thumbnailData.dataUrl,
-        thumbnailData.width,
+        box, entry, thumbnailData.dataUrl, thumbnailData.width,
         thumbnailData.height,
-        /* should not animate */ false,
-        mimeType);
+        /* should not animate */ false, mimeType);
     li.classList.toggle('thumbnail-loaded', true);
   } else {
     FileGrid.setGenericThumbnail_(box, entry);
     li.classList.toggle('thumbnail-loaded', false);
   }
-  const mimeType = this.metadataModel_.getCache(
-      [entry], ['contentMimeType'])[0].contentMimeType;
-  li.classList.toggle('can-hide-filename',
-                      FileType.isImage(entry, mimeType) ||
-                      FileType.isRaw(entry, mimeType));
+  const mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+                       .contentMimeType;
+  li.classList.toggle(
+      'can-hide-filename',
+      FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType));
 };
 
 /**
@@ -716,37 +708,38 @@ FileGrid.prototype.onSplice_ = function() {
  * @param {string=} opt_mimeType Optional mime type for the image.
  * @private
  */
-FileGrid.setThumbnailImage_ = (box, entry, dataUrl, width, height, shouldAnimate, opt_mimeType) => {
-  const oldThumbnails = box.querySelectorAll('.thumbnail');
+FileGrid.setThumbnailImage_ =
+    (box, entry, dataUrl, width, height, shouldAnimate, opt_mimeType) => {
+      const oldThumbnails = box.querySelectorAll('.thumbnail');
 
-  const thumbnail = box.ownerDocument.createElement('div');
-  thumbnail.classList.add('thumbnail');
+      const thumbnail = box.ownerDocument.createElement('div');
+      thumbnail.classList.add('thumbnail');
 
-  // If the image is JPEG or the thumbnail is larger than the grid size, resize
-  // it to cover the thumbnail box.
-  const type = FileType.getType(entry, opt_mimeType);
-  if ((type.type === 'image' && type.subtype === 'JPEG') ||
-      width > FileGrid.GridSize || height > FileGrid.GridSize) {
-    thumbnail.style.backgroundSize = 'cover';
-  }
-
-  thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-  thumbnail.addEventListener('animationend', () => {
-    // Remove animation css once animation is completed in order not to animate
-    // again when an item is attached to the dom again.
-    thumbnail.classList.remove('animate');
-
-    for (let i = 0; i < oldThumbnails.length; i++) {
-      if (box.contains(oldThumbnails[i])) {
-        box.removeChild(oldThumbnails[i]);
+      // If the image is JPEG or the thumbnail is larger than the grid size,
+      // resize it to cover the thumbnail box.
+      const type = FileType.getType(entry, opt_mimeType);
+      if ((type.type === 'image' && type.subtype === 'JPEG') ||
+          width > FileGrid.GridSize || height > FileGrid.GridSize) {
+        thumbnail.style.backgroundSize = 'cover';
       }
-    }
-  });
-  if (shouldAnimate) {
-    thumbnail.classList.add('animate');
-  }
-  box.appendChild(thumbnail);
-};
+
+      thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
+      thumbnail.addEventListener('animationend', () => {
+        // Remove animation css once animation is completed in order not to
+        // animate again when an item is attached to the dom again.
+        thumbnail.classList.remove('animate');
+
+        for (let i = 0; i < oldThumbnails.length; i++) {
+          if (box.contains(oldThumbnails[i])) {
+            box.removeChild(oldThumbnails[i]);
+          }
+        }
+      });
+      if (shouldAnimate) {
+        thumbnail.classList.add('animate');
+      }
+      box.appendChild(thumbnail);
+    };
 
 /**
  * Clears thumbnail image from the box.
@@ -787,30 +780,28 @@ FileGrid.setGenericThumbnail_ = (box, entry) => {
  */
 FileGrid.applyHistoryBadges_ = (entry, box, history) => {
   history.wasImported(entry, importer.Destination.GOOGLE_DRIVE)
-      .then(
-          imported => {
-            if (imported) {
-              // TODO(smckay): update badges when history changes
-              // "box" is currently the sibling of the elemement
-              // we want to style. So rather than employing
-              // a possibly-fragile sibling selector we just
-              // plop the imported class on the parent of both.
-              box.parentElement.classList.add('imported');
-            } else {
-              history.wasCopied(entry, importer.Destination.GOOGLE_DRIVE)
-                  .then(
-                      copied => {
-                        if (copied) {
-                          // TODO(smckay): update badges when history changes
-                          // "box" is currently the sibling of the elemement
-                          // we want to style. So rather than employing
-                          // a possibly-fragile sibling selector we just
-                          // plop the imported class on the parent of both.
-                          box.parentElement.classList.add('copied');
-                        }
-                      });
-            }
-          });
+      .then(imported => {
+        if (imported) {
+          // TODO(smckay): update badges when history changes
+          // "box" is currently the sibling of the elemement
+          // we want to style. So rather than employing
+          // a possibly-fragile sibling selector we just
+          // plop the imported class on the parent of both.
+          box.parentElement.classList.add('imported');
+        } else {
+          history.wasCopied(entry, importer.Destination.GOOGLE_DRIVE)
+              .then(copied => {
+                if (copied) {
+                  // TODO(smckay): update badges when history changes
+                  // "box" is currently the sibling of the elemement
+                  // we want to style. So rather than employing
+                  // a possibly-fragile sibling selector we just
+                  // plop the imported class on the parent of both.
+                  box.parentElement.classList.add('copied');
+                }
+              });
+        }
+      });
 };
 
 /**
@@ -975,9 +966,8 @@ function FileGridSelectionController(selectionModel, grid) {
   this.tapHandler_ = new FileTapHandler();
 }
 
-FileGridSelectionController.prototype = /** @struct */ {
-  __proto__: cr.ui.GridSelectionController.prototype
-};
+FileGridSelectionController.prototype =
+    /** @struct */ {__proto__: cr.ui.GridSelectionController.prototype};
 
 /** @override */
 FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
