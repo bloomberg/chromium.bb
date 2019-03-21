@@ -107,12 +107,12 @@ Polymer({
    */
   computeTitle_: function() {
     if (this.error_) {
-      return this.i18n('errorTitle');
+      return this.i18n('errorTitle', getBrowserName());
     }
     if (this.secondCounter_ > 0) {
-      return this.i18n('countdownTitle', this.secondCounter_);
+      return this.i18n('countdownTitle', this.secondCounter_, getBrowserName());
     }
-    return this.i18n('openingTitle');
+    return this.i18n('openingTitle', getBrowserName());
   },
 
   /**
@@ -121,11 +121,17 @@ Polymer({
    */
   computeDescription_: function() {
     if (this.error_) {
-      return this.i18n(this.error_, getUrlHostname(this.url_));
+      return this.i18n(
+          this.error_, getUrlHostname(this.url_), getBrowserName());
     }
-    return this.i18n('description', getUrlHostname(this.url_));
+    return this.i18n(
+        'description', getUrlHostname(this.url_), getBrowserName());
   },
 });
+
+function getBrowserName() {
+  return loadTimeData.getString('browserName');
+}
 
 function getUrlHostname(url) {
   const anchor = document.createElement('a');
