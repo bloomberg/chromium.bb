@@ -51,6 +51,20 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
         GetInstallableAppURL().GetOrigin().spec());
   }
 
+  void SetUpOnMainThread() override {
+    pwa_install_view_ =
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar_button_provider()
+            ->GetPageActionIconContainerView()
+            ->GetPageActionIconView(PageActionIconType::kPwaInstall);
+    EXPECT_FALSE(pwa_install_view_->visible());
+
+    web_contents_ = GetCurrentTab();
+    app_banner_manager_ =
+        banners::TestAppBannerManagerDesktop::CreateForWebContents(
+            web_contents_);
+  }
+
   content::WebContents* GetCurrentTab() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -79,16 +93,13 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL("app.com", "/simple.html");
   }
 
-  PageActionIconView* GetPwaInstallView() {
-    return BrowserView::GetBrowserViewForBrowser(browser())
-        ->toolbar_button_provider()
-        ->GetPageActionIconContainerView()
-        ->GetPageActionIconView(PageActionIconType::kPwaInstall);
-  }
-
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
+
+  PageActionIconView* pwa_install_view_ = nullptr;
+  content::WebContents* web_contents_ = nullptr;
+  banners::TestAppBannerManagerDesktop* app_banner_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PwaInstallViewBrowserTest);
 };
@@ -97,9 +108,6 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
 // installable/non-installable tabs.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
                        IconVisibilityAfterTabSwitching) {
-  PageActionIconView* pwa_install_view = GetPwaInstallView();
-  EXPECT_FALSE(pwa_install_view->visible());
-
   content::WebContents* installable_web_contents =
       OpenNewTab(GetInstallableAppURL(), true);
   content::WebContents* non_installable_web_contents =
@@ -107,55 +115,114 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
 
   chrome::SelectPreviousTab(browser());
   ASSERT_EQ(installable_web_contents, GetCurrentTab());
-  EXPECT_TRUE(pwa_install_view->visible());
+  EXPECT_TRUE(pwa_install_view_->visible());
 
   chrome::SelectNextTab(browser());
   ASSERT_EQ(non_installable_web_contents, GetCurrentTab());
-  EXPECT_FALSE(pwa_install_view->visible());
+  EXPECT_FALSE(pwa_install_view_->visible());
 }
 
 // Tests that the plus icon updates its visibiliy once the installability check
 // completes.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
                        IconVisibilityAfterInstallabilityCheck) {
-  PageActionIconView* pwa_install_view = GetPwaInstallView();
-  EXPECT_FALSE(pwa_install_view->visible());
-
-  content::WebContents* web_contents = GetCurrentTab();
-  auto* app_banner_manager =
-      banners::TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
-
   ui_test_utils::NavigateToURL(browser(), GetInstallableAppURL());
-  EXPECT_FALSE(pwa_install_view->visible());
-  ASSERT_TRUE(app_banner_manager->WaitForInstallableCheck());
-  EXPECT_TRUE(pwa_install_view->visible());
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
 
   ui_test_utils::NavigateToURL(browser(), GetNonInstallableAppURL());
-  EXPECT_FALSE(pwa_install_view->visible());
-  ASSERT_FALSE(app_banner_manager->WaitForInstallableCheck());
-  EXPECT_FALSE(pwa_install_view->visible());
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_FALSE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_FALSE(pwa_install_view_->visible());
 }
 
 // Tests that the plus icon animates its label when the installability check
 // passes but doesn't animate more than once for the same installability check.
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, LabelAnimation) {
-  PageActionIconView* pwa_install_view = GetPwaInstallView();
-  EXPECT_FALSE(pwa_install_view->visible());
-
-  content::WebContents* web_contents = GetCurrentTab();
-  auto* app_banner_manager =
-      banners::TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
-
   ui_test_utils::NavigateToURL(browser(), GetInstallableAppURL());
-  EXPECT_FALSE(pwa_install_view->visible());
-  ASSERT_TRUE(app_banner_manager->WaitForInstallableCheck());
-  EXPECT_TRUE(pwa_install_view->visible());
-  EXPECT_TRUE(pwa_install_view->is_animating_label());
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
 
   chrome::NewTab(browser());
-  EXPECT_FALSE(pwa_install_view->visible());
+  EXPECT_FALSE(pwa_install_view_->visible());
 
   chrome::SelectPreviousTab(browser());
-  EXPECT_TRUE(pwa_install_view->visible());
-  EXPECT_FALSE(pwa_install_view->is_animating_label());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_FALSE(pwa_install_view_->is_animating_label());
+}
+
+// Tests that the icon persists while loading the same scope and omits running
+// the label animation again.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, NavigateToSameScope) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_a/page_1.html"));
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_a/page_2.html"));
+  EXPECT_TRUE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_FALSE(pwa_install_view_->is_animating_label());
+}
+
+// Tests that the icon persists while loading the same scope but goes away when
+// the installability check fails.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       NavigateToSameScopeNonInstallable) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_a/page_1.html"));
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_a/bad_manifest.html"));
+  EXPECT_TRUE(pwa_install_view_->visible());
+  ASSERT_FALSE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_FALSE(pwa_install_view_->visible());
+  EXPECT_FALSE(pwa_install_view_->is_animating_label());
+}
+
+// Tests that the icon and animation resets while loading a different scope.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, NavigateToDifferentScope) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_a/page_1.html"));
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_b/scope_b.html"));
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
+}
+
+// Tests that the icon and animation resets while loading a different empty
+// scope.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       NavigateToDifferentEmptyScope) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/scope_a/page_1.html"));
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/banners/manifest_test_page.html"));
+  EXPECT_FALSE(pwa_install_view_->visible());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->visible());
+  EXPECT_TRUE(pwa_install_view_->is_animating_label());
 }
