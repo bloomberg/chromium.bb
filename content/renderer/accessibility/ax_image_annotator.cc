@@ -158,9 +158,33 @@ void AXImageAnnotator::MarkAllImagesDirty() {
     blink::WebAXObject image = blink::WebAXObject::FromWebDocumentByID(
         render_accessibility_->GetMainDocument(), key_value.first);
     if (!image.IsDetached())
-      render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+      MarkDirty(image);
   }
   image_annotations_.clear();
+}
+
+void AXImageAnnotator::MarkDirty(const blink::WebAXObject& image) const {
+  render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+
+  // Check two unignored parents. If either of them is a link or root web area,
+  // mark it dirty too, because we want a link or document containing exactly
+  // a single image and nothing more to get annotated directly, too.
+  //
+  // TODO(dmazzoni): Expose ParentObjectUnignored in WebAXObject to
+  // make this simpler.
+  blink::WebAXObject parent = image.ParentObject();
+  for (int ancestor_count = 0; !parent.IsDetached() && ancestor_count < 2;
+       parent = parent.ParentObject()) {
+    if (!parent.AccessibilityIsIgnored()) {
+      ++ancestor_count;
+      if (parent.Role() == ax::mojom::Role::kLink ||
+          parent.Role() == ax::mojom::Role::kRootWebArea) {
+        render_accessibility_->MarkWebAXObjectDirty(parent,
+                                                    false /* subtree */);
+        return;
+      }
+    }
+  }
 }
 
 AXImageAnnotator::ImageInfo::ImageInfo(const blink::WebAXObject& image)
@@ -241,7 +265,7 @@ void AXImageAnnotator::OnImageAnnotated(
             .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationAdult);
         break;
     }
-    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+    MarkDirty(image);
     return;
   }
 
@@ -249,7 +273,7 @@ void AXImageAnnotator::OnImageAnnotated(
     DLOG(WARNING) << "No image annotation results.";
     image_annotations_.at(image.AxID())
         .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
-    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+    MarkDirty(image);
     return;
   }
 
@@ -286,7 +310,7 @@ void AXImageAnnotator::OnImageAnnotated(
   if (contextualized_strings.empty()) {
     image_annotations_.at(image.AxID())
         .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
-    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+    MarkDirty(image);
     return;
   }
 
@@ -298,7 +322,7 @@ void AXImageAnnotator::OnImageAnnotated(
   std::string contextualized_string =
       base::JoinString(contextualized_strings, ". ");
   image_annotations_.at(image.AxID()).set_annotation(contextualized_string);
-  render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+  MarkDirty(image);
 
   VLOG(1) << "Annotating image on page " << GetDocumentUrl() << " - "
           << contextualized_string;
