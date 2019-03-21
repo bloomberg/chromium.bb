@@ -7,54 +7,30 @@ cr.define('other_options_settings_test', function() {
     /** @type {?PrintPreviewOtherOptionsSettingsElement} */
     let otherOptionsSection = null;
 
+    /** @type {?PrintPreviewModelElement} */
+    let model = null;
+
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+      model.set('settings.duplex.available', true);
+      model.set('settings.duplex.value', true);
+      model.set('settings.headerFooter.available', true);
+      model.set('settings.headerFotoer.value', true);
+      model.set('settings.cssBackground.available', true);
+      model.set('settings.cssBackground.value', true);
+      model.set('settings.selectionOnly.available', true);
+      model.set('settings.selectionOnly.value', true);
+      model.set('settings.rasterize.available', true);
+      model.set('settings.rasterize.value', true);
+
       otherOptionsSection =
           document.createElement('print-preview-other-options-settings');
-      otherOptionsSection.settings = {
-        duplex: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isDuplexEnabled',
-        },
-        cssBackground: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isCssBackgroundEnabled',
-        },
-        selectionOnly: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-        headerFooter: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isHeaderFooterEnabled',
-        },
-        rasterize: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-      };
+      otherOptionsSection.settings = model.settings;
       otherOptionsSection.disabled = false;
+      test_util.fakeDataBind(model, otherOptionsSection, 'settings');
       document.body.appendChild(otherOptionsSection);
       Polymer.dom.flush();
     });
@@ -75,7 +51,7 @@ cr.define('other_options_settings_test', function() {
             const checkbox = otherOptionsSection.$$(`#${setting}`);
             // Show, hide and reset.
             [true, false, true].forEach(value => {
-              otherOptionsSection.set(`settings.${setting}.available`, value);
+              model.set(`settings.${setting}.available`, value);
               // Element expected to be visible when available.
               assertEquals(!value, isSectionHidden(checkbox));
             });
@@ -128,7 +104,7 @@ cr.define('other_options_settings_test', function() {
         const checkbox = otherOptionsSection.$$(`#${setting}`);
         // Set true and then false.
         [true, false].forEach(value => {
-          otherOptionsSection.set(`settings.${setting}.setByPolicy`, value);
+          model.set(`settings.${setting}.setByPolicy`, value);
           // Element expected to be disabled when policy is set.
           assertEquals(value, checkbox.disabled);
         });

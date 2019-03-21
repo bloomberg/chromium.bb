@@ -11,29 +11,15 @@ cr.define('margins_settings_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       marginsSection = document.createElement('print-preview-margins-settings');
       document.body.appendChild(marginsSection);
-      Polymer.dom.flush();
-      marginsTypeEnum = print_preview.ticket_items.MarginsTypeValue;
-      marginsSection.settings = {
-        margins: {
-          value: marginsTypeEnum.DEFAULT,
-          unavailableValue: marginsTypeEnum.DEFAULT,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'marginsType',
-        },
-        pagesPerSheet: {
-          value: 1,
-          unavailableValue: 1,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-      };
+      marginsSection.settings = model.settings;
       marginsSection.disabled = false;
+      test_util.fakeDataBind(model, marginsSection, 'settings');
+      marginsTypeEnum = print_preview.ticket_items.MarginsTypeValue;
     });
 
     // Tests that setting the setting updates the UI.
@@ -41,7 +27,7 @@ cr.define('margins_settings_test', function() {
       const select = marginsSection.$$('select');
       assertEquals(marginsTypeEnum.DEFAULT.toString(), select.value);
 
-      marginsSection.set('settings.margins.value', marginsTypeEnum.MINIMUM);
+      marginsSection.setSetting('margins', marginsTypeEnum.MINIMUM);
       await test_util.eventToPromise('process-select-change', marginsSection);
       assertEquals(marginsTypeEnum.MINIMUM.toString(), select.value);
     });
@@ -68,10 +54,10 @@ cr.define('margins_settings_test', function() {
       const select = marginsSection.$$('select');
       assertFalse(select.disabled);
 
-      marginsSection.set('settings.pagesPerSheet.value', 2);
+      marginsSection.setSetting('pagesPerSheet', 2);
       assertTrue(select.disabled);
 
-      marginsSection.set('settings.pagesPerSheet.value', 1);
+      marginsSection.setSetting('pagesPerSheet', 1);
       assertFalse(select.disabled);
     });
   });

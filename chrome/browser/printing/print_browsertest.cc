@@ -207,7 +207,7 @@ class PrintBrowserTest : public InProcessBrowserTest {
   static PrintMsg_Print_Params GetNupPrintParams() {
     PrintMsg_Print_Params params;
     params.page_size = gfx::Size(612, 792);
-    params.content_size = gfx::Size(612, 792);
+    params.content_size = gfx::Size(540, 720);
     params.printable_area = gfx::Rect(612, 792);
     params.dpi = gfx::Size(72, 72);
     params.document_cookie = kDefaultDocumentCookie;

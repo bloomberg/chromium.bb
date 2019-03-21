@@ -15,34 +15,20 @@ cr.define('scaling_settings_test', function() {
     /** @type {?PrintPreviewScalingSettingsElement} */
     let scalingSection = null;
 
+    /** @type {?PrintPreviewModelElement} */
+    let model = null;
+
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+      model.set('settings.fitToPage.available', false);
+
       scalingSection = document.createElement('print-preview-scaling-settings');
-      scalingSection.settings = {
-        scaling: {
-          value: '100',
-          unavailableValue: '100',
-          valid: true,
-          available: true,
-          key: 'scaleFactor',
-        },
-        customScaling: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'customScaling',
-        },
-        fitToPage: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: false,
-          key: 'isFitToPageEnabled',
-        },
-      };
+      scalingSection.settings = model.settings;
       scalingSection.disabled = false;
+      test_util.fakeDataBind(model, scalingSection, 'settings');
       document.body.appendChild(scalingSection);
     });
 
@@ -59,7 +45,7 @@ cr.define('scaling_settings_test', function() {
       assertFalse(customOption.hidden);
 
       // Fit to page available -> All 3 options.
-      scalingSection.set('settings.fitToPage.available', true);
+      model.set('settings.fitToPage.available', true);
       assertFalse(fitToPageOption.hidden);
       assertFalse(defaultOption.hidden);
       assertFalse(customOption.hidden);
@@ -100,7 +86,7 @@ cr.define('scaling_settings_test', function() {
       const scalingDropdown = scalingSection.$$('.md-select');
 
       // Make fit to page available.
-      scalingSection.set('settings.fitToPage.available', true);
+      model.set('settings.fitToPage.available', true);
 
       // Default is 100
       validateState('100', true, false, false, '100');
@@ -177,7 +163,7 @@ cr.define('scaling_settings_test', function() {
       // false is detected. Imitate this here. Since we are only interacting
       // with the scaling input, at no point should the input be disabled, as it
       // will lose focus.
-      scalingSection.addEventListener('setting-valid-changed', function(e) {
+      model.addEventListener('setting-valid-changed', function(e) {
         assertFalse(input.disabled);
       });
 

@@ -21,39 +21,15 @@ cr.define('header_test', function() {
 
     /** @override */
     setup(function() {
-      // The header cares about color, duplex, and header/footer to determine
-      // whether to show the enterprise managed icon, and pages, copies, and
-      // duplex to compute the number of sheets of paper.
-      const settings = {
-        copies: {
-          value: '1',
-          unavailableValue: '1',
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-        duplex: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: 'isDuplexEnabled',
-        },
-        pages: {
-          value: [1],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          setByPolicy: false,
-          key: '',
-        },
-      };
-
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       header = document.createElement('print-preview-header');
-      header.settings = settings;
+      header.settings = model.settings;
+      model.set('settings.duplex.available', true);
+      model.set('settings.duplex.value', false);
+
       header.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
@@ -61,6 +37,7 @@ cr.define('header_test', function() {
       header.errorMessage = '';
       header.state = print_preview_new.State.READY;
       header.managed = false;
+      test_util.fakeDataBind(model, header, 'settings');
       document.body.appendChild(header);
     });
 
@@ -141,8 +118,8 @@ cr.define('header_test', function() {
       assertTrue(printButton.disabled);
 
       const testError = 'Error printing to cloud print';
-      header.set('errorMessage', testError);
       header.set('state', print_preview_new.State.FATAL_ERROR);
+      header.setErrorMessage(testError);
       assertEquals(testError, summary.textContent);
       assertTrue(printButton.disabled);
     });

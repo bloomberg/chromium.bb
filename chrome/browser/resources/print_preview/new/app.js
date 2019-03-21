@@ -64,12 +64,6 @@ Polymer({
     /** @private {!print_preview.PrintableArea} */
     printableArea_: Object,
 
-    /** @private {string} */
-    errorMessage_: {
-      type: String,
-      value: '',
-    },
-
     /** @private {boolean} */
     isInAppKioskMode_: {
       type: Boolean,
@@ -125,6 +119,9 @@ Polymer({
 
   /** @private {boolean} */
   printRequested_: false,
+
+  /** @private {boolean} */
+  startPreviewWhenReady_: false,
 
   /** @private {boolean} */
   showSystemDialogBeforePrint_: false,
@@ -327,7 +324,7 @@ Polymer({
   },
 
   /** @private */
-  onDestinationStateChange_: function(e) {
+  onDestinationStateChange_: function() {
     switch (this.destinationState_) {
       case print_preview.DestinationState.SELECTED:
         // If the plugin does not exist do not attempt to load the preview.
@@ -344,6 +341,7 @@ Polymer({
         this.$.model.applyDestinationSpecificPolicies();
         // </if>
 
+        this.startPreviewWhenReady_ = true;
         if (this.state == print_preview_new.State.NOT_READY ||
             this.state == print_preview_new.State.INVALID_PRINTER) {
           this.$.state.transitTo(print_preview_new.State.READY);
@@ -355,36 +353,43 @@ Polymer({
         }
         break;
       case print_preview.DestinationState.INVALID:
-        this.previewState_ =
-            print_preview_new.PreviewAreaState.INVALID_SETTINGS;
-        break;
       case print_preview.DestinationState.UNSUPPORTED:
-        this.previewState_ =
-            print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER;
-        break;
       // <if expr="chromeos">
       case print_preview.DestinationState.NO_DESTINATIONS:
+        // </if>
         this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
-        this.$.previewArea.setNoDestinationsFound();
         break;
-      // </if>
       default:
         break;
     }
   },
 
   /**
-   * @param {!CustomEvent<string>} e Event containing the sticky settings
-   *     string.
+   * @param {!CustomEvent<string>} e Event containing the new sticky settings.
    * @private
    */
-  onSaveStickySettings_: function(e) {
+  onStickySettingChanged_: function(e) {
     this.nativeLayer_.saveAppState(e.detail);
   },
 
   /** @private */
+  onPreviewSettingChanged_: function() {
+    if (this.state === print_preview_new.State.READY) {
+      this.$.previewArea.startPreview();
+      this.startPreviewWhenReady_ = false;
+    } else {
+      this.startPreviewWhenReady_ = true;
+    }
+  },
+
+  /** @private */
   onStateChanged_: function() {
-    if (this.state == print_preview_new.State.CLOSING) {
+    if (this.state == print_preview_new.State.READY) {
+      if (this.startPreviewWhenReady_) {
+        this.$.previewArea.startPreview();
+        this.startPreviewWhenReady_ = false;
+      }
+    } else if (this.state == print_preview_new.State.CLOSING) {
       this.remove();
       this.nativeLayer_.dialogClose(this.cancelled_);
     } else if (this.state == print_preview_new.State.HIDDEN) {
@@ -502,8 +507,8 @@ Polymer({
    */
   onPrintFailed_: function(httpError) {
     console.error('Printing failed with error code ' + httpError);
-    this.errorMessage_ = loadTimeData.getString('couldNotPrint');
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+    this.$.header.setErrorMessage(loadTimeData.getString('couldNotPrint'));
   },
 
   /** @private */
@@ -514,7 +519,6 @@ Polymer({
         this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
         break;
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
-      case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
         if (this.state != print_preview_new.State.INVALID_PRINTER) {
           this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
         }
@@ -542,8 +546,8 @@ Polymer({
         (event.detail.status == 403 && !this.isInAppKioskMode_)) {
       return;  // No internet connectivity or not signed in.
     }
-    this.errorMessage_ = event.detail.message;
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+    this.$.header.setErrorMessage(event.detail.message);
     if (event.detail.status == 200) {
       console.error(
           'Google Cloud Print Error: ' +

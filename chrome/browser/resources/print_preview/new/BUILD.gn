@@ -222,6 +222,7 @@ js_library("settings_select") {
 
 js_library("settings_behavior") {
   deps = [
+    ":model",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -376,7 +377,6 @@ js_library("highlight_utils") {
 
 js_library("model") {
   deps = [
-    ":settings_behavior",
     "../data:destination",
     "../data:document_info",
     "../data:margins",

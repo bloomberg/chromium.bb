@@ -28,7 +28,8 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_MODEL_JS"
                  file="new/model.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_CLOUD_PRINT_INTERFACE_HTML"
                  file="cloud_print_interface.html"
                  type="chrome_html" />

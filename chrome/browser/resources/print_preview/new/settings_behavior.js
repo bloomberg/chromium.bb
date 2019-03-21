@@ -14,6 +14,7 @@ cr.exportPath('print_preview_new');
  *   available: boolean,
  *   setByPolicy: boolean,
  *   key: string,
+ *   updatesPreview: boolean,
  * }}
  */
 print_preview_new.Setting;
@@ -49,10 +50,7 @@ print_preview_new.Settings;
 const SettingsBehavior = {
   properties: {
     /** @type {print_preview_new.Settings} */
-    settings: {
-      type: Object,
-      notify: true,
-    },
+    settings: Object,
   },
 
   /**
@@ -60,10 +58,7 @@ const SettingsBehavior = {
    * @return {print_preview_new.Setting} The setting object.
    */
   getSetting: function(settingName) {
-    const setting = /** @type {print_preview_new.Setting} */ (
-        this.get(settingName, this.settings));
-    assert(setting, 'Setting is missing: ' + settingName);
-    return setting;
+    return print_preview.Model.getInstance().getSetting(settingName);
   },
 
   /**
@@ -71,20 +66,19 @@ const SettingsBehavior = {
    * @return {*} The value of the setting, accounting for availability.
    */
   getSettingValue: function(settingName) {
-    const setting = this.getSetting(settingName);
-    return setting.available ? setting.value : setting.unavailableValue;
+    return print_preview.Model.getInstance().getSettingValue(settingName);
   },
 
   /**
+   * Sets settings.settingName.value to |value|, unless updating the setting is
+   * disallowed by enterprise policy. Fires preview-setting-changed and
+   * sticky-setting-changed events if the update impacts the preview or requires
+   * an update to sticky settings.
    * @param {string} settingName Name of the setting to set
    * @param {*} value The value to set the setting to.
    */
   setSetting: function(settingName, value) {
-    const setting = this.getSetting(settingName);
-    if (setting.setByPolicy) {
-      return;
-    }
-    this.set(`settings.${settingName}.value`, value);
+    print_preview.Model.getInstance().setSetting(settingName, value);
   },
 
   /**
@@ -94,32 +88,17 @@ const SettingsBehavior = {
    * @param {*} newValue The value to add (if any).
    */
   setSettingSplice: function(settingName, start, end, newValue) {
-    const setting = this.getSetting(settingName);
-    if (setting.setByPolicy) {
-      return;
-    }
-    if (newValue) {
-      this.splice(`settings.${settingName}.value`, start, end, newValue);
-    } else {
-      this.splice(`settings.${settingName}.value`, start, end);
-    }
+    print_preview.Model.getInstance().setSettingSplice(
+        settingName, start, end, newValue);
   },
 
   /**
+   * Sets the validity of |settingName| to |valid|. If the validity is changed,
+   * fires a setting-valid-changed event.
    * @param {string} settingName Name of the setting to set
    * @param {boolean} valid Whether the setting value is currently valid.
    */
   setSettingValid: function(settingName, valid) {
-    const setting = this.getSetting(settingName);
-    // Should not set the setting to invalid if it is not available, as there
-    // is no way for the user to change the value in this case.
-    if (!valid) {
-      assert(setting.available, 'Setting is not available: ' + settingName);
-    }
-    const shouldFireEvent = valid != setting.valid;
-    this.set(`settings.${settingName}.valid`, valid);
-    if (shouldFireEvent) {
-      this.fire('setting-valid-changed', valid);
-    }
-  }
+    print_preview.Model.getInstance().setSettingValid(settingName, valid);
+  },
 };

@@ -420,7 +420,10 @@ cr.define('preview_generation_test', function() {
           'rasterize', false, true, 'rasterizePDF', false, true);
     });
 
-    /** Validate changing the destination updates the preview. */
+    /**
+     * Validate changing the destination updates the preview, if it results
+     * in a settings change.
+     */
     test(assert(TestNames.Destination), function() {
       return initialize()
           .then(function(args) {
@@ -431,12 +434,23 @@ cr.define('preview_generation_test', function() {
                 'BarDevice', print_preview.DestinationType.LOCAL,
                 print_preview.DestinationOrigin.LOCAL, 'BarName',
                 print_preview.DestinationConnectionStatus.ONLINE);
-            barDestination.capabilities =
+            const capabilities =
                 print_preview_test_utils.getCddTemplate(barDestination.id)
                     .capabilities;
+            capabilities.printer.media_size = {
+              option: [
+                {
+                  name: 'ISO_A4',
+                  width_microns: 210000,
+                  height_microns: 297000,
+                  custom_display_name: 'A4',
+                },
+              ],
+            };
+            barDestination.capabilities = capabilities;
             nativeLayer.resetResolver('getPreview');
-            page.set('destination_', barDestination);
             page.destinationState_ = print_preview.DestinationState.SELECTED;
+            page.set('destination_', barDestination);
             page.destinationState_ = print_preview.DestinationState.UPDATED;
             return nativeLayer.whenCalled('getPreview');
           })

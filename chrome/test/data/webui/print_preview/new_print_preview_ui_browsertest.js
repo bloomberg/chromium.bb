@@ -889,6 +889,7 @@ PrintPreviewHeaderTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'header_test.js',
     ]);
   }
@@ -973,6 +974,7 @@ PrintPreviewAdvancedItemTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'print_preview_test_utils.js',
       'advanced_item_test.js',
     ]);
