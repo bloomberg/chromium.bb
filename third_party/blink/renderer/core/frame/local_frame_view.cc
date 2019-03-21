@@ -2215,7 +2215,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     for (auto& observer : frame_view.lifecycle_observers_)
-      observer->WillStartLifecycleUpdate(frame_view);
+      observer->WillStartLifecycleUpdate();
   });
 
   // If we're in PrintBrowser mode, setup a print context.
@@ -2231,7 +2231,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     for (auto& observer : frame_view.lifecycle_observers_)
-      observer->DidFinishLifecycleUpdate(frame_view);
+      observer->DidFinishLifecycleUpdate();
   });
 
   return Lifecycle().GetState() == target_state;

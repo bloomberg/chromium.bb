@@ -99,10 +99,10 @@ class WebAXObject {
   // tree.
   BLINK_EXPORT int GenerateAXID() const;
 
-  // Update layout if necessary on the underlying tree, and return true if this
-  // object is still valid (not detached). Note that calling this method can
-  // cause other WebAXObjects to become invalid, too, so always call isDetached
-  // if any other blink/renderer/core code has run.
+  // Update layout on the underlying tree, and return true if this object is
+  // still valid (not detached). Note that calling this method
+  // can cause other WebAXObjects to become invalid, too,
+  // so always call isDetached if any other WebCore code has run.
   BLINK_EXPORT bool UpdateLayoutAndCheckValidity();
 
   BLINK_EXPORT unsigned ChildCount() const;

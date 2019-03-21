@@ -12,8 +12,10 @@ async_test_after_layout_and_paint(function(t)
 {
     var axImg = accessibilityController.accessibleElementById("img1");
     axImg.addNotificationListener(function(notification) {
-        if (notification == 'Clicked')
+        if (notification == 'Clicked') {
+            document.getElementById("wrapper1").style.display = "none";
             t.done();
+        }
     });
 
     var img = document.getElementById("img1");
@@ -45,8 +47,10 @@ async_test_after_layout_and_paint(function(t)
             domEvent = true;
         }
 
-        if (axEvent && domEvent)
+        if (axEvent && domEvent) {
+            document.getElementById("wrapper2").style.display = "none";
             t.done();
+        }
     };
 
     var axImg = accessibilityController.accessibleElementById("img2");
@@ -56,3 +60,4 @@ async_test_after_layout_and_paint(function(t)
     axImg.press();
 }, "clicking an image via accessibility sends both an accessible and a DOM click event");
 </script>
+
