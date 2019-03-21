@@ -662,7 +662,6 @@ mojom("mojo_bindings") {
   ]
   public_deps = [
     ":android_mojo_bindings",
-    ":authenticator_test_mojo_bindings",
     "//components/services/font/public/interfaces",
     "//device/bluetooth/public/mojom",
     "//mojo/public/mojom/base",
@@ -696,14 +695,8 @@ mojom("mojo_bindings") {
 }
 
 mojom("android_mojo_bindings") {
-  visibility = [
-    ":mojo_bindings",
-    ":authenticator_test_mojo_bindings",
-  ]
-  visibility_blink = [
-    ":mojo_bindings_blink",
-    ":authenticator_test_mojo_bindings_blink",
-  ]
+  visibility = [ ":mojo_bindings" ]
+  visibility_blink = [ ":mojo_bindings_blink" ]
   sources = [
     "platform/modules/document_metadata/copyless_paste.mojom",
     "platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom",
@@ -711,7 +704,6 @@ mojom("android_mojo_bindings") {
     "platform/modules/installedapp/installed_app_provider.mojom",
     "platform/modules/installedapp/related_application.mojom",
     "platform/modules/mediasession/media_session.mojom",
-    "platform/modules/webauthn/authenticator.mojom",
   ]
   public_deps = [
     "//mojo/public/mojom/base",
@@ -729,9 +721,6 @@ mojom("android_mojo_bindings") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
-
-  # Don't scramble message IDs so they are redistributable to external tests.
-  scramble_message_ids = false
 }
 
 # The embedded_frame_sink_mojo_bindings is separated from the rest of mojom
@@ -803,19 +792,4 @@ group("generate_mojo_bindings") {
     ":mojo_bindings_blink_headers",
     ":mojo_bindings_headers",
   ]
-}
-
-# This is a separate target because it needs unscrambled message IDs.
-mojom("authenticator_test_mojo_bindings") {
-  sources = [
-    "platform/modules/webauthn/virtual_authenticator.mojom",
-  ]
-
-  public_deps = [
-    ":android_mojo_bindings",
-    "//url/mojom:url_mojom_gurl",
-  ]
-
-  # Don't scramble message IDs so they are redistributable to external tests.
-  scramble_message_ids = false
 }
