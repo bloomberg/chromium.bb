@@ -28,7 +28,6 @@ const base::Feature* const kAllFeatures[] = {
     &kCategoryOrder,
     &kCategoryRanker,
     &kContentSuggestionsDebugLog,
-    &kIncreasedVisibility,
     &kKeepPrefetchedContentSuggestions,
     &kNotificationsFeature,
     &kRemoteSuggestionsBackendFeature};
@@ -38,9 +37,6 @@ const base::Feature kArticleSuggestionsFeature{
 
 const base::Feature kBookmarkSuggestionsFeature{
     "NTPBookmarkSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kIncreasedVisibility{"NTPSnippetsIncreasedVisibility",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBreakingNewsPushFeature{"BreakingNewsPush",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

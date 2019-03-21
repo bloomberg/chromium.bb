@@ -39,9 +39,6 @@ extern const base::Feature kBookmarkSuggestionsFeature;
 
 extern const base::Feature kArticleSuggestionsFeature;
 
-// Feature to allow UI as specified here: https://crbug.com/660837.
-extern const base::Feature kIncreasedVisibility;
-
 // Feature to listen for GCM push updates from the server.
 extern const base::Feature kBreakingNewsPushFeature;
 
