@@ -28,7 +28,6 @@
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/auth_policy/auth_policy_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -86,7 +85,7 @@ AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
 
   // Connecting to the signal sent by authpolicyd notifying that Kerberos files
   // have changed.
-  DBusThreadManager::Get()->GetAuthPolicyClient()->ConnectToSignal(
+  AuthPolicyClient::Get()->ConnectToSignal(
       authpolicy::kUserKerberosFilesChangedSignal,
       base::Bind(
           &AuthPolicyCredentialsManager::OnUserKerberosFilesChangedCallback,
@@ -125,7 +124,7 @@ void AuthPolicyCredentialsManager::GetUserStatus() {
   authpolicy::GetUserStatusRequest request;
   request.set_user_principal_name(account_id_.GetUserEmail());
   request.set_account_id(account_id_.GetObjGuid());
-  DBusThreadManager::Get()->GetAuthPolicyClient()->GetUserStatus(
+  AuthPolicyClient::Get()->GetUserStatus(
       request,
       base::BindOnce(&AuthPolicyCredentialsManager::OnGetUserStatusCallback,
                      weak_factory_.GetWeakPtr()));
@@ -188,7 +187,7 @@ void AuthPolicyCredentialsManager::OnGetUserStatusCallback(
 }
 
 void AuthPolicyCredentialsManager::GetUserKerberosFiles() {
-  DBusThreadManager::Get()->GetAuthPolicyClient()->GetUserKerberosFiles(
+  AuthPolicyClient::Get()->GetUserKerberosFiles(
       account_id_.GetObjGuid(),
       base::BindOnce(
           &AuthPolicyCredentialsManager::OnGetUserKerberosFilesCallback,

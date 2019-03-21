@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -21,7 +20,7 @@ namespace chromeos {
 // AuthPolicyClient is used to communicate with the org.chromium.AuthPolicy
 // sevice. All method should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) AuthPolicyClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) AuthPolicyClient {
  public:
   using AuthCallback = base::OnceCallback<void(
       authpolicy::ErrorType error,
@@ -38,11 +37,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) AuthPolicyClient : public DBusClient {
   using RefreshPolicyCallback =
       base::OnceCallback<void(authpolicy::ErrorType error)>;
 
-  ~AuthPolicyClient() override;
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
 
-  // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static AuthPolicyClient* Create();
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static AuthPolicyClient* Get();
 
   // Calls JoinADDomain to join a machine/device to an Active Directory domain.
   // Password is read from the |password_fd|. |callback| is called after getting
@@ -91,8 +96,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) AuthPolicyClient : public DBusClient {
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) = 0;
 
  protected:
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   AuthPolicyClient();
+  virtual ~AuthPolicyClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthPolicyClient);

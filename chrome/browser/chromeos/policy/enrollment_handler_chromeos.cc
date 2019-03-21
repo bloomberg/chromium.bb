@@ -748,11 +748,9 @@ void EnrollmentHandlerChromeOS::OnDeviceAccountTokenStored() {
     // policy is accepted.
     chromeos::DeviceSettingsService::Get()->SetDeviceMode(
         install_attributes_->GetMode());
-    chromeos::DBusThreadManager::Get()
-        ->GetAuthPolicyClient()
-        ->RefreshDevicePolicy(base::BindOnce(
-            &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
-            weak_ptr_factory_.GetWeakPtr()));
+    chromeos::AuthPolicyClient::Get()->RefreshDevicePolicy(base::BindOnce(
+        &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
+        weak_ptr_factory_.GetWeakPtr()));
   } else {
     store_->InstallInitialPolicy(*policy_);
   }

@@ -44,13 +44,7 @@ void RunRefreshCallback(base::OnceCallback<void(bool success)> callback,
 
 // Gets the AuthPolicy D-Bus interface.
 chromeos::AuthPolicyClient* GetAuthPolicyClient() {
-  chromeos::DBusThreadManager* thread_manager =
-      chromeos::DBusThreadManager::Get();
-  DCHECK(thread_manager);
-  chromeos::AuthPolicyClient* auth_policy_client =
-      thread_manager->GetAuthPolicyClient();
-  DCHECK(auth_policy_client);
-  return auth_policy_client;
+  return chromeos::AuthPolicyClient::Get();
 }
 
 bool IsComponentPolicyDisabled() {

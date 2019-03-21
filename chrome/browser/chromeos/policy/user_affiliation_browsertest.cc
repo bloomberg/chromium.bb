@@ -165,19 +165,14 @@ class UserAffiliationBrowserTest
     chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::make_unique<chromeos::FakeCryptohomeClient>());
 
-    // Initialize UpstartClient here so that it is available for
-    // FakeAuthPolicyClient. It will be shutdown in ChromeBrowserMain.
+    // Initialize clients here so they are available during setup. They will be
+    // shutdown in ChromeBrowserMain.
     chromeos::UpstartClient::InitializeFake();
-
     chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
     if (GetParam().active_directory) {
-      auto fake_auth_policy_client_owned =
-          std::make_unique<chromeos::FakeAuthPolicyClient>();
-      fake_auth_policy_client = fake_auth_policy_client_owned.get();
+      chromeos::AuthPolicyClient::InitializeFake();
+      fake_auth_policy_client = chromeos::FakeAuthPolicyClient::Get();
       fake_auth_policy_client->DisableOperationDelayForTesting();
-      chromeos::DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
-          std::move(fake_auth_policy_client_owned));
-
       // PrepareLogin requires a message loop, which isn't available yet here.
       base::MessageLoop message_loop;
       chromeos::active_directory_test_helper::PrepareLogin(

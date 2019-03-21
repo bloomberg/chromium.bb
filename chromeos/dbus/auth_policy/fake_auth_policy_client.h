@@ -28,8 +28,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeAuthPolicyClient
   FakeAuthPolicyClient();
   ~FakeAuthPolicyClient() override;
 
-  // DBusClient overrides.
-  void Init(dbus::Bus* bus) override;
+  // Returns the fake global instance if initialized. May return null.
+  static FakeAuthPolicyClient* Get();
+
   // AuthPolicyClient overrides.
 
   // Performs basic checks on |request.machine_name| and

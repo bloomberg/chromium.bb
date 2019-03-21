@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/auth_policy/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
@@ -39,12 +40,14 @@ void InitializeDBus() {
   }
 
   if (bus) {
+    AuthPolicyClient::Initialize(bus);
     BiodClient::Initialize(bus);  // For device::Fingerprint.
     KerberosClient::Initialize(bus);
     PowerManagerClient::Initialize(bus);
     SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
   } else {
+    AuthPolicyClient::InitializeFake();
     BiodClient::InitializeFake();  // For device::Fingerprint.
     KerberosClient::InitializeFake();
     PowerManagerClient::InitializeFake();
@@ -60,6 +63,7 @@ void InitializeDBus() {
 }
 
 void ShutdownDBus() {
+  AuthPolicyClient::Shutdown();
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   PowerManagerClient::Shutdown();

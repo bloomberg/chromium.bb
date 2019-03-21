@@ -9,8 +9,6 @@
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
-#include "chromeos/dbus/auth_policy/auth_policy_client.h"
-#include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
@@ -77,11 +75,6 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     arc_oemcrypto_client_.reset(ArcOemCryptoClient::Create());
   else
     arc_oemcrypto_client_.reset(new FakeArcOemCryptoClient);
-
-  if (use_real_clients)
-    auth_policy_client_.reset(AuthPolicyClient::Create());
-  else
-    auth_policy_client_.reset(new FakeAuthPolicyClient);
 
   cec_service_client_ = CecServiceClient::Create(client_impl_type);
 
@@ -169,7 +162,6 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   arc_midis_client_->Init(system_bus);
   arc_obb_mounter_client_->Init(system_bus);
   arc_oemcrypto_client_->Init(system_bus);
-  auth_policy_client_->Init(system_bus);
   cec_service_client_->Init(system_bus);
   cicerone_client_->Init(system_bus);
   concierge_client_->Init(system_bus);

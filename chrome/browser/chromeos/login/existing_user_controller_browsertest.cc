@@ -831,7 +831,13 @@ class ExistingUserControllerActiveDirectoryTest
   // Overriden from ExistingUserControllerTest:
   void SetUpInProcessBrowserTestFixture() override {
     ExistingUserControllerTest::SetUpInProcessBrowserTestFixture();
-    fake_authpolicy_client()->DisableOperationDelayForTesting();
+
+    // This is called before ChromeBrowserMain initializes the fake dbus
+    // clients, and DisableOperationDelayForTesting() needs to be called before
+    // other ChromeBrowserMain initialization occurs.
+    AuthPolicyClient::InitializeFake();
+    FakeAuthPolicyClient::Get()->DisableOperationDelayForTesting();
+
     ASSERT_TRUE(
         tpm_util::LockDeviceActiveDirectoryForTesting(kActiveDirectoryRealm));
     RefreshDevicePolicy();
@@ -847,11 +853,6 @@ class ExistingUserControllerActiveDirectoryTest
   }
 
  protected:
-  chromeos::FakeAuthPolicyClient* fake_authpolicy_client() {
-    return static_cast<chromeos::FakeAuthPolicyClient*>(
-        chromeos::DBusThreadManager::Get()->GetAuthPolicyClient());
-  }
-
   void LoginAdOnline() {
     ExpectLoginSuccess();
     UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
@@ -899,7 +900,7 @@ class ExistingUserControllerActiveDirectoryTest
   std::string GetExpectedKerberosConfig(bool enable_dns_cname_lookup) {
     std::string config(base::StringPrintf(
         kKrb5CnameSettings, enable_dns_cname_lookup ? "true" : "false"));
-    config += fake_authpolicy_client()->user_kerberos_conf();
+    config += FakeAuthPolicyClient::Get()->user_kerberos_conf();
     return config;
   }
 
@@ -913,7 +914,8 @@ class ExistingUserControllerActiveDirectoryTest
 
     EXPECT_TRUE(base::ReadFileToString(
         base::FilePath(GetKerberosCredentialsCacheFileName()), &file_contents));
-    EXPECT_EQ(file_contents, fake_authpolicy_client()->user_kerberos_creds());
+    EXPECT_EQ(file_contents,
+              FakeAuthPolicyClient::Get()->user_kerberos_creds());
   }
 
   // Applies policy and waits until both config and credentials files changed.
@@ -944,7 +946,7 @@ class ExistingUserControllerActiveDirectoryUserWhitelistTest
     em::ChromeDeviceSettingsProto device_policy;
     device_policy.mutable_user_whitelist()->add_user_whitelist()->assign(
         kUserWhitelist);
-    fake_authpolicy_client()->set_device_policy(device_policy);
+    FakeAuthPolicyClient::Get()->set_device_policy(device_policy);
   }
 
   void SetUpLoginDisplay() override {
@@ -988,8 +990,8 @@ IN_PROC_BROWSER_TEST_F(
     DISABLED_UserKerberosFilesChangedSignalTriggersFileUpdate) {
   LoginAdOnline();
   KerberosFilesChangeWaiter files_change_waiter(true /* files_must_exist */);
-  fake_authpolicy_client()->SetUserKerberosFiles("new_kerberos_creds",
-                                                 "new_kerberos_config");
+  FakeAuthPolicyClient::Get()->SetUserKerberosFiles("new_kerberos_creds",
+                                                    "new_kerberos_config");
   files_change_waiter.Wait();
   CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 }
