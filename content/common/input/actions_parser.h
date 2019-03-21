@@ -14,16 +14,17 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }  // namespace base
 
 namespace content {
 
-// This class takes the arugment of json format from
+// This class takes the argument of json format from
 // GpuBenchmarking::PointerActionSequence, parses it and warps
 // it into a SyntheticPointerActionListParams object.
 class CONTENT_EXPORT ActionsParser {
  public:
-  explicit ActionsParser(base::Value* value);
+  explicit ActionsParser(base::Value value);
   ~ActionsParser();
   bool ParsePointerActionSequence();
   std::string error_message() { return error_message_; }
@@ -46,7 +47,7 @@ class CONTENT_EXPORT ActionsParser {
   std::string pointer_type_;
   std::string error_message_;
 
-  base::Value* pointer_actions_value_;
+  base::Value pointer_actions_value_;
   int action_index_;
   std::set<int> pointer_id_set_;
   std::set<std::string> pointer_name_set_;
