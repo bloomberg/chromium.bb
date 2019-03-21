@@ -3,9 +3,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<org.chromium.chrome.browser.widget.TextViewWithCompoundDrawables
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeightSmall"
     android:textAppearance="@style/TextAppearance.ListMenuItem"
     android:gravity="center_vertical"
-    style="@style/ListMenuItemStyle" />
+    style="@style/ListMenuItemStyle"
+    app:chromeDrawableTint="@color/default_icon_color_blue" />
