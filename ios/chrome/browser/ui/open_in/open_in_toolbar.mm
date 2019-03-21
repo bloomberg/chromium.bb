@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/open_in_toolbar.h"
+#import "ios/chrome/browser/ui/open_in/open_in_toolbar.h"
 
 #include <cmath>
 

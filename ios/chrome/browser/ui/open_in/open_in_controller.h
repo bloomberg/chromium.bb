@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OPEN_IN_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_OPEN_IN_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_OPEN_IN_OPEN_IN_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_OPEN_IN_OPEN_IN_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#import "ios/chrome/browser/ui/open_in_toolbar.h"
+#import "ios/chrome/browser/ui/open_in/open_in_toolbar.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -33,8 +33,8 @@ enum class OpenInDownloadResult {
 };
 
 // Class used to handle opening files in other applications.
-@interface OpenInController : NSObject<UIGestureRecognizerDelegate,
-                                       UIDocumentInteractionControllerDelegate>
+@interface OpenInController : NSObject <UIGestureRecognizerDelegate,
+                                        UIDocumentInteractionControllerDelegate>
 // Designated initializer.
 - (id)initWithURLLoaderFactory:
           (scoped_refptr<network::SharedURLLoaderFactory>)urlLoaderFactory
@@ -57,4 +57,4 @@ enum class OpenInDownloadResult {
             suggestedFilename:(NSString*)suggestedFilename;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OPEN_IN_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_OPEN_IN_OPEN_IN_CONTROLLER_H_

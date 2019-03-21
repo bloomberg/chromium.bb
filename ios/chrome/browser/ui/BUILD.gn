@@ -30,7 +30,6 @@ source_set("ui") {
     "//components/sessions",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/commands",
-    "//ios/web",
     "//ui/base",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/commands" ]
@@ -67,8 +66,6 @@ source_set("unit_tests") {
     "key_commands_provider_unittest.mm",
     "native_content_controller_unittest.mm",
     "network_activity_indicator_manager_unittest.mm",
-    "open_in_controller_unittest.mm",
-    "open_in_toolbar_unittest.mm",
     "page_not_available_controller_unittest.mm",
   ]
   deps = [
@@ -114,7 +111,6 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/net",
     "//ios/testing:ocmock_support",
-    "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",
@@ -228,11 +224,6 @@ source_set("ui_internal") {
   sources = [
     "key_commands_provider.h",
     "key_commands_provider.mm",
-    "open_in_controller.h",
-    "open_in_controller.mm",
-    "open_in_controller_testing.h",
-    "open_in_toolbar.h",
-    "open_in_toolbar.mm",
     "page_not_available_controller.h",
     "page_not_available_controller.mm",
   ]
@@ -367,7 +358,6 @@ source_set("ui_internal") {
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
-    "//ios/web",
     "//ios/web/public",
     "//third_party/google_toolbox_for_mac",
     "//ui/base",
