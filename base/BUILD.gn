@@ -2415,6 +2415,7 @@ test("base_unittests") {
     "mac/mach_port_broker_unittest.cc",
     "mac/mach_port_rendezvous_unittest.cc",
     "mac/objc_release_properties_unittest.mm",
+    "mac/scoped_mach_vm_unittest.cc",
     "mac/scoped_nsobject_unittest.mm",
     "mac/scoped_objc_class_swizzler_unittest.mm",
     "mac/scoped_sending_event_unittest.mm",
