@@ -94,6 +94,10 @@ void FormSaverImpl::RemovePresavedPassword() {
   presaved_ = nullptr;
 }
 
+void FormSaverImpl::Remove(const PasswordForm& form) {
+  store_->RemoveLogin(form);
+}
+
 std::unique_ptr<FormSaver> FormSaverImpl::Clone() {
   auto result = std::make_unique<FormSaverImpl>(store_);
   if (presaved_)
