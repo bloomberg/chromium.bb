@@ -4,6 +4,7 @@
 
 #include "content/renderer/accessibility/ax_image_annotator.h"
 
+#include <ctype.h>
 #include <utility>
 #include <vector>
 
@@ -295,15 +296,26 @@ void AXImageAnnotator::OnImageAnnotated(
     if (message_id == 0)
       continue;
 
-    if (annotation->text.empty())
+    int last_meaningful_char = annotation->text.length() - 1;
+    while (last_meaningful_char >= 0) {
+      bool is_whitespace_or_punct =
+          isspace(annotation->text[last_meaningful_char]) ||
+          ispunct(annotation->text[last_meaningful_char]);
+      if (!is_whitespace_or_punct)
+        break;
+      last_meaningful_char--;
+    }
+
+    if (annotation->text.empty() || last_meaningful_char < 0)
       continue;
 
+    std::string text = annotation->text.substr(0, last_meaningful_char + 1);
     if (GetContentClient()) {
       contextualized_strings.push_back(
           base::UTF16ToUTF8(GetContentClient()->GetLocalizedString(
-              message_id, base::UTF8ToUTF16(annotation->text))));
+              message_id, base::UTF8ToUTF16(text))));
     } else {
-      contextualized_strings.emplace_back(annotation->text);
+      contextualized_strings.push_back(text);
     }
   }
 
