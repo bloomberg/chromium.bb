@@ -12,12 +12,6 @@ general web. For example, the way the `<delete>`/`<backspace>` keys work
 inside table cells, the way indenting/outdenting of list items work, etc.
 Therefore, we will probably not be able to send _everything_ upstream.
 
-### bugfix/badquerycommand (Shezan Baig; D32128551) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Fbadquerycommand)\]
-Open [this link](repros/badquerycommand.html) in Chrome, click the yellow div
-and hit `<enter>` a bunch of times. Then `<shift>`+`<up>` a bunch of times.
-Each time you press `<up>`, the result of `queryCommandValue('bold')` changes
-inconsistently.
-
 ### bugfix/caret-position-for-inline-children (Shezan Baig; D48542454) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FcaretPositionForInlineChildren)\]
 Open [this link](repros/caretPositionForInlineChildren.html) in Chrome. The
 "pill" elements have `-webkit-user-modify: read-only`, however, the caret
