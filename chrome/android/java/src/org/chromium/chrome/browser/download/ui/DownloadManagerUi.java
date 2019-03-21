@@ -245,7 +245,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         }
 
         mSelectableListLayout.configureWideDisplayStyle();
-        mHistoryAdapter.initialize(mBackendProvider, mSelectableListLayout.getUiConfig());
+        mHistoryAdapter.initialize(activity, mBackendProvider, mSelectableListLayout.getUiConfig());
 
         mUndoDeletionSnackbarController = new UndoDeletionSnackbarController();
         enableStorageInfoHeader(mHistoryAdapter.shouldShowStorageInfoHeader());
