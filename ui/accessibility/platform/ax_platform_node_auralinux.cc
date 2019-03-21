@@ -161,9 +161,13 @@ const char* GetUniqueAccessibilityGTypeName(int interface_mask) {
 }
 
 bool IsRoleWithValueInterface(ax::mojom::Role role) {
+  // TODO(accessibility) Not all kSplitters should implement AtkValue.
+  // For instance, a focusable and/or movable widget kSplitter should,
+  // but a static HR element should not.
   return role == ax::mojom::Role::kScrollBar ||
          role == ax::mojom::Role::kSlider ||
          role == ax::mojom::Role::kProgressIndicator ||
+         role == ax::mojom::Role::kMeter ||
          role == ax::mojom::Role::kSplitter ||
          role == ax::mojom::Role::kSpinButton;
 }
@@ -2721,6 +2725,30 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
     dict->SetString(attribute->name, attribute->value);
   }
   atk_attribute_set_free(attributes);
+
+  // Properties obtained via AtkValue.
+  auto value_properties = std::make_unique<base::ListValue>();
+  if (ATK_IS_VALUE(atk_object_)) {
+    AtkValue* value = ATK_VALUE(atk_object_);
+    GValue current = G_VALUE_INIT;
+    g_value_init(&current, G_TYPE_FLOAT);
+    atk_value_get_current_value(value, &current);
+    value_properties->AppendString(
+        base::StringPrintf("current=%f", g_value_get_float(&current)));
+
+    GValue minimum = G_VALUE_INIT;
+    g_value_init(&minimum, G_TYPE_FLOAT);
+    atk_value_get_minimum_value(value, &minimum);
+    value_properties->AppendString(
+        base::StringPrintf("minimum=%f", g_value_get_float(&minimum)));
+
+    GValue maximum = G_VALUE_INIT;
+    g_value_init(&maximum, G_TYPE_FLOAT);
+    atk_value_get_maximum_value(value, &maximum);
+    value_properties->AppendString(
+        base::StringPrintf("maximum=%f", g_value_get_float(&maximum)));
+  }
+  dict->Set("value", std::move(value_properties));
 
   // Properties obtained via AtkTable.
   auto table_properties = std::make_unique<base::ListValue>();

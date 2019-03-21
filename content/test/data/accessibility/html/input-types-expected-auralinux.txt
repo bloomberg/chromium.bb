@@ -21,14 +21,14 @@
 ++++++[push button] name='Image:'
 ++++[label]
 ++++++[text] name='Number: '
-++++++[spin button] name='Number:' selectable-text text-input-type:number
+++++++[spin button] name='Number:' selectable-text text-input-type:number current=0.000000 minimum=0.000000 maximum=0.000000
 ++++[label]
 ++++++[text] name='Password: '
 ++++++[password text] name='Password:' selectable-text text-input-type:password
 ++++[radio button] name='Radio:' checkable:true
 ++++[label]
 ++++++[text] name='Range: '
-++++++[slider] name='Range:' horizontal
+++++++[slider] name='Range:' horizontal current=50.000000 minimum=0.000000 maximum=100.000000
 ++++[label]
 ++++++[text] name='Reset: '
 ++++++[push button] name='Reset:'
