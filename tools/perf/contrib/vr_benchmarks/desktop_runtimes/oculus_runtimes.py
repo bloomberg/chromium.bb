@@ -28,12 +28,12 @@ class OculusRuntimeReal(_BaseOculusRuntime):
     super(OculusRuntimeReal, self).__init__(*args, **kwargs)
     self._runtime_handle = None
 
-  def _SetupInternal(self):
+  def Setup(self):
     # We need to launch the Oculus client before running any tests to ensure
     # that the runtime is ready when we try to enter VR.
     self._runtime_handle = subprocess.Popen([self._GetOculusClientPath()])
 
-  def _WillRunStoryInternal(self):
+  def WillRunStory(self):
     if not self._runtime_handle:
       raise RuntimeError(
           'Somehow called real Oculus pre-story without calling setup')
@@ -43,7 +43,7 @@ class OculusRuntimeReal(_BaseOculusRuntime):
           self._runtime_handle.returncode)
       self._runtime_handle = subprocess.Popen([self._GetOculusClientPath()])
 
-  def _TearDownInternal(self):
+  def TearDown(self):
     if not self._runtime_handle:
       raise RuntimeError(
           'Somehow called real Oculus tear down without calling setup')

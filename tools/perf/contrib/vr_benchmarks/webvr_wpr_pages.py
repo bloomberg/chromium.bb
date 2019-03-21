@@ -36,7 +36,8 @@ class WebVrWprPage(page.Page):
       self._interaction_function(action_runner, self.recording_wpr)
 
     action_runner.MeasureMemory(True)
-    action_runner.Navigate("about:blank")
+    if self._shared_page_state.ShouldNavigateToBlankPageBeforeFinishing():
+      action_runner.Navigate("about:blank")
 
   def Run(self, shared_state):
     self._shared_page_state = shared_state
