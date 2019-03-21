@@ -3587,11 +3587,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
   const AXNodeData& data = GetData();
 
   switch (pattern_id) {
-    // Supported by IAccessibleEx.
-    // TODO(suproteem): Implementations where applicable.
-    case UIA_DockPatternId:
-      break;
-
     case UIA_ExpandCollapsePatternId:
       if (SupportsExpandCollapse(data)) {
         AddRef();
@@ -3613,7 +3608,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       }
       break;
 
-    case UIA_MultipleViewPatternId:
+    case UIA_InvokePatternId:
+      if (IsInvokable(data)) {
+        AddRef();
+        *result = static_cast<IInvokeProvider*>(this);
+      }
       break;
 
     case UIA_RangeValuePatternId:
@@ -3635,7 +3634,18 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       *result = static_cast<IScrollItemProvider*>(this);
       break;
 
-    case UIA_SynchronizedInputPatternId:
+    case UIA_SelectionItemPatternId:
+      if (IsSelectionItemSupported()) {
+        AddRef();
+        *result = static_cast<ISelectionItemProvider*>(this);
+      }
+      break;
+
+    case UIA_SelectionPatternId:
+      if (IsContainerWithSelectableChildren(data.role)) {
+        AddRef();
+        *result = static_cast<ISelectionProvider*>(this);
+      }
       break;
 
     case UIA_TablePatternId:
@@ -3649,30 +3659,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       if (IsCellOrTableHeader(data.role)) {
         AddRef();
         *result = static_cast<ITableItemProvider*>(this);
-      }
-      break;
-
-    case UIA_TransformPatternId:
-      break;
-
-    case UIA_InvokePatternId:
-      if (IsInvokable(data)) {
-        AddRef();
-        *result = static_cast<IInvokeProvider*>(this);
-      }
-      break;
-
-    case UIA_SelectionItemPatternId:
-      if (IsSelectionItemSupported()) {
-        AddRef();
-        *result = static_cast<ISelectionItemProvider*>(this);
-      }
-      break;
-
-    case UIA_SelectionPatternId:
-      if (IsContainerWithSelectableChildren(data.role)) {
-        AddRef();
-        *result = static_cast<ISelectionProvider*>(this);
       }
       break;
 
@@ -3703,21 +3689,28 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       }
       break;
 
-    // Overlap with MSAA, not supported.
+    // Not currently implemented.
     case UIA_AnnotationPatternId:
     case UIA_CustomNavigationPatternId:
+    case UIA_DockPatternId:
     case UIA_DragPatternId:
     case UIA_DropTargetPatternId:
     case UIA_ItemContainerPatternId:
-    case UIA_LegacyIAccessiblePatternId:
+    case UIA_MultipleViewPatternId:
     case UIA_ObjectModelPatternId:
     case UIA_SpreadsheetPatternId:
     case UIA_SpreadsheetItemPatternId:
     case UIA_StylesPatternId:
+    case UIA_SynchronizedInputPatternId:
     case UIA_TextChildPatternId:
     case UIA_TextPattern2Id:
+    case UIA_TransformPatternId:
     case UIA_TransformPattern2Id:
     case UIA_VirtualizedItemPatternId:
+      break;
+
+    // Provided by UIA Core; we should not implement.
+    case UIA_LegacyIAccessiblePatternId:
       break;
   }
   return S_OK;
@@ -3746,8 +3739,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
   const AXNodeData& data = GetData();
 
   switch (property_id) {
-    // Supported by IAccessibleEx.
-    // TODO(suproteem): Implementations where applicable.
     case UIA_AriaPropertiesPropertyId:
       result->vt = VT_BSTR;
       result->bstrVal = SysAllocString(ComputeUIAProperties().c_str());
@@ -3912,10 +3903,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
     }
 
-    case UIA_ItemTypePropertyId:
-      // TODO(suproteem)
-      break;
-
     case UIA_LabeledByPropertyId:
       for (int32_t id : data.GetIntListAttribute(
                ax::mojom::IntListAttribute::kLabelledbyIds)) {
@@ -4074,34 +4061,27 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
     }
 
-    // Covered by MSAA.
-    case UIA_BoundingRectanglePropertyId:
-    case UIA_NativeWindowHandlePropertyId:
-    case UIA_ProcessIdPropertyId:
-      break;
-
-    // Overlap with MSAA, not supported.
+    // Not currently implemented.
     case UIA_AnnotationObjectsPropertyId:
     case UIA_AnnotationTypesPropertyId:
     case UIA_CenterPointPropertyId:
-    case UIA_CustomControlTypeId:
     case UIA_FillColorPropertyId:
     case UIA_FillTypePropertyId:
-    case UIA_GroupControlTypeId:
     case UIA_HeadingLevelPropertyId:
-    case UIA_MenuControlTypeId:
+    case UIA_ItemTypePropertyId:
     case UIA_OutlineColorPropertyId:
     case UIA_OutlineThicknessPropertyId:
-    case UIA_PaneControlTypeId:
-    case UIA_ProviderDescriptionPropertyId:
     case UIA_RotationPropertyId:
-    case UIA_RuntimeIdPropertyId:
     case UIA_SizePropertyId:
-    case UIA_ToolBarControlTypeId:
-    case UIA_ToolTipControlTypeId:
     case UIA_VisualEffectsPropertyId:
-    case UIA_WindowControlTypeId:
-      // MSAA-to-UIA Proxy.
+      break;
+
+    // Provided by UIA Core; we should not implement.
+    case UIA_BoundingRectanglePropertyId:
+    case UIA_NativeWindowHandlePropertyId:
+    case UIA_ProcessIdPropertyId:
+    case UIA_ProviderDescriptionPropertyId:
+    case UIA_RuntimeIdPropertyId:
       break;
   }
 
