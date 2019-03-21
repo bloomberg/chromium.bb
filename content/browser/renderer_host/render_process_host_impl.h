@@ -509,7 +509,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
-  friend class StoragePartitonInterceptor;
+  friend class StoragePartitionInterceptor;
   class ConnectionFilterController;
   class ConnectionFilterImpl;
 
