@@ -206,14 +206,14 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
 
   // Register handler for media actions.
   assistant_manager_internal_->RegisterFallbackMediaHandler(
-      [this](std::string play_media_args_proto) {
+      [this](std::string action_name, std::string media_action_args_proto) {
         std::unique_ptr<action::AndroidAppInfo> android_app_info =
-            GetAndroidAppInfoFromMediaArgs(play_media_args_proto);
+            GetAndroidAppInfoFromMediaArgs(media_action_args_proto);
         if (android_app_info) {
-          OnOpenMediaAndroidIntent(play_media_args_proto,
+          OnOpenMediaAndroidIntent(media_action_args_proto,
                                    android_app_info.get());
         } else {
-          std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
+          std::string url = GetWebUrlFromMediaArgs(media_action_args_proto);
           // Fallack to web URL.
           if (!url.empty())
             OnOpenUrl(url);
