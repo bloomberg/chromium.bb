@@ -75,6 +75,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // The IdentityManager instance associated with this instance.
   IdentityManager* identity_manager();
 
+  // Returns the FakeProfileOAuth2TokenService owned by IdentityManager.
+  FakeProfileOAuth2TokenService* fake_token_service();
+
   // Returns the |TestIdentityManagerObserver| watching the IdentityManager.
   TestIdentityManagerObserver* identity_manager_observer();
 
@@ -352,16 +355,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void WaitForAccessTokenRequestIfNecessary(
       base::Optional<std::string> account_id);
 
-  // NOTE: This object must be first in the list, as it owns the objects
-  // pointed to below in the case where those objects are not passed in via
-  // the IdentityTestEnvironment constructor.
+  // Owner of all dependencies that don't belong to IdentityManager.
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
-  PrefService* pref_service_ = nullptr;
-  AccountTrackerService* account_tracker_service_ = nullptr;
-  AccountFetcherService* account_fetcher_service_ = nullptr;
-  FakeProfileOAuth2TokenService* token_service_ = nullptr;
-  SigninManagerBase* signin_manager_ = nullptr;
-  GaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
 
   // Used to set fake responses for cookie-related requests.
   // This can be null if no TestURLLoaderFactory was passed via the constructor.

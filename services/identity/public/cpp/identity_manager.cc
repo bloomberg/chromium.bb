@@ -390,6 +390,10 @@ AccountTrackerService* IdentityManager::GetAccountTrackerService() {
   return account_tracker_service_;
 }
 
+AccountFetcherService* IdentityManager::GetAccountFetcherService() {
+  return account_fetcher_service_;
+}
+
 GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() {
   return gaia_cookie_manager_service_;
 }
