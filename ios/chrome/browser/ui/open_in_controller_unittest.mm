@@ -13,8 +13,8 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/open_in_controller_testing.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -38,6 +38,8 @@ class OpenInControllerTest : public PlatformTest {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
 
+  ~OpenInControllerTest() override { [open_in_controller_ detachFromWebState]; }
+
   void SetUp() override {
     PlatformTest::SetUp();
 
@@ -54,10 +56,9 @@ class OpenInControllerTest : public PlatformTest {
 
     GURL documentURL = GURL("http://www.test.com/doc.pdf");
     parent_view_ = [[UIView alloc] init];
-    id webController = [OCMockObject niceMockForClass:[CRWWebController class]];
     open_in_controller_ = [[OpenInController alloc]
         initWithURLLoaderFactory:test_shared_url_loader_factory_
-                   webController:webController];
+                        webState:&web_state_];
     [open_in_controller_ enableWithDocumentURL:documentURL
                              suggestedFilename:@"doc.pdf"];
   }
@@ -82,6 +83,7 @@ class OpenInControllerTest : public PlatformTest {
   OpenInController* open_in_controller_;
   UIView* parent_view_;
   base::HistogramTester histogram_tester_;
+  web::TestWebState web_state_;
 };
 
 TEST_F(OpenInControllerTest, TestDisplayOpenInMenu) {

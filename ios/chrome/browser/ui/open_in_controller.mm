@@ -23,8 +23,8 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -102,7 +102,7 @@ bool HasValidPdfAtUrl(NSURL* _Nullable url) {
 - (void)showOpenInToolbarWithTimer:(BOOL)withTimer;
 // Hides the overlayed toolbar |openInToolbar_|.
 - (void)hideOpenInToolbar;
-// Called when there is a tap on the |webController_|'s view to display the
+// Called when there is a tap on the |webState_|'s view to display the
 // overlayed toolbar |openInToolbar_| if necessary and (re)schedule the
 // |openInTimer_|.
 - (void)handleTapFrom:(UIGestureRecognizer*)gestureRecognizer;
@@ -194,9 +194,9 @@ class OpenInControllerBridge
   // Loader used to redownload the document and save it in the sandbox.
   std::unique_ptr<network::SimpleURLLoader> urlLoader_;
 
-  // CRWWebController used to check if the tap is not on a link and the
+  // WebState used to check if the tap is not on a link and the
   // |openInToolbar_| should be displayed.
-  CRWWebController* webController_;
+  web::WebState* webState_;
 
   // URLLoaderFactory instance needed for URLLoader.
   scoped_refptr<network::SharedURLLoaderFactory> urlLoaderFactory_;
@@ -225,11 +225,11 @@ class OpenInControllerBridge
 
 - (id)initWithURLLoaderFactory:
           (scoped_refptr<network::SharedURLLoaderFactory>)urlLoaderFactory
-                 webController:(CRWWebController*)webController {
+                      webState:(web::WebState*)webState {
   self = [super init];
   if (self) {
     urlLoaderFactory_ = std::move(urlLoaderFactory);
-    webController_ = webController;
+    webState_ = webState;
     tapRecognizer_ = [[UITapGestureRecognizer alloc]
         initWithTarget:self
                 action:@selector(handleTapFrom:)];
@@ -246,10 +246,11 @@ class OpenInControllerBridge
             suggestedFilename:(NSString*)suggestedFilename {
   documentURL_ = GURL(documentURL);
   suggestedFilename_ = suggestedFilename;
-  [webController_ addGestureRecognizerToWebView:tapRecognizer_];
+  [self.baseView addGestureRecognizer:tapRecognizer_];
   [self openInToolbar].alpha = 0.0f;
   [self.baseView addSubview:[self openInToolbar]];
-  [webController_.webViewProxy.scrollViewProxy addObserver:self];
+  if (webState_)
+    [[webState_->GetWebViewProxy() scrollViewProxy] addObserver:self];
 
   [self showOpenInToolbarWithTimer:NO];
 }
@@ -260,8 +261,9 @@ class OpenInControllerBridge
   if (bridge_.get())
     bridge_->OnOwnerDisabled();
   bridge_ = nil;
-  [webController_ removeGestureRecognizerFromWebView:tapRecognizer_];
-  [webController_.webViewProxy.scrollViewProxy removeObserver:self];
+  [self.baseView removeGestureRecognizer:tapRecognizer_];
+  if (webState_)
+    [[webState_->GetWebViewProxy() scrollViewProxy] removeObserver:self];
   self.previousScrollViewOffset = 0;
   [[self openInToolbar] removeFromSuperview];
   [documentController_ dismissMenuAnimated:NO];
@@ -271,11 +273,11 @@ class OpenInControllerBridge
   urlLoader_.reset();
 }
 
-- (void)detachFromWebController {
+- (void)detachFromWebState {
   [self disable];
   // Animation blocks may be keeping this object alive; don't extend the
-  // lifetime of CRWWebController.
-  webController_ = nil;
+  // lifetime of WebState.
+  webState_ = nullptr;
 }
 
 - (void)dealloc {
@@ -335,11 +337,11 @@ class OpenInControllerBridge
 - (void)exportFileWithOpenInMenuAnchoredAt:(UIView*)view {
   DCHECK([view isKindOfClass:[UIView class]]);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  if (!webController_)
+  if (!webState_)
     return;
 
   anchorLocation_ = [[self openInToolbar] convertRect:view.frame
-                                               toView:[webController_ view]];
+                                               toView:self.baseView];
   [openInTimer_ invalidate];
   if (!bridge_.get())
     bridge_ = new OpenInControllerBridge(self);
@@ -432,7 +434,7 @@ class OpenInControllerBridge
 }
 
 - (void)presentOpenInMenuForFileAtURL:(NSURL*)fileURL {
-  if (!webController_)
+  if (!webState_)
     return;
 
   if (!documentController_) {
@@ -446,10 +448,9 @@ class OpenInControllerBridge
   // support for other file types as well.
   [documentController_ setUTI:@"com.adobe.pdf"];
   [documentController_ setDelegate:self];
-  BOOL success =
-      [documentController_ presentOpenInMenuFromRect:anchorLocation_
-                                              inView:[webController_ view]
-                                            animated:YES];
+  BOOL success = [documentController_ presentOpenInMenuFromRect:anchorLocation_
+                                                         inView:self.baseView
+                                                       animated:YES];
   [self removeOverlayedView];
   if (!success) {
     if (IsIPadIdiom())

@@ -17,6 +17,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace web {
+class WebState;
+}
+
 // Enum for the IOS.OpenIn.DownloadResult UMA histogram to log the result of
 // the file download initiated when the user tap on "open in" button.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -28,15 +32,13 @@ enum class OpenInDownloadResult {
   kMaxValue = kFailed,
 };
 
-@class CRWWebController;
-
 // Class used to handle opening files in other applications.
 @interface OpenInController : NSObject<UIGestureRecognizerDelegate,
                                        UIDocumentInteractionControllerDelegate>
 // Designated initializer.
 - (id)initWithURLLoaderFactory:
           (scoped_refptr<network::SharedURLLoaderFactory>)urlLoaderFactory
-                 webController:(CRWWebController*)webController;
+                      webState:(web::WebState*)webState;
 
 // Base view on which the Open In toolbar will be presented.
 @property(nonatomic, weak) UIView* baseView;
@@ -45,9 +47,9 @@ enum class OpenInDownloadResult {
 // variables specific to the loaded document.
 - (void)disable;
 
-// Disconnects the controller from its CRWWebController. Should be called when
-// the CRWWebController is being torn down.
-- (void)detachFromWebController;
+// Disconnects the controller from its WebState. Should be called when the
+// WebState is being torn down.
+- (void)detachFromWebState;
 
 // Adds the |openInToolbar_| to the |webController_|'s view and sets the url and
 // the filename for the currently loaded document.
