@@ -114,13 +114,6 @@ so that it partially overlaps the Chrome window. Move the mouse from the
 Chrome window to the overlapping window; the box should turn red, but it
 doesn't.
 
-### bugfix/noBRAtStartOfPara (Shezan Baig; D36813987) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FnoBRAtStartOfPara)\]
-Open [this link](repros/noBRAtStartOfPara.html) in Chrome. The contents of
-the table will be selected on load. Hit the "List" button multiple times.
-Each click executes the `insertOrderedList` command.
-
-On every second click, the table will move down.
-
 ### bugfix/removeSpellingMarker (Tianyin Zhang; D38695085) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FremoveSpellingMarker)\]
 Open [this link](repros/removeSpellingMarker.html) in chrome, place the
 cursor inside the contenteditable and make sure some mispelling markers show
