@@ -959,7 +959,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       (original_node.data().role == ax::mojom::Role::kRadioButton);
 
   for (int i = 0; i < local_parent->child_count(); ++i) {
-    const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
+    const AXNode* child = local_parent->ChildAtIndex(i);
 
     // Invisible children should not be counted.
     // However, in the collapsed container case (e.g. a combobox), items can
