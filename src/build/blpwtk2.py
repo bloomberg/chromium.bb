@@ -64,7 +64,7 @@ import sys
 import subprocess
 
 # Update the version of content shell here
-content_version = '72.0.3626.120'
+content_version = '72.0.3626.122'
 
 if sys.platform == 'win32':
   try:
