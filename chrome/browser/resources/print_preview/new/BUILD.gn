@@ -17,6 +17,7 @@ js_type_check("closure_compile") {
     ":destination_list_item",
     ":destination_settings",
     ":dpi_settings",
+    ":duplex_settings",
     ":header",
     ":highlight_utils",
     ":input_behavior",
@@ -50,6 +51,7 @@ js_library("app") {
     ":copies_settings",
     ":destination_settings",
     ":dpi_settings",
+    ":duplex_settings",
     ":header",
     ":layout_settings",
     ":link_container",
@@ -187,6 +189,14 @@ js_library("other_options_settings") {
   deps = [
     ":settings_behavior",
   ]
+}
+
+js_library("duplex_settings") {
+  deps = [
+    ":select_behavior",
+    ":settings_behavior",
+  ]
+  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_library("advanced_options_settings") {

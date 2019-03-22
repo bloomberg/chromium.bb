@@ -42,6 +42,7 @@ cr.define('model_test', function() {
         isFitToPageEnabled: false,
         isCollateEnabled: true,
         isDuplexEnabled: true,
+        isDuplexShortEdge: false,
         isLandscapeEnabled: false,
         isColorEnabled: true,
         vendorOptions: {},
@@ -65,6 +66,7 @@ cr.define('model_test', function() {
         isFitToPageEnabled: true,
         isCollateEnabled: false,
         isDuplexEnabled: false,
+        isDuplexShortEdge: true,
         isLandscapeEnabled: true,
         isColorEnabled: false,
         vendorOptions: {
@@ -116,6 +118,9 @@ cr.define('model_test', function() {
                       'cssBackground', 'isCssBackgroundEnabled'))
               .then(() => testStickySetting('dpi', 'dpi'))
               .then(() => testStickySetting('duplex', 'isDuplexEnabled'))
+              .then(
+                  () =>
+                      testStickySetting('duplexShortEdge', 'isDuplexShortEdge'))
               .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
               .then(
                   () => testStickySetting(
@@ -190,6 +195,7 @@ cr.define('model_test', function() {
         customScaling: true,
         scaling: '90',
         duplex: true,
+        duplexShortEdge: true,
         cssBackground: true,
         selectionOnly: true,
         headerFooter: false,
@@ -299,7 +305,7 @@ cr.define('model_test', function() {
         color: testDestination.getNativeColorModel(false),
         headerFooterEnabled: false,
         marginsType: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
-        duplex: print_preview_new.DuplexMode.LONG_EDGE,
+        duplex: print_preview_new.DuplexMode.SHORT_EDGE,
         copies: 2,
         collate: false,
         shouldPrintBackgrounds: true,
@@ -390,7 +396,7 @@ cr.define('model_test', function() {
             type: testDestination.getSelectedColorOption(false).type,
           },
           copies: {copies: 2},
-          duplex: {type: 'LONG_EDGE'},
+          duplex: {type: 'SHORT_EDGE'},
           media_size: {
             width_microns: 215900,
             height_microns: 215900,

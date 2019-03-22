@@ -55,7 +55,8 @@ print_preview_new.PolicySettings;
 print_preview_new.DuplexMode = {
   SIMPLEX: 0,
   LONG_EDGE: 1,
-  UNKNOWN_DUPLEX_MODE: -1
+  SHORT_EDGE: 2,
+  UNKNOWN_DUPLEX_MODE: -1,
 };
 
 /**
@@ -94,6 +95,7 @@ const STICKY_SETTING_NAMES = [
   'customMargins',
   'dpi',
   'duplex',
+  'duplexShortEdge',
   'headerFooter',
   'layout',
   'margins',
@@ -294,6 +296,15 @@ Polymer({
         available: false,
         setByPolicy: false,
         key: 'isDuplexEnabled',
+        updatesPreview: false,
+      },
+      duplexShortEdge: {
+        value: false,
+        unavailableValue: false,
+        valid: true,
+        available: true,
+        setByPolicy: false,
+        key: 'isDuplexShortEdge',
         updatesPreview: false,
       },
       cssBackground: {
@@ -559,11 +570,18 @@ Polymer({
         !!caps && !!caps.dpi && !!caps.dpi.option &&
             caps.dpi.option.length > 1);
 
+    const capsHasDuplex = !!caps && !!caps.duplex && !!caps.duplex.option;
+    const capsHasLongEdge = capsHasDuplex &&
+        caps.duplex.option.some(
+            o => o.type == print_preview_new.DuplexType.LONG_EDGE);
+    const capsHasShortEdge = capsHasDuplex &&
+        caps.duplex.option.some(
+            o => o.type == print_preview_new.DuplexType.SHORT_EDGE);
+    this.setSettingPath_(
+        'duplexShortEdge.available', capsHasLongEdge && capsHasShortEdge);
     this.setSettingPath_(
         'duplex.available',
-        !!caps && !!caps.duplex && !!caps.duplex.option &&
-            caps.duplex.option.some(
-                o => o.type == print_preview_new.DuplexType.LONG_EDGE) &&
+        (capsHasLongEdge || capsHasShortEdge) &&
             caps.duplex.option.some(
                 o => o.type == print_preview_new.DuplexType.NO_DUPLEX));
 
@@ -601,13 +619,6 @@ Polymer({
         'mediaSize.available',
         !!caps && !!caps.media_size && !knownSizeToSaveAsPdf);
     this.setSettingPath_('layout.available', this.isLayoutAvailable_(caps));
-    this.setSettingPath_(
-        'otherOptions.available',
-        this.settings.duplex.available ||
-            this.settings.cssBackground.available ||
-            this.settings.selectionOnly.available ||
-            this.settings.headerFooter.available ||
-            this.settings.rasterize.available);
   },
 
   /** @private */
@@ -631,6 +642,12 @@ Polymer({
     this.setSettingPath_(
         'rasterize.available',
         !this.documentSettings.isModifiable && !cr.isWindows && !cr.isMac);
+    this.setSettingPath_(
+        'otherOptions.available',
+        this.settings.cssBackground.available ||
+            this.settings.selectionOnly.available ||
+            this.settings.headerFooter.available ||
+            this.settings.rasterize.available);
 
     if (this.destination) {
       this.updateSettingsAvailabilityFromDestinationAndDocumentSettings_();
@@ -783,19 +800,40 @@ Polymer({
       this.setSetting(
           'duplex',
           defaultOption ?
-              defaultOption.type == print_preview_new.DuplexType.LONG_EDGE :
+              (defaultOption.type == print_preview_new.DuplexType.LONG_EDGE ||
+               defaultOption.type == print_preview_new.DuplexType.SHORT_EDGE) :
               false);
+      this.setSetting(
+          'duplexShortEdge',
+          defaultOption ?
+              defaultOption.type == print_preview_new.DuplexType.SHORT_EDGE :
+              false);
+
+      if (!this.settings.duplexShortEdge.available) {
+        // Duplex is available, so must have only one two sided printing option.
+        // Set duplexShortEdge's unavailable value based on the printer.
+        this.setSettingPath_(
+            'duplexShortEdge.unavailableValue',
+            caps.duplex.option.some(
+                o => o.type == print_preview_new.DuplexType.SHORT_EDGE));
+      }
     } else if (
         !this.settings.duplex.available && caps && caps.duplex &&
-        caps.duplex.option &&
-        !caps.duplex.option.some(
-            o => o.type != print_preview_new.DuplexType.LONG_EDGE)) {
+        caps.duplex.option) {
+      // In this case, there must only be one option.
+      const hasLongEdge = caps.duplex.option.some(
+          o => o.type == print_preview_new.DuplexType.LONG_EDGE);
+      const hasShortEdge = caps.duplex.option.some(
+          o => o.type == print_preview_new.DuplexType.SHORT_EDGE);
       // If the only option available is long edge, the value should always be
       // true.
-      this.setSettingPath_('duplex.unavailableValue', true);
+      this.setSettingPath_(
+          'duplex.unavailableValue', hasLongEdge || hasShortEdge);
+      this.setSettingPath_('duplexShortEdge.unavailableValue', hasShortEdge);
     } else if (!this.settings.duplex.available) {
       // If no duplex capability is reported, assume false.
       this.setSettingPath_('duplex.unavailableValue', false);
+      this.setSettingPath_('duplexShortEdge.unavailableValue', false);
     }
 
     if (this.settings.vendorItems.available) {
@@ -928,12 +966,24 @@ Polymer({
     const duplexPolicy = this.destination.duplexPolicy;
     const duplexValue =
         duplexPolicy ? duplexPolicy : this.destination.defaultDuplexPolicy;
+    let setDuplexTypeByPolicy = false;
     if (duplexValue) {
       this.set(
           'settings.duplex.value',
           duplexValue != print_preview.DuplexModeRestriction.SIMPLEX);
+      if (duplexValue === print_preview.DuplexModeRestriction.SHORT_EDGE) {
+        this.set('settings.duplexShortEdge.value', true);
+        setDuplexTypeByPolicy = true;
+      } else if (
+          duplexValue === print_preview.DuplexModeRestriction.LONG_EDGE) {
+        this.set('settings.duplexShortEdge.value', false);
+        setDuplexTypeByPolicy = true;
+      }
     }
     this.set('settings.duplex.setByPolicy', !!duplexPolicy);
+    this.set(
+        'settings.duplexShortEdge.setByPolicy',
+        !!duplexPolicy && setDuplexTypeByPolicy);
 
     const pinPolicy = this.destination.pinPolicy;
     if (pinPolicy == print_preview.PinModeRestriction.UNSECURE) {
@@ -947,6 +997,7 @@ Polymer({
           pinValue == print_preview.PinModeRestriction.SECURE);
     }
     this.set('settings.pin.setByPolicy', !!pinPolicy);
+
     this.updateManaged_();
   },
   // </if>
@@ -955,7 +1006,8 @@ Polymer({
   updateManaged_: function() {
     let managedSettings = ['headerFooter'];
     // <if expr="chromeos">
-    managedSettings = managedSettings.concat(['color', 'duplex', 'pin']);
+    managedSettings =
+        managedSettings.concat(['color', 'duplex', 'duplexShortEdge', 'pin']);
     // </if>
     this.controlsManaged = managedSettings.some(settingName => {
       const setting = this.getSetting(settingName);
@@ -986,6 +1038,34 @@ Polymer({
   },
 
   /**
+   * @return {!print_preview_new.DuplexMode} The duplex mode selected.
+   * @private
+   */
+  getDuplexMode_: function() {
+    if (!this.getSettingValue('duplex')) {
+      return print_preview_new.DuplexMode.SIMPLEX;
+    }
+
+    return this.getSettingValue('duplexShortEdge') ?
+        print_preview_new.DuplexMode.SHORT_EDGE :
+        print_preview_new.DuplexMode.LONG_EDGE;
+  },
+
+  /**
+   * @return {!print_preview_new.DuplexType} The duplex type selected.
+   * @private
+   */
+  getCddDuplexType_: function() {
+    if (!this.getSettingValue('duplex')) {
+      return print_preview_new.DuplexType.NO_DUPLEX;
+    }
+
+    return this.getSettingValue('duplexShortEdge') ?
+        print_preview_new.DuplexType.SHORT_EDGE :
+        print_preview_new.DuplexType.LONG_EDGE;
+  },
+
+  /**
    * Creates a string that represents a print ticket.
    * @param {!print_preview.Destination} destination Destination to print to.
    * @param {boolean} openPdfInPreview Whether this print request is to open
@@ -999,7 +1079,6 @@ Polymer({
                             vertical_dpi: (number | undefined),
                             vendor_id: (number | undefined)}} */ (
         this.getSettingValue('dpi'));
-
     const ticket = {
       mediaSize: this.getSettingValue('mediaSize'),
       pageCount: this.getSettingValue('pages').length,
@@ -1008,9 +1087,7 @@ Polymer({
           /** @type {boolean} */ (this.getSettingValue('color'))),
       headerFooterEnabled: false,  // only used in print preview
       marginsType: this.getSettingValue('margins'),
-      duplex: this.getSettingValue('duplex') ?
-          print_preview_new.DuplexMode.LONG_EDGE :
-          print_preview_new.DuplexMode.SIMPLEX,
+      duplex: this.getDuplexMode_(),
       copies: parseInt(this.getSettingValue('copies'), 10),
       collate: this.getSettingValue('collate'),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
@@ -1117,9 +1194,7 @@ Polymer({
     }
     if (this.settings.duplex.available) {
       cjt.print.duplex = {
-        type: this.settings.duplex.value ?
-            print_preview_new.DuplexType.LONG_EDGE :
-            print_preview_new.DuplexType.NO_DUPLEX,
+        type: this.getCddDuplexType_(),
       };
     }
     if (this.settings.mediaSize.available) {

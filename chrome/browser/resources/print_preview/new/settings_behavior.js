@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 cr.exportPath('print_preview_new');
+
 /**
  * |key| is the field in the serialized settings state that corresponds to the
  * setting, or an empty string if the setting should not be saved in the
@@ -32,6 +33,7 @@ print_preview_new.Setting;
  *   fitToPage: !print_preview_new.Setting,
  *   scaling: !print_preview_new.Setting,
  *   duplex: !print_preview_new.Setting,
+ *   duplexShortEdge: !print_preview_new.Setting,
  *   cssBackground: !print_preview_new.Setting,
  *   selectionOnly: !print_preview_new.Setting,
  *   headerFooter: !print_preview_new.Setting,

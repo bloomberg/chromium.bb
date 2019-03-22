@@ -279,6 +279,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_DPI_SETTINGS_JS"
                  file="new/dpi_settings.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_DUPLEX_SETTINGS_HTML"
+                 file="new/duplex_settings.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_DUPLEX_SETTINGS_JS"
+                 file="new/duplex_settings.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_SCALING_SETTINGS_HTML"
                  file="new/scaling_settings.html"
                  type="chrome_html" />
