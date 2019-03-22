@@ -243,6 +243,25 @@ def ParseArgs(argv):
   return opts
 
 
+def FilterObsoleteDeps(package_deps):
+  """Remove all the packages that are to be uninstalled from |package_deps|.
+
+  Returns:
+    None since this method mutates |package_deps| directly.
+  """
+  obsolete_package_deps = []
+  for k, v in package_deps.iteritems():
+    if v['action'] in ('merge', 'nomerge'):
+      continue
+    elif v['action'] == 'uninstall':
+      obsolete_package_deps.append(k)
+    else:
+      assert False, (
+          'Unrecognized action. Package dep data: %s' % v)
+  for p in obsolete_package_deps:
+    del package_deps[p]
+
+
 def ExtractDeps(sysroot, package_list, formatting='deps'):
   """Returns the set of dependencies for the packages in package_list.
 
@@ -272,6 +291,14 @@ def ExtractDeps(sysroot, package_list, formatting='deps'):
   deps.Initialize(lib_argv)
   deps_tree, _deps_info = deps.GenDependencyTree()
   flattened_deps = FlattenDepTree(deps_tree, get_cpe=(formatting == 'cpe'))
+
+  # Workaround: since emerge doesn't honor the --emptytree flag, for now we need
+  # to manually filter out packages that are obsolete (meant to be
+  # uninstalled by emerge)
+  # TODO(crbug.com/938605): remove this work around once
+  # https://bugs.gentoo.org/681308 is addressed.
+  FilterObsoleteDeps(flattened_deps)
+
   if formatting == 'cpe':
     flattened_deps = GenerateCPEList(flattened_deps, sysroot)
   return flattened_deps
