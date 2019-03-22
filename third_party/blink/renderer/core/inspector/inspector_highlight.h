@@ -40,20 +40,11 @@ struct CORE_EXPORT InspectorHighlightConfig {
   String selector_list;
 };
 
-struct InspectorHighlightContrastInfo {
-  Color background_color;
-  String font_size;
-  String font_weight;
-};
-
 class CORE_EXPORT InspectorHighlight {
   STACK_ALLOCATED();
 
  public:
-  InspectorHighlight(Node*,
-                     const InspectorHighlightConfig&,
-                     const InspectorHighlightContrastInfo&,
-                     bool append_element_info);
+  InspectorHighlight(Node*, const InspectorHighlightConfig&);
   explicit InspectorHighlight(float scale);
   ~InspectorHighlight();
 

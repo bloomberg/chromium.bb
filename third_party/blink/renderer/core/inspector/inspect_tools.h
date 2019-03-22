@@ -26,6 +26,7 @@ class SearchingForNodeTool : public InspectTool {
                         const WebInputEvent& input_event,
                         bool* swallow_next_mouse_up,
                         bool* swallow_next_escape_up) override;
+  CString GetDataResourceName() override;
   bool HandleMouseDown(const WebMouseEvent& event,
                        bool* swallow_next_mouse_up) override;
   bool HandleMouseMove(const WebMouseEvent& event) override;
@@ -40,7 +41,6 @@ class SearchingForNodeTool : public InspectTool {
   Member<Node> hovered_node_;
   Member<Node> event_target_node_;
   std::unique_ptr<InspectorHighlightConfig> highlight_config_;
-  InspectorHighlightContrastInfo contrast_info_;
   bool omit_tooltip_ = false;
   DISALLOW_COPY_AND_ASSIGN(SearchingForNodeTool);
 };
@@ -71,6 +71,7 @@ class NodeHighlightTool : public InspectTool {
                     std::unique_ptr<InspectorHighlightConfig> highlight_config);
 
  private:
+  CString GetDataResourceName() override;
   bool ForwardEventsToOverlay() override;
   void Draw(float scale) override;
   void DrawNode();
@@ -80,7 +81,6 @@ class NodeHighlightTool : public InspectTool {
   Member<Node> node_;
   String selector_list_;
   std::unique_ptr<InspectorHighlightConfig> highlight_config_;
-  InspectorHighlightContrastInfo contrast_info_;
   DISALLOW_COPY_AND_ASSIGN(NodeHighlightTool);
 };
 
