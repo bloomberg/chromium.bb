@@ -1844,6 +1844,14 @@ std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
       portal_frame->GetFrame(), pair.second);
 }
 
+RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
+  WebRemoteFrameImpl* portal_frame =
+      ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken()));
+  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
+                                    g_null_atom);
+  return portal_frame->GetFrame();
+}
+
 void WebLocalFrameImpl::DidChangeContentsSize(const IntSize& size) {
   if (GetTextFinder() && GetTextFinder()->TotalMatchCount() > 0)
     GetTextFinder()->IncreaseMarkerVersion();
@@ -2509,7 +2517,10 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
   }
 }
 
-void WebLocalFrameImpl::OnPortalActivated(TransferableMessage data) {
+void WebLocalFrameImpl::OnPortalActivated(
+    const base::UnguessableToken& portal_token,
+    mojo::ScopedInterfaceEndpointHandle portal_pipe,
+    TransferableMessage data) {
   GetFrame()->GetPage()->SetInsidePortal(false);
 
   LocalDOMWindow* window = GetFrame()->DomWindow();
@@ -2521,8 +2532,11 @@ void WebLocalFrameImpl::OnPortalActivated(TransferableMessage data) {
   MessagePortArray* ports = MessagePort::EntanglePorts(
       *window->document(), std::move(blink_data.ports));
 
-  PortalActivateEvent* event =
-      PortalActivateEvent::Create(std::move(blink_data.message), ports);
+  PortalActivateEvent* event = PortalActivateEvent::Create(
+      frame_.Get(), portal_token,
+      mojom::blink::PortalAssociatedPtr(mojom::blink::PortalAssociatedPtrInfo(
+          std::move(portal_pipe), mojom::blink::Portal::Version_)),
+      std::move(blink_data.message), ports);
 
   ThreadDebugger* debugger = MainThreadDebugger::Instance();
   if (debugger)

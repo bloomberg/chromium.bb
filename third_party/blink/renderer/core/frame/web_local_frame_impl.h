@@ -301,7 +301,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   void AdvanceFocusInForm(WebFocusType) override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
-  void OnPortalActivated(TransferableMessage data) override;
+  void OnPortalActivated(const base::UnguessableToken& portal_token,
+                         mojo::ScopedInterfaceEndpointHandle portal_pipe,
+                         TransferableMessage data) override;
   void ForwardMessageToPortalHost(
       const WebString& message,
       const WebSecurityOrigin& source_origin,
@@ -373,6 +375,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
       mojom::blink::PortalAssociatedRequest);
+  RemoteFrame* AdoptPortal(HTMLPortalElement*);
 
   void DidChangeContentsSize(const IntSize&);
 

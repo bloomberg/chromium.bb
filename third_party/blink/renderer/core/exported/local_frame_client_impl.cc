@@ -841,6 +841,10 @@ LocalFrameClientImpl::CreatePortal(
   return web_frame_->CreatePortal(portal, std::move(request));
 }
 
+RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
+  return web_frame_->AdoptPortal(portal);
+}
+
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     HTMLPlugInElement& element,
     const KURL& url,

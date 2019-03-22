@@ -535,7 +535,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void BlockRequests() override;
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
-  void OnPortalActivated(blink::TransferableMessage data) override;
   void ForwardMessageToPortalHost(
       const std::string& message,
       const url::Origin& source_origin,
@@ -645,6 +644,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::string16& javascript,
       int32_t world_id,
       JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
+  void OnPortalActivated(const base::UnguessableToken& portal_token,
+                         blink::mojom::PortalAssociatedPtrInfo portal,
+                         blink::TransferableMessage data) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
@@ -697,6 +699,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
       mojo::ScopedInterfaceEndpointHandle request) override;
+  blink::WebRemoteFrame* AdoptPortal(
+      const base::UnguessableToken& portal_token) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;

@@ -279,6 +279,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       HTMLPortalElement*,
       mojom::blink::PortalAssociatedRequest) = 0;
 
+  // Adopts the predecessor |portal|. The HTMLPortalElement must have been
+  // created by adopting the predecessor in the PortalActivateEvent, and have a
+  // valid portal token. Returns a RemoteFrame for the portal.
+  // Adopting the predecessor allows a page to keep it alive and embed it as a
+  // portal, allowing instantaneous back and forward activations.
+  virtual RemoteFrame* AdoptPortal(HTMLPortalElement* portal) = 0;
+
   // Whether or not plugin creation should fail if the HTMLPlugInElement isn't
   // in the DOM after plugin initialization.
   enum DetachedPluginPolicy {

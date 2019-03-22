@@ -33,8 +33,13 @@
 
 namespace blink {
 
-HTMLPortalElement::HTMLPortalElement(Document& document)
-    : HTMLFrameOwnerElement(html_names::kPortalTag, document) {}
+HTMLPortalElement::HTMLPortalElement(
+    Document& document,
+    const base::UnguessableToken& portal_token,
+    mojom::blink::PortalAssociatedPtr portal_ptr)
+    : HTMLFrameOwnerElement(html_names::kPortalTag, document),
+      portal_token_(portal_token),
+      portal_ptr_(std::move(portal_ptr)) {}
 
 HTMLPortalElement::~HTMLPortalElement() {}
 
@@ -54,6 +59,14 @@ void HTMLPortalElement::Navigate() {
   if (!url.IsEmpty() && portal_ptr_) {
     portal_ptr_->Navigate(url);
   }
+}
+
+void HTMLPortalElement::ConsumePortal() {
+  if (portal_token_) {
+    DocumentPortals::From(GetDocument()).OnPortalRemoved(this);
+    portal_token_ = base::UnguessableToken();
+  }
+  portal_ptr_.reset();
 }
 
 namespace {
@@ -136,20 +149,21 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
   }
 
   // The HTMLPortalElement is bound as a persistent so that it won't get
-  // garbage collected while there is a pending callback. This is necessary
-  // because the HTMLPortalElement owns the mojo interface, so if it were
-  // garbage collected the callback would never be called and the promise
-  // would never be resolved.
-  is_activating_ = true;
-  portal_ptr_->Activate(
-      std::move(data),
-      WTF::Bind(
-          [](HTMLPortalElement* portal, ScriptPromiseResolver* resolver) {
-            resolver->Resolve();
-            portal->portal_ptr_.reset();
-            portal->is_activating_ = false;
-          },
-          WrapPersistent(this), WrapPersistent(resolver)));
+  // garbage collected while there is a pending callback.
+  // We also pass the ownership of the PortalPtr, which guarantees that the
+  // PortalPtr stays alive until the callback is called.
+  auto* raw_portal_ptr = portal_ptr_.get();
+  raw_portal_ptr->Activate(std::move(data),
+                           WTF::Bind(
+                               [](HTMLPortalElement* portal,
+                                  mojom::blink::PortalAssociatedPtr portal_ptr,
+                                  ScriptPromiseResolver* resolver) {
+                                 resolver->Resolve();
+                                 portal->is_activating_ = false;
+                                 portal->ConsumePortal();
+                               },
+                               WrapPersistent(this), std::move(portal_ptr_),
+                               WrapPersistent(resolver)));
   return promise;
 }
 
@@ -199,11 +213,22 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     return result;
   }
 
-  std::tie(portal_frame_, portal_token_) =
-      GetDocument().GetFrame()->Client()->CreatePortal(
-          this, mojo::MakeRequest(&portal_ptr_));
-  DocumentPortals::From(GetDocument()).OnPortalInserted(this);
-  Navigate();
+  if (portal_ptr_) {
+    // The interface is already bound if the HTMLPortalElement is adopting the
+    // predecessor.
+    portal_frame_ = GetDocument().GetFrame()->Client()->AdoptPortal(this);
+    portal_ptr_.set_connection_error_handler(
+        WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
+    DocumentPortals::From(GetDocument()).OnPortalInserted(this);
+  } else {
+    std::tie(portal_frame_, portal_token_) =
+        GetDocument().GetFrame()->Client()->CreatePortal(
+            this, mojo::MakeRequest(&portal_ptr_));
+    portal_ptr_.set_connection_error_handler(
+        WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
+    DocumentPortals::From(GetDocument()).OnPortalInserted(this);
+    Navigate();
+  }
 
   return result;
 }
@@ -214,15 +239,7 @@ void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
   Document& document = GetDocument();
 
   if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
-    // The portal creation is asynchronous, and the Document only gets notified
-    // after the element receives a callback from the browser that assigns its
-    // token, so we need to check whether that has been completed before
-    // notifying the document about the portal's removal.
-    if (!portal_token_.is_empty())
-      DocumentPortals::From(GetDocument()).OnPortalRemoved(this);
-
-    portal_token_ = base::UnguessableToken();
-    portal_ptr_.reset();
+    ConsumePortal();
   }
 }
 
