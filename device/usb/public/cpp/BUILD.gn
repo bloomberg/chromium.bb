@@ -24,6 +24,8 @@ static_library("test_support") {
     "fake_usb_device_info.h",
     "fake_usb_device_manager.cc",
     "fake_usb_device_manager.h",
+    "mock_usb_mojo_device.cc",
+    "mock_usb_mojo_device.h",
   ]
 
   deps = [
@@ -33,6 +35,7 @@ static_library("test_support") {
   public_deps = [
     "//base",
     "//device/usb/public/mojom",
+    "//testing/gmock",
     "//url:url",
   ]
 }
