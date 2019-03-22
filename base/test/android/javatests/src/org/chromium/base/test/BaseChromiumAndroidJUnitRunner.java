@@ -33,7 +33,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A custom AndroidJUnitRunner that supports multidex installer and list out test information.
@@ -326,12 +328,22 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     }
 
     private static void addClassloaderDexFiles(List<DexFile> dexFiles, ClassLoader cl) {
+        // The main apk appears in the classpath twice sometimes, so check for apk path rather
+        // than comparing DexFile instances (e.g. on kitkat without an apk-under-test).
+        Set<String> apkPaths = new HashSet<>();
         try {
             Object pathList = getField(cl.getClass().getSuperclass(), cl, "pathList");
             Object[] dexElements =
                     (Object[]) getField(pathList.getClass(), pathList, "dexElements");
             for (Object dexElement : dexElements) {
-                dexFiles.add((DexFile) getField(dexElement.getClass(), dexElement, "dexFile"));
+                DexFile dexFile = (DexFile) getField(dexElement.getClass(), dexElement, "dexFile");
+                // Prevent adding the main apk twice, and also skip any system libraries added due
+                // to <uses-library> manifest entries.
+                String apkPath = dexFile.getName();
+                if (!apkPaths.contains(apkPath) && !apkPath.startsWith("/system")) {
+                    dexFiles.add(dexFile);
+                    apkPaths.add(apkPath);
+                }
             }
         } catch (Exception e) {
             // No way to recover and test listing will fail.
