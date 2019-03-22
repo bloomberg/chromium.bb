@@ -18,8 +18,6 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
   MockWebIDBDatabase();
   ~MockWebIDBDatabase() override;
 
-  MOCK_METHOD2(DeleteObjectStore,
-               void(int64_t transaction_id, int64_t object_store_id));
   MOCK_METHOD3(RenameObjectStore,
                void(int64_t transaction_id,
                     int64_t object_store_id,

@@ -109,20 +109,6 @@ DatabaseImpl::~DatabaseImpl() {
   indexed_db_context_->ConnectionClosed(origin_, connection_.get());
 }
 
-void DatabaseImpl::DeleteObjectStore(int64_t transaction_id,
-                                     int64_t object_store_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  connection_->database()->DeleteObjectStore(transaction, object_store_id);
-}
-
 void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
                                      int64_t object_store_id,
                                      const base::string16& new_name) {

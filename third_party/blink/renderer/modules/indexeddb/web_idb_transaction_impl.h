@@ -26,6 +26,7 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
                          const String& name,
                          const IDBKeyPath&,
                          bool auto_increment) override;
+  void DeleteObjectStore(int64_t object_store_id) override;
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 

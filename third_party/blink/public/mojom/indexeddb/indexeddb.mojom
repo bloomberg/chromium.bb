@@ -292,11 +292,10 @@ interface IDBTransaction {
                     mojo_base.mojom.String16 name,
                     IDBKeyPath key_path,
                     bool auto_increment);
+  DeleteObjectStore(int64 object_store_id);
 };
 
 interface IDBDatabase {
-  DeleteObjectStore(int64 transaction_id,
-                    int64 object_store_id);
   RenameObjectStore(int64 transaction_id,
                     int64 object_store_id,
                     mojo_base.mojom.String16 new_name);

@@ -26,8 +26,6 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   ~WebIDBDatabaseImpl() override;
 
   // WebIDBDatabase
-  void DeleteObjectStore(int64_t transaction_id,
-                         int64_t object_store_id) override;
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const String& new_name) override;

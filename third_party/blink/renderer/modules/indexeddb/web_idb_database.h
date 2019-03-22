@@ -43,8 +43,6 @@ class MODULES_EXPORT WebIDBDatabase {
  public:
   virtual ~WebIDBDatabase() = default;
 
-  virtual void DeleteObjectStore(int64_t transaction_id,
-                                 int64_t object_store_id) = 0;
   virtual void RenameObjectStore(int64_t transaction_id,
                                  int64_t object_store_id,
                                  const String& name) = 0;

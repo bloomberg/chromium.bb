@@ -1155,7 +1155,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
         .WillOnce(RunClosure(std::move(quit_closure)));
 
     ASSERT_TRUE(connection3.database.is_bound());
-    connection3.database->DeleteObjectStore(kTransactionId3, kObjectStoreId);
+    connection3.version_change_transaction->DeleteObjectStore(kObjectStoreId);
     connection3.database->Commit(kTransactionId3, 0);
     loop.Run();
   }

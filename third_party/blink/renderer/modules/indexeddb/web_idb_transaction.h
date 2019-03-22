@@ -43,6 +43,7 @@ class MODULES_EXPORT WebIDBTransaction {
                                  const String& name,
                                  const IDBKeyPath&,
                                  bool auto_increment) = 0;
+  virtual void DeleteObjectStore(int64_t object_store_id) = 0;
 
   virtual mojom::blink::IDBTransactionAssociatedRequest CreateRequest() = 0;
 
