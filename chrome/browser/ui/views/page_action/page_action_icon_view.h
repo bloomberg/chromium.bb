@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -42,8 +43,6 @@ class PageActionIconView : public IconLabelBubbleView {
 
     virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
   };
-
-  void Init();
 
   // Updates the color of the icon, this must be set before the icon is drawn.
   void SetIconColor(SkColor icon_color);
@@ -142,7 +141,7 @@ class PageActionIconView : public IconLabelBubbleView {
 
  private:
   // The size of the icon image (excluding the ink drop).
-  int icon_size_;
+  int icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 
   // What color to paint the icon with.
   SkColor icon_color_ = gfx::kPlaceholderColor;
@@ -159,12 +158,12 @@ class PageActionIconView : public IconLabelBubbleView {
   // The active node_data. The precise definition of "active" is unique to each
   // subclass, but generally indicates that the associated feature is acting on
   // the web page.
-  bool active_;
+  bool active_ = false;
 
   // This is used to check if the bookmark bubble was showing during the mouse
   // pressed event. If this is true then the mouse released event is ignored to
   // prevent the bubble from reshowing.
-  bool suppress_mouse_released_action_;
+  bool suppress_mouse_released_action_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };

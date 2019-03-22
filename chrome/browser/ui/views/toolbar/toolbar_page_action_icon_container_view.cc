@@ -20,7 +20,6 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
       // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
                             views::style::STYLE_PRIMARY));
-  local_card_migration_icon_view_->Init();
   local_card_migration_icon_view_->SetVisible(false);
   AddChildView(local_card_migration_icon_view_);
 
@@ -30,7 +29,6 @@ ToolbarPageActionIconContainerView::ToolbarPageActionIconContainerView(
       // what we want here. Put placeholders for now.
       views::style::GetFont(CONTEXT_TOOLBAR_BUTTON,
                             views::style::STYLE_PRIMARY));
-  save_card_icon_view_->Init();
   save_card_icon_view_->SetVisible(false);
   AddChildView(save_card_icon_view_);
 }

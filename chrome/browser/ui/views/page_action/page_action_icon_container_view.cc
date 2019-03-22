@@ -69,7 +69,6 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
   for (PageActionIconView* icon : page_action_icons_) {
     icon->SetVisible(false);
     icon->set_icon_size(params.icon_size);
-    icon->Init();
     icon->SetIconColor(params.icon_color);
     AddChildView(icon);
   }
