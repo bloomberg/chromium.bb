@@ -21914,8 +21914,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--gtest_filter=-TextureFunctionTest.NonConstantOffset"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
