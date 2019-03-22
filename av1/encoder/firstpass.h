@@ -68,17 +68,14 @@ typedef struct {
 } FIRSTPASS_STATS;
 
 enum {
-  KF_UPDATE = 0,
-  LF_UPDATE = 1,
-  GF_UPDATE = 2,
-  ARF_UPDATE = 3,
-  OVERLAY_UPDATE = 4,
-  BRF_UPDATE = 5,            // Backward Reference Frame
-  LAST_BIPRED_UPDATE = 6,    // Last Bi-predictive Frame
-  BIPRED_UPDATE = 7,         // Bi-predictive Frame, but not the last one
-  INTNL_OVERLAY_UPDATE = 8,  // Internal Overlay Frame
-  INTNL_ARF_UPDATE = 9,      // Internal Altref Frame (candidate for ALTREF2)
-  FRAME_UPDATE_TYPES = 10
+  KF_UPDATE,
+  LF_UPDATE,
+  GF_UPDATE,
+  ARF_UPDATE,
+  OVERLAY_UPDATE,
+  INTNL_OVERLAY_UPDATE,  // Internal Overlay Frame
+  INTNL_ARF_UPDATE,      // Internal Altref Frame
+  FRAME_UPDATE_TYPES
 } UENUM1BYTE(FRAME_UPDATE_TYPE);
 
 #define FC_ANIMATION_THRESH 0.15
@@ -98,7 +95,6 @@ typedef struct {
   unsigned char pyramid_level[MAX_STATIC_GF_GROUP_LENGTH + 1];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
-  unsigned char brf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];
 } GF_GROUP;
 

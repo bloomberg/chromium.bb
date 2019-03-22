@@ -2532,10 +2532,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->alt_ref_source = NULL;
   rc->is_src_frame_alt_ref = 0;
 
-  rc->is_bwd_ref_frame = 0;
-  rc->is_last_bipred_frame = 0;
-  rc->is_bipred_frame = 0;
-
   set_tile_info(cpi);
 
   cpi->ext_refresh_frame_flags_pending = 0;

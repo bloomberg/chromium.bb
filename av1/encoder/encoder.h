@@ -779,13 +779,6 @@ typedef struct AV1_COMP {
   // frame of the same type as the current frame).
   int fb_of_context_type[REF_FRAMES];
 
-  // When true, a new rule for backward (future) reference frames is in effect:
-  // - BWDREF_FRAME is always the closest future frame available
-  // - ALTREF2_FRAME is always the 2nd closest future frame available
-  // - 'refresh_bwd_ref_frame' flag is used for updating both the BWDREF_FRAME
-  // and ALTREF2_FRAME. ('refresh_alt2_ref_frame' flag is irrelevant).
-  int new_bwdref_update_rule;
-
   int ext_refresh_frame_flags_pending;
   int ext_refresh_last_frame;
   int ext_refresh_golden_frame;

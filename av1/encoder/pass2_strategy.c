@@ -641,20 +641,7 @@ static void allocate_gf_group_bits(
         clamp((int)((double)total_group_bits * err_fraction), 0,
               AOMMIN(max_bits, (int)total_group_bits));
 
-    if (gf_group->update_type[frame_index] == BRF_UPDATE) {
-      // Boost up the allocated bits on BWDREF_FRAME
-      gf_group->bit_allocation[frame_index] =
-          target_frame_size + (target_frame_size >> 2);
-    } else if (gf_group->update_type[frame_index] == LAST_BIPRED_UPDATE) {
-      // Press down the allocated bits on LAST_BIPRED_UPDATE frames
-      gf_group->bit_allocation[frame_index] =
-          target_frame_size - (target_frame_size >> 1);
-    } else if (gf_group->update_type[frame_index] == BIPRED_UPDATE) {
-      // TODO(zoeliu): To investigate whether the allocated bits on
-      // BIPRED_UPDATE frames need to be further adjusted.
-      gf_group->bit_allocation[frame_index] = target_frame_size;
-    } else if (cpi->new_bwdref_update_rule &&
-               gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
+    if (gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
       assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
              "non-valid height for a pyramid structure");
 
@@ -667,7 +654,7 @@ static void allocate_gf_group_bits(
       assert(gf_group->update_type[frame_index] == LF_UPDATE ||
              gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
-      if (cpi->new_bwdref_update_rule && cpi->num_extra_arfs > 0) {
+      if (cpi->num_extra_arfs > 0) {
         const int this_budget_reduction =
             (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
         gf_group->bit_allocation[frame_index] -= this_budget_reduction;
@@ -685,15 +672,13 @@ static void allocate_gf_group_bits(
   }
 
   if (budget_reduced_from_leaf_level > 0) {
-    assert(cpi->new_bwdref_update_rule);
     assert(cpi->num_extra_arfs > 0);
     // Restore.
     frame_index = tmp_frame_index;
 
     // Re-distribute this extra budget to overlay frames in the group.
     for (i = 0; i < normal_frames; ++i) {
-      if (cpi->new_bwdref_update_rule &&
-          gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
+      if (gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
         assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
                "non-valid height for a pyramid structure");
         const int arf_pos = gf_group->arf_pos_in_gf[frame_index];
@@ -712,27 +697,6 @@ static void allocate_gf_group_bits(
       if (cpi->num_extra_arfs) {
         while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE)
           ++frame_index;
-      }
-    }
-  }
-
-  if (cpi->new_bwdref_update_rule == 0 && rc->source_alt_ref_pending) {
-    if (cpi->num_extra_arfs) {
-      // NOTE: For bit allocation, move the allocated bits associated with
-      //       INTNL_OVERLAY_UPDATE to the corresponding INTNL_ARF_UPDATE.
-      //       i > 0 for extra-ARF's and i == 0 for ARF:
-      //         arf_pos_for_ovrly[i]: Position for INTNL_OVERLAY_UPDATE
-      //         arf_pos_in_gf[i]: Position for INTNL_ARF_UPDATE
-      for (i = cpi->num_extra_arfs; i > 0; --i) {
-        assert(gf_group->update_type[cpi->arf_pos_for_ovrly[i]] ==
-               INTNL_OVERLAY_UPDATE);
-
-        // Encoder's choice:
-        //   Set show_existing_frame == 1 for all extra-ARF's, and hence
-        //   allocate zero bit for both all internal OVERLAY frames.
-        gf_group->bit_allocation[cpi->arf_pos_in_gf[i]] =
-            gf_group->bit_allocation[cpi->arf_pos_for_ovrly[i]];
-        gf_group->bit_allocation[cpi->arf_pos_for_ovrly[i]] = 0;
       }
     }
   }
@@ -1053,10 +1017,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   }
 
   rc->frames_till_gf_update_due = rc->baseline_gf_interval;
-
-  rc->bipred_group_interval = BFG_INTERVAL;
-  // The minimum bi-predictive frame group interval is 2.
-  if (rc->bipred_group_interval < 2) rc->bipred_group_interval = 0;
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);

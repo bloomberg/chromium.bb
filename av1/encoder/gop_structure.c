@@ -118,10 +118,9 @@ static int construct_multi_layer_gf_structure(
 #if CHECK_GF_PARAMETER
 void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
                         int frame_nums) {
-  static const char *update_type_strings[] = {
-    "KF_UPDATE",          "LF_UPDATE",      "GF_UPDATE",
-    "ARF_UPDATE",         "OVERLAY_UPDATE", "BRF_UPDATE",
-    "LAST_BIPRED_UPDATE", "BIPRED_UPDATE",  "INTNL_OVERLAY_UPDATE",
+  static const char *update_type_strings[FRAME_UPDATE_TYPES] = {
+    "KF_UPDATE",       "LF_UPDATE",      "GF_UPDATE",
+    "ARF_UPDATE",      "OVERLAY_UPDATE", "INTNL_OVERLAY_UPDATE",
     "INTNL_ARF_UPDATE"
   };
   FILE *fid = fopen("GF_PARAMS.txt", "a");
@@ -167,18 +166,17 @@ static int get_pyramid_height(const AV1_COMP *const cpi) {
                 cpi->oxcf.gf_max_pyr_height);
 }
 
+// Derive rf_level from update_type
 static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
-  // Derive rf_level from update_type
   switch (update_type) {
     case LF_UPDATE: return INTER_NORMAL;
     case ARF_UPDATE: return GF_ARF_STD;
     case OVERLAY_UPDATE: return INTER_NORMAL;
-    case BRF_UPDATE: return GF_ARF_LOW;
-    case LAST_BIPRED_UPDATE: return INTER_NORMAL;
-    case BIPRED_UPDATE: return INTER_NORMAL;
     case INTNL_ARF_UPDATE: return GF_ARF_LOW;
     case INTNL_OVERLAY_UPDATE: return INTER_NORMAL;
-    default: return INTER_NORMAL;
+    default:
+      assert(0);  // Function not called for other update types.
+      return INTER_NORMAL;
   }
 }
 
@@ -194,10 +192,6 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
   const int gf_update_frames = construct_multi_layer_gf_structure(
       gf_group, rc->baseline_gf_interval, get_pyramid_height(cpi),
       first_frame_update_type);
-
-  // Unused, so set to default value.
-  memset(gf_group->brf_src_offset, 0,
-         gf_update_frames * sizeof(*gf_group->brf_src_offset));
 
   // Set rate factor level for 1st frame.
   if (!key_frame) {  // For a key-frame, rate factor is already assigned.
@@ -225,14 +219,10 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
     gf_group->update_type[gf_update_frames] = GF_UPDATE;
     gf_group->rf_level[gf_update_frames] = GF_ARF_STD;
   }
-  gf_group->brf_src_offset[gf_update_frames] = 0;
   gf_group->arf_update_idx[gf_update_frames] = 0;
   gf_group->arf_pos_in_gf[gf_update_frames] = 0;
 
 #if CHECK_GF_PARAMETER
   check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
 #endif
-  // TODO(urvang): Remove 'new_bwdref_update_rule' and other code related to
-  // the old GOP structure.
-  cpi->new_bwdref_update_rule = 1;
 }

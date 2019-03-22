@@ -40,9 +40,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
   cpi->rc.is_src_frame_alt_ref = 0;
-  cpi->rc.is_bwd_ref_frame = 0;
-  cpi->rc.is_last_bipred_frame = 0;
-  cpi->rc.is_bipred_frame = 0;
   cpi->rc.is_src_frame_ext_arf = 0;
 
   switch (type) {
@@ -91,36 +88,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_alt_ref_frame = 1;
       break;
 
-    case BRF_UPDATE:
-      frame_params->refresh_last_frame = 0;
-      frame_params->refresh_golden_frame = 0;
-      frame_params->refresh_bwd_ref_frame = 1;
-      frame_params->refresh_alt2_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
-
-      cpi->rc.is_bwd_ref_frame = 1;
-      break;
-
-    case LAST_BIPRED_UPDATE:
-      frame_params->refresh_last_frame = 1;
-      frame_params->refresh_golden_frame = 0;
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
-
-      cpi->rc.is_last_bipred_frame = 1;
-      break;
-
-    case BIPRED_UPDATE:
-      frame_params->refresh_last_frame = 1;
-      frame_params->refresh_golden_frame = 0;
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt2_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
-
-      cpi->rc.is_bipred_frame = 1;
-      break;
-
     case INTNL_OVERLAY_UPDATE:
       frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 0;
@@ -135,7 +102,7 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
     case INTNL_ARF_UPDATE:
       frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 0;
-      if (cpi->new_bwdref_update_rule == 1 && cpi->oxcf.pass == 2) {
+      if (cpi->oxcf.pass == 2) {
         frame_params->refresh_bwd_ref_frame = 1;
         frame_params->refresh_alt2_ref_frame = 0;
       } else {
@@ -174,9 +141,7 @@ static void set_additional_frame_flags(const AV1_COMMON *const cm,
 }
 
 static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
-  // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
-  //               differently here for rc->avg_frame_bandwidth.
-  if (cpi->common.show_frame || cpi->rc.is_bwd_ref_frame) {
+  if (cpi->common.show_frame) {
     if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref ||
         cpi->common.current_frame.frame_type == KEY_FRAME) {
       // If this is a show_existing_frame with a source other than altref,
@@ -229,38 +194,20 @@ static void check_show_existing_frame(AV1_COMP *const cpi,
   AV1_COMMON *const cm = &cpi->common;
   const FRAME_UPDATE_TYPE frame_update_type =
       gf_group->update_type[gf_group->index];
-  const int which_arf = cpi->new_bwdref_update_rule
-                            ? gf_group->arf_update_idx[gf_group->index] > 0
-                            : gf_group->arf_update_idx[gf_group->index];
+  const int which_arf = (gf_group->arf_update_idx[gf_group->index] > 0);
 
   if (cm->show_existing_frame == 1) {
     frame_params->show_existing_frame = 0;
-  } else if (cpi->rc.is_last_bipred_frame) {
-    // NOTE: When new structure is used, every bwdref will have one overlay
-    //       frame. Therefore, there is no need to find out which frame to
-    //       show in advance.
-    if (!cpi->new_bwdref_update_rule) {
-      // NOTE: If the last frame is a last bi-predictive frame, it is
-      //       needed next to show the BWDREF_FRAME, which is pointed by
-      //       the last_fb_idxes[0] after reference frame buffer update
-      frame_params->show_existing_frame = 1;
-      frame_params->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
-    }
   } else if (cpi->is_arf_filter_off[which_arf] &&
              (frame_update_type == OVERLAY_UPDATE ||
               frame_update_type == INTNL_OVERLAY_UPDATE)) {
-    const int bwdref_to_show =
-        cpi->new_bwdref_update_rule ? BWDREF_FRAME : ALTREF2_FRAME;
     // Other parameters related to OVERLAY_UPDATE will be taken care of
     // in av1_get_second_pass_params(cpi)
     frame_params->show_existing_frame = 1;
     frame_params->existing_fb_idx_to_show =
         (frame_update_type == OVERLAY_UPDATE)
             ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
-            : get_ref_frame_map_idx(cm, bwdref_to_show);
-    if (!cpi->new_bwdref_update_rule) {
-      cpi->is_arf_filter_off[which_arf] = 0;
-    }
+            : get_ref_frame_map_idx(cm, BWDREF_FRAME);
   }
 }
 
@@ -464,8 +411,7 @@ static int get_order_offset(const GF_GROUP *const gf_group,
 
   const int arf_offset =
       AOMMIN((MAX_GF_INTERVAL - 1), gf_group->arf_src_offset[gf_group->index]);
-  const int brf_offset = gf_group->brf_src_offset[gf_group->index];
-  return AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
+  return AOMMIN((MAX_GF_INTERVAL - 1), arf_offset);
 }
 
 static void adjust_frame_rate(AV1_COMP *cpi,
@@ -526,28 +472,6 @@ static int get_arf_src_index(AV1_COMP *cpi) {
     }
   }
   return arf_src_index;
-}
-
-static int is_bipred_enabled(const GF_GROUP *const gf_group) {
-  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
-  return update_type == BRF_UPDATE || update_type == LAST_BIPRED_UPDATE ||
-         update_type == BIPRED_UPDATE;
-}
-
-static int get_brf_src_index(AV1_COMP *cpi) {
-  int brf_src_index = 0;
-  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-
-  if (is_bipred_enabled(gf_group)) {
-    if (cpi->oxcf.pass == 2) {
-      if (gf_group->update_type[gf_group->index] == BRF_UPDATE)
-        brf_src_index = gf_group->brf_src_offset[gf_group->index];
-    } else {
-      brf_src_index = cpi->rc.bipred_group_interval - 1;
-    }
-  }
-
-  return brf_src_index;
 }
 
 // Returns 0 if this is not an alt ref else the offset of the source frame
@@ -663,16 +587,6 @@ struct lookahead_entry *choose_frame_source(
     source = setup_arf_or_arf2(cpi, arf_src_index, 1, temporal_filtered,
                                frame_params);
     *frame_update_type = INTNL_ARF_UPDATE;
-  }
-
-  int brf_src_index = get_brf_src_index(cpi);
-  if (brf_src_index) {
-    assert(brf_src_index <= cpi->rc.frames_to_key);
-    if ((source = av1_lookahead_peek(cpi->lookahead, brf_src_index)) != NULL) {
-      cm->showable_frame = 1;
-      frame_params->show_frame = 0;
-      *frame_update_type = BRF_UPDATE;
-    }
   }
 
   if (!source) {
@@ -900,27 +814,18 @@ static void update_ref_frame_map(AV1_COMP *cpi,
              encode_show_existing_frame(cm)) {
     // Note that because encode_show_existing_frame(cm) we don't refresh any
     // buffers.
-    if (cpi->new_bwdref_update_rule) {  // Pyramid GOP structure
-      // Pop BWDREF (shown as current frame) from the bwdref stack and make it
-      // the new LAST_FRAME.
-      assign_new_map(cm, new_map, LAST_FRAME, BWDREF_FRAME);
+    // Pop BWDREF (shown as current frame) from the bwdref stack and make it
+    // the new LAST_FRAME.
+    assign_new_map(cm, new_map, LAST_FRAME, BWDREF_FRAME);
 
-      // Progress the last-frame FIFO and the bwdref stack
-      assign_new_map(cm, new_map, LAST2_FRAME, LAST_FRAME);
-      assign_new_map(cm, new_map, LAST3_FRAME, LAST2_FRAME);
-      assign_new_map(cm, new_map, BWDREF_FRAME, ALTREF2_FRAME);
-      assign_new_map(cm, new_map, ALTREF2_FRAME, EXTREF_FRAME);
-      assign_new_map(cm, new_map, EXTREF_FRAME, LAST3_FRAME);
-    } else {  // Flat GOP structure
-      // Push ALTREF2 (shown as current frame) into the last-frame FIFO.  The
-      // buffer which used to be LAST3 becomes the new ALTREF2 buffer.
-      assign_new_map(cm, new_map, LAST_FRAME, ALTREF2_FRAME);
-      assign_new_map(cm, new_map, LAST2_FRAME, LAST_FRAME);
-      assign_new_map(cm, new_map, LAST3_FRAME, LAST2_FRAME);
-      assign_new_map(cm, new_map, ALTREF2_FRAME, LAST3_FRAME);
-    }
+    // Progress the last-frame FIFO and the bwdref stack
+    assign_new_map(cm, new_map, LAST2_FRAME, LAST_FRAME);
+    assign_new_map(cm, new_map, LAST3_FRAME, LAST2_FRAME);
+    assign_new_map(cm, new_map, BWDREF_FRAME, ALTREF2_FRAME);
+    assign_new_map(cm, new_map, ALTREF2_FRAME, EXTREF_FRAME);
+    assign_new_map(cm, new_map, EXTREF_FRAME, LAST3_FRAME);
   } else if (frame_update_type == INTNL_ARF_UPDATE &&
-             cpi->new_bwdref_update_rule && !cm->show_existing_frame) {
+             !cm->show_existing_frame) {
     // We want to push the current frame onto the bwdref stack.  We refresh
     // EXTREF (the old bottom of the stack) and rotate the references so it
     // becomes BWDREF, the top of the stack.
@@ -929,29 +834,10 @@ static void update_ref_frame_map(AV1_COMP *cpi,
     assign_new_map(cm, new_map, EXTREF_FRAME, ALTREF2_FRAME);
   }
 
-  if (frame_update_type == LAST_BIPRED_UPDATE &&
-      cpi->new_bwdref_update_rule == 0 && !cm->show_existing_frame) {
-    // In the old structure, a LAST_BIPRED frame is followed by a show_existing
-    // of the BWDREF frame.  Since the show_existing won't update the reference
-    // map, we do two updates together here, so the ref-map is as it should be
-    // after showing the BWDREF.
-    //
-    // The current frame refreshes LAST3 and becomes LAST2
-    assign_new_map(cm, new_map, LAST2_FRAME, LAST3_FRAME);
-    // The BWDREF we're about to show becomes LAST
-    assign_new_map(cm, new_map, LAST_FRAME, BWDREF_FRAME);
-    // LAST, the frame shown before this one, becomes LAST3
-    assign_new_map(cm, new_map, LAST3_FRAME, LAST_FRAME);
-    // LAST2 is pushed out the last-frame FIFO and becomes new BWDREF
-    assign_new_map(cm, new_map, BWDREF_FRAME, LAST2_FRAME);
-  } else if ((frame_update_type == LF_UPDATE ||
-              frame_update_type == GF_UPDATE ||
-              frame_update_type == LAST_BIPRED_UPDATE ||
-              frame_update_type == BIPRED_UPDATE ||
-              frame_update_type == INTNL_OVERLAY_UPDATE) &&
-             !encode_show_existing_frame(cm) &&
-             (!cm->show_existing_frame ||
-              frame_update_type == INTNL_OVERLAY_UPDATE)) {
+  if ((frame_update_type == LF_UPDATE || frame_update_type == GF_UPDATE ||
+       frame_update_type == INTNL_OVERLAY_UPDATE) &&
+      !encode_show_existing_frame(cm) &&
+      (!cm->show_existing_frame || frame_update_type == INTNL_OVERLAY_UPDATE)) {
     // A standard last-frame: we refresh the LAST3_FRAME buffer and then push it
     // into the last-frame FIFO.
     assign_new_map(cm, new_map, LAST3_FRAME, LAST2_FRAME);
@@ -987,12 +873,6 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
 
   int refresh_mask = 0;
 
-  // The new pyramid structure uses BWD, ALT2 and EXT refs like a stack, so we
-  // refresh EXT and update_ref_frame_map shuffles things around.  For the old
-  // structure we just use the BWDREF buffer normally.
-  const int which_bwd_ref_frame =
-      (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
-
   if (cpi->ext_refresh_frame_flags_pending) {
     // Unfortunately the encoder interface reflects the old refresh_*_frame
     // flags so we have to replicate the old refresh_frame_flags logic here in
@@ -1000,7 +880,7 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
     refresh_mask |= cpi->ext_refresh_last_frame
                     << get_ref_frame_map_idx(cm, LAST3_FRAME);
     refresh_mask |= cpi->ext_refresh_bwd_ref_frame
-                    << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
+                    << get_ref_frame_map_idx(cm, EXTREF_FRAME);
     refresh_mask |= cpi->ext_refresh_alt2_ref_frame
                     << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
     if (frame_update_type == OVERLAY_UPDATE) {
@@ -1028,13 +908,11 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
       // really a shown key-frame or S-frame but want to refresh all the
       // important buffers.
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
+      refresh_mask |= 1 << get_ref_frame_map_idx(cm, EXTREF_FRAME);
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
       break;
-    case BIPRED_UPDATE:  // These updates all just implement last-frame updates
-    case LAST_BIPRED_UPDATE:
     case LF_UPDATE:
       // Refresh LAST3, which becomes the new LAST while LAST becomes LAST2
       // and LAST2 becomes the new LAST3 (like a FIFO but circular)
@@ -1057,13 +935,6 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
     case ARF_UPDATE:
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
       break;
-    case BRF_UPDATE:
-      // For the old, flat, structure (new_bwdref_update_rule == 0) we just
-      // refresh ALTREF2_FRAME.  With the new structure (new_bwdref_update_rule
-      // == 1) the multiple bwdrefs act like a stack.  Here, we refresh EXTREF
-      // (the bottom of the stack) which gets moved to the top of the stack.
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, which_bwd_ref_frame);
-      break;
     case INTNL_OVERLAY_UPDATE:
       // INTNL_OVERLAY may be a show_existing_frame in which case we don't
       // refresh anything and the BWDREF or ALTREF2 being shown becomes the new
@@ -1073,7 +944,7 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
       break;
     case INTNL_ARF_UPDATE:
-      if (cpi->new_bwdref_update_rule && cpi->oxcf.pass == 2) {
+      if (cpi->oxcf.pass == 2) {
         // Push the new ARF2 onto the bwdref stack.  We refresh EXTREF which is
         // at the bottom of the stack then move it to the top.
         refresh_mask |= 1 << get_ref_frame_map_idx(cm, EXTREF_FRAME);

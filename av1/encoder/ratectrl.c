@@ -218,9 +218,7 @@ static void update_buffer_level(AV1_COMP *cpi, int encoded_frame_size) {
   RATE_CONTROL *const rc = &cpi->rc;
 
   // Non-viewable frames are a special case and are treated as pure overhead.
-  // TODO(zoeliu): To further explore whether we should treat BWDREF_FRAME
-  //               differently, since it is a no-show frame.
-  if (!cm->show_frame && !rc->is_bwd_ref_frame)
+  if (!cm->show_frame)
     rc->bits_off_target -= encoded_frame_size;
   else
     rc->bits_off_target += rc->avg_frame_bandwidth - encoded_frame_size;
@@ -1092,16 +1090,13 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       // Constrained quality use slightly lower active best.
       active_best_quality = active_best_quality * 15 / 16;
 
-      if (gf_group->update_type[gf_group->index] == ARF_UPDATE ||
-          (is_intrl_arf_boost && !cpi->new_bwdref_update_rule)) {
-        if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
-          const int min_boost = get_gf_high_motion_quality(q, bit_depth);
-          const int boost = min_boost - active_best_quality;
+      if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+        const int min_boost = get_gf_high_motion_quality(q, bit_depth);
+        const int boost = min_boost - active_best_quality;
 
-          active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
-        }
+        active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
         *arf_q = active_best_quality;
-      } else if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
+      } else if (is_intrl_arf_boost) {
         assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
         active_best_quality = rc->arf_q;
         int this_height = gf_group_pyramid_level(cpi);
@@ -1125,7 +1120,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
           active_best_quality = rc->arf_q;
         }
-        if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
+        if (is_intrl_arf_boost) {
           int this_height = gf_group_pyramid_level(cpi);
           while (this_height < gf_group->pyramid_height) {
             active_best_quality = (active_best_quality + cq_level + 1) / 2;
@@ -1144,7 +1139,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       const int boost = min_boost - active_best_quality;
 
       active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
-      if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
+      if (is_intrl_arf_boost) {
         int this_height = gf_group_pyramid_level(cpi);
         while (this_height < gf_group->pyramid_height) {
           active_best_quality =
@@ -1331,9 +1326,10 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
   //                   updated and cpi->refresh_golden_frame will still be zero.
   if (cpi->refresh_golden_frame || rc->is_src_frame_alt_ref) {
     // We will not use internal overlay frames to replace the golden frame
-    if (!rc->is_src_frame_ext_arf)
+    if (!rc->is_src_frame_ext_arf) {
       // this frame refreshes means next frames don't unless specified by user
       rc->frames_since_golden = 0;
+    }
 
     // If we are not using alt ref in the up and coming group clear the arf
     // active flag. In multi arf group case, if the index is not 0 then
@@ -1429,10 +1425,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
 
   // Actual bits spent
   rc->total_actual_bits += rc->projected_frame_size;
-  // TODO(zoeliu): To investigate whether we should treat BWDREF_FRAME
-  //               differently here for rc->avg_frame_bandwidth.
-  rc->total_target_bits +=
-      (cm->show_frame || rc->is_bwd_ref_frame) ? rc->avg_frame_bandwidth : 0;
+  rc->total_target_bits += cm->show_frame ? rc->avg_frame_bandwidth : 0;
 
   rc->total_target_vs_actual = rc->total_actual_bits - rc->total_target_bits;
 

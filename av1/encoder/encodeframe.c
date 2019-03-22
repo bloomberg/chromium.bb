@@ -4913,18 +4913,18 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
 }
 
 static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
-  if (frame_is_intra_only(&cpi->common)) return INTRA_FRAME;
-  // We will not update the golden frame with an internal overlay frame
-  else if ((cpi->rc.is_src_frame_alt_ref && cpi->refresh_golden_frame) ||
-           cpi->rc.is_src_frame_ext_arf)
+  if (frame_is_intra_only(&cpi->common)) {
+    return INTRA_FRAME;
+  } else if ((cpi->rc.is_src_frame_alt_ref && cpi->refresh_golden_frame) ||
+             cpi->rc.is_src_frame_ext_arf) {
+    // We will not update the golden frame with an internal overlay frame
     return ALTREF_FRAME;
-  else if (cpi->refresh_golden_frame || cpi->refresh_alt2_ref_frame ||
-           cpi->refresh_alt_ref_frame)
+  } else if (cpi->refresh_golden_frame || cpi->refresh_alt2_ref_frame ||
+             cpi->refresh_alt_ref_frame) {
     return GOLDEN_FRAME;
-  else
-    // TODO(zoeliu): To investigate whether a frame_type other than
-    // INTRA/ALTREF/GOLDEN/LAST needs to be specified seperately.
+  } else {
     return LAST_FRAME;
+  }
 }
 
 static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
