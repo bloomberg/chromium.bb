@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WIN_DIRECT_MANIPULATION_H_
-#define UI_WIN_DIRECT_MANIPULATION_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_DIRECT_MANIPULATION_WIN_H_
+#define CONTENT_BROWSER_RENDERER_HOST_DIRECT_MANIPULATION_WIN_H_
 
 #include <windows.h>
 
@@ -13,20 +13,15 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
+#include "content/common/content_export.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
+
 class DirectManipulationBrowserTest;
-}  // namespace content
-
-namespace ui {
-namespace win {
-
-class DirectManipulationUnitTest;
-
 class DirectManipulationHelper;
+class DirectManipulationUnitTest;
 
 // DirectManipulationHandler receives status update and gesture events from
 // Direct Manipulation API.
@@ -40,12 +35,11 @@ class DirectManipulationHandler
               Microsoft::WRL::FtmBase,
               IDirectManipulationViewportEventHandler>> {
  public:
-  explicit DirectManipulationHandler(DirectManipulationHelper* helper,
-                                     WindowEventTarget* event_target);
+  explicit DirectManipulationHandler(DirectManipulationHelper* helper);
 
   // WindowEventTarget updates for every DM_POINTERHITTEST in case window
   // hierarchy changed.
-  void SetWindowEventTarget(WindowEventTarget* event_target);
+  void SetWindowEventTarget(ui::WindowEventTarget* event_target);
 
   void SetDeviceScaleFactor(float device_scale_factor);
 
@@ -72,7 +66,7 @@ class DirectManipulationHandler
                    _In_ IDirectManipulationContent* content) override;
 
   DirectManipulationHelper* helper_ = nullptr;
-  WindowEventTarget* event_target_ = nullptr;
+  ui::WindowEventTarget* event_target_ = nullptr;
   float device_scale_factor_ = 1.0f;
   float last_scale_ = 1.0f;
   int last_x_offset_ = 0;
@@ -95,18 +89,18 @@ class DirectManipulationHandler
 //    when DM_POINTERHITTEST.
 // 3. OnViewportStatusChanged will be called when the gesture phase change.
 //    OnContentUpdated will be called when the gesture update.
-class UI_BASE_EXPORT DirectManipulationHelper {
+class CONTENT_EXPORT DirectManipulationHelper {
  public:
   // Creates and initializes an instance of this class if Direct Manipulation is
   // enabled on the platform. Returns nullptr if it disabled or failed on
   // initialization.
   static std::unique_ptr<DirectManipulationHelper> CreateInstance(
       HWND window,
-      WindowEventTarget* event_target);
+      ui::WindowEventTarget* event_target);
 
   // Creates and initializes an instance for testing.
   static std::unique_ptr<DirectManipulationHelper> CreateInstanceForTesting(
-      WindowEventTarget* event_target,
+      ui::WindowEventTarget* event_target,
       Microsoft::WRL::ComPtr<IDirectManipulationViewport> viewport);
 
   ~DirectManipulationHelper();
@@ -126,7 +120,7 @@ class UI_BASE_EXPORT DirectManipulationHelper {
 
   // Pass the pointer hit test to Direct Manipulation. Return true indicated we
   // need poll for new events every frame from here.
-  bool OnPointerHitTest(WPARAM w_param, WindowEventTarget* event_target);
+  bool OnPointerHitTest(WPARAM w_param, ui::WindowEventTarget* event_target);
 
   // On each frame poll new Direct Manipulation events. Return true if we still
   // need poll for new events on next frame, otherwise stop request need begin
@@ -141,7 +135,7 @@ class UI_BASE_EXPORT DirectManipulationHelper {
 
   // This function instantiates Direct Manipulation and creates a viewport for
   // the passed in |window|. Return false if initialize failed.
-  bool Initialize(WindowEventTarget* event_target);
+  bool Initialize(ui::WindowEventTarget* event_target);
 
   void SetDeviceScaleFactorForTesting(float factor);
 
@@ -157,7 +151,6 @@ class UI_BASE_EXPORT DirectManipulationHelper {
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };
 
-}  // namespace win
-}  // namespace ui
+}  // namespace content
 
-#endif  // UI_WIN_DIRECT_MANIPULATION_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_DIRECT_MANIPULATION_WIN_H_

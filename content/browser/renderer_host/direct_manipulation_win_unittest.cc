@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/direct_manipulation.h"
+#include "content/browser/renderer_host/direct_manipulation_win.h"
 
 #include <objbase.h>
 
@@ -12,9 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 
-namespace ui {
-
-namespace win {
+namespace content {
 
 namespace {
 
@@ -265,7 +263,7 @@ struct Event {
   float scroll_y_ = 0;
 };
 
-class MockWindowEventTarget : public WindowEventTarget {
+class MockWindowEventTarget : public ui::WindowEventTarget {
  public:
   MockWindowEventTarget() {}
 
@@ -751,6 +749,4 @@ TEST_F(DirectManipulationUnitTest, HiDPIScroll) {
   EXPECT_EQ(5, events[0].scroll_x_);
 }
 
-}  //  namespace win
-
-}  //  namespace ui
+}  //  namespace content
