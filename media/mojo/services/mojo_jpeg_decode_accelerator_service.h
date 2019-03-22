@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
-#include "media/mojo/interfaces/jpeg_decode_accelerator.mojom.h"
+#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/jpeg_decode_accelerator.h"
 

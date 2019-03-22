@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//media/mojo/interfaces/jpeg_decode_accelerator.mojom"
+mojom = "//media/mojo/interfaces/mjpeg_decode_accelerator.mojom"
 
 public_headers = [
   "//media/base/bitstream_buffer.h",
@@ -10,10 +10,10 @@ public_headers = [
 ]
 
 traits_headers =
-    [ "//media/mojo/interfaces/jpeg_decode_accelerator_mojom_traits.h" ]
+    [ "//media/mojo/interfaces/mjpeg_decode_accelerator_mojom_traits.h" ]
 
 sources = [
-  "//media/mojo/interfaces/jpeg_decode_accelerator_mojom_traits.cc",
+  "//media/mojo/interfaces/mjpeg_decode_accelerator_mojom_traits.cc",
 ]
 
 deps = [

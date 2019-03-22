@@ -7,7 +7,7 @@
 module cros.mojom;
 
 import "media/capture/video/chromeos/mojo/camera_common.mojom";
-import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
+import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
 import "media/mojo/interfaces/jpeg_encode_accelerator.mojom";
 
 // The CrOS camera HAL v3 Mojo dispatcher.  The dispatcher acts as a proxy and

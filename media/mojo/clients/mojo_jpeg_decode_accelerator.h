@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "media/mojo/interfaces/jpeg_decode_accelerator.mojom.h"
+#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace base {
