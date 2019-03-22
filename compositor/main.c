@@ -2758,7 +2758,7 @@ load_wayland_backend(struct weston_compositor *c,
 	parse_options(wayland_options, ARRAY_LENGTH(wayland_options), argc, argv);
 	config.sprawl = sprawl_;
 	config.fullscreen = fullscreen_;
-	config.use_pixman = use_pixman_config_;
+	config.use_pixman = use_pixman_;
 
 	section = weston_config_get_section(wc, "shell", NULL, NULL);
 	weston_config_section_get_string(section, "cursor-theme",
