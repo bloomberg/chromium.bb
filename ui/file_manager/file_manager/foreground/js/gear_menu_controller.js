@@ -72,7 +72,7 @@ function GearMenuController(
  */
 GearMenuController.prototype.onShowGearMenu_ = function() {
   this.toggleRipple_.activated = true;
-  this.refreshRemainingSpace_(false);  /* Without loading caption. */
+  this.refreshRemainingSpace_(false); /* Without loading caption. */
 
   // Update view of drive-related settings.
   this.commandHandler_.updateAvailability();
@@ -154,9 +154,12 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
     return;
   }
 
-  this.gearMenu_.setSpaceInfo(new Promise(fulfill => {
-    chrome.fileManagerPrivate.getSizeStats(currentVolumeInfo.volumeId, fulfill);
-  }), true);
+  this.gearMenu_.setSpaceInfo(
+      new Promise(fulfill => {
+        chrome.fileManagerPrivate.getSizeStats(
+            currentVolumeInfo.volumeId, fulfill);
+      }),
+      true);
 };
 
 /**

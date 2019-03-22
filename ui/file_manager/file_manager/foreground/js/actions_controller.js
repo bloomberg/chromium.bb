@@ -164,8 +164,9 @@ ActionsController.prototype.onSelectionChangeThrottled_ = function() {
     return;
   }
 
-  const actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
-        this.shortcutsModel_, this.driveSyncHandler_, this.ui_, entries);
+  const actionsModel = new ActionsModel(
+      this.volumeManager_, this.metadataModel_, this.shortcutsModel_,
+      this.driveSyncHandler_, this.ui_, entries);
 
   const initializeAndUpdateUI =
       /** @type {function(Event=)} */ (opt_event => {
@@ -205,14 +206,16 @@ ActionsController.prototype.onNavigationListSelectionChanged_ = function() {
   this.updateUI_();
 
   const entry = this.ui_.directoryTree.selectedItem ?
-      (this.ui_.directoryTree.selectedItem.entry || null) : null;
+      (this.ui_.directoryTree.selectedItem.entry || null) :
+      null;
   if (!entry) {
     return;
   }
 
   const sequence = ++this.navigationListSequence_;
-  const actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
-        this.shortcutsModel_, this.driveSyncHandler_, this.ui_, [entry]);
+  const actionsModel = new ActionsModel(
+      this.volumeManager_, this.metadataModel_, this.shortcutsModel_,
+      this.driveSyncHandler_, this.ui_, [entry]);
 
   const initializeAndUpdateUI =
       /** @type {function(Event=)} */ (opt_event => {

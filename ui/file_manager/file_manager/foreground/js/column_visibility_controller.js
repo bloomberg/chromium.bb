@@ -16,7 +16,7 @@ function ColumnVisibilityController(ui, directoryModel, volumeManager) {
   this.directoryModel_ = directoryModel;
 
   /** @private {!VolumeManager} */
-  this.volumeManager_  = volumeManager;
+  this.volumeManager_ = volumeManager;
 
   /** @private {!FileManagerUI} */
   this.ui_ = ui;
