@@ -199,6 +199,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
     return notify_lock_screen_dismissed_call_count_;
   }
 
+  int start_tpm_firmware_update_call_count() const {
+    return start_tpm_firmware_update_call_count_;
+  }
+
   void set_arc_available(bool available) { arc_available_ = available; }
   void set_arc_start_time(base::TimeTicks arc_start_time) {
     arc_start_time_ = arc_start_time;
@@ -230,6 +234,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
   int request_lock_screen_call_count_;
   int notify_lock_screen_shown_call_count_;
   int notify_lock_screen_dismissed_call_count_;
+  int start_tpm_firmware_update_call_count_;
   bool screen_is_locked_;
 
   bool arc_available_;

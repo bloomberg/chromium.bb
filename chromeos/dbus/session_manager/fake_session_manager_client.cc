@@ -225,6 +225,7 @@ FakeSessionManagerClient::FakeSessionManagerClient(
       request_lock_screen_call_count_(0),
       notify_lock_screen_shown_call_count_(0),
       notify_lock_screen_dismissed_call_count_(0),
+      start_tpm_firmware_update_call_count_(0),
       screen_is_locked_(false),
       arc_available_(false),
       delegate_(nullptr),
@@ -294,7 +295,9 @@ void FakeSessionManagerClient::ClearForcedReEnrollmentVpd(
 }
 
 void FakeSessionManagerClient::StartTPMFirmwareUpdate(
-    const std::string& update_mode) {}
+    const std::string& update_mode) {
+  start_tpm_firmware_update_call_count_++;
+}
 
 void FakeSessionManagerClient::RequestLockScreen() {
   request_lock_screen_call_count_++;
