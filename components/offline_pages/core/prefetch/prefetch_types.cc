@@ -195,6 +195,24 @@ bool PrefetchArchiveInfo::empty() const {
   return offline_id == 0;
 }
 
+base::Optional<PrefetchItemState> ToPrefetchItemState(int value) {
+  switch (static_cast<PrefetchItemState>(value)) {
+    case PrefetchItemState::NEW_REQUEST:
+    case PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE:
+    case PrefetchItemState::AWAITING_GCM:
+    case PrefetchItemState::RECEIVED_GCM:
+    case PrefetchItemState::SENT_GET_OPERATION:
+    case PrefetchItemState::RECEIVED_BUNDLE:
+    case PrefetchItemState::DOWNLOADING:
+    case PrefetchItemState::DOWNLOADED:
+    case PrefetchItemState::IMPORTING:
+    case PrefetchItemState::FINISHED:
+    case PrefetchItemState::ZOMBIE:
+      return static_cast<PrefetchItemState>(value);
+  }
+  return base::nullopt;
+}
+
 std::ostream& operator<<(std::ostream& out,
                          PrefetchBackgroundTaskRescheduleType value) {
   return out << PrefetchEnumToString(value);
