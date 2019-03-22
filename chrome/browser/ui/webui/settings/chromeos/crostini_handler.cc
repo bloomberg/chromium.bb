@@ -24,7 +24,9 @@ namespace settings {
 CrostiniHandler::CrostiniHandler(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
 
-CrostiniHandler::~CrostiniHandler() = default;
+CrostiniHandler::~CrostiniHandler() {
+  DisallowJavascript();
+}
 
 void CrostiniHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
