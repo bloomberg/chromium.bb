@@ -230,10 +230,6 @@ namespace {
 class HandleContainer
     : public blink::GarbageCollectedFinalized<HandleContainer> {
  public:
-  static HandleContainer* Create() {
-    return MakeGarbageCollected<HandleContainer>();
-  }
-
   HandleContainer() = default;
   virtual ~HandleContainer() = default;
 
@@ -264,7 +260,7 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierOnUnmarkedContainer) {
       v8::String::NewFromUtf8(scope.GetIsolate(), "teststring",
                               v8::NewStringType::kNormal, sizeof("teststring"))
           .ToLocalChecked();
-  HandleContainer* container = HandleContainer::Create();
+  auto* container = MakeGarbageCollected<HandleContainer>();
   CHECK_EQ(0u, raw_visitor->NumberOfMarkedWrappers());
   container->SetValue(scope.GetIsolate(), str);
   // The write barrier is conservative and does not check the mark bits of the
@@ -287,7 +283,7 @@ TEST(ScriptWrappableMarkingVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
       v8::String::NewFromUtf8(scope.GetIsolate(), "teststring",
                               v8::NewStringType::kNormal, sizeof("teststring"))
           .ToLocalChecked();
-  HandleContainer* container = HandleContainer::Create();
+  auto* container = MakeGarbageCollected<HandleContainer>();
   HeapObjectHeader::FromPayload(container)->MarkWrapperHeader();
   CHECK_EQ(0u, raw_visitor->NumberOfMarkedWrappers());
   container->SetValue(scope.GetIsolate(), str);
@@ -415,11 +411,6 @@ class Base : public blink::GarbageCollected<Base>,
   USING_GARBAGE_COLLECTED_MIXIN(Base);
 
  public:
-  static Base* Create(DeathAwareScriptWrappable* wrapper_in_base,
-                      DeathAwareScriptWrappable* wrapper_in_mixin) {
-    return MakeGarbageCollected<Base>(wrapper_in_base, wrapper_in_mixin);
-  }
-
   Base(DeathAwareScriptWrappable* wrapper_in_base,
        DeathAwareScriptWrappable* wrapper_in_mixin)
       : Mixin(wrapper_in_mixin), wrapper_in_base_(wrapper_in_base) {
@@ -451,7 +442,7 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   DeathAwareScriptWrappable* base_wrapper = DeathAwareScriptWrappable::Create();
   DeathAwareScriptWrappable* mixin_wrapper =
       DeathAwareScriptWrappable::Create();
-  Base* base = Base::Create(base_wrapper, mixin_wrapper);
+  auto* base = MakeGarbageCollected<Base>(base_wrapper, mixin_wrapper);
   Mixin* mixin = static_cast<Mixin*>(base);
   HeapObjectHeader* base_header = HeapObjectHeader::FromPayload(base);
   EXPECT_FALSE(base_header->IsWrapperHeaderMarked());

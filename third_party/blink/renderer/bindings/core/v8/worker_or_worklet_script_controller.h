@@ -52,9 +52,6 @@ class WorkerOrWorkletGlobalScope;
 class CORE_EXPORT WorkerOrWorkletScriptController final
     : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
  public:
-  static WorkerOrWorkletScriptController* Create(WorkerOrWorkletGlobalScope*,
-                                                 v8::Isolate*);
-
   WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
   virtual ~WorkerOrWorkletScriptController();
   void Dispose();

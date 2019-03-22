@@ -92,13 +92,6 @@ class WorkerOrWorkletScriptController::ExecutionState final {
   ExecutionState* outer_state_;
 };
 
-WorkerOrWorkletScriptController* WorkerOrWorkletScriptController::Create(
-    WorkerOrWorkletGlobalScope* global_scope,
-    v8::Isolate* isolate) {
-  return MakeGarbageCollected<WorkerOrWorkletScriptController>(global_scope,
-                                                               isolate);
-}
-
 WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
     WorkerOrWorkletGlobalScope* global_scope,
     v8::Isolate* isolate)

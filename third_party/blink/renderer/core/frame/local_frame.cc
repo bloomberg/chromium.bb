@@ -926,7 +926,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               Page& page,
                               FrameOwner* owner,
                               InterfaceRegistry* interface_registry)
-    : Frame(client, page, owner, LocalWindowProxyManager::Create(*this)),
+    : Frame(client,
+            page,
+            owner,
+            MakeGarbageCollected<LocalWindowProxyManager>(*this)),
       frame_scheduler_(page.GetPageScheduler()->CreateFrameScheduler(
           this,
           client->GetFrameBlameContext(),
@@ -934,7 +937,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                         : FrameScheduler::FrameType::kSubframe)),
       loader_(this),
       navigation_scheduler_(NavigationScheduler::Create(this)),
-      script_controller_(ScriptController::Create(
+      script_controller_(MakeGarbageCollected<ScriptController>(
           *this,
           *static_cast<LocalWindowProxyManager*>(GetWindowProxyManager()))),
       editor_(Editor::Create(*this)),
