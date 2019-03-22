@@ -19,29 +19,6 @@
 extern "C" {
 #endif
 
-#if CONFIG_FLAT_GF_STRUCTURE_ALLOWED
-// Given the maximum allowed height of the pyramid structure, return the maximum
-// GF length supported by the same.
-static INLINE int get_max_gf_length(int max_pyr_height) {
-  // We allow a frame to have at most two left/right descendants before changing
-  // them into to a subtree, i.e., we allow the following structure:
-  /*                    OUT_OF_ORDER_FRAME
-                       / /              \ \
-  (two left children) F F                F F (two right children) */
-  // For example, the max gf size supported by 4 layer structure is:
-  // 1 (KEY/OVERLAY) + 1 + 2 + 4 + 16 (two children on both side of their
-  // parent)
-  switch (max_pyr_height) {
-    case 2: return 6;   // = 1 (KEY/OVERLAY) + 1 + 4
-    case 3: return 12;  // = 1 (KEY/OVERLAY) + 1 + 2 + 8
-    case 4: return 24;  // = 1 (KEY/OVERLAY) + 1 + 2 + 4 + 16
-    case 1:
-      return MAX_GF_INTERVAL;  // Special case: uses the old pyramid structure.
-    default: assert(0 && "Invalid max_pyr_height"); return -1;
-  }
-}
-#endif  // CONFIG_FLAT_GF_STRUCTURE_ALLOWED
-
 struct AV1_COMP;
 struct EncodeFrameParams;
 

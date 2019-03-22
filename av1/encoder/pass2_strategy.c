@@ -741,13 +741,8 @@ static void allocate_gf_group_bits(
 // Given the maximum allowed height of the pyramid structure, return the fixed
 // GF length to be used.
 static INLINE int get_fixed_gf_length(int max_pyr_height) {
-#if CONFIG_FLAT_GF_STRUCTURE_ALLOWED
-  const int max_gf_length_allowed = get_max_gf_length(max_pyr_height);
-  return AOMMIN(max_gf_length_allowed, MAX_GF_INTERVAL);
-#else
   (void)max_pyr_height;
   return MAX_GF_INTERVAL;
-#endif  // CONFIG_FLAT_GF_STRUCTURE_ALLOWED
 }
 
 // Returns true if KF group and GF group both are almost completely static.
