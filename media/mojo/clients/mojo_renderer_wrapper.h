@@ -34,9 +34,10 @@ class MojoRendererWrapper : public Renderer {
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
 
- private:
+ protected:
   std::unique_ptr<MojoRenderer> mojo_renderer_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MojoRendererWrapper);
 };
 
