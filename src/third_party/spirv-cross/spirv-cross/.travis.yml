@@ -1,0 +1,17 @@
+language: cpp
+os:
+  - linux
+  - osx
+osx_image: xcode10
+
+# Use Ubuntu 14.04 LTS (Trusty) as the Linux testing environment.
+sudo: required
+dist: trusty
+
+before_script:
+  - ./checkout_glslang_spirv_tools.sh
+
+script:
+  - ./build_glslang_spirv_tools.sh Debug 2
+  - make -j2
+  - ./test_shaders.sh
