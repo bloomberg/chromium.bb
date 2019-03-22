@@ -77,6 +77,7 @@ void GetAnimationValuesForType(
       *out_delay = kLabelAnimationDelayMs;
       *out_duration = kLabelAnimationMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
+      *out_preemption_strategy = ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
       return;
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
@@ -88,6 +89,7 @@ void GetAnimationValuesForType(
       *out_delay = kOtherFadeOutDelayMs;
       *out_duration = kOtherFadeInOutMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
+      *out_preemption_strategy = ui::LayerAnimator::ENQUEUE_NEW_ANIMATION;
       return;
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
       *out_duration = kWindowTransformMs;
@@ -109,6 +111,7 @@ void GetAnimationValuesForType(
 void ApplyAnimationSettings(
     ui::ScopedLayerAnimationSettings* settings,
     ui::LayerAnimator* animator,
+    ui::LayerAnimationElement::AnimatableProperties animated_property,
     base::TimeDelta duration,
     gfx::Tween::Type tween,
     ui::LayerAnimator::PreemptionStrategy preemption_strategy,
@@ -117,13 +120,8 @@ void ApplyAnimationSettings(
   settings->SetTransitionDuration(duration);
   settings->SetTweenType(tween);
   settings->SetPreemptionStrategy(preemption_strategy);
-  if (!delay.is_zero()) {
-    settings->SetPreemptionStrategy(
-        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    animator->SchedulePauseForProperties(
-        delay, ui::LayerAnimationElement::OPACITY |
-                   ui::LayerAnimationElement::TRANSFORM);
-  }
+  if (!delay.is_zero())
+    animator->SchedulePauseForProperties(delay, animated_property);
 }
 
 }  // namespace
@@ -168,7 +166,8 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
 
   ui::LayerAnimator* animator = layer->GetAnimator();
   ui::ScopedLayerAnimationSettings settings(animator);
-  ApplyAnimationSettings(&settings, animator, duration, tween,
+  ApplyAnimationSettings(&settings, animator,
+                         ui::LayerAnimationElement::OPACITY, duration, tween,
                          preemption_strategy, delay);
   layer->SetOpacity(target_opacity);
 }
@@ -202,7 +201,8 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
 
   ui::LayerAnimator* animator = layer->GetAnimator();
   ui::ScopedLayerAnimationSettings settings(animator);
-  ApplyAnimationSettings(&settings, animator, duration, tween,
+  ApplyAnimationSettings(&settings, animator,
+                         ui::LayerAnimationElement::TRANSFORM, duration, tween,
                          preemption_strategy, delay);
   layer->SetTransform(target_transform);
 }

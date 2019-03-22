@@ -201,32 +201,57 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
   // Called to update the opacity of the labels view on |indicator_state|.
   void OnIndicatorTypeChanged(IndicatorState indicator_state,
                               IndicatorState previous_indicator_state) {
-    if (indicator_state == IndicatorState::kNone ||
-        IsPreviewAreaState(indicator_state)) {
+    // In split view, the labels never show, and they do not need to be updated.
+    if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
+      return;
+
+    // On transition to a state with no indicators, any label that is showing
+    // shall fade out with the corresponding indicator. The following call to
+    // DoSplitviewOpacityAnimation() will do nothing if this, in the sense of
+    // the C++ keyword this, already has zero opacity.
+    if (indicator_state == IndicatorState::kNone) {
+      DoSplitviewOpacityAnimation(
+          layer(), SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT);
+      return;
+    }
+
+    // On transition to a state with a preview area, any label that is showing
+    // shall fade out. The following call to DoSplitviewOpacityAnimation() will
+    // do nothing if this, in the sense of the C++ keyword this, already has
+    // zero opacity (for example, on transition from kDragAreaLeft to
+    // kPreviewAreaLeft, if this is the label on the right).
+    if (IsPreviewAreaState(indicator_state)) {
       DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_TEXT_FADE_OUT);
       return;
     }
 
-    // No need to update left/top label view for right indicator state and also
-    // no need to update right/bottom label view for left indicator state.
-    if ((!is_right_or_bottom_ && IsRightIndicatorState(indicator_state)) ||
-        (is_right_or_bottom_ && IsLeftIndicatorState(indicator_state))) {
+    // Having ruled out kNone and the "preview area" states, we know that
+    // |indicator_state| is either a "drag area" state or a "cannot snap" state.
+    // If there is an indicator on only one side, and if this, in the sense of
+    // the C++ keyword this, is the label on the opposite side, then bail out.
+    if (is_right_or_bottom_ ? IsLeftIndicatorState(indicator_state)
+                            : IsRightIndicatorState(indicator_state)) {
       return;
     }
 
+    // Set the text according to whether |indicator_state| is a "drag area"
+    // state or a "cannot snap" state.
     SetLabelText(l10n_util::GetStringUTF16(IsCannotSnapState(indicator_state)
                                                ? IDS_ASH_SPLIT_VIEW_CANNOT_SNAP
                                                : IDS_ASH_SPLIT_VIEW_GUIDANCE));
-    SplitviewAnimationType animation_type;
-    if (Shell::Get()->split_view_controller()->state() ==
-        SplitViewController::NO_SNAP) {
-      animation_type = IsPreviewAreaState(previous_indicator_state)
-                           ? SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT
-                           : SPLITVIEW_ANIMATION_TEXT_FADE_IN;
-    } else {
-      animation_type = SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT;
+
+    // On transition from a state with no indicators, fade in with an indicator.
+    if (previous_indicator_state == IndicatorState::kNone) {
+      DoSplitviewOpacityAnimation(
+          layer(), SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT);
+      return;
     }
-    DoSplitviewOpacityAnimation(layer(), animation_type);
+
+    // On transition from a state with a preview area, fade in.
+    if (IsPreviewAreaState(previous_indicator_state)) {
+      DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_TEXT_FADE_IN);
+      return;
+    }
   }
 
  protected:
