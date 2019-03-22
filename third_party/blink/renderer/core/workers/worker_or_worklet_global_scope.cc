@@ -172,7 +172,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       worker_clients_(worker_clients),
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
-          WorkerOrWorkletScriptController::Create(this, isolate)),
+          MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy),
       used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
