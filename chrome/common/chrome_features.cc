@@ -370,6 +370,11 @@ const base::Feature kIntentPicker {
 };
 #endif  // !defined(OS_ANDROID)
 
+// Uses KidsManagement UrlClassification instead of SafeSearch for supervised
+// accounts.
+const base::Feature kKidsManagementUrlClassification{
+    "KidsManagementUrlClassification", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Enables Casting a Presentation API-enabled website to a secondary display.
 const base::Feature kLocalScreenCasting{"LocalScreenCasting",
