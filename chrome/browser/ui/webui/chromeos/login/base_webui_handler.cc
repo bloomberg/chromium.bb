@@ -35,18 +35,11 @@ void JSCallsContainer::ExecuteDeferredJSCalls() {
 BaseWebUIHandler::BaseWebUIHandler(JSCallsContainer* js_calls_container)
     : js_calls_container_(js_calls_container) {}
 
-BaseWebUIHandler::~BaseWebUIHandler() {
-  if (base_screen_)
-    base_screen_->set_model_view_channel(nullptr);
-}
+BaseWebUIHandler::~BaseWebUIHandler() = default;
 
 void BaseWebUIHandler::InitializeBase() {
   page_is_ready_ = true;
   Initialize();
-  if (!pending_context_changes_.empty()) {
-    CommitContextChanges(pending_context_changes_);
-    pending_context_changes_.Clear();
-  }
 }
 
 void BaseWebUIHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
@@ -63,16 +56,7 @@ std::string BaseWebUIHandler::FullMethodPath(const std::string& method) const {
 void BaseWebUIHandler::RegisterMessages() {
   AddCallback(FullMethodPath("userActed"),
               &BaseScreenHandler::HandleUserAction);
-  AddCallback(FullMethodPath("contextChanged"),
-              &BaseScreenHandler::HandleContextChanged);
   DeclareJSCallbacks();
-}
-
-void BaseWebUIHandler::CommitContextChanges(const base::DictionaryValue& diff) {
-  if (!page_is_ready())
-    pending_context_changes_.MergeDictionary(&diff);
-  else
-    CallJS(FullMethodPath("contextChanged"), diff);
 }
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
@@ -107,21 +91,12 @@ OobeScreen BaseWebUIHandler::GetCurrentScreen() const {
 void BaseWebUIHandler::SetBaseScreen(BaseScreen* base_screen) {
   if (base_screen_ == base_screen)
     return;
-  if (base_screen_)
-    base_screen_->set_model_view_channel(nullptr);
   base_screen_ = base_screen;
-  if (base_screen_)
-    base_screen_->set_model_view_channel(this);
 }
 
 void BaseWebUIHandler::HandleUserAction(const std::string& action_id) {
   if (base_screen_)
     base_screen_->OnUserAction(action_id);
-}
-
-void BaseWebUIHandler::HandleContextChanged(const base::DictionaryValue* diff) {
-  if (diff && base_screen_)
-    base_screen_->OnContextChanged(*diff);
 }
 
 }  // namespace chromeos

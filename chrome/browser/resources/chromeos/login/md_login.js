@@ -8,7 +8,6 @@
 
 // <include src="test_util.js">
 // <include src="../../../../../ui/login/screen.js">
-// <include src="screen_context.js">
 // <include src="../../../../../ui/login/bubble.js">
 // <include src="../../../../../ui/login/display_manager.js">
 // <include src="demo_mode_test_helper.js">
