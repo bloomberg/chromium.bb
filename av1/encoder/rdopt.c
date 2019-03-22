@@ -9620,6 +9620,7 @@ static int64_t motion_mode_rd(
       // 2 means to both do the tx search and also update the inter_modes_info
       // structure, since some modes will be conditionally TX searched.
       if (do_tx_search == 2) {
+        rd_stats->rdcost = curr_rd;
         inter_modes_info_push(inter_modes_info, rd_stats->rate, rd_stats->sse,
                               curr_rd, true, x->blk_skip, rd_stats, rd_stats_y,
                               rd_stats_uv, mbmi);
