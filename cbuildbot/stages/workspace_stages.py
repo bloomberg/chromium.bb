@@ -49,6 +49,8 @@ BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
 CROS_RUN_UNITTESTS = '6773.0.0'
 BUILD_IMAGE_BUILDER_PATH = '8183.0.0'
 ANDROID_BREAKPAD = '9667.0.0'
+SETUP_BOARD_PORT_COMPLETE = '11802.0.0'
+
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -454,7 +456,9 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     usepkg = self._run.config.usepkg_build_packages
-    commands.SetupBoard(
+    func = (commands.SetupBoard if self.AfterLimit(SETUP_BOARD_PORT_COMPLETE)
+            else commands.LegacySetupBoard)
+    func(
         self._build_root, board=self._current_board, usepkg=usepkg,
         force=self._run.config.board_replace,
         profile=self._run.options.profile or self._run.config.profile,

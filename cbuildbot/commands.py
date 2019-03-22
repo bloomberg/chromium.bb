@@ -301,8 +301,7 @@ def SetupBoard(buildroot, board, usepkg,
       date, you can specify chroot_upgrade=False.
     chroot_args: The args to the chroot.
   """
-  cmd = ['setup_board', '--board=%s' % board,
-         '--accept-licenses=@CHROMEOS']
+  cmd = ['setup_board', '--board=%s' % board, '--accept-licenses=@CHROMEOS']
 
   # This isn't the greatest thing, but emerge's dependency calculation
   # isn't the speediest thing, so let callers skip this step when they
@@ -323,6 +322,48 @@ def SetupBoard(buildroot, board, usepkg,
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True, extra_env=extra_env,
                  enter_chroot=True, chroot_args=chroot_args)
+
+
+def LegacySetupBoard(buildroot, board, usepkg, extra_env=None, force=False,
+                     profile=None, chroot_upgrade=True, chroot_args=None):
+  """Wrapper around setup_board for the workspace stage only.
+
+  This wrapper supports the old version of setup_board, and is only meant to be
+  used for the workspace builders so they can support old firmware/factory
+  branches.
+
+  This function should not need to be changed until it's deleted.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    board: The board to set up.
+    usepkg: Whether to use binary packages when setting up the board.
+    extra_env: A dictionary of environmental variables to set during generation.
+    force: Whether to remove the board prior to setting it up.
+    profile: The profile to use with this board.
+    chroot_upgrade: Whether to update the chroot. If the chroot is already up to
+      date, you can specify chroot_upgrade=False.
+    chroot_args: The args to the chroot.
+  """
+  cmd = ['./setup_board', '--board=%s' % board, '--accept_licenses=@CHROMEOS']
+
+  # This isn't the greatest thing, but emerge's dependency calculation
+  # isn't the speediest thing, so let callers skip this step when they
+  # know the system is up-to-date already.
+  if not chroot_upgrade:
+    cmd.append('--skip_chroot_upgrade')
+
+  if profile:
+    cmd.append('--profile=%s' % profile)
+
+  if not usepkg:
+    cmd.extend(LOCAL_BUILD_FLAGS)
+
+  if force:
+    cmd.append('--force')
+
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True,
+                 chroot_args=chroot_args)
 
 
 def BuildSDKBoard(buildroot, board, force=False, extra_env=None,
