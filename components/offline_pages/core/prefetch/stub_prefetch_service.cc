@@ -19,15 +19,13 @@ void StubPrefetchService::NewSuggestionsAvailable() {}
 void StubPrefetchService::RemoveSuggestion(GURL url) {}
 
 void StubPrefetchService::SetCachedGCMToken(const std::string& gcm_token) {}
-
 void StubPrefetchService::GetGCMToken(GCMTokenCallback callback) {}
 
 const std::string& StubPrefetchService::GetCachedGCMToken() const {
   return gcm_token_;
 }
 
-PrefetchGCMHandler* StubPrefetchService::GetOrCreatePrefetchGCMHandler(
-    content::BrowserContext* context) {
+PrefetchGCMHandler* StubPrefetchService::GetPrefetchGCMHandler() {
   return nullptr;
 }
 

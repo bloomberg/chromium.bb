@@ -23,8 +23,7 @@ class StubPrefetchService : public PrefetchService {
   void SetCachedGCMToken(const std::string& gcm_token) override;
   const std::string& GetCachedGCMToken() const override;
   void GetGCMToken(GCMTokenCallback callback) override;
-  PrefetchGCMHandler* GetOrCreatePrefetchGCMHandler(
-      content::BrowserContext* context) override;
+  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
   OfflineEventLogger* GetLogger() override;
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchDispatcher* GetPrefetchDispatcher() override;
