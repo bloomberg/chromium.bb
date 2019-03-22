@@ -1834,8 +1834,8 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
 std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalRequest request) {
-  auto pair = client_->CreatePortal(request.PassMessagePipe());
+    mojom::blink::PortalAssociatedRequest request) {
+  auto pair = client_->CreatePortal(request.PassHandle());
   WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
   portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
                                     g_null_atom);

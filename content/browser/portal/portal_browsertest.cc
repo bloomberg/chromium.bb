@@ -21,7 +21,7 @@
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,7 +41,7 @@ class PortalInterceptorForTesting final
  public:
   static PortalInterceptorForTesting* Create(
       RenderFrameHostImpl* render_frame_host_impl,
-      blink::mojom::PortalRequest request);
+      blink::mojom::PortalAssociatedRequest request);
   static PortalInterceptorForTesting* From(content::Portal* portal);
 
   void Activate(blink::TransferableMessage data,
@@ -86,12 +86,13 @@ class PortalInterceptorForTesting final
 // static
 PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
     RenderFrameHostImpl* render_frame_host_impl,
-    blink::mojom::PortalRequest request) {
+    blink::mojom::PortalAssociatedRequest request) {
   auto test_portal_ptr =
       base::WrapUnique(new PortalInterceptorForTesting(render_frame_host_impl));
   PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
   test_portal->GetPortal()->SetBindingForTesting(
-      mojo::MakeStrongBinding(std::move(test_portal_ptr), std::move(request)));
+      mojo::MakeStrongAssociatedBinding(std::move(test_portal_ptr),
+                                        std::move(request)));
   return test_portal;
 }
 
@@ -123,7 +124,7 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
     return render_frame_host_impl_;
   }
 
-  void CreatePortal(blink::mojom::PortalRequest request,
+  void CreatePortal(blink::mojom::PortalAssociatedRequest request,
                     CreatePortalCallback callback) override {
     PortalInterceptorForTesting* portal_interceptor =
         PortalInterceptorForTesting::Create(render_frame_host_impl_,

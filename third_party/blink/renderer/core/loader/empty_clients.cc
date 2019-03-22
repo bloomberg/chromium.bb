@@ -154,7 +154,7 @@ LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
 
 std::pair<RemoteFrame*, base::UnguessableToken>
 EmptyLocalFrameClient::CreatePortal(HTMLPortalElement*,
-                                    mojom::blink::PortalRequest) {
+                                    mojom::blink::PortalAssociatedRequest) {
   return std::pair<RemoteFrame*, base::UnguessableToken>(
       nullptr, base::UnguessableToken());
 }

@@ -368,7 +368,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                HTMLFrameOwnerElement*);
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalRequest);
+      mojom::blink::PortalAssociatedRequest);
 
   void DidChangeContentsSize(const IntSize&);
 

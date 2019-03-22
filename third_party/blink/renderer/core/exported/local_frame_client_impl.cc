@@ -835,8 +835,9 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
 }
 
 std::pair<RemoteFrame*, base::UnguessableToken>
-LocalFrameClientImpl::CreatePortal(HTMLPortalElement* portal,
-                                   mojom::blink::PortalRequest request) {
+LocalFrameClientImpl::CreatePortal(
+    HTMLPortalElement* portal,
+    mojom::blink::PortalAssociatedRequest request) {
   return web_frame_->CreatePortal(portal, std::move(request));
 }
 

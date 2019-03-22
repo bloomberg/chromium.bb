@@ -3799,9 +3799,9 @@ void RenderFrameHostImpl::CreateNewWindow(
                           std::move(reply));
 }
 
-void RenderFrameHostImpl::CreatePortal(blink::mojom::PortalRequest request,
-                                       CreatePortalCallback callback) {
-  // We don't support attaching a portal inside a nested browsing context.
+void RenderFrameHostImpl::CreatePortal(
+    blink::mojom::PortalAssociatedRequest request,
+    CreatePortalCallback callback) {
   if (frame_tree_node()->parent()) {
     mojo::ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");

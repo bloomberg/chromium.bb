@@ -70,7 +70,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   Member<RemoteFrame> portal_frame_;
 
-  mojom::blink::PortalPtr portal_ptr_;
+  mojom::blink::PortalAssociatedPtr portal_ptr_;
 };
 
 }  // namespace blink
