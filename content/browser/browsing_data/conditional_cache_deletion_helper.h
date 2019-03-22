@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "url/gurl.h"
@@ -62,7 +62,7 @@ class CONTENT_EXPORT ConditionalCacheDeletionHelper {
   // ERR_IO_PENDING, the |completion_callback| will be invoked when the
   // operation completes.
   int DeleteAndDestroySelfWhenFinished(
-      const net::CompletionCallback& completion_callback);
+      net::CompletionOnceCallback completion_callback);
 
  private:
   friend class base::DeleteHelper<ConditionalCacheDeletionHelper>;
@@ -73,7 +73,7 @@ class CONTENT_EXPORT ConditionalCacheDeletionHelper {
   disk_cache::Backend* cache_;
   const base::Callback<bool(const disk_cache::Entry*)> condition_;
 
-  net::CompletionCallback completion_callback_;
+  net::CompletionOnceCallback completion_callback_;
 
   std::unique_ptr<disk_cache::Backend::Iterator> iterator_;
   disk_cache::Entry* current_entry_;

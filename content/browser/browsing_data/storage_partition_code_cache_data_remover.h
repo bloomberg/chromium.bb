@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "url/gurl.h"
 
 namespace disk_cache {
@@ -70,7 +70,7 @@ class StoragePartitionCodeCacheDataRemover {
   // Executed on IO thread.
   void ClearJSCodeCache();
   void ClearWASMCodeCache(int rv);
-  void ClearCache(net::CompletionCallback callback,
+  void ClearCache(net::CompletionOnceCallback callback,
                   disk_cache::Backend* backend);
   void DoneClearCodeCache(int rv);
 
