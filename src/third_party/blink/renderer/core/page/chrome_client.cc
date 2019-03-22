@@ -105,10 +105,14 @@ Page* ChromeClient::CreateWindow(
     NavigationPolicy navigation_policy,
     SandboxFlags sandbox_flags,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
+// Popups during page unloading is a feature being put behind a policy and
+// needing an easily-mergeable change. See https://crbug.com/936080 .
+#if 0
   if (!CanOpenUIElementIfDuringPageDismissal(
           frame->Tree().Top(), UIElementType::kPopup, g_empty_string)) {
     return nullptr;
   }
+#endif
 
   return CreateWindowDelegate(frame, r, features, navigation_policy,
                               sandbox_flags, session_storage_namespace_id);
