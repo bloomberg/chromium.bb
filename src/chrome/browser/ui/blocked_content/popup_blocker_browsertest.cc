@@ -427,6 +427,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(1, GetBlockedContentsCount());
 }
 
+// Popups during page unloading is a feature being put behind a policy and
+// needing an easily-mergeable change. See https://crbug.com/936080 .
+#if 0
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
@@ -440,6 +443,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   // Expect no popup.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
+#endif
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
