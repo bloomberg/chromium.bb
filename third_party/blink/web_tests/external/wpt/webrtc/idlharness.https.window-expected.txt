@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 421 PASS, 85 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 419 PASS, 87 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 PASS Test driver for asyncInitTransports
@@ -372,10 +372,10 @@ PASS RTCTrackEvent interface: initTrackEvent() must inherit property "receiver" 
 PASS RTCTrackEvent interface: initTrackEvent() must inherit property "track" with the proper type
 PASS RTCTrackEvent interface: initTrackEvent() must inherit property "streams" with the proper type
 PASS RTCTrackEvent interface: initTrackEvent() must inherit property "transceiver" with the proper type
-PASS RTCSctpTransport interface: existence and properties of interface object
+FAIL RTCSctpTransport interface: existence and properties of interface object assert_equals: prototype of RTCSctpTransport is not EventTarget expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
 PASS RTCSctpTransport interface object length
 PASS RTCSctpTransport interface object name
-PASS RTCSctpTransport interface: existence and properties of interface prototype object
+FAIL RTCSctpTransport interface: existence and properties of interface prototype object assert_equals: prototype of RTCSctpTransport.prototype is not EventTarget.prototype expected object "[object EventTarget]" but got object "[object Object]"
 PASS RTCSctpTransport interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCSctpTransport interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCSctpTransport interface: attribute transport
