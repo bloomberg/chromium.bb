@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
@@ -481,11 +482,11 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
     if (tapped_element)
       text_run_length = tapped_element->textContent().length();
 
-    // Compute the style of the tapped node to extract text characteristics.
-    const ComputedStyle* style = tapped_node->EnsureComputedStyle();
     int font_size = 0;
-    if (style)
+    // Extract text characteristics from the computed style of the tapped node.
+    if (const ComputedStyle* style = tapped_node->GetComputedStyle())
       font_size = style->FontSize();
+
     // TODO(donnd): get the text color and style and return,
     // e.g. style->GetFontWeight() to return bold.  Need italic, color, etc.
 
