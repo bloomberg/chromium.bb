@@ -5938,7 +5938,6 @@ crbug.com/934636 virtual/outofblink-cors/http/tests/security/cross-origin-indexe
 crbug.com/934768 [ Mac ] http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
 crbug.com/934768 [ Mac ] virtual/threaded/http/tests/devtools/tracing/worker-events.js [ Failure Pass ]
 crbug.com/934818 [ Mac Debug ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
-crbug.com/935027 http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Crash Pass ]
 
 # Sheriff 2019-02-25
 crbug.com/935587 [ Mac ] virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure Pass ]
