@@ -1086,6 +1086,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckTest) {
 
 // Tests that after disabling spellchecking, spelling in new out-of-process
 // subframes is not checked. See crbug.com/789273 for details.
+// https://crbug.com/944428
+#if defined(OS_MACOSX)
+#define MAYBE_OOPIFDisabledSpellCheckTest DISABLED_OOPIFDisabledSpellCheckTest
+#else
+#define MAYBE_OOPIFDisabledSpellCheckTest OOPIFDisabledSpellCheckTest
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
   TestBrowserClientForSpellCheck browser_client;
   content::ContentBrowserClient* old_browser_client =
