@@ -4,7 +4,7 @@
 
 module video_capture.mojom;
 
-import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
+import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
 import "services/video_capture/public/mojom/device_factory.mojom";
 import "services/video_capture/public/mojom/video_source_provider.mojom";
 

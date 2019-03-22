@@ -10,8 +10,8 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "media/capture/video/video_capture_device.h"
-#include "media/mojo/interfaces/jpeg_decode_accelerator.mojom.h"
 #include "media/mojo/interfaces/jpeg_encode_accelerator.mojom.h"
+#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 
 namespace media {
 
