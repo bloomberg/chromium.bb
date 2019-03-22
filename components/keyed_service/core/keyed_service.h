@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_H_
 #define COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
 // Interface for keyed services that support two-phase destruction order.
@@ -22,6 +23,9 @@ class KEYED_SERVICE_EXPORT KeyedService {
 
   // The first pass is to call Shutdown on a KeyedService.
   virtual void Shutdown();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyedService);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_H_

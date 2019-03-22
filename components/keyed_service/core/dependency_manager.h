@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.h"
 #include "components/keyed_service/core/dependency_graph.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
@@ -91,6 +92,8 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   // locations in memory so we can nicely assert if we're asked to do anything
   // with them.
   std::set<void*> dead_context_pointers_;
+
+  DISALLOW_COPY_AND_ASSIGN(DependencyManager);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_MANAGER_H_
