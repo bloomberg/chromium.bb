@@ -354,7 +354,9 @@ class ExpectationSyntaxTests(Base):
         expectations = expectations or []
         warnings = warnings or []
         line_number = '1'
-        expectation_line = TestExpectationLine.tokenize_line(filename, line, line_number)
+        host = MockHost()
+        expectation_line = TestExpectationLine.tokenize_line(
+            filename, line, line_number, host.port_factory.get('test-win-win7', None))
         self.assertEqual(expectation_line.warnings, warnings)
         self.assertEqual(expectation_line.name, name)
         self.assertEqual(expectation_line.filename, filename)
@@ -386,6 +388,8 @@ class ExpectationSyntaxTests(Base):
         self.assert_tokenize_exp('foo.html [ Slow ]', specifiers=[], expectations=['SLOW'], filename='SlowTests')
         self.assert_tokenize_exp('foo.html [ Timeout Slow ]', specifiers=[], expectations=['SKIP', 'TIMEOUT'], warnings=[
                                  'Only SLOW expectations are allowed in SlowTests'], filename='SlowTests')
+        self.assert_tokenize_exp('external/wpt/foo.html [ Slow ]', name='external/wpt/foo.html', specifiers=[], expectations=['SLOW'], warnings=[
+                                 'WPT should not be added to SlowTests; they should be marked as slow inside the test (see https://web-platform-tests.org/writing-tests/testharness-api.html#harness-timeout)'], filename='SlowTests')
 
     def test_wontfix(self):
         self.assert_tokenize_exp(
@@ -778,7 +782,8 @@ class TestExpectationSerializationTests(unittest.TestCase):
         unittest.TestCase.__init__(self, testFunc)
 
     def _tokenize(self, line):
-        return TestExpectationLine.tokenize_line('path', line, 0)
+        host = MockHost()
+        return TestExpectationLine.tokenize_line('path', line, 0, host.port_factory.get('test-win-win7', None))
 
     def assert_round_trip(self, in_string, expected_string=None):
         expectation = self._tokenize(in_string)
