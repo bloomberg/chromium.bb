@@ -100,6 +100,15 @@ void FlushQueue() {
 
 }  // namespace
 
+struct ViewAXPlatformNodeDelegate::ChildWidgetsResult {
+  std::vector<Widget*> child_widgets;
+
+  // Set to true if, instead of populating |child_widgets| normally, a single
+  // child widget was returned (e.g. a dialog that should be read instead of
+  // the rest of the page contents).
+  bool is_tab_modal_showing;
+};
+
 // static
 int ViewAXPlatformNodeDelegate::menu_depth_ = 0;
 
@@ -228,17 +237,13 @@ int ViewAXPlatformNodeDelegate::GetChildCount() {
   if (virtual_child_count())
     return virtual_child_count();
 
-  int child_count = view()->child_count();
-  std::vector<Widget*> child_widgets;
-  bool is_tab_modal_showing;
-  PopulateChildWidgetVector(&child_widgets, &is_tab_modal_showing);
-  if (is_tab_modal_showing) {
-    DCHECK_EQ(child_widgets.size(), 1ULL);
+  const auto child_widgets_result = GetChildWidgets();
+  if (child_widgets_result.is_tab_modal_showing) {
+    DCHECK_EQ(child_widgets_result.child_widgets.size(), 1ULL);
     return 1;
   }
-  child_count += child_widgets.size();
-
-  return child_count;
+  return static_cast<int>(view()->children().size() +
+                          child_widgets_result.child_widgets.size());
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
@@ -252,13 +257,12 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     return virtual_child_at(index)->GetNativeObject();
 
   // If this is a root view, our widget might have child widgets. Include
-  std::vector<Widget*> child_widgets;
-  bool is_tab_modal_showing;
-  PopulateChildWidgetVector(&child_widgets, &is_tab_modal_showing);
+  const auto child_widgets_result = GetChildWidgets();
+  const auto& child_widgets = child_widgets_result.child_widgets;
 
   // If a visible tab modal dialog is present, ignore |index| and return the
   // dialog.
-  if (is_tab_modal_showing) {
+  if (child_widgets_result.is_tab_modal_showing) {
     DCHECK_EQ(child_widgets.size(), 1ULL);
     return child_widgets[0]->GetRootView()->GetNativeViewAccessible();
   }
@@ -310,10 +314,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
     return GetNativeObject();
 
   // Search child widgets first, since they're on top in the z-order.
-  std::vector<Widget*> child_widgets;
-  bool is_tab_modal_showing;
-  PopulateChildWidgetVector(&child_widgets, &is_tab_modal_showing);
-  for (Widget* child_widget : child_widgets) {
+  for (Widget* child_widget : GetChildWidgets().child_widgets) {
     View* child_root_view = child_widget->GetRootView();
     gfx::Point point(x, y);
     View::ConvertPointFromScreen(child_root_view, &point);
@@ -384,26 +385,24 @@ const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
 
-void ViewAXPlatformNodeDelegate::PopulateChildWidgetVector(
-    std::vector<Widget*>* result_child_widgets,
-    bool* is_tab_modal_showing) {
+ViewAXPlatformNodeDelegate::ChildWidgetsResult
+ViewAXPlatformNodeDelegate::GetChildWidgets() const {
   // Only attach child widgets to the root view.
   Widget* widget = view()->GetWidget();
   // Note that during window close, a Widget may exist in a state where it has
   // no NativeView, but hasn't yet torn down its view hierarchy.
-  if (!widget || !widget->GetNativeView() || widget->GetRootView() != view()) {
-    *is_tab_modal_showing = false;
-    return;
-  }
+  if (!widget || !widget->GetNativeView() || widget->GetRootView() != view())
+    return {{}, false};
 
   const views::FocusManager* focus_manager = view()->GetFocusManager();
   const views::View* focused_view =
       focus_manager ? focus_manager->GetFocusedView() : nullptr;
 
-  std::set<Widget*> child_widgets;
-  Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widgets);
-  for (auto iter = child_widgets.begin(); iter != child_widgets.end(); ++iter) {
-    Widget* child_widget = *iter;
+  std::set<Widget*> child_widget_set;
+  Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widget_set);
+
+  std::vector<Widget*> child_widgets;
+  for (Widget* child_widget : child_widget_set) {
     DCHECK_NE(widget, child_widget);
 
     if (!child_widget->IsVisible())
@@ -415,16 +414,12 @@ void ViewAXPlatformNodeDelegate::PopulateChildWidgetVector(
     // Focused child widgets should take the place of the web page they cover in
     // the accessibility tree.
     if (ViewAccessibilityUtils::IsFocusedChildWidget(child_widget,
-                                                     focused_view)) {
-      result_child_widgets->clear();
-      result_child_widgets->push_back(child_widget);
-      *is_tab_modal_showing = true;
-      return;
-    }
+                                                     focused_view))
+      return {{child_widget}, true};
 
-    result_child_widgets->push_back(child_widget);
+    child_widgets.push_back(child_widget);
   }
-  *is_tab_modal_showing = false;
+  return {child_widgets, false};
 }
 
 }  // namespace views
