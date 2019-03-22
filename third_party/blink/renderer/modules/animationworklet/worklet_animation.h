@@ -129,8 +129,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void SetOutputState(
       const AnimationWorkletOutput::AnimationState& state) override;
 
-  base::Optional<base::TimeDelta> CurrentTime() const;
-
   void SetRunningOnMainThreadForTesting(bool running_on_main_thread) {
     running_on_main_thread_ = running_on_main_thread;
   }
@@ -140,6 +138,12 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
  private:
   void DestroyCompositorAnimation();
+  bool IsTimelineActive() const;
+  base::Optional<base::TimeDelta> CurrentTime();
+  base::Optional<base::TimeDelta> CurrentTimeInternal() const;
+  void UpdateCurrentTimeIfNeeded();
+  bool IsCurrentTimeInitialized() const;
+  base::Optional<base::TimeDelta> InitialCurrentTime() const;
 
   // Attempts to start the animation on the compositor side, returning true if
   // it succeeds or false otherwise. If false is returned and the animation
@@ -156,10 +160,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // the start time or the hold time so that the computed current time is
   // matched.
   //
-  // The exception to this are scroll-linked animations whose start time is not
-  // modifiable (always zero) in which case the post setting the current time,
-  // the computed current time may not match it.
-  //
   // Generally, when an animation play state transitions, we expect to see the
   // current time is set. Here are some interesting examples of this:
   //  - when transitioning to play, the current time is either set to
@@ -170,11 +170,8 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   //  current time for holding.
   void SetCurrentTime(base::Optional<base::TimeDelta> current_time);
 
-  // For DocumentTimeline animations, adjusts start_time_ according to playback
-  // rate change to preserve current time and avoid the animation output from
-  // jumping.
-  // Setting playback rate is currently not supported for scroll-linked
-  // animations.
+  // Adjusts start_time_ according to playback rate change to preserve current
+  // time and avoid the animation output from jumping.
   void SetPlaybackRateInternal(double);
 
   // Updates a running animation on the compositor side.
@@ -204,9 +201,15 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // Hold time is used when animation is paused.
   // TODO(majidvp): Replace base::TimeDelta usage with AnimationTimeDelta.
   base::Optional<base::TimeDelta> hold_time_;
+  // Keeps last set or calculated current time. It's used as a hold time when
+  // the timeline is inactive.
+  base::Optional<base::TimeDelta> last_current_time_;
+  // Indicates if the timeline was active when the current time was calculated
+  // last time.
+  bool was_timeline_active_;
   // We use this to skip updating if current time has not changed since last
   // update.
-  base::Optional<base::TimeDelta> last_current_time_;
+  base::Optional<base::TimeDelta> last_input_update_current_time_;
   // Time the main thread sends a peek request.
   base::Optional<base::TimeDelta> last_peek_request_time_;
 

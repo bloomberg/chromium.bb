@@ -93,7 +93,7 @@ DocumentTimeline::DocumentTimeline(Document* document,
   DCHECK(document);
 }
 
-bool DocumentTimeline::IsActive() {
+bool DocumentTimeline::IsActive() const {
   return document_->GetPage();
 }
 
