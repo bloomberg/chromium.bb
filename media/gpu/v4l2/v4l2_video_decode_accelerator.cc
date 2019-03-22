@@ -2506,13 +2506,6 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
     return false;
   }
 
-  std::vector<base::ScopedFD> output_fds;
-  if (output_mode_ == Config::OutputMode::IMPORT) {
-    output_fds = DuplicateFDs(output_record.output_frame->DmabufFds());
-    if (output_fds.empty())
-      return false;
-  }
-
   // Keep reference to the IP input until the frame is processed
   buffers_at_ip_.push(std::make_pair(bitstream_buffer_id, buf));
 
@@ -2527,7 +2520,7 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
                        buf->BufferId()));
   } else {
     image_processor_->Process(
-        input_frame, buf->BufferId(), std::move(output_fds),
+        input_frame,
         base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
                        base::Unretained(this), bitstream_buffer_id));
   }

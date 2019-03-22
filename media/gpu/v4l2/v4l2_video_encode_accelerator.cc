@@ -397,10 +397,9 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
         // We have to bind |weak_this| for FrameProcessed, because child
         // thread is outlive this V4L2VideoEncodeAccelerator.
         if (!image_processor_->Process(
-                frame, output_buffer_index, std::vector<base::ScopedFD>(),
-                base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                               weak_this_, force_keyframe,
-                               frame->timestamp()))) {
+                frame, base::BindOnce(
+                           &V4L2VideoEncodeAccelerator::FrameProcessed,
+                           weak_this_, force_keyframe, frame->timestamp()))) {
           NOTIFY_ERROR(kPlatformFailureError);
         }
       }

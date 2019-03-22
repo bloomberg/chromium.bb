@@ -102,8 +102,6 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool LibYUVImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> frame,
-    int output_buffer_index,
-    std::vector<base::ScopedFD> output_dmabuf_fds,
     LegacyFrameReadyCB cb) {
   DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   NOTIMPLEMENTED();

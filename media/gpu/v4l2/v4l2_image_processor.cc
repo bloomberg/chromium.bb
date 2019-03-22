@@ -369,8 +369,6 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
 
 bool V4L2ImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> frame,
-    int output_buffer_index,
-    std::vector<base::ScopedFD> output_dmabuf_fds,
     LegacyFrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
 
@@ -378,24 +376,8 @@ bool V4L2ImageProcessor::ProcessInternal(
   job_record->input_frame = frame;
   job_record->legacy_ready_cb = std::move(cb);
 
-  switch (output_memory_type_) {
-    case V4L2_MEMORY_MMAP:
-      if (!output_dmabuf_fds.empty()) {
-        VLOGF(1) << "output_dmabuf_fds must be empty for MMAP output mode";
-        return false;
-      }
-      break;
-
-    case V4L2_MEMORY_DMABUF:
-      job_record->output_frame = VideoFrame::WrapExternalDmabufs(
-          output_layout_, gfx::Rect(output_visible_size_), output_visible_size_,
-          std::move(output_dmabuf_fds), job_record->input_frame->timestamp());
-      job_record->output_buffer_index = output_buffer_index;
-      break;
-
-    default:
-      NOTREACHED();
-      return false;
+  if (output_memory_type_ != V4L2_MEMORY_MMAP) {
+    NOTREACHED();
   }
 
   // Since device_thread_ is owned by this class. base::Unretained(this) and the
@@ -745,8 +727,6 @@ void V4L2ImageProcessor::Dequeue() {
     std::unique_ptr<JobRecord> job_record = std::move(running_jobs_.front());
     running_jobs_.pop();
 
-    int output_index;
-
     scoped_refptr<VideoFrame> output_frame;
     switch (output_memory_type_) {
       case V4L2_MEMORY_MMAP:
@@ -756,7 +736,6 @@ void V4L2ImageProcessor::Dequeue() {
         output_frame = VideoFrame::WrapVideoFrame(
             output_frame, output_frame->format(), output_frame->visible_rect(),
             output_frame->natural_size());
-        output_index = buffer->BufferId();
         output_frame->AddDestructionObserver(BindToCurrentLoop(
             base::BindOnce(&V4L2ImageProcessor::V4L2VFDestructionObserver,
                            weak_this_factory_.GetWeakPtr(), buffer)));
@@ -764,7 +743,6 @@ void V4L2ImageProcessor::Dequeue() {
 
       case V4L2_MEMORY_DMABUF:
         output_frame = std::move(job_record->output_frame);
-        output_index = job_record->output_buffer_index;
         break;
 
       default:
@@ -776,7 +754,7 @@ void V4L2ImageProcessor::Dequeue() {
 
     if (!job_record->legacy_ready_cb.is_null()) {
       std::move(job_record->legacy_ready_cb)
-          .Run(output_index, std::move(output_frame));
+          .Run(buffer->BufferId(), std::move(output_frame));
     } else {
       std::move(job_record->ready_cb).Run(std::move(output_frame));
     }
