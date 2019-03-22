@@ -280,6 +280,7 @@ class LitePage(IntegrationTest):
   # Verifies Lo-Fi fallback via the page-policies server directive.
   # Note: this test is for the CPAT protocol change in M-61.
   @ChromeVersionEqualOrAfterM(61)
+  @ChromeVersionBeforeM(75)
   def testLitePageFallbackViaPagePolicies(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')

@@ -78,6 +78,7 @@ class LoFi(IntegrationTest):
   # Checks that LoFi images are served when LoFi slow connections are used and
   # the network quality estimator returns Slow2G.
   @ChromeVersionEqualOrAfterM(65)
+  @ChromeVersionBeforeM(75)
   def testLoFiOnSlowConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -150,6 +151,7 @@ class LoFi(IntegrationTest):
   # Checks that LoFi images are NOT served when the network quality estimator
   # returns fast connection.
   @ChromeVersionEqualOrAfterM(65)
+  @ChromeVersionBeforeM(75)
   def testLoFiFastConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -315,6 +317,7 @@ class LoFi(IntegrationTest):
   # load should not pick the Lo-Fi placeholder from cache and original image
   # should be loaded.
   @ChromeVersionEqualOrAfterM(65)
+  @ChromeVersionBeforeM(75)
   def testLoFiCacheBypass(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
@@ -434,6 +437,7 @@ class LoFi(IntegrationTest):
 
   # Checks that Client LoFi resource requests have the Intervention header.
   @ChromeVersionEqualOrAfterM(61)
+  @ChromeVersionBeforeM(75)
   def testClientLoFiInterventionHeader(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
@@ -461,6 +465,7 @@ class LoFi(IntegrationTest):
   # Checks that Client LoFi range requests that go through the Data Reduction
   # Proxy are returned correctly.
   @ChromeVersionEqualOrAfterM(62)
+  @ChromeVersionBeforeM(75)
   def testClientLoFiRangeRequestThroughDataReductionProxy(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
