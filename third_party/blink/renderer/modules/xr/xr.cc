@@ -271,13 +271,16 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
 void XR::DispatchRequestSession(PendingSessionQuery* query) {
   if (!device_) {
+    // If we don't have a device by the time we reach this call, there is no XR
+    // hardware. Attempt to create a sensorless session.
+    // TODO(https://crbug.com/944987): When device_ is eliminated, unify with
+    // OnRequestSessionReturned() and inline CreateSensorlessInlineSession().
     if (query->mode == XRSession::kModeInline) {
-      CreateInlineIdentitySession(query);
+      XRSession* session = CreateSensorlessInlineSession();
+      query->resolver->Resolve(session);
       return;
     }
 
-    // If we don't have a device by the time we reach this call it indicates
-    // that there's no WebXR hardware. Reject as not supported.
     query->resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return;
@@ -373,8 +376,13 @@ void XR::OnRequestSessionReturned(
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
   if (!session_ptr) {
+    // |device_| does not support the requested mode. Attempt to create a
+    // sensorless session.
+    // TODO(https://crbug.com/944987): When device_ is eliminated, unify with
+    // DispatchRequestSession() and inline CreateSensorlessInlineSession().
     if (query->mode == XRSession::kModeInline) {
-      CreateInlineIdentitySession(query);
+      XRSession* session = CreateSensorlessInlineSession();
+      query->resolver->Resolve(session);
       return;
     }
 
@@ -394,14 +402,14 @@ void XR::OnRequestSessionReturned(
   DCHECK(!environment_integration || session_ptr->display_info->capabilities
                                          ->canProvideEnvironmentIntegration);
 
+  // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
-  XRSession* session = MakeGarbageCollected<XRSession>(
-      this, std::move(session_ptr->client_request), query->mode, blend_mode);
-  session->SetXRDisplayInfo(std::move(session_ptr->display_info));
-  sessions_.insert(session);
+  XRSession* session = CreateSession(query->mode, blend_mode,
+                                     std::move(session_ptr->client_request),
+                                     std::move(session_ptr->display_info));
 
   if (query->mode == XRSession::kModeImmersiveVR ||
       query->mode == XRSession::kModeImmersiveAR) {
@@ -459,12 +467,27 @@ void XR::ContextDestroyed(ExecutionContext*) {
   Dispose();
 }
 
-void XR::CreateInlineIdentitySession(PendingSessionQuery* query) {
-  XRSession* session =
-      MakeGarbageCollected<XRSession>(this, nullptr /* client request */,
-                                      query->mode, XRSession::kBlendModeOpaque);
+// A session is always created and returned.
+XRSession* XR::CreateSession(
+    XRSession::SessionMode mode,
+    XRSession::EnvironmentBlendMode blend_mode,
+    device::mojom::blink::XRSessionClientRequest client_request,
+    device::mojom::blink::VRDisplayInfoPtr display_info) {
+  XRSession* session = MakeGarbageCollected<XRSession>(
+      this, client_request ? std::move(client_request) : nullptr, mode,
+      blend_mode);
+  if (display_info)
+    session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);
-  query->resolver->Resolve(session);
+  return session;
+}
+
+XRSession* XR::CreateSensorlessInlineSession() {
+  // TODO(https://crbug.com/944936): The blend mode could be "additive".
+  XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
+  return CreateSession(XRSession::kModeInline, blend_mode,
+                       nullptr /* client request */,
+                       nullptr /* display_info */);
 }
 
 void XR::Dispose() {

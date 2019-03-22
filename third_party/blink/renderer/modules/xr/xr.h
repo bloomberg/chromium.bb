@@ -107,7 +107,12 @@ class XR final : public EventTargetWithInlineData,
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
-  void CreateInlineIdentitySession(PendingSessionQuery*);
+  XRSession* CreateSession(
+      XRSession::SessionMode mode,
+      XRSession::EnvironmentBlendMode blend_mode,
+      device::mojom::blink::XRSessionClientRequest client_request,
+      device::mojom::blink::VRDisplayInfoPtr display_info);
+  XRSession* CreateSensorlessInlineSession();
 
   void Dispose();
 
