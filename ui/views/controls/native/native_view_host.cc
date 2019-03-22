@@ -20,11 +20,7 @@ const char kWidgetNativeViewHostKey[] = "WidgetNativeViewHost";
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHost, public:
 
-NativeViewHost::NativeViewHost()
-    : native_view_(nullptr),
-      fast_resize_(false),
-      fast_resize_at_last_layout_(false),
-      resize_background_color_(SK_ColorWHITE) {}
+NativeViewHost::NativeViewHost() = default;
 
 NativeViewHost::~NativeViewHost() {
   // As part of deleting NativeViewHostWrapper the native view is unparented.
@@ -150,7 +146,7 @@ void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
   // It would be nice if this used some approximation of the page's
   // current background color.
   if (native_wrapper_->HasInstalledClip())
-    canvas->FillRect(GetLocalBounds(), resize_background_color_);
+    canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
 }
 
 void NativeViewHost::VisibilityChanged(View* starting_from, bool is_visible) {
