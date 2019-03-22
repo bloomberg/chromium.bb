@@ -1213,6 +1213,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("form-validation-message.html"));
 }
 
+// https://crbug.com/944519
+#if defined(OS_LINUX)
+#define MAYBE_AccessibilityFormValidationMessageRemovedAfterErrorCorrected \
+  DISABLED_AccessibilityFormValidationMessageRemovedAfterErrorCorrected
+#else
+#define MAYBE_AccessibilityFormValidationMessageRemovedAfterErrorCorrected \
+  AccessibilityFormValidationMessageRemovedAfterErrorCorrected
+#endif
 IN_PROC_BROWSER_TEST_F(
     DumpAccessibilityTreeTest,
     AccessibilityFormValidationMessageRemovedAfterErrorCorrected) {
