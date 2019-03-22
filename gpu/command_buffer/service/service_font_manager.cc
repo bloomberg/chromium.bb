@@ -39,6 +39,9 @@ class Deserializer {
     if (!AlignMemory(size, 16))
       return false;
 
+    if (size > memory_size_ - bytes_read_)
+      return false;
+
     if (!strike_client->readStrikeData(memory_, size))
       return false;
 
