@@ -1234,7 +1234,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
 // Check that stored entries are shown no matter what the preference for saving
 // passwords is.
-- (void)testStoredEntriesAlwaysShown {
+// TODO(crbug.com/944561): Disabled due to failing on first try consistently and
+// only passing on the retry.
+- (void)DISABLED_testStoredEntriesAlwaysShown {
   SaveExamplePasswordForm();
 
   PasswordForm blacklisted;
