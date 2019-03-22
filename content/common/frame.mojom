@@ -329,7 +329,7 @@ interface FrameHost {
   // |pipe| is the pipe to be used for the Portal object. Returns
   // |proxy_routing_id|, which is the routing id of the RenderFrameProxy and
   // |portal_token|, which is the unique identifier for the portal.
-  [Sync] CreatePortal(blink.mojom.Portal& portal)
+  [Sync] CreatePortal(associated blink.mojom.Portal& portal)
       => (int32 proxy_routing_id,
           mojo_base.mojom.UnguessableToken portal_token);
 

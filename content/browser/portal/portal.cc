@@ -38,11 +38,11 @@ bool Portal::IsEnabled() {
 
 // static
 Portal* Portal::Create(RenderFrameHostImpl* owner_render_frame_host,
-                       blink::mojom::PortalRequest request) {
+                       blink::mojom::PortalAssociatedRequest request) {
   auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
   Portal* portal = portal_ptr.get();
-  portal->binding_ =
-      mojo::MakeStrongBinding(std::move(portal_ptr), std::move(request));
+  portal->binding_ = mojo::MakeStrongAssociatedBinding(std::move(portal_ptr),
+                                                       std::move(request));
   return portal;
 }
 
@@ -145,7 +145,7 @@ WebContentsImpl* Portal::GetPortalContents() {
 }
 
 void Portal::SetBindingForTesting(
-    mojo::StrongBindingPtr<blink::mojom::Portal> binding) {
+    mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding) {
   binding_ = binding;
 }
 
