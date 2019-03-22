@@ -6053,6 +6053,50 @@ fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
   ]
 }
 
+fuzzer_test("net_cert_ocsp_parse_ocsp_cert_id_fuzzer") {
+  sources = [
+    "cert/internal/ocsp_parse_ocsp_cert_id_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/parse_ocsp_cert_id_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_ocsp_parse_ocsp_single_response_fuzzer") {
+  sources = [
+    "cert/internal/ocsp_parse_ocsp_single_response_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/parse_ocsp_single_response_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_ocsp_parse_ocsp_response_data_fuzzer") {
+  sources = [
+    "cert/internal/ocsp_parse_ocsp_response_data_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/parse_ocsp_response_data_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_cert_ocsp_parse_ocsp_response_fuzzer") {
+  sources = [
+    "cert/internal/ocsp_parse_ocsp_response_fuzzer.cc",
+  ]
+  seed_corpus = "data/fuzzer_data/parse_ocsp_response_fuzzer"
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_cert_parse_certificate_fuzzer") {
   sources = [
     "cert/internal/parse_certificate_fuzzer.cc",
