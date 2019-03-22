@@ -53,14 +53,6 @@
 
 namespace blink {
 
-std::unique_ptr<DedicatedWorkerObjectProxy> DedicatedWorkerObjectProxy::Create(
-    DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
-    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
-  DCHECK(messaging_proxy_weak_ptr);
-  return base::WrapUnique(new DedicatedWorkerObjectProxy(
-      messaging_proxy_weak_ptr, parent_execution_context_task_runners));
-}
-
 DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() = default;
 
 void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(

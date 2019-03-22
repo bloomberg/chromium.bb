@@ -357,9 +357,8 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
       (kFadeDuration + extra_duration_required).InSecondsF(),
       WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0, timing_function));
 
-  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-      CompositorKeyframeModel::Create(
-          *curve, compositor_target_property::OPACITY, 0, 0);
+  auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
+      *curve, compositor_target_property::OPACITY, 0, 0);
 
   compositor_animation_->AddKeyframeModel(std::move(keyframe_model));
 

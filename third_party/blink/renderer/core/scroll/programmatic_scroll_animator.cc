@@ -132,10 +132,8 @@ void ProgrammaticScrollAnimator::UpdateCompositorAnimations() {
     // crbug.com/730705
     if (!scrollable_area_->ShouldScrollOnMainThread() &&
         !is_sequenced_scroll_) {
-      std::unique_ptr<CompositorKeyframeModel> animation =
-          CompositorKeyframeModel::Create(
-              *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0,
-              0);
+      auto animation = std::make_unique<CompositorKeyframeModel>(
+          *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0, 0);
 
       int animation_id = animation->Id();
       int animation_group_id = animation->Group();

@@ -706,8 +706,8 @@ void CompositorAnimations::GetAnimationOnCompositor(
     }
     DCHECK(curve.get());
 
-    std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-        CompositorKeyframeModel::Create(*curve, target_property, group, 0);
+    auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
+        *curve, target_property, 0, group);
 
     if (start_time)
       keyframe_model->SetStartTime(start_time.value());
