@@ -28,6 +28,18 @@ class AddressPhoneFormLabelFormatter : public LabelFormatter {
 
   std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const override;
+
+ private:
+  // Returns a label to show the user. The contents of the label and their
+  // ordering depend on the data in |profile| and on the |focused_group|.
+  base::string16 GetLabelForFocusedGroup(const AutofillProfile& profile,
+                                         FieldTypeGroup group) const;
+
+  // True if this formatter's associated form has a street address field. A
+  // form may have an address-related field, e.g. zip code, without having a
+  // street address field. If a form does not include a street address field,
+  // street addresses should not appear in labels.
+  bool form_has_street_address_;
 };
 
 }  // namespace autofill

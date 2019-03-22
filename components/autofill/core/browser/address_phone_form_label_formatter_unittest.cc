@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/address_email_form_label_formatter.h"
+#include "components/autofill/core/browser/address_phone_form_label_formatter.h"
 
 #include <memory>
 #include <string>
@@ -26,24 +26,35 @@ namespace autofill {
 namespace {
 
 std::vector<ServerFieldType> GetFieldTypes() {
-  return {NAME_FULL,
-          EMAIL_ADDRESS,
-          ADDRESS_BILLING_LINE1,
-          ADDRESS_BILLING_LINE2,
-          ADDRESS_BILLING_CITY,
-          ADDRESS_BILLING_STATE,
-          ADDRESS_BILLING_ZIP,
-          ADDRESS_BILLING_COUNTRY};
+  return {UNKNOWN_TYPE,       NAME_FULL,          PHONE_HOME_WHOLE_NUMBER,
+          ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2, ADDRESS_HOME_CITY,
+          ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP,   ADDRESS_HOME_COUNTRY};
 }
 
-TEST(AddressEmailFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
+TEST(AddressPhoneFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", NAME_BILLING_FULL, GetFieldTypes());
+      LabelFormatter::Create("en-US", NAME_FULL, GetFieldTypes());
   EXPECT_TRUE(formatter->GetLabels(std::vector<AutofillProfile*>()).empty());
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedNonAddressNonEmail) {
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForUSProfilesAndFocusedNoGroup) {
+  AutofillProfile profile1 =
+      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
+                       "333 Washington St", "", "Brookline", "MA", "02445",
+                       "US", "16177302000");
+
+  const std::unique_ptr<LabelFormatter> formatter =
+      LabelFormatter::Create("en-US", NO_SERVER_DATA, GetFieldTypes());
+
+  EXPECT_THAT(
+      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
+      ElementsAre(FormatExpectedLabel("(617) 730-2000", "333 Washington St")));
+}
+
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForUSProfilesAndFocusedNonAddressNonPhone) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -58,26 +69,26 @@ TEST(AddressEmailFormLabelFormatterTest,
 
   AutofillProfile profile3 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile3, "Paul", "", "Revere", "paul1775@gmail.com",
-                       "", "", "", "", "", "", "US", "");
+  test::SetProfileInfo(&profile3, "Paul", "", "Revere", "", "", "", "", "", "",
+                       "", "US", "6175232338");
 
   AutofillProfile profile4 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile4, "John", "", "Adams", "", "", "", "", "Quincy",
-                       "MA", "02169", "US", "");
+  test::SetProfileInfo(&profile4, "John", "", "Adams", "", "", "", "", "", "",
+                       "", "US", "");
 
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", NAME_BILLING_FULL, GetFieldTypes());
+      LabelFormatter::Create("en-US", NAME_FULL, GetFieldTypes());
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("333 Washington St", "jfk@gmail.com"),
+      ElementsAre(FormatExpectedLabel("(617) 730-2000", "333 Washington St"),
                   base::ASCIIToUTF16("151 Irving Ave"),
-                  base::ASCIIToUTF16("paul1775@gmail.com"), base::string16()));
+                  base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
+TEST(AddressPhoneFormLabelFormatterTest,
      GetLabelsForUSProfilesAndFocusedAddress) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -93,8 +104,8 @@ TEST(AddressEmailFormLabelFormatterTest,
 
   AutofillProfile profile3 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile3, "", "", "", "paul1775@gmail.com", "", "", "",
-                       "", "", "", "US", "");
+  test::SetProfileInfo(&profile3, "", "", "", "", "", "", "", "", "", "", "US",
+                       "6175232338");
 
   AutofillProfile profile4 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -102,18 +113,18 @@ TEST(AddressEmailFormLabelFormatterTest,
                        "Quincy", "MA", "02169", "US", "");
 
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", ADDRESS_BILLING_LINE1, GetFieldTypes());
+      LabelFormatter::Create("en-US", ADDRESS_HOME_LINE1, GetFieldTypes());
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "jfk@gmail.com"),
+      ElementsAre(FormatExpectedLabel("(617) 730-2000", "John F Kennedy"),
                   base::ASCIIToUTF16("Jackie Kennedy"),
-                  base::ASCIIToUTF16("paul1775@gmail.com"), base::string16()));
+                  base::ASCIIToUTF16("(617) 523-2338"), base::string16()));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
-     GetLabelsForUSProfilesAndFocusedEmail) {
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForUSProfilesAndFocusedPhone) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "John", "F", "Kennedy", "jfk@gmail.com", "",
@@ -122,32 +133,34 @@ TEST(AddressEmailFormLabelFormatterTest,
 
   AutofillProfile profile2 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile2, "Jackie", "", "Kennedy", "jackie@outlook.com",
-                       "", "", "", "Hyannis", "MA", "02601", "US", "");
+  test::SetProfileInfo(&profile2, "Jackie", "", "Kennedy", "", "", "", "", "",
+                       "", "", "US", "");
 
   AutofillProfile profile3 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile3, "", "", "", "paul1775@gmail.com", "", "", "",
-                       "", "", "", "US", "");
+  test::SetProfileInfo(&profile3, "", "", "", "", "", "Paul Revere House",
+                       "19 North Square", "Boston", "MA", "02113", "US",
+                       "6175232338");
 
   AutofillProfile profile4 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile4, "", "", "", "", "", "141 Franklin St", "",
-                       "Quincy", "MA", "02169", "US", "");
+  test::SetProfileInfo(&profile4, "", "", "", "", "", "", "", "", "", "", "US",
+                       "");
 
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", EMAIL_ADDRESS, GetFieldTypes());
+      LabelFormatter::Create("en-US", PHONE_HOME_WHOLE_NUMBER, GetFieldTypes());
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2,
                                                          &profile3, &profile4}),
       ElementsAre(FormatExpectedLabel("John F Kennedy", "333 Washington St"),
-                  base::ASCIIToUTF16("Jackie Kennedy"), base::string16(),
-                  base::ASCIIToUTF16("141 Franklin St")));
+                  base::ASCIIToUTF16("Jackie Kennedy"),
+                  base::ASCIIToUTF16("Paul Revere House, 19 North Square"),
+                  base::string16()));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
-     GetLabelsForBRProfilesAndFocusedNonAddressNonEmail) {
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForBRProfilesAndFocusedNonAddressNonPhone) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",
@@ -163,17 +176,17 @@ TEST(AddressEmailFormLabelFormatterTest,
                        "21987650000");
 
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("pt-BR", NAME_BILLING_FULL, GetFieldTypes());
+      LabelFormatter::Create("pt-BR", NAME_FULL, GetFieldTypes());
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Av. Pedro Álvares Cabral, 1301",
-                                      "tarsila@aol.com"),
-                  FormatExpectedLabel("Estr. Dona Castorina, 110",
-                                      "aavila@uol.com.br")));
+      ElementsAre(
+          FormatExpectedLabel("(11) 2648-0254",
+                              "Av. Pedro Álvares Cabral, 1301"),
+          FormatExpectedLabel("(21) 98765-0000", "Estr. Dona Castorina, 110")));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
+TEST(AddressPhoneFormLabelFormatterTest,
      GetLabelsForBRProfilesAndFocusedAddress) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -190,16 +203,16 @@ TEST(AddressEmailFormLabelFormatterTest,
                        "21987650000");
 
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("pt-BR", ADDRESS_BILLING_LINE1, GetFieldTypes());
+      LabelFormatter::Create("pt-BR", ADDRESS_HOME_LINE1, GetFieldTypes());
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
-      ElementsAre(FormatExpectedLabel("Tarsila do Amaral", "tarsila@aol.com"),
-                  FormatExpectedLabel("Artur Avila", "aavila@uol.com.br")));
+      ElementsAre(FormatExpectedLabel("(11) 2648-0254", "Tarsila do Amaral"),
+                  FormatExpectedLabel("(21) 98765-0000", "Artur Avila")));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
-     GetLabelsForBRProfilesAndFocusedEmail) {
+TEST(AddressPhoneFormLabelFormatterTest,
+     GetLabelsForBRProfilesAndFocusedPhone) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Tarsila", "do", "Amaral", "tarsila@aol.com",
@@ -215,7 +228,7 @@ TEST(AddressEmailFormLabelFormatterTest,
                        "21987650000");
 
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("pt-BR", EMAIL_ADDRESS, GetFieldTypes());
+      LabelFormatter::Create("pt-BR", PHONE_HOME_WHOLE_NUMBER, GetFieldTypes());
 
   EXPECT_THAT(
       formatter->GetLabels(std::vector<AutofillProfile*>{&profile1, &profile2}),
@@ -225,7 +238,7 @@ TEST(AddressEmailFormLabelFormatterTest,
           FormatExpectedLabel("Artur Avila", "Estr. Dona Castorina, 110")));
 }
 
-TEST(AddressEmailFormLabelFormatterTest,
+TEST(AddressPhoneFormLabelFormatterTest,
      GetLabelsForFormWithAddressFieldsMinusStreetAddress) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -233,15 +246,13 @@ TEST(AddressEmailFormLabelFormatterTest,
                        "333 Washington St", "", "Brookline", "MA", "02445",
                        "US", "16177302000");
 
-  const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", EMAIL_ADDRESS,
-                             {NAME_BILLING_FULL, EMAIL_ADDRESS,
-                              ADDRESS_BILLING_CITY, ADDRESS_BILLING_STATE});
+  const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
+      "en-US", PHONE_HOME_WHOLE_NUMBER,
+      {NAME_FULL, PHONE_HOME_WHOLE_NUMBER, ADDRESS_HOME_ZIP});
 
   // Checks that only address fields in the form are shown in the label.
-  EXPECT_THAT(
-      formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
-      ElementsAre(FormatExpectedLabel("John F Kennedy", "Brookline, MA")));
+  EXPECT_THAT(formatter->GetLabels(std::vector<AutofillProfile*>{&profile1}),
+              ElementsAre(FormatExpectedLabel("John F Kennedy", "02445")));
 }
 
 }  // namespace
