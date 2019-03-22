@@ -117,7 +117,8 @@ piex wasm raw image preview / thumbnail test page
     console.log('test:', JSON.stringify(image));
 
     let canvas = document.createElement('canvas');
-    Object.assign(canvas, { image.width, image.height });
+    canvas.width = image.width;
+    canvas.height = image.height;
     if (image.width > (window.screen.availWidth / 2))
       canvas.classList.add('zoom');
 
