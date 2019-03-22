@@ -39,8 +39,8 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
       suspension_db_initialized_(false),
       token_mapping_db_initialized_(false),
       weak_ptr_factory_(this) {
-  ProtoDatabaseProvider* db_provider =
-      ProtoDatabaseProviderFactory::GetForBrowserContext(profile);
+  ProtoDatabaseProvider* db_provider = ProtoDatabaseProviderFactory::GetForKey(
+      profile->GetSimpleFactoryKey(), profile->GetPrefs());
 
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 

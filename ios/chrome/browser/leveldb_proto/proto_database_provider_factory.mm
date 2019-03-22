@@ -22,10 +22,9 @@ ProtoDatabaseProviderFactory* ProtoDatabaseProviderFactory::GetInstance() {
 }
 
 // static
-leveldb_proto::ProtoDatabaseProvider*
-ProtoDatabaseProviderFactory::GetForBrowserState(
+ProtoDatabaseProvider* ProtoDatabaseProviderFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<leveldb_proto::ProtoDatabaseProvider*>(
+  return static_cast<ProtoDatabaseProvider*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -39,9 +38,7 @@ ProtoDatabaseProviderFactory::~ProtoDatabaseProviderFactory() = default;
 std::unique_ptr<KeyedService>
 ProtoDatabaseProviderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  base::FilePath profile_dir = context->GetStatePath();
-  return base::WrapUnique(
-      leveldb_proto::ProtoDatabaseProvider::Create(profile_dir));
+  return std::make_unique<ProtoDatabaseProvider>(context->GetStatePath());
 }
 
 }  // namespace leveldb_proto

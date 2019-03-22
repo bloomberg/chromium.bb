@@ -177,8 +177,7 @@ class ProtoDatabaseImplTest : public testing::Test {
         db_type, db_dir, task_runner, std::move(db_provider));
   }
 
-  void GetDbAndWait(leveldb_proto::ProtoDatabaseProvider* db_provider,
-                    leveldb_proto::ProtoDbType db_type) {
+  void GetDbAndWait(ProtoDatabaseProvider* db_provider, ProtoDbType db_type) {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -189,9 +188,9 @@ class ProtoDatabaseImplTest : public testing::Test {
 
     // Initialize a database, it should succeed.
     db->Init(base::BindOnce(
-        [](base::OnceClosure closure, leveldb_proto::Enums::InitStatus status) {
+        [](base::OnceClosure closure, Enums::InitStatus status) {
           std::move(closure).Run();
-          EXPECT_TRUE(status == leveldb_proto::Enums::InitStatus::kOK);
+          EXPECT_TRUE(status == Enums::InitStatus::kOK);
         },
         run_init.QuitClosure()));
 
@@ -232,8 +231,8 @@ class ProtoDatabaseImplTest : public testing::Test {
                   const std::string& client_name,
                   bool use_shared_db,
                   Callbacks::InitStatusCallback callback) {
-    db_impl->InitInternal(client_name, leveldb_proto::CreateSimpleOptions(),
-                          use_shared_db, std::move(callback));
+    db_impl->InitInternal(client_name, CreateSimpleOptions(), use_shared_db,
+                          std::move(callback));
   }
 
   void InitDBImplAndWait(ProtoDatabaseImpl<TestProto, T>* db_impl,
@@ -948,7 +947,7 @@ TYPED_TEST(ProtoDatabaseImplTest, InitWithOptions) {
                          this->CreateSharedProvider(db_provider.get()));
 
   base::RunLoop run_init;
-  auto options = leveldb_proto::CreateSimpleOptions();
+  auto options = CreateSimpleOptions();
   options.create_if_missing = false;
 
   // Initialize database with unique DB arguments, it should fail because we
@@ -975,13 +974,13 @@ TYPED_TEST(ProtoDatabaseImplTest, InitUniqueTwiceShouldSucceed) {
       {"migrate_TestDatabase1", "false"}, {"migrate_TestDatabase2", "false"}};
   this->SetUpExperimentParams(experiment_params);
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+  auto db_provider =
+      std::make_unique<ProtoDatabaseProvider>(temp_dir_profile.GetPath());
 
   // Initialize a database, it should succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
 }
 
 TYPED_TEST(ProtoDatabaseImplTest, InitUniqueThenSharedShouldSucceed) {
@@ -993,13 +992,13 @@ TYPED_TEST(ProtoDatabaseImplTest, InitUniqueThenSharedShouldSucceed) {
       {"migrate_TestDatabase1", "false"}, {"migrate_TestDatabase2", "true"}};
   this->SetUpExperimentParams(experiment_params);
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+  auto db_provider =
+      std::make_unique<ProtoDatabaseProvider>(temp_dir_profile.GetPath());
 
   // Initialize a database, it should succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
 }
 
 TYPED_TEST(ProtoDatabaseImplTest, InitSharedThenUniqueShouldSucceed) {
@@ -1011,13 +1010,13 @@ TYPED_TEST(ProtoDatabaseImplTest, InitSharedThenUniqueShouldSucceed) {
       {"migrate_TestDatabase1", "true"}, {"migrate_TestDatabase2", "false"}};
   this->SetUpExperimentParams(experiment_params);
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+  auto db_provider =
+      std::make_unique<ProtoDatabaseProvider>(temp_dir_profile.GetPath());
 
   // Initialize a database, it should succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
 }
 
 TYPED_TEST(ProtoDatabaseImplTest, InitSharedTwiceShouldSucceed) {
@@ -1029,13 +1028,13 @@ TYPED_TEST(ProtoDatabaseImplTest, InitSharedTwiceShouldSucceed) {
       {"migrate_TestDatabase1", "true"}, {"migrate_TestDatabase2", "true"}};
   this->SetUpExperimentParams(experiment_params);
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+  auto db_provider =
+      std::make_unique<ProtoDatabaseProvider>(temp_dir_profile.GetPath());
 
   // Initialize a database, it should succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE1);
   // Initialize a second database, it should also succeed.
-  this->GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+  this->GetDbAndWait(db_provider.get(), ProtoDbType::TEST_DATABASE2);
 }
 
 }  // namespace leveldb_proto
