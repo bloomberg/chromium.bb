@@ -222,6 +222,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
 
+  // Manual RTTI to ensure safe downcasts in tests.
+  virtual bool IsTestRenderViewHost() const;
+
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
   // the caller places are in different platforms, in which case it's better

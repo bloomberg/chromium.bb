@@ -87,7 +87,10 @@ TestRenderFrameHost* TestWebContents::GetMainFrame() {
 }
 
 TestRenderViewHost* TestWebContents::GetRenderViewHost() {
-  return static_cast<TestRenderViewHost*>(WebContentsImpl::GetRenderViewHost());
+  auto* instance = WebContentsImpl::GetRenderViewHost();
+  DCHECK(instance->IsTestRenderViewHost())
+      << "You may want to instantiate RenderViewHostTestEnabler.";
+  return static_cast<TestRenderViewHost*>(instance);
 }
 
 TestRenderFrameHost* TestWebContents::GetPendingMainFrame() {

@@ -314,6 +314,10 @@ void TestRenderViewHost::OnWebkitPreferencesChanged() {
     ++*webkit_preferences_changed_counter_;
 }
 
+bool TestRenderViewHost::IsTestRenderViewHost() const {
+  return true;
+}
+
 void TestRenderViewHost::TestOnStartDragging(
     const DropData& drop_data) {
   blink::WebDragOperationsMask drag_operation = blink::kWebDragOperationEvery;
