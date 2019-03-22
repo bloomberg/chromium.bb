@@ -424,7 +424,9 @@ if (is_linux) {
       ]
     }
   }
+}
 
+if (is_fuchsia || is_linux) {
   shared_library("malloc_wrapper") {
     testonly = true
     sources = [

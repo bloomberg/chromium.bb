@@ -2792,11 +2792,7 @@ test("base_unittests") {
     }
   }
 
-  if (is_linux) {
-    if (is_desktop_linux) {
-      sources += [ "nix/xdg_util_unittest.cc" ]
-    }
-
+  if (is_fuchsia || is_linux) {
     sources += [ "debug/elf_reader_unittest.cc" ]
 
     deps += [ "//base/test:malloc_wrapper" ]
@@ -2811,6 +2807,10 @@ test("base_unittests") {
     }
   }
 
+  if (is_desktop_linux) {
+    sources += [ "nix/xdg_util_unittest.cc" ]
+  }
+
   if (!use_glib) {
     sources -= [ "message_loop/message_pump_glib_unittest.cc" ]
   }
@@ -2822,7 +2822,6 @@ test("base_unittests") {
 
   if (is_fuchsia) {
     sources += [
-      "debug/elf_reader_unittest.cc",
       "files/dir_reader_posix_unittest.cc",
       "files/file_descriptor_watcher_posix_unittest.cc",
       "fuchsia/file_utils_unittest.cc",
