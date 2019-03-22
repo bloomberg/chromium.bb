@@ -57,6 +57,14 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
 
 ProfileMenuViewBase::~ProfileMenuViewBase() = default;
 
+ax::mojom::Role ProfileMenuViewBase::GetAccessibleWindowRole() const {
+  // Return |ax::mojom::Role::kDialog| which will make screen readers announce
+  // the following in the listed order:
+  // the title of the dialog, labels (if any), the focused View within the
+  // dialog (if any)
+  return ax::mojom::Role::kDialog;
+}
+
 void ProfileMenuViewBase::ShowMenu() {
   views::BubbleDialogDelegateView::CreateBubble(this)->Show();
 }
