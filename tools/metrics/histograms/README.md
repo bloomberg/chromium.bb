@@ -15,9 +15,16 @@ etc., where each group organizes related histograms.
 
 ## Coding (Emitting to Histograms)
 
-Generally you'll be best served by using one of the macros in
-[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h)
-if possible.
+Generally you should be using the
+[histogram_functions.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_functions.h).
+You can also use the macros in
+[histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h).
+The macros are best used in code where efficiency matters--when the histogram is
+emitted frequently (i.e., on any regular basis resulting in more than about ten
+calls per hour) or on a critical path.  The macros cache a pointer to the
+histogram object for efficiency, though this comes at the cost of increased
+binary size. (130 bytes/macro sounds small but could and does easily add up.)
+If efficiency isn't a concern, prefer the histogram_functions.h methods.
 
 ### Don't Use the Same Histogram Logging Call in Multiple Places
 
@@ -45,9 +52,12 @@ name and you update one one location and forget another.
 
 ### Efficiency
 
-Don't worry about it.  In general, the histogram code is highly optimized.  Do
-not be concerned about the processing cost of emitting to a histogram (unless
-you're using [sparse histograms](#When-To-Use-Sparse-Histograms)).
+Generally, don't be concerned about the processing cost of emitting to a
+histogram (unless you're using [sparse
+histograms](#When-To-Use-Sparse-Histograms)). The normal histogram code is
+highly optimized. If you are recording to a histogram in particularly
+performance-sensitive or "hot" code, make sure you're using the histogram
+macros; see [reasons above](#Coding-Emitting-to-Histograms).
 
 ## Picking Your Histogram Type
 
@@ -500,5 +510,8 @@ vector and no lock. It is thus more costly to add values to, and each value
 stored has more overhead, compared to the other histogram types. However it
 may be more efficient in memory if the total number of sample values is small
 compared to the range of their values.
+
+Please talk with the metrics team if there are more than a thousand possible
+different values that you could emit.
 
 For more information, see [sparse_histograms.h](https://cs.chromium.org/chromium/src/base/metrics/sparse_histogram.h).
