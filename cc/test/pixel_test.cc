@@ -285,7 +285,8 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
 #if BUILDFLAG(ENABLE_VULKAN)
     vulkan_implementation_ = gpu::CreateVulkanImplementation();
     if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance()) {
+        !vulkan_implementation_->InitializeVulkanInstance(
+            !gpu_preferences.disable_vulkan_surface)) {
       LOG(FATAL) << "Failed to create and initialize Vulkan implementation.";
     }
 #else

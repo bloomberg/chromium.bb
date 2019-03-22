@@ -171,6 +171,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kEnableRasterToSkImage);
   gpu_preferences.enable_vulkan =
       command_line->HasSwitch(switches::kEnableVulkan);
+  gpu_preferences.disable_vulkan_surface =
+      command_line->HasSwitch(switches::kDisableVulkanSurface);
   return gpu_preferences;
 }
 

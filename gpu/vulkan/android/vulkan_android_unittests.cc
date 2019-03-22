@@ -23,7 +23,7 @@ class VulkanImplementationAndroidTest : public testing::Test {
 
     // This call checks for all instance extensions. Let the test pass if this
     // call fails since many bots would not have this extension present.
-    if (!vk_implementation_->InitializeVulkanInstance())
+    if (!vk_implementation_->InitializeVulkanInstance(true /* using_surface */))
       return;
 
     // Create vulkan context provider. This call checks for all device

@@ -19,7 +19,8 @@ VulkanImplementationGbm::VulkanImplementationGbm() {}
 
 VulkanImplementationGbm::~VulkanImplementationGbm() {}
 
-bool VulkanImplementationGbm::InitializeVulkanInstance() {
+bool VulkanImplementationGbm::InitializeVulkanInstance(bool using_surface) {
+  DLOG_IF(ERROR, using_surface) << "VK_KHR_surface is not supported.";
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 

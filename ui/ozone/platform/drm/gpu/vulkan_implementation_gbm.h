@@ -18,7 +18,7 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
   ~VulkanImplementationGbm() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance() override;
+  bool InitializeVulkanInstance(bool using_surface) override;
   gpu::VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<gpu::VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;

@@ -33,7 +33,8 @@ VulkanImplementationScenic::VulkanImplementationScenic(
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
 
-bool VulkanImplementationScenic::InitializeVulkanInstance() {
+bool VulkanImplementationScenic::InitializeVulkanInstance(bool using_surface) {
+  DCHECK(using_surface);
   base::NativeLibraryLoadError error;
   base::NativeLibrary handle =
       base::LoadNativeLibrary(base::FilePath("libvulkan.so"), &error);

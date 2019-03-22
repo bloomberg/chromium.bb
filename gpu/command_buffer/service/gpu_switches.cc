@@ -79,4 +79,8 @@ const char kEnableRasterToSkImage[] = "enable-raster-to-sk-image";
 // Enable Vulkan support, must also have ENABLE_VULKAN defined.
 const char kEnableVulkan[] = "enable-vulkan";
 
+// Disables VK_KHR_surface extension. Instead of using swapchain, bitblt will be
+// used for present render result on screen.
+const char kDisableVulkanSurface[] = "disable-vulkan-surface";
+
 }  // namespace switches

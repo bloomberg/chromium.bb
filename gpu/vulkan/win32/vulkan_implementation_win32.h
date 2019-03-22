@@ -20,7 +20,7 @@ class COMPONENT_EXPORT(VULKAN_WIN32) VulkanImplementationWin32
   ~VulkanImplementationWin32() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance() override;
+  bool InitializeVulkanInstance(bool using_surface) override;
   VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;

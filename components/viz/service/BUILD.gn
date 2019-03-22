@@ -357,6 +357,15 @@ viz_source_set("gpu_service_dependencies") {
 
     public_deps += [ "//gpu/vulkan" ]
   }
+
+  if (use_x11 && enable_vulkan) {
+    sources += [
+      "display_embedder/skia_output_device_x11.cc",
+      "display_embedder/skia_output_device_x11.h",
+    ]
+    configs = [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
+  }
 }
 
 viz_source_set("unit_tests") {

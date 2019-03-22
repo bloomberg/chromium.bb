@@ -17,7 +17,8 @@ namespace gpu {
 
 VulkanImplementationWin32::~VulkanImplementationWin32() = default;
 
-bool VulkanImplementationWin32::InitializeVulkanInstance() {
+bool VulkanImplementationWin32::InitializeVulkanInstance(bool using_surface) {
+  DCHECK(using_surface);
   std::vector<const char*> required_extensions = {
       VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
 

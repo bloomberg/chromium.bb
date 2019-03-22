@@ -204,6 +204,9 @@ struct GPU_EXPORT GpuPreferences {
   // Use Vulkan for rasterization and display compositing.
   bool enable_vulkan = false;
 
+  // Use vulkan VK_KHR_surface for presenting.
+  bool disable_vulkan_surface = false;
+
   // ===================================
   // Settings from //cc/base/switches.h
   // Enable the GPU benchmarking extension; used by tests only.
