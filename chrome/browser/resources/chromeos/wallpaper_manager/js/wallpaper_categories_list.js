@@ -69,25 +69,31 @@ cr.define('wallpapers', function() {
         cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
         var div = self.ownerDocument.createElement('div');
         div.textContent = entry;
+        var inkEl = self.ownerDocument.createElement('span');
+        inkEl.classList.add('ink');
+        li.appendChild(inkEl);
         li.appendChild(div);
-        div.addEventListener('mousedown', e => {
-          var targetEl = e.target;
-          var inkEl = targetEl.querySelector('.ink');
-          if (inkEl) {
-            inkEl.classList.remove('ripple-category-list-item-animation');
-          } else {
-            inkEl = document.createElement('span');
-            inkEl.classList.add('ink');
-            inkEl.style.width = inkEl.style.height =
-                Math.max(targetEl.offsetWidth, targetEl.offsetHeight) + 'px';
-            targetEl.appendChild(inkEl);
-          }
-          inkEl.style.left = (e.offsetX - 0.5 * inkEl.offsetWidth) + 'px';
-          inkEl.style.top = (e.offsetY - 0.5 * inkEl.offsetHeight) + 'px';
+        li.addEventListener('mousedown', e => {
+          var currentTarget = e.currentTarget;
+          var inkEl = currentTarget.querySelector('.ink');
+          inkEl.style.width = inkEl.style.height =
+              currentTarget.offsetWidth + 'px';
+          // If target is div, the offset of div relative to li must be added.
+          inkEl.style.left =
+              (e.offsetX +
+               (e.target.tagName == 'DIV' ? e.target.offsetLeft : 0) -
+               0.5 * inkEl.offsetWidth) +
+              'px';
+          inkEl.style.top =
+              (e.offsetY +
+               (e.target.tagName == 'DIV' ? e.target.offsetTop : 0) -
+               0.5 * inkEl.offsetHeight) +
+              'px';
           inkEl.classList.add('ripple-category-list-item-animation');
         });
-        li.addEventListener('mousedown', e => {
-          e.preventDefault();
+        inkEl.addEventListener('animationend', e => {
+          var inkTarget = e.target;
+          inkTarget.classList.remove('ripple-category-list-item-animation');
         });
         return li;
       };
