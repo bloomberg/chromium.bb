@@ -45,8 +45,8 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
     const LayoutPoint paint_offset) {
   LayoutSize fieldset_size(fieldset_.Size().ToLayoutSize());
   LayoutRect paint_rect(paint_offset, fieldset_size);
-  const NGPhysicalBoxFragment& fragment =
-      ToNGPhysicalBoxFragment(fieldset_.PhysicalFragment());
+  const auto& fragment =
+      To<NGPhysicalBoxFragment>(fieldset_.PhysicalFragment());
   BoxDecorationData box_decoration_data(paint_info, fragment);
   if (!box_decoration_data.ShouldPaint())
     return;

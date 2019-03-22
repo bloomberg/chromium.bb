@@ -2703,7 +2703,7 @@ LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
     if (const NGPaintFragment* paint_fragment = PaintFragment()) {
       NGBoxFragment box_fragment(
           StyleRef().GetWritingMode(), StyleRef().Direction(),
-          ToNGPhysicalBoxFragment(paint_fragment->PhysicalFragment()));
+          To<NGPhysicalBoxFragment>(paint_fragment->PhysicalFragment()));
       NGLineHeightMetrics metrics =
           box_fragment.BaselineMetricsWithoutSynthesize(
               {NGBaselineAlgorithmType::kFirstLine,

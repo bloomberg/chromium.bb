@@ -145,8 +145,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment());
+  const auto* fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   DCHECK_GT(fragment->Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose

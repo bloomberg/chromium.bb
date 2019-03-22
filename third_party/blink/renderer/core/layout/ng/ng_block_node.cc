@@ -260,7 +260,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   NGBoxStrut old_scrollbars = GetScrollbarSizes();
 
   NGLayoutAlgorithmParams params(*this, constraint_space,
-                                 ToNGBlockBreakToken(break_token));
+                                 To<NGBlockBreakToken>(break_token));
   layout_result = LayoutWithAlgorithm(params);
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
@@ -334,17 +334,17 @@ void NGBlockNode::FinishLayout(
     if (has_inline_children || box_->IsLayoutNGFieldset()) {
       if (has_inline_children) {
         CopyFragmentDataToLayoutBoxForInlineChildren(
-            ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
+            To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()),
             layout_result->PhysicalFragment()->Size().width,
             Style().IsFlippedBlocksWritingMode());
       }
 
-      block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token),
+      block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
                                    layout_result->PhysicalFragment());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
-      block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token), nullptr);
+      block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token), nullptr);
     }
   }
 
@@ -389,7 +389,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     NGBoxFragment fragment(
         container_writing_mode,
         TextDirection::kLtr,  // irrelevant here
-        ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
+        To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()));
     sizes.min_size = sizes.max_size = fragment.Size().inline_size;
     if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
       sizes -= fragment.Borders().InlineSum() + fragment.Padding().InlineSum() +
@@ -422,7 +422,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   NGBoxFragment min_fragment(
       container_writing_mode,
       TextDirection::kLtr,  // irrelevant here
-      ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
+      To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()));
   sizes.min_size = min_fragment.Size().inline_size;
 
   // Now, redo with infinite space for max_content
@@ -436,7 +436,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   NGBoxFragment max_fragment(
       container_writing_mode,
       TextDirection::kLtr,  // irrelevant here
-      ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
+      To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
 
   if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
@@ -549,8 +549,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   if (UNLIKELY(constraint_space.IsIntermediateLayout()))
     return;
 
-  const NGPhysicalBoxFragment& physical_fragment =
-      ToNGPhysicalBoxFragment(*layout_result.PhysicalFragment());
+  const auto& physical_fragment =
+      To<NGPhysicalBoxFragment>(*layout_result.PhysicalFragment());
 
   NGBoxFragment fragment(constraint_space.GetWritingMode(),
                          constraint_space.Direction(), physical_fragment);
@@ -662,7 +662,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     if (!child_fragment->IsBox() && !child_fragment->IsRenderedLegend())
       continue;
 
-    const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.get());
+    const auto& box_fragment = *To<NGPhysicalBoxFragment>(child_fragment.get());
     if (IsFirstFragment(constraint_space, box_fragment)) {
       if (box_fragment.IsRenderedLegend())
         rendered_legend = ToLayoutBox(box_fragment.GetLayoutObject());
@@ -701,9 +701,9 @@ void NGBlockNode::PlaceChildrenInFlowThread(
 
     // Position each child node in the first column that they occur, relatively
     // to the block-start of the flow thread.
-    const auto* column = ToNGPhysicalBoxFragment(child.get());
+    const auto* column = To<NGPhysicalBoxFragment>(child.get());
     PlaceChildrenInLayoutBox(constraint_space, *column, offset);
-    const auto* token = ToNGBlockBreakToken(column->BreakToken());
+    const auto* token = To<NGBlockBreakToken>(column->BreakToken());
     flowthread_offset = token->UsedBlockSize();
   }
 }
@@ -785,7 +785,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
       // descendants in this case.
       if (!child->IsBlockFormattingContextRoot()) {
         CopyFragmentDataToLayoutBoxForInlineChildren(
-            ToNGPhysicalContainerFragment(*child), initial_container_width,
+            To<NGPhysicalContainerFragment>(*child), initial_container_width,
             initial_container_is_flipped, child_offset);
       }
     }

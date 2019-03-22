@@ -353,13 +353,15 @@ bool NGPaintFragment::HasSelfPaintingLayer() const {
 }
 
 bool NGPaintFragment::HasOverflowClip() const {
-  return physical_fragment_->IsBox() &&
-         ToNGPhysicalBoxFragment(*physical_fragment_).HasOverflowClip();
+  auto* box_physical_fragment =
+      DynamicTo<NGPhysicalBoxFragment>(physical_fragment_.get());
+  return box_physical_fragment && box_physical_fragment->HasOverflowClip();
 }
 
 bool NGPaintFragment::ShouldClipOverflow() const {
-  return physical_fragment_->IsBox() &&
-         ToNGPhysicalBoxFragment(*physical_fragment_).ShouldClipOverflow();
+  auto* box_physical_fragment =
+      DynamicTo<NGPhysicalBoxFragment>(physical_fragment_.get());
+  return box_physical_fragment && box_physical_fragment->ShouldClipOverflow();
 }
 
 // Populate descendants from NGPhysicalFragment tree.
@@ -367,14 +369,13 @@ void NGPaintFragment::PopulateDescendants(
     const NGPhysicalOffset inline_offset_to_container_box,
     HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map) {
   const NGPhysicalFragment& fragment = PhysicalFragment();
-  DCHECK(fragment.IsContainer());
-  const NGPhysicalContainerFragment& container =
-      ToNGPhysicalContainerFragment(fragment);
+  const auto& container = To<NGPhysicalContainerFragment>(fragment);
   scoped_refptr<NGPaintFragment> previous_children = std::move(first_child_);
   scoped_refptr<NGPaintFragment>* last_child_ptr = &first_child_;
 
+  auto* box_physical_fragment = DynamicTo<NGPhysicalBoxFragment>(fragment);
   bool children_are_inline =
-      !fragment.IsBox() || ToNGPhysicalBoxFragment(fragment).ChildrenInline();
+      !box_physical_fragment || box_physical_fragment->ChildrenInline();
 
   for (const NGLink& child_fragment : container.Children()) {
     bool populate_children = child_fragment->IsContainer() &&
@@ -610,8 +611,8 @@ NGPhysicalOffsetRect NGPaintFragment::RecalcInkOverflow() {
     // Line boxes don't have self overflow. Compute content overflow only.
     contents_rect = RecalcContentsInkOverflow();
     self_and_contents_rect = contents_rect;
-  } else if (const NGPhysicalBoxFragment* box_fragment =
-                 ToNGPhysicalBoxFragmentOrNull(&fragment)) {
+  } else if (const auto* box_fragment =
+                 DynamicTo<NGPhysicalBoxFragment>(fragment)) {
     contents_rect = RecalcContentsInkOverflow();
     self_rect = box_fragment->ComputeSelfInkOverflow();
     self_and_contents_rect = self_rect;
@@ -703,11 +704,11 @@ void NGPaintFragment::AddSelfOutlineRect(Vector<LayoutRect>* outline_rects,
                                          NGOutlineType outline_type) const {
   DCHECK(outline_rects);
   const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (fragment.IsBox()) {
+  if (auto* box_fragment = DynamicTo<NGPhysicalBoxFragment>(fragment)) {
     if (NGOutlineUtils::IsInlineOutlineNonpaintingFragment(PhysicalFragment()))
       return;
-    ToNGPhysicalBoxFragment(fragment).AddSelfOutlineRects(
-        outline_rects, additional_offset, outline_type);
+    box_fragment->AddSelfOutlineRects(outline_rects, additional_offset,
+                                      outline_type);
   }
 }
 
@@ -964,7 +965,7 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
     const NGPhysicalOffset& point) const {
   DCHECK(PhysicalFragment().IsBlockFlow());
   DCHECK(PhysicalFragment().IsBox());
-  DCHECK(ToNGPhysicalBoxFragment(PhysicalFragment()).ChildrenInline());
+  DCHECK(To<NGPhysicalBoxFragment>(PhysicalFragment()).ChildrenInline());
 
   const NGLogicalOffset logical_point = point.ConvertToLogical(
       Style().GetWritingMode(), Style().Direction(), Size(),
@@ -1043,7 +1044,7 @@ PositionWithAffinity NGPaintFragment::PositionForPoint(
     // We current fall back to legacy for block formatting contexts, so we
     // should reach here only for inline formatting contexts.
     // TODO(xiaochengh): Do not fall back.
-    DCHECK(ToNGPhysicalBoxFragment(PhysicalFragment()).ChildrenInline());
+    DCHECK(To<NGPhysicalBoxFragment>(PhysicalFragment()).ChildrenInline());
     return PositionForPointInInlineFormattingContext(point);
   }
 

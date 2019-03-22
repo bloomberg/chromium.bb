@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -63,11 +64,12 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
   wtf_size_t num_children_;
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalContainerFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->IsContainer(),
-                  fragment.IsContainer());
+template <>
+struct DowncastTraits<NGPhysicalContainerFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.IsContainer();
+  }
+};
 
 }  // namespace blink
 

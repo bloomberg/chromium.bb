@@ -72,7 +72,7 @@ const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
   if (!cached_layout_result)
     return nullptr;
 
-  return ToNGPhysicalBoxFragment(cached_layout_result->PhysicalFragment());
+  return To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
 }
 
 template <typename Base>
@@ -198,7 +198,7 @@ base::Optional<LayoutUnit> LayoutNGMixin<Base>::FragmentBaseline(
 
   if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
     FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
-    return ToNGPhysicalBoxFragment(physical_fragment)
+    return To<NGPhysicalBoxFragment>(physical_fragment)
         ->Baseline({type, baseline_type});
   }
   return base::nullopt;

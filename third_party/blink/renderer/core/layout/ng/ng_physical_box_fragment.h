@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -92,14 +93,13 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGLinkStorage children_[];
 };
 
-DEFINE_TYPE_CASTS(
-    NGPhysicalBoxFragment,
-    NGPhysicalFragment,
-    fragment,
-    (fragment->Type() == NGPhysicalFragment::kFragmentBox ||
-     fragment->Type() == NGPhysicalFragment::kFragmentRenderedLegend),
-    (fragment.Type() == NGPhysicalFragment::kFragmentBox ||
-     fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend));
+template <>
+struct DowncastTraits<NGPhysicalBoxFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.Type() == NGPhysicalFragment::kFragmentBox ||
+           fragment.Type() == NGPhysicalFragment::kFragmentRenderedLegend;
+  }
+};
 
 }  // namespace blink
 

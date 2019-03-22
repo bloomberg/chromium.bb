@@ -72,7 +72,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
     NGBlockNode node,
     const NGConstraintSpace& space,
     const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
@@ -123,8 +123,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
                                              break_token.get());
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
-      const NGPhysicalBoxFragment* column =
-          ToNGPhysicalBoxFragment(result->PhysicalFragment());
+      const auto* column =
+          To<NGPhysicalBoxFragment>(result->PhysicalFragment());
 
       NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
       container_builder_.AddChild(*result, logical_offset);
@@ -149,7 +149,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
           std::max(intrinsic_block_size, column_block_offset + block_size);
 
       column_inline_offset += column_inline_progression;
-      break_token = ToNGBlockBreakToken(column->BreakToken());
+      break_token = To<NGBlockBreakToken>(column->BreakToken());
     } while (break_token && !break_token->IsFinished());
 
     // If we overflowed (actual column count larger than what we have room for),

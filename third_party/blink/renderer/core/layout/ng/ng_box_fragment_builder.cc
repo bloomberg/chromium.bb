@@ -287,8 +287,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
                                                 &containing_linebox_map,
                                                 linebox, linebox_offset);
     } else if (children_[i]->IsBox()) {
-      const NGPhysicalBoxFragment* box_fragment =
-          ToNGPhysicalBoxFragment(children_[i].get());
+      const auto* box_fragment = To<NGPhysicalBoxFragment>(children_[i].get());
       bool is_anonymous_container =
           box_fragment->GetLayoutObject() &&
           box_fragment->GetLayoutObject()->IsAnonymousBlock();

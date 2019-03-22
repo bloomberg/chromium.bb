@@ -19,7 +19,7 @@ namespace blink {
 NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
                                              const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
@@ -54,8 +54,7 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                            break_token.get());
     scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
-    const NGPhysicalBoxFragment* page =
-        ToNGPhysicalBoxFragment(result->PhysicalFragment());
+    const auto* page = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
 
     container_builder_.AddChild(*result, page_offset);
 
@@ -65,7 +64,7 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
         std::max(intrinsic_block_size,
                  page_offset.block_offset + logical_fragment.BlockSize());
     page_offset += page_progression;
-    break_token = ToNGBlockBreakToken(page->BreakToken());
+    break_token = To<NGBlockBreakToken>(page->BreakToken());
   } while (break_token && !break_token->IsFinished());
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);

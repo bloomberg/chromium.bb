@@ -98,7 +98,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     switch (child->Type()) {
       case NGPhysicalFragment::kFragmentBox:
       case NGPhysicalFragment::kFragmentRenderedLegend:
-        if (ToNGBlockBreakToken(child_break_token)->HasLastResortBreak())
+        if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
           has_last_resort_break_ = true;
         child_break_tokens_.push_back(child_break_token);
         break;
@@ -119,9 +119,11 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (!has_floating_descendants_) {
     if (child->IsFloating()) {
       has_floating_descendants_ = true;
-    } else if (child->IsContainer() && !child->IsBlockFormattingContextRoot() &&
-               ToNGPhysicalContainerFragment(*child).HasFloatingDescendants()) {
-      has_floating_descendants_ = true;
+    } else {
+      auto* child_container = DynamicTo<NGPhysicalContainerFragment>(*child);
+      if (child_container && !child->IsBlockFormattingContextRoot() &&
+          child_container->HasFloatingDescendants())
+        has_floating_descendants_ = true;
     }
   }
 
