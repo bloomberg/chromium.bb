@@ -58,7 +58,8 @@ void WaitForOffset(CGFloat y_offset) {
 // be {0, 0} before returning.
 void ScrollLongPageToTop(const GURL& url) {
   // Load the page and swipe down.
-  GREYAssert([ShellEarlGrey loadURL:url], @"Page did not complete loading.");
+  bool success = [ShellEarlGrey loadURL:url];
+  GREYAssert(success, @"Page did not complete loading.");
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   // Waits for the {0, 0} offset.
@@ -111,8 +112,8 @@ using web::test::HttpServer;
   // Set up the file-based server to load the tall page.
   const GURL baseURL = web::test::HttpServer::MakeUrl(kLongPage1);
   web::test::SetUpFileBasedHttpServer();
-  GREYAssert([ShellEarlGrey loadURL:baseURL],
-             @"Page did not complete loading.");
+  bool success = [ShellEarlGrey loadURL:baseURL];
+  GREYAssert(success, @"Page did not complete loading.");
 
   // Scroll the page and load again to verify that the new page's scroll offset
   // is reset to {0, 0}.
