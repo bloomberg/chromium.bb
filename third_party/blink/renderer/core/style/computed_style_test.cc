@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
@@ -400,35 +399,6 @@ TEST(ComputedStyleTest, BorderStyle) {
   EXPECT_FALSE(style->BorderSizeEquals(*other));
   style->SetBorderBottomStyle(EBorderStyle::kSolid);
   EXPECT_TRUE(style->BorderSizeEquals(*other));
-}
-
-#define TEST_ANIMATION_FLAG(flag, inherited)                               \
-  do {                                                                     \
-    auto style = ComputedStyle::Create();                                  \
-    auto other = ComputedStyle::Create();                                  \
-    EXPECT_FALSE(style->flag());                                           \
-    EXPECT_FALSE(other->flag());                                           \
-    style->Set##flag(true);                                                \
-    EXPECT_TRUE(style->flag());                                            \
-    EXPECT_EQ(ComputedStyle::Difference::inherited,                        \
-              ComputedStyle::ComputeDifference(style.get(), other.get())); \
-    auto diff = style->VisualInvalidationDiff(*document, *other);          \
-    EXPECT_TRUE(diff.HasDifference());                                     \
-    EXPECT_TRUE(diff.CompositingReasonsChanged());                         \
-  } while (false)
-
-TEST(ComputedStyleTest, AnimationFlags) {
-  Persistent<Document> document = Document::CreateForTest();
-  TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
-  TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
-  TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
-  TEST_ANIMATION_FLAG(HasCurrentBackdropFilterAnimation, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningTransformAnimationOnCompositor, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningOpacityAnimationOnCompositor, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningFilterAnimationOnCompositor, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningBackdropFilterAnimationOnCompositor,
-                      kNonInherited);
-  TEST_ANIMATION_FLAG(SubtreeWillChangeContents, kInherited);
 }
 
 }  // namespace blink

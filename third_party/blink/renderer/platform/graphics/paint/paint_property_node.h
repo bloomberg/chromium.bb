@@ -25,19 +25,6 @@ class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
 
-// Used to report whether and how paint properties have changed. The order is
-// important - it must go from no change to the most significant change.
-enum class PaintPropertyChangeType {
-  kUnchanged,
-  kChangedOnlyCompositedAnimationValues,
-  // TODO(crbug.com/937929): See ObjectPaintProperties::Update().
-  kChangedOnlyCompositedAnimationStatus,
-  kChangedOnlyValues,
-  // A paint property node is added or removed. This value is used only in
-  // renderer/core classes.
-  kNodeAddedOrRemoved,
-};
-
 // Returns the lowest common ancestor in the paint property tree.
 template <typename NodeType>
 const NodeType& LowestCommonAncestor(const NodeType& a, const NodeType& b) {
@@ -130,15 +117,18 @@ class PaintPropertyNode : public RefCounted<NodeType> {
         is_parent_alias_(is_parent_alias),
         changed_(!!parent) {}
 
-  PaintPropertyChangeType SetParent(const NodeType* parent) {
+  bool SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
     DCHECK(parent != this);
     if (parent == parent_)
-      return PaintPropertyChangeType::kUnchanged;
+      return false;
 
     parent_ = parent;
     static_cast<NodeType*>(this)->SetChanged();
-    return PaintPropertyChangeType::kChangedOnlyValues;
+    return true;
+  }
+  bool HasParentChanged(const NodeType* parent) const {
+    return parent != parent_;
   }
 
   void SetChanged() {

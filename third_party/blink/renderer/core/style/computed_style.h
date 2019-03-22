@@ -282,9 +282,8 @@ class ComputedStyle : public ComputedStyleBase,
     // flat tree in the presence of display:contents.
     kDisplayAffectingDescendantStyles,
   };
-  CORE_EXPORT static Difference ComputeDifference(
-      const ComputedStyle* old_style,
-      const ComputedStyle* new_style);
+  static Difference ComputeDifference(const ComputedStyle* old_style,
+                                      const ComputedStyle* new_style);
 
   // Returns true if the ComputedStyle change requires a LayoutObject re-attach.
   static bool NeedsReattachLayoutTree(const ComputedStyle* old_style,
@@ -318,8 +317,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleContentAlignmentData ResolvedJustifyContent(
       const StyleContentAlignmentData& normal_behaviour) const;
 
-  CORE_EXPORT StyleDifference
-  VisualInvalidationDiff(const Document&, const ComputedStyle&) const;
+  StyleDifference VisualInvalidationDiff(const Document&,
+                                         const ComputedStyle&) const;
 
   CORE_EXPORT void InheritFrom(const ComputedStyle& inherit_parent,
                                IsAtShadowBoundary = kNotAtShadowBoundary);

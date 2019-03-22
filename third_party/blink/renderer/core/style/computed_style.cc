@@ -883,15 +883,6 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       HasCurrentFilterAnimation() != other.HasCurrentFilterAnimation() ||
       HasCurrentBackdropFilterAnimation() !=
           other.HasCurrentBackdropFilterAnimation() ||
-      IsRunningTransformAnimationOnCompositor() !=
-          other.IsRunningTransformAnimationOnCompositor() ||
-      IsRunningOpacityAnimationOnCompositor() !=
-          other.IsRunningOpacityAnimationOnCompositor() ||
-      IsRunningFilterAnimationOnCompositor() !=
-          other.IsRunningFilterAnimationOnCompositor() ||
-      IsRunningBackdropFilterAnimationOnCompositor() !=
-          other.IsRunningBackdropFilterAnimationOnCompositor() ||
-      SubtreeWillChangeContents() != other.SubtreeWillChangeContents() ||
       BackfaceVisibility() != other.BackfaceVisibility() ||
       HasWillChangeCompositingHint() != other.HasWillChangeCompositingHint() ||
       UsedTransformStyle3D() != other.UsedTransformStyle3D() ||

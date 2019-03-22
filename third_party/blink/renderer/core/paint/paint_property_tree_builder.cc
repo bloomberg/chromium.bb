@@ -137,7 +137,7 @@ class FragmentPaintPropertyTreeBuilder {
         properties_(fragment_data.PaintProperties()) {}
 
   ~FragmentPaintPropertyTreeBuilder() {
-    if (property_changed_ >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
+    if (property_changed_ >= PaintPropertyChangedState::kAddedOrRemoved) {
       // Tree topology changes are blocked by isolation.
       full_context_.force_subtree_update_reasons |=
           PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
@@ -151,7 +151,9 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateForSelf();
   ALWAYS_INLINE void UpdateForChildren();
 
-  PaintPropertyChangeType PropertyChanged() const { return property_changed_; }
+  PaintPropertyChangedState PropertyChanged() const {
+    return property_changed_;
+  }
   bool HasIsolationNodes() const {
     // All or nothing check on the isolation nodes.
     DCHECK(!properties_ ||
@@ -201,30 +203,41 @@ class FragmentPaintPropertyTreeBuilder {
            full_context_.force_subtree_update_reasons;
   }
 
-  void OnUpdate(PaintPropertyChangeType change) {
-    property_changed_ = std::max(property_changed_, change);
+  void OnUpdate(const ObjectPaintProperties::UpdateResult& result,
+                bool only_for_running_animation = false) {
+    if (!result.Unchanged()) {
+      if (result.NewNodeCreated()) {
+        property_changed_ = PaintPropertyChangedState::kAddedOrRemoved;
+      } else if (only_for_running_animation) {
+        property_changed_ =
+            std::max(property_changed_,
+                     PaintPropertyChangedState::kChangedOnlyDueToAnimations);
+      } else {
+        property_changed_ =
+            std::max(property_changed_, PaintPropertyChangedState::kChanged);
+      }
+    }
   }
   // Like |OnUpdate| but sets |clip_changed| if the clip values change.
-  void OnUpdateClip(PaintPropertyChangeType change,
+  void OnUpdateClip(const ObjectPaintProperties::UpdateResult& result,
                     bool only_updated_hit_test_values = false) {
-    OnUpdate(change);
+    OnUpdate(result);
     full_context_.clip_changed |=
-        (change != PaintPropertyChangeType::kUnchanged &&
-         !only_updated_hit_test_values);
+        !(result.Unchanged() || only_updated_hit_test_values);
   }
   // Like |OnUpdate| but forces a piercing subtree update if the scroll tree
   // hierarchy changes because the scroll tree does not have isolation nodes
   // and non-piercing updates can fail to update scroll descendants.
-  void OnUpdateScroll(PaintPropertyChangeType change) {
-    OnUpdate(change);
-    if (change >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
+  void OnUpdateScroll(const ObjectPaintProperties::UpdateResult& result) {
+    OnUpdate(result);
+    if (result.NewNodeCreated()) {
       full_context_.force_subtree_update_reasons |=
           PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
     }
   }
   void OnClear(bool cleared) {
     if (cleared) {
-      property_changed_ = PaintPropertyChangeType::kNodeAddedOrRemoved;
+      property_changed_ = PaintPropertyChangedState::kAddedOrRemoved;
     }
   }
   // See: |OnUpdateScroll|.
@@ -248,8 +261,8 @@ class FragmentPaintPropertyTreeBuilder {
   PaintPropertyTreeBuilderFragmentContext& context_;
   FragmentData& fragment_data_;
   ObjectPaintProperties* properties_;
-  PaintPropertyChangeType property_changed_ =
-      PaintPropertyChangeType::kUnchanged;
+  PaintPropertyChangedState property_changed_ =
+      PaintPropertyChangedState::kUnchanged;
 };
 
 static bool IsRootScroller(const LayoutBox& box) {
@@ -712,12 +725,22 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(),
             CompositorElementIdNamespace::kPrimaryTransform);
-        state.is_running_animation_on_compositor =
-            style.IsRunningTransformAnimationOnCompositor();
       }
 
+      // If nothing but the transform matrix changed, and animations are
+      // running, avoid setting property_changed.
+      bool other_properties_changed = true;
+      if (properties_->Transform()) {
+        other_properties_changed =
+            properties_->Transform()->HaveNonAnimatingPropertiesChanged(
+                *context_.current.transform, state);
+      }
+      bool running_animation =
+          style.IsRunningTransformAnimationOnCompositor() &&
+          !other_properties_changed;
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
-                                            std::move(state)));
+                                            std::move(state)),
+               running_animation);
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -971,14 +994,23 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
-        state.is_running_opacity_animation_on_compositor =
-            style.IsRunningOpacityAnimationOnCompositor();
-        state.is_running_backdrop_filter_animation_on_compositor =
-            style.IsRunningBackdropFilterAnimationOnCompositor();
       }
 
-      OnUpdate(properties_->UpdateEffect(*context_.current_effect,
-                                         std::move(state)));
+      // If nothing but the opacity and/or backdrop-filter changed, and
+      // animations are running, avoid setting property_changed.
+      bool other_properties_changed = true;
+      if (properties_->Effect()) {
+        other_properties_changed =
+            properties_->Effect()->HaveNonAnimatingPropertiesChanged(
+                *context_.current_effect, state);
+      }
+      bool running_animation =
+          (style.IsRunningOpacityAnimationOnCompositor() ||
+           style.IsRunningBackdropFilterAnimationOnCompositor()) &&
+          !other_properties_changed;
+      OnUpdate(
+          properties_->UpdateEffect(*context_.current_effect, std::move(state)),
+          running_animation);
 
       if (mask_clip || has_spv1_composited_clip_path) {
         EffectPaintPropertyNode::State mask_state;
@@ -1129,12 +1161,21 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
 
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
-        state.is_running_filter_animation_on_compositor =
-            style.IsRunningFilterAnimationOnCompositor();
       }
 
-      OnUpdate(properties_->UpdateFilter(*context_.current_effect,
-                                         std::move(state)));
+      // If nothing but the filter changed, and animations are running, avoid
+      // setting property_changed.
+      bool other_properties_changed = true;
+      if (properties_->Filter()) {
+        other_properties_changed =
+            properties_->Filter()->HaveNonAnimatingPropertiesChanged(
+                *context_.current_effect, state);
+      }
+      bool running_animation = style.IsRunningFilterAnimationOnCompositor() &&
+                               !other_properties_changed;
+      OnUpdate(
+          properties_->UpdateFilter(*context_.current_effect, std::move(state)),
+          running_animation);
     } else {
       OnClear(properties_->ClearFilter());
     }
@@ -1306,7 +1347,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
 
     if (!fragment_data_.HasLocalBorderBoxProperties() ||
         local_border_box != fragment_data_.LocalBorderBoxProperties())
-      property_changed_ = PaintPropertyChangeType::kNodeAddedOrRemoved;
+      property_changed_ = PaintPropertyChangedState::kAddedOrRemoved;
 
     fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
   } else {
@@ -1878,7 +1919,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformIsolationNode() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsIsolationNodes(object_)) {
       OnUpdate(properties_->UpdateTransformIsolationNode(
-          *context_.current.transform));
+          *context_.current.transform, TransformPaintPropertyNode::State{},
+          true /* is_parent_alias */));
     } else {
       OnClear(properties_->ClearTransformIsolationNode());
     }
@@ -1890,8 +1932,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformIsolationNode() {
 void FragmentPaintPropertyTreeBuilder::UpdateEffectIsolationNode() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsIsolationNodes(object_)) {
-      OnUpdate(
-          properties_->UpdateEffectIsolationNode(*context_.current_effect));
+      OnUpdate(properties_->UpdateEffectIsolationNode(
+          *context_.current_effect, EffectPaintPropertyNode::State{},
+          true /* is_parent_alias */));
     } else {
       OnClear(properties_->ClearEffectIsolationNode());
     }
@@ -1903,7 +1946,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffectIsolationNode() {
 void FragmentPaintPropertyTreeBuilder::UpdateClipIsolationNode() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsIsolationNodes(object_)) {
-      OnUpdate(properties_->UpdateClipIsolationNode(*context_.current.clip));
+      OnUpdate(properties_->UpdateClipIsolationNode(
+          *context_.current.clip, ClipPaintPropertyNode::State{},
+          true /* is_parent_alias */));
     } else {
       OnClear(properties_->ClearClipIsolationNode());
     }
@@ -3087,18 +3132,18 @@ void PaintPropertyTreeBuilder::UpdatePaintingLayer() {
   DCHECK(context_.painting_layer == object_.PaintingLayer());
 }
 
-PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForSelf() {
+PaintPropertyChangedState PaintPropertyTreeBuilder::UpdateForSelf() {
   // This is not inherited from the parent context and we always recalculate it.
   context_.direct_compositing_reasons =
       CompositingReasonFinder::DirectReasonsForPaintProperties(object_);
 
   UpdatePaintingLayer();
 
-  PaintPropertyChangeType property_changed =
-      PaintPropertyChangeType::kUnchanged;
+  PaintPropertyChangedState property_changed =
+      PaintPropertyChangedState::kUnchanged;
   if (ObjectTypeMightNeedPaintProperties()) {
     if (UpdateFragments())
-      property_changed = PaintPropertyChangeType::kNodeAddedOrRemoved;
+      property_changed = PaintPropertyChangedState::kAddedOrRemoved;
   } else {
     DCHECK_EQ(context_.direct_compositing_reasons, CompositingReason::kNone);
     object_.GetMutableForPainting().FirstFragment().ClearNextFragment();
@@ -3115,16 +3160,16 @@ PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForSelf() {
   DCHECK(!fragment_data);
 
   // We need to update property tree states of paint chunks.
-  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
+  if (property_changed >= PaintPropertyChangedState::kAddedOrRemoved) {
     context_.painting_layer->SetNeedsRepaint();
   }
 
   return property_changed;
 }
 
-PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForChildren() {
-  PaintPropertyChangeType property_changed =
-      PaintPropertyChangeType::kUnchanged;
+PaintPropertyChangedState PaintPropertyTreeBuilder::UpdateForChildren() {
+  PaintPropertyChangedState property_changed =
+      PaintPropertyChangedState::kUnchanged;
   if (!ObjectTypeMightNeedPaintProperties())
     return property_changed;
 
@@ -3170,7 +3215,7 @@ PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForChildren() {
   }
 
   // We need to update property tree states of paint chunks.
-  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved)
+  if (property_changed >= PaintPropertyChangedState::kAddedOrRemoved)
     context_.painting_layer->SetNeedsRepaint();
 
   return property_changed;

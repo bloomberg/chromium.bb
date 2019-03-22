@@ -989,12 +989,10 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
   for (const auto& layer : layers) {
     bool found_backdrop_filter = false;
     for (auto* effect = effect_tree.Node(layer->effect_tree_index());
-         // TODO(crbug.com/938679): Check
-         // has_potential_backdrop_filter_animation when we have it.
          !effect->has_render_surface || !effect->backdrop_filters.IsEmpty();
          effect = effect_tree.Node(effect->parent_id)) {
       found_backdrop_filter |= !effect->backdrop_filters.IsEmpty();
-      if ((effect->opacity != 1.f || effect->has_potential_opacity_animation ||
+      if ((effect->opacity != 1.f ||
            effect->blend_mode != SkBlendMode::kSrcOver) &&
           (!pending_render_surfaces.insert(effect->id).is_new_entry ||
            found_backdrop_filter)) {

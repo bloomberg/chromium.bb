@@ -120,13 +120,6 @@
   },
   {
     "prefix": "disable-blink-gen-property-trees",
-    "base": "animations",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees",
-             "--enable-threaded-compositing",
-             "--disable-composited-antialiasing"]
-  },
-  {
-    "prefix": "disable-blink-gen-property-trees",
     "base": "compositing",
     "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
