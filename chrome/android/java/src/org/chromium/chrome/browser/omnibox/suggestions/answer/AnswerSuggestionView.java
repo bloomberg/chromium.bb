@@ -111,6 +111,22 @@ public class AnswerSuggestionView extends RelativeLayout {
     }
 
     /**
+     * Specifies text accessibility description of the first text line.
+     * @param text Text to be announced.
+     */
+    void setLine1AccessibilityDescription(String text) {
+        mTextView1.setContentDescription(text);
+    }
+
+    /**
+     * Specifies text accessibility description of the second text line.
+     * @param text Text to be announced.
+     */
+    void setLine2AccessibilityDescription(String text) {
+        mTextView2.setContentDescription(text);
+    }
+
+    /**
      * Specifies text content of the first text line.
      * @param text Text to be displayed.
      */

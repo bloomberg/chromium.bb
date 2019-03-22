@@ -56,6 +56,9 @@ class AnswerSuggestionViewProperties {
     /** The actual text content for the first line of text. */
     public static final WritableObjectPropertyKey<Spannable> TEXT_LINE_1_TEXT =
             new WritableObjectPropertyKey<>();
+    /** The accessibility description to be announced with this line. */
+    public static final WritableObjectPropertyKey<String> TEXT_LINE_1_ACCESSIBILITY_DESCRIPTION =
+            new WritableObjectPropertyKey<>();
 
     /** The sizing information for the second line of text. */
     public static final WritableIntPropertyKey TEXT_LINE_2_SIZE = new WritableIntPropertyKey();
@@ -64,10 +67,14 @@ class AnswerSuggestionViewProperties {
     /** The actual text content for the second line of text. */
     public static final WritableObjectPropertyKey<Spannable> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
+    /** The accessibility description to be announced with this line. */
+    public static final WritableObjectPropertyKey<String> TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION =
+            new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {DELEGATE, ANSWER_IMAGE,
             ANSWER_ICON_TYPE, TEXT_LINE_1_SIZE, TEXT_LINE_1_MAX_LINES, TEXT_LINE_1_TEXT,
-            TEXT_LINE_2_SIZE, TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_TEXT};
+            TEXT_LINE_1_ACCESSIBILITY_DESCRIPTION, TEXT_LINE_2_SIZE, TEXT_LINE_2_MAX_LINES,
+            TEXT_LINE_2_TEXT, TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);
