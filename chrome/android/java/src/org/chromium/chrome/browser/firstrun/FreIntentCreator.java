@@ -10,11 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -36,21 +38,17 @@ public class FreIntentCreator {
      */
     public Intent create(Context caller, Intent fromIntent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
-        Intent intentToLaunchAfterFreComplete = fromIntent;
-        String associatedAppNameForLightweightFre = null;
-        WebappLauncherActivity.FreParams webApkFreParams =
-                WebappLauncherActivity.slowGenerateFreParamsIfIntentIsForWebApk(fromIntent);
-        if (webApkFreParams != null) {
-            intentToLaunchAfterFreComplete = webApkFreParams.getIntentToLaunchAfterFreComplete();
-            associatedAppNameForLightweightFre = webApkFreParams.webApkShortName();
-        }
+        @Nullable WebApkInfo webApkInfo =
+                WebappLauncherActivity.maybeSlowlyGenerateWebApkInfoFromIntent(fromIntent);
+        Intent intentToLaunchAfterFreComplete = (webApkInfo == null)
+                ? fromIntent
+                : WebappLauncherActivity.createRelaunchWebApkIntent(fromIntent, webApkInfo);
 
         // Launch the Generic First Run Experience if it was previously active.
         boolean isGenericFreActive = checkIsGenericFreActive();
         if (preferLightweightFre && !isGenericFreActive) {
-            return createLightweightFirstRunIntent(caller, fromIntent,
-                    associatedAppNameForLightweightFre, intentToLaunchAfterFreComplete,
-                    requiresBroadcast);
+            return createLightweightFirstRunIntent(caller, fromIntent, webApkInfo,
+                    intentToLaunchAfterFreComplete, requiresBroadcast);
         } else {
             return createGenericFirstRunIntent(
                     caller, fromIntent, intentToLaunchAfterFreComplete, requiresBroadcast);
@@ -61,19 +59,19 @@ public class FreIntentCreator {
      * Returns an intent to show the lightweight first run activity.
      * @param context                        The context.
      * @param fromIntent                     The intent that was used to launch Chrome.
-     * @param associatedAppName              The id of the application associated with the activity
-     *                                       being launched.
+     * @param webApkInfo                     An optional WebApkInfo if this FRE flow was triggered
+     *                                       by launching a WebAPK.
      * @param intentToLaunchAfterFreComplete The intent to launch when the user completes the FRE.
      * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
     private static Intent createLightweightFirstRunIntent(Context context, Intent fromIntent,
-            String associatedAppName, Intent intentToLaunchAfterFreComplete,
+            @Nullable WebApkInfo webApkInfo, Intent intentToLaunchAfterFreComplete,
             boolean requiresBroadcast) {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
-        if (associatedAppName != null) {
-            intent.putExtra(
-                    LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, associatedAppName);
+        String webApkShortName = webApkInfo == null ? null : webApkInfo.shortName();
+        if (webApkShortName != null) {
+            intent.putExtra(LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, webApkShortName);
         }
         addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
         return intent;
