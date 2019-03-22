@@ -45,6 +45,10 @@ class UsageStatsDatabase {
 
   using StatusCallback = base::OnceCallback<void(Error)>;
 
+  // Digital Wellbeing doesn't show activity older than a week, so 7 days is the
+  // max age for event retention.
+  constexpr static int EXPIRY_THRESHOLD_DAYS = 7;
+
   // Initializes the database with user |profile|.
   explicit UsageStatsDatabase(Profile* profile);
 
@@ -74,6 +78,9 @@ class UsageStatsDatabase {
   void DeleteEventsWithMatchingDomains(base::flat_set<std::string> domains,
                                        StatusCallback callback);
 
+  // Delete events older than EXPIRY_THRESHOLD_DAYS.
+  void ExpireEvents(base::Time now);
+
   void GetAllSuspensions(SuspensionsCallback callback);
 
   // Persists all the suspensions in |domains| and deletes any suspensions *not*
@@ -98,6 +105,8 @@ class UsageStatsDatabase {
 
   void OnTokenMappingInitDone(bool retry,
                               leveldb_proto::Enums::InitStatus status);
+
+  void OnWebsiteEventExpiryDone(Error error);
 
   void OnUpdateEntries(StatusCallback callback, bool isSuccess);
 

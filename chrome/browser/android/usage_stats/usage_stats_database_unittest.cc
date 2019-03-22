@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -287,6 +288,47 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
   fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 remaining event outside range (at time 10).
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event3))));
+
+  fake_website_event_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, ExpiryDeletesOldEvents) {
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
+  // Add 3 events.
+  base::Time now = base::Time::NowFromSystemTime();
+  long now_in_seconds = now.ToDoubleT();
+  WebsiteEvent event1 = CreateWebsiteEvent(kFqdn1, now_in_seconds + 1,
+                                           WebsiteEvent::START_BROWSING);
+  WebsiteEvent event2 = CreateWebsiteEvent(kFqdn1, now_in_seconds + 2,
+                                           WebsiteEvent::START_BROWSING);
+  WebsiteEvent event3 = CreateWebsiteEvent(kFqdn1, now_in_seconds + 10,
+                                           WebsiteEvent::START_BROWSING);
+  std::vector<WebsiteEvent> events({event1, event2, event3});
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  fake_website_event_db()->UpdateCallback(true);
+
+  // Advance "now" by 7 days + 9 seconds so that the first two events are > 7
+  // days old.
+  now = now +
+        base::TimeDelta::FromDays(UsageStatsDatabase::EXPIRY_THRESHOLD_DAYS) +
+        base::TimeDelta::FromSeconds(9);
+  usage_stats_database()->ExpireEvents(now);
+
+  fake_website_event_db()->LoadCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
+
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 

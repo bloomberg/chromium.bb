@@ -11,6 +11,7 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
@@ -60,6 +61,7 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
       usage_stats_dir.Append(kTokensDbName), db_task_runner);
 
   InitializeDBs();
+  ExpireEvents(base::Time::NowFromSystemTime());
 }
 
 UsageStatsDatabase::UsageStatsDatabase(
@@ -254,6 +256,16 @@ void UsageStatsDatabase::DeleteEventsWithMatchingDomains(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void UsageStatsDatabase::ExpireEvents(base::Time now) {
+  long seven_days_ago =
+      (long)(now - base::TimeDelta::FromDays(EXPIRY_THRESHOLD_DAYS))
+          .ToDoubleT();
+  DeleteEventsInRange(
+      1, seven_days_ago,
+      base::BindOnce(&UsageStatsDatabase::OnWebsiteEventExpiryDone,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void UsageStatsDatabase::GetAllSuspensions(SuspensionsCallback callback) {
   if (!suspension_db_initialized_) {
     // Defer execution if database is uninitialized.
@@ -420,6 +432,8 @@ void UsageStatsDatabase::OnTokenMappingInitDone(
     token_mapping_db_callbacks_.pop();
   }
 }
+
+void UsageStatsDatabase::OnWebsiteEventExpiryDone(Error error) {}
 
 void UsageStatsDatabase::OnUpdateEntries(StatusCallback callback,
                                          bool isSuccess) {
