@@ -3083,8 +3083,8 @@ class ChangeDescription(object):
     ] + self._description_lines)
 
     regexp = re.compile(self.BUG_LINE)
+    prefix = settings.GetBugPrefix()
     if not any((regexp.match(line) for line in self._description_lines)):
-      prefix = settings.GetBugPrefix()
       values = list(_get_bug_line_values(prefix, bug or '')) or [prefix]
       if git_footer:
         self.append_footer('Bug: %s' % ', '.join(values))
@@ -3100,7 +3100,9 @@ class ChangeDescription(object):
 
     # Strip off comments and default inserted "Bug:" line.
     clean_lines = [line.rstrip() for line in lines if not
-                   (line.startswith('#') or line.rstrip() == "Bug:")]
+                   (line.startswith('#') or
+                    line.rstrip() == "Bug:" or
+                    line.rstrip() == "Bug: " + prefix)]
     if not clean_lines:
       DieWithError('No CL description, aborting')
     self.set_description(clean_lines)
