@@ -82,6 +82,18 @@ void WebAppProvider::StartRegistry() {
                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
+AppRegistrar& WebAppProvider::registrar() {
+  return *registrar_;
+}
+
+InstallManager& WebAppProvider::install_manager() {
+  return *install_manager_;
+}
+
+PendingAppManager& WebAppProvider::pending_app_manager() {
+  return *pending_app_manager_;
+}
+
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());

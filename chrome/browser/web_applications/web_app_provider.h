@@ -14,7 +14,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "components/keyed_service/core/keyed_service.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -49,7 +49,7 @@ class WebAppPolicyManager;
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
 // Profile-linked KeyedService) and their associated PrefService.
-class WebAppProvider : public KeyedService,
+class WebAppProvider : public WebAppProviderBase,
                        public content::NotificationObserver {
  public:
   static WebAppProvider* Get(Profile* profile);
@@ -63,14 +63,10 @@ class WebAppProvider : public KeyedService,
   // Start registry. All subsystems depend on it.
   void StartRegistry();
 
-  AppRegistrar& registrar() { return *registrar_; }
-
-  // UIs can use InstallManager for user-initiated Web Apps install.
-  InstallManager& install_manager() { return *install_manager_; }
-
-  // Clients can use PendingAppManager to install, uninstall, and update
-  // Web Apps.
-  PendingAppManager& pending_app_manager() { return *pending_app_manager_; }
+  // WebAppProviderBase:
+  AppRegistrar& registrar() override;
+  InstallManager& install_manager() override;
+  PendingAppManager& pending_app_manager() override;
 
   const SystemWebAppManager& system_web_app_manager() {
     return *system_web_app_manager_;

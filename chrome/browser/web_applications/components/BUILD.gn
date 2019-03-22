@@ -22,6 +22,10 @@ source_set("components") {
     "web_app_icon_generator.h",
     "web_app_install_utils.cc",
     "web_app_install_utils.h",
+    "web_app_provider_base.cc",
+    "web_app_provider_base.h",
+    "web_app_provider_base_factory.cc",
+    "web_app_provider_base_factory.h",
     "web_app_shortcut.cc",
     "web_app_shortcut.h",
     "web_app_shortcut_chromeos.cc",
@@ -61,6 +65,7 @@ source_set("components") {
     "//chrome/common",
     "//components/crx_file",
     "//components/favicon/content",
+    "//components/keyed_service/content",
     "//content/public/browser",
     "//skia",
   ]
