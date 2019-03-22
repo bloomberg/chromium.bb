@@ -2750,9 +2750,6 @@
   <message name="IDS_SET_TIME_PROMPT" desc="Text prompting the user to check and set the system time.">
     Chrome was unable to set the system time. Please check the time below and correct it if needed.
   </message>
-  <message name="IDS_SET_TIME_BUTTON_CLOSE" desc="Text for the button to close the window.">
-    Done
-  </message>
   <message name="IDS_SET_TIME_DATE_LABEL" desc="Label for the date input element.">
     System date
   </message>
