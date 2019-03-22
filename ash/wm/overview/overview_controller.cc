@@ -219,7 +219,13 @@ class OverviewController::OverviewBlurController
         DCHECK(overview_session);
         OverviewGrid* grid = overview_session->GetGridWithRootWindow(root);
         bool should_animate = grid && grid->ShouldAnimateWallpaper();
-        if (should_animate && animate_only) {
+        auto* wallpaper_view = RootWindowController::ForWindow(root)
+                                   ->wallpaper_widget_controller()
+                                   ->wallpaper_view();
+        float blur_sigma =
+            wallpaper_view ? wallpaper_view->repaint_blur() : 0.f;
+        if (should_animate && animate_only &&
+            blur_sigma != kWallpaperBlurSigma) {
           root->AddObserver(this);
           roots_to_animate_.push_back(root);
           continue;
