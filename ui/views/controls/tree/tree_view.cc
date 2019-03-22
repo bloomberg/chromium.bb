@@ -68,16 +68,7 @@ bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
 
 }  // namespace
 TreeView::TreeView()
-    : model_(nullptr),
-      selected_node_(nullptr),
-      editing_(false),
-      editor_(nullptr),
-      focus_manager_(nullptr),
-      auto_expand_children_(false),
-      editable_(true),
-      controller_(nullptr),
-      root_shown_(true),
-      row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
+    : row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
       drawing_provider_(std::make_unique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -1142,11 +1133,7 @@ void TreeView::SetHasFocusIndicator(bool shows) {
 
 // InternalNode ----------------------------------------------------------------
 
-TreeView::InternalNode::InternalNode()
-    : model_node_(nullptr),
-      loaded_children_(false),
-      is_expanded_(false),
-      text_width_(0) {}
+TreeView::InternalNode::InternalNode() = default;
 
 TreeView::InternalNode::~InternalNode() = default;
 

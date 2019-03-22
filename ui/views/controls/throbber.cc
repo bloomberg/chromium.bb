@@ -26,8 +26,7 @@ static constexpr int kDefaultDiameter = 16;
 // diamater plus padding inherent in the checkmark SVG.
 static constexpr int kCheckmarkDipSize = 18;
 
-Throbber::Throbber() : checked_(false) {
-}
+Throbber::Throbber() = default;
 
 Throbber::~Throbber() {
   Stop();

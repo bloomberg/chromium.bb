@@ -167,9 +167,7 @@ class ScrollView::Viewport : public View {
 };
 
 ScrollView::ScrollView()
-    : contents_(nullptr),
-      contents_viewport_(new Viewport(this)),
-      header_(nullptr),
+    : contents_viewport_(new Viewport(this)),
       header_viewport_(new Viewport(this)),
       horiz_sb_(PlatformStyle::CreateScrollBar(true).release()),
       vert_sb_(PlatformStyle::CreateScrollBar(false).release()),
@@ -178,9 +176,6 @@ ScrollView::ScrollView()
       more_content_top_(std::make_unique<Separator>()),
       more_content_right_(std::make_unique<Separator>()),
       more_content_bottom_(std::make_unique<Separator>()),
-      min_height_(-1),
-      max_height_(-1),
-      hide_horizontal_scrollbar_(false),
       scroll_with_layers_enabled_(base::FeatureList::IsEnabled(
           ::features::kUiCompositorScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);

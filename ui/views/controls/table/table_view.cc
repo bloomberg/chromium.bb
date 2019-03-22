@@ -125,16 +125,11 @@ struct TableView::GroupSortHelper {
   std::map<int, int> model_index_to_range_start;
 };
 
-TableView::VisibleColumn::VisibleColumn() : x(0), width(0) {}
+TableView::VisibleColumn::VisibleColumn() = default;
 
 TableView::VisibleColumn::~VisibleColumn() = default;
 
-TableView::PaintRegion::PaintRegion()
-    : min_row(0),
-      max_row(0),
-      min_column(0),
-      max_column(0) {
-}
+TableView::PaintRegion::PaintRegion() = default;
 
 TableView::PaintRegion::~PaintRegion() = default;
 
@@ -145,18 +140,9 @@ TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
                      bool single_selection)
-    : model_(nullptr),
-      columns_(columns),
-      active_visible_column_index_(-1),
-      header_(nullptr),
+    : columns_(columns),
       table_type_(table_type),
-      single_selection_(single_selection),
-      select_on_remove_(true),
-      observer_(nullptr),
-      last_parent_width_(0),
-      layout_width_(0),
-      grouper_(nullptr),
-      in_set_visible_column_width_(false) {
+      single_selection_(single_selection) {
   constexpr int kTextContext = style::CONTEXT_TABLE_ROW;
   constexpr int kTextStyle = style::STYLE_PRIMARY;
   font_list_ = style::GetFont(kTextContext, kTextStyle);

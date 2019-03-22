@@ -306,7 +306,7 @@ static void RepostEventImpl(const ui::LocatedEvent* event,
 
 class MenuController::MenuScrollTask {
  public:
-  MenuScrollTask() : submenu_(nullptr), is_scrolling_up_(false), start_y_(0) {
+  MenuScrollTask() {
     pixels_per_second_ = MenuItemView::pref_menu_height() * 20;
   }
 
@@ -358,10 +358,10 @@ class MenuController::MenuScrollTask {
   }
 
   // SubmenuView being scrolled.
-  SubmenuView* submenu_;
+  SubmenuView* submenu_ = nullptr;
 
   // Direction scrolling.
-  bool is_scrolling_up_;
+  bool is_scrolling_up_ = false;
 
   // Timer to periodically scroll.
   base::RepeatingTimer scrolling_timer_;
@@ -373,7 +373,7 @@ class MenuController::MenuScrollTask {
   int pixels_per_second_;
 
   // Y-coordinate of submenu_view_ when scrolling started.
-  int start_y_;
+  int start_y_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollTask);
 };
@@ -381,35 +381,26 @@ class MenuController::MenuScrollTask {
 // MenuController:SelectByCharDetails ----------------------------------------
 
 struct MenuController::SelectByCharDetails {
-  SelectByCharDetails()
-      : first_match(-1),
-        has_multiple(false),
-        index_of_item(-1),
-        next_match(-1) {}
+  SelectByCharDetails() = default;
 
   // Index of the first menu with the specified mnemonic.
-  int first_match;
+  int first_match = -1;
 
   // If true there are multiple menu items with the same mnemonic.
-  bool has_multiple;
+  bool has_multiple = false;
 
   // Index of the selected item; may remain -1.
-  int index_of_item;
+  int index_of_item = -1;
 
   // If there are multiple matches this is the index of the item after the
   // currently selected item whose mnemonic matches. This may remain -1 even
   // though there are matches.
-  int next_match;
+  int next_match = -1;
 };
 
 // MenuController:State ------------------------------------------------------
 
-MenuController::State::State()
-    : item(nullptr),
-      hot_button(nullptr),
-      submenu_open(false),
-      anchor(MenuAnchorPosition::kTopLeft),
-      context_menu(false) {}
+MenuController::State::State() = default;
 
 MenuController::State::State(const State& other) = default;
 

@@ -219,12 +219,12 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
-  View* contents_;
+  View* contents_ = nullptr;
   View* contents_viewport_;
 
   // The current header and its viewport. |header_| is contained in
   // |header_viewport_|.
-  View* header_;
+  View* header_ = nullptr;
   View* header_viewport_;
 
   // Horizontal scrollbar.
@@ -244,8 +244,8 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // The min and max height for the bounded scroll view. These are negative
   // values if the view is not bounded.
-  int min_height_;
-  int max_height_;
+  int min_height_ = -1;
+  int max_height_ = -1;
 
   // See description of SetBackgroundColor() for details.
   BackgroundColorData background_color_data_ = {
@@ -254,7 +254,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // If true, never show the horizontal scrollbar (even if the contents is wider
   // than the viewport).
-  bool hide_horizontal_scrollbar_;
+  bool hide_horizontal_scrollbar_ = false;
 
   // In Harmony, the indicator is a focus ring. Pre-Harmony, the indicator is a
   // different border painter.

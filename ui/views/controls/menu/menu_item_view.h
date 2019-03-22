@@ -111,20 +111,16 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // The data structure which is used for the menu size
   struct MenuItemDimensions {
-    MenuItemDimensions()
-        : standard_width(0),
-          children_width(0),
-          minor_text_width(0),
-          height(0) {}
+    MenuItemDimensions() = default;
 
     // Width of everything except the accelerator and children views.
-    int standard_width;
+    int standard_width = 0;
     // The width of all contained views of the item.
-    int children_width;
+    int children_width = 0;
     // The amount of space needed to accommodate the subtext.
-    int minor_text_width;
+    int minor_text_width = 0;
     // The height of the menu item.
-    int height;
+    int height = 0;
   };
 
   // Constructor for use with the top level menu item. This menu is never
