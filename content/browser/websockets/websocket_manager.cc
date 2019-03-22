@@ -167,6 +167,7 @@ void WebSocketManager::CreateWebSocket(
     int frame_id,
     url::Origin origin,
     network::mojom::AuthenticationHandlerPtr auth_handler,
+    network::mojom::TrustedHeaderClientPtr header_client,
     network::mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -178,11 +179,14 @@ void WebSocketManager::CreateWebSocket(
     network::mojom::NetworkContext* network_context =
         storage_partition->GetNetworkContext();
     network_context->CreateWebSocket(std::move(request), process_id, frame_id,
-                                     origin, std::move(auth_handler));
+                                     origin, std::move(auth_handler),
+                                     std::move(header_client));
     return;
   }
-  // |auth_handler| is provided only for the network service path.
+  // |auth_handler| and |header_client| are provided only for the network
+  // service path.
   DCHECK(!auth_handler);
+  DCHECK(!header_client);
 
   // Maintain a WebSocketManager per RenderProcessHost. While the instance of
   // WebSocketManager is allocated on the UI thread, it must only be used and
@@ -286,7 +290,7 @@ std::unique_ptr<network::WebSocket> WebSocketManager::DoCreateWebSocketInternal(
     url::Origin origin,
     base::TimeDelta delay) {
   return std::make_unique<network::WebSocket>(
-      std::move(delegate), std::move(request), nullptr,
+      std::move(delegate), std::move(request), nullptr, nullptr,
       std::move(pending_connection_tracker), child_id, frame_id,
       std::move(origin), delay);
 }

@@ -1530,13 +1530,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
   extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
       profile())
-      ->MaybeProxyWebSocket(host, &request, &auth_handler);
+      ->MaybeProxyWebSocket(host, &request, &auth_handler, nullptr);
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->GetNetworkContext()
       ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
                         host->GetProcess()->GetID(),
                         url::Origin::Create(GURL("http://example.com")),
-                        std::move(auth_handler));
+                        std::move(auth_handler), nullptr);
   web_socket.reset();
 }
 

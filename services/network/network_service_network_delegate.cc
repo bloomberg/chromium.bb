@@ -5,6 +5,7 @@
 #include "services/network/network_service_network_delegate.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -12,6 +13,10 @@
 #include "services/network/pending_callback_chain.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
+
+#if !defined(OS_IOS)
+#include "services/network/websocket.h"
+#endif
 
 namespace network {
 
@@ -38,6 +43,13 @@ int NetworkServiceNetworkDelegate::OnBeforeStartTransaction(
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (url_loader)
     return url_loader->OnBeforeStartTransaction(std::move(callback), headers);
+
+#if !defined(OS_IOS)
+  WebSocket* web_socket = WebSocket::ForRequest(*request);
+  if (web_socket)
+    return web_socket->OnBeforeStartTransaction(std::move(callback), headers);
+#endif  // !defined(OS_IOS)
+
   return net::OK;
 }
 
@@ -65,6 +77,15 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
         chain->CreateCallback(), original_response_headers,
         override_response_headers, allowed_unsafe_redirect_url));
   }
+
+#if !defined(OS_IOS)
+  WebSocket* web_socket = WebSocket::ForRequest(*request);
+  if (web_socket) {
+    chain->AddResult(web_socket->OnHeadersReceived(
+        chain->CreateCallback(), original_response_headers,
+        override_response_headers, allowed_unsafe_redirect_url));
+  }
+#endif  // !defined(OS_IOS)
 
   // Clear-Site-Data header will be handled by |ResourceDispatcherHost| if
   // network service is disabled.

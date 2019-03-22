@@ -9,6 +9,7 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket.h"
 #include "services/network/websocket_throttler.h"
@@ -28,6 +29,7 @@ class WebSocketFactory final {
 
   void CreateWebSocket(mojom::WebSocketRequest request,
                        mojom::AuthenticationHandlerPtr auth_handler,
+                       mojom::TrustedHeaderClientPtr header_client,
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin);

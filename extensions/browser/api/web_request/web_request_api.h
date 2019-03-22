@@ -224,7 +224,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   void MaybeProxyWebSocket(
       content::RenderFrameHost* frame,
       network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* auth_handler);
+      network::mojom::AuthenticationHandlerPtr* auth_handler,
+      network::mojom::TrustedHeaderClientPtr* header_client);
 
   void ForceProxyForTesting();
 

@@ -744,7 +744,8 @@ bool WebRequestAPI::MaybeProxyAuthRequest(
 void WebRequestAPI::MaybeProxyWebSocket(
     content::RenderFrameHost* frame,
     network::mojom::WebSocketRequest* request,
-    network::mojom::AuthenticationHandlerPtr* auth_handler) {
+    network::mojom::AuthenticationHandlerPtr* auth_handler,
+    network::mojom::TrustedHeaderClientPtr* header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!MayHaveProxies())
     return;
@@ -753,6 +754,12 @@ void WebRequestAPI::MaybeProxyWebSocket(
   auto proxied_request = std::move(*request);
   *request = mojo::MakeRequest(&proxied_socket_ptr_info);
   auto authentication_request = mojo::MakeRequest(auth_handler);
+
+  network::mojom::TrustedHeaderClientRequest header_client_request;
+  if (ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          frame->GetProcess()->GetBrowserContext())) {
+    header_client_request = mojo::MakeRequest(header_client);
+  }
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -763,7 +770,8 @@ void WebRequestAPI::MaybeProxyWebSocket(
           frame->GetProcess()->GetBrowserContext(),
           frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
           base::Unretained(info_map_), std::move(proxied_socket_ptr_info),
-          std::move(proxied_request), std::move(authentication_request)));
+          std::move(proxied_request), std::move(authentication_request),
+          std::move(header_client_request)));
 }
 
 void WebRequestAPI::ForceProxyForTesting() {

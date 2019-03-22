@@ -8,30 +8,6 @@ function getSetCookieUrl(name, value) {
   return getServerURL('set-cookie?' + name + '=' + value);
 }
 
-function checkHeaders(headers, requiredNames, disallowedNames) {
-  var headerMap = {};
-  for (var i = 0; i < headers.length; i++)
-    headerMap[headers[i].name.toLowerCase()] = headers[i].value;
-
-  for (var i = 0; i < requiredNames.length; i++) {
-    chrome.test.assertTrue(!!headerMap[requiredNames[i]],
-        'Missing header: ' + requiredNames[i]);
-  }
-  for (var i = 0; i < disallowedNames.length; i++) {
-    chrome.test.assertFalse(!!headerMap[disallowedNames[i]],
-        'Header should not be present: ' + disallowedNames[i]);
-  }
-}
-
-function removeHeader(headers, name) {
-  for (var i = 0; i < headers.length; i++) {
-    if (headers[i].name.toLowerCase() == name) {
-      headers.splice(i, 1);
-      break;
-    }
-  }
-}
-
 runTests([
   function testSpecialRequestHeadersVisible() {
     // Set a cookie so the cookie request header is set.
