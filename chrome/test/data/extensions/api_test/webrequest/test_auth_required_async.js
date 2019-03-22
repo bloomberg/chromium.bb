@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,9 +11,9 @@ function getURLAuthRequired(realm, subpath = 'subpath') {
 }
 
 runTests([
-  // onAuthRequired is not a blocking function in this variant.
-  function authRequiredNonBlocking() {
-    var realm = 'nonblock';
+  // onAuthRequired is an async function but takes no action in this variant.
+  function authRequiredAsyncNoAction() {
+    var realm = 'asyncnoaction';
     var url = getURLAuthRequired(realm);
     expect(
       [  // events
@@ -87,93 +87,13 @@ runTests([
          "onHeadersReceived", "onAuthRequired", "onResponseStarted",
          "onCompleted"]
       ],
-      {urls: ["<all_urls>"]}, ["responseHeaders"]);
+      {urls: ["<all_urls>"]}, ["asyncBlocking", "responseHeaders"]);
     navigateAndWait(url);
   },
 
-  // onAuthRequired is a blocking function but takes no action in this variant.
-  function authRequiredSyncNoAction() {
-    var realm = 'syncnoaction';
-    var url = getURLAuthRequired(realm);
-    expect(
-      [  // events
-        { label: "onBeforeRequest",
-          event: "onBeforeRequest",
-          details: {
-            url: url,
-            frameUrl: url
-          }
-        },
-        { label: "onBeforeSendHeaders",
-          event: "onBeforeSendHeaders",
-          details: {
-            url: url,
-            // Note: no requestHeaders because we don't ask for them.
-          },
-        },
-        { label: "onSendHeaders",
-          event: "onSendHeaders",
-          details: {
-            url: url,
-          }
-        },
-        { label: "onHeadersReceived",
-          event: "onHeadersReceived",
-          details: {
-            url: url,
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized",
-            statusCode: 401,
-          }
-        },
-        { label: "onAuthRequired",
-          event: "onAuthRequired",
-          details: {
-            url: url,
-            isProxy: false,
-            scheme: "basic",
-            realm: realm,
-            challenger: {host: testServer, port: testServerPort},
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized",
-            statusCode: 401,
-          }
-        },
-        { label: "onResponseStarted",
-          event: "onResponseStarted",
-          details: {
-            url: url,
-            fromCache: false,
-            statusCode: 401,
-            ip: "127.0.0.1",
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized",
-          }
-        },
-        { label: "onCompleted",
-          event: "onCompleted",
-          details: {
-            url: url,
-            fromCache: false,
-            statusCode: 401,
-            ip: "127.0.0.1",
-            responseHeadersExist: true,
-            statusLine: "HTTP/1.1 401 Unauthorized",
-          }
-        },
-      ],
-      [  // event order
-        ["onBeforeRequest", "onBeforeSendHeaders", "onSendHeaders",
-         "onHeadersReceived", "onAuthRequired", "onResponseStarted",
-         "onCompleted"]
-      ],
-      {urls: ["<all_urls>"]}, ["blocking", "responseHeaders"]);
-    navigateAndWait(url);
-  },
-
-  // onAuthRequired is a blocking function that cancels the auth attempt.
-  function authRequiredSyncCancelAuth() {
-    var realm = 'synccancel';
+  // onAuthRequired is an async function that cancels the auth attempt.
+  function authRequiredAsyncCancelAuth() {
+    var realm = 'asynccancel';
     var url = getURLAuthRequired(realm);
     expect(
       [  // events
@@ -251,13 +171,13 @@ runTests([
          "onCompleted"]
       ],
       {urls: ["<all_urls>"]},
-      ["responseHeaders", "blocking"]);
+      ["responseHeaders", "asyncBlocking"]);
     navigateAndWait(url);
   },
 
-  // onAuthRequired is a blocking function that sets authentication credentials.
-  function authRequiredSyncSetAuth() {
-    var realm = 'syncsetauth';
+  // onAuthRequired is an async function that sets authentication credentials.
+  function authRequiredAsyncSetAuth() {
+    var realm = 'asyncsetauth';
     var url = getURLAuthRequired(realm);
     expect(
       [  // events
@@ -335,7 +255,7 @@ runTests([
          "onCompleted"]
       ],
       {urls: ["<all_urls>"]},
-      ["responseHeaders", "blocking"]);
+      ["responseHeaders", "asyncBlocking"]);
     navigateAndWait(url);
   },
 ]);
