@@ -36,7 +36,7 @@
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {
