@@ -63,7 +63,6 @@ class CORE_EXPORT NavigationScheduler final
   explicit NavigationScheduler(LocalFrame*);
   ~NavigationScheduler();
 
-  bool LocationChangePending();
   bool IsNavigationScheduledWithin(double interval_in_seconds) const;
 
   void ScheduleRedirect(double delay, const KURL&, Document::HttpRefreshType);
@@ -79,7 +78,9 @@ class CORE_EXPORT NavigationScheduler final
   bool ShouldScheduleNavigation(const KURL&) const;
 
   void NavigateTask();
-  void Schedule(ScheduledNavigation*);
+
+  enum CancelParsingPolicy { kCancelParsing, kDoNotCancelParsing };
+  void Schedule(ScheduledNavigation*, CancelParsingPolicy);
 
   static bool MustReplaceCurrentItem(LocalFrame* target_frame);
   base::TimeTicks InputTimestamp();
