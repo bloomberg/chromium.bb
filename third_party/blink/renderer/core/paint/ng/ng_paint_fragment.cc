@@ -523,8 +523,7 @@ NGPhysicalOffsetRect NGPaintFragment::SelfInkOverflow() const {
 
   // NGPhysicalTextFragment caches ink overflow in layout.
   const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (const NGPhysicalTextFragment* text =
-          ToNGPhysicalTextFragmentOrNull(&fragment))
+  if (const auto* text = DynamicTo<NGPhysicalTextFragment>(fragment))
     return text->SelfInkOverflow();
 
   if (!ink_overflow_)
@@ -552,8 +551,7 @@ NGPhysicalOffsetRect NGPaintFragment::InkOverflow() const {
 
   // NGPhysicalTextFragment caches ink overflow in layout.
   const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (const NGPhysicalTextFragment* text =
-          ToNGPhysicalTextFragmentOrNull(&fragment))
+  if (const auto* text = DynamicTo<NGPhysicalTextFragment>(fragment))
     return text->SelfInkOverflow();
 
   if (!ink_overflow_)
@@ -600,8 +598,7 @@ NGPhysicalOffsetRect NGPaintFragment::RecalcInkOverflow() {
 
   // NGPhysicalTextFragment caches ink overflow in layout. No need to recalc nor
   // to store in NGPaintFragment.
-  if (const NGPhysicalTextFragment* text =
-          ToNGPhysicalTextFragmentOrNull(&fragment)) {
+  if (const auto* text = DynamicTo<NGPhysicalTextFragment>(&fragment)) {
     DCHECK(!ink_overflow_);
     return text->SelfInkOverflow();
   }
@@ -841,8 +838,7 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
 
 NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRectForText(
     const LayoutSelectionStatus& selection_status) const {
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragmentOrDie(PhysicalFragment());
+  const auto& text_fragment = To<NGPhysicalTextFragment>(PhysicalFragment());
   NGPhysicalOffsetRect selection_rect =
       text_fragment.LocalRect(selection_status.start, selection_status.end);
   NGLogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, *this);
@@ -881,9 +877,7 @@ NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRectForReplaced()
 
 PositionWithAffinity NGPaintFragment::PositionForPointInText(
     const NGPhysicalOffset& point) const {
-  DCHECK(PhysicalFragment().IsText());
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(PhysicalFragment());
+  const auto& text_fragment = To<NGPhysicalTextFragment>(PhysicalFragment());
   if (text_fragment.IsAnonymousText())
     return PositionWithAffinity();
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
@@ -1118,7 +1112,7 @@ String NGPaintFragment::DebugName() const {
     }
   } else if (physical_fragment.IsText()) {
     name.Append("NGPhysicalTextFragment '");
-    name.Append(ToNGPhysicalTextFragment(physical_fragment).Text());
+    name.Append(To<NGPhysicalTextFragment>(physical_fragment).Text());
     name.Append('\'');
   } else if (physical_fragment.IsLineBox()) {
     name.Append("NGPhysicalLineBoxFragment");

@@ -154,8 +154,8 @@ void PaintDocumentMarkers(GraphicsContext& context,
   if (markers_to_paint.IsEmpty())
     return;
 
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   DCHECK(text_fragment.GetNode());
   const Text& text = ToTextOrDie(*text_fragment.GetNode());
   for (const DocumentMarker* marker : markers_to_paint) {
@@ -257,8 +257,8 @@ static void PaintSelection(GraphicsContext& context,
                            Color text_color,
                            const LayoutRect& box_rect,
                            const LayoutSelectionStatus& selection_status) {
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   const Color color =
       SelectionBackgroundColor(document, style, text_fragment, text_color);
   const NGPhysicalOffsetRect selection_rect =
@@ -285,8 +285,8 @@ void NGTextFragmentPainter::PaintSymbol(const PaintInfo& paint_info,
 void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset,
                                   const NodeHolder& node_holder) {
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
   const Document& document = fragment_.GetLayoutObject()->GetDocument();
 

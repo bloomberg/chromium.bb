@@ -200,7 +200,7 @@ bool NGLineTruncator::TruncateChild(LayoutUnit space_for_child,
   // Only text fragments can be truncated.
   if (!child->fragment)
     return is_first_child;
-  auto& fragment = ToNGPhysicalTextFragment(*child->fragment);
+  auto& fragment = To<NGPhysicalTextFragment>(*child->fragment);
   // TODO(layout-dev): Add support for OffsetToFit to ShapeResultView to avoid
   // this copy.
   scoped_refptr<blink::ShapeResult> shape_result =

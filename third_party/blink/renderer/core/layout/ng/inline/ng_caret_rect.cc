@@ -56,8 +56,8 @@ NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
 NGPhysicalOffsetRect ComputeLocalCaretRectAtTextOffset(
     const NGPaintFragment& paint_fragment,
     unsigned offset) {
-  const NGPhysicalTextFragment& fragment =
-      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
+  const auto& fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   DCHECK_GE(offset, fragment.StartOffset());
   DCHECK_LE(offset, fragment.EndOffset());
 

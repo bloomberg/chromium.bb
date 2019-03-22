@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -169,11 +170,12 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   std::unique_ptr<RareData> rare_data_;
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalTextFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->IsText(),
-                  fragment.IsText());
+template <>
+struct DowncastTraits<NGPhysicalTextFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.IsText();
+  }
+};
 
 }  // namespace blink
 

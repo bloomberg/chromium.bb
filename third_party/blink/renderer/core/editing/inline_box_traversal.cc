@@ -146,9 +146,8 @@ class AbstractInlineBox {
       }
       return DirectionFromLevel(min_level);
     }
-    const NGPhysicalLineBoxFragment& line_box =
-        ToNGPhysicalLineBoxFragmentOrDie(
-            GetNGPaintFragment().ContainerLineBox()->PhysicalFragment());
+    const auto& line_box = To<NGPhysicalLineBoxFragment>(
+        GetNGPaintFragment().ContainerLineBox()->PhysicalFragment());
     return line_box.BaseDirection();
   }
 
@@ -189,8 +188,8 @@ bool IsAtFragmentStart(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kAfterBox:
       return false;
     case NGCaretPositionType::kAtTextOffset:
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+      const auto& text_fragment = To<NGPhysicalTextFragment>(
+          caret_position.fragment->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset == text_fragment.StartOffset();
   }
@@ -206,8 +205,8 @@ bool IsAtFragmentEnd(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kAfterBox:
       return true;
     case NGCaretPositionType::kAtTextOffset:
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+      const auto& text_fragment = To<NGPhysicalTextFragment>(
+          caret_position.fragment->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset == text_fragment.EndOffset();
   }
@@ -268,16 +267,13 @@ class AbstractInlineBoxAndSideAffinity {
     DCHECK(physical_fragment.IsInline());
 
     if (physical_fragment.IsBox()) {
-      DCHECK(physical_fragment.IsInline());
       return {&fragment,
               is_at_start ? NGCaretPositionType::kBeforeBox
                           : NGCaretPositionType::kAfterBox,
               base::nullopt};
     }
 
-    DCHECK(physical_fragment.IsText());
-    const NGPhysicalTextFragment& text_fragment =
-        ToNGPhysicalTextFragment(physical_fragment);
+    const auto& text_fragment = To<NGPhysicalTextFragment>(physical_fragment);
     return {
         &fragment, NGCaretPositionType::kAtTextOffset,
         is_at_start ? text_fragment.StartOffset() : text_fragment.EndOffset()};

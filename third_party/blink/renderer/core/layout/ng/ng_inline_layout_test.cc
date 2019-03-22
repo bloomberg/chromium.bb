@@ -53,7 +53,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   EXPECT_TRUE(result);
 
   String expected_text("Hello World!");
-  NGInlineNode first_child = ToNGInlineNode(node.FirstChild());
+  auto first_child = To<NGInlineNode>(node.FirstChild());
   EXPECT_EQ(expected_text,
             StringView(first_child.ItemsData(false).text_content, 0, 12));
 }
@@ -80,7 +80,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   String expected_text("Hello ");
   expected_text.append(kObjectReplacementCharacter);
   expected_text.append(".");
-  NGInlineNode first_child = ToNGInlineNode(node.FirstChild());
+  auto first_child = To<NGInlineNode>(node.FirstChild());
   EXPECT_EQ(expected_text,
             StringView(first_child.ItemsData(false).text_content, 0, 8));
 

@@ -1175,9 +1175,8 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
     auto fragments = NGPaintFragment::InlineFragmentsFor(layout_object);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (const NGPaintFragment* fragment : fragments) {
-        DCHECK(fragment->PhysicalFragment().IsText());
-        const NGPhysicalTextFragment& text_fragment =
-            ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+        const auto& text_fragment =
+            To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
         const ShapeResultView* shape_result = text_fragment.TextShapeResult();
         if (!shape_result)
           continue;

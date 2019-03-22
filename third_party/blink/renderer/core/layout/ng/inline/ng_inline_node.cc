@@ -956,8 +956,7 @@ scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
     NGInlineChildLayoutContext* context) {
   PrepareLayoutIfNeeded();
 
-  const NGInlineBreakToken* inline_break_token =
-      ToNGInlineBreakToken(break_token);
+  const auto* inline_break_token = To<NGInlineBreakToken>(break_token);
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
                                     context);
   return algorithm.Layout();

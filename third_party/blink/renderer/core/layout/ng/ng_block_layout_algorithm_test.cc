@@ -1361,12 +1361,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
 
   const auto* linebox_fragment = empty2_fragment->Children()[0].fragment;
 
-  offset = ToNGPhysicalLineBoxFragment(linebox_fragment)->Children()[0].offset;
+  offset =
+      To<NGPhysicalLineBoxFragment>(linebox_fragment)->Children()[0].offset;
   // inline 10 = left float's margin(10)
   // block 10 = left float's margin
   EXPECT_THAT(offset, NGPhysicalOffset(LayoutUnit(10), LayoutUnit(10)));
 
-  offset = ToNGPhysicalLineBoxFragment(linebox_fragment)->Children()[1].offset;
+  offset =
+      To<NGPhysicalLineBoxFragment>(linebox_fragment)->Children()[1].offset;
   // inline offset 135 = right float's margin(10) + right float offset(125)
   // block offset 15 = right float's margin
   LayoutUnit right_float_offset = LayoutUnit(125);
@@ -2289,7 +2291,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
   const auto* linebox =
       ToNGPhysicalBoxFragment(fragment.get())->Children()[0].fragment;
   const auto* float2 =
-      ToNGPhysicalLineBoxFragment(linebox)->Children()[1].fragment;
+      To<NGPhysicalLineBoxFragment>(linebox)->Children()[1].fragment;
 
   // float2 should only have one fragment.
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(60), LayoutUnit(200)), float2->Size());

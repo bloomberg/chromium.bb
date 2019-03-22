@@ -834,8 +834,8 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   NodeHolder node_holder;
   if (auto* node = text_fragment.GetNode()) {
     if (node->GetLayoutObject()->IsText())
@@ -1059,8 +1059,8 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   if (action != kHitTestForeground)
     return false;
 
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(text_paint_fragment.PhysicalFragment());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(text_paint_fragment.PhysicalFragment());
   LayoutSize size(text_fragment.Size().width, text_fragment.Size().height);
   LayoutRect border_rect(physical_offset, size);
   const ComputedStyle& style = text_fragment.Style();
