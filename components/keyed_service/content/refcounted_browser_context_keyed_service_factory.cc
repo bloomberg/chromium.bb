@@ -45,8 +45,7 @@ RefcountedBrowserContextKeyedServiceFactory::
     RefcountedBrowserContextKeyedServiceFactory(
         const char* name,
         BrowserContextDependencyManager* manager)
-    : RefcountedKeyedServiceFactory(name, manager) {
-}
+    : RefcountedKeyedServiceFactory(name, manager, BROWSER_CONTEXT) {}
 
 RefcountedBrowserContextKeyedServiceFactory::
     ~RefcountedBrowserContextKeyedServiceFactory() {

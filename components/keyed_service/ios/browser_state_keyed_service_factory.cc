@@ -41,8 +41,7 @@ KeyedService* BrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
 BrowserStateKeyedServiceFactory::BrowserStateKeyedServiceFactory(
     const char* name,
     BrowserStateDependencyManager* manager)
-    : KeyedServiceFactory(name, manager) {
-}
+    : KeyedServiceFactory(name, manager, BROWSER_STATE) {}
 
 BrowserStateKeyedServiceFactory::~BrowserStateKeyedServiceFactory() {
 }

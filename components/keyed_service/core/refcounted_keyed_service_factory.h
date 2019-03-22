@@ -26,7 +26,9 @@ class RefcountedKeyedService;
 class KEYED_SERVICE_EXPORT RefcountedKeyedServiceFactory
     : public KeyedServiceBaseFactory {
  protected:
-  RefcountedKeyedServiceFactory(const char* name, DependencyManager* manager);
+  RefcountedKeyedServiceFactory(const char* name,
+                                DependencyManager* manager,
+                                Type type);
   ~RefcountedKeyedServiceFactory() override;
 
   // A callback that supplies the instance of a KeyedService for a given

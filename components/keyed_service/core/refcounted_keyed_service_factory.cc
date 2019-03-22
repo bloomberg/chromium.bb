@@ -11,9 +11,9 @@
 
 RefcountedKeyedServiceFactory::RefcountedKeyedServiceFactory(
     const char* name,
-    DependencyManager* manager)
-    : KeyedServiceBaseFactory(name, manager) {
-}
+    DependencyManager* manager,
+    Type type)
+    : KeyedServiceBaseFactory(name, manager, type) {}
 
 RefcountedKeyedServiceFactory::~RefcountedKeyedServiceFactory() {
   DCHECK(mapping_.empty());

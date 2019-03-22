@@ -46,8 +46,7 @@ KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
 BrowserContextKeyedServiceFactory::BrowserContextKeyedServiceFactory(
     const char* name,
     BrowserContextDependencyManager* manager)
-    : KeyedServiceFactory(name, manager) {
-}
+    : KeyedServiceFactory(name, manager, BROWSER_CONTEXT) {}
 
 BrowserContextKeyedServiceFactory::~BrowserContextKeyedServiceFactory() {
 }
