@@ -36,9 +36,7 @@ Widget* TouchSelectionMenuRunnerViews::TestApi::GetWidget() const {
   TouchSelectionMenuViews* menu = menu_runner_->menu_;
   return menu ? menu->GetWidget() : nullptr;
 }
-TouchSelectionMenuRunnerViews::TouchSelectionMenuRunnerViews()
-    : menu_(nullptr) {
-}
+TouchSelectionMenuRunnerViews::TouchSelectionMenuRunnerViews() = default;
 
 TouchSelectionMenuRunnerViews::~TouchSelectionMenuRunnerViews() {
   CloseMenu();

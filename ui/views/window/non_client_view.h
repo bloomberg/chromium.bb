@@ -107,7 +107,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // Used to force ShouldPaintAsActive() to treat the active state a particular
   // way.  This is normally null; when non-null, its value will override the
   // normal "active" value computed by the function.
-  bool* active_state_override_;
+  bool* active_state_override_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameView);
 };
@@ -242,7 +242,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   // A ClientView object or subclass, responsible for sizing the contents view
   // of the window, hit testing and perhaps other tasks depending on the
   // implementation.
-  ClientView* client_view_;
+  ClientView* client_view_ = nullptr;
 
   // The NonClientFrameView that renders the non-client portions of the window.
   // This object is not owned by the view hierarchy because it can be replaced
@@ -251,7 +251,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
 
   // The overlay view, when non-NULL and visible, takes up the entire widget and
   // is placed on top of the ClientView and NonClientFrameView.
-  View* overlay_view_;
+  View* overlay_view_ = nullptr;
 
   // The accessible name of this view.
   base::string16 accessible_name_;

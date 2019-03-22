@@ -61,11 +61,11 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   std::unique_ptr<TooltipView> tooltip_view_;
 
   // The widget containing the tooltip. May be NULL.
-  Widget* widget_;
+  Widget* widget_ = nullptr;
 
   // The window we're showing the tooltip for. Never NULL and valid while
   // showing.
-  aura::Window* tooltip_window_;
+  aura::Window* tooltip_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipAura);
 };

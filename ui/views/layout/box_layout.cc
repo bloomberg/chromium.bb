@@ -34,7 +34,7 @@ gfx::Insets MaxAxisInsets(Axis axis,
 
 }  // namespace
 
-BoxLayout::ViewWrapper::ViewWrapper() : view_(nullptr), layout_(nullptr) {}
+BoxLayout::ViewWrapper::ViewWrapper() = default;
 
 BoxLayout::ViewWrapper::ViewWrapper(const BoxLayout* layout, View* view)
     : view_(view), layout_(layout) {

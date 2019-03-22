@@ -78,7 +78,7 @@ void WidgetFocusManager::OnNativeFocusChanged(gfx::NativeView focused_now) {
   }
 }
 
-WidgetFocusManager::WidgetFocusManager() : enabled_(true) {}
+WidgetFocusManager::WidgetFocusManager() = default;
 
 // AutoNativeNotificationDisabler ----------------------------------------------
 

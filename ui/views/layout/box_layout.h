@@ -190,8 +190,8 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     bool visible() const;
 
    private:
-    View* view_;
-    const BoxLayout* layout_;
+    View* view_ = nullptr;
+    const BoxLayout* layout_ = nullptr;
     gfx::Insets margins_;
 
     DISALLOW_COPY_AND_ASSIGN(ViewWrapper);

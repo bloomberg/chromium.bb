@@ -43,16 +43,7 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
 };
 
 AccessiblePaneView::AccessiblePaneView()
-    : pane_has_focus_(false),
-      allow_deactivate_on_esc_(false),
-      focus_manager_(nullptr),
-      home_key_(ui::VKEY_HOME, ui::EF_NONE),
-      end_key_(ui::VKEY_END, ui::EF_NONE),
-      escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
-      left_key_(ui::VKEY_LEFT, ui::EF_NONE),
-      right_key_(ui::VKEY_RIGHT, ui::EF_NONE),
-      last_focused_view_tracker_(std::make_unique<ViewTracker>()),
-      method_factory_(this) {
+    : last_focused_view_tracker_(std::make_unique<ViewTracker>()) {
   focus_search_ = std::make_unique<AccessiblePaneViewFocusSearch>(this);
 }
 

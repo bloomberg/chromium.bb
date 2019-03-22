@@ -70,8 +70,7 @@ namespace corewm {
 // TODO(oshima): Consider to use views::Label.
 class TooltipAura::TooltipView : public views::View {
  public:
-  TooltipView()
-      : render_text_(gfx::RenderText::CreateHarfBuzzInstance()), max_width_(0) {
+  TooltipView() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
     constexpr int kHorizontalPadding = 8;
     constexpr int kVerticalPaddingTop = 4;
     constexpr int kVerticalPaddingBottom = 5;
@@ -150,15 +149,12 @@ class TooltipAura::TooltipView : public views::View {
   }
 
   std::unique_ptr<gfx::RenderText> render_text_;
-  int max_width_;
+  int max_width_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipView);
 };
 
-TooltipAura::TooltipAura()
-    : tooltip_view_(new TooltipView),
-      widget_(nullptr),
-      tooltip_window_(nullptr) {}
+TooltipAura::TooltipAura() : tooltip_view_(new TooltipView) {}
 
 TooltipAura::~TooltipAura() {
   DestroyWidget();

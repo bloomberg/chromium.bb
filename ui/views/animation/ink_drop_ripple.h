@@ -114,9 +114,9 @@ class VIEWS_EXPORT InkDropRipple {
       InkDropState ink_drop_state);
 
   // The target InkDropState.
-  InkDropState target_ink_drop_state_;
+  InkDropState target_ink_drop_state_ = InkDropState::HIDDEN;
 
-  InkDropRippleObserver* observer_;
+  InkDropRippleObserver* observer_ = nullptr;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
 

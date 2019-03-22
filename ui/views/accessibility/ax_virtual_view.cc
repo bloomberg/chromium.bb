@@ -38,8 +38,7 @@ AXVirtualView* AXVirtualView::GetFromId(int32_t id) {
   return it != id_map.end() ? it->second : nullptr;
 }
 
-AXVirtualView::AXVirtualView()
-    : parent_view_(nullptr), virtual_parent_view_(nullptr) {
+AXVirtualView::AXVirtualView() {
 #if defined(USE_AURA)
   wrapper_ = std::make_unique<AXVirtualViewWrapper>(this);
 #endif
