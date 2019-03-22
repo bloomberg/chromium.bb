@@ -77,11 +77,11 @@ constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 // is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
 constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
 
-// When ranking with the |AppSearchResultRanker| is enabled, this boost is
+// When ranking with the |QueryBasedAppsRanker| is enabled, this boost is
 // added to all apps that the ranker knows about.
 constexpr float kDefaultRankerScoreBoost = 0.0f;
 
-// When ranking with the |AppSearchResultRanker| is enabled, its scores are
+// When ranking with the |QueryBasedAppsRanker| is enabled, its scores are
 // multiplied by this amount.
 constexpr float kDefaultRankerScoreCoefficient = 0.1f;
 
@@ -784,9 +784,9 @@ void AppSearchProvider::UpdateQueriedResults() {
   new_results.reserve(apps_size);
 
   const bool should_rerank =
-      app_list_features::IsAppSearchResultRankerEnabled() &&
+      app_list_features::IsQueryBasedAppsRankerEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
-          app_list_features::kEnableAppSearchResultRanker,
+          app_list_features::kEnableQueryBasedAppsRanker,
           "rank_app_query_results", false) &&
       ranker_ != nullptr;
   // Maps app IDs to their score according to |ranker_|.
@@ -796,10 +796,10 @@ void AppSearchProvider::UpdateQueriedResults() {
   if (should_rerank) {
     ranker_scores = ranker_->Rank();
     ranker_score_coefficient = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAppSearchResultRanker,
-        "app_query_coefficient", ranker_score_coefficient);
+        app_list_features::kEnableQueryBasedAppsRanker, "app_query_coefficient",
+        ranker_score_coefficient);
     ranker_score_boost = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAppSearchResultRanker, "app_query_boost",
+        app_list_features::kEnableQueryBasedAppsRanker, "app_query_boost",
         ranker_score_boost);
   }
 

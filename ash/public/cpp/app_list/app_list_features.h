@@ -44,8 +44,14 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 // Enable an adaptive model that tweaks search result scores.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAdaptiveResultRanker;
 
-// Enables the feature to rank app search result using AppSearchResultRanker.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppSearchResultRanker;
+// Enable an model that ranks query based apps search result.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedAppsRanker;
+
+// Enable an model that ranks zero-state apps search result.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
+
+// Enable an model that ranks query based non-apps result.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedMixedTypesRanker;
 
 // Enables the feature to include a single reinstallation candidate in
 // zero-state.
@@ -65,7 +71,9 @@ bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
 bool ASH_PUBLIC_EXPORT IsAdaptiveResultRankerEnabled();
-bool ASH_PUBLIC_EXPORT IsAppSearchResultRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
