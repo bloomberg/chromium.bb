@@ -10714,7 +10714,11 @@ class TouchEventObserver : public RenderWidgetHost::InputEventObserver {
 // child first, then the main frame. In this scenario, we expect the touch
 // events sent to the main-frame to ack first, which will be problematic if
 // the events are acked to the GestureRecognizer out of order.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
+//
+// This test is disabled due to flakiness on all platforms, but especially on
+// Android.  See https://crbug.com/945025.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DISABLED_TouchEventAckQueueOrdering) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
