@@ -323,9 +323,10 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
 bool PaintArtifactCompositor::PropertyTreeStateChanged(
     const PropertyTreeState& state) const {
   const auto& root = PropertyTreeState::Root();
-  return state.Transform().Changed(root.Transform()) ||
-         state.Clip().Changed(root, &state.Transform()) ||
-         state.Effect().Changed(root, &state.Transform());
+  auto change = PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+  return state.Transform().Changed(change, root.Transform()) ||
+         state.Clip().Changed(change, root, &state.Transform()) ||
+         state.Effect().Changed(change, root, &state.Transform());
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(

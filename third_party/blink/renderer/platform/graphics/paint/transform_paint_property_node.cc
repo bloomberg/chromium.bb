@@ -30,25 +30,26 @@ TransformPaintPropertyNode::NearestScrollTranslationNode() const {
 }
 
 bool TransformPaintPropertyNode::Changed(
+    PaintPropertyChangeType change,
     const TransformPaintPropertyNode& relative_to_node) const {
   for (const auto* node = this; node; node = node->Parent()) {
     if (node == &relative_to_node)
       return false;
-    if (node->NodeChanged())
+    if (node->NodeChanged() >= change)
       return true;
   }
 
   // |this| is not a descendant of |relative_to_node|. We have seen no changed
   // flag from |this| to the root. Now check |relative_to_node| to the root.
-  return relative_to_node.Changed(Root());
+  return relative_to_node.Changed(change, Root());
 }
 
 std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
   auto json = std::make_unique<JSONObject>();
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
-  if (NodeChanged())
-    json->SetBoolean("changed", true);
+  if (NodeChanged() != PaintPropertyChangeType::kUnchanged)
+    json->SetString("changed", PaintPropertyChangeTypeToString(NodeChanged()));
   if (IsIdentityOr2DTranslation()) {
     if (!Translation2D().IsZero())
       json->SetString("translation2d", Translation2D().ToString());

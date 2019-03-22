@@ -204,12 +204,10 @@ class FragmentPaintPropertyTreeBuilder {
     property_changed_ = std::max(property_changed_, change);
   }
   // Like |OnUpdate| but sets |clip_changed| if the clip values change.
-  void OnUpdateClip(PaintPropertyChangeType change,
-                    bool only_updated_hit_test_values = false) {
+  void OnUpdateClip(PaintPropertyChangeType change) {
     OnUpdate(change);
     full_context_.clip_changed |=
-        (change != PaintPropertyChangeType::kUnchanged &&
-         !only_updated_hit_test_values);
+        change >= PaintPropertyChangeType::kChangedOnlyValues;
   }
   // Like |OnUpdate| but forces a piercing subtree update if the scroll tree
   // hierarchy changes because the scroll tree does not have isolation nodes
@@ -1506,13 +1504,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
             viewport_container.LocalToSVGParentTransform().Inverse().MapRect(
                 viewport_container.Viewport()));
       }
-      const ClipPaintPropertyNode* existing = properties_->OverflowClip();
-      bool equal_ignoring_hit_test_rects =
-          !!existing &&
-          existing->EqualIgnoringHitTestRects(context_.current.clip, state);
       OnUpdateClip(properties_->UpdateOverflowClip(*context_.current.clip,
-                                                   std::move(state)),
-                   equal_ignoring_hit_test_rects);
+                                                   std::move(state)));
     } else {
       OnClearClip(properties_->ClearOverflowClip());
     }
