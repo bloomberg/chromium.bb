@@ -135,7 +135,8 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
         ShelfID::Deserialize(window->GetProperty(kShelfIDKey)));
   }
 
-  if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
+  if (key == aura::client::kAppIconLargeKey ||
+      key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
       key == aura::client::kDrawAttentionKey || key == kShelfItemTypeKey ||
       key == kShelfIDKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);
