@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -565,12 +566,14 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
   bool use_online_check =
       supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
-    if (use_online_check)
+    if (use_online_check) {
       url_filter_.InitAsyncURLChecker(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess());
-    else
+              ->GetURLLoaderFactoryForBrowserProcess(),
+          IdentityManagerFactory::GetForProfile(profile_));
+    } else {
       url_filter_.ClearAsyncURLChecker();
+    }
   }
 }
 
