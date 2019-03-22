@@ -31,10 +31,12 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/root_view.h"
@@ -190,6 +192,9 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartHiding();
   void StartShowing();
 
+  // Update text label's size.
+  void ResizeText();
+
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -203,7 +208,7 @@ class StatusBubbleViews::StatusView : public views::View {
   StatusBubbleViews* status_bubble_;
 
   // The currently-displayed text.
-  base::string16 text_;
+  views::Label* text_;
 
   gfx::Size popup_size_;
 
@@ -221,6 +226,19 @@ StatusBubbleViews::StatusView::StatusView(StatusBubbleViews* status_bubble,
                                           gfx::Size popup_size)
     : status_bubble_(status_bubble), popup_size_(popup_size) {
   animation_ = std::make_unique<StatusViewAnimation>(this, 0, 0);
+
+  // Text color is the foreground tab text color at 60% alpha.
+  std::unique_ptr<views::Label> text = std::make_unique<views::Label>();
+  const auto* theme_provider = status_bubble_->base_view()->GetThemeProvider();
+  SkColor bubble_color =
+      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
+  SkColor blended_text_color = color_utils::AlphaBlend(
+      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
+      0.6f);
+  text->SetEnabledColor(color_utils::GetColorWithMinimumContrast(
+      blended_text_color, bubble_color));
+  text_ = AddChildView(std::move(text));
+  ResizeText();
 }
 
 StatusBubbleViews::StatusView::~StatusView() {
@@ -233,10 +251,7 @@ void StatusBubbleViews::StatusView::SetText(const base::string16& text,
   if (text.empty()) {
     StartHiding();
   } else {
-    if (text != text_) {
-      text_ = text;
-      SchedulePaint();
-    }
+    text_->SetText(text);
     if (should_animate_open)
       StartShowing();
   }
@@ -262,7 +277,7 @@ void StatusBubbleViews::StatusView::HideInstantly() {
   animation_->Stop();
   CancelTimer();
   SetOpacity(0.0);
-  text_.clear();
+  text_->SetText(base::string16());
   state_ = BUBBLE_HIDDEN;
 #if !defined(OS_MACOSX)
   // Don't orderOut: the window on macOS. Doing so for a child window requires
@@ -371,6 +386,16 @@ void StatusBubbleViews::StatusView::StartShowing() {
   }
 }
 
+void StatusBubbleViews::StatusView::ResizeText() {
+  gfx::Rect text_rect(kTextPositionX, 0,
+                      popup_size_.width() - kTextHorizPadding,
+                      popup_size_.height());
+  text_rect.Inset(kShadowThickness, kShadowThickness);
+  // Make sure the text is aligned to the right on RTL UIs.
+  text_rect = GetMirroredRect(text_rect);
+  text_->SetBoundsRect(text_rect);
+}
+
 void StatusBubbleViews::StatusView::SetOpacity(float opacity) {
   GetWidget()->SetOpacity(opacity);
 }
@@ -391,6 +416,7 @@ void StatusBubbleViews::StatusView::OnAnimationEnded() {
 
 void StatusBubbleViews::StatusView::SetWidth(int new_width) {
   popup_size_.set_width(new_width);
+  ResizeText();
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {
@@ -398,7 +424,7 @@ const char* StatusBubbleViews::StatusView::GetClassName() const {
 }
 
 void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
-  canvas->Save();
+  gfx::ScopedCanvas scoped(canvas);
   float scale = canvas->UndoDeviceScaleFactor();
   const float radius = kBubbleCornerRadius * scale;
 
@@ -489,26 +515,6 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
 
   flags.setColor(kShadowColor);
   canvas->sk_canvas()->drawPath(stroke_path, flags);
-
-  canvas->Restore();
-
-  // Compute text bounds.
-  gfx::Rect text_rect(kTextPositionX, 0,
-                      popup_size_.width() - kTextHorizPadding,
-                      popup_size_.height());
-  text_rect.Inset(kShadowThickness, kShadowThickness);
-  // Make sure the text is aligned to the right on RTL UIs.
-  text_rect = GetMirroredRect(text_rect);
-
-  // Text color is the foreground tab text color at 60% alpha.
-  SkColor blended_text_color = color_utils::AlphaBlend(
-      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
-      0.6f);
-
-  canvas->DrawStringRect(text_, GetFont(),
-                         color_utils::GetColorWithMinimumContrast(
-                             blended_text_color, bubble_color),
-                         text_rect);
 }
 
 
