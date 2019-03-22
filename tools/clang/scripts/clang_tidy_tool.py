@@ -102,7 +102,7 @@ def GenerateCompDb(out_dir):
   gen_compdb_script = os.path.join(
       os.path.dirname(__file__), 'generate_compdb.py')
   comp_db_file = os.path.join(out_dir, 'compile_commands.json')
-  args = [gen_compdb_script, '-p', out_dir, '-o', comp_db_file]
+  args = [sys.executable, gen_compdb_script, '-p', out_dir, '-o', comp_db_file]
   subprocess.check_call(args)
 
 
@@ -117,6 +117,7 @@ def RunClangTidy(checks, header_filter, auto_fix, out_dir, ninja_target):
       GetBuildDir(out_dir), 'bin', 'clang-apply-replacements')
 
   args = [
+      sys.executable,
       run_clang_tidy_script,
       '-quiet',
       '-p',
