@@ -2519,10 +2519,18 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
   // Unretained(this) is safe for FrameReadyCB because |decoder_thread_| is
   // owned by this V4L2VideoDecodeAccelerator and |this| must be valid when
   // FrameReadyCB is executed.
-  image_processor_->Process(
-      input_frame, buf->BufferId(), std::move(output_fds),
-      base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
-                     base::Unretained(this), bitstream_buffer_id));
+  if (image_processor_->output_mode() == ImageProcessor::OutputMode::IMPORT) {
+    image_processor_->Process(
+        input_frame, output_record.output_frame,
+        base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
+                       base::Unretained(this), bitstream_buffer_id,
+                       buf->BufferId()));
+  } else {
+    image_processor_->Process(
+        input_frame, buf->BufferId(), std::move(output_fds),
+        base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
+                       base::Unretained(this), bitstream_buffer_id));
+  }
   return true;
 }
 
