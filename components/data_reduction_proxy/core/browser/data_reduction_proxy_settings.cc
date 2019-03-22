@@ -211,6 +211,10 @@ void DataReductionProxySettings::OnProxyEnabledPrefChange() {
     RegisterDataReductionProxyFieldTrial();
   }
   MaybeActivateDataReductionProxy(false);
+
+  bool enabled = IsDataReductionProxyEnabled();
+  for (auto& observer : observers_)
+    observer.OnDataSaverEnabledChanged(enabled);
 }
 
 void DataReductionProxySettings::ResetDataReductionStatistics() {

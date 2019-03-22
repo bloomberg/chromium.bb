@@ -63,11 +63,14 @@ class DataReductionProxySettingsObserver {
  public:
   // Notifies when the proxy server request header change.
   virtual void OnProxyRequestHeadersChanged(
-      const net::HttpRequestHeaders& headers) = 0;
+      const net::HttpRequestHeaders& headers) {}
 
   // Notifies when |DataReductionProxySettings::InitDataReductionProxySettings|
   // is finished.
-  virtual void OnSettingsInitialized() = 0;
+  virtual void OnSettingsInitialized() {}
+
+  // Notifies when Data Saver is enabled or disabled.
+  virtual void OnDataSaverEnabledChanged(bool enabled) {}
 };
 
 // Central point for configuring the data reduction proxy.

@@ -35,6 +35,7 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
             DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
                 browser()->profile());
     data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
+    base::RunLoop().RunUntilIdle();
   }
 
   void VerifySaveDataHeader(const std::string& expected_header_value) {
