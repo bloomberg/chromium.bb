@@ -15,9 +15,15 @@ enum PrerenderRelType {
 };
 
 enum PrerenderMode {
+  // Neither prefetch nor prerender.
   NO_PRERENDER = 0,
-  FULL_PRERENDER = 1,  // Full rendering of the page.
-  PREFETCH_ONLY = 2,   // Prefetch some network resources to warm up the cache.
+
+  // Only used in tests. Can be removed after http://crbug.com/898955 is fixed.
+  DEPRECATED_FULL_PRERENDER = 1,
+
+  // Prefetch some network resources to warm up the cache.
+  PREFETCH_ONLY = 2,
+
   PRERENDER_MODE_COUNT = 3,
 };
 

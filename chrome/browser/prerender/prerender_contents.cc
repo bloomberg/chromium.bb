@@ -174,7 +174,7 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
                                      const GURL& url,
                                      const content::Referrer& referrer,
                                      Origin origin)
-    : prerender_mode_(FULL_PRERENDER),
+    : prerender_mode_(DEPRECATED_FULL_PRERENDER),
       prerendering_has_started_(false),
       prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
@@ -326,7 +326,7 @@ PrerenderContents::~PrerenderContents() {
   prerender_manager_->RecordFinalStatus(origin(), final_status());
   prerender_manager_->RecordNetworkBytesConsumed(origin(), network_bytes_);
 
-  if (prerender_mode_ == FULL_PRERENDER) {
+  if (prerender_mode_ == DEPRECATED_FULL_PRERENDER) {
     // Broadcast the removal of aliases.
     for (content::RenderProcessHost::iterator host_iterator =
              content::RenderProcessHost::AllHostsIterator();
@@ -450,7 +450,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
 
   alias_urls_.push_back(url);
 
-  if (prerender_mode_ == FULL_PRERENDER) {
+  if (prerender_mode_ == DEPRECATED_FULL_PRERENDER) {
     for (content::RenderProcessHost::iterator host_iterator =
              content::RenderProcessHost::AllHostsIterator();
          !host_iterator.IsAtEnd(); host_iterator.Advance()) {
