@@ -129,7 +129,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
     }
 
     case BasicShape::kStylePathType:
-      return ToStylePath(basic_shape)->ComputedCSSValue();
+      return To<StylePath>(basic_shape)->ComputedCSSValue();
 
     case BasicShape::kBasicShapeCircleType: {
       const BasicShapeCircle* circle = ToBasicShapeCircle(basic_shape);
