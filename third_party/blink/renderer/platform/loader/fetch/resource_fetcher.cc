@@ -294,7 +294,13 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourcePriority::VisibilityStatus visibility,
     FetchParameters::DeferOption defer_option,
     FetchParameters::SpeculativePreloadType speculative_preload_type,
-    bool is_link_preload) {
+    bool is_link_preload,
+    bool is_stale_revalidation) {
+  // Stale revalidation resource requests should be very low regardless of
+  // the |type|.
+  if (is_stale_revalidation)
+    return ResourceLoadPriority::kVeryLow;
+
   ResourceLoadPriority priority = TypeToPriority(type);
 
   // Visible resources (images in practice) get a boost to High priority.
@@ -820,7 +826,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   resource_request.SetPriority(ComputeLoadPriority(
       resource_type, params.GetResourceRequest(), ResourcePriority::kNotVisible,
       params.Defer(), params.GetSpeculativePreloadType(),
-      params.IsLinkPreload()));
+      params.IsLinkPreload(), params.IsStaleRevalidation()));
   if (resource_request.GetCacheMode() == mojom::FetchCacheMode::kDefault) {
     resource_request.SetCacheMode(Context().ResourceRequestCachePolicy(
         resource_request, resource_type, params.Defer()));

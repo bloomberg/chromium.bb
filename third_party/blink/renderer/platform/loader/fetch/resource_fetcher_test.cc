@@ -861,8 +861,10 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
 TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   scoped_refptr<const SecurityOrigin> source_origin =
       SecurityOrigin::CreateUniqueOpaque();
+  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
   auto* fetcher = CreateFetcher(
-      *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin));
+      *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin),
+      context);
 
   KURL url("http://127.0.0.1:8000/foo.html");
   FetchParameters fetch_params{ResourceRequest(url)};
@@ -901,6 +903,10 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
       ->RunUntilIdle();
+  base::Optional<ResourceRequest> swr_request =
+      context->RequestFromWillSendRequest();
+  ASSERT_TRUE(swr_request.has_value());
+  EXPECT_EQ(ResourceLoadPriority::kVeryLow, swr_request->Priority());
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_FALSE(GetMemoryCache()->Contains(resource));
 }

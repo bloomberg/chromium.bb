@@ -260,7 +260,8 @@ class PLATFORM_EXPORT ResourceFetcher
       FetchParameters::DeferOption = FetchParameters::kNoDefer,
       FetchParameters::SpeculativePreloadType =
           FetchParameters::SpeculativePreloadType::kNotSpeculative,
-      bool is_link_preload = false);
+      bool is_link_preload = false,
+      bool is_stale_revalidation = false);
 
   // |virtual_time_pauser| is an output parameter. PrepareRequest may
   // create a new WebScopedVirtualTimePauser and set it to
