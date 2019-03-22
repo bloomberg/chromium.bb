@@ -229,7 +229,7 @@ bool FrameImpl::ShouldCreateWebContents(
   return false;
 }
 
-void FrameImpl::CreateView(fuchsia::ui::gfx::ExportToken view_token) {
+void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   // If a View to this Frame is already active then disconnect it.
   TearDownView();
 
@@ -262,12 +262,12 @@ void FrameImpl::CreateView(fuchsia::ui::gfx::ExportToken view_token) {
 }
 
 void FrameImpl::CreateView2(
-    zx::eventpair view_token,
+    zx::eventpair view_token_value,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
-  fuchsia::ui::gfx::ExportToken export_token;
-  export_token.value = std::move(view_token);
-  CreateView(std::move(export_token));
+  fuchsia::ui::views::ViewToken view_token;
+  view_token.value = std::move(view_token_value);
+  CreateView(std::move(view_token));
 }
 
 void FrameImpl::GetNavigationController(

@@ -6,7 +6,7 @@ library chromium.web;
 
 using fuchsia.mem;
 using fuchsia.sys;
-using fuchsia.ui.gfx;
+using fuchsia.ui.views;
 
 enum ExecuteMode {
   /// Evaluate the script immediately.
@@ -34,7 +34,7 @@ protocol Frame {
   /// to a the view tree.
   ///
   /// |view_token|: Token for the new view.
-  CreateView(fuchsia.ui.gfx.ExportToken view_token);
+  CreateView(fuchsia.ui.views.ViewToken view_token);
 
   // Deprecated.
   // TODO(crbug.com/899348): Update all code to use CreateView()

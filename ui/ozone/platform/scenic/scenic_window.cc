@@ -24,7 +24,7 @@ namespace ui {
 
 ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
                            PlatformWindowDelegate* delegate,
-                           fuchsia::ui::gfx::ExportToken view_token)
+                           fuchsia::ui::views::ViewToken view_token)
     : manager_(window_manager),
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),

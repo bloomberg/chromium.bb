@@ -5,6 +5,7 @@
 #include "fuchsia/runners/common/web_component.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/fit/function.h>
 #include <utility>
@@ -79,15 +80,15 @@ void WebComponent::Detach() {
 }
 
 void WebComponent::CreateView(
-    zx::eventpair view_token,
+    zx::eventpair view_token_value,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
   DCHECK(frame_);
   DCHECK(!view_is_bound_);
 
-  fuchsia::ui::gfx::ExportToken export_token;
-  export_token.value = std::move(view_token);
-  frame_->CreateView(std::move(export_token));
+  fuchsia::ui::views::ViewToken view_token;
+  view_token.value = std::move(view_token_value);
+  frame_->CreateView(std::move(view_token));
 
   view_is_bound_ = true;
 }
