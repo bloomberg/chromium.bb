@@ -396,15 +396,10 @@ static void WaitForInputProcessedFromMain(
   WidgetInputHandlerManager* manager =
       render_widget->widget_input_handler_manager();
 
-  // TODO(bokan): The synchronous compositor doesn't support the
-  // RequestPresentation API yet so just ACK the gesture immediately so it
-  // doesn't hang forever. https://crbug.com/938956.
-  bool ack_immediately = false;
-#if defined(OS_ANDROID)
-  bool sync_compositing = GetContentClient()->UsingSynchronousCompositing();
-  bool is_vr = render_widget->delegate()->ShouldAckSyntheticInputImmediately();
-  ack_immediately = sync_compositing || is_vr;
-#endif
+  // TODO(bokan): Temporary to unblock synthetic gesture events running under
+  // VR. https://crbug.com/940063
+  bool ack_immediately =
+      render_widget->delegate()->ShouldAckSyntheticInputImmediately();
 
   // If the RenderWidget is hidden, we won't produce compositor frames for it
   // so just ACK the input to prevent blocking the browser indefinitely.
