@@ -106,12 +106,6 @@ class AgentImpl : public ::fuchsia::modular::Agent {
             CreateComponentStateCallback create_component_state_callback);
   ~AgentImpl() override;
 
-  // Configures a Closure that will be run when no component instances, nor
-  // connections to the Agent interface, remain.
-  void set_on_last_client_callback(base::OnceClosure on_last_client_callback) {
-    on_last_client_callback_ = std::move(on_last_client_callback);
-  }
-
   // fuchsia::modular::Agent implementation.
   void Connect(std::string requester_url,
                fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services)
@@ -133,9 +127,6 @@ class AgentImpl : public ::fuchsia::modular::Agent {
   // Owns the ComponentState instances for each connected component.
   base::flat_map<std::string, std::unique_ptr<ComponentStateBase>>
       active_components_;
-
-  // Run when no active components, nor Agent clients, remain.
-  base::OnceClosure on_last_client_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AgentImpl);
 };
