@@ -257,6 +257,12 @@ history::HistoryService* ChromeSyncClient::GetHistoryService() {
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
+send_tab_to_self::SendTabToSelfSyncService*
+ChromeSyncClient::GetSendTabToSelfSyncService() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return SendTabToSelfSyncServiceFactory::GetForProfile(profile_);
+}
+
 sync_sessions::SessionSyncService* ChromeSyncClient::GetSessionSyncService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return SessionSyncServiceFactory::GetForProfile(profile_);
@@ -457,16 +463,6 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
     }
   }
 #endif  // defined(OS_CHROMEOS)
-
-  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
-      base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
-    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-        syncer::SEND_TAB_TO_SELF,
-        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-            SendTabToSelfSyncServiceFactory::GetForProfile(profile_)
-                ->GetControllerDelegate()
-                .get())));
-  }
 
   return controllers;
 }

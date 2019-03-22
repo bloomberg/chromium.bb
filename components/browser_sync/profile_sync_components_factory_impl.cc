@@ -31,6 +31,7 @@
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/async_directory_type_controller.h"
@@ -402,6 +403,16 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       FeatureList::IsEnabled(switches::kSyncUserEvents)) {
     controllers.push_back(CreateModelTypeControllerForModelRunningOnUIThread(
         syncer::USER_EVENTS));
+  }
+
+  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
+      base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+        syncer::SEND_TAB_TO_SELF,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            sync_client_->GetSendTabToSelfSyncService()
+                ->GetControllerDelegate()
+                .get())));
   }
 
   // TODO(crbug.com/919489): Enable security events once their controller

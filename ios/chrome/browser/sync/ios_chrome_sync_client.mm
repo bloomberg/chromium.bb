@@ -62,6 +62,7 @@
 #include "ios/chrome/browser/sync/device_info_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/sync/model_type_store_service_factory.h"
+#include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -135,6 +136,12 @@ syncer::ModelTypeStoreService* IOSChromeSyncClient::GetModelTypeStoreService() {
 syncer::DeviceInfoSyncService* IOSChromeSyncClient::GetDeviceInfoSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state_);
+}
+
+send_tab_to_self::SendTabToSelfSyncService*
+IOSChromeSyncClient::GetSendTabToSelfSyncService() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
 bookmarks::BookmarkModel* IOSChromeSyncClient::GetBookmarkModel() {

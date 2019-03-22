@@ -125,6 +125,11 @@ sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
   return nullptr;
 }
 
+send_tab_to_self::SendTabToSelfSyncService*
+WebViewSyncClient::GetSendTabToSelfSyncService() {
+  return nullptr;
+}
+
 autofill::PersonalDataManager* WebViewSyncClient::GetPersonalDataManager() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return WebViewPersonalDataManagerFactory::GetForBrowserState(browser_state_);
