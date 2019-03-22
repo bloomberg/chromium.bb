@@ -20,7 +20,7 @@
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 #endif
 #if defined(OS_MACOSX)
-#include "media/gpu/vt_video_decode_accelerator_mac.h"
+#include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #endif
 #if BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_device.h"

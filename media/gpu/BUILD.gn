@@ -69,8 +69,6 @@ component("gpu") {
     "command_buffer_helper.h",
     "fake_jpeg_decode_accelerator.cc",
     "fake_jpeg_decode_accelerator.h",
-    "fake_video_decode_accelerator.cc",
-    "fake_video_decode_accelerator.h",
     "gles2_decoder_helper.cc",
     "gles2_decoder_helper.h",
     "gpu_jpeg_decode_accelerator_factory.cc",
@@ -122,10 +120,10 @@ component("gpu") {
 
   if (is_mac) {
     sources += [
-      "vt_video_decode_accelerator_mac.cc",
-      "vt_video_decode_accelerator_mac.h",
-      "vt_video_encode_accelerator_mac.cc",
-      "vt_video_encode_accelerator_mac.h",
+      "mac/vt_video_decode_accelerator_mac.cc",
+      "mac/vt_video_decode_accelerator_mac.h",
+      "mac/vt_video_encode_accelerator_mac.cc",
+      "mac/vt_video_encode_accelerator_mac.h",
     ]
     public_deps += [ "//third_party/webrtc/common_video" ]
     libs += [
@@ -395,6 +393,8 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
 
     if (is_win || is_chromeos || use_v4l2_codec) {
       sources = [
+        "test/fake_video_decode_accelerator.cc",
+        "test/fake_video_decode_accelerator.h",
         "video_decode_accelerator_unittest.cc",
       ]
       deps += [
@@ -589,8 +589,8 @@ static_library("test_support") {
   visibility = [ "//media:test_support" ]
   testonly = true
   sources = [
-    "fake_command_buffer_helper.cc",
-    "fake_command_buffer_helper.h",
+    "test/fake_command_buffer_helper.cc",
+    "test/fake_command_buffer_helper.h",
   ]
   configs += [ "//media:media_config" ]
   deps = [
