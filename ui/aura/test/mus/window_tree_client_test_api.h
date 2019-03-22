@@ -28,6 +28,7 @@ class Event;
 
 namespace aura {
 
+class DragDropControllerMus;
 class EmbedRoot;
 class Window;
 class WindowMus;
@@ -79,6 +80,8 @@ class WindowTreeClientTestApi {
   bool HasInFlightChanges();
 
   bool HasChangeInFlightOfType(ChangeType type);
+
+  DragDropControllerMus* GetDragDropController();
 
  private:
 #if defined(USE_OZONE)
