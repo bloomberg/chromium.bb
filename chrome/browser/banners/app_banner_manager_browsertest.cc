@@ -42,14 +42,13 @@ class AppBannerManagerTest : public AppBannerManager {
 
   ~AppBannerManagerTest() override {}
 
-  void RequestAppBanner(const GURL& validated_url,
-                        bool is_debug_mode) override {
+  void RequestAppBanner(const GURL& validated_url) override {
     // Filter out about:blank navigations - we use these in testing to force
     // Stop() to be called.
     if (validated_url == GURL("about:blank"))
       return;
 
-    AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
+    AppBannerManager::RequestAppBanner(validated_url);
   }
 
   bool banner_shown() { return banner_shown_.get() && *banner_shown_; }
@@ -665,35 +664,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
                                 SHOWING_WEB_APP_BANNER, 1);
-}
-
-IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, OverlappingDebugRequest) {
-  base::HistogramTester histograms;
-  GURL test_url = GetBannerURL();
-  SiteEngagementService* service =
-      SiteEngagementService::Get(browser()->profile());
-  service->ResetBaseScoreForURL(test_url, 10);
-
-  ui_test_utils::NavigateToURL(browser(), test_url);
-
-  std::unique_ptr<AppBannerManagerTest> manager(
-      CreateAppBannerManager(browser()));
-  base::RunLoop run_loop;
-  manager->PrepareDone(run_loop.QuitClosure());
-
-  // Call RequestAppBanner to start the pipeline, then call it again in debug
-  // mode to ensure that this doesn't fail.
-  manager->RequestAppBanner(test_url, false);
-  EXPECT_EQ(State::FETCHING_MANIFEST, manager->state());
-  manager->RequestAppBanner(test_url, true);
-  run_loop.Run();
-
-  EXPECT_TRUE(manager->banner_shown());
-  EXPECT_EQ(WebappInstallSource::DEVTOOLS, manager->install_source());
-  EXPECT_EQ(State::COMPLETE, manager->state());
-
-  // Ensure that we do not record any histograms.
-  histograms.ExpectTotalCount(banners::kInstallableStatusCodeHistogram, 0);
 }
 
 }  // namespace banners

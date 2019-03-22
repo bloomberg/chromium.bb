@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -132,6 +133,19 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
          params.valid_primary_icon;
 }
 
+void OnDidCompleteGetAllErrors(
+    base::OnceCallback<void(std::vector<std::string> errors)> callback,
+    const InstallableData& data) {
+  std::vector<std::string> error_messages;
+  for (auto error : data.errors) {
+    std::string message = GetErrorMessage(error);
+    if (!message.empty())
+      error_messages.push_back(std::move(message));
+  }
+
+  std::move(callback).Run(std::move(error_messages));
+}
+
 }  // namespace
 
 InstallableManager::EligiblityProperty::EligiblityProperty() = default;
@@ -202,6 +216,20 @@ void InstallableManager::GetData(const InstallableParams& params,
 
   metrics_->Start();
   WorkOnTask();
+}
+
+void InstallableManager::GetAllErrors(
+    base::OnceCallback<void(std::vector<std::string> errors)> callback) {
+  InstallableParams params;
+  params.check_eligibility = true;
+  params.valid_manifest = true;
+  params.check_webapp_manifest_display = true;
+  params.has_worker = true;
+  params.valid_primary_icon = true;
+  params.wait_for_worker = false;
+  params.is_debug_mode = true;
+  GetData(params,
+          base::BindOnce(OnDidCompleteGetAllErrors, std::move(callback)));
 }
 
 void InstallableManager::RecordMenuOpenHistogram() {
@@ -659,11 +687,10 @@ void InstallableManager::CheckAndFetchBestIcon(int ideal_icon_size_in_px,
 void InstallableManager::OnIconFetched(const GURL icon_url,
                                        const IconPurpose purpose,
                                        const SkBitmap& bitmap) {
-  IconProperty& icon = icons_[purpose];
-
   if (!GetWebContents())
     return;
 
+  IconProperty& icon = icons_[purpose];
   if (bitmap.drawsNothing()) {
     icon.error = NO_ICON_AVAILABLE;
   } else {

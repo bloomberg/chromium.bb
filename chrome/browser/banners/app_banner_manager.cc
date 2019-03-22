@@ -165,22 +165,11 @@ class NullStatusReporter : public banners::AppBannerManager::StatusReporter {
 
 namespace banners {
 
-void AppBannerManager::RequestAppBanner(const GURL& validated_url,
-                                        bool is_debug_mode) {
-  // The only time we should start the pipeline while it is already running is
-  // if it's been triggered from devtools.
-  if (state_ != State::INACTIVE) {
-    DCHECK(is_debug_mode);
-    weak_factory_.InvalidateWeakPtrs();
-    ResetBindings();
-  }
+void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
+  DCHECK_EQ(State::INACTIVE, state_);
 
   UpdateState(State::ACTIVE);
-  triggered_by_devtools_ = is_debug_mode;
-
-  // We only need to use TrackingStatusReporter if we aren't in debug mode
-  // (this avoids skew from testing).
-  if (IsDebugMode())
+  if (ShouldBypassEngagementChecks())
     status_reporter_ = std::make_unique<ConsoleStatusReporter>(web_contents());
   else
     status_reporter_ = std::make_unique<TrackingStatusReporter>();
@@ -243,7 +232,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       binding_(this),
       has_sufficient_engagement_(false),
       load_finished_(false),
-      triggered_by_devtools_(false),
       status_reporter_(std::make_unique<NullStatusReporter>()),
       install_animation_pending_(false),
       installable_(Installable::UNKNOWN),
@@ -256,7 +244,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
 AppBannerManager::~AppBannerManager() { }
 
 bool AppBannerManager::CheckIfShouldShowBanner() {
-  if (IsDebugMode())
+  if (ShouldBypassEngagementChecks())
     return true;
 
   InstallableStatusCode code = ShouldShowBannerCode();
@@ -298,13 +286,12 @@ std::string AppBannerManager::GetBannerType() {
 
 
 bool AppBannerManager::HasSufficientEngagement() const {
-  return has_sufficient_engagement_ || IsDebugMode();
+  return has_sufficient_engagement_ || ShouldBypassEngagementChecks();
 }
 
-bool AppBannerManager::IsDebugMode() const {
-  return triggered_by_devtools_ ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kBypassAppBannerEngagementChecks);
+bool AppBannerManager::ShouldBypassEngagementChecks() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kBypassAppBannerEngagementChecks);
 }
 
 bool AppBannerManager::IsWebAppConsideredInstalled(
@@ -336,8 +323,7 @@ InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
   params.valid_primary_icon = true;
   params.valid_manifest = true;
   params.has_worker = true;
-  // Don't wait for the service worker if this was triggered from devtools.
-  params.wait_for_worker = !triggered_by_devtools_;
+  params.wait_for_worker = true;
 
   return params;
 }
@@ -429,9 +415,10 @@ void AppBannerManager::ResetCurrentPageData() {
 }
 
 void AppBannerManager::Terminate() {
-  if (state_ == State::PENDING_PROMPT)
+  if (state_ == State::PENDING_PROMPT) {
     TrackBeforeInstallEvent(
         BEFORE_INSTALL_EVENT_PROMPT_NOT_CALLED_AFTER_PREVENT_DEFAULT);
+  }
 
   if (state_ == State::PENDING_ENGAGEMENT && !has_sufficient_engagement_)
     TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
@@ -564,7 +551,7 @@ void AppBannerManager::DidFinishLoad(
   // or if the experimental app banners feature is active.
   if (state_ == State::INACTIVE &&
       (has_sufficient_engagement_ || IsExperimentalAppBannersEnabled())) {
-    RequestAppBanner(validated_url, false /* is_debug_mode */);
+    RequestAppBanner(validated_url);
   }
 }
 
@@ -606,7 +593,7 @@ void AppBannerManager::OnEngagementEvent(
       // This performs some simple tests and starts async checks to test
       // installability. It should be safe to start in response to user input.
       // Don't call if we're already working on processing a banner request.
-      RequestAppBanner(url, false /* is_debug_mode */);
+      RequestAppBanner(url);
     }
   }
 }
@@ -705,7 +692,7 @@ void AppBannerManager::OnBannerPromptReply(
   // the banner immediately.
   if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
-    if (IsDebugMode()) {
+    if (ShouldBypassEngagementChecks()) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
           blink::mojom::ConsoleMessageLevel::kInfo,
           "Banner not shown: beforeinstallpromptevent.preventDefault() called. "

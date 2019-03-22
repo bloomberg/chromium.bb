@@ -56,6 +56,10 @@ enum InstallableStatusCode {
   MAX_ERROR_CODE,
 };
 
+// Returns a user-readable description for |code|, or an empty string if |code|
+// should not be exposed.
+std::string GetErrorMessage(InstallableStatusCode code);
+
 // Logs a message associated with |code| to the devtools console attached to
 // |web_contents|. Does nothing if |web_contents| is nullptr.
 void LogErrorToConsole(content::WebContents* web_contents,

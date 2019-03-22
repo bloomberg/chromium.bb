@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -50,6 +51,12 @@ class InstallableManager
   // data.
   virtual void GetData(const InstallableParams& params,
                        InstallableCallback callback);
+
+  // Runs the full installability check, and when finished, runs |callback|
+  // passing a list of human-readable strings describing the errors encountered
+  // during the run. The list is empty if no errors were encountered.
+  void GetAllErrors(
+      base::OnceCallback<void(std::vector<std::string> errors)> callback);
 
   // Called via AppBannerManagerAndroid to record metrics on how often the
   // installable check is completed when the menu or add to homescreen menu item

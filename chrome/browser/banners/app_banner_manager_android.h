@@ -83,7 +83,7 @@ class AppBannerManagerAndroid
       const base::android::JavaParamRef<jstring>& jicon_url);
 
   // AppBannerManager overrides.
-  void RequestAppBanner(const GURL& validated_url, bool is_debug_mode) override;
+  void RequestAppBanner(const GURL& validated_url) override;
   void SendBannerDismissed() override;
 
   // InstallableAmbientBadgeInfoBarAndroid::Client overrides.
