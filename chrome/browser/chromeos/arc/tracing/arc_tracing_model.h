@@ -32,9 +32,17 @@ class ArcTracingModel {
   ArcTracingModel();
   ~ArcTracingModel();
 
+  // Limits events by the requested interval. All events outside of this
+  // interval are discarded. |min_timestamp| is inclusive and |max_timestamp| is
+  // exclusive.
+  void SetMinMaxTime(uint64_t min_timestamp, uint64_t max_timestamp);
+
   // Builds model from string data in Json format. Returns false if model
   // cannot be built.
   bool Build(const std::string& data);
+
+  // Gets root events.
+  TracingEventPtrs GetRoots() const;
 
   // Selects list of events according to |query|. |query| consists from segments
   // separated by '/' where segment is in format
@@ -68,6 +76,9 @@ class ArcTracingModel {
 
   // Metadata events.
   TracingEvents metadata_events_;
+
+  uint64_t min_timestamp_ = 0;
+  uint64_t max_timestamp_ = std::numeric_limits<uint64_t>::max();
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingModel);
 };

@@ -338,6 +338,33 @@ TEST_F(ArcTracingModelTest, EventMatcher) {
           .Match(event));
 }
 
+TEST_F(ArcTracingModelTest, TimeMinMax) {
+  // Model contains events with timestamps 100000..100004 inclusively.
+  base::FilePath base_path;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
+  const base::FilePath tracing_path =
+      base_path.Append("arc_graphics_tracing").Append("trace_time.dat");
+
+  std::string tracing_data;
+  ASSERT_TRUE(base::ReadFileToString(tracing_path, &tracing_data));
+
+  ArcTracingModel model_without_time_filter;
+  EXPECT_TRUE(model_without_time_filter.Build(tracing_data));
+  EXPECT_EQ(5U, model_without_time_filter.GetRoots().size());
+
+  ArcTracingModel model_with_time_filter;
+  model_with_time_filter.SetMinMaxTime(100001L, 100003L);
+  EXPECT_TRUE(model_with_time_filter.Build(tracing_data));
+  ASSERT_EQ(2U, model_with_time_filter.GetRoots().size());
+  EXPECT_EQ(100001L, model_with_time_filter.GetRoots()[0]->GetTimestamp());
+  EXPECT_EQ(100002L, model_with_time_filter.GetRoots()[1]->GetTimestamp());
+
+  ArcTracingModel model_with_empty_time_filter;
+  model_with_empty_time_filter.SetMinMaxTime(99999L, 100000L);
+  EXPECT_TRUE(model_with_empty_time_filter.Build(tracing_data));
+  EXPECT_EQ(0U, model_with_empty_time_filter.GetRoots().size());
+}
+
 TEST_F(ArcTracingModelTest, GraphicsModelLoad) {
   EXPECT_TRUE(TestGraphicsModelLoad("gm_good.json"));
   EXPECT_FALSE(TestGraphicsModelLoad("gm_bad_no_view_buffers.json"));

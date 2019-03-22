@@ -89,6 +89,13 @@ ArcTracingModel::ArcTracingModel() = default;
 
 ArcTracingModel::~ArcTracingModel() = default;
 
+void ArcTracingModel::SetMinMaxTime(uint64_t min_timestamp,
+                                    uint64_t max_timestamp) {
+  DCHECK(min_timestamp < max_timestamp);
+  min_timestamp_ = min_timestamp;
+  max_timestamp_ = max_timestamp;
+}
+
 bool ArcTracingModel::Build(const std::string& data) {
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value) {
@@ -124,19 +131,28 @@ bool ArcTracingModel::Build(const std::string& data) {
   return true;
 }
 
+ArcTracingModel::TracingEventPtrs ArcTracingModel::GetRoots() const {
+  ArcTracingModel::TracingEventPtrs result;
+  for (auto& gr : group_events_) {
+    for (const auto& event : gr.second)
+      result.emplace_back(event.get());
+  }
+
+  for (const auto& gr : per_thread_events_) {
+    for (const auto& event : gr.second)
+      result.emplace_back(event.get());
+  }
+  return result;
+}
+
 ArcTracingModel::TracingEventPtrs ArcTracingModel::Select(
     const std::string query) const {
   ArcTracingModel::TracingEventPtrs collector;
   const std::vector<std::unique_ptr<ArcTracingEventMatcher>> selector =
       BuildSelector(query);
-  for (const auto& thread_events : per_thread_events_) {
-    for (const auto& root : thread_events.second)
-      SelectRecursively(0, root.get(), selector, &collector);
-  }
-  for (const auto& group_events : group_events_) {
-    for (const auto& root : group_events.second)
-      SelectRecursively(0, root.get(), selector, &collector);
-  }
+  for (const ArcTracingEvent* root : GetRoots())
+    SelectRecursively(0, root, selector, &collector);
+
   return collector;
 }
 
@@ -162,6 +178,10 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
 
     std::unique_ptr<ArcTracingEvent> event =
         std::make_unique<ArcTracingEvent>(std::move(event_data));
+    const uint64_t timestamp = event->GetTimestamp();
+    if (timestamp < min_timestamp_ || timestamp >= max_timestamp_)
+      continue;
+
     switch (event->GetPhase()) {
       case TRACE_EVENT_PHASE_METADATA:
       case TRACE_EVENT_PHASE_COMPLETE:
@@ -258,6 +278,7 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
       LOG(ERROR) << "Cannot parse timestamp in trace event: " << line;
       return false;
     }
+
     const size_t separator_position =
         ParseUint32(line, pos_dot + 1, ':', &timestamp_low);
     if (separator_position == std::string::npos) {
@@ -288,6 +309,8 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
 
     const char phase = line[event_position];
     const double timestamp = 1000000L * timestamp_high + timestamp_low;
+    if (timestamp < min_timestamp_ || timestamp >= max_timestamp_)
+      continue;
 
     uint32_t pid;
     switch (phase) {
@@ -375,15 +398,8 @@ bool ArcTracingModel::AddToThread(std::unique_ptr<ArcTracingEvent> event) {
 }
 
 void ArcTracingModel::Dump(std::ostream& stream) const {
-  for (auto& gr : group_events_) {
-    for (const auto& event : gr.second)
-      event->Dump("", stream);
-  }
-
-  for (const auto& gr : per_thread_events_) {
-    for (const auto& event : gr.second)
-      event->Dump("", stream);
-  }
+  for (const ArcTracingEvent* root : GetRoots())
+    root->Dump("", stream);
 }
 
 }  // namespace arc
