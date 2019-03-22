@@ -132,6 +132,9 @@ cr.define('model_settings_policy_test', function() {
         expectedAvailable: false,
         expectedManaged: false,
         expectedEnforced: true,
+        expectedShortEdge: false,
+        expectedShortEdgeAvailable: false,
+        expectedShortEdgeEnforced: false,
       },
        {
          // Policy contradicts actual capabilities and is ignored.
@@ -142,6 +145,9 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: false,
          expectedManaged: false,
          expectedEnforced: true,
+         expectedShortEdge: false,
+         expectedShortEdgeAvailable: false,
+         expectedShortEdgeEnforced: false,
        },
        {
          // Policy overrides default.
@@ -158,6 +164,28 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: true,
          expectedManaged: true,
          expectedEnforced: true,
+         expectedShortEdge: false,
+         expectedShortEdgeAvailable: true,
+         expectedShortEdgeEnforced: false,
+       },
+       {
+         // Policy sets duplex type, overriding default.
+         duplexCap: {
+           option: [
+             {type: 'NO_DUPLEX'}, {type: 'LONG_EDGE', is_default: true},
+             {type: 'SHORT_EDGE'}
+           ]
+         },
+         duplexPolicy: print_preview.DuplexModeRestriction.SHORT_EDGE,
+         // Default mismatches restriction and is ignored.
+         duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: true,
+         expectedEnforced: true,
+         expectedShortEdge: true,
+         expectedShortEdgeAvailable: true,
+         expectedShortEdgeEnforced: true,
        },
        {
          // Default defined by policy but setting is modifiable.
@@ -172,6 +200,9 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: true,
          expectedManaged: false,
          expectedEnforced: false,
+         expectedShortEdge: false,
+         expectedShortEdgeAvailable: true,
+         expectedShortEdgeEnforced: false,
        }].forEach(subtestParams => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
@@ -192,6 +223,15 @@ cr.define('model_settings_policy_test', function() {
         assertEquals(subtestParams.expectedManaged, model.controlsManaged);
         assertEquals(
             subtestParams.expectedEnforced, model.settings.duplex.setByPolicy);
+        assertEquals(
+            subtestParams.expectedShortEdge,
+            model.getSettingValue('duplexShortEdge'));
+        assertEquals(
+            subtestParams.expectedShortEdgeAvailable,
+            model.settings.duplexShortEdge.available);
+        assertEquals(
+            subtestParams.expectedShortEdgeEnforced,
+            model.settings.duplexShortEdge.setByPolicy);
       });
     });
 

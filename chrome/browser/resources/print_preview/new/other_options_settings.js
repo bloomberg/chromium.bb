@@ -22,7 +22,6 @@ Polymer({
       value: function() {
         return [
           {name: 'headerFooter', label: 'optionHeaderFooter'},
-          {name: 'duplex', label: 'optionTwoSided'},
           {name: 'cssBackground', label: 'optionBackgroundColorsAndImages'},
           {name: 'rasterize', label: 'optionRasterize'},
           {name: 'selectionOnly', label: 'optionSelectionOnly'},
@@ -42,7 +41,6 @@ Polymer({
 
   observers: [
     'onHeaderFooterSettingChange_(settings.headerFooter.*)',
-    'onDuplexSettingChange_(settings.duplex.*)',
     'onCssBackgroundSettingChange_(settings.cssBackground.*)',
     'onRasterizeSettingChange_(settings.rasterize.*)',
     'onSelectionOnlySettingChange_(settings.selectionOnly.*)',
@@ -111,23 +109,18 @@ Polymer({
   },
 
   /** @private */
-  onDuplexSettingChange_: function() {
+  onCssBackgroundSettingChange_: function() {
     this.updateOptionFromSetting_(1);
   },
 
   /** @private */
-  onCssBackgroundSettingChange_: function() {
+  onRasterizeSettingChange_: function() {
     this.updateOptionFromSetting_(2);
   },
 
   /** @private */
-  onRasterizeSettingChange_: function() {
-    this.updateOptionFromSetting_(3);
-  },
-
-  /** @private */
   onSelectionOnlySettingChange_: function() {
-    this.updateOptionFromSetting_(4);
+    this.updateOptionFromSetting_(3);
   },
 
   /**

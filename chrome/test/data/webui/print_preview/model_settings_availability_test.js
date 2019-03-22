@@ -436,6 +436,7 @@ cr.define('model_settings_availability_test', function() {
 
     test('duplex', function() {
       assertTrue(model.settings.duplex.available);
+      assertTrue(model.settings.duplexShortEdge.available);
 
       // Remove duplex capability.
       let capabilities =
@@ -444,6 +445,7 @@ cr.define('model_settings_availability_test', function() {
       delete capabilities.printer.duplex;
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.duplex.available);
+      assertFalse(model.settings.duplexShortEdge.available);
 
       // Set a duplex capability with only 1 type, no duplex.
       capabilities =
@@ -456,6 +458,22 @@ cr.define('model_settings_availability_test', function() {
       };
       model.set('destination.capabilities', capabilities);
       assertFalse(model.settings.duplex.available);
+      assertFalse(model.settings.duplexShortEdge.available);
+
+      // Set a duplex capability with 2 types, long edge and no duplex.
+      capabilities =
+          print_preview_test_utils.getCddTemplate(model.destination.id)
+              .capabilities;
+      delete capabilities.printer.duplex;
+      capabilities.printer.duplex = {
+        option: [
+          {type: print_preview_new.DuplexType.NO_DUPLEX},
+          {type: print_preview_new.DuplexType.LONG_EDGE, is_default: true}
+        ]
+      };
+      model.set('destination.capabilities', capabilities);
+      assertTrue(model.settings.duplex.available);
+      assertFalse(model.settings.duplexShortEdge.available);
     });
 
     test('rasterize', function() {

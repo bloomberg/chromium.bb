@@ -9,8 +9,6 @@ const ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
-function PrintPreviewSettingsSectionsTest() {}
-
 const NewPrintPreviewTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
@@ -1411,5 +1409,25 @@ PrintPreviewPagesPerSheetSettingsTest = class extends NewPrintPreviewTest {
 };
 
 TEST_F('PrintPreviewPagesPerSheetSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+PrintPreviewDuplexSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/duplex_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'duplex_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewDuplexSettingsTest', 'All', function() {
   mocha.run();
 });

@@ -96,7 +96,7 @@ cr.define('print_preview_app_test', function() {
       moreSettingsElement.$.label.click();
       const camelToKebab = s => s.replace(/([A-Z])/g, '-$1').toLowerCase();
       ['copies', 'layout', 'color', 'mediaSize', 'margins', 'dpi', 'scaling',
-       'otherOptions']
+       'duplex', 'otherOptions']
           .forEach(setting => {
             const element =
                 page.$$(`print-preview-${camelToKebab(setting)}-settings`);

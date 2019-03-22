@@ -579,7 +579,16 @@ Polymer({
     if (duplex !== print_preview_new.DuplexMode.UNKNOWN_DUPLEX_MODE &&
         this.getSetting('duplex').available) {
       this.setSetting(
-          'duplex', duplex === print_preview_new.DuplexMode.LONG_EDGE);
+          'duplex',
+          duplex === print_preview_new.DuplexMode.LONG_EDGE ||
+              duplex === print_preview_new.DuplexMode.SHORT_EDGE);
+    }
+    if (duplex !== print_preview_new.DuplexMode.UNKNOWN_DUPLEX_MODE &&
+        duplex !== print_preview_new.DuplexMode.SIMPLEX &&
+        this.getSetting('duplexShortEdge').available) {
+      this.setSetting(
+          'duplexShortEdge',
+          duplex === print_preview_new.DuplexMode.SHORT_EDGE);
     }
   },
 

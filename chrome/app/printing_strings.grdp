@@ -67,6 +67,15 @@
     <message name="IDS_PRINT_PREVIEW_OPTION_TWO_SIDED" desc="Option to do two-sided (duplex) printing.">
       Two-sided
     </message>
+    <message name="IDS_PRINT_PREVIEW_PRINT_ON_BOTH_SIDES_LABEL" desc="Label for checkbox to print on both sides of paper">
+      Print on both sides
+    </message>
+    <message name="IDS_PRINT_PREVIEW_OPTION_LONG_EDGE" desc="Option to do two-sided (duplex) printing with the page flipped on the long edge of the paper.">
+      Flip on long edge
+    </message>
+    <message name="IDS_PRINT_PREVIEW_OPTION_SHORT_EDGE" desc="Option to do two-sided (duplex) printing with the page flipped on the short edge of the paper.">
+      Flip on short edge
+    </message>
     <message name="IDS_PRINT_PREVIEW_PAGES_LABEL" desc="Page range option label.">
       Pages
     </message>

@@ -122,6 +122,7 @@ cr.define('restore_state_test', function() {
         isFitToPageEnabled: true,
         isCollateEnabled: true,
         isDuplexEnabled: true,
+        isDuplexShortEdge: true,
         isLandscapeEnabled: true,
         isColorEnabled: true,
       };
@@ -157,6 +158,7 @@ cr.define('restore_state_test', function() {
         isFitToPageEnabled: false,
         isCollateEnabled: false,
         isDuplexEnabled: false,
+        isDuplexShortEdge: false,
         isLandscapeEnabled: false,
         isColorEnabled: false,
       };
@@ -231,10 +233,16 @@ cr.define('restore_state_test', function() {
           value: '85',
         },
         {
-          section: 'print-preview-other-options-settings',
+          section: 'print-preview-duplex-settings',
           settingName: 'duplex',
           key: 'isDuplexEnabled',
           value: false,
+        },
+        {
+          section: 'print-preview-duplex-settings',
+          settingName: 'duplexShortEdge',
+          key: 'isDuplexShortEdge',
+          value: true,
         },
         {
           section: 'print-preview-other-options-settings',
