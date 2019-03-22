@@ -43,6 +43,9 @@ namespace WFN = ABI::Windows::Foundation::Numerics;
 namespace WInput = ABI::Windows::UI::Input::Spatial;
 
 class MixedRealityWindow : public gfx::WindowImpl {
+ public:
+  MixedRealityWindow() : gfx::WindowImpl() { set_window_style(WS_OVERLAPPED); }
+
   BOOL ProcessWindowMessage(HWND window,
                             UINT message,
                             WPARAM w_param,
@@ -399,10 +402,10 @@ void MixedRealityRenderLoop::OnSessionStart() {
 
 void MixedRealityRenderLoop::InitializeSpace() {
   // Create a Window, which is required to get an IHolographicSpace.
-  // TODO(billorr): Finalize what is rendered to this window, its title, and
-  // where the window is shown.
   window_ = std::make_unique<MixedRealityWindow>();
-  window_->Init(NULL, gfx::Rect());
+
+  // A small arbitrary size that keeps the window from being distracting.
+  window_->Init(NULL, gfx::Rect(25, 10));
 
   // Create a holographic space from that Window.
   ComPtr<IHolographicSpaceInterop> holographic_space_interop;
