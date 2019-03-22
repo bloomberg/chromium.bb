@@ -184,7 +184,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                std::string());
 #endif
 
-  registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   data_reduction_proxy::RegisterSyncableProfilePrefs(registry);
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

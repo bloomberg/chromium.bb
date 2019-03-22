@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/android/chrome_backup_agent.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "jni/ChromeBackupAgent_jni.h"
@@ -18,7 +18,7 @@
 namespace {
 
 const char* backed_up_preferences_[] = {
-    prefs::kDataSaverEnabled,
+    data_reduction_proxy::prefs::kDataSaverEnabled,
     syncer::prefs::kSyncFirstSetupComplete,
     syncer::prefs::kSyncKeepEverythingSynced,
     syncer::prefs::kSyncAutofillProfile,

@@ -379,11 +379,6 @@ const char kWebKitLoadsImagesAutomatically[] =
     "webkit.webprefs.loads_images_automatically";
 const char kWebKitPluginsEnabled[] = "webkit.webprefs.plugins_enabled";
 
-// Boolean that is true when Data Saver is enabled.
-// Please do not check this directly. Use
-// |DataReductionProxyChromeSettings::IsDataReductionProxyEnabled()|.
-const char kDataSaverEnabled[] = "spdy_proxy.enabled";
-
 // Boolean that is true when the SSL interstitial should allow users to
 // proceed anyway. Otherwise, proceeding is not possible.
 const char kSSLErrorOverrideAllowed[] = "ssl.error_override_allowed";

@@ -42,6 +42,7 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -778,7 +779,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 
 #if defined(OS_ANDROID)
   { key::kDataCompressionProxyEnabled,
-    prefs::kDataSaverEnabled,
+    data_reduction_proxy::prefs::kDataSaverEnabled,
     base::Value::Type::BOOLEAN },
   { key::kAuthAndroidNegotiateAccountType,
     prefs::kAuthAndroidNegotiateAccountType,
