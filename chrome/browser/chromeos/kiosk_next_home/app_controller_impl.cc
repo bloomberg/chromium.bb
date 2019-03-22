@@ -7,8 +7,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
@@ -69,14 +71,41 @@ void AppControllerImpl::OnAppUpdate(const apps::AppUpdate& update) {
   }
 }
 
-chromeos::kiosk_next_home::mojom::AppPtr AppControllerImpl::CreateAppPtr(
-    const apps::AppUpdate& update) {
+mojom::AppPtr AppControllerImpl::CreateAppPtr(const apps::AppUpdate& update) {
   auto app = chromeos::kiosk_next_home::mojom::App::New();
   app->app_id = update.AppId();
   app->type = update.AppType();
   app->display_name = update.Name();
   app->readiness = update.Readiness();
+
+  if (app->type == apps::mojom::AppType::kArc) {
+    app->android_package_name = MaybeGetAndroidPackageName(app->app_id);
+  }
   return app;
+}
+
+const std::string& AppControllerImpl::MaybeGetAndroidPackageName(
+    const std::string& app_id) {
+  // Try to find a cached package name for this app.
+  const auto& package_name_it = android_package_map_.find(app_id);
+  if (package_name_it != android_package_map_.end()) {
+    return package_name_it->second;
+  }
+
+  // If we don't find it, try to get the package name from ARC prefs.
+  ArcAppListPrefs* arc_prefs_ = ArcAppListPrefs::Get(profile_);
+  if (!arc_prefs_) {
+    return base::EmptyString();
+  }
+  std::unique_ptr<ArcAppListPrefs::AppInfo> arc_info =
+      arc_prefs_->GetApp(app_id);
+  if (!arc_info) {
+    return base::EmptyString();
+  }
+
+  // Now that we have a valid package name, update our caches.
+  android_package_map_[app_id] = arc_info->package_name;
+  return android_package_map_[app_id];
 }
 
 }  // namespace kiosk_next_home
