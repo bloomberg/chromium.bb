@@ -165,7 +165,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         OriginAccessEntry access_entry(
             request.Url().Protocol(), request.Url().Host(),
             network::mojom::CorsOriginAccessMatchMode::
-                kAllowRegisterableDomains);
+                kAllowRegistrableDomains);
         if (access_entry.MatchesOrigin(
                 *fetch_client_settings_object.GetSecurityOrigin()) ==
             network::cors::OriginAccessEntry::kMatchesOrigin) {
