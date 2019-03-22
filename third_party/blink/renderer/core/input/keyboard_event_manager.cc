@@ -46,6 +46,7 @@ static const uint16_t kHIGHBITMASKSHORT = 0x8000;
 #endif
 
 const int kVKeyProcessKey = 229;
+const int kVKeySpatNavBack = 233;
 
 bool MapKeyCodeForScroll(int key_code,
                          WebInputEvent::Modifiers modifiers,
@@ -284,6 +285,12 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
     // TODO(dtapuska): Replace this with isComposing support. crbug.com/625686
     if (event->keyCode() == kVKeyProcessKey)
       return;
+
+    if (event->keyCode() == kVKeySpatNavBack &&
+        DefaultSpatNavBackEventHandler(event)) {
+      return;
+    }
+
     if (event->key() == "Tab") {
       DefaultTabEventHandler(event);
     } else if (event->key() == "Escape") {
@@ -411,6 +418,34 @@ void KeyboardEventManager::DefaultEscapeEventHandler(KeyboardEvent* event) {
 
   if (HTMLDialogElement* dialog = frame_->GetDocument()->ActiveModalDialog())
     dialog->DispatchEvent(*Event::CreateCancelable(event_type_names::kCancel));
+}
+
+bool KeyboardEventManager::DefaultSpatNavBackEventHandler(
+    KeyboardEvent* event) {
+  if (RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
+    bool handled = frame_->LocalFrameRoot()
+                       .GetEventHandler()
+                       .HandleFallbackCursorModeBackEvent();
+    if (handled) {
+      event->SetDefaultHandled();
+      return true;
+    }
+  }
+
+  if (IsSpatialNavigationEnabled(frame_) &&
+      !frame_->GetDocument()->InDesignMode()) {
+    Page* page = frame_->GetPage();
+    if (!page)
+      return false;
+    bool handled =
+        page->GetSpatialNavigationController().HandleEscapeKeyboardEvent(event);
+    if (handled) {
+      event->SetDefaultHandled();
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void KeyboardEventManager::DefaultEnterEventHandler(KeyboardEvent* event) {
