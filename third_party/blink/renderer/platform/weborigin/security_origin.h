@@ -123,6 +123,11 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   String Host() const { return host_; }
   String Domain() const { return domain_; }
 
+  // Returns the registrable domain if available.
+  // For non-tuple origin, IP address URL, and public suffixes, this returns a
+  // null string. https://url.spec.whatwg.org/#host-registrable-domain
+  String RegistrableDomain() const;
+
   // Returns 0 if the effective port of this origin is the default for its
   // scheme.
   uint16_t Port() const { return port_; }

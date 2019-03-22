@@ -832,4 +832,25 @@ TEST_F(SecurityOriginTest, EdgeCases) {
   EXPECT_TRUE(local->IsSameSchemeHostPort(local.get()));
 }
 
+TEST_F(SecurityOriginTest, RegistrableDomain) {
+  scoped_refptr<SecurityOrigin> opaque = SecurityOrigin::CreateUniqueOpaque();
+  EXPECT_TRUE(opaque->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> ip_address =
+      SecurityOrigin::CreateFromString("http://0.0.0.0");
+  EXPECT_TRUE(ip_address->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> public_suffix =
+      SecurityOrigin::CreateFromString("http://com");
+  EXPECT_TRUE(public_suffix->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> registrable =
+      SecurityOrigin::CreateFromString("http://example.com");
+  EXPECT_EQ(String("example.com"), registrable->RegistrableDomain());
+
+  scoped_refptr<SecurityOrigin> subdomain =
+      SecurityOrigin::CreateFromString("http://foo.example.com");
+  EXPECT_EQ(String("example.com"), subdomain->RegistrableDomain());
+}
+
 }  // namespace blink

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/url_security_origin_map.h"
@@ -265,6 +266,17 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {
 void SecurityOrigin::SetDomainFromDOM(const String& new_domain) {
   domain_was_set_in_dom_ = true;
   domain_ = new_domain;
+}
+
+String SecurityOrigin::RegistrableDomain() const {
+  if (IsOpaque())
+    return String();
+
+  OriginAccessEntry entry(
+      Protocol(), Host(),
+      network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
+  String domain = entry.registrable_domain();
+  return domain.IsEmpty() ? String() : domain;
 }
 
 bool SecurityOrigin::IsSecure(const KURL& url) {
