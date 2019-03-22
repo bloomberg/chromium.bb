@@ -335,6 +335,12 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
   generation_enabled_fields_.clear();
 }
 
+void PasswordGenerationAgent::DidChangeScrollOffset() {
+  if (!current_generation_item_)
+    return;
+  GetPasswordGenerationDriver()->FrameWasScrolled();
+}
+
 void PasswordGenerationAgent::DidFinishDocumentLoad() {
   FindPossibleGenerationForm();
 }
@@ -720,6 +726,7 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     if (current_generation_item_->generation_element_.Value().length() <
         kMinimumLengthForEditedPassword) {
       PasswordNoLongerGenerated();
+      MaybeOfferAutomaticGeneration();
       if (current_generation_item_->generation_element_.Value().IsEmpty())
         current_generation_item_->generation_element_.SetShouldRevealPassword(
             false);

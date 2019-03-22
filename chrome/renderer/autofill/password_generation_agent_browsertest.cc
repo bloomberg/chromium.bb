@@ -1190,7 +1190,9 @@ TEST_F(PasswordGenerationAgentTest, JavascriptClearedTheField) {
               PresaveGeneratedPassword(testing::Field(
                   &autofill::PasswordForm::password_value, password)));
   password_generation_->GeneratedPasswordAccepted(password);
+
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
+  EXPECT_CALL(fake_pw_client_, AutomaticGenerationStatusChanged(true, _));
   ExecuteJavaScriptForTests(
       "document.getElementById('first_password').value = '';");
   FocusField(kGenerationElementId);
