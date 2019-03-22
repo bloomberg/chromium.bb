@@ -260,7 +260,6 @@ public class NotificationPlatformBridgeTest {
      * with a remote input on the action.
      */
     @Test
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @MediumTest
@@ -291,7 +290,6 @@ public class NotificationPlatformBridgeTest {
      * appropriately.
      */
     @Test
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
     @MediumTest
@@ -339,7 +337,6 @@ public class NotificationPlatformBridgeTest {
      * incremented appropriately.
      */
     @Test
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs added in KITKAT_WATCH.
     @MediumTest
@@ -401,7 +398,6 @@ public class NotificationPlatformBridgeTest {
      */
     @Test
     @TargetApi(Build.VERSION_CODES.KITKAT) // Notification.Action.actionIntent added in Android K.
-    @CommandLineFlags.Add("enable-experimental-web-platform-features")
     @MediumTest
     @Feature({"Browser", "Notifications"})
     public void testReplyToNotificationWithNoRemoteInput() throws Exception {
