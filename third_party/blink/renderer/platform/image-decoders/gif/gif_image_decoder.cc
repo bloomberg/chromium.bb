@@ -27,7 +27,7 @@
 
 #include <limits>
 #include "third_party/blink/renderer/platform/image-decoders/segment_stream.h"
-#include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {

@@ -99,7 +99,6 @@ jumbo_component("wtf") {
     "list_hash_set.h",
     "locker.h",
     "math_extras.h",
-    "not_found.h",
     "pod_arena.h",
     "pod_free_list_arena.h",
     "pod_interval.h",
@@ -225,6 +224,7 @@ jumbo_component("wtf") {
     "wtf.cc",
     "wtf.h",
     "wtf_export.h",
+    "wtf_size_t.h",
     "wtf_thread_data.cc",
     "wtf_thread_data.h",
   ]
