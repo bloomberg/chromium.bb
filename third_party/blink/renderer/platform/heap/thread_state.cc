@@ -1696,7 +1696,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   current_gc_data_.reason = reason;
   current_gc_data_.visitor =
       IsUnifiedGCMarkingInProgress()
-          ? UnifiedHeapMarkingVisitor::Create(
+          ? std::make_unique<UnifiedHeapMarkingVisitor>(
                 this, GetMarkingMode(should_compact, take_snapshot),
                 GetIsolate())
           : std::make_unique<MarkingVisitor>(

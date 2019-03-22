@@ -11,16 +11,6 @@
 
 namespace blink {
 
-std::unique_ptr<UnifiedHeapMarkingVisitor> UnifiedHeapMarkingVisitor::Create(
-    ThreadState* thread_state,
-    MarkingMode mode,
-    v8::Isolate* isolate) {
-  DCHECK(thread_state);
-  DCHECK(isolate);
-  return std::unique_ptr<UnifiedHeapMarkingVisitor>(
-      new UnifiedHeapMarkingVisitor(thread_state, mode, isolate));
-}
-
 UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,
                                                      MarkingMode mode,
                                                      v8::Isolate* isolate)

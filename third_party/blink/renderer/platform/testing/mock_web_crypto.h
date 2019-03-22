@@ -16,12 +16,8 @@ namespace blink {
 
 class MockWebCrypto : public WebCrypto {
  public:
+  MockWebCrypto() = default;
   ~MockWebCrypto() override = default;
-
-  static std::unique_ptr<MockWebCrypto> Create() {
-    return std::unique_ptr<MockWebCrypto>(
-        new testing::StrictMock<MockWebCrypto>());
-  }
 
   MOCK_METHOD5(Encrypt,
                void(const WebCryptoAlgorithm&,
@@ -117,8 +113,6 @@ class MockWebCrypto : public WebCrypto {
                bool(const WebCryptoKey&, WebVector<unsigned char>&));
 
  protected:
-  MockWebCrypto() = default;
-
   std::unique_ptr<WebCryptoDigestor> CreateDigestor(
       WebCryptoAlgorithmId id) override {
     return std::unique_ptr<WebCryptoDigestor>(CreateDigestorProxy(id));
