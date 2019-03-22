@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MEMORY_PURGE_MANAGER_H_
 
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
@@ -15,7 +16,7 @@ namespace blink {
 // Manages process-wide proactive memory purging.
 class PLATFORM_EXPORT MemoryPurgeManager {
  public:
-  MemoryPurgeManager();
+  MemoryPurgeManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MemoryPurgeManager();
 
   // Called when a page is created or destroyed, to maintain the total count of
@@ -98,8 +99,6 @@ class PLATFORM_EXPORT MemoryPurgeManager {
   int frozen_page_count_;
 
   // Timer to delay memory purging.
-  //
-  // TODO(adityakeerthi): This timer should use a best-effort task runner.
   base::OneShotTimer purge_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPurgeManager);

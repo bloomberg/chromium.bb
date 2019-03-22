@@ -729,7 +729,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   IdleHelper idle_helper_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
-  MemoryPurgeManager memory_purge_manager_;
 
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> compositor_task_queue_;
@@ -749,6 +748,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> v8_task_queue_;
   scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
   scoped_refptr<MainThreadTaskQueue> cleanup_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> memory_purge_task_queue_;
 
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -756,6 +756,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> cleanup_task_runner_;
+
+  MemoryPurgeManager memory_purge_manager_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
