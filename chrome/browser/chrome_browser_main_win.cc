@@ -192,6 +192,30 @@ void DetectFaultTolerantHeap() {
   UMA_HISTOGRAM_ENUMERATION("FaultTolerantHeap", detected, FTH_FLAGS_COUNT);
 }
 
+// Initializes the ModuleDatabase on its owning sequence. Also starts the
+// enumeration of registered modules in the Windows Registry.
+void InitializeModuleDatabase() {
+  DCHECK(ModuleDatabase::GetTaskRunner()->RunsTasksInCurrentSequence());
+
+  ModuleDatabase::SetInstance(std::make_unique<ModuleDatabase>());
+
+  auto* module_database = ModuleDatabase::GetInstance();
+  module_database->StartDrainingModuleLoadAttemptsLog();
+
+  // Enumerate shell extensions and input method editors. It is safe to use
+  // base::Unretained() here because the ModuleDatabase is never freed.
+  EnumerateShellExtensions(
+      base::BindRepeating(&ModuleDatabase::OnShellExtensionEnumerated,
+                          base::Unretained(module_database)),
+      base::BindOnce(&ModuleDatabase::OnShellExtensionEnumerationFinished,
+                     base::Unretained(module_database)));
+  EnumerateInputMethodEditors(
+      base::BindRepeating(&ModuleDatabase::OnImeEnumerated,
+                          base::Unretained(module_database)),
+      base::BindOnce(&ModuleDatabase::OnImeEnumerationFinished,
+                     base::Unretained(module_database)));
+}
+
 // Notes on the OnModuleEvent() callback.
 //
 // The ModuleDatabase uses the TimeDateStamp value of the DLL to uniquely
@@ -236,8 +260,7 @@ void DetectFaultTolerantHeap() {
 // load event to the ModuleDatabase.
 void HandleModuleLoadEventWithoutTimeDateStamp(
     const base::FilePath& module_path,
-    size_t module_size,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner) {
+    size_t module_size) {
   uint32_t size_of_image = 0;
   uint32_t time_date_stamp = 0;
   bool got_time_date_stamp = GetModuleImageSizeAndTimeDateStamp(
@@ -252,10 +275,8 @@ void HandleModuleLoadEventWithoutTimeDateStamp(
   if (!got_time_date_stamp)
     return;
 
-  ui_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&ModuleDatabase::HandleModuleLoadEvent,
-                                content::PROCESS_TYPE_BROWSER, module_path,
-                                module_size, time_date_stamp));
+  ModuleDatabase::HandleModuleLoadEvent(
+      content::PROCESS_TYPE_BROWSER, module_path, module_size, time_date_stamp);
 }
 
 // Helper function for getting the module size associated with a module in this
@@ -337,8 +358,7 @@ bool TryGetModuleTimeDateStamp(void* module_load_address,
 // Note: This callback may be invoked on any thread, even those not owned by the
 //       task scheduler, under the loader lock, directly on the thread where the
 //       DLL is currently loading.
-void OnModuleEvent(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-                   const ModuleWatcher::ModuleEvent& event) {
+void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
   TRACE_EVENT1("browser", "OnModuleEvent", "module_path",
                event.module_path.BaseName().AsUTF8Unsafe());
 
@@ -350,11 +370,9 @@ void OnModuleEvent(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       if (TryGetModuleTimeDateStamp(event.module_load_address,
                                     event.module_path, event.module_size,
                                     &time_date_stamp)) {
-        ui_task_runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(&ModuleDatabase::HandleModuleLoadEvent,
-                           content::PROCESS_TYPE_BROWSER, event.module_path,
-                           event.module_size, time_date_stamp));
+        ModuleDatabase::HandleModuleLoadEvent(
+            content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
+            time_date_stamp);
       } else {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
@@ -364,48 +382,29 @@ void OnModuleEvent(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(&HandleModuleLoadEventWithoutTimeDateStamp,
-                           event.module_path, event.module_size,
-                           ui_task_runner));
+                           event.module_path, event.module_size));
       }
-      return;
+      break;
     }
     case ModuleWatcher::ModuleEventType::kModuleLoaded: {
-      ui_task_runner->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ModuleDatabase::HandleModuleLoadEvent,
-                         content::PROCESS_TYPE_BROWSER, event.module_path,
-                         event.module_size,
-                         GetModuleTimeDateStamp(event.module_load_address)));
-      return;
+      ModuleDatabase::HandleModuleLoadEvent(
+          content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
+          GetModuleTimeDateStamp(event.module_load_address));
+      break;
     }
   }
 }
 
-// Helper function for initializing the module database subsystem. Populates
-// the provided |module_watcher|, and starts the enumeration of registered
-// modules in the Windows Registry.
+// Helper function for initializing the module database subsystem and populating
+// the provided |module_watcher|.
 void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(module_watcher);
 
-  ModuleDatabase::SetInstance(std::make_unique<ModuleDatabase>());
-  auto* module_database = ModuleDatabase::GetInstance();
-  module_database->StartDrainingModuleLoadAttemptsLog();
+  ModuleDatabase::GetTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&InitializeModuleDatabase));
 
-  *module_watcher = ModuleWatcher::Create(base::BindRepeating(
-      &OnModuleEvent, base::SequencedTaskRunnerHandle::Get()));
-
-  // Enumerate shell extensions and input method editors. It is safe to use
-  // base::Unretained() here because the ModuleDatabase is never freed.
-  EnumerateShellExtensions(
-      base::BindRepeating(&ModuleDatabase::OnShellExtensionEnumerated,
-                          base::Unretained(module_database)),
-      base::BindOnce(&ModuleDatabase::OnShellExtensionEnumerationFinished,
-                     base::Unretained(module_database)));
-  EnumerateInputMethodEditors(
-      base::BindRepeating(&ModuleDatabase::OnImeEnumerated,
-                          base::Unretained(module_database)),
-      base::BindOnce(&ModuleDatabase::OnImeEnumerationFinished,
-                     base::Unretained(module_database)));
+  *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
 }
 
 void ShowCloseBrowserFirstMessageBox() {
