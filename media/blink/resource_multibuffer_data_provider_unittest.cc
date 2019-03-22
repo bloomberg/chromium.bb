@@ -107,7 +107,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   void FullResponse(int64_t instance_size, bool ok = true) {
     WebURLResponse response(gurl_);
-    response.SetHTTPHeaderField(
+    response.SetHttpHeaderField(
         WebString::FromUTF8("Content-Length"),
         WebString::FromUTF8(base::StringPrintf("%" PRId64, instance_size)));
     response.SetExpectedContentLength(instance_size);
@@ -133,7 +133,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
                        bool chunked,
                        bool accept_ranges) {
     WebURLResponse response(gurl_);
-    response.SetHTTPHeaderField(
+    response.SetHttpHeaderField(
         WebString::FromUTF8("Content-Range"),
         WebString::FromUTF8(
             base::StringPrintf("bytes "
@@ -143,7 +143,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     // HTTP 1.1 doesn't permit Content-Length with Transfer-Encoding: chunked.
     int64_t content_length = -1;
     if (chunked) {
-      response.SetHTTPHeaderField(WebString::FromUTF8("Transfer-Encoding"),
+      response.SetHttpHeaderField(WebString::FromUTF8("Transfer-Encoding"),
                                   WebString::FromUTF8("chunked"));
     } else {
       content_length = last_position - first_position + 1;
@@ -152,7 +152,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
     // A server isn't required to return Accept-Ranges even though it might.
     if (accept_ranges) {
-      response.SetHTTPHeaderField(WebString::FromUTF8("Accept-Ranges"),
+      response.SetHttpHeaderField(WebString::FromUTF8("Accept-Ranges"),
                                   WebString::FromUTF8("bytes"));
     }
 
@@ -302,7 +302,7 @@ TEST_F(ResourceMultiBufferDataProviderTest, InvalidPartialResponse) {
   EXPECT_CALL(*this, RedirectCallback(scoped_refptr<UrlData>(nullptr)));
 
   WebURLResponse response(gurl_);
-  response.SetHTTPHeaderField(
+  response.SetHttpHeaderField(
       WebString::FromUTF8("Content-Range"),
       WebString::FromUTF8(base::StringPrintf("bytes "
                                              "%d-%d/%d",

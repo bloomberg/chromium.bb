@@ -169,9 +169,9 @@ WebString WebURLResponse::HttpHeaderField(const WebString& name) const {
   return resource_response_->HttpHeaderField(name);
 }
 
-void WebURLResponse::SetHTTPHeaderField(const WebString& name,
+void WebURLResponse::SetHttpHeaderField(const WebString& name,
                                         const WebString& value) {
-  resource_response_->SetHTTPHeaderField(name, value);
+  resource_response_->SetHttpHeaderField(name, value);
 }
 
 void WebURLResponse::AddHTTPHeaderField(const WebString& name,

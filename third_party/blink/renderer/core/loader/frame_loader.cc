@@ -1658,7 +1658,7 @@ void FrameLoader::ModifyRequestForCSP(
   if (!RequiredCSP().IsEmpty()) {
     DCHECK(
         ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
-    resource_request.SetHTTPHeaderField(http_names::kSecRequiredCSP,
+    resource_request.SetHttpHeaderField(http_names::kSecRequiredCSP,
                                         RequiredCSP());
   }
 
@@ -1672,7 +1672,7 @@ void FrameLoader::ModifyRequestForCSP(
       return;
     }
 
-    resource_request.SetHTTPHeaderField(http_names::kUpgradeInsecureRequests,
+    resource_request.SetHttpHeaderField(http_names::kUpgradeInsecureRequests,
                                         "1");
   }
 

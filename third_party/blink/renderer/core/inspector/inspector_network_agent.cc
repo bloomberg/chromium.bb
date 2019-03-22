@@ -862,7 +862,7 @@ void InspectorNetworkAgent::PrepareRequest(
         request.SetHTTPReferrer(
             Referrer(value, network::mojom::ReferrerPolicy::kAlways));
       } else {
-        request.SetHTTPHeaderField(header_name, AtomicString(value));
+        request.SetHttpHeaderField(header_name, AtomicString(value));
       }
     }
   }

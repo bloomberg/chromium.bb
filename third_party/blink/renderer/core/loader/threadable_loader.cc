@@ -163,7 +163,7 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   std::unique_ptr<ResourceRequest> preflight_request =
       std::make_unique<ResourceRequest>(request_url);
   preflight_request->SetHTTPMethod(http_names::kOPTIONS);
-  preflight_request->SetHTTPHeaderField(http_names::kAccessControlRequestMethod,
+  preflight_request->SetHttpHeaderField(http_names::kAccessControlRequestMethod,
                                         request.HttpMethod());
   preflight_request->SetPriority(request.Priority());
   preflight_request->SetRequestContext(request.GetRequestContext());
@@ -174,14 +174,14 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetReferrerPolicy(request.GetReferrerPolicy());
 
   if (request.IsExternalRequest()) {
-    preflight_request->SetHTTPHeaderField(
+    preflight_request->SetHttpHeaderField(
         http_names::kAccessControlRequestExternal, "true");
   }
 
   const AtomicString request_headers =
       CreateAccessControlRequestHeadersHeader(request.HttpHeaderFields());
   if (request_headers != g_null_atom) {
-    preflight_request->SetHTTPHeaderField(
+    preflight_request->SetHttpHeaderField(
         http_names::kAccessControlRequestHeaders, request_headers);
   }
 
@@ -712,7 +712,7 @@ bool ThreadableLoader::RedirectReceived(
   // Add any request headers which we previously saved from the
   // original request.
   for (const auto& header : request_headers_)
-    cross_origin_request.SetHTTPHeaderField(header.key, header.value);
+    cross_origin_request.SetHttpHeaderField(header.key, header.value);
   cross_origin_request.SetReportUploadProgress(report_upload_progress_);
   MakeCrossOriginAccessRequest(cross_origin_request);
 

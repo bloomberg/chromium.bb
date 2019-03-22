@@ -195,7 +195,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetHttpStatusText(const WebString&);
 
   BLINK_PLATFORM_EXPORT WebString HttpHeaderField(const WebString& name) const;
-  BLINK_PLATFORM_EXPORT void SetHTTPHeaderField(const WebString& name,
+  BLINK_PLATFORM_EXPORT void SetHttpHeaderField(const WebString& name,
                                                 const WebString& value);
   BLINK_PLATFORM_EXPORT void AddHTTPHeaderField(const WebString& name,
                                                 const WebString& value);

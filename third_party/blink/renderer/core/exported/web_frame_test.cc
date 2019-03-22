@@ -7285,7 +7285,7 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
   WebURLResponse redirect_response;
   redirect_response.SetMimeType("text/html");
   redirect_response.SetHttpStatusCode(302);
-  redirect_response.SetHTTPHeaderField("Location", redirect);
+  redirect_response.SetHttpHeaderField("Location", redirect);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       test_url, redirect_response, file_path);
 

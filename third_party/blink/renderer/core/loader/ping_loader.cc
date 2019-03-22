@@ -214,14 +214,14 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   request.SetHTTPMethod(http_names::kPOST);
   request.SetHTTPContentType("text/ping");
   request.SetHTTPBody(EncodedFormData::Create("PING"));
-  request.SetHTTPHeaderField(http_names::kCacheControl, "max-age=0");
-  request.SetHTTPHeaderField(http_names::kPingTo,
+  request.SetHttpHeaderField(http_names::kCacheControl, "max-age=0");
+  request.SetHttpHeaderField(http_names::kPingTo,
                              AtomicString(destination_url.GetString()));
   scoped_refptr<const SecurityOrigin> ping_origin =
       SecurityOrigin::Create(ping_url);
   if (ProtocolIs(frame->GetDocument()->Url().GetString(), "http") ||
       frame->GetDocument()->GetSecurityOrigin()->CanAccess(ping_origin.get())) {
-    request.SetHTTPHeaderField(
+    request.SetHttpHeaderField(
         http_names::kPingFrom,
         AtomicString(frame->GetDocument()->Url().GetString()));
   }

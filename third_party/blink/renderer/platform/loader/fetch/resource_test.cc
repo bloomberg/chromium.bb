@@ -173,46 +173,46 @@ TEST(ResourceTest, Vary) {
   ResourceRequest new_request(url);
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
-  response.SetHTTPHeaderField(http_names::kVary, "*");
+  response.SetHttpHeaderField(http_names::kVary, "*");
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Irrelevant header
-  response.SetHTTPHeaderField(http_names::kVary, "definitelynotarealheader");
+  response.SetHttpHeaderField(http_names::kVary, "definitelynotarealheader");
   resource->SetResponse(response);
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Header present on new but not old
-  new_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
-  response.SetHTTPHeaderField(http_names::kVary, http_names::kUserAgent);
+  new_request.SetHttpHeaderField(http_names::kUserAgent, "something");
+  response.SetHttpHeaderField(http_names::kVary, http_names::kUserAgent);
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
   new_request.ClearHttpHeaderField(http_names::kUserAgent);
 
   ResourceRequest old_request(url);
-  old_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
-  old_request.SetHTTPHeaderField(http_names::kReferer, "http://foo.com");
+  old_request.SetHttpHeaderField(http_names::kUserAgent, "something");
+  old_request.SetHttpHeaderField(http_names::kReferer, "http://foo.com");
   resource = MockResource::Create(old_request);
   resource->ResponseReceived(response);
   resource->FinishForTest();
 
   // Header present on old but not new
   new_request.ClearHttpHeaderField(http_names::kUserAgent);
-  response.SetHTTPHeaderField(http_names::kVary, http_names::kUserAgent);
+  response.SetHttpHeaderField(http_names::kVary, http_names::kUserAgent);
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Header present on both
-  new_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
+  new_request.SetHttpHeaderField(http_names::kUserAgent, "something");
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
   // One matching, one mismatching
-  response.SetHTTPHeaderField(http_names::kVary, "User-Agent, Referer");
+  response.SetHttpHeaderField(http_names::kVary, "User-Agent, Referer");
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Two matching
-  new_request.SetHTTPHeaderField(http_names::kReferer, "http://foo.com");
+  new_request.SetHttpHeaderField(http_names::kReferer, "http://foo.com");
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 }
 
@@ -449,7 +449,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
 
   // The revalidating request is redirected.
   ResourceResponse redirect_response(url);
-  redirect_response.SetHTTPHeaderField(
+  redirect_response.SetHttpHeaderField(
       "location", AtomicString(redirect_target_url.GetString()));
   redirect_response.SetHttpStatusCode(308);
   ResourceRequest redirected_revalidating_request(redirect_target_url);
@@ -505,7 +505,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
   const KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHTTPHeaderField(http_names::kCacheControl,
+  response.SetHttpHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
   MockResource* resource = MockResource::Create(url);
@@ -532,15 +532,15 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   const KURL url("http://127.0.0.1:8000/foo.html");
   const KURL redirect_target_url("http://127.0.0.1:8000/food.html");
   ResourceResponse response(url);
-  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=50");
+  response.SetHttpHeaderField(http_names::kCacheControl, "max-age=50");
   response.SetHttpStatusCode(200);
 
   // The revalidating request is redirected.
   ResourceResponse redirect_response(url);
-  redirect_response.SetHTTPHeaderField(
+  redirect_response.SetHttpHeaderField(
       "location", AtomicString(redirect_target_url.GetString()));
   redirect_response.SetHttpStatusCode(302);
-  redirect_response.SetHTTPHeaderField(http_names::kCacheControl,
+  redirect_response.SetHttpHeaderField(http_names::kCacheControl,
                                        "max-age=0, stale-while-revalidate=40");
   redirect_response.SetAsyncRevalidationRequested(true);
   ResourceRequest redirected_revalidating_request(redirect_target_url);

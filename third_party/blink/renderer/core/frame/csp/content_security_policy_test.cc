@@ -944,23 +944,23 @@ TEST_F(ContentSecurityPolicyTest, ShouldEnforceEmbeddersPolicy) {
                   response, secure_origin.get()),
               test.inherits);
 
-    response.SetHTTPHeaderField(http_names::kAllowCSPFrom, AtomicString("*"));
+    response.SetHttpHeaderField(http_names::kAllowCSPFrom, AtomicString("*"));
     EXPECT_TRUE(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
         response, secure_origin.get()));
 
-    response.SetHTTPHeaderField(http_names::kAllowCSPFrom,
+    response.SetHttpHeaderField(http_names::kAllowCSPFrom,
                                 AtomicString("* not a valid header"));
     EXPECT_EQ(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
                   response, secure_origin.get()),
               test.inherits);
 
-    response.SetHTTPHeaderField(http_names::kAllowCSPFrom,
+    response.SetHttpHeaderField(http_names::kAllowCSPFrom,
                                 AtomicString("http://example.test"));
     EXPECT_EQ(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
                   response, secure_origin.get()),
               test.inherits);
 
-    response.SetHTTPHeaderField(http_names::kAllowCSPFrom,
+    response.SetHttpHeaderField(http_names::kAllowCSPFrom,
                                 AtomicString("https://example.test"));
     EXPECT_TRUE(ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
         response, secure_origin.get()));
