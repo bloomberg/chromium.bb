@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 
 namespace base {
 class Token;
@@ -29,7 +30,9 @@ struct IndexAndPersistRulesResult {
  public:
   static IndexAndPersistRulesResult CreateSuccessResult(
       int ruleset_checksum,
-      std::vector<InstallWarning> warnings);
+      std::vector<InstallWarning> warnings,
+      size_t rules_count,
+      base::TimeDelta index_and_persist_time);
   static IndexAndPersistRulesResult CreateErrorResult(std::string error);
 
   ~IndexAndPersistRulesResult();
@@ -44,6 +47,13 @@ struct IndexAndPersistRulesResult {
 
   // Valid if |success| is true.
   std::vector<InstallWarning> warnings;
+
+  // The number of indexed rules. Valid if |success| is true.
+  size_t rules_count;
+
+  // Time taken to deserialize the JSON rules and persist them in flatbuffer
+  // format. Valid if success is true.
+  base::TimeDelta index_and_persist_time;
 
   // Valid if |success| is false.
   std::string error;
@@ -63,7 +73,8 @@ class RulesetSource {
   RulesetSource(base::FilePath json_path,
                 base::FilePath indexed_path,
                 size_t id,
-                size_t priority);
+                size_t priority,
+                size_t rule_count_limit);
   ~RulesetSource();
   RulesetSource(RulesetSource&&);
   RulesetSource& operator=(RulesetSource&&);
@@ -79,6 +90,9 @@ class RulesetSource {
   // Each ruleset source within an extension has a distinct ID and priority.
   size_t id() const { return id_; }
   size_t priority() const { return priority_; }
+
+  // The maximum number of rules that will be indexed from this source.
+  size_t rule_count_limit() const { return rule_count_limit_; }
 
   // Indexes and persists the JSON ruleset. This is potentially unsafe since the
   // JSON rules file is parsed in-process. Note: This must be called on a
@@ -103,6 +117,7 @@ class RulesetSource {
   base::FilePath indexed_path_;
   size_t id_;
   size_t priority_;
+  size_t rule_count_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetSource);
 };

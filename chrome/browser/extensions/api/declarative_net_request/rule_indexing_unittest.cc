@@ -79,10 +79,13 @@ class RuleIndexingTest : public DNRTestBase {
     // Ensure no load errors were reported.
     EXPECT_TRUE(error_reporter()->GetErrors()->empty());
 
-    tester.ExpectTotalCount(kIndexRulesTimeHistogram, 1);
-    tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 1);
-    tester.ExpectBucketCount(kManifestRulesCountHistogram,
-                             expected_indexed_rules_count, 1);
+    // The histograms below are not logged for unpacked extensions.
+    if (GetParam() == ExtensionLoadType::PACKED) {
+      tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
+                              1 /* count */);
+      tester.ExpectBucketCount(kManifestRulesCountHistogram,
+                               expected_indexed_rules_count, 1 /* count */);
+    }
   }
 
   void LoadAndExpectError(const std::string& expected_error) {
@@ -106,7 +109,6 @@ class RuleIndexingTest : public DNRTestBase {
               errors->at(0).find(base::UTF8ToUTF16(expected_error)))
         << "expected: " << expected_error << " actual: " << errors->at(0);
 
-    tester.ExpectTotalCount(kIndexRulesTimeHistogram, 0u);
     tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 0u);
     tester.ExpectTotalCount(kManifestRulesCountHistogram, 0u);
   }
@@ -511,41 +513,6 @@ TEST_P(RuleIndexingTest, AddTwoRules) {
   rule.id = kMinValidID + 1;
   AddRule(rule);
   LoadAndExpectSuccess(2 /* rules count */);
-}
-
-TEST_P(RuleIndexingTest, ReloadExtension) {
-  AddRule(CreateGenericRule());
-  LoadAndExpectSuccess(1 /* rules count */);
-
-  base::HistogramTester tester;
-  TestExtensionRegistryObserver registry_observer(registry());
-
-  service()->ReloadExtension(extension()->id());
-  // Reloading should invalidate pointers to existing extension(). Hence reset
-  // it.
-  set_extension(
-      base::WrapRefCounted(registry_observer.WaitForExtensionLoaded()));
-
-  // Reloading the extension should cause the rules to be re-indexed in the
-  // case of unpacked extensions.
-  int expected_histogram_count = -1;
-  switch (GetParam()) {
-    case ExtensionLoadType::PACKED:
-      expected_histogram_count = 0;
-      break;
-    case ExtensionLoadType::UNPACKED:
-      expected_histogram_count = 1;
-      break;
-  }
-
-  tester.ExpectTotalCount(kIndexRulesTimeHistogram, expected_histogram_count);
-  tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
-                          expected_histogram_count);
-  tester.ExpectBucketCount(kManifestRulesCountHistogram, 1 /* rules count */,
-                           expected_histogram_count);
-
-  // Ensure no install warnings were raised on reload.
-  EXPECT_TRUE(extension()->install_warnings().empty());
 }
 
 // Test that we do not use an extension provided indexed ruleset.

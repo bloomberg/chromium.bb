@@ -56,7 +56,6 @@ extern const char kTooManyParseFailuresWarning[];
 
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
-extern const char kIndexRulesTimeHistogram[];
 extern const char kManifestRulesCountHistogram[];
 
 }  // namespace declarative_net_request

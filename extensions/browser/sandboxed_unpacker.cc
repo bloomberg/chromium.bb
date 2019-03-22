@@ -29,6 +29,7 @@
 #include "components/services/unzip/public/cpp/unzip.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -701,6 +702,12 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
   if (result.success) {
     if (!result.warnings.empty())
       extension_->AddInstallWarnings(std::move(result.warnings));
+    UMA_HISTOGRAM_COUNTS_100000(
+        declarative_net_request::kManifestRulesCountHistogram,
+        result.rules_count);
+    UMA_HISTOGRAM_TIMES(
+        declarative_net_request::kIndexAndPersistRulesTimeHistogram,
+        result.index_and_persist_time);
     ReportSuccess(std::move(manifest), result.ruleset_checksum);
     return;
   }
