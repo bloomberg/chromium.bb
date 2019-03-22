@@ -22,6 +22,6 @@ type_mappings = [
   "gfx.mojom.GpuMemoryBufferHandle=gfx::GpuMemoryBufferHandle[move_only,nullable_is_same_type]",
   "gfx.mojom.GpuMemoryBufferId=gfx::GpuMemoryBufferId[copyable_pass_by_value]",
   "gfx.mojom.GpuMemoryBufferType=gfx::GpuMemoryBufferType",
-  "gfx.mojom.NativePixmapHandle=gfx::NativePixmapHandle",
-  "gfx.mojom.NativePixmapPlane=gfx::NativePixmapPlane",
+  "gfx.mojom.NativePixmapHandle=gfx::NativePixmapHandle[move_only]",
+  "gfx.mojom.NativePixmapPlane=gfx::NativePixmapPlane[move_only]",
 ]

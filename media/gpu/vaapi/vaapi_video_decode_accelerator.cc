@@ -64,16 +64,6 @@ void ReportToUMA(VAVDADecoderFailure failure) {
                             VAVDA_DECODER_FAILURES_MAX + 1);
 }
 
-#if defined(USE_OZONE)
-void CloseGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& handle) {
-  for (const auto& fd : handle.native_pixmap_handle.fds) {
-    // Close the fd by wrapping it in a ScopedFD and letting
-    // it fall out of scope.
-    base::ScopedFD scoped_fd(fd.fd);
-  }
-}
-#endif
-
 // Returns true if the CPU is an Intel Kaby/Gemini/Sky Lake or later.
 // Cpu platform id's are referenced from the following file in kernel source
 // arch/x86/include/asm/intel-family.h
@@ -725,12 +715,11 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
-    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   VLOGF(2) << "Importing picture id: " << picture_buffer_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
-    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
     VLOGF(1) << "Cannot import in non-import mode";
     NotifyError(INVALID_ARGUMENT);
     return;
@@ -739,8 +728,6 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
   {
     base::AutoLock auto_lock(lock_);
     if (!pictures_.count(picture_buffer_id)) {
-      CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
-
       // It's possible that we've already posted a DismissPictureBuffer for this
       // picture, but it has not yet executed when this ImportBufferForPicture
       // was posted to us by the client. In that case just ignore this (we've
@@ -753,7 +740,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     VaapiPicture* picture = pictures_[picture_buffer_id].get();
     if (!picture->ImportGpuMemoryBufferHandle(
             VideoPixelFormatToGfxBufferFormat(pixel_format),
-            gpu_memory_buffer_handle)) {
+            std::move(gpu_memory_buffer_handle))) {
       // ImportGpuMemoryBufferHandle will close the handles even on failure, so
       // we don't need to do this ourselves.
       VLOGF(1) << "Failed to import GpuMemoryBufferHandle";

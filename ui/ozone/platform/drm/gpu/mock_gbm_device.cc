@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +79,6 @@ class MockGbmBuffer final : public ui::GbmBuffer {
   uint32_t format_ = 0;
   uint64_t format_modifier_ = 0;
   uint32_t flags_ = 0;
-  std::vector<base::ScopedFD> fds_;
   gfx::Size size_;
   std::vector<gfx::NativePixmapPlane> planes_;
   std::vector<uint32_t> handles_;
@@ -145,7 +146,8 @@ std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferWithModifiers(
 
   std::vector<gfx::NativePixmapPlane> planes;
   planes.push_back(gfx::NativePixmapPlane(plane_stride, plane_offset,
-                                          plane_size, format_modifier));
+                                          plane_size, base::ScopedFD(),
+                                          format_modifier));
   std::vector<uint32_t> handles;
   handles.push_back(next_handle_++);
 
@@ -153,11 +155,10 @@ std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferWithModifiers(
                                          std::move(planes), std::move(handles));
 }
 
-std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferFromFds(
+std::unique_ptr<GbmBuffer> MockGbmDevice::CreateBufferFromHandle(
     uint32_t format,
     const gfx::Size& size,
-    std::vector<base::ScopedFD> fds,
-    const std::vector<gfx::NativePixmapPlane>& planes) {
+    gfx::NativePixmapHandle handle) {
   NOTREACHED();
   return nullptr;
 }

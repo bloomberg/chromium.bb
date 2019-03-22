@@ -178,7 +178,7 @@ void VideoDecoderClient::ProvidePictureBuffers(
           CreateGpuMemoryBufferHandle(video_frame.get());
       LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
       decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format,
-                                       handle);
+                                       std::move(handle));
     }
   }
 

@@ -82,7 +82,7 @@ SurfaceFactoryOzone::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    const gfx::NativePixmapHandle& handle) {
+    gfx::NativePixmapHandle handle) {
   return nullptr;
 }
 
@@ -91,7 +91,7 @@ SurfaceFactoryOzone::CreateNativePixmapForProtectedBufferHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    const gfx::NativePixmapHandle& handle) {
+    gfx::NativePixmapHandle handle) {
   return nullptr;
 }
 

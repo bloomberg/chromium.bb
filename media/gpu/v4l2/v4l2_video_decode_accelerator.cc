@@ -553,7 +553,7 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
 void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
-    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   if (output_mode_ != Config::OutputMode::IMPORT) {
@@ -562,32 +562,18 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
-  std::vector<base::ScopedFD> dmabuf_fds;
-  std::vector<gfx::NativePixmapPlane> planes;
-#if defined(USE_OZONE)
-  DCHECK_EQ(gpu_memory_buffer_handle.native_pixmap_handle.fds.size(),
-            gpu_memory_buffer_handle.native_pixmap_handle.planes.size());
-
-  for (auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
-    dmabuf_fds.emplace_back(fd.fd);
-  }
-
-  planes = gpu_memory_buffer_handle.native_pixmap_handle.planes;
-#endif
-
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask,
           base::Unretained(this), picture_buffer_id, pixel_format,
-          std::move(dmabuf_fds), std::move(planes)));
+          std::move(gpu_memory_buffer_handle.native_pixmap_handle)));
 }
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
-    std::vector<base::ScopedFD> dmabuf_fds,
-    std::vector<gfx::NativePixmapPlane> planes) {
+    gfx::NativePixmapHandle handle) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   // |output_format_fourcc_| is the output format of the decoder. It is not
   // the final output format from the image processor (if exists).
@@ -599,6 +585,11 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
     return;
   }
 
+  std::vector<base::ScopedFD> dmabuf_fds;
+  for (auto& plane : handle.planes) {
+    dmabuf_fds.push_back(std::move(plane.fd));
+  }
+
   // If the driver does not accept as many fds as we received from the client,
   // we have to check if the additional fds are actually duplicated fds pointing
   // to previous planes; if so, we can close the duplicates and keep only the
@@ -607,7 +598,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
   // Otherwise, if offset == 0, return error as it may be pointing to a new
   // plane.
   for (size_t i = dmabuf_fds.size() - 1; i >= egl_image_planes_count_; i--) {
-    if (planes[i].offset == 0) {
+    if (handle.planes[i].offset == 0) {
       VLOGF(1) << "The dmabuf fd points to a new buffer, ";
       NOTIFY_ERROR(INVALID_ARGUMENT);
       return;
@@ -617,12 +608,12 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureForImportTask(
     dmabuf_fds.pop_back();
   }
 
-  for (const auto& plane : planes) {
+  for (const auto& plane : handle.planes) {
     DVLOGF(3) << ": offset=" << plane.offset << ", stride=" << plane.stride;
   }
 
   ImportBufferForPictureTask(picture_buffer_id, std::move(dmabuf_fds),
-                             planes[0].stride);
+                             handle.planes[0].stride);
 }
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(

@@ -555,10 +555,11 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
       TextureRefMap::iterator texture_it = active_textures_.find(buffer.id());
       ASSERT_NE(active_textures_.end(), texture_it);
 
-      const gfx::GpuMemoryBufferHandle& handle =
+      gfx::GpuMemoryBufferHandle handle =
           texture_it->second->ExportGpuMemoryBufferHandle();
       LOG_ASSERT(!handle.is_null()) << "Failed producing GMB handle";
-      decoder_->ImportBufferForPicture(buffer.id(), pixel_format, handle);
+      decoder_->ImportBufferForPicture(buffer.id(), pixel_format,
+                                       std::move(handle));
     }
   }
 }

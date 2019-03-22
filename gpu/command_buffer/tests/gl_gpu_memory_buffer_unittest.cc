@@ -359,18 +359,18 @@ TEST_F(GpuMemoryBufferTestEGL, GLCreateImageCHROMIUMFromNativePixmap) {
   // simplicity the test gets them from a GL texture.
   gfx::NativePixmapHandle native_pixmap_handle =
       CreateNativePixmapHandle(format, size, pixels.get());
-  EXPECT_EQ(1u, native_pixmap_handle.fds.size());
+  EXPECT_EQ(1u, native_pixmap_handle.planes.size());
 
   // Initialize a GpuMemoryBufferHandle to wrap a native pixmap.
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
-  handle.native_pixmap_handle = native_pixmap_handle;
+  handle.native_pixmap_handle = std::move(native_pixmap_handle);
   EXPECT_TRUE(handle.id.is_valid());
 
   // Create a GMB to pass to glCreateImageCHROMIUM.
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
       gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
-          native_pixmap_factory_.get(), handle, size, format,
+          native_pixmap_factory_.get(), std::move(handle), size, format,
           gfx::BufferUsage::SCANOUT,
           base::RepeatingCallback<void(const gpu::SyncToken&)>());
   EXPECT_NE(nullptr, buffer.get());

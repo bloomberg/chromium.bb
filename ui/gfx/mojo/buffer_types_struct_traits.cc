@@ -29,30 +29,33 @@ bool StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
 }
 
 #if defined(OS_LINUX)
-std::vector<mojo::ScopedHandle>
-StructTraits<gfx::mojom::NativePixmapHandleDataView, gfx::NativePixmapHandle>::
-    fds(const gfx::NativePixmapHandle& pixmap_handle) {
-  std::vector<mojo::ScopedHandle> handles;
-  for (const base::FileDescriptor& fd : pixmap_handle.fds)
-    handles.emplace_back(mojo::WrapPlatformFile(fd.fd));
-  return handles;
+bool StructTraits<
+    gfx::mojom::NativePixmapPlaneDataView,
+    gfx::NativePixmapPlane>::Read(gfx::mojom::NativePixmapPlaneDataView data,
+                                  gfx::NativePixmapPlane* out) {
+  out->stride = data.stride();
+  out->offset = data.offset();
+  out->size = data.size();
+  out->modifier = data.modifier();
+
+  mojo::PlatformHandle handle = mojo::UnwrapPlatformHandle(data.TakeFd());
+  if (!handle.is_fd())
+    return false;
+  out->fd = handle.TakeFD();
+
+  return true;
+}
+
+mojo::ScopedHandle
+StructTraits<gfx::mojom::NativePixmapPlaneDataView, gfx::NativePixmapPlane>::fd(
+    gfx::NativePixmapPlane& plane) {
+  return mojo::WrapPlatformFile(plane.fd.release());
 }
 
 bool StructTraits<
     gfx::mojom::NativePixmapHandleDataView,
     gfx::NativePixmapHandle>::Read(gfx::mojom::NativePixmapHandleDataView data,
                                    gfx::NativePixmapHandle* out) {
-  mojo::ArrayDataView<mojo::ScopedHandle> handles_data_view;
-  data.GetFdsDataView(&handles_data_view);
-  for (size_t i = 0; i < handles_data_view.size(); ++i) {
-    mojo::ScopedHandle handle = handles_data_view.Take(i);
-    base::PlatformFile platform_file;
-    if (mojo::UnwrapPlatformFile(std::move(handle), &platform_file) !=
-        MOJO_RESULT_OK)
-      return false;
-    constexpr bool auto_close = true;
-    out->fds.push_back(base::FileDescriptor(platform_file, auto_close));
-  }
   return data.ReadPlanes(&out->planes);
 }
 #endif  // defined(OS_LINUX)
@@ -70,7 +73,7 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
     case gfx::NATIVE_PIXMAP:
 #if defined(OS_LINUX)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewNativePixmapHandle(
-          handle.native_pixmap_handle);
+          std::move(handle.native_pixmap_handle));
 #else
       break;
 #endif
@@ -148,7 +151,8 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::
         NATIVE_PIXMAP_HANDLE:
       out->type = gfx::NATIVE_PIXMAP;
-      out->native_pixmap_handle = platform_handle->get_native_pixmap_handle();
+      out->native_pixmap_handle =
+          std::move(platform_handle->get_native_pixmap_handle());
       return true;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::MACH_PORT: {

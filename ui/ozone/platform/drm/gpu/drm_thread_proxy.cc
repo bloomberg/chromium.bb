@@ -50,19 +50,18 @@ void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
                      widget, size, format, usage, flags, buffer, framebuffer));
 }
 
-void DrmThreadProxy::CreateBufferFromFds(
+void DrmThreadProxy::CreateBufferFromHandle(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    std::vector<base::ScopedFD> fds,
-    const std::vector<gfx::NativePixmapPlane>& planes,
+    gfx::NativePixmapHandle handle,
     std::unique_ptr<GbmBuffer>* buffer,
     scoped_refptr<DrmFramebuffer>* framebuffer) {
-  PostSyncTask(drm_thread_.task_runner(),
-               base::BindOnce(&DrmThread::CreateBufferFromFds,
-                              base::Unretained(&drm_thread_), widget, size,
-                              format, base::Passed(std::move(fds)), planes,
-                              buffer, framebuffer));
+  PostSyncTask(
+      drm_thread_.task_runner(),
+      base::BindOnce(&DrmThread::CreateBufferFromHandle,
+                     base::Unretained(&drm_thread_), widget, size, format,
+                     base::Passed(std::move(handle)), buffer, framebuffer));
 }
 
 void DrmThreadProxy::CheckOverlayCapabilities(

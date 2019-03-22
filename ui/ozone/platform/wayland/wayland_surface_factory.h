@@ -53,7 +53,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       gfx::AcceleratedWidget widget,
       gfx::Size size,
       gfx::BufferFormat format,
-      const gfx::NativePixmapHandle& handle) override;
+      gfx::NativePixmapHandle handle) override;
 
  private:
   WaylandConnectionProxy* connection_ = nullptr;

@@ -66,7 +66,6 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   uint32_t offset;
   int32_t stride;
 #if defined(OS_LINUX)
-  // TODO(crbug.com/863011): convert this to a scoped handle.
   NativePixmapHandle native_pixmap_handle;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   ScopedRefCountedIOSurfaceMachPort mach_port;

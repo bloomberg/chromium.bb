@@ -29,11 +29,10 @@ class GbmDevice {
       const gfx::Size& size,
       uint32_t flags,
       const std::vector<uint64_t>& modifiers) = 0;
-  virtual std::unique_ptr<GbmBuffer> CreateBufferFromFds(
+  virtual std::unique_ptr<GbmBuffer> CreateBufferFromHandle(
       uint32_t format,
       const gfx::Size& size,
-      std::vector<base::ScopedFD> fds,
-      const std::vector<gfx::NativePixmapPlane>& planes) = 0;
+      gfx::NativePixmapHandle handle) = 0;
 };
 
 }  // namespace ui

@@ -104,17 +104,15 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::NATIVE_PIXMAP;
 
-  const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-  for (size_t i = 0; i < num_planes; ++i) {
-    const auto& plane = video_frame->layout().planes()[i];
-    handle.native_pixmap_handle.planes.emplace_back(plane.stride, plane.offset,
-                                                    i, plane.modifier);
-  }
-
   std::vector<base::ScopedFD> duped_fds =
       DuplicateFDs(video_frame->DmabufFds());
-  for (auto& duped_fd : duped_fds)
-    handle.native_pixmap_handle.fds.emplace_back(std::move(duped_fd));
+  const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
+  DCHECK_EQ(num_planes, duped_fds.size());
+  for (size_t i = 0; i < num_planes; ++i) {
+    const auto& plane = video_frame->layout().planes()[i];
+    handle.native_pixmap_handle.planes.emplace_back(
+        plane.stride, plane.offset, i, std::move(duped_fds[i]), plane.modifier);
+  }
 
   return handle;
 }

@@ -309,7 +309,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   virtual void ImportBufferForPicture(
       int32_t picture_buffer_id,
       VideoPixelFormat pixel_format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle);
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle);
 
   // Sends picture buffers to be reused by the decoder. This needs to be called
   // for each buffer that has been processed so that decoder may know onto which

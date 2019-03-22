@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace ui {
 
@@ -18,7 +19,7 @@ class StubClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
 
   // ClientNativePixmapFactory:
   std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
-      const gfx::NativePixmapHandle& handle,
+      gfx::NativePixmapHandle handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
     NOTREACHED();
