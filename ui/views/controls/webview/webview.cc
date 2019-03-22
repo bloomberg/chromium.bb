@@ -121,10 +121,6 @@ void WebView::EnableSizingFromWebContents(const gfx::Size& min_size,
   MaybeEnableAutoResize();
 }
 
-void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
-  holder_->set_resize_background_color(resize_background_color);
-}
-
 void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
   if (crashed_overlay_view_ == crashed_overlay_view)
     return;
