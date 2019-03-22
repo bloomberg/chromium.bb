@@ -1117,7 +1117,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ProcessingBeforeUnload() const {
     return load_event_progress_ == kBeforeUnloadEventInProgress;
   }
-  void SuppressLoadEvent();
 
   void SetContainsPlugins() { contains_plugins_ = true; }
   bool ContainsPlugins() const { return contains_plugins_; }

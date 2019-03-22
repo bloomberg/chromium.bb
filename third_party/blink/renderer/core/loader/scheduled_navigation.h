@@ -22,7 +22,6 @@ class ScheduledNavigation
   ScheduledNavigation(ClientNavigationReason,
                       double delay,
                       Document* origin_document,
-                      bool is_location_change,
                       base::TimeTicks input_timestamp);
   virtual ~ScheduledNavigation();
 
@@ -35,7 +34,6 @@ class ScheduledNavigation
   ClientNavigationReason GetReason() const { return reason_; }
   double Delay() const { return delay_; }
   Document* OriginDocument() const { return origin_document_.Get(); }
-  bool IsLocationChange() const { return is_location_change_; }
   std::unique_ptr<UserGestureIndicator> CreateUserGestureIndicator();
   base::TimeTicks InputTimestamp() const { return input_timestamp_; }
 
@@ -50,7 +48,6 @@ class ScheduledNavigation
   ClientNavigationReason reason_;
   double delay_;
   Member<Document> origin_document_;
-  bool is_location_change_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
   base::TimeTicks input_timestamp_;
 
