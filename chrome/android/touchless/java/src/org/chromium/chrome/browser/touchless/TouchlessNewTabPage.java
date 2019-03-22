@@ -54,6 +54,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
     private SuggestionsRecyclerView mRecyclerView;
     private Tab mTab;
     private ContextMenuManager mContextMenuManager;
+    private SiteSuggestionsCoordinator mSiteSuggestionsCoordinator;
 
     public TouchlessNewTabPage(ChromeActivity activity, NativePageHost host) {
         super(activity, host); // Super calls initialize at the beginning of the constructor.
@@ -80,7 +81,6 @@ public class TouchlessNewTabPage extends BasicNativePage {
                 R.layout.new_tab_page_touchless, mRecyclerView, false);
 
         // TODO(dewittj): Initialize the recent tab coordinator here.
-        // TODO(dewittj): Initialize the tile suggestions coordinator here.
 
         initializeContentSuggestions(activity, nativePageHost, model);
 
@@ -123,6 +123,10 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
         mRecyclerView.init(uiConfig, mContextMenuManager);
+
+        // Infinite scrolling view for site suggestions.
+        mSiteSuggestionsCoordinator = new SiteSuggestionsCoordinator(mRecyclerTopmostView, profile,
+                navigationDelegate, mContextMenuManager, suggestionsUiDelegate.getImageFetcher());
 
         NewTabPageAdapter newTabPageAdapter =
                 new NewTabPageAdapter(suggestionsUiDelegate, mRecyclerTopmostView, uiConfig,
@@ -167,6 +171,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
 
         mMediator.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
+        mSiteSuggestionsCoordinator.destroy();
 
         super.destroy();
     }

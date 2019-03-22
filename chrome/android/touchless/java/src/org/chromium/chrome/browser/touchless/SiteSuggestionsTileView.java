@@ -29,6 +29,10 @@ public class SiteSuggestionsTileView extends TileView {
         mIconSizePx = getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
     }
 
+    /**
+     * Initializes the icon generator and clears the model processor attached to this view.
+     * @param generator The generator for icons.
+     */
     public void initialize(RoundedIconGenerator generator) {
         mIconGenerator = generator;
     }
