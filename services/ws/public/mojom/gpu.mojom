@@ -40,7 +40,7 @@ interface Gpu {
                             gpu.mojom.GpuFeatureInfo gpu_feature_info);
 
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.JpegDecodeAccelerator& jda);
+  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
 
   // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
   CreateVideoEncodeAcceleratorProvider(

@@ -18,7 +18,7 @@ namespace media {
 
 MojoJpegDecodeAccelerator::MojoJpegDecodeAccelerator(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder)
+    mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder)
     : io_task_runner_(std::move(io_task_runner)),
       jpeg_decoder_info_(std::move(jpeg_decoder)) {}
 
@@ -27,7 +27,7 @@ MojoJpegDecodeAccelerator::~MojoJpegDecodeAccelerator() {
 }
 
 bool MojoJpegDecodeAccelerator::Initialize(
-    JpegDecodeAccelerator::Client* /*client*/) {
+    MjpegDecodeAccelerator::Client* /*client*/) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -84,7 +84,7 @@ bool MojoJpegDecodeAccelerator::IsSupported() {
 
 void MojoJpegDecodeAccelerator::OnInitializeDone(
     InitCB init_cb,
-    JpegDecodeAccelerator::Client* client,
+    MjpegDecodeAccelerator::Client* client,
     bool success) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
@@ -96,13 +96,13 @@ void MojoJpegDecodeAccelerator::OnInitializeDone(
 
 void MojoJpegDecodeAccelerator::OnDecodeAck(
     int32_t bitstream_buffer_id,
-    ::media::JpegDecodeAccelerator::Error error) {
+    ::media::MjpegDecodeAccelerator::Error error) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!client_)
     return;
 
-  if (error == ::media::JpegDecodeAccelerator::Error::NO_ERRORS) {
+  if (error == ::media::MjpegDecodeAccelerator::Error::NO_ERRORS) {
     client_->VideoFrameReady(bitstream_buffer_id);
     return;
   }
@@ -118,7 +118,7 @@ void MojoJpegDecodeAccelerator::OnDecodeAck(
 void MojoJpegDecodeAccelerator::OnLostConnectionToJpegDecoder() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   OnDecodeAck(kInvalidBitstreamBufferId,
-              ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+              ::media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
 }
 
 }  // namespace media

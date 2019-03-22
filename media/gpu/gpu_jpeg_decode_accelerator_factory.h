@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -18,7 +18,7 @@ namespace media {
 class MEDIA_GPU_EXPORT GpuJpegDecodeAcceleratorFactory {
  public:
   using CreateAcceleratorCB =
-      base::Callback<std::unique_ptr<JpegDecodeAccelerator>(
+      base::Callback<std::unique_ptr<MjpegDecodeAccelerator>(
           scoped_refptr<base::SingleThreadTaskRunner>)>;
 
   // Static query for JPEG supported. This query calls the appropriate

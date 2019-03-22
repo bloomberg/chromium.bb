@@ -44,17 +44,17 @@ static void ReportToUMA(VAJDADecoderFailure failure) {
                             VAJDA_DECODER_FAILURES_MAX + 1);
 }
 
-static JpegDecodeAccelerator::Error VaapiJpegDecodeStatusToError(
+static MjpegDecodeAccelerator::Error VaapiJpegDecodeStatusToError(
     VaapiJpegDecodeStatus status) {
   switch (status) {
     case VaapiJpegDecodeStatus::kSuccess:
-      return JpegDecodeAccelerator::Error::NO_ERRORS;
+      return MjpegDecodeAccelerator::Error::NO_ERRORS;
     case VaapiJpegDecodeStatus::kParseJpegFailed:
-      return JpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
+      return MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
     case VaapiJpegDecodeStatus::kUnsupportedSubsampling:
-      return JpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
+      return MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
     default:
-      return JpegDecodeAccelerator::Error::PLATFORM_FAILURE;
+      return MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
   }
 }
 

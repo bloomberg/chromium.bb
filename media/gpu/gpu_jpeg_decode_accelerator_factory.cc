@@ -31,9 +31,9 @@ namespace media {
 namespace {
 
 #if defined(USE_V4L2_JDA)
-std::unique_ptr<JpegDecodeAccelerator> CreateV4L2JDA(
+std::unique_ptr<MjpegDecodeAccelerator> CreateV4L2JDA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  std::unique_ptr<JpegDecodeAccelerator> decoder;
+  std::unique_ptr<MjpegDecodeAccelerator> decoder;
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (device) {
     decoder.reset(
@@ -44,14 +44,14 @@ std::unique_ptr<JpegDecodeAccelerator> CreateV4L2JDA(
 #endif
 
 #if BUILDFLAG(USE_VAAPI)
-std::unique_ptr<JpegDecodeAccelerator> CreateVaapiJDA(
+std::unique_ptr<MjpegDecodeAccelerator> CreateVaapiJDA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return std::make_unique<VaapiJpegDecodeAccelerator>(
       std::move(io_task_runner));
 }
 #endif
 
-std::unique_ptr<JpegDecodeAccelerator> CreateFakeJDA(
+std::unique_ptr<MjpegDecodeAccelerator> CreateFakeJDA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   return std::make_unique<FakeJpegDecodeAccelerator>(std::move(io_task_runner));
 }
@@ -62,7 +62,7 @@ std::unique_ptr<JpegDecodeAccelerator> CreateFakeJDA(
 bool GpuJpegDecodeAcceleratorFactory::IsAcceleratedJpegDecodeSupported() {
   auto accelerator_factory_functions = GetAcceleratorFactories();
   for (const auto& create_jda_function : accelerator_factory_functions) {
-    std::unique_ptr<JpegDecodeAccelerator> accelerator =
+    std::unique_ptr<MjpegDecodeAccelerator> accelerator =
         create_jda_function.Run(base::ThreadTaskRunnerHandle::Get());
     if (accelerator && accelerator->IsSupported())
       return true;

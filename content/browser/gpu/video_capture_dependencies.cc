@@ -14,7 +14,7 @@ namespace content {
 
 // static
 void VideoCaptureDependencies::CreateJpegDecodeAccelerator(
-    media::mojom::JpegDecodeAcceleratorRequest accelerator) {
+    media::mojom::MjpegDecodeAcceleratorRequest accelerator) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},

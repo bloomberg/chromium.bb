@@ -8,18 +8,18 @@
 #include "base/numerics/safe_conversions.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace mojo {
 
 template <>
 struct EnumTraits<media::mojom::DecodeError,
-                  media::JpegDecodeAccelerator::Error> {
+                  media::MjpegDecodeAccelerator::Error> {
   static media::mojom::DecodeError ToMojom(
-      media::JpegDecodeAccelerator::Error error);
+      media::MjpegDecodeAccelerator::Error error);
 
   static bool FromMojom(media::mojom::DecodeError input,
-                        media::JpegDecodeAccelerator::Error* out);
+                        media::MjpegDecodeAccelerator::Error* out);
 };
 
 template <>

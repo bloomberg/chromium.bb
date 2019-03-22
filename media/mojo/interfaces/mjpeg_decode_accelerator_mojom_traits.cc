@@ -13,20 +13,20 @@ namespace mojo {
 
 // static
 media::mojom::DecodeError
-EnumTraits<media::mojom::DecodeError, media::JpegDecodeAccelerator::Error>::
-    ToMojom(media::JpegDecodeAccelerator::Error error) {
+EnumTraits<media::mojom::DecodeError, media::MjpegDecodeAccelerator::Error>::
+    ToMojom(media::MjpegDecodeAccelerator::Error error) {
   switch (error) {
-    case media::JpegDecodeAccelerator::NO_ERRORS:
+    case media::MjpegDecodeAccelerator::NO_ERRORS:
       return media::mojom::DecodeError::NO_ERRORS;
-    case media::JpegDecodeAccelerator::INVALID_ARGUMENT:
+    case media::MjpegDecodeAccelerator::INVALID_ARGUMENT:
       return media::mojom::DecodeError::INVALID_ARGUMENT;
-    case media::JpegDecodeAccelerator::UNREADABLE_INPUT:
+    case media::MjpegDecodeAccelerator::UNREADABLE_INPUT:
       return media::mojom::DecodeError::UNREADABLE_INPUT;
-    case media::JpegDecodeAccelerator::PARSE_JPEG_FAILED:
+    case media::MjpegDecodeAccelerator::PARSE_JPEG_FAILED:
       return media::mojom::DecodeError::PARSE_JPEG_FAILED;
-    case media::JpegDecodeAccelerator::UNSUPPORTED_JPEG:
+    case media::MjpegDecodeAccelerator::UNSUPPORTED_JPEG:
       return media::mojom::DecodeError::UNSUPPORTED_JPEG;
-    case media::JpegDecodeAccelerator::PLATFORM_FAILURE:
+    case media::MjpegDecodeAccelerator::PLATFORM_FAILURE:
       return media::mojom::DecodeError::PLATFORM_FAILURE;
   }
   NOTREACHED();
@@ -35,27 +35,27 @@ EnumTraits<media::mojom::DecodeError, media::JpegDecodeAccelerator::Error>::
 
 // static
 bool EnumTraits<media::mojom::DecodeError,
-                media::JpegDecodeAccelerator::Error>::
+                media::MjpegDecodeAccelerator::Error>::
     FromMojom(media::mojom::DecodeError error,
-              media::JpegDecodeAccelerator::Error* out) {
+              media::MjpegDecodeAccelerator::Error* out) {
   switch (error) {
     case media::mojom::DecodeError::NO_ERRORS:
-      *out = media::JpegDecodeAccelerator::Error::NO_ERRORS;
+      *out = media::MjpegDecodeAccelerator::Error::NO_ERRORS;
       return true;
     case media::mojom::DecodeError::INVALID_ARGUMENT:
-      *out = media::JpegDecodeAccelerator::Error::INVALID_ARGUMENT;
+      *out = media::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT;
       return true;
     case media::mojom::DecodeError::UNREADABLE_INPUT:
-      *out = media::JpegDecodeAccelerator::Error::UNREADABLE_INPUT;
+      *out = media::MjpegDecodeAccelerator::Error::UNREADABLE_INPUT;
       return true;
     case media::mojom::DecodeError::PARSE_JPEG_FAILED:
-      *out = media::JpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
+      *out = media::MjpegDecodeAccelerator::Error::PARSE_JPEG_FAILED;
       return true;
     case media::mojom::DecodeError::UNSUPPORTED_JPEG:
-      *out = media::JpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
+      *out = media::MjpegDecodeAccelerator::Error::UNSUPPORTED_JPEG;
       return true;
     case media::mojom::DecodeError::PLATFORM_FAILURE:
-      *out = media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE;
+      *out = media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE;
       return true;
   }
   NOTREACHED();

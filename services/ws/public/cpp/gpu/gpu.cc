@@ -59,7 +59,7 @@ class Gpu::GpuPtrIO {
   }
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest request) {
+      media::mojom::MjpegDecodeAcceleratorRequest request) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     gpu_ptr_->CreateJpegDecodeAccelerator(std::move(request));
   }
@@ -302,7 +302,7 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
 }
 
 void Gpu::CreateJpegDecodeAccelerator(
-    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,

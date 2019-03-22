@@ -6,7 +6,7 @@ mojom = "//media/mojo/interfaces/mjpeg_decode_accelerator.mojom"
 
 public_headers = [
   "//media/base/bitstream_buffer.h",
-  "//media/video/jpeg_decode_accelerator.h",
+  "//media/video/mjpeg_decode_accelerator.h",
 ]
 
 traits_headers =
@@ -24,5 +24,5 @@ deps = [
 
 type_mappings = [
   "media.mojom.BitstreamBuffer=media::BitstreamBuffer",
-  "media.mojom.DecodeError=media::JpegDecodeAccelerator::Error",
+  "media.mojom.DecodeError=media::MjpegDecodeAccelerator::Error",
 ]

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_JPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_VIDEO_JPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_VIDEO_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_VIDEO_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 
 namespace media {
 
-// JPEG decoder interface.
+// MJPEG decoder interface.
 // The input are JPEG images including headers (Huffman tables may be omitted).
 // The output color format is I420. The decoder will convert the color format
 // to I420 if the color space or subsampling does not match that and if it is
@@ -23,7 +23,7 @@ namespace media {
 // from camera capture. It can also be used for normal still JPEG image
 // decoding, but normal JPEG images may use more JPEG features that may not be
 // supported by a particular accelerator implementation and/or platform.
-class MEDIA_EXPORT JpegDecodeAccelerator {
+class MEDIA_EXPORT MjpegDecodeAccelerator {
  public:
   // Callback for JPEG decoder initialization.
   typedef base::Callback<void(bool success)> InitCB;
@@ -81,11 +81,9 @@ class MEDIA_EXPORT JpegDecodeAccelerator {
   // call may asynchronously free system resources, but its client-visible
   // effects are synchronous. After destructor returns, no more callbacks
   // will be made on the client.
-  virtual ~JpegDecodeAccelerator() = 0;
+  virtual ~MjpegDecodeAccelerator() = 0;
 
-  // JPEG decoder functions.
-
-  // Initializes the JPEG decoder. Should be called once per decoder
+  // Initializes the MJPEG decoder. Should be called once per decoder
   // construction. This call is synchronous and returns true iff initialization
   // is successful.
   // Parameters:
@@ -98,18 +96,18 @@ class MEDIA_EXPORT JpegDecodeAccelerator {
   // upon completion.
   virtual void InitializeAsync(Client* client, InitCB init_cb) {}
 
-  // Decodes the given bitstream buffer that contains one JPEG picture. It
+  // Decodes the given bitstream buffer that contains one JPEG frame. It
   // supports at least baseline encoding defined in JPEG ISO/IEC 10918-1. The
   // decoder will convert the color format to I420 or return UNSUPPORTED_JPEG
   // if it cannot convert. Client still owns this buffer, but should deallocate
   // or access the buffer only after receiving a decode callback VideoFrameReady
   // with the corresponding bitstream_buffer_id, or NotifyError.
   // Parameters:
-  //  |bitstream_buffer| contains encoded JPEG picture.
+  //  |bitstream_buffer| contains encoded JPEG frame.
   //  |video_frame| contains an allocated video frame for the output.
   //  Client is responsible for filling the coded_size of video_frame and
   //  allocating its backing buffer. For now, only shared memory backed
-  //  VideoFrames are supported. After decode completes, decoded JPEG picture
+  //  VideoFrames are supported. After decode completes, the decoded JPEG frame
   //  will be filled into the |video_frame|.
   //  Ownership of the |bitstream_buffer| and |video_frame| remains with the
   //  client. The client is not allowed to deallocate them before
@@ -125,4 +123,4 @@ class MEDIA_EXPORT JpegDecodeAccelerator {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_JPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_VIDEO_MJPEG_DECODE_ACCELERATOR_H_
