@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 
+#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -48,23 +50,6 @@ void ReportingContext::QueueReport(Report* report) {
     observer->QueueReport(report);
 }
 
-void ReportingContext::CountReport(Report* report) {
-  const String& type = report->type();
-  WebFeature feature;
-
-  if (type == "deprecation") {
-    feature = WebFeature::kDeprecationReport;
-  } else if (type == "feature-policy") {
-    feature = WebFeature::kFeaturePolicyReport;
-  } else if (type == "intervention") {
-    feature = WebFeature::kInterventionReport;
-  } else {
-    return;
-  }
-
-  UseCounter::Count(execution_context_, feature);
-}
-
 void ReportingContext::RegisterObserver(ReportingObserver* observer) {
   UseCounter::Count(execution_context_, WebFeature::kReportingObserver);
 
@@ -84,11 +69,37 @@ void ReportingContext::UnregisterObserver(ReportingObserver* observer) {
   observers_.erase(observer);
 }
 
+const mojom::blink::ReportingServiceProxyPtr&
+ReportingContext::GetReportingService() const {
+  if (!reporting_service_) {
+    Platform::Current()->GetConnector()->BindInterface(
+        Platform::Current()->GetBrowserServiceName(), &reporting_service_);
+  }
+  return reporting_service_;
+}
+
 void ReportingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(observers_);
   visitor->Trace(report_buffer_);
   visitor->Trace(execution_context_);
   Supplement<ExecutionContext>::Trace(visitor);
+}
+
+void ReportingContext::CountReport(Report* report) {
+  const String& type = report->type();
+  WebFeature feature;
+
+  if (type == "deprecation") {
+    feature = WebFeature::kDeprecationReport;
+  } else if (type == "feature-policy") {
+    feature = WebFeature::kFeaturePolicyReport;
+  } else if (type == "intervention") {
+    feature = WebFeature::kInterventionReport;
+  } else {
+    return;
+  }
+
+  UseCounter::Count(execution_context_, feature);
 }
 
 }  // namespace blink
