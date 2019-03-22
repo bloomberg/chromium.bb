@@ -691,8 +691,19 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
 
   if (output_mode_ == Config::OutputMode::IMPORT) {
     DCHECK_EQ(egl_image_planes_count_, dmabuf_fds.size());
-    DCHECK(iter->output_fds.empty());
-    iter->output_fds = DuplicateFDs(dmabuf_fds);
+    DCHECK(!iter->output_frame);
+
+    auto layout = VideoFrameLayout::Create(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+        coded_size_);
+    if (!layout) {
+      VLOGF(1) << "Cannot create layout!";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+    iter->output_frame = VideoFrame::WrapExternalDmabufs(
+        *layout, gfx::Rect(visible_size_), visible_size_,
+        DuplicateFDs(dmabuf_fds), base::TimeDelta());
   }
 
   if (iter->texture_id != 0) {
@@ -1588,10 +1599,12 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
     case V4L2_MEMORY_MMAP:
       ret = std::move(buffer).QueueMMap();
       break;
-    case V4L2_MEMORY_DMABUF:
-      DCHECK_EQ(output_planes_count_, output_record.output_fds.size());
-      ret = std::move(buffer).QueueDMABuf(output_record.output_fds);
+    case V4L2_MEMORY_DMABUF: {
+      const auto& fds = output_record.output_frame->DmabufFds();
+      DCHECK_EQ(output_planes_count_, fds.size());
+      ret = std::move(buffer).QueueDMABuf(fds);
       break;
+    }
     default:
       NOTREACHED();
   }
@@ -2495,7 +2508,7 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
 
   std::vector<base::ScopedFD> output_fds;
   if (output_mode_ == Config::OutputMode::IMPORT) {
-    output_fds = DuplicateFDs(output_record.output_fds);
+    output_fds = DuplicateFDs(output_record.output_frame->DmabufFds());
     if (output_fds.empty())
       return false;
   }
