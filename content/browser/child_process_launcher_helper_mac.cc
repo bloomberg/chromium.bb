@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/sandbox/mac/audio.sb.h"
@@ -68,6 +69,13 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   base::FieldTrialList::InsertFieldTrialHandleIfNeeded(
       &options->mach_ports_for_rendezvous);
+
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    options->mach_ports_for_rendezvous.insert(std::make_pair(
+        'mojo', base::MachRendezvousPort(mojo_channel_->TakeRemoteEndpoint()
+                                             .TakePlatformHandle()
+                                             .TakeMachReceiveRight())));
+  }
 
   options->environment = delegate_->GetEnvironment();
 
