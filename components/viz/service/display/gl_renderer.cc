@@ -186,6 +186,34 @@ static GLint GetActiveTextureUnit(GLES2Interface* gl) {
   return active_unit;
 }
 
+bool ShouldUseRoundedCornerShader(const DrawQuad* quad) {
+  const SharedQuadState* sqs = quad->shared_quad_state;
+  const gfx::RRectF& rounded_corner_bounds = sqs->rounded_corner_bounds;
+
+  // There is no rounded corner set.
+  if (rounded_corner_bounds.IsEmpty())
+    return false;
+
+  const gfx::RectF target_quad = cc::MathUtil::MapClippedRect(
+      sqs->quad_to_target_transform, gfx::RectF(quad->visible_rect));
+
+  // If the rounded corner rect intersects with the quad, then we should run the
+  // fragment shader.
+  if (rounded_corner_bounds.rect().Intersects(target_quad))
+    return true;
+
+  // If the quad is not within the rounded corner bounds, neither does it
+  // intersect, we do not have to apply any rounded corner on it.
+  if (!rounded_corner_bounds.rect().Contains(target_quad))
+    return false;
+
+  // If the rounded corner bounding rect contains the quad but the rounded
+  // corner rrect does not, it means there is an intersection. Apply rounded
+  // corner on the quad.
+  SkRRect rrect = static_cast<SkRRect>(rounded_corner_bounds);
+  return !rrect.contains(gfx::RectFToSkRect(target_quad));
+}
+
 // Parameters needed to draw a RenderPassDrawQuad.
 struct GLRenderer::DrawRenderPassDrawQuadParams {
   DrawRenderPassDrawQuadParams() {}
@@ -1296,9 +1324,10 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
 
 void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
   SkBlendMode blend_mode = params->quad->shared_quad_state->blend_mode;
-  SetBlendEnabled(!params->use_shaders_for_blending &&
-                  (params->quad->ShouldDrawWithBlending() ||
-                   !IsDefaultBlendMode(blend_mode)));
+  SetBlendEnabled((!params->use_shaders_for_blending &&
+                   (params->quad->ShouldDrawWithBlending() ||
+                    !IsDefaultBlendMode(blend_mode))) ||
+                  ShouldUseRoundedCornerShader(params->quad));
   if (!params->use_shaders_for_blending) {
     if (!use_blend_equation_advanced_coherent_ && use_blend_equation_advanced_)
       gl_->BlendBarrierKHR();
@@ -1330,7 +1359,8 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
       ProgramKey::RenderPass(
           tex_coord_precision, sampler_type, shader_blend_mode,
           params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
-          params->use_color_matrix, tint_gl_composited_content_),
+          params->use_color_matrix, tint_gl_composited_content_,
+          ShouldUseRoundedCornerShader(params->quad)),
       params->contents_and_bypass_color_space, target_color_space);
 }
 
@@ -1467,6 +1497,8 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   }
 
   SetShaderOpacity(params->quad->shared_quad_state->opacity);
+  SetShaderRoundedCorner(params->quad->shared_quad_state->rounded_corner_bounds,
+                         params->window_matrix * params->projection_matrix);
   SetShaderQuadF(params->surface_quad);
 }
 
@@ -1796,10 +1828,14 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
   gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
   SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA,
-                                       tint_gl_composited_content_),
+                                       tint_gl_composited_content_,
+                                       ShouldUseRoundedCornerShader(quad)),
                 quad_color_space,
                 current_frame()->current_render_pass->color_space);
   SetShaderColor(color, opacity);
+  SetShaderRoundedCorner(
+      quad->shared_quad_state->rounded_corner_bounds,
+      current_frame()->window_matrix * current_frame()->projection_matrix);
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
@@ -1947,7 +1983,8 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
                        quad->is_premultiplied ? PREMULTIPLIED_ALPHA
                                               : NON_PREMULTIPLIED_ALPHA,
-                       false, false, tint_gl_composited_content_),
+                       false, false, tint_gl_composited_content_,
+                       ShouldUseRoundedCornerShader(quad)),
       quad_resource_lock.color_space(),
       current_frame()->current_render_pass->color_space);
 
@@ -1969,6 +2006,9 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   // Blending is required for antialiasing.
   SetBlendEnabled(true);
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  SetShaderRoundedCorner(
+      quad->shared_quad_state->rounded_corner_bounds,
+      current_frame()->window_matrix * current_frame()->projection_matrix);
   DCHECK(CanApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode));
   ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
@@ -2039,7 +2079,8 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                        quad->is_premultiplied ? PREMULTIPLIED_ALPHA
                                               : NON_PREMULTIPLIED_ALPHA,
                        !quad->ShouldDrawWithBlending(), has_tex_clamp_rect,
-                       tint_gl_composited_content_),
+                       tint_gl_composited_content_,
+                       ShouldUseRoundedCornerShader(quad)),
       quad_resource_lock.color_space(),
       current_frame()->current_render_pass->color_space);
 
@@ -2062,6 +2103,9 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  SetShaderRoundedCorner(
+      quad->shared_quad_state->rounded_corner_bounds,
+      current_frame()->window_matrix * current_frame()->projection_matrix);
 
   // Pass quad coordinates to the uniform in the same order as GeometryBinding
   // does, then vertices will match the texture mapping in the vertex buffer.
@@ -2171,7 +2215,8 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
   SetUseProgram(
       ProgramKey::YUVVideo(tex_coord_precision, sampler, alpha_texture_mode,
-                           uv_texture_mode, tint_gl_composited_content_),
+                           uv_texture_mode, tint_gl_composited_content_,
+                           ShouldUseRoundedCornerShader(quad)),
       src_color_space, dst_color_space);
 
   if (current_program_->tint_color_matrix_location() != -1) {
@@ -2286,7 +2331,8 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                                  quad->resource_id());
 
-  SetUseProgram(ProgramKey::VideoStream(tex_coord_precision),
+  SetUseProgram(ProgramKey::VideoStream(tex_coord_precision,
+                                        ShouldUseRoundedCornerShader(quad)),
                 lock.color_space(),
                 current_frame()->current_render_pass->color_space);
 
@@ -2441,12 +2487,17 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   bool need_tex_clamp_rect = !quad->resource_size_in_pixels().IsEmpty() &&
                              (quad->uv_top_left != gfx::PointF(0, 0) ||
                               quad->uv_bottom_right != gfx::PointF(1, 1));
+
   ProgramKey program_key = ProgramKey::Texture(
       tex_coord_precision, sampler,
       quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
       quad->background_color != SK_ColorTRANSPARENT, need_tex_clamp_rect,
-      tint_gl_composited_content_);
+      tint_gl_composited_content_, ShouldUseRoundedCornerShader(quad));
   int resource_id = quad->resource_id();
+
+  SetShaderRoundedCorner(
+      quad->shared_quad_state->rounded_corner_bounds,
+      current_frame()->window_matrix * current_frame()->projection_matrix);
 
   size_t max_quads = StaticGeometryBinding::NUM_QUADS;
   if (draw_cache_.is_empty || draw_cache_.program_key != program_key ||
@@ -2695,6 +2746,35 @@ void GLRenderer::SetBlendEnabled(bool enabled) {
   else
     gl_->Disable(GL_BLEND);
   blend_shadow_ = enabled;
+}
+
+void GLRenderer::SetShaderRoundedCorner(
+    const gfx::RRectF& rounded_corner_bounds,
+    const gfx::Transform& screen_transform) {
+  if (!current_program_ ||
+      current_program_->rounded_corner_rect_location() == -1 ||
+      current_program_->rounded_corner_radius_location() == -1 ||
+      rounded_corner_bounds.IsEmpty()) {
+    return;
+  }
+
+  DCHECK(screen_transform.IsScaleOrTranslation());
+  const gfx::Vector2dF& translate = screen_transform.To2dTranslation();
+  const gfx::Vector2dF& scale = screen_transform.Scale2d();
+  gfx::RRectF bounds_in_screen = rounded_corner_bounds;
+  bounds_in_screen.Scale(scale.x(), scale.y());
+  bounds_in_screen.Offset(translate.x(), translate.y());
+
+  gfx::RectF rect = bounds_in_screen.rect();
+
+  gl_->Uniform4f(current_program_->rounded_corner_rect_location(), rect.x(),
+                 rect.y(), rect.width(), rect.height());
+  gl_->Uniform4f(
+      current_program_->rounded_corner_radius_location(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x());
 }
 
 void GLRenderer::DrawQuadGeometryClippedByQuadF(

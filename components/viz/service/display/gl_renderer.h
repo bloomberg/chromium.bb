@@ -261,6 +261,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SetShaderQuadF(const gfx::QuadF& quad);
   void SetShaderMatrix(const gfx::Transform& transform);
   void SetShaderColor(SkColor color, float opacity);
+  void SetShaderRoundedCorner(const gfx::RRectF& rounded_corner_bounds,
+                              const gfx::Transform& screen_transform);
   void DrawQuadGeometryClippedByQuadF(const gfx::Transform& draw_transform,
                                       const gfx::RectF& quad_rect,
                                       const gfx::QuadF& clipping_region_quad,

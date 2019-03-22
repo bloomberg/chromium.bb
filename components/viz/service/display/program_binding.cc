@@ -35,7 +35,8 @@ bool ProgramKey::operator==(const ProgramKey& other) const {
          uv_texture_mode_ == other.uv_texture_mode_ &&
          color_conversion_mode_ == other.color_conversion_mode_ &&
          color_transform_ == other.color_transform_ &&
-         has_output_color_matrix_ == other.has_output_color_matrix_;
+         has_output_color_matrix_ == other.has_output_color_matrix_ &&
+         has_rounded_corner_ == other.has_rounded_corner_;
 }
 
 bool ProgramKey::operator!=(const ProgramKey& other) const {
@@ -50,11 +51,14 @@ ProgramKey ProgramKey::DebugBorder() {
 }
 
 // static
-ProgramKey ProgramKey::SolidColor(AAMode aa_mode, bool tint_color) {
+ProgramKey ProgramKey::SolidColor(AAMode aa_mode,
+                                  bool tint_color,
+                                  bool rounded_corner) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_SOLID_COLOR;
   result.aa_mode_ = aa_mode;
   result.has_tint_color_matrix_ = tint_color;
+  result.has_rounded_corner_ = rounded_corner;
   return result;
 }
 
@@ -66,7 +70,8 @@ ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
                             PremultipliedAlphaMode premultiplied_alpha,
                             bool is_opaque,
                             bool has_tex_clamp_rect,
-                            bool tint_color) {
+                            bool tint_color,
+                            bool rounded_corner) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_TILE;
   result.precision_ = precision;
@@ -77,6 +82,7 @@ ProgramKey ProgramKey::Tile(TexCoordPrecision precision,
   result.has_tex_clamp_rect_ = has_tex_clamp_rect;
   result.has_tint_color_matrix_ = tint_color;
   result.premultiplied_alpha_ = premultiplied_alpha;
+  result.has_rounded_corner_ = rounded_corner;
   return result;
 }
 
@@ -86,7 +92,8 @@ ProgramKey ProgramKey::Texture(TexCoordPrecision precision,
                                PremultipliedAlphaMode premultiplied_alpha,
                                bool has_background_color,
                                bool has_tex_clamp_rect,
-                               bool tint_color) {
+                               bool tint_color,
+                               bool rounded_corner) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_TEXTURE;
   result.precision_ = precision;
@@ -95,6 +102,7 @@ ProgramKey ProgramKey::Texture(TexCoordPrecision precision,
   result.has_background_color_ = has_background_color;
   result.has_tex_clamp_rect_ = has_tex_clamp_rect;
   result.has_tint_color_matrix_ = tint_color;
+  result.has_rounded_corner_ = rounded_corner;
   return result;
 }
 
@@ -106,7 +114,8 @@ ProgramKey ProgramKey::RenderPass(TexCoordPrecision precision,
                                   MaskMode mask_mode,
                                   bool mask_for_background,
                                   bool has_color_matrix,
-                                  bool tint_color) {
+                                  bool tint_color,
+                                  bool rounded_corner) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_RENDER_PASS;
   result.precision_ = precision;
@@ -117,15 +126,18 @@ ProgramKey ProgramKey::RenderPass(TexCoordPrecision precision,
   result.mask_for_background_ = mask_for_background;
   result.has_color_matrix_ = has_color_matrix;
   result.has_tint_color_matrix_ = tint_color;
+  result.has_rounded_corner_ = rounded_corner;
   return result;
 }
 
 // static
-ProgramKey ProgramKey::VideoStream(TexCoordPrecision precision) {
+ProgramKey ProgramKey::VideoStream(TexCoordPrecision precision,
+                                   bool rounded_corner) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_VIDEO_STREAM;
   result.precision_ = precision;
   result.sampler_ = SAMPLER_TYPE_EXTERNAL_OES;
+  result.has_rounded_corner_ = rounded_corner;
   return result;
 }
 
@@ -134,7 +146,8 @@ ProgramKey ProgramKey::YUVVideo(TexCoordPrecision precision,
                                 SamplerType sampler,
                                 YUVAlphaTextureMode yuv_alpha_texture_mode,
                                 UVTextureMode uv_texture_mode,
-                                bool tint_color) {
+                                bool tint_color,
+                                bool rounded_corner) {
   ProgramKey result;
   result.type_ = PROGRAM_TYPE_YUV_VIDEO;
   result.precision_ = precision;
@@ -146,6 +159,7 @@ ProgramKey ProgramKey::YUVVideo(TexCoordPrecision precision,
   DCHECK(uv_texture_mode == UV_TEXTURE_MODE_UV ||
          uv_texture_mode == UV_TEXTURE_MODE_U_V);
   result.has_tint_color_matrix_ = tint_color;
+  result.has_rounded_corner_ = rounded_corner;
   return result;
 }
 
