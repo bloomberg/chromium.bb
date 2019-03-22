@@ -30,6 +30,10 @@ namespace history {
 class HistoryService;
 }  // namespace history
 
+namespace send_tab_to_self {
+class SendTabToSelfSyncService;
+}  // namespace send_tab_to_self
+
 namespace sync_sessions {
 class SessionSyncService;
 }  // namespace sync_sessions
@@ -62,6 +66,8 @@ class BrowserSyncClient : public syncer::SyncClient {
   virtual favicon::FaviconService* GetFaviconService() = 0;
   virtual history::HistoryService* GetHistoryService() = 0;
   virtual sync_sessions::SessionSyncService* GetSessionSyncService() = 0;
+  virtual send_tab_to_self::SendTabToSelfSyncService*
+  GetSendTabToSelfSyncService() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoService() = 0;
   virtual base::RepeatingClosure GetPasswordStateChangedCallback() = 0;
