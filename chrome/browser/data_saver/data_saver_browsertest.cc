@@ -33,6 +33,7 @@ void SetDataSaverEnabled(content::BrowserContext* browser_context,
           DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
               browser_context);
   data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test version of the observer. Used to wait for the event when the network
