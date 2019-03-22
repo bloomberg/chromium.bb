@@ -21,7 +21,7 @@ def LoadConfig():
         with open(CONFIG, 'rb') as f:
             config = json.load(f)
             if config['version'] == VERSION:
-                config['countdown'] -= 1
+                config['countdown'] = max(0, config['countdown'] - 1)
                 return config
 
     return {
