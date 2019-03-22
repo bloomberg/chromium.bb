@@ -36,6 +36,7 @@ import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
+import "url/mojom/origin.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
@@ -61,6 +62,11 @@ interface Frame {
   // Called on the main frame of a page embedded in a Portal when it is
   // activated.
   OnPortalActivated(blink.mojom.TransferableMessage data);
+
+  // Forwards message to the portal's main frame.
+  ForwardMessageToPortalHost(string message,
+                             url.mojom.Origin source_origin,
+                             url.mojom.Origin? target_origin);
 
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);

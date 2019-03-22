@@ -93,6 +93,15 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
 
     return true;
   }
+
+  static bool IsNull(
+      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
+    return !origin;
+  }
+
+  static void SetToNull(scoped_refptr<const ::blink::SecurityOrigin>* origin) {
+    *origin = nullptr;
+  }
 };
 
 }  // namespace mojo

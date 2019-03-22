@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_PORTAL_PORTAL_H_
 
 #include <memory>
+#include <string>
 
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
@@ -54,6 +55,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   void Navigate(const GURL& url) override;
   void Activate(blink::TransferableMessage data,
                 base::OnceCallback<void()> callback) override;
+  void PostMessage(const std::string& message,
+                   const base::Optional<url::Origin>& target_origin) override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;

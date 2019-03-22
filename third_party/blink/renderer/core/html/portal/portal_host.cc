@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/html/portal/portal_host.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -39,6 +41,21 @@ const AtomicString& PortalHost::InterfaceName() const {
 
 ExecutionContext* PortalHost::GetExecutionContext() const {
   return GetSupplementable()->document();
+}
+
+void PortalHost::ReceiveMessage(
+    const String& message,
+    scoped_refptr<const SecurityOrigin> source_origin,
+    scoped_refptr<const SecurityOrigin> target_origin) {
+  DCHECK(GetSupplementable()->document()->GetPage()->InsidePortal());
+  if (target_origin && !target_origin->IsSameSchemeHostPort(
+                           GetExecutionContext()->GetSecurityOrigin())) {
+    return;
+  }
+
+  MessageEvent* event =
+      MessageEvent::Create(message, source_origin->ToString());
+  DispatchEvent(*event);
 }
 
 }  // namespace blink
