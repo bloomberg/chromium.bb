@@ -302,6 +302,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
   void OnPortalActivated(TransferableMessage data) override;
+  void ForwardMessageToPortalHost(
+      const WebString& message,
+      const WebSecurityOrigin& source_origin,
+      const base::Optional<WebSecurityOrigin>& target_origin) override;
 
   // WebNavigationControl methods:
   bool DispatchBeforeUnloadEvent(bool) override;

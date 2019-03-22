@@ -612,8 +612,16 @@ class WebLocalFrame : public WebFrame {
   // This will be removed following the deprecation.
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
 
+  // Portals -------------------------------------------------------------
+
   // Dispatches an event when a Portal gets activated.
   virtual void OnPortalActivated(TransferableMessage data) = 0;
+
+  // Forwards message to the PortalHost associated with frame.
+  virtual void ForwardMessageToPortalHost(
+      const WebString& message,
+      const WebSecurityOrigin& source_origin,
+      const base::Optional<WebSecurityOrigin>& target_origin) = 0;
 
   // Scheduling ---------------------------------------------------------------
 

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/core/frame/window_post_message_options.h"
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
@@ -139,12 +140,47 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
   // because the HTMLPortalElement owns the mojo interface, so if it were
   // garbage collected the callback would never be called and the promise
   // would never be resolved.
+  is_activating_ = true;
   portal_ptr_->Activate(
       std::move(data),
-      WTF::Bind([](HTMLPortalElement* portal,
-                   ScriptPromiseResolver* resolver) { resolver->Resolve(); },
-                WrapPersistent(this), WrapPersistent(resolver)));
+      WTF::Bind(
+          [](HTMLPortalElement* portal, ScriptPromiseResolver* resolver) {
+            resolver->Resolve();
+            portal->portal_ptr_.reset();
+            portal->is_activating_ = false;
+          },
+          WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
+}
+
+void HTMLPortalElement::postMessage(const String& message,
+                                    const String& target_origin,
+                                    const Vector<ScriptValue>& transfer,
+                                    ExceptionState& exception_state) {
+  WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
+  options->setTargetOrigin(target_origin);
+  if (!transfer.IsEmpty())
+    options->setTransfer(transfer);
+  postMessage(message, options, exception_state);
+}
+
+void HTMLPortalElement::postMessage(const String& message,
+                                    const WindowPostMessageOptions* options,
+                                    ExceptionState& exception_state) {
+  if (!portal_ptr_ || is_activating_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The HTMLPortalElement is not associated with a portal context");
+    return;
+  }
+
+  scoped_refptr<const SecurityOrigin> target_origin = nullptr;
+  if (options->targetOrigin() == "/")
+    target_origin = GetDocument().GetSecurityOrigin();
+  else if (options->targetOrigin() != "*")
+    target_origin = SecurityOrigin::CreateFromString(options->targetOrigin());
+
+  portal_ptr_->PostMessage(message, target_origin);
 }
 
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(

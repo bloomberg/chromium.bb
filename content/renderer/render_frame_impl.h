@@ -135,7 +135,7 @@ struct WebScrollIntoViewParams;
 namespace gfx {
 class Point;
 class Range;
-}
+}  // namespace gfx
 
 namespace media {
 class MediaPermission;
@@ -536,6 +536,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
   void OnPortalActivated(blink::TransferableMessage data) override;
+  void ForwardMessageToPortalHost(
+      const std::string& message,
+      const url::Origin& source_origin,
+      const base::Optional<url::Origin>& target_origin) override;
   void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;
 
 #if defined(OS_ANDROID)
@@ -1198,8 +1202,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // c) function:DidFinishDocumentLoadForFrame. When this function is
   // called, that means we have got whole html page. In here we should
   // finally get right encoding of page.
-  void UpdateEncoding(blink::WebFrame* frame,
-                      const std::string& encoding_name);
+  void UpdateEncoding(blink::WebFrame* frame, const std::string& encoding_name);
 
   bool RunJavaScriptDialog(JavaScriptDialogType type,
                            const base::string16& message,

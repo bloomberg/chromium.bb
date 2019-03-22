@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -122,6 +123,13 @@ void Portal::Activate(blink::TransferableMessage data,
   portal_contents_impl_->set_portal(nullptr);
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(std::move(data));
   std::move(callback).Run();
+}
+
+void Portal::PostMessage(const std::string& message,
+                         const base::Optional<url::Origin>& target_origin) {
+  portal_contents_impl_->GetMainFrame()->ForwardMessageToPortalHost(
+      message, owner_render_frame_host_->GetLastCommittedOrigin(),
+      target_origin);
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {

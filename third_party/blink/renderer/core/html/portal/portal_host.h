@@ -13,6 +13,7 @@ namespace blink {
 
 class ExecutionContext;
 class LocalDOMWindow;
+class SecurityOrigin;
 
 class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
                                public Supplement<LocalDOMWindow> {
@@ -30,6 +31,10 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
   // EventTarget overrides
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
+
+  void ReceiveMessage(const String& message,
+                      scoped_refptr<const SecurityOrigin> source_origin,
+                      scoped_refptr<const SecurityOrigin> target_origin);
 };
 
 }  // namespace blink

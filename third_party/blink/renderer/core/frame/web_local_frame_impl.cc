@@ -210,6 +210,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html/portal/portal_host.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -2529,6 +2530,18 @@ void WebLocalFrameImpl::OnPortalActivated(TransferableMessage data) {
   GetFrame()->DomWindow()->DispatchEvent(*event);
   if (debugger)
     debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
+}
+
+void WebLocalFrameImpl::ForwardMessageToPortalHost(
+    const WebString& message,
+    const WebSecurityOrigin& source_origin,
+    const base::Optional<WebSecurityOrigin>& target_origin) {
+  scoped_refptr<const SecurityOrigin> target;
+  if (target_origin)
+    target = target_origin.value();
+
+  PortalHost::From(*(GetFrame()->DomWindow()))
+      .ReceiveMessage(message, source_origin, target);
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

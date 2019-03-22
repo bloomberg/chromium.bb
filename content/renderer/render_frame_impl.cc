@@ -2611,6 +2611,14 @@ void RenderFrameImpl::OnPortalActivated(blink::TransferableMessage data) {
   frame_->OnPortalActivated(std::move(data));
 }
 
+void RenderFrameImpl::ForwardMessageToPortalHost(
+    const std::string& message,
+    const url::Origin& source_origin,
+    const base::Optional<url::Origin>& target_origin) {
+  frame_->ForwardMessageToPortalHost(WebString::FromUTF8(message),
+                                     source_origin, target_origin);
+}
+
 void RenderFrameImpl::SetLifecycleState(
     blink::mojom::FrameLifecycleState state) {
   frame_->SetLifecycleState(state);

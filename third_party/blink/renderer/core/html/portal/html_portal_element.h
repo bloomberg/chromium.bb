@@ -38,6 +38,13 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // idl implementation.
   ScriptPromise activate(ScriptState*, PortalActivateOptions*);
+  void postMessage(const String& message,
+                   const String& target_origin,
+                   const Vector<ScriptValue>& transfer,
+                   ExceptionState& exception_state);
+  void postMessage(const String& message,
+                   const WindowPostMessageOptions* options,
+                   ExceptionState& exception_state);
 
   const base::UnguessableToken& GetToken() const { return portal_token_; }
 
@@ -69,6 +76,10 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   base::UnguessableToken portal_token_;
 
   Member<RemoteFrame> portal_frame_;
+
+  // Set to true after activate() is called on the portal. It is set to false
+  // right before the promise returned by activate() is resolved or rejected.
+  bool is_activating_ = false;
 
   mojom::blink::PortalAssociatedPtr portal_ptr_;
 };

@@ -1053,6 +1053,21 @@ void RenderFrameHostImpl::OnPortalActivated(blink::TransferableMessage data) {
   frame_->OnPortalActivated(std::move(data));
 }
 
+void RenderFrameHostImpl::ForwardMessageToPortalHost(
+    const std::string& message,
+    const url::Origin& source_origin,
+    const base::Optional<url::Origin>& target_origin) {
+  // The target origin check needs to be done here in case the frame has
+  // navigated after the postMessage call, or if the renderer is compromised and
+  // the check done in PortalHost::ReceiveMessage is bypassed.
+  if (target_origin) {
+    DCHECK(!target_origin->opaque());
+    if (target_origin != GetLastCommittedOrigin())
+      return;
+  }
+  frame_->ForwardMessageToPortalHost(message, source_origin, target_origin);
+}
+
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
   return site_instance_.get();
 }
