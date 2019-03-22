@@ -170,7 +170,9 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return active_frame_data_ ? active_frame_data_->frame_index : 0;
   }
 
-  void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
+  void TakeActiveLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
+  void TakeActiveAndPendingLatencyInfo(
+      std::vector<ui::LatencyInfo>* latency_info);
   bool TakePresentedCallback(PresentedCallback* callback);
   void SendAckToClient();
   void MarkAsDrawn();
@@ -204,6 +206,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return seen_first_surface_embedding_;
   }
 
+  SurfaceAllocationGroup* allocation_group() const { return allocation_group_; }
+
   // SurfaceDeadlineClient implementation:
   void OnDeadline(base::TimeDelta duration) override;
 
@@ -220,6 +224,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Called when the embedder of this surface has been activated and therefore
   // this surface should activate too by deadline inheritance.
   void ActivatePendingFrameForInheritedDeadline();
+
+  // Returns whether the LatencyInfo of the current pending and active frames
+  // is already taken.
+  bool is_latency_info_taken() { return is_latency_info_taken_; }
 
  private:
   struct SequenceNumbers {
@@ -290,8 +298,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   void UnrefFrameResourcesAndRunCallbacks(base::Optional<FrameData> frame_data);
   void ClearCopyRequests();
 
-  void TakeLatencyInfoFromPendingFrame(
-      std::vector<ui::LatencyInfo>* latency_info);
+  void TakePendingLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   static void TakeLatencyInfoFromFrame(
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
@@ -336,6 +343,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Allocation groups that this surface references by its active frame.
   base::flat_set<SurfaceAllocationGroup*> referenced_allocation_groups_;
+
+  bool is_latency_info_taken_ = false;
 
   SurfaceAllocationGroup* const allocation_group_;
 

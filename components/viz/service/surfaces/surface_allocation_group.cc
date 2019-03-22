@@ -107,6 +107,17 @@ Surface* SurfaceAllocationGroup::FindLatestActiveSurfaceInRange(
   return result;
 }
 
+void SurfaceAllocationGroup::TakeAggregatedLatencyInfoUpTo(
+    Surface* surface,
+    std::vector<ui::LatencyInfo>* out) {
+  DCHECK_EQ(this, surface->allocation_group());
+  surface->TakeActiveLatencyInfo(out);
+  auto it = FindLatestSurfaceUpTo(surface->surface_id());
+  DCHECK_EQ(*it, surface);
+  for (--it; it >= surfaces_.begin() && !(*it)->is_latency_info_taken(); --it)
+    (*it)->TakeActiveAndPendingLatencyInfo(out);
+}
+
 void SurfaceAllocationGroup::OnFirstSurfaceActivation(Surface* surface) {
   for (Surface* embedder : active_embedders_)
     embedder->OnChildActivatedForActiveFrame(surface->surface_id());

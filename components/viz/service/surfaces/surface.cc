@@ -75,10 +75,6 @@ void Surface::SetDependencyDeadline(
 void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
   previous_frame_surface_id_ = surface->surface_id();
-  CompositorFrame& frame = active_frame_data_ ? active_frame_data_->frame
-                                              : pending_frame_data_->frame;
-  surface->TakeLatencyInfo(&frame.metadata.latency_info);
-  surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
 
 void Surface::RefResources(const std::vector<TransferableResource>& resources) {
@@ -225,10 +221,12 @@ bool Surface::QueueFrame(
   if (closed_)
     return true;
 
+  is_latency_info_taken_ = false;
+
   if (active_frame_data_ || pending_frame_data_)
     previous_frame_surface_id_ = surface_id();
 
-  TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
+  TakePendingLatencyInfo(&frame.metadata.latency_info);
 
   base::Optional<FrameData> previous_pending_frame_data =
       std::move(pending_frame_data_);
@@ -484,7 +482,7 @@ void Surface::ActivateFrame(FrameData frame_data,
 
   ClearCopyRequests();
 
-  TakeLatencyInfo(&frame_data.frame.metadata.latency_info);
+  TakeActiveLatencyInfo(&frame_data.frame.metadata.latency_info);
 
   base::Optional<FrameData> previous_frame_data = std::move(active_frame_data_);
 
@@ -681,10 +679,18 @@ const CompositorFrame& Surface::GetPendingFrame() {
   return pending_frame_data_->frame;
 }
 
-void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
+void Surface::TakeActiveLatencyInfo(
+    std::vector<ui::LatencyInfo>* latency_info) {
   if (!active_frame_data_)
     return;
   TakeLatencyInfoFromFrame(&active_frame_data_->frame, latency_info);
+}
+
+void Surface::TakeActiveAndPendingLatencyInfo(
+    std::vector<ui::LatencyInfo>* latency_info) {
+  TakeActiveLatencyInfo(latency_info);
+  TakePendingLatencyInfo(latency_info);
+  is_latency_info_taken_ = true;
 }
 
 bool Surface::TakePresentedCallback(PresentedCallback* callback) {
@@ -757,7 +763,7 @@ void Surface::ClearCopyRequests() {
   }
 }
 
-void Surface::TakeLatencyInfoFromPendingFrame(
+void Surface::TakePendingLatencyInfo(
     std::vector<ui::LatencyInfo>* latency_info) {
   if (!pending_frame_data_)
     return;
