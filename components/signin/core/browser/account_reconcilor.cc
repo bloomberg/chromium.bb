@@ -485,7 +485,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     const std::string& primary_account,
     const std::vector<std::string>& chrome_accounts,
     std::vector<gaia::ListedAccount>&& gaia_accounts) {
-  DCHECK(base::FeatureList::IsEnabled(kUseMultiloginEndpoint));
+  DCHECK(IsMultiloginEndpointEnabled());
   DCHECK(!set_accounts_in_progress_);
 
   bool primary_has_error =
