@@ -20,13 +20,12 @@ LibYUVImageProcessor::LibYUVImageProcessor(
     const VideoFrameLayout& output_layout,
     const gfx::Size& output_visible_size,
     VideoFrame::StorageType output_storage_type,
-    OutputMode output_mode,
     ErrorCB error_cb)
     : ImageProcessor(input_layout,
                      input_storage_type,
                      output_layout,
                      output_storage_type,
-                     output_mode),
+                     OutputMode::IMPORT),
       input_visible_rect_(input_visible_size),
       output_visible_rect_(output_visible_size),
       error_cb_(error_cb),
@@ -88,7 +87,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
       input_config.layout, input_config.visible_size, input_storage_type,
       output_config.layout, output_config.visible_size, output_storage_type,
-      output_mode, media::BindToCurrentLoop(std::move(error_cb))));
+      media::BindToCurrentLoop(std::move(error_cb))));
   if (!processor->process_thread_.Start()) {
     VLOGF(1) << "Failed to start processing thread";
     return nullptr;
