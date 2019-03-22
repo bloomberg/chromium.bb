@@ -1132,6 +1132,31 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       schedule='0 0 3 * * 0 *',
   )
 
+  def PGOBuilders(name, board):
+    site_config.Add(
+        name + '-llvm-pgo-generate-toolchain',
+        site_config.templates.toolchain,
+        site_config.templates.no_hwtest_builder,
+        description='Full release build with PGO instrumented LLVM toolchain)',
+        chrome_sdk=False,
+        # Run PGO generate specific stages.
+        builder_class_name='pgo_generate_builders.PGOGenerateBuilder',
+        useflags=config_lib.append_useflags(['llvm_pgo_generate']),
+        boards=[board],
+        images=['base'],
+        # Build chrome as C++ training set, and kernel as C training set.
+        packages=[
+            'chromeos-base/chromeos-chrome',
+            'virtual/linux-sources'
+        ],
+        # Weekly on Mon 5 PM UTC, aka 9 AM PST
+        schedule='0 0 17 * * 1 *',
+    )
+  # Create three PGO profile collecting builders.
+  PGOBuilders('amd64', 'eve')
+  PGOBuilders('arm', 'kevin')
+  PGOBuilders('arm64', 'kevin64')
+
   # All *-generic boards are external.
   site_config.Add(
       'amd64-generic-llvm-tot-toolchain',

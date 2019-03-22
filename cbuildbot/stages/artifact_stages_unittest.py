@@ -524,3 +524,66 @@ class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
     stage._GenerateSysroot()
     sysroot_tarball = 'sysroot_%s.tar.xz' % ("virtual_target-os")
     stage._upload_queue.put.assert_called_with([sysroot_tarball])
+
+
+class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
+                                  cbuildbot_unittest.SimpleBuilderTestCase):
+  """Exercise CollectPGOProfilesStage functionality."""
+
+  RELEASE_TAG = ''
+
+  # pylint: disable=protected-access
+
+  def setUp(self):
+    self._Prepare()
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+    self.buildstore = FakeBuildStore()
+
+  def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
+    return artifact_stages.CollectPGOProfilesStage(self._run, self.buildstore,
+                                                   self._current_board)
+
+  def testCollectPGOProfiles(self):
+    """Test that the sysroot generation was called correctly."""
+    stage = self.ConstructStage()
+
+    # No profiles directory
+    with self.assertRaises(Exception) as msg:
+      stage._CollectPGOProfiles()
+    self.assertEqual('No profile directories found.', str(msg.exception))
+
+    # Create profiles directory
+    out_sys_devel = os.path.abspath(
+        os.path.join(self.build_root, 'chroot', stage.SYS_DEVEL_DIR))
+    os.makedirs(os.path.join(out_sys_devel, 'profiles'))
+
+    # No profraw files
+    with self.assertRaises(Exception) as msg:
+      stage._CollectPGOProfiles()
+    self.assertEqual('No profraw files found in profiles directory.',
+                     str(msg.exception))
+
+    # Create profraw file
+    profraw = os.path.join(out_sys_devel, 'profiles', 'a.profraw')
+    with open(profraw, 'a') as f:
+      f.write('123')
+
+    # Check uploading tarball
+    self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
+    self.PatchObject(stage._upload_queue, 'put', autospec=True)
+    stage._CollectPGOProfiles()
+    tarball = stage.PROFDATA_TAR
+    stage._upload_queue.put.assert_called_with([tarball])
+
+    # Check multiple profiles directories
+    out_sys_devel = os.path.abspath(
+        os.path.join(self.build_root, 'chroot', stage.SYS_DEVEL_DIR))
+    os.makedirs(os.path.join(out_sys_devel, 'another/profiles'))
+    with self.assertRaises(Exception) as msg:
+      stage._CollectPGOProfiles()
+    dirs = os.path.join(out_sys_devel, 'another/profiles') + ' ' + \
+           os.path.join(out_sys_devel, 'profiles')
+    self.assertEqual('More than one profile directories are found: %s' % dirs,
+                     str(msg.exception))
