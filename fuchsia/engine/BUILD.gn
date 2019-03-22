@@ -227,6 +227,7 @@ test("web_engine_browsertests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//ui/ozone",
   ]
 }

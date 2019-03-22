@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <lib/fidl/cpp/binding.h>
+#include <lib/ui/scenic/cpp/view_token_pair.h>
 
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -168,12 +169,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
   chromium::web::FramePtr frame = CreateFrame();
   EXPECT_TRUE(frame);
 
-  zx::eventpair import_token;
-  fuchsia::ui::gfx::ExportToken export_token;
-  ASSERT_EQ(zx::eventpair::create(0, &import_token, &export_token.value),
-            ZX_OK);
+  auto view_tokens = scenic::NewViewTokenPair();
 
-  frame->CreateView(std::move(export_token));
+  frame->CreateView(std::move(view_tokens.first));
   base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;

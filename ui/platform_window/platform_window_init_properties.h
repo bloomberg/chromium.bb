@@ -12,7 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_FUCHSIA)
-#include <fuchsia/ui/gfx/cpp/fidl.h>
+#include <fuchsia/ui/views/cpp/fidl.h>
 #endif
 
 namespace ui {
@@ -54,7 +54,7 @@ struct PlatformWindowInitProperties {
   PlatformWindowOpacity opacity = PlatformWindowOpacity::kOpaqueWindow;
 
 #if defined(OS_FUCHSIA)
-  fuchsia::ui::gfx::ExportToken view_token;
+  fuchsia::ui::views::ViewToken view_token;
 #endif
 };
 
