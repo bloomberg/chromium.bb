@@ -685,6 +685,9 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testMemoryPressure(boolean interestFeedEnabled) throws Exception {
+        // TODO(https://crbug.com/944061): Re-enable tablet test on interest feed enabled.
+        if (interestFeedEnabled && mActivityTestRule.getActivity().isTablet()) return;
+
         // TODO(twellington): This test currently just checks that sending a memory pressure
         // signal doesn't crash. Enhance the test to also check whether certain behaviors are
         // performed.
