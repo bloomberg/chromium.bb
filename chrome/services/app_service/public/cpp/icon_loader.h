@@ -91,7 +91,7 @@ class IconLoader {
 
     Key(apps::mojom::AppType app_type,
         const std::string& app_id,
-        const apps::mojom::IconKey& icon_key,
+        const apps::mojom::IconKeyPtr& icon_key,
         apps::mojom::IconCompression icon_compression,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon);
