@@ -27,7 +27,7 @@ class CryptoTestingPlatformSupport : public FetchTestingPlatformSupport {
     explicit SetMockCryptoScope(CryptoTestingPlatformSupport& platform)
         : platform_(platform) {
       DCHECK(!platform_.Crypto());
-      platform_.SetMockCrypto(MockWebCrypto::Create());
+      platform_.SetMockCrypto(std::make_unique<MockWebCrypto>());
     }
     ~SetMockCryptoScope() { platform_.SetMockCrypto(nullptr); }
     MockWebCrypto& MockCrypto() { return *platform_.mock_web_crypto_; }

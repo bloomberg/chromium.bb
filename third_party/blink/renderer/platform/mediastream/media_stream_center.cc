@@ -100,7 +100,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     MediaStreamComponent* track) {
   DCHECK(track);
   if (private_) {
-    return MediaStreamWebAudioSource::Create(base::WrapUnique(
+    return std::make_unique<MediaStreamWebAudioSource>(base::WrapUnique(
         private_->CreateWebAudioSourceFromMediaStreamTrack(track)));
   }
 
