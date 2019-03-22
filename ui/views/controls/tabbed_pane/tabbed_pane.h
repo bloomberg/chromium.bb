@@ -50,12 +50,12 @@ class VIEWS_EXPORT TabbedPane : public View {
   TabbedPaneListener* listener() const { return listener_; }
   void set_listener(TabbedPaneListener* listener) { listener_ = listener; }
 
-  // Returns the index of the currently selected tab, or -1 if no tab is
-  // selected.
-  int GetSelectedTabIndex() const;
+  // Returns the index of the currently selected tab, or
+  // TabStrip::kNoSelectedTab if no tab is selected.
+  size_t GetSelectedTabIndex() const;
 
   // Returns the number of tabs.
-  int GetTabCount();
+  size_t GetTabCount();
 
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
@@ -65,10 +65,10 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Adds a new tab at |index| with |title|. |contents| is the view displayed
   // when the tab is selected and is owned by the TabbedPane. If the tabbed pane
   // is currently empty, the new tab is selected.
-  void AddTabAtIndex(int index, const base::string16& title, View* contents);
+  void AddTabAtIndex(size_t index, const base::string16& title, View* contents);
 
   // Selects the tab at |index|, which must be valid.
-  void SelectTabAt(int index);
+  void SelectTabAt(size_t index);
 
   // Selects |tab| (the tabstrip view, not its content) if it is valid.
   void SelectTab(Tab* tab);
@@ -116,9 +116,6 @@ class VIEWS_EXPORT TabbedPane : public View {
   // correspond to match each Tab with its respective content View.
   TabStrip* tab_strip_;
   View* contents_;
-
-  // The selected tab index or -1 if invalid.
-  int selected_tab_index_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPane);
 };
@@ -183,6 +180,9 @@ class Tab : public View {
 // The tab strip shown above/left of the tab contents.
 class TabStrip : public View {
  public:
+  // The return value of GetSelectedTabIndex() when no tab is selected.
+  static constexpr size_t kNoSelectedTab = size_t{-1};
+
   // Internal class name.
   static const char kViewClassName[];
 
@@ -201,8 +201,8 @@ class TabStrip : public View {
 
   Tab* GetSelectedTab() const;
   Tab* GetTabAtDeltaFromSelected(int delta) const;
-  Tab* GetTabAtIndex(int index) const;
-  int GetSelectedTabIndex() const;
+  Tab* GetTabAtIndex(size_t index) const;
+  size_t GetSelectedTabIndex() const;
 
   TabbedPane::Orientation orientation() const { return orientation_; }
 

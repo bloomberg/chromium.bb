@@ -46,8 +46,8 @@ class TabbedPaneTest : public ViewsTestBase {
     tabbed_pane_->set_owned_by_client();
   }
 
-  Tab* GetTabAt(int index) {
-    return static_cast<Tab*>(tabbed_pane_->tab_strip_->child_at(index));
+  Tab* GetTabAt(size_t index) {
+    return static_cast<Tab*>(tabbed_pane_->tab_strip_->children()[index]);
   }
 
   View* GetSelectedTabContentView() {
@@ -156,15 +156,15 @@ TEST_F(TabbedPaneTest, SizeAndLayoutInVerticalOrientation) {
 
 TEST_F(TabbedPaneTest, AddAndSelect) {
   // Add several tabs; only the first should be selected automatically.
-  for (int i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     View* tab = new View();
     tabbed_pane_->AddTab(DefaultTabTitle(), tab);
     EXPECT_EQ(i + 1, tabbed_pane_->GetTabCount());
-    EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
+    EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
   }
 
   // Select each tab.
-  for (int i = 0; i < tabbed_pane_->GetTabCount(); ++i) {
+  for (size_t i = 0; i < tabbed_pane_->GetTabCount(); ++i) {
     tabbed_pane_->SelectTabAt(i);
     EXPECT_EQ(i, tabbed_pane_->GetSelectedTabIndex());
   }
@@ -173,34 +173,34 @@ TEST_F(TabbedPaneTest, AddAndSelect) {
   View* tab0 = new View();
   tabbed_pane_->AddTabAtIndex(0, ASCIIToUTF16("tab0"), tab0);
   EXPECT_NE(tab0, GetSelectedTabContentView());
-  EXPECT_NE(0, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_NE(0u, tabbed_pane_->GetSelectedTabIndex());
 }
 
 TEST_F(TabbedPaneTest, ArrowKeyBindings) {
   // Add several tabs; only the first should be selected automatically.
-  for (int i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     View* tab = new View();
     tabbed_pane_->AddTab(DefaultTabTitle(), tab);
     EXPECT_EQ(i + 1, tabbed_pane_->GetTabCount());
   }
 
-  EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
 
   // Right arrow should select tab 1:
   SendKeyPressToSelectedTab(ui::VKEY_RIGHT);
-  EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(1u, tabbed_pane_->GetSelectedTabIndex());
 
   // Left arrow should select tab 0:
   SendKeyPressToSelectedTab(ui::VKEY_LEFT);
-  EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
 
   // Left arrow again should wrap to tab 2:
   SendKeyPressToSelectedTab(ui::VKEY_LEFT);
-  EXPECT_EQ(2, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(2u, tabbed_pane_->GetSelectedTabIndex());
 
   // Right arrow again should wrap to tab 0:
   SendKeyPressToSelectedTab(ui::VKEY_RIGHT);
-  EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
 }
 
 // Use TabbedPane::HandleAccessibleAction() to select tabs and make sure their
@@ -213,15 +213,15 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
   widget->GetContentsView()->AddChildView(tabbed_pane_.get());
   widget->Show();
 
-  constexpr int kNumTabs = 3;
-  for (int i = 0; i < kNumTabs; ++i) {
+  constexpr size_t kNumTabs = 3;
+  for (size_t i = 0; i < kNumTabs; ++i) {
     tabbed_pane_->AddTab(DefaultTabTitle(), new View());
   }
   // Check the first tab is selected.
-  EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
 
   // Check the a11y information for each tab.
-  for (int i = 0; i < kNumTabs; ++i) {
+  for (size_t i = 0; i < kNumTabs; ++i) {
     ui::AXNodeData data;
     GetTabAt(i)->GetAccessibleNodeData(&data);
     SCOPED_TRACE(testing::Message() << "Tab at index: " << i);
@@ -237,14 +237,14 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
   // Select the first tab.
 
   GetTabAt(0)->HandleAccessibleAction(action);
-  EXPECT_EQ(0, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(0u, tabbed_pane_->GetSelectedTabIndex());
 
   // Select the second tab.
   GetTabAt(1)->HandleAccessibleAction(action);
-  EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(1u, tabbed_pane_->GetSelectedTabIndex());
   // Select the second tab again.
   GetTabAt(1)->HandleAccessibleAction(action);
-  EXPECT_EQ(1, tabbed_pane_->GetSelectedTabIndex());
+  EXPECT_EQ(1u, tabbed_pane_->GetSelectedTabIndex());
 
   widget->CloseNow();
 }
