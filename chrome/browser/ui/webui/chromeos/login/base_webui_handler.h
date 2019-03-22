@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/model_view_channel.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -70,8 +69,7 @@ class JSCallsContainer {
 //
 // TODO(jdufault): Move all OobeScreen related concepts out of BaseWebUIHandler
 // and into BaseScreenHandler.
-class BaseWebUIHandler : public content::WebUIMessageHandler,
-                         public ModelViewChannel {
+class BaseWebUIHandler : public content::WebUIMessageHandler {
  public:
   explicit BaseWebUIHandler(JSCallsContainer* js_calls_container);
   ~BaseWebUIHandler() override;
@@ -81,9 +79,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
-
-  // ModelViewChannel implementation:
-  void CommitContextChanges(const base::DictionaryValue& diff) override;
 
   // This method is called when page is ready. It propagates to inherited class
   // via virtual Initialize() method (see below).
@@ -110,14 +105,10 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
 
   // All subclasses should implement this method to register callbacks for JS
   // messages.
-  //
-  // TODO (ygorshenin, crbug.com/433797): make this method purely vrtual when
-  // all screens will be switched to use ScreenContext.
   virtual void DeclareJSCallbacks() {}
 
   // Subclasses can override these methods to pass additional parameters
-  // to loadTimeData. Generally, it is a bad approach, and it should be replaced
-  // with Context at some point.
+  // to loadTimeData.
   virtual void GetAdditionalParameters(base::DictionaryValue* parameters);
 
   void CallJS(const std::string& function_name) {
@@ -253,9 +244,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // Handles user action.
   void HandleUserAction(const std::string& action_id);
 
-  // Handles situation when screen context is changed.
-  void HandleContextChanged(const base::DictionaryValue* diff);
-
   // Keeps whether page is ready.
   bool page_is_ready_ = false;
 
@@ -270,9 +258,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // non empty value, the Initialize will be deferred until the underlying load
   // is finished.
   std::string async_assets_load_id_;
-
-  // Pending changes to context which will be sent when the page will be ready.
-  base::DictionaryValue pending_context_changes_;
 
   JSCallsContainer* js_calls_container_ = nullptr;  // non-owning pointers.
 

@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
-#include "chrome/browser/chromeos/login/screens/mock_model_view_channel.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -45,7 +44,6 @@ class NetworkScreenUnitTest : public testing::Test {
         &mock_view_,
         base::BindRepeating(&NetworkScreenUnitTest::HandleScreenExit,
                             base::Unretained(this)));
-    network_screen_->set_model_view_channel(&mock_channel_);
     mock_network_state_helper_ = new login::MockNetworkStateHelper();
     network_screen_->SetNetworkStateHelperForTest(mock_network_state_helper_);
   }
@@ -74,7 +72,6 @@ class NetworkScreenUnitTest : public testing::Test {
 
   // More accessory objects needed by NetworkScreen.
   MockNetworkScreenView mock_view_;
-  MockModelViewChannel mock_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenUnitTest);
 };

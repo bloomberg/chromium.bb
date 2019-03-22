@@ -6,7 +6,6 @@
  * @fileoverview Base class for all login WebUI screens.
  */
 cr.define('login', function() {
-  /** @const */ var CALLBACK_CONTEXT_CHANGED = 'contextChanged';
   /** @const */ var CALLBACK_USER_ACTED = 'userActed';
 
   function doNothing() {};
@@ -17,8 +16,6 @@ cr.define('login', function() {
 
   var Screen = function(sendPrefix) {
     this.sendPrefix_ = sendPrefix;
-    this.screenContext_ = null;
-    this.contextObservers_ = {};
   };
 
   Screen.prototype = {
@@ -28,21 +25,6 @@ cr.define('login', function() {
      * Prefix added to sent to Chrome messages' names.
      */
     sendPrefix_: null,
-
-    /**
-     * Context used by this screen.
-     */
-    screenContext_: null,
-
-    get context() {
-      return this.screenContext_;
-    },
-
-    /**
-     * Dictionary of context observers that are methods of |this| bound to
-     * |this|.
-     */
-    contextObservers_: null,
 
     /**
      * Called during screen initialization.
@@ -75,27 +57,6 @@ cr.define('login', function() {
      */
     send: function() {
       return this.sendImpl_.apply(this, arguments);
-    },
-
-    /**
-     * @final
-     */
-    addContextObserver: function() {
-      return this.addContextObserverImpl_.apply(this, arguments);
-    },
-
-    /**
-     * @final
-     */
-    removeContextObserver: function() {
-      return this.removeContextObserverImpl_.apply(this, arguments);
-    },
-
-    /**
-     * @final
-     */
-    commitContextChanges: function() {
-      return this.commitContextChangesImpl_.apply(this, arguments);
     },
 
     /**
@@ -158,7 +119,6 @@ cr.define('login', function() {
 
     /**
      * Does the following things:
-     *  * Creates screen context.
      *  * Looks for elements having "alias" property and adds them as the
      *    proprties of the screen with name equal to value of "alias", i.e. HTML
      *    element <div alias="myDiv"></div> will be stored in this.myDiv.
@@ -168,9 +128,6 @@ cr.define('login', function() {
      * @private
      */
     initializeImpl_: function() {
-      if (cr.isChromeOS)
-        this.screenContext_ = new login.ScreenContext();
-
       this.decorate();
 
       this.querySelectorAllImpl_('[alias]').forEach(function(element) {
@@ -208,59 +165,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Starts observation of property with |key| of the context attached to
-     * current screen. This method differs from "login.ScreenContext" in that
-     * it automatically detects if observer is method of |this| and make
-     * all needed actions to make it work correctly. So it's no need for client
-     * to bind methods to |this| and keep resulting callback for
-     * |removeObserver| call:
-     *
-     *   this.addContextObserver('key', this.onKeyChanged_);
-     *   ...
-     *   this.removeContextObserver('key', this.onKeyChanged_);
-     * @private
-     */
-    addContextObserverImpl_: function(key, observer) {
-      var realObserver = observer;
-      var propertyName = this.getPropertyNameOf_(observer);
-      if (propertyName) {
-        if (!this.contextObservers_.hasOwnProperty(propertyName))
-          this.contextObservers_[propertyName] = observer.bind(this);
-        realObserver = this.contextObservers_[propertyName];
-      }
-      this.screenContext_.addObserver(key, realObserver);
-    },
-
-    /**
-     * Removes |observer| from the list of context observers. Supports not only
-     * regular functions but also screen methods (see comment to
-     * |addContextObserver|).
-     * @private
-     */
-    removeContextObserverImpl_: function(observer) {
-      var realObserver = observer;
-      var propertyName = this.getPropertyNameOf_(observer);
-      if (propertyName) {
-        if (!this.contextObservers_.hasOwnProperty(propertyName))
-          return;
-        realObserver = this.contextObservers_[propertyName];
-        delete this.contextObservers_[propertyName];
-      }
-      this.screenContext_.removeObserver(realObserver);
-    },
-
-    /**
-     * Sends recent context changes to C++ handler.
-     * @private
-     */
-    commitContextChangesImpl_: function() {
-      if (!this.screenContext_.hasChanges())
-        return;
-      this.sendImpl_(CALLBACK_CONTEXT_CHANGED,
-                     this.screenContext_.getChangesAndReset());
-    },
-
-    /**
      * Calls standart |querySelectorAll| method and returns its result converted
      * to Array.
      * @private
@@ -268,14 +172,6 @@ cr.define('login', function() {
     querySelectorAllImpl_: function(selector) {
       var list = querySelectorAll.call(this, selector);
       return Array.prototype.slice.call(list);
-    },
-
-    /**
-     * Called when context changes are recieved from C++.
-     * @private
-     */
-    contextChanged_: function(diff) {
-      this.screenContext_.applyChanges(diff);
     },
 
     /**
@@ -367,11 +263,6 @@ cr.define('login', function() {
       });
 
       Constructor.prototype.name = function() { return id; };
-
-      api.contextChanged = function() {
-        var screen = $(id);
-        screen.contextChanged_.apply(screen, arguments);
-      }
 
       api.register = function(opt_lazy_init) {
         var screen = $(id);
