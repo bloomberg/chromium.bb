@@ -535,8 +535,8 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     ProcessEventHookCallback(DWORD event,
                              HWND hwnd,
-                             LONG idObject,
-                             LONG idChild) {
+                             LONG id_object,
+                             LONG id_child) {
   // Can't do DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_) here. See
   // comment before call to PostTask below as to why.
 
@@ -545,6 +545,12 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // events.
   if (!hwnd)
     return;
+
+  // We only care about events for window objects. In particular, we don't care
+  // about OBJID_CARET, which is spammy.
+  if (id_object != OBJID_WINDOW)
+    return;
+
   // Don't continually calculate occlusion while a window is moving, but rather
   // once at the beginning and once at the end.
   if (event == EVENT_SYSTEM_MOVESIZESTART) {
@@ -561,6 +567,7 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     // that case, we want to go back to calculating occlusion.
     window_is_moving_ = false;
   }
+
   // ProcessEventHookCallback is called from the task_runner's PeekMessage
   // call, on the task runner's thread, but before the task_tracker thread sets
   // up the thread sequence. In order to prevent DCHECK failures with the
