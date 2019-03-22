@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -56,27 +57,6 @@ public class WebappLauncherActivity extends Activity {
 
     private static final String TAG = "webapps";
 
-    /** WebAPK first run experience parameters. */
-    public static class FreParams {
-        private final Intent mIntentToLaunchAfterFreComplete;
-        private final String mShortName;
-
-        public FreParams(Intent intentToLaunchAfterFreComplete, String shortName) {
-            mIntentToLaunchAfterFreComplete = intentToLaunchAfterFreComplete;
-            mShortName = shortName;
-        }
-
-        /** Returns the intent launch when the user completes the first run experience. */
-        public Intent getIntentToLaunchAfterFreComplete() {
-            return mIntentToLaunchAfterFreComplete;
-        }
-
-        /** Returns the WebAPK's short name. */
-        public String webApkShortName() {
-            return mShortName;
-        }
-    }
-
     /** Creates intent to relaunch WebAPK. */
     public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebApkInfo webApkInfo) {
         assert webApkInfo != null;
@@ -112,7 +92,7 @@ public class WebappLauncherActivity extends Activity {
      * if the intent does not launch either a WebappLauncherActivity or a WebApkActivity. This
      * method is slow. It makes several PackageManager calls.
      */
-    public static FreParams slowGenerateFreParamsIfIntentIsForWebApk(Intent fromIntent) {
+    public static @Nullable WebApkInfo maybeSlowlyGenerateWebApkInfoFromIntent(Intent fromIntent) {
         // Check for intents targeted at WebApkActivity, WebApkActivity0-9,
         // SameTaskWebApkActivity and WebappLauncherActivity.
         String targetActivityClassName = fromIntent.getComponent().getClassName();
@@ -122,10 +102,7 @@ public class WebappLauncherActivity extends Activity {
             return null;
         }
 
-        WebApkInfo info = WebApkInfo.create(fromIntent);
-        return (info != null)
-                ? new FreParams(createRelaunchWebApkIntent(fromIntent, info), info.shortName())
-                : null;
+        return WebApkInfo.create(fromIntent);
     }
 
     @Override
