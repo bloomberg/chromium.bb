@@ -238,6 +238,8 @@ Bug(none) virtual/composite-after-paint/paint/filters/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
+crbug.com/945034 virtual/layout_ng_experimental/printing/composited-thead-tfoot-repeat.html [ Failure ]
+
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
