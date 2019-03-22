@@ -43,7 +43,10 @@ class VULKAN_EXPORT VulkanImplementation {
 
   virtual ~VulkanImplementation();
 
-  virtual bool InitializeVulkanInstance() = 0;
+  // Initialize VulkanInstance. If using_surface, VK_KHR_surface instance
+  // extension will be required when initialize VkInstance. This extension is
+  // required for presenting with VkSwapchain API.
+  virtual bool InitializeVulkanInstance(bool using_surface = true) = 0;
 
   virtual VulkanInstance* GetVulkanInstance() = 0;
 

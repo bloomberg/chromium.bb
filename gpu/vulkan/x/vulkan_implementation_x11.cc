@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
@@ -14,6 +15,20 @@
 #include "ui/gfx/x/x11_types.h"
 
 namespace gpu {
+
+namespace {
+
+class ScopedUnsetDisplay {
+ public:
+  ScopedUnsetDisplay() : display_(getenv("DISPLAY")) { unsetenv("DISPLAY"); }
+  ~ScopedUnsetDisplay() { setenv("DISPLAY", display_.c_str(), 1); }
+
+ private:
+  std::string display_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedUnsetDisplay);
+};
+
+}  // namespace
 
 VulkanImplementationX11::VulkanImplementationX11()
     : VulkanImplementationX11(gfx::GetXDisplay()) {}
@@ -23,11 +38,21 @@ VulkanImplementationX11::VulkanImplementationX11(XDisplay* x_display)
 
 VulkanImplementationX11::~VulkanImplementationX11() {}
 
-bool VulkanImplementationX11::InitializeVulkanInstance() {
+bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
+  using_surface_ = using_surface;
+  // Unset DISPLAY env, so the vulkan can be initialized successfully, if the X
+  // server doesn't support Vulkan surface.
+  base::Optional<ScopedUnsetDisplay> unset_display;
+  if (!using_surface_)
+    unset_display.emplace();
+
   std::vector<const char*> required_extensions = {
-      VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
       VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
       VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME};
+  if (using_surface_) {
+    required_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+    required_extensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+  }
 
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
@@ -41,23 +66,25 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
   if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
 
-  // Initialize platform function pointers
-  vkGetPhysicalDeviceXlibPresentationSupportKHR_ =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
-          vkGetInstanceProcAddr(
-              vulkan_instance_.vk_instance(),
-              "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
-  if (!vkGetPhysicalDeviceXlibPresentationSupportKHR_) {
-    LOG(ERROR) << "vkGetPhysicalDeviceXlibPresentationSupportKHR not found";
-    return false;
-  }
+  if (using_surface_) {
+    // Initialize platform function pointers
+    vkGetPhysicalDeviceXlibPresentationSupportKHR_ =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
+            vkGetInstanceProcAddr(
+                vulkan_instance_.vk_instance(),
+                "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR_) {
+      LOG(ERROR) << "vkGetPhysicalDeviceXlibPresentationSupportKHR not found";
+      return false;
+    }
 
-  vkCreateXlibSurfaceKHR_ =
-      reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(vkGetInstanceProcAddr(
-          vulkan_instance_.vk_instance(), "vkCreateXlibSurfaceKHR"));
-  if (!vkCreateXlibSurfaceKHR_) {
-    LOG(ERROR) << "vkCreateXlibSurfaceKHR not found";
-    return false;
+    vkCreateXlibSurfaceKHR_ =
+        reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(vkGetInstanceProcAddr(
+            vulkan_instance_.vk_instance(), "vkCreateXlibSurfaceKHR"));
+    if (!vkCreateXlibSurfaceKHR_) {
+      LOG(ERROR) << "vkCreateXlibSurfaceKHR not found";
+      return false;
+    }
   }
 
   return true;
@@ -69,6 +96,8 @@ VulkanInstance* VulkanImplementationX11::GetVulkanInstance() {
 
 std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
     gfx::AcceleratedWidget window) {
+  DLOG_IF(FATAL, !using_surface_)
+      << "Flag --disable-vulkan-surface is provided.";
   VkSurfaceKHR surface;
   VkXlibSurfaceCreateInfoKHR surface_create_info = {};
   surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -97,9 +126,12 @@ bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(
 
 std::vector<const char*>
 VulkanImplementationX11::GetRequiredDeviceExtensions() {
-  return {VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-          VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
-          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
+  std::vector<const char*> extensions = {
+      VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+      VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME};
+  if (using_surface_)
+    extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+  return extensions;
 }
 
 VkFence VulkanImplementationX11::CreateVkFenceForGpuFence(VkDevice vk_device) {

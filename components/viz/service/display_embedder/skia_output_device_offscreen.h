@@ -21,10 +21,11 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   void Reshape(const gfx::Size& size) override;
   gfx::SwapResult SwapBuffers() override;
 
- private:
+ protected:
   GrContext* const gr_context_;
   sk_sp<SkSurface> draw_surface_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceOffscreen);
 };
 

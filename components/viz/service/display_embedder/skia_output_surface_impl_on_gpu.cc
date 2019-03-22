@@ -54,6 +54,10 @@
 #include "components/viz/service/display_embedder/skia_output_device_vulkan.h"
 #endif
 
+#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
+#include "components/viz/service/display_embedder/skia_output_device_x11.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
@@ -436,8 +440,18 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
         output_device_ =
             std::make_unique<SkiaOutputDeviceOffscreen>(gr_context());
       } else {
+#if defined(USE_X11)
+        if (gpu_preferences_.disable_vulkan_surface) {
+          output_device_ = std::make_unique<SkiaOutputDeviceX11>(
+              gr_context(), surface_handle_);
+        } else {
+          output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
+              vulkan_context_provider_, surface_handle_);
+        }
+#else
         output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
             vulkan_context_provider_, surface_handle_);
+#endif
       }
     }
     output_device_->Reshape(size);

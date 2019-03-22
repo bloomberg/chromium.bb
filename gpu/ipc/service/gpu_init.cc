@@ -231,7 +231,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (gpu_preferences_.enable_vulkan) {
     vulkan_implementation_ = gpu::CreateVulkanImplementation();
     if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance()) {
+        !vulkan_implementation_->InitializeVulkanInstance(
+            !gpu_preferences_.disable_vulkan_surface)) {
       DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
       vulkan_implementation_ = nullptr;
     }
