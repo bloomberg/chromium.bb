@@ -30,6 +30,7 @@ import org.chromium.components.offline_pages.core.prefetch.proto.OfflinePages.Pa
 import org.chromium.components.offline_pages.core.prefetch.proto.OperationOuterClass.Operation;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
 import org.chromium.net.test.util.WebServer;
+import org.chromium.net.test.util.WebServer.HTTPHeader;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -114,6 +115,13 @@ public class TestOfflinePageService {
             String suffix = request.getURI().substring(10);
             String[] nameAndQuery = suffix.split("[?]", 2);
             if (nameAndQuery.length == 2) {
+                for (HTTPHeader header : request.getHeaders()) {
+                    if (header.key.equalsIgnoreCase("range")) {
+                        // The server is not equipped to correctly handle range requests for the
+                        // initial request, as the response won't be cached.
+                        Assert.fail("received range request for page data. Range=" + header.value);
+                    }
+                }
                 if (handleRead(nameAndQuery[0], stream)) {
                     ReadCalled.notifyCalled();
                     return true;
