@@ -137,7 +137,7 @@ TEST_F(PreviewsContentUtilTest,
           is_data_saver_user, enabled_previews_decider(), nullptr));
   is_data_saver_user = false;
   EXPECT_EQ(
-      content::OFFLINE_PAGE_ON,
+      content::PREVIEWS_UNSPECIFIED,
       previews::DetermineAllowedClientPreviewsState(
           &user_data, GURL("http://www.google.com"), is_reload, is_redirect,
           is_data_saver_user, enabled_previews_decider(), nullptr));
@@ -147,12 +147,11 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateOfflineAndRedirects) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews,ClientLoFi,ResourceLoadingHints,NoScriptPreviews",
-      {} /* disable_features */);
+      "Previews", "ClientLoFi,ResourceLoadingHints,NoScriptPreviews");
   PreviewsUserData user_data(1);
   bool is_reload = false;
   bool is_redirect = false;
-  bool is_data_saver_user = false;
+  bool is_data_saver_user = true;
   EXPECT_EQ(
       content::OFFLINE_PAGE_ON,
       previews::DetermineAllowedClientPreviewsState(
