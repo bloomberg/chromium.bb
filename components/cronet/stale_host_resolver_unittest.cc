@@ -176,7 +176,7 @@ class StaleHostResolverTest : public testing::Test {
   CreateMockInnerResolverWithDnsClient(
       std::unique_ptr<net::DnsClient> dns_client) {
     std::unique_ptr<net::ContextHostResolver> inner_resolver(
-        net::HostResolver::CreateDefaultResolverImpl(nullptr));
+        net::HostResolver::CreateStandaloneContextResolver(nullptr));
 
     net::ProcTaskParams proc_params(mock_proc_.get(), 1u);
     inner_resolver->SetProcParamsForTesting(proc_params);

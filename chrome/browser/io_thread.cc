@@ -153,8 +153,10 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
   std::string host_mapping_rules =
       command_line.GetSwitchValueASCII(network::switches::kHostResolverRules);
 
-  return net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
-                                                 net_log, host_mapping_rules);
+  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+  // global HostResolver.
+  return net::HostResolver::CreateStandaloneResolver(
+      net_log, net::HostResolver::Options(), host_mapping_rules);
 }
 
 }  // namespace

@@ -63,6 +63,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
@@ -2910,10 +2911,19 @@ class TestResolverFactory : public net::HostResolver::Factory {
   }
 
   std::unique_ptr<net::HostResolver> CreateResolver(
+      net::HostResolverManager* manager,
+      base::StringPiece host_mapping_rules) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  std::unique_ptr<net::HostResolver> CreateStandaloneResolver(
+      net::NetLog* net_log,
       const net::HostResolver::Options& options,
-      net::NetLog* net_log) override {
+      base::StringPiece host_mapping_rules) override {
+    DCHECK(host_mapping_rules.empty());
     std::unique_ptr<net::ContextHostResolver> resolver =
-        net::HostResolver::CreateSystemResolverImpl(options, net_log);
+        net::HostResolver::CreateStandaloneContextResolver(net_log, options);
     resolvers_.push_back(resolver.get());
     return resolver;
   }

@@ -64,7 +64,7 @@ void ResolverThread::Run() {
   options.max_concurrent_resolves = 6;
   options.max_retry_attempts = 3u;
   std::unique_ptr<net::HostResolver> resolver =
-      net::HostResolver::CreateSystemResolver(options, &net_log);
+      net::HostResolver::CreateStandaloneResolver(&net_log, options);
 
   HostPortPair host_port_pair(host_, 80);
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request =

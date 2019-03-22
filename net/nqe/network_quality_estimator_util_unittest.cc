@@ -122,7 +122,8 @@ TEST(NetworkQualityEstimatorUtilTest, Localhost) {
   // Use actual HostResolver since MockCachingHostResolver does not determine
   // the correct answer for localhosts.
   std::unique_ptr<ContextHostResolver> resolver =
-      HostResolver::CreateDefaultResolverImpl(net_log_ptr->bound().net_log());
+      HostResolver::CreateStandaloneContextResolver(
+          net_log_ptr->bound().net_log());
 
   scoped_refptr<net::RuleBasedHostResolverProc> rules(
       new net::RuleBasedHostResolverProc(nullptr));

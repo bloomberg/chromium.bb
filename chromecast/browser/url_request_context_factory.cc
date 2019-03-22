@@ -233,7 +233,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   if (system_dependencies_initialized_)
     return;
 
-  host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
+  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+  // global HostResolver.
+  host_resolver_ = net::HostResolver::CreateStandaloneResolver(nullptr);
   cert_verifier_ = net::CertVerifier::CreateDefault();
   ssl_config_service_.reset(new net::SSLConfigServiceDefaults);
   transport_security_state_.reset(new net::TransportSecurityState());

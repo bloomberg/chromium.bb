@@ -122,7 +122,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
             new net::HttpServerPropertiesImpl()));
 
     std::unique_ptr<net::HostResolver> host_resolver(
-        net::HostResolver::CreateDefaultResolver(
+        net::HostResolver::CreateStandaloneResolver(
             url_request_context_->net_log()));
     storage_->set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault());

@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/base/address_family.h"
@@ -34,6 +35,7 @@ class AddressList;
 class ContextHostResolver;
 class DnsClient;
 struct DnsConfigOverrides;
+class HostResolverManager;
 class NetLog;
 class NetLogWithSource;
 class URLRequestContext;
@@ -133,9 +135,16 @@ class NET_EXPORT HostResolver {
    public:
     virtual ~Factory() = default;
 
-    // See HostResolver::CreateSystemResolver.
-    virtual std::unique_ptr<HostResolver> CreateResolver(const Options& options,
-                                                         NetLog* net_log);
+    // See HostResolver::CreateResolver.
+    virtual std::unique_ptr<HostResolver> CreateResolver(
+        HostResolverManager* manager,
+        base::StringPiece host_mapping_rules);
+
+    // See HostResolver::CreateStandaloneResolver.
+    virtual std::unique_ptr<HostResolver> CreateStandaloneResolver(
+        NetLog* net_log,
+        const Options& options,
+        base::StringPiece host_mapping_rules);
   };
 
   // Parameter-grouping struct for additional optional parameters for
@@ -293,28 +302,29 @@ class NET_EXPORT HostResolver {
   virtual const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const;
 
-  // Creates a HostResolver implementation that queries the underlying system.
-  // (Except if a unit-test has changed the global HostResolverProc using
-  // ScopedHostResolverProc to intercept requests to the system).
+  // Creates a new HostResolver. |manager| must outlive the returned resolver.
   //
   // If |mapping_rules| is non-empty, the mapping rules will be applied to
   // requests.  See MappedHostResolver for details.
-  static std::unique_ptr<HostResolver> CreateSystemResolver(
-      const Options& options,
+  static std::unique_ptr<HostResolver> CreateResolver(
+      HostResolverManager* manager,
+      base::StringPiece host_mapping_rules = "");
+
+  // Creates a HostResolver independent of any global HostResolverManager. Only
+  // for tests and standalone tools not part of the browser.
+  //
+  // If |mapping_rules| is non-empty, the mapping rules will be applied to
+  // requests.  See MappedHostResolver for details.
+  static std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
+      base::Optional<Options> options = base::nullopt,
       base::StringPiece host_mapping_rules = "");
   // Same, but explicitly returns the implementing ContextHostResolver. Only
-  // used by tests.
-  static std::unique_ptr<ContextHostResolver> CreateSystemResolverImpl(
-      const Options& options,
-      NetLog* net_log);
-
-  // As above, but uses default parameters.
-  static std::unique_ptr<HostResolver> CreateDefaultResolver(NetLog* net_log);
-  // Same, but explicitly returns the implementing ContextHostResolver. Only
-  // used by tests and by StaleHostResolver in Cronet.
-  static std::unique_ptr<ContextHostResolver> CreateDefaultResolverImpl(
-      NetLog* net_log);
+  // used by tests and by StaleHostResolver in Cronet. No mapping rules can be
+  // applied because doing so requires wrapping the ContextHostResolver.
+  static std::unique_ptr<ContextHostResolver> CreateStandaloneContextResolver(
+      NetLog* net_log,
+      base::Optional<Options> options = base::nullopt);
 
   // Helpers for interacting with HostCache and ProcResolver.
   static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);
