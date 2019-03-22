@@ -49,16 +49,14 @@ const SAConstants = {
    * @type {string}
    * @const
    */
-  PRIMARY_FOCUS_COLOR: '#8ab4f8',
+  PRIMARY_FOCUS_COLOR: '#8ab4f8b8',
 
   /**
    * The outer color of the focus rings.
-   * Temporarily does not match spec, as alpha is not yet configurable.
-   * TODO(anastasi): Set alpha as specified in the spec.
    * @type {string}
    * @const
    */
-  SECONDARY_FOCUS_COLOR: '#aaa',
+  SECONDARY_FOCUS_COLOR: '#0003',
 
   /**
    * The amount of space (in px) needed to fit a focus ring around an element.
