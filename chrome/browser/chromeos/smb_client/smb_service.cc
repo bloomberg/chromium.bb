@@ -222,7 +222,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            bool should_open_file_manager_after_mount,
                            MountResponse callback) {
   SmbUrl parsed_url(share_path.value());
-  if (!parsed_url.IsValid()) {
+  if (!parsed_url.IsValid() || parsed_url.GetShare().empty()) {
     // Handle invalid URLs early to avoid having unaccounted for UMA counts for
     // authentication method.
     std::move(callback).Run(
