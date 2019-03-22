@@ -55,6 +55,9 @@ namespace {
 const char kErrorNotSupported[] = "This API is not supported on this platform.";
 
 #if defined(OS_CHROMEOS)
+constexpr int kBackButtonWidth = 45;
+constexpr int kBackButtonHeight = 45;
+
 ash::mojom::AccessibilityControllerPtr GetAccessibilityController() {
   // Connect to the accessibility mojo interface in ash.
   ash::mojom::AccessibilityControllerPtr accessibility_controller;
@@ -414,9 +417,26 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
       params = accessibility_private::SetSwitchAccessMenuState::Params::Create(
           *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  bool show_menu = params->show;
 
+  chromeos::AccessibilityManager* manager =
+      chromeos::AccessibilityManager::Get();
+
+  if (!params->show) {
+    manager->HideSwitchAccessMenu();
+    return RespondNow(NoArguments());
+  }
+
+  accessibility_private::ScreenRect elem = std::move(params->element_bounds);
+  gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
   int item_count = params->item_count;
+
+  // If we have an item count of 0, the panel is showing only the back button.
+  if (item_count == 0) {
+    manager->ShowSwitchAccessMenu(element_bounds, kBackButtonWidth,
+                                  kBackButtonHeight,
+                                  true /* back_button_only */);
+    return RespondNow(NoArguments());
+  }
 
   int padding = 40;
   int item_width = 88;
@@ -431,17 +451,7 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
   int width = padding + (item_width * cols);
   int height = padding + (item_height * rows);
 
-  accessibility_private::ScreenRect elem = std::move(params->element_bounds);
-
-  gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
-
-  if (show_menu) {
-    chromeos::AccessibilityManager::Get()->ShowSwitchAccessMenu(element_bounds,
-                                                                width, height);
-  } else {
-    chromeos::AccessibilityManager::Get()->HideSwitchAccessMenu();
-  }
-
+  manager->ShowSwitchAccessMenu(element_bounds, width, height);
   return RespondNow(NoArguments());
 }
 

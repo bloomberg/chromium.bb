@@ -32,6 +32,7 @@ run_jsbundler("switch_access_copied_files") {
     "../select_to_speak/closure_shim.js",
     "//third_party/chromevox/third_party/closure-library/closure/goog/base.js",
     "auto_scan_manager.js",
+    "back_button_manager.js",
     "background.js",
     "commands.js",
     "icons/back.svg",
@@ -155,6 +156,7 @@ manifest("switch_access_guest_manifest") {
 js_type_check("closure_compile") {
   deps = [
     ":auto_scan_manager",
+    ":back_button_manager",
     ":background",
     ":commands",
     ":keyboard_handler",
@@ -182,6 +184,7 @@ js_library("auto_scan_manager") {
 
 js_library("navigation_manager") {
   deps = [
+    ":back_button_manager",
     ":menu_manager",
     ":menu_panel_interface",
     ":switch_access_constants",
@@ -201,6 +204,16 @@ js_library("background") {
     ":switch_access",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
+}
+
+js_library("back_button_manager") {
+  deps = [
+    ":menu_panel_interface",
+  ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
 }
 
 js_library("commands") {

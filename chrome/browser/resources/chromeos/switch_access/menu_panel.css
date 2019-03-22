@@ -7,6 +7,8 @@
 body {
   background: none;
   margin: 10px;
+  overflow-x: hidden;
+  overflow-y: hidden;
   padding: 0;
 }
 #switchaccess_menu_actions {
@@ -35,10 +37,7 @@ button.action {
 }
 .focus,
 #back.focus {
-  outline: solid thick #78e428;  /** light green from automation_manager.js */
-}
-div.focus {
-  outline-color: #de742f;  /** dark orange from automation_manager.js */
+  outline: solid 3px rgb(138, 180, 248);  /** GB300 from SAConstants */
 }
 img {
   display: block;
@@ -56,4 +55,7 @@ button#back {
   background: #131313;
   border: solid 1px white;
   border-radius: 4px;
+}
+#back > img {
+  transform: rotate(180deg) translateY(-5px);
 }
