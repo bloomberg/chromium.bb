@@ -231,8 +231,11 @@ uint32_t DragDropControllerMus::HandleDragEnterOrOver(
     const gfx::PointF& location,
     uint32_t effect_bitmask,
     bool is_enter) {
-  // Reset the tracker on drag movement, ET_GESTURE_LONG_TAP will not be needed.
-  current_drag_state_->source_window_tracker.RemoveAll();
+  if (current_drag_state_) {
+    // Reset the tracker on drag movement, ET_GESTURE_LONG_TAP will not be
+    // needed.
+    current_drag_state_->source_window_tracker.RemoveAll();
+  }
 
   client::DragDropDelegate* drag_drop_delegate =
       window ? client::GetDragDropDelegate(window->GetWindow()) : nullptr;

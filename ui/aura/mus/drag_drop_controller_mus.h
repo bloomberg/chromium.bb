@@ -50,6 +50,10 @@ class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
   // the drag.
   bool DoesChangeIdMatchDragChangeId(uint32_t id) const;
 
+  // Returns true if the client has initiated a drag session. That is,
+  // StartDragAndDrop() has been called and has not completed.
+  bool IsRunningDragLoop() const { return current_drag_state_ != nullptr; }
+
   // Forwarded from WindowTreeClient. These correspond to the functions of the
   // same name defined in ws::mojom::WindowTreeClient.
   void OnDragDropStart(std::map<std::string, std::vector<uint8_t>> data);
