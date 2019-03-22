@@ -57604,6 +57604,7 @@ Full version information for the fingerprint enum values:
   <int value="1956464558" label="/changePicture"/>
   <int value="2083843665" label="/unsandboxedPlugins"/>
   <int value="2127311241" label="/editDictionary"/>
+  <int value="2136150421" label="/content/all"/>
   <int value="2136345292" label="/privacy"/>
 </enum>
 
