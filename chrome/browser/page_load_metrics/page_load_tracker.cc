@@ -665,7 +665,7 @@ void PageLoadTracker::OnSubFrameTimingChanged(
 
 void PageLoadTracker::OnSubFrameRenderDataChanged(
     content::RenderFrameHost* rfh,
-    const mojom::PageRenderData& render_data) {
+    const mojom::FrameRenderDataUpdate& render_data) {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   DCHECK(rfh->GetParent());
   for (const auto& observer : observers_) {

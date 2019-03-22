@@ -280,7 +280,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
                                 mojom::PageLoadMetadataPtr(base::in_place),
                                 mojom::PageLoadFeaturesPtr(base::in_place),
                                 std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::PageRenderDataPtr(base::in_place),
+                                mojom::FrameRenderDataUpdatePtr(base::in_place),
                                 timing.Clone());
   }
 
@@ -303,7 +303,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
                                 mojom::PageLoadMetadataPtr(base::in_place),
                                 mojom::PageLoadFeaturesPtr(base::in_place),
                                 std::vector<mojom::ResourceDataUpdatePtr>(),
-                                mojom::PageRenderDataPtr(base::in_place),
+                                mojom::FrameRenderDataUpdatePtr(base::in_place),
                                 mojom::CpuTimingPtr(base::in_place));
   }
 

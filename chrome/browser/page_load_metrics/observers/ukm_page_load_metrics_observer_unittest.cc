@@ -970,7 +970,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, BodySizeMetrics) {
 TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
   NavigateAndCommit(GURL(kTestUrl1));
 
-  page_load_metrics::mojom::PageRenderData render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
   SimulateRenderDataUpdate(render_data);
 
   // Simulate hiding the tab (the report should include jank after hide).

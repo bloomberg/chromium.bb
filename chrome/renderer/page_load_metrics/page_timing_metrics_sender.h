@@ -86,7 +86,7 @@ class PageTimingMetricsSender {
   // A list of newly observed features during page load, to be sent to the
   // browser.
   mojom::PageLoadFeaturesPtr new_features_;
-  mojom::PageRenderData render_data_;
+  mojom::FrameRenderDataUpdate render_data_;
 
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_sent_;

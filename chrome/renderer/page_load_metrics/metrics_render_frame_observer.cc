@@ -42,7 +42,7 @@ class MojoPageTimingSender : public PageTimingSender {
                   const mojom::PageLoadMetadataPtr& metadata,
                   mojom::PageLoadFeaturesPtr new_features,
                   std::vector<mojom::ResourceDataUpdatePtr> resources,
-                  const mojom::PageRenderData& render_data,
+                  const mojom::FrameRenderDataUpdate& render_data,
                   const mojom::CpuTimingPtr& cpu_timing) override {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(

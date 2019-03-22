@@ -218,9 +218,10 @@ struct ResourceDataUpdate {
   url.mojom.Origin origin;
 };
 
-// Metrics about how the page rendered during the browsing session.
-struct PageRenderData {
+// Metrics about how a RenderFrame rendered since the last UpdateTiming call.
+struct FrameRenderDataUpdate {
   // How much visible elements in the frame shifted (bit.ly/lsm-explainer).
+  // TODO(skobes): Send delta instead of cumulative score.
   float layout_jank_score;
 };
 
@@ -237,6 +238,6 @@ interface PageLoadMetrics {
                PageLoadMetadata page_load_metadata,
                PageLoadFeatures new_features,
                array<ResourceDataUpdate> resources,
-               PageRenderData render_data,
+               FrameRenderDataUpdate render_data,
                CpuTiming cpu_load_timing);
 };

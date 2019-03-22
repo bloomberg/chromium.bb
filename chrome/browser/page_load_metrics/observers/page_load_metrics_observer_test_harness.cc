@@ -82,12 +82,12 @@ void PageLoadMetricsObserverTestHarness::SimulateFeaturesUpdate(
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateRenderDataUpdate(
-    const mojom::PageRenderData& render_data) {
+    const mojom::FrameRenderDataUpdate& render_data) {
   tester_->SimulateRenderDataUpdate(render_data);
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateRenderDataUpdate(
-    const mojom::PageRenderData& render_data,
+    const mojom::FrameRenderDataUpdate& render_data,
     content::RenderFrameHost* render_frame_host) {
   tester_->SimulateRenderDataUpdate(render_data, render_frame_host);
 }
