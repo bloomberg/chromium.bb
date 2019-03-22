@@ -448,6 +448,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const std::string& error_name,
       const std::string& error_message);
 
+  // Called by dbus:: on an error while trying to set long term keys.
+  void SetLongTermKeysError(const std::string& error_name,
+                            const std::string& error_message);
+
   InitCallback init_callback_;
 
   bool initialized_;
