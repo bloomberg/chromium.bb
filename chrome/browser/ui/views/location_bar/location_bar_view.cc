@@ -264,7 +264,6 @@ void LocationBarView::Init() {
   }
 
   for (PageActionIconView* icon_view : page_action_icons_) {
-    icon_view->Init();
     icon_view->SetVisible(false);
     icon_view->SetIconColor(icon_color);
     AddChildView(icon_view);
