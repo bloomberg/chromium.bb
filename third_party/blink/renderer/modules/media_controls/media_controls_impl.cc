@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -1763,6 +1764,9 @@ bool MediaControlsImpl::IsOnLeftSide(Event* event) {
 
   DOMRect* rect = getBoundingClientRect();
   double middle = rect->x() + (rect->width() / 2);
+  if (GetDocument().GetFrame())
+    middle *= GetDocument().GetFrame()->PageZoomFactor();
+
   return tap_x < middle;
 }
 
