@@ -189,10 +189,11 @@ if get_option('backend-drm')
 		dependency('libudev', version: '>= 136'),
 	]
 
-	if get_option('renderer-gl')
+	# XXX: Actually let DRM-backend build without GBM, it really should
+	if true # get_option('renderer-gl')
 		dep_gbm = dependency('gbm', required: false)
 		if not dep_gbm.found()
-			error('drm-backend + gl-renderer requires gbm which was not found. Or, you can use \'-Dbackend-drm=false\' or \'-Drenderer-gl=false\'.')
+			error('drm-backend requires gbm which was not found. Or, you can use \'-Dbackend-drm=false\'.')
 		endif
 		if dep_gbm.version().version_compare('>= 17.1')
 			config_h.set('HAVE_GBM_MODIFIERS', '1')
