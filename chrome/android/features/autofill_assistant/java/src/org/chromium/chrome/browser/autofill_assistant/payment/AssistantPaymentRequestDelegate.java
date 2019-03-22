@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.payments.AutofillContact;
 /** Delegate for the Payment Request UI. */
 @JNINamespace("autofill_assistant")
 class AssistantPaymentRequestDelegate {
-    private long mNativeAssistantOverlayDelegate;
+    private long mNativeAssistantPaymentRequestDelegate;
 
     @CalledByNative
     private static AssistantPaymentRequestDelegate create(
@@ -23,11 +23,11 @@ class AssistantPaymentRequestDelegate {
     }
 
     private AssistantPaymentRequestDelegate(long nativeAssistantPaymentRequestDelegate) {
-        mNativeAssistantOverlayDelegate = nativeAssistantPaymentRequestDelegate;
+        mNativeAssistantPaymentRequestDelegate = nativeAssistantPaymentRequestDelegate;
     }
 
-    public void onContactInfoChanged(AutofillContact contact) {
-        if (mNativeAssistantOverlayDelegate != 0) {
+    public void onContactInfoChanged(@Nullable AutofillContact contact) {
+        if (mNativeAssistantPaymentRequestDelegate != 0) {
             String name = null;
             String phone = null;
             String email = null;
@@ -38,31 +38,31 @@ class AssistantPaymentRequestDelegate {
                 email = contact.getPayerEmail();
             }
 
-            nativeOnContactInfoChanged(mNativeAssistantOverlayDelegate, name, phone, email);
+            nativeOnContactInfoChanged(mNativeAssistantPaymentRequestDelegate, name, phone, email);
         }
     }
 
-    public void onShippingAddressChanged(PersonalDataManager.AutofillProfile address) {
-        if (mNativeAssistantOverlayDelegate != 0) {
-            nativeOnShippingAddressChanged(mNativeAssistantOverlayDelegate, address);
+    public void onShippingAddressChanged(@Nullable PersonalDataManager.AutofillProfile address) {
+        if (mNativeAssistantPaymentRequestDelegate != 0) {
+            nativeOnShippingAddressChanged(mNativeAssistantPaymentRequestDelegate, address);
         }
     }
 
-    public void onCreditCardChanged(PersonalDataManager.CreditCard card) {
-        if (mNativeAssistantOverlayDelegate != 0) {
-            nativeOnCreditCardChanged(mNativeAssistantOverlayDelegate, card);
+    public void onCreditCardChanged(@Nullable PersonalDataManager.CreditCard card) {
+        if (mNativeAssistantPaymentRequestDelegate != 0) {
+            nativeOnCreditCardChanged(mNativeAssistantPaymentRequestDelegate, card);
         }
     }
 
     public void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state) {
-        if (mNativeAssistantOverlayDelegate != 0) {
-            nativeOnTermsAndConditionsChanged(mNativeAssistantOverlayDelegate, state);
+        if (mNativeAssistantPaymentRequestDelegate != 0) {
+            nativeOnTermsAndConditionsChanged(mNativeAssistantPaymentRequestDelegate, state);
         }
     }
 
     @CalledByNative
     private void clearNativePtr() {
-        mNativeAssistantOverlayDelegate = 0;
+        mNativeAssistantPaymentRequestDelegate = 0;
     }
 
     private native void nativeOnContactInfoChanged(long nativeAssistantPaymentRequestDelegate,

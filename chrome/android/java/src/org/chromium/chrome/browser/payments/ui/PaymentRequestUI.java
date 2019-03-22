@@ -258,9 +258,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     private static final int DIALOG_ENTER_ANIMATION_MS = 225;
 
-    /** Length of the animation to hide the bottom sheet UI. */
-    private static final int DIALOG_EXIT_ANIMATION_MS = 195;
-
     private static PaymentRequestObserverForTest sPaymentRequestObserverForTest;
     private static EditorObserverForTest sEditorObserverForTest;
 

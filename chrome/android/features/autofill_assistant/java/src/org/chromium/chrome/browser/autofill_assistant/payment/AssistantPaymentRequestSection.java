@@ -9,7 +9,7 @@ import android.content.Context;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection;
 
-class AutofillAssistantPaymentRequestSection extends PaymentRequestSection.OptionSection {
+class AssistantPaymentRequestSection extends PaymentRequestSection.OptionSection {
     /**
      * Constructs an AA Payment Request Section.
      *
@@ -17,7 +17,7 @@ class AutofillAssistantPaymentRequestSection extends PaymentRequestSection.Optio
      * @param sectionName Title of the section to display.
      * @param delegate    Delegate to alert when something changes in the dialog.
      */
-    public AutofillAssistantPaymentRequestSection(
+    public AssistantPaymentRequestSection(
             Context context, String sectionName, SectionDelegate delegate) {
         super(context, sectionName, delegate);
         super.setTitleAppearance(R.style.TextAppearance_BlackTitle2);
