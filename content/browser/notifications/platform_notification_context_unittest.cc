@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -113,6 +114,22 @@ class PlatformNotificationContextTest : public ::testing::Test {
   // proxy, to reduce the number of threads involved in the tests.
   void OverrideTaskRunnerForTesting(PlatformNotificationContextImpl* context) {
     context->SetTaskRunnerForTesting(base::ThreadTaskRunnerHandle::Get());
+  }
+
+  // Gets the currently displayed notifications from |service| synchronously.
+  std::set<std::string> GetDisplayedNotificationsSync(
+      PlatformNotificationService* service) {
+    std::set<std::string> displayed_notification_ids;
+    base::RunLoop run_loop;
+    service->GetDisplayedNotifications(
+        browser_context(),
+        base::BindLambdaForTesting(
+            [&](std::set<std::string> notification_ids, bool supports_sync) {
+              displayed_notification_ids = std::move(notification_ids);
+              run_loop.QuitClosure().Run();
+            }));
+    run_loop.Run();
+    return displayed_notification_ids;
   }
 
   // Returns the testing browsing context that can be used for this test.
@@ -583,6 +600,37 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   // The notification was removed, so we shouldn't be able to read it from
   // the database anymore.
   EXPECT_FALSE(success());
+}
+
+TEST_F(PlatformNotificationContextTest, WriteDisplaysNotification) {
+  NotificationBrowserClient notification_browser_client;
+  SetBrowserClientForTesting(&notification_browser_client);
+
+  scoped_refptr<PlatformNotificationContextImpl> context =
+      CreatePlatformNotificationContext();
+
+  GURL origin("https://example.com");
+  NotificationDatabaseData notification_database_data;
+
+  context->WriteNotificationData(
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The write operation should have succeeded with a notification id.
+  ASSERT_TRUE(success());
+  EXPECT_FALSE(notification_id().empty());
+
+  // The written notification should be shown now.
+  std::set<std::string> displayed_notification_ids =
+      GetDisplayedNotificationsSync(
+          notification_browser_client.GetPlatformNotificationService());
+
+  ASSERT_EQ(1u, displayed_notification_ids.size());
+  EXPECT_EQ(notification_id(), *displayed_notification_ids.begin());
 }
 
 }  // namespace content

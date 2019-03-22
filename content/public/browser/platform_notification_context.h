@@ -90,10 +90,12 @@ class PlatformNotificationContext
       int64_t service_worker_registration_id,
       ReadAllResultCallback callback) = 0;
 
-  // Writes the data associated with a notification to a database. When this
-  // action completed, |callback| will be invoked with the success status and
-  // the notification id when written successfully. The notification ID field
-  // for |database_data| will be generated, and thus must be empty.
+  // Writes the data associated with a notification to a database and displays
+  // it either immediately or at the desired time if the notification has a show
+  // trigger defined. When this action is completed, |callback| will be invoked
+  // with the success status and the notification id when written successfully.
+  // The notification ID field for |database_data| will be generated, and thus
+  // must be empty.
   virtual void WriteNotificationData(
       int64_t persistent_notification_id,
       int64_t service_worker_registration_id,
