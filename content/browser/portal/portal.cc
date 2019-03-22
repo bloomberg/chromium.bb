@@ -133,13 +133,17 @@ void Portal::Activate(blink::TransferableMessage data,
                       base::OnceCallback<void()> callback) {
   WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
+
+  if (outer_contents->portal()) {
+    mojo::ReportBadMessage("Portal::Activate called on nested portal");
+    return;
+  }
+
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
   bool is_loading = portal_contents_impl_->IsLoading();
   std::unique_ptr<WebContents> portal_contents =
       portal_contents_impl_->DetachFromOuterWebContents();
-  // TODO(lfg): If there are nested portals, this would replace the entire tab
-  // upon a nested portal's activation. We should handle that case so that it
-  // would only replace the nested portal's contents. https://crbug.com/919110
+
   static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView())
       ->Destroy();

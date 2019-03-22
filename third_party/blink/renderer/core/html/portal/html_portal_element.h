@@ -55,6 +55,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
     return FrameOwnerElementType::kPortal;
   }
 
+  bool IsActivating() { return is_activating_; }
+
  private:
   // Navigates the portal to |url_|.
   void Navigate();
