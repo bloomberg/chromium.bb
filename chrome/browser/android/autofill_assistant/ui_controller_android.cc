@@ -136,7 +136,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
 
     OnStateChanged(ui_delegate->GetState());
   }
-  Java_AssistantModel_setVisible(env, GetModel(), true);
+  SetVisible(true);
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
@@ -157,9 +157,18 @@ UiControllerAndroid::GetHeaderModel() {
 }
 
 void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
-  UpdateActions();
+  if (!Java_AssistantModel_getVisible(AttachCurrentThread(), GetModel())) {
+    // Leave the UI alone as long as it's invisible. Missed state changes will
+    // be recovered by SetVisible(true).
+    return;
+  }
+  SetupForState();
+}
 
-  switch (new_state) {
+void UiControllerAndroid::SetupForState() {
+  UpdateActions();
+  AutofillAssistantState state = ui_delegate_->GetState();
+  switch (state) {
     case AutofillAssistantState::STARTING:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
@@ -217,7 +226,7 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
       NOTREACHED() << "Switching to the inactive state is not supported.";
       return;
   }
-  NOTREACHED() << "Unknown state: " << static_cast<int>(new_state);
+  NOTREACHED() << "Unknown state: " << static_cast<int>(state);
 }
 
 void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
@@ -279,7 +288,7 @@ void UiControllerAndroid::ShowSnackbar(const std::string& message,
     std::move(action).Run();
     return;
   }
-  Java_AssistantModel_setVisible(env, jmodel, false);
+  SetVisible(false);
   snackbar_action_ = std::move(action);
   Java_AutofillAssistantUiController_showSnackbar(
       env, java_object_, base::android::ConvertUTF8ToJavaString(env, message));
@@ -295,7 +304,7 @@ void UiControllerAndroid::SnackbarResult(
     return;
   }
   if (undo) {
-    Java_AssistantModel_setVisible(env, GetModel(), true);
+    SetVisible(true);
     return;
   }
   std::move(action).Run();
@@ -310,6 +319,23 @@ std::string UiControllerAndroid::GetDebugContext() {
 
 void UiControllerAndroid::DestroySelf() {
   client_->DestroyUI();
+}
+
+void UiControllerAndroid::SetVisible(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean visible) {
+  SetVisible(visible);
+}
+
+void UiControllerAndroid::SetVisible(bool visible) {
+  Java_AssistantModel_setVisible(AttachCurrentThread(), GetModel(), visible);
+  if (visible) {
+    // Recover possibly state changes missed by OnStateChanged()
+    SetupForState();
+  } else {
+    SetOverlayState(OverlayState::HIDDEN);
+  }
 }
 
 // Suggestions and actions carousels related methods.

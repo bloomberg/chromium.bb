@@ -11,16 +11,6 @@
     android:layout_height="match_parent"
     android:gravity="bottom">
 
-    <org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterView
-        android:id="@+id/touch_event_filter"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:clickable="true"
-        android:visibility="visible"
-        android:focusable="false"
-        android:orientation="vertical"/>
-
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

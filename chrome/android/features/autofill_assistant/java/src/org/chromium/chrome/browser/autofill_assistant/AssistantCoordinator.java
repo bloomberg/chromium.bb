@@ -70,8 +70,7 @@ class AssistantCoordinator {
         // Instantiate child components.
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mAssistantView, mModel);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
-        mOverlayCoordinator =
-                new AssistantOverlayCoordinator(activity, mAssistantView, mModel.getOverlayModel());
+        mOverlayCoordinator = new AssistantOverlayCoordinator(activity, mModel.getOverlayModel());
 
         // Listen when we should (dis)allow the soft keyboard or swiping the bottom sheet.
         mModel.addObserver((source, propertyKey) -> {

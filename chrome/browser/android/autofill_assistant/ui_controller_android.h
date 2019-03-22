@@ -115,6 +115,9 @@ class UiControllerAndroid : public UiController {
   void OnCloseButtonClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
+  void SetVisible(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& jcaller,
+                  jboolean visible);
 
  private:
   // A pointer to the client. nullptr until Attach() is called.
@@ -153,6 +156,12 @@ class UiControllerAndroid : public UiController {
   void OnCancelButtonClicked();
   void OnCancelButtonWithActionIndexClicked(int action_index);
   void OnCancel(int action_index);
+
+  // Updates the state of the UI to reflect the UIDelegate's state.
+  void SetupForState();
+
+  // Makes the whole of AA invisible or visible again.
+  void SetVisible(bool visible);
 
   // Debug context captured previously. If non-empty, GetDebugContext() returns
   // this context.
