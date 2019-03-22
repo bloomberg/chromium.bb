@@ -101,18 +101,7 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
 const char AutocompleteMatch::kEllipsis[] = "... ";
 
 AutocompleteMatch::AutocompleteMatch()
-    : provider(nullptr),
-      relevance(0),
-      typed_count(-1),
-      deletable(false),
-      allowed_to_be_default_match(false),
-      document_type(DocumentType::NONE),
-      swap_contents_and_description(false),
-      transition(ui::PAGE_TRANSITION_GENERATED),
-      type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
-      has_tab_match(false),
-      subtype_identifier(0),
-      from_previous(false) {}
+    : transition(ui::PAGE_TRANSITION_GENERATED) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      int relevance,
@@ -120,16 +109,9 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      Type type)
     : provider(provider),
       relevance(relevance),
-      typed_count(-1),
       deletable(deletable),
-      allowed_to_be_default_match(false),
-      document_type(DocumentType::NONE),
-      swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_TYPED),
-      type(type),
-      has_tab_match(false),
-      subtype_identifier(0),
-      from_previous(false) {}
+      type(type) {}
 
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
@@ -159,6 +141,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                              ? new AutocompleteMatch(*match.associated_keyword)
                              : nullptr),
       keyword(match.keyword),
+      from_keyword(match.from_keyword),
       pedal(match.pedal),
       from_previous(match.from_previous),
       search_terms_args(
@@ -207,6 +190,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
           ? new AutocompleteMatch(*match.associated_keyword)
           : nullptr);
   keyword = match.keyword;
+  from_keyword = match.from_keyword;
   pedal = match.pedal;
   from_previous = match.from_previous;
   search_terms_args.reset(
@@ -801,11 +785,11 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
   res += base::trace_event::EstimateMemoryUsage(image_dominant_color);
   res += base::trace_event::EstimateMemoryUsage(image_url);
+  res += base::trace_event::EstimateMemoryUsage(tail_suggest_common_prefix);
   res += base::trace_event::EstimateMemoryUsage(contents);
   res += base::trace_event::EstimateMemoryUsage(contents_class);
   res += base::trace_event::EstimateMemoryUsage(description);
   res += base::trace_event::EstimateMemoryUsage(description_class);
-  res += sizeof(int);
   if (answer)
     res += base::trace_event::EstimateMemoryUsage(answer.value());
   else
@@ -813,6 +797,7 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(associated_keyword);
   res += base::trace_event::EstimateMemoryUsage(keyword);
   res += base::trace_event::EstimateMemoryUsage(search_terms_args);
+  res += base::trace_event::EstimateMemoryUsage(post_content);
   res += base::trace_event::EstimateMemoryUsage(additional_info);
   res += base::trace_event::EstimateMemoryUsage(duplicate_matches);
 
