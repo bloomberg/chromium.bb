@@ -1249,7 +1249,9 @@ TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
             GetController()->registration_origin());
 }
 
-TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
+// TODO(https://crbug.com/944871): Flakes after setting CONNECTION_WIFI, on
+// some bots.
+TEST_F(BackgroundSyncManagerTest, DISABLED_WakeBrowserCalled) {
   InitDelayedSyncEventTest();
 
   // The BackgroundSyncManager should declare in initialization
