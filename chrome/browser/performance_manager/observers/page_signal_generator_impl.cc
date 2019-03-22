@@ -185,8 +185,7 @@ void PageSignalGeneratorImpl::OnSystemEventReceived(
 }
 
 void PageSignalGeneratorImpl::OnPageAlmostIdleChanged(PageNodeImpl* page_node) {
-  auto* data = GetPageData(page_node);
-  data->Reset();
+  GetPageData(page_node)->Reset();
 
   if (page_node->page_almost_idle()) {
     // Notify observers that the page is loaded and idle.

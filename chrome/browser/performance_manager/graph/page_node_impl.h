@@ -9,18 +9,16 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 
 namespace performance_manager {
 
 class FrameNodeImpl;
-class PageAlmostIdleData;
 class ProcessNodeImpl;
 
 class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
  public:
-  struct PageAlmostIdleHelper;
-
   static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kPage;
   }
@@ -121,13 +119,18 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
     return intervention_policy_frames_reported_;
   }
 
+  void SetPageAlmostIdleForTesting(bool page_almost_idle) {
+    SetPageAlmostIdle(page_almost_idle);
+  }
+
  private:
   friend class FrameNodeImpl;
+  friend class PageAlmostIdleAccess;
 
   void JoinGraph() override;
   void LeaveGraph() override;
 
-  void set_page_almost_idle(bool page_almost_idle);
+  void SetPageAlmostIdle(bool page_almost_idle);
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
@@ -218,26 +221,10 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // process.
   bool is_loading_ = false;
 
-  // TODO(chrisha): Hide away this type using a base class, and expose a
-  // strongly typed "WebContentsUserData" like mechanism.
-  // "User data" storage for the PageAlmostIdleDecorator.
-  std::unique_ptr<PageAlmostIdleData> page_almost_idle_data_;
+  // Storage for PageAlmostIdle user data.
+  std::unique_ptr<NodeAttachedData> page_almost_idle_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
-};
-
-// Helper that allows the PageAlmostIdleDecorator scoped access to the
-// PageNodeImpl.
-struct PageNodeImpl::PageAlmostIdleHelper {
- protected:
-  friend class PageAlmostIdleDecorator;
-
-  static PageAlmostIdleData* GetOrCreateData(PageNodeImpl* page_node);
-  static PageAlmostIdleData* GetData(PageNodeImpl* page_node);
-  static void DestroyData(PageNodeImpl* page_node);
-
-  static void set_page_almost_idle(PageNodeImpl* page_node,
-                                   bool page_almost_idle);
 };
 
 }  // namespace performance_manager
