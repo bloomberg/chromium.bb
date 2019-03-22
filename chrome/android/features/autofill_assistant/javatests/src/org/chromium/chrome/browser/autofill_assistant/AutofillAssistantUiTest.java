@@ -139,13 +139,13 @@ public class AutofillAssistantUiTest {
         TextView statusMessageView = bottomSheet.findViewById(R.id.status_message);
         Assert.assertEquals(statusMessageView.getText(), testStatusMessage);
 
-        // Show overlay.
+        // Show scrim.
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> assistantCoordinator.getModel().getOverlayModel().set(
                                 AssistantOverlayModel.STATE, AssistantOverlayState.FULL));
-        View overlay = bottomSheet.findViewById(R.id.touch_event_filter);
-        Assert.assertTrue(overlay.isShown());
+        View scrim = getActivity().getScrim();
+        Assert.assertTrue(scrim.isShown());
 
         // Test suggestions and actions carousels.
         testChips(inOrder, assistantCoordinator.getModel().getSuggestionsModel(),

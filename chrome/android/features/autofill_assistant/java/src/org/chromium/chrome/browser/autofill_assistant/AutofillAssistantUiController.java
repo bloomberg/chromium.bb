@@ -92,15 +92,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                         // confusion.
                         dismissSnackbar();
 
-                        AssistantModel model = getModel();
                         if (tab == null) {
                             // A null tab indicates that there's no selected tab; Most likely, we're
                             // in the process of selecting a new tab. Hide the UI for possible reuse
                             // later.
-                            getModel().setVisible(false);
+                            safeNativeSetVisible(false);
                         } else if (tab.getWebContents() == mWebContents) {
                             // The original tab was re-selected. Show it again
-                            model.setVisible(true);
+                            safeNativeSetVisible(true);
                         } else {
                             // A new tab was selected. If Autofill Assistant is running on it,
                             // attach the UI to that other instance, otherwise destroy the UI.
@@ -308,4 +307,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mNativeUiController != 0) nativeOnCloseButtonClicked(mNativeUiController);
     }
     private native void nativeOnCloseButtonClicked(long nativeUiControllerAndroid);
+
+    private void safeNativeSetVisible(boolean visible) {
+        if (mNativeUiController != 0) nativeSetVisible(mNativeUiController, visible);
+    }
+    private native void nativeSetVisible(long nativeUiControllerAndroid, boolean visible);
 }
