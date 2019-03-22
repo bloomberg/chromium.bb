@@ -566,6 +566,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisplaySearchEngineFaviconName,
      flag_descriptions::kDisplaySearchEngineFaviconDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDisplaySearchEngineFavicon)},
+    {"autofill-no-local-save-on-unmask-success",
+     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
+     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
 };
 
 // Add all switches from experimental flags to |command_line|.

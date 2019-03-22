@@ -33167,6 +33167,7 @@ from previous Chrome versions.
   <int value="58695502" label="NTPButton:disabled"/>
   <int value="59784035" label="ImeThread:disabled"/>
   <int value="59964519" label="OmniboxEnableClipboardProvider:disabled"/>
+  <int value="60023885" label="AutofillNoLocalSaveOnUnmaskSuccess:disabled"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
   <int value="61466986" label="AsyncDns:disabled"/>
   <int value="64942701" label="OfflinePagesSvelteConcurrentLoading:disabled"/>
@@ -34252,6 +34253,7 @@ from previous Chrome versions.
   <int value="1849580433" label="disable-oop-rasterization"/>
   <int value="1851358497" label="enable-ash-sidebar"/>
   <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
+  <int value="1854226565" label="AutofillNoLocalSaveOnUnmaskSuccess:enabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
   <int value="1860597983" label="AndroidSpellChecker:disabled"/>

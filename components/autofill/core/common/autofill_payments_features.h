@@ -28,6 +28,7 @@ extern const base::Feature kAutofillEnableToolbarStatusChip;
 extern const base::Feature kAutofillImportNonFocusableCreditCardForms;
 extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
+extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardImprovedUserConsent;
 extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;

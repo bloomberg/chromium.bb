@@ -4117,6 +4117,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMimeHandlerViewInCrossProcessFrame)},
 #endif
 
+    {"autofill-no-local-save-on-unmask-success",
+     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
+     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

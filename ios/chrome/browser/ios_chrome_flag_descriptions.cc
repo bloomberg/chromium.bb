@@ -138,6 +138,12 @@ const char kAppLauncherRefreshDescription[] =
     "also Apps will launch asynchronously and there will be no logic that"
     "depends on the success or the failure of launching an app.";
 
+const char kAutofillNoLocalSaveOnUnmaskSuccessName[] =
+    "Remove the option to save local copies of unmasked server cards";
+const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[] =
+    "When enabled, the server card unmask prompt will not include the checkbox "
+    "to also save the card locally on the current device upon success.";
+
 const char kAutofillNoLocalSaveOnUploadSuccessName[] =
     "Disable saving local copy of uploaded card when credit card upload "
     "succeeds";

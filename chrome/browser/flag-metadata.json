@@ -237,9 +237,18 @@
     "expiry_milestone": 74
   },
   {
+    "name": "autofill-no-local-save-on-unmask-success",
+    "owners": [ "jsaul@google.com" ],
+    // Currently unclear if this is launching independently with M75 or
+    // alongside the Autofill Auth Project, which could be as late as ~Q3.
+    "expiry_milestone": 79
+  },
+  {
     "name": "autofill-no-local-save-on-upload-success",
-    "owners": [ "sebsg" ],
-    "expiry_milestone": 71
+    "owners": [ "jsaul@google.com", "annelim@google.com" ],
+    // Currently unclear if this is launching independently with M75 or
+    // alongside the Autofill Auth Project, which could be as late as ~Q3.
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-prefilled-fields",
