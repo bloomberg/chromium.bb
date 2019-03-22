@@ -110,7 +110,8 @@ class ArcTracingDataSource : public tracing::ProducerClient::DataSourceBase {
 
   ArcTracingDataSource()
       : DataSourceBase(tracing::mojom::kArcTraceDataSourceName),
-        perfetto_task_runner_(tracing::ProducerClient::Get()->GetTaskRunner()) {
+        perfetto_task_runner_(
+            tracing::ProducerClient::Get()->GetTaskRunner()->task_runner()) {
     tracing::ProducerClient::Get()->AddDataSource(this);
   }
 

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/task_scheduler/scheduler_lock_impl.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
@@ -25,15 +26,22 @@ scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
 }
 
-// We never destroy the taskrunner as we may need it for cleanup
-// of TraceWriters in TLS, which could happen after the ProducerClient
-// is deleted.
-PerfettoTaskRunner* GetPerfettoTaskRunner() {
-  static base::NoDestructor<PerfettoTaskRunner> task_runner(CreateTaskRunner());
-  return task_runner.get();
+}  // namespace
+
+ScopedPerfettoPostTaskBlocker::ScopedPerfettoPostTaskBlocker(bool enable)
+    : enabled_(enable) {
+  if (enabled_) {
+    ProducerClient::GetTaskRunner()->BlockPostTaskForThread();
+  } else {
+    base::internal::SchedulerLockImpl::AssertNoLockHeldOnCurrentThread();
+  }
 }
 
-}  // namespace
+ScopedPerfettoPostTaskBlocker::~ScopedPerfettoPostTaskBlocker() {
+  if (enabled_) {
+    ProducerClient::GetTaskRunner()->UnblockPostTaskForThread();
+  }
+}
 
 ProducerClient::DataSourceBase::DataSourceBase(const std::string& name)
     : name_(name) {
@@ -67,20 +75,23 @@ ProducerClient::~ProducerClient() {
 // static
 void ProducerClient::DeleteSoonForTesting(
     std::unique_ptr<ProducerClient> producer_client) {
-  GetTaskRunner()->DeleteSoon(FROM_HERE, std::move(producer_client));
+  GetTaskRunner()->task_runner()->DeleteSoon(FROM_HERE,
+                                             std::move(producer_client));
 }
 
+// We never destroy the taskrunner as we may need it for cleanup
+// of TraceWriters in TLS, which could happen after the ProducerClient
+// is deleted.
 // static
-base::SequencedTaskRunner* ProducerClient::GetTaskRunner() {
-  auto* task_runner = GetPerfettoTaskRunner()->task_runner();
-  DCHECK(task_runner);
-  return task_runner;
+PerfettoTaskRunner* ProducerClient::GetTaskRunner() {
+  static base::NoDestructor<PerfettoTaskRunner> task_runner(CreateTaskRunner());
+  return task_runner.get();
 }
 
 // static
 void ProducerClient::ResetTaskRunnerForTesting() {
   DETACH_FROM_SEQUENCE(ProducerClient::Get()->sequence_checker_);
-  GetPerfettoTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
+  GetTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
 }
 
 void ProducerClient::Connect(mojom::PerfettoServicePtr perfetto_service) {
@@ -99,7 +110,7 @@ void ProducerClient::CreateMojoMessagepipes(
   auto origin_task_runner = base::SequencedTaskRunnerHandle::Get();
   DCHECK(origin_task_runner);
   mojom::ProducerClientPtr producer_client;
-  GetTaskRunner()->PostTask(
+  GetTaskRunner()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProducerClient::CreateMojoMessagepipesOnSequence,
                      base::Unretained(this), origin_task_runner,
@@ -149,7 +160,7 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
 }
 
 void ProducerClient::AddDataSource(DataSourceBase* data_source) {
-  GetTaskRunner()->PostTask(
+  GetTaskRunner()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&ProducerClient::AddDataSourceOnSequence,
                                 base::Unretained(this), data_source));
 }
@@ -183,8 +194,7 @@ void ProducerClient::OnTracingStart(
         std::make_unique<MojoSharedMemory>(std::move(shared_memory));
 
     shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateInstance(
-        shared_memory_.get(), kShmemBufferPageSize, this,
-        GetPerfettoTaskRunner());
+        shared_memory_.get(), kShmemBufferPageSize, this, GetTaskRunner());
   } else {
     // TODO(oysteine): This is assuming the SMB is the same, currently. Swapping
     // out SharedMemoryBuffers would require more thread synchronization.

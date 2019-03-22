@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
+#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
@@ -117,6 +118,9 @@ void ChromeBundleThreadLocalEventSink::AddTraceEvent(
     handle->chunk_seq = session_id_;
     return;
   }
+
+  ScopedPerfettoPostTaskBlocker post_task_blocker(
+      !!(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK));
 
   EnsureValidHandles();
 

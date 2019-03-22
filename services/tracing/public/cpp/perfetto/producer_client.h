@@ -30,6 +30,15 @@ namespace tracing {
 
 class MojoSharedMemory;
 
+class ScopedPerfettoPostTaskBlocker {
+ public:
+  explicit ScopedPerfettoPostTaskBlocker(bool enable);
+  ~ScopedPerfettoPostTaskBlocker();
+
+ private:
+  const bool enabled_;
+};
+
 // This class is the per-process client side of the Perfetto
 // producer, and is responsible for creating specific kinds
 // of DataSources (like ChromeTracing) on demand, and provide
@@ -80,7 +89,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   static void DeleteSoonForTesting(std::unique_ptr<ProducerClient>);
 
   // Returns the taskrunner used by Perfetto.
-  static base::SequencedTaskRunner* GetTaskRunner();
+  static PerfettoTaskRunner* GetTaskRunner();
 
   void Connect(mojom::PerfettoServicePtr perfetto_service);
 

@@ -263,7 +263,7 @@ MockProducer::~MockProducer() {
 }
 
 void MockProducer::WritePacketBigly(base::OnceClosure on_write_complete) {
-  producer_client_->GetTaskRunner()->PostTaskAndReply(
+  producer_client_->GetTaskRunner()->task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&TestDataSource::WritePacketBigly,
                      base::Unretained(producer_client_->data_source())),
