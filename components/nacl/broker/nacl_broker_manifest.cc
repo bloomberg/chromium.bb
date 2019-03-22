@@ -26,6 +26,7 @@ const service_manager::Manifest& GetNaClBrokerManifest() {
                                 "content.mojom.Child",
                                 "content.mojom.ChildControl",
                                 "content.mojom.ChildHistogramFetcherFactory",
+                                "content.mojom.ResourceUsageReporter",
                             })
 
           .Build()};
