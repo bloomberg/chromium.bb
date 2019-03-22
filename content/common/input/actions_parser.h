@@ -12,8 +12,6 @@
 #include "content/common/input/synthetic_pointer_action_list_params.h"
 
 namespace base {
-class DictionaryValue;
-class ListValue;
 class Value;
 }  // namespace base
 
@@ -33,9 +31,9 @@ class CONTENT_EXPORT ActionsParser {
   }
 
  private:
-  bool ParsePointerActions(const base::DictionaryValue& pointer_actions);
-  bool ParseActions(const base::ListValue& actions, int pointer_id);
-  bool ParseAction(const base::DictionaryValue& action,
+  bool ParsePointerActions(const base::Value& pointer_actions);
+  bool ParseActions(const base::Value& actions, int pointer_id);
+  bool ParseAction(const base::Value& action,
                    SyntheticPointerActionListParams::ParamList& param_list,
                    int pointer_id);
 
