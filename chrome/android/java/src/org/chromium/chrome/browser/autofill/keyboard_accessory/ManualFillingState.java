@@ -25,7 +25,11 @@ class ManualFillingState {
     private @Nullable PasswordAccessorySheetCoordinator mPasswordAccessorySheet;
     private @Nullable CreditCardAccessorySheetCoordinator mCreditCardAccessorySheet;
 
-    private final WebContentsObserver mWebContentsObserver = new WebContentsObserver() {
+    private class Observer extends WebContentsObserver {
+        public Observer(WebContents webContents) {
+            super(webContents);
+        }
+
         @Override
         public void wasShown() {
             super.wasShown();
@@ -42,14 +46,20 @@ class ManualFillingState {
         }
     };
 
+    private final WebContentsObserver mWebContentsObserver;
+
     /**
      * Creates a new set of user data that is bound to and observing the given web contents.
      * @param webContents Some {@link WebContents} which are assumed to be shown right now.
      */
     ManualFillingState(@Nullable WebContents webContents) {
         mWebContents = webContents;
-        if (webContents == null) return;
+        if (webContents == null) {
+            mWebContentsObserver = null;
+            return;
+        }
         mWebContentsShowing = true;
+        mWebContentsObserver = new Observer(mWebContents);
         mWebContents.addObserver(mWebContentsObserver);
     }
 
