@@ -229,7 +229,7 @@ class WebFrameTest : public testing::Test {
                                         bool report_only = false) {
     WebURLResponse response;
     response.SetMimeType("text/html");
-    response.AddHTTPHeaderField(
+    response.AddHttpHeaderField(
         report_only ? WebString("Content-Security-Policy-Report-Only")
                     : WebString("Content-Security-Policy"),
         WebString::FromUTF8(csp));

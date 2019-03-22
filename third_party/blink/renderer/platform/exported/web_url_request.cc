@@ -171,9 +171,9 @@ void WebURLRequest::SetHTTPReferrer(
   resource_request_->SetHTTPReferrer(Referrer(referrer, referrer_policy));
 }
 
-void WebURLRequest::AddHTTPHeaderField(const WebString& name,
+void WebURLRequest::AddHttpHeaderField(const WebString& name,
                                        const WebString& value) {
-  resource_request_->AddHTTPHeaderField(name, value);
+  resource_request_->AddHttpHeaderField(name, value);
 }
 
 void WebURLRequest::ClearHttpHeaderField(const WebString& name) {

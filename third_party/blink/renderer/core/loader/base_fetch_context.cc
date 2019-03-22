@@ -173,12 +173,12 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         }
       }
 
-      request.AddHTTPHeaderField("Sec-Fetch-Dest", destination_value);
-      request.AddHTTPHeaderField(
+      request.AddHttpHeaderField("Sec-Fetch-Dest", destination_value);
+      request.AddHttpHeaderField(
           "Sec-Fetch-Mode",
           FetchRequestModeToString(request.GetFetchRequestMode()));
-      request.AddHTTPHeaderField("Sec-Fetch-Site", site_value);
-      request.AddHTTPHeaderField("Sec-Fetch-User", "?F");
+      request.AddHttpHeaderField("Sec-Fetch-Site", site_value);
+      request.AddHttpHeaderField("Sec-Fetch-User", "?F");
     }
   }
 }

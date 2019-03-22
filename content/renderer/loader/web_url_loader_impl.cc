@@ -1236,7 +1236,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->AddHTTPHeaderField(WebString::FromLatin1(name),
+    response->AddHttpHeaderField(WebString::FromLatin1(name),
                                  WebString::FromLatin1(value));
   }
 }

@@ -228,12 +228,12 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     expected_response_ = WebURLResponse();
     expected_response_.SetMimeType("text/html");
     expected_response_.SetHttpStatusCode(200);
-    expected_response_.AddHTTPHeaderField("Access-Control-Allow-Origin", "*");
+    expected_response_.AddHttpHeaderField("Access-Control-Allow-Origin", "*");
     if (exposed) {
-      expected_response_.AddHTTPHeaderField("access-control-expose-headers",
+      expected_response_.AddHttpHeaderField("access-control-expose-headers",
                                             header_name_string);
     }
-    expected_response_.AddHTTPHeaderField(header_name_string, "foo");
+    expected_response_.AddHttpHeaderField(header_name_string, "foo");
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
         url, expected_response_, frame_file_path_);
 
@@ -342,7 +342,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
-  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
 
@@ -370,7 +370,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
-  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
 
@@ -400,7 +400,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(0);
-  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
 
@@ -554,7 +554,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   expected_redirect_response_.SetMimeType("text/html");
   expected_redirect_response_.SetHttpStatusCode(301);
   expected_redirect_response_.SetHttpHeaderField("Location", redirect);
-  expected_redirect_response_.AddHTTPHeaderField("access-control-allow-origin",
+  expected_redirect_response_.AddHttpHeaderField("access-control-allow-origin",
                                                  "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_redirect_response_, frame_file_path_);
@@ -564,7 +564,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
-  expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
+  expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       redirect_url, expected_response_, frame_file_path_);
 
@@ -671,8 +671,8 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   expected_response_ = WebURLResponse();
   expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
-  expected_response_.AddHTTPHeaderField("Access-Control-Allow-Origin", "*");
-  expected_response_.AddHTTPHeaderField(header_name_string, "foo");
+  expected_response_.AddHttpHeaderField("Access-Control-Allow-Origin", "*");
+  expected_response_.AddHttpHeaderField(header_name_string, "foo");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
 

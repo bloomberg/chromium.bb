@@ -206,7 +206,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   const AtomicString& HttpHeaderField(const AtomicString& name) const;
   void SetHttpHeaderField(const AtomicString& name, const AtomicString& value);
-  void AddHTTPHeaderField(const AtomicString& name, const AtomicString& value);
+  void AddHttpHeaderField(const AtomicString& name, const AtomicString& value);
   void ClearHttpHeaderField(const AtomicString& name);
   const HTTPHeaderMap& HttpHeaderFields() const;
 

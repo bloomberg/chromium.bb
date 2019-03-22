@@ -17,14 +17,14 @@ namespace {
 
 ResourceResponse CreateTestResponse() {
   ResourceResponse response;
-  response.AddHTTPHeaderField("age", "0");
-  response.AddHTTPHeaderField("cache-control", "no-cache");
-  response.AddHTTPHeaderField("date", "Tue, 17 Jan 2017 04:01:00 GMT");
-  response.AddHTTPHeaderField("expires", "Tue, 17 Jan 2017 04:11:00 GMT");
-  response.AddHTTPHeaderField("last-modified", "Tue, 17 Jan 2017 04:00:00 GMT");
-  response.AddHTTPHeaderField("pragma", "public");
-  response.AddHTTPHeaderField("etag", "abc");
-  response.AddHTTPHeaderField("content-disposition",
+  response.AddHttpHeaderField("age", "0");
+  response.AddHttpHeaderField("cache-control", "no-cache");
+  response.AddHttpHeaderField("date", "Tue, 17 Jan 2017 04:01:00 GMT");
+  response.AddHttpHeaderField("expires", "Tue, 17 Jan 2017 04:11:00 GMT");
+  response.AddHttpHeaderField("last-modified", "Tue, 17 Jan 2017 04:00:00 GMT");
+  response.AddHttpHeaderField("pragma", "public");
+  response.AddHttpHeaderField("etag", "abc");
+  response.AddHttpHeaderField("content-disposition",
                               "attachment; filename=a.txt");
   return response;
 }

@@ -18,7 +18,7 @@ class CorsExposedHeadersTest : public testing::Test {
   WebHTTPHeaderSet Parse(CredentialsMode credentials_mode,
                          const AtomicString& header) const {
     ResourceResponse response;
-    response.AddHTTPHeaderField("access-control-expose-headers", header);
+    response.AddHttpHeaderField("access-control-expose-headers", header);
 
     return cors::ExtractCorsExposedHeaderNamesList(credentials_mode, response);
   }
@@ -71,11 +71,11 @@ TEST_F(CorsExposedHeadersTest, InvalidInput) {
 
 TEST_F(CorsExposedHeadersTest, Wildcard) {
   ResourceResponse response;
-  response.AddHTTPHeaderField("access-control-expose-headers", "a, b, *");
-  response.AddHTTPHeaderField("b", "-");
-  response.AddHTTPHeaderField("c", "-");
-  response.AddHTTPHeaderField("d", "-");
-  response.AddHTTPHeaderField("*", "-");
+  response.AddHttpHeaderField("access-control-expose-headers", "a, b, *");
+  response.AddHttpHeaderField("b", "-");
+  response.AddHttpHeaderField("c", "-");
+  response.AddHttpHeaderField("d", "-");
+  response.AddHttpHeaderField("*", "-");
 
   EXPECT_EQ(
       cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kOmit, response),
@@ -89,11 +89,11 @@ TEST_F(CorsExposedHeadersTest, Wildcard) {
 
 TEST_F(CorsExposedHeadersTest, Asterisk) {
   ResourceResponse response;
-  response.AddHTTPHeaderField("access-control-expose-headers", "a, b, *");
-  response.AddHTTPHeaderField("b", "-");
-  response.AddHTTPHeaderField("c", "-");
-  response.AddHTTPHeaderField("d", "-");
-  response.AddHTTPHeaderField("*", "-");
+  response.AddHttpHeaderField("access-control-expose-headers", "a, b, *");
+  response.AddHttpHeaderField("b", "-");
+  response.AddHttpHeaderField("c", "-");
+  response.AddHttpHeaderField("d", "-");
+  response.AddHttpHeaderField("*", "-");
 
   EXPECT_EQ(cors::ExtractCorsExposedHeaderNamesList(CredentialsMode::kInclude,
                                                     response),

@@ -615,7 +615,7 @@ bool ParseMultipartHeadersFromBody(const char* bytes,
     response->ClearHttpHeaderField(header);
     while (response_headers->EnumerateHeader(&iterator, header_string_piece,
                                              &value)) {
-      response->AddHTTPHeaderField(header, WebString::FromLatin1(value));
+      response->AddHttpHeaderField(header, WebString::FromLatin1(value));
     }
   }
   return true;

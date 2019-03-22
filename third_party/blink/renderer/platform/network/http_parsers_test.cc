@@ -318,9 +318,9 @@ TEST(HTTPParsersTest, ParseMultipartHeadersResult) {
 
 TEST(HTTPParsersTest, ParseMultipartHeaders) {
   ResourceResponse response;
-  response.AddHTTPHeaderField("foo", "bar");
-  response.AddHTTPHeaderField("range", "piyo");
-  response.AddHTTPHeaderField("content-length", "999");
+  response.AddHttpHeaderField("foo", "bar");
+  response.AddHttpHeaderField("range", "piyo");
+  response.AddHttpHeaderField("content-length", "999");
 
   const char kData[] = "content-type: image/png\ncontent-length: 10\n\n";
   wtf_size_t end = 0;

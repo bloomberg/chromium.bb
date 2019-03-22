@@ -174,12 +174,12 @@ void WebURLResponse::SetHttpHeaderField(const WebString& name,
   resource_response_->SetHttpHeaderField(name, value);
 }
 
-void WebURLResponse::AddHTTPHeaderField(const WebString& name,
+void WebURLResponse::AddHttpHeaderField(const WebString& name,
                                         const WebString& value) {
   if (name.IsNull() || value.IsNull())
     return;
 
-  resource_response_->AddHTTPHeaderField(name, value);
+  resource_response_->AddHttpHeaderField(name, value);
 }
 
 void WebURLResponse::ClearHttpHeaderField(const WebString& name) {

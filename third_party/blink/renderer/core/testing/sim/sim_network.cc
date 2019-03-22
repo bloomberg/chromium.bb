@@ -100,7 +100,7 @@ void SimNetwork::AddRequest(SimRequestBase& request) {
     response.SetHttpStatusCode(200);
   } else {
     response.SetHttpStatusCode(302);
-    response.AddHTTPHeaderField("Location", request.redirect_url_);
+    response.AddHttpHeaderField("Location", request.redirect_url_);
   }
 
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(request.url_,
