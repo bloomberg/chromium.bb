@@ -47,6 +47,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       override;
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
+  void PostNonNestableToClient(base::OnceClosure callback) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

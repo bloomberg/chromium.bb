@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/scheduler.h"
 
@@ -94,6 +95,11 @@ void GpuInProcessThreadService::ScheduleOutOfOrderTask(base::OnceClosure task) {
 void GpuInProcessThreadService::ScheduleDelayedWork(base::OnceClosure task) {
   task_runner_->PostDelayedTask(FROM_HERE, std::move(task),
                                 base::TimeDelta::FromMilliseconds(2));
+}
+
+void GpuInProcessThreadService::PostNonNestableToClient(
+    base::OnceClosure callback) {
+  NOTREACHED();
 }
 
 }  // namespace gpu

@@ -1219,10 +1219,11 @@ void InProcessCommandBuffer::HandleReturnData(base::span<const uint8_t> data) {
 void InProcessCommandBuffer::PostOrRunClientCallback(
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
-  if (origin_task_runner_ && !origin_task_runner_->BelongsToCurrentThread())
-    origin_task_runner_->PostTask(FROM_HERE, std::move(callback));
-  else
-    std::move(callback).Run();
+  if (!origin_task_runner_) {
+    task_executor_->PostNonNestableToClient(std::move(callback));
+    return;
+  }
+  origin_task_runner_->PostTask(FROM_HERE, std::move(callback));
 }
 
 base::OnceClosure InProcessCommandBuffer::WrapClientCallback(
