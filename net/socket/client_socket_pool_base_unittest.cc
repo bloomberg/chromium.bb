@@ -540,6 +540,7 @@ class TestConnectJobFactory
             nullptr /* http_auth_cache */,
             nullptr /* http_auth_handler_factory */,
             nullptr /* spdy_session_pool */,
+            nullptr /* quic_supported_versions */,
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,

@@ -45,7 +45,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   HttpProxySocketParams(
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
-      quic::QuicTransportVersion quic_version,
+      bool is_quic,
       const HostPortPair& endpoint,
       bool is_trusted_proxy,
       bool tunnel,
@@ -57,7 +57,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const scoped_refptr<SSLSocketParams>& ssl_params() const {
     return ssl_params_;
   }
-  quic::QuicTransportVersion quic_version() const { return quic_version_; }
+  bool is_quic() const { return is_quic_; }
   const HostPortPair& endpoint() const { return endpoint_; }
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
   bool tunnel() const { return tunnel_; }
@@ -71,7 +71,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
-  quic::QuicTransportVersion quic_version_;
+  bool is_quic_;
   const HostPortPair endpoint_;
   const bool is_trusted_proxy_;
   const bool tunnel_;

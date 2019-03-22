@@ -132,29 +132,26 @@ HttpProxyTimeoutExperiments* GetProxyTimeoutExperiments() {
 HttpProxySocketParams::HttpProxySocketParams(
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
-    quic::QuicTransportVersion quic_version,
+    bool is_quic,
     const HostPortPair& endpoint,
     bool is_trusted_proxy,
     bool tunnel,
     const NetworkTrafficAnnotationTag traffic_annotation)
     : transport_params_(transport_params),
       ssl_params_(ssl_params),
-      quic_version_(quic_version),
+      is_quic_(is_quic),
       endpoint_(endpoint),
       is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
       traffic_annotation_(traffic_annotation) {
-  // If doing a QUIC proxy, |quic_version| must not be
-  // quic::QUIC_VERSION_UNSUPPORTED, and |ssl_params| must be valid while
-  // |transport_params| is null. Otherwise, |quic_version| must be
-  // quic::QUIC_VERSION_UNSUPPORTED, and exactly one of |transport_params| or
-  // |ssl_params| must be set.
-  DCHECK(quic_version_ == quic::QUIC_VERSION_UNSUPPORTED
-             ? (bool)transport_params != (bool)ssl_params
-             : !transport_params && ssl_params);
-  // Exactly one of |transport_params_| and |ssl_params_| must be non-null.
+  // This is either a connection to an HTTP proxy or an SSL/QUIC proxy.
   DCHECK(transport_params_ || ssl_params_);
   DCHECK(!transport_params_ || !ssl_params_);
+
+  // If connecting to a QUIC proxy, and |ssl_params_| must be valid. This also
+  // implies |transport_params_| is null, per the above DCHECKs.
+  if (is_quic_)
+    DCHECK(ssl_params_);
 }
 
 HttpProxySocketParams::~HttpProxySocketParams() = default;
@@ -321,7 +318,7 @@ int HttpProxyConnectJob::ConnectInternal() {
 }
 
 ProxyServer::Scheme HttpProxyConnectJob::GetProxyServerScheme() const {
-  if (params_->quic_version() != quic::QUIC_VERSION_UNSUPPORTED)
+  if (params_->is_quic())
     return ProxyServer::SCHEME_QUIC;
 
   if (params_->transport_params())
@@ -653,14 +650,19 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
   SSLSocketParams* ssl_params = params_->ssl_params().get();
   DCHECK(ssl_params);
   DCHECK(params_->tunnel());
+  DCHECK(!common_connect_job_params()->quic_supported_versions->empty());
 
   next_state_ = STATE_QUIC_PROXY_CREATE_STREAM;
   const HostPortPair& proxy_server =
       ssl_params->GetDirectConnectionParams()->destination();
   quic_stream_request_ = std::make_unique<QuicStreamRequest>(
       common_connect_job_params()->quic_stream_factory);
+
+  // Use default QUIC version, which is the version listed supported version.
+  quic::QuicTransportVersion quic_version =
+      common_connect_job_params()->quic_supported_versions->front();
   return quic_stream_request_->Request(
-      proxy_server, params_->quic_version(), ssl_params->privacy_mode(),
+      proxy_server, quic_version, ssl_params->privacy_mode(),
       kH2QuicTunnelPriority, socket_tag(),
       ssl_params->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log(),

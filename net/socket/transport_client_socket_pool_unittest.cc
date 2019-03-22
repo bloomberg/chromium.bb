@@ -1366,9 +1366,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
 
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
       base::MakeRefCounted<HttpProxySocketParams>(
-          nullptr /* transport_params */, proxy_ssl_params,
-          quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
-          false /* is_trusted_proxy */, true /* tunnel */,
+          nullptr /* transport_params */, proxy_ssl_params, false /* is_quic */,
+          kEndpoint, false /* is_trusted_proxy */, true /* tunnel */,
           TRAFFIC_ANNOTATION_FOR_TESTS);
   scoped_refptr<SSLSocketParams> endpoint_ssl_params =
       base::MakeRefCounted<SSLSocketParams>(
@@ -1485,9 +1484,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
 
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
       base::MakeRefCounted<HttpProxySocketParams>(
-          nullptr /* transport_params */, proxy_ssl_params,
-          quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
-          false /* is_trusted_proxy */, true /* tunnel */,
+          nullptr /* transport_params */, proxy_ssl_params, false /* is_quic */,
+          kEndpoint, false /* is_trusted_proxy */, true /* tunnel */,
           TRAFFIC_ANNOTATION_FOR_TESTS);
   scoped_refptr<SSLSocketParams> endpoint_ssl_params =
       base::MakeRefCounted<SSLSocketParams>(
@@ -1592,9 +1590,8 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
       scoped_refptr<HttpProxySocketParams> http_proxy_params =
           base::MakeRefCounted<HttpProxySocketParams>(
               use_https_proxy ? nullptr : transport_params,
-              use_https_proxy ? proxy_ssl_params : nullptr,
-              quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
-              false /* is_trusted_proxy */, true /* tunnel */,
+              use_https_proxy ? proxy_ssl_params : nullptr, false /* is_quic */,
+              kEndpoint, false /* is_trusted_proxy */, true /* tunnel */,
               TRAFFIC_ANNOTATION_FOR_TESTS);
       scoped_refptr<SSLSocketParams> endpoint_ssl_params =
           base::MakeRefCounted<SSLSocketParams>(
@@ -2134,8 +2131,8 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
               base::MakeRefCounted<TransportSocketParams>(
                   HostPortPair("http.proxy.host", 80), false,
                   OnHostResolutionCallback()),
-              nullptr /* ssl_params */, quic::QUIC_VERSION_UNSUPPORTED,
-              kDestination, false /* is_trusted_proxy */, false /* tunnel */,
+              nullptr /* ssl_params */, false /* is_quic */, kDestination,
+              false /* is_trusted_proxy */, false /* tunnel */,
               TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Verify requested socket is tagged properly.

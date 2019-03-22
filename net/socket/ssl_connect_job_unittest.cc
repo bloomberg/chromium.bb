@@ -105,7 +105,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,
                                       nullptr /* ssl_params */,
-                                      quic::QUIC_VERSION_UNSUPPORTED,
+                                      false /* is_quic */,
                                       HostPortPair("host", 80),
                                       /*is_trusted_proxy=*/false,
                                       /*tunnel=*/true,
