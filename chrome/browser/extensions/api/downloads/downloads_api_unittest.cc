@@ -45,8 +45,7 @@ class TestDownloadCoreService : public DownloadCoreServiceImpl {
 
   ExtensionDownloadsEventRouter* GetExtensionEventRouter() override {
     if (!router_.get()) {
-      router_.reset(new ExtensionDownloadsEventRouter(
-          profile_, content::BrowserContext::GetDownloadManager(profile_)));
+      router_.reset(new ExtensionDownloadsEventRouter(profile_));
     }
     return router_.get();
   }
@@ -80,9 +79,10 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
     EXPECT_CALL(*manager_, GetAllDownloads(testing::_))
         .Times(testing::AnyNumber());
 
+    notifier_.reset(new download::AllDownloadItemNotifier(manager_.get()));
     std::unique_ptr<HistoryAdapter> history_adapter(new HistoryAdapter);
     std::unique_ptr<DownloadHistory> download_history(
-        new DownloadHistory(manager_.get(), std::move(history_adapter)));
+        new DownloadHistory(notifier_.get(), std::move(history_adapter)));
     TestDownloadCoreService* download_core_service =
         static_cast<TestDownloadCoreService*>(
             DownloadCoreServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -108,6 +108,7 @@ class DownloadsApiUnitTest : public ExtensionApiUnittest {
       content::BrowserContext* browser_context);
 
   std::unique_ptr<MockDownloadManager> manager_;
+  std::unique_ptr<download::AllDownloadItemNotifier> notifier_;
   content::DownloadManager::Observer* download_history_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsApiUnitTest);

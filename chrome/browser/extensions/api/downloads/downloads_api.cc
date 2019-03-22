@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/downloads.h"
+#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -1632,14 +1633,14 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
   SendResponse(true);
 }
 
-ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
-    Profile* profile,
-    DownloadManager* manager)
+ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(Profile* profile)
     : profile_(profile),
-      notifier_(manager, this),
+      notifier_(download::AllDownloadItemNotifierFactory::GetForBrowserContext(
+          profile_)),
       extension_registry_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
+  notifier_->AddObserver(this);
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   EventRouter* router = EventRouter::Get(profile_);
   if (router)
@@ -1648,6 +1649,7 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
 }
 
 ExtensionDownloadsEventRouter::~ExtensionDownloadsEventRouter() {
+  notifier_->RemoveObserver(this);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   EventRouter* router = EventRouter::Get(profile_);
   if (router)
@@ -1825,7 +1827,7 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
 void ExtensionDownloadsEventRouter::OnListenerRemoved(
     const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DownloadManager* manager = notifier_.GetManager();
+  DownloadManager* manager = notifier_->GetManager();
   if (!manager)
     return;
   bool determiner_removed = (
@@ -2049,7 +2051,7 @@ void ExtensionDownloadsEventRouter::OnExtensionUnloaded(
 
 void ExtensionDownloadsEventRouter::CheckForHistoryFilesRemoval() {
   static const int kFileExistenceRateLimitSeconds = 10;
-  DownloadManager* manager = notifier_.GetManager();
+  DownloadManager* manager = notifier_->GetManager();
   if (!manager)
     return;
   base::Time now(base::Time::Now());

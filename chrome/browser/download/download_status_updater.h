@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATUS_UPDATER_H_
 
 #include <memory>
-#include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/download/content/public/all_download_item_notifier.h"
@@ -31,7 +31,7 @@ class DownloadStatusUpdater
   // The manager must not have previously been added to this updater.
   // The updater will automatically disassociate itself from the
   // manager when the manager is shutdown.
-  void AddManager(content::DownloadManager* manager);
+  void AddManager(download::AllDownloadItemNotifier* notifier);
 
   // AllDownloadItemNotifier::Observer
   void OnDownloadCreated(content::DownloadManager* manager,
@@ -47,7 +47,7 @@ class DownloadStatusUpdater
   virtual void UpdateAppIconDownloadProgress(download::DownloadItem* download);
 
  private:
-  std::vector<std::unique_ptr<download::AllDownloadItemNotifier>> notifiers_;
+  std::vector<download::AllDownloadItemNotifier*> notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStatusUpdater);
 };

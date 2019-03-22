@@ -54,6 +54,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
     for (size_t mgr_idx = 0; mgr_idx < managers_.size(); ++mgr_idx) {
       EXPECT_CALL(*Manager(mgr_idx), RemoveObserver(_));
     }
+    notifiers_.clear();
 
     delete updater_;
     updater_ = nullptr;
@@ -91,7 +92,9 @@ class DownloadStatusUpdaterTest : public testing::Test {
     EXPECT_CALL(*mgr, AddObserver(_))
         .WillOnce(WithArg<0>(Invoke(
             this, &DownloadStatusUpdaterTest::SetObserver)));
-    updater_->AddManager(mgr);
+    notifiers_.push_back(
+        std::make_unique<download::AllDownloadItemNotifier>(mgr));
+    updater_->AddManager(notifiers_.back().get());
   }
 
   // Add some number of Download items to a particular manager.
@@ -165,6 +168,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
 
   // The mocked download managers.
   std::vector<std::unique_ptr<content::MockDownloadManager>> managers_;
+  std::vector<std::unique_ptr<download::AllDownloadItemNotifier>> notifiers_;
   // The download items being downloaded by those managers in |managers_|. The
   // top-level vector is the manager index, and the inner vector is the list of
   // items of that manager. The inner vector is a vector<DownloadItem*> for

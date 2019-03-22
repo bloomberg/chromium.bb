@@ -43,9 +43,9 @@ bool ShouldShowItem(const DownloadItem& item) {
 // A test version of DownloadsListTracker.
 class TestDownloadsListTracker : public DownloadsListTracker {
  public:
-  TestDownloadsListTracker(content::DownloadManager* manager,
+  TestDownloadsListTracker(download::AllDownloadItemNotifier* notifier,
                            downloads::mojom::PagePtr page)
-      : DownloadsListTracker(manager,
+      : DownloadsListTracker(notifier,
                              std::move(page),
                              base::BindRepeating(&ShouldShowItem)) {}
   ~TestDownloadsListTracker() override {}
@@ -97,8 +97,9 @@ class DownloadsListTrackerTest : public testing::Test {
   }
 
   void CreateTracker() {
-    tracker_.reset(
-        new TestDownloadsListTracker(manager(), page_.BindAndGetPtr()));
+    tracker_.reset(new TestDownloadsListTracker(
+        new download::AllDownloadItemNotifier(manager()),
+        page_.BindAndGetPtr()));
   }
 
   TestingProfile* profile() { return &profile_; }
@@ -241,7 +242,8 @@ TEST_F(DownloadsListTrackerTest, Incognito) {
   ON_CALL(incognito_manager, GetDownload(0)).WillByDefault(Return(&item));
 
   testing::StrictMock<MockPage> page;
-  TestDownloadsListTracker tracker(&incognito_manager, page.BindAndGetPtr());
+  download::AllDownloadItemNotifier notifier(&incognito_manager);
+  TestDownloadsListTracker tracker(&notifier, page.BindAndGetPtr());
   EXPECT_TRUE(tracker.IsIncognito(item));
 }
 

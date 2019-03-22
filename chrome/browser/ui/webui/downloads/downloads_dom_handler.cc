@@ -80,14 +80,15 @@ void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
 DownloadsDOMHandler::DownloadsDOMHandler(
     downloads::mojom::PageHandlerRequest request,
     downloads::mojom::PagePtr page,
-    content::DownloadManager* download_manager,
+    download::AllDownloadItemNotifier* download_notifier,
     content::WebUI* web_ui)
-    : list_tracker_(download_manager, std::move(page)),
+    : list_tracker_(download_notifier, std::move(page)),
       web_ui_(web_ui),
       binding_(this, std::move(request)) {
   // Create our fileicon data source.
   content::URLDataSource::Add(
-      Profile::FromBrowserContext(download_manager->GetBrowserContext()),
+      Profile::FromBrowserContext(
+          GetMainNotifierManager()->GetBrowserContext()),
       std::make_unique<FileIconSource>());
   CheckForRemovedFiles();
 }
