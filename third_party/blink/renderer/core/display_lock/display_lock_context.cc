@@ -631,12 +631,12 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   }
 }
 
-void DisplayLockContext::WillStartLifecycleUpdate() {
+void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
   if (state_ == kUpdating)
     update_budget_->WillStartLifecycleUpdate();
 }
 
-void DisplayLockContext::DidFinishLifecycleUpdate() {
+void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
   if (state_ == kPendingAcquire) {
     if (!ElementSupportsDisplayLocking()) {
       FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);

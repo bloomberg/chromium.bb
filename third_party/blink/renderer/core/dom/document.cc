@@ -2474,9 +2474,6 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 
-  if (AXObjectCache* cache = ExistingAXObjectCache())
-    cache->ProcessUpdatesAfterLayout(*this);
-
   if (LocalFrameView* frame_view_anchored = View())
     frame_view_anchored->PerformScrollAnchoringAdjustments();
 

@@ -236,8 +236,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
+// TODO(aboxhall): Fix flaky test
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaComboBoxDelayAddList) {
+                       DISABLED_AccessibilityEventsAriaComboBoxDelayAddList) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-delay-add-list.html"));
 }
 
@@ -414,8 +415,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("live-region-elem-reparent.html"));
 }
 
+// TODO(aboxhall): Fix flakiness.
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsLiveRegionIgnoresClick) {
+                       DISABLED_AccessibilityEventsLiveRegionIgnoresClick) {
   RunEventTest(FILE_PATH_LITERAL("live-region-ignores-click.html"));
 }
 
@@ -478,8 +480,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute.html"));
 }
 
+// TODO(aboxhall): Fix flakiness on Windows
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsReportValidityInvalidField \
+  DISABLED_AccessibilityEventsReportValidityInvalidField
+#else
+#define MAYBE_AccessibilityEventsReportValidityInvalidField \
+  AccessibilityEventsReportValidityInvalidField
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsReportValidityInvalidField) {
+                       MAYBE_AccessibilityEventsReportValidityInvalidField) {
   RunEventTest(FILE_PATH_LITERAL("report-validity-invalid-field.html"));
 }
 
@@ -543,8 +553,18 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
 }
 
+// Even with the deflaking in WaitForAccessibilityTreeToContainNodeWithName,
+// this test is still flaky on Windows.
+// TODO(aboxhall, dmazzoni, meredithl): re-enable with better fix for above.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsAriaSelectedChanged \
+  DISABLED_AccessibilityEventsAriaSelectedChanged
+#else
+#define MAYBE_AccessibilityEventsAriaSelectedChanged \
+  AccessibilityEventsAriaSelectedChanged
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaSelectedChanged) {
+                       MAYBE_AccessibilityEventsAriaSelectedChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-selected-changed.html"));
 }
 

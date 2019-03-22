@@ -96,19 +96,20 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
   }
 };
 
-#if DCHECK_IS_ON()
-// It's not safe to call some WebAXObject APIs if a layout is pending.
-// Clients should call updateLayoutAndCheckValidity first.
 static bool IsLayoutClean(Document* document) {
   if (!document || !document->View())
     return false;
-  return document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean ||
-         ((document->Lifecycle().GetState() == DocumentLifecycle::kStyleClean ||
-           document->Lifecycle().GetState() ==
-               DocumentLifecycle::kLayoutSubtreeChangeClean) &&
-          !document->View()->NeedsLayout());
+  if (document->View()->NeedsLayout())
+    return false;
+  DocumentLifecycle::LifecycleState state = document->Lifecycle().GetState();
+  if (state >= DocumentLifecycle::kLayoutClean ||
+      state == DocumentLifecycle::kStyleClean ||
+      state == DocumentLifecycle::kLayoutSubtreeChangeClean) {
+    return true;
+  }
+
+  return false;
 }
-#endif
 
 void WebAXObject::Reset() {
   private_.Reset();
@@ -146,8 +147,11 @@ int WebAXObject::GenerateAXID() const {
 bool WebAXObject::UpdateLayoutAndCheckValidity() {
   if (!IsDetached()) {
     Document* document = private_->GetDocument();
-    if (!document || !document->View() ||
-        !document->View()->UpdateLifecycleToCompositingCleanPlusScrolling())
+    if (!document || !document->View())
+      return false;
+    if (IsLayoutClean(document))
+      return true;
+    if (!document->View()->UpdateLifecycleToCompositingCleanPlusScrolling())
       return false;
   }
 

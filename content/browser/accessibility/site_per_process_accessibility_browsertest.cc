@@ -136,8 +136,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   EXPECT_EQ(ax_child_frame_root->PlatformGetParent(), ax_iframe);
 }
 
+// TODO(aboxhall): Flaky test, discuss with dmazzoni
 IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
-                       TwoCrossSiteNavigations) {
+                       DISABLED_TwoCrossSiteNavigations) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
