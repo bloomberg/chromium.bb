@@ -186,9 +186,6 @@ class PreviewsInfoBarDelegateUnitTest
     PrefRegistrySimple* registry =
         drp_test_context_->pref_service()->registry();
     registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
-    data_reduction_proxy_settings
-        ->set_data_reduction_proxy_enabled_pref_name_for_test(
-            drp_test_context_->GetDataReductionProxyEnabledPrefName());
     data_reduction_proxy_settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
         drp_test_context_->request_context_getter(), profile(),

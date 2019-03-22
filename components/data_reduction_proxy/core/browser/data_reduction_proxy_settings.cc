@@ -65,24 +65,20 @@ DataReductionProxySettings::~DataReductionProxySettings() {
 void DataReductionProxySettings::InitPrefMembers() {
   DCHECK(thread_checker_.CalledOnValidThread());
   spdy_proxy_auth_enabled_.Init(
-      data_reduction_proxy_enabled_pref_name_, GetOriginalProfilePrefs(),
+      prefs::kDataSaverEnabled, GetOriginalProfilePrefs(),
       base::Bind(&DataReductionProxySettings::OnProxyEnabledPrefChange,
                  base::Unretained(this)));
 }
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
-    const std::string& data_reduction_proxy_enabled_pref_name,
     PrefService* prefs,
     DataReductionProxyIOData* io_data,
     std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!data_reduction_proxy_enabled_pref_name.empty());
   DCHECK(prefs);
   DCHECK(io_data);
   DCHECK(io_data->config());
   DCHECK(data_reduction_proxy_service);
-  data_reduction_proxy_enabled_pref_name_ =
-      data_reduction_proxy_enabled_pref_name;
   prefs_ = prefs;
   config_ = io_data->config();
   data_reduction_proxy_service_ = std::move(data_reduction_proxy_service);

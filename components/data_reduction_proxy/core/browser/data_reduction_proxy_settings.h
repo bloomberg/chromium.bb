@@ -84,12 +84,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
 
-  // Initializes the Data Reduction Proxy with the name of the preference that
-  // controls enabling it, profile prefs and a |DataReductionProxyIOData|. The
-  // caller must ensure that all parameters remain alive for the lifetime of
-  // the |DataReductionProxySettings| instance.
+  // Initializes the Data Reduction Proxy with the profile prefs and a
+  // |DataReductionProxyIOData|. The caller must ensure that all parameters
+  // remain alive for the lifetime of the |DataReductionProxySettings| instance.
   void InitDataReductionProxySettings(
-      const std::string& data_reduction_proxy_enabled_pref_name,
       PrefService* prefs,
       DataReductionProxyIOData* io_data,
       std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service);
@@ -279,13 +277,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Update IO thread objects in response to UI thread changes.
   void UpdateIOData(bool at_startup);
 
-  // For tests.
-  void set_data_reduction_proxy_enabled_pref_name_for_test(
-      const std::string& data_reduction_proxy_enabled_pref_name) {
-    data_reduction_proxy_enabled_pref_name_ =
-        data_reduction_proxy_enabled_pref_name;
-  }
-
   bool unreachable_;
 
   // A call to MaybeActivateDataReductionProxy may take place before the
@@ -308,10 +299,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   BooleanPrefMember spdy_proxy_auth_enabled_;
 
   std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service_;
-
-  // The name of the preference that controls enabling and disabling the Data
-  // Reduction Proxy.
-  std::string data_reduction_proxy_enabled_pref_name_;
 
   PrefService* prefs_;
 

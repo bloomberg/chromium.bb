@@ -188,8 +188,6 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
     : data_reduction_proxy::DataReductionProxySettings(),
-      data_reduction_proxy_enabled_pref_name_(
-          data_reduction_proxy::prefs::kDataSaverEnabled),
       profile_(nullptr) {}
 
 DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {}
@@ -241,8 +239,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
           commit_delay);
   data_reduction_proxy::DataReductionProxySettings::
-      InitDataReductionProxySettings(data_reduction_proxy_enabled_pref_name_,
-                                     profile_prefs, io_data,
+      InitDataReductionProxySettings(profile_prefs, io_data,
                                      std::move(service));
   io_data->SetDataReductionProxyService(
       data_reduction_proxy_service()->GetWeakPtr());

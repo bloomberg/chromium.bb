@@ -56,8 +56,6 @@ class DataReductionProxySettingsTest
   }
 
   void InitPrefMembers() {
-    settings_->set_data_reduction_proxy_enabled_pref_name_for_test(
-        test_context_->GetDataReductionProxyEnabledPrefName());
     settings_->InitPrefMembers();
   }
 };
@@ -295,8 +293,7 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
       &network_properties_manager);
 
   settings_->spdy_proxy_auth_enabled_.Init(
-      test_context_->GetDataReductionProxyEnabledPrefName(),
-      settings_->GetOriginalProfilePrefs());
+      prefs::kDataSaverEnabled, settings_->GetOriginalProfilePrefs());
 
   // TODO(bengr): Test enabling/disabling while a secure proxy check is
   // outstanding.
