@@ -410,8 +410,18 @@ bool V4L2ImageProcessor::ProcessInternal(
 bool V4L2ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                                          scoped_refptr<VideoFrame> output_frame,
                                          FrameReadyCB cb) {
-  NOTIMPLEMENTED();
-  return false;
+  DVLOGF(4) << "ts=" << input_frame->timestamp().InMilliseconds();
+
+  auto job_record = std::make_unique<JobRecord>();
+  job_record->input_frame = std::move(input_frame);
+  job_record->output_frame = std::move(output_frame);
+  job_record->ready_cb = std::move(cb);
+
+  process_task_tracker_.PostTask(
+      device_thread_.task_runner().get(), FROM_HERE,
+      base::BindOnce(&V4L2ImageProcessor::ProcessTask, base::Unretained(this),
+                     std::move(job_record)));
+  return true;
 }
 
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
