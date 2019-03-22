@@ -50,6 +50,15 @@ source_set("common") {
     "//mojo/public/cpp/system",
     "//sandbox/win:sandbox",
   ]
+
+  if (!is_official_chrome_cleaner_build) {
+    # Unofficial builds allow loading some target-only code in the broker, for
+    # testing.
+    deps += [
+      "//chrome/chrome_cleaner/engines/target:common",
+      "//chrome/chrome_cleaner/engines/target:engine_delegate_factory",
+    ]
+  }
 }
 
 source_set("disabled_cleaner_sandbox_interface") {
@@ -144,6 +153,7 @@ source_set("unittest_sources") {
   sources = [
     "cleaner_sandbox_interface_unittest.cc",
     "engine_client_unittest.cc",
+    "engine_requests_no_blocking_unittest.cc",
     "interface_log_service_unittest.cc",
     "logging_conversion_unittest.cc",
     "scanner_sandbox_interface_unittest.cc",
@@ -157,6 +167,8 @@ source_set("unittest_sources") {
     "//base:base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/engines/common",
+    "//chrome/chrome_cleaner/engines/target:common",
+    "//chrome/chrome_cleaner/engines/target:test_support",
     "//chrome/chrome_cleaner/interfaces:engine_sandbox_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/logging:mock_logging_service",
