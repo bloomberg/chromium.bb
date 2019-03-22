@@ -760,6 +760,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     const LayoutBoxModelObject* clipping_container = nullptr;
 
     bool is_under_video = false;
+    bool is_under_position_sticky = false;
   };
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate();

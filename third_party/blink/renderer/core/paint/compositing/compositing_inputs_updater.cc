@@ -234,6 +234,9 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   if (layer->GetLayoutObject().IsVideo())
     info.is_under_video = true;
 
+  if (layer->GetLayoutObject().IsStickyPositioned())
+    info.is_under_position_sticky = true;
+
   bool should_recurse =
       layer->ChildNeedsCompositingInputsUpdate() || update_type == kForceUpdate;
 
@@ -301,13 +304,21 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
         RoundedIntSize(root_layer_->GetScrollableArea()->GetScrollOffset()));
   }
 
+  // For sticky-positioned elements, the scroll offset is sometimes included and
+  // sometimes not, depending on whether the sticky element is affixed or still
+  // scrolling. This makes caching difficult, as compared to Fixed position
+  // elements which have consistent behavior. So we disable caching for
+  // sticky-positioned subtrees.
+  ClipRectsCacheSlot cache_slot = info.is_under_position_sticky
+                                      ? kUncachedClipRects
+                                      : kAbsoluteClipRectsIgnoringViewportClip;
+
   ClipRect clip_rect;
   layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
       .CalculateBackgroundClipRect(
           ClipRectsContext(root_layer_,
                            &root_layer_->GetLayoutObject().FirstFragment(),
-                           kAbsoluteClipRectsIgnoringViewportClip,
-                           kIgnorePlatformOverlayScrollbarSize,
+                           cache_slot, kIgnorePlatformOverlayScrollbarSize,
                            kIgnoreOverflowClipAndScroll),
           clip_rect);
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
@@ -355,6 +366,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
     properties.scroll_parent = info.scrolling_ancestor;
 
   properties.is_under_video = info.is_under_video;
+  properties.is_under_position_sticky = info.is_under_position_sticky;
 
   layer->UpdateAncestorDependentCompositingInputs(properties);
 }
