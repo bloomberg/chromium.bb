@@ -553,6 +553,14 @@ class IdentityManager : public SigninManagerBase::Observer,
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
       const std::string& account_id) const;
 
+  // Fires the IdentityManager::Observer::OnPrimaryAccountSet() notification
+  // to observers.
+  // TODO(https://crbug.com/944012): Unify the firing of this observer
+  // notification between ChromeOS and other platforms and eliminate the need
+  // for this helper method.
+  void FireOnPrimaryAccountSetNotification(
+      const AccountInfo& primary_account_info);
+
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
