@@ -22,6 +22,10 @@ class SearchingForNodeTool : public InspectTool {
                        const String& highlight_config);
 
  private:
+  bool HandleInputEvent(LocalFrameView* frame_view,
+                        const WebInputEvent& input_event,
+                        bool* swallow_next_mouse_up,
+                        bool* swallow_next_escape_up) override;
   bool HandleMouseDown(const WebMouseEvent& event,
                        bool* swallow_next_mouse_up) override;
   bool HandleMouseMove(const WebMouseEvent& event) override;

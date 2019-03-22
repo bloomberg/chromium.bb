@@ -54,17 +54,17 @@ class Layer;
 
 namespace blink {
 
+class FrameOverlay;
 class GraphicsContext;
 class InspectedFrames;
 class InspectorDOMAgent;
 class LocalFrame;
+class LocalFrameView;
 class Node;
 class Page;
-class FrameOverlay;
 class WebGestureEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
-class WebMouseWheelEvent;
 class WebLocalFrameImpl;
 class WebPointerEvent;
 
@@ -77,6 +77,12 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
   virtual ~InspectTool() = default;
   void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
   virtual CString GetDataResourceName();
+  virtual bool HandleInputEvent(LocalFrameView* frame_view,
+                                const WebInputEvent& input_event,
+                                bool* swallow_next_mouse_up,
+                                bool* swallow_next_escape_up);
+  virtual bool HandleMouseEvent(const WebMouseEvent&,
+                                bool* swallow_next_mouse_up);
   virtual bool HandleMouseDown(const WebMouseEvent&,
                                bool* swallow_next_mouse_up);
   virtual bool HandleMouseUp(const WebMouseEvent&);
@@ -159,6 +165,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   void Inspect(Node*);
   void DispatchBufferedTouchEvents();
   WebInputEventResult HandleInputEvent(const WebInputEvent&);
+  WebInputEventResult HandleInputEventInOverlay(const WebInputEvent&);
   void PageLayoutInvalidated(bool resized);
   void EvaluateInOverlay(const String& method, const String& argument);
   void EvaluateInOverlay(const String& method,
@@ -173,6 +180,7 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   LocalFrame* GetFrame() const;
   float WindowToViewportScale() const;
+  void ScheduleUpdate();
 
  private:
   class InspectorOverlayChromeClient;
@@ -190,7 +198,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   void OnTimer(TimerBase*);
   void UpdateOverlayPage();
   void RebuildOverlayPage();
-  void ScheduleUpdate();
 
   protocol::Response CompositingEnabled();
 
@@ -204,14 +211,6 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
       std::unique_ptr<InspectorHighlightConfig>*);
-  WebInputEventResult HandleGestureTapEvent(
-      const WebGestureEvent& gesture_event);
-  WebInputEventResult HandleMouseEvent(const WebMouseEvent& mouse_event);
-  WebInputEventResult HandlePointerEvent(const WebPointerEvent& pointer_event);
-  WebInputEventResult HandleKeyboardEvent(
-      const WebKeyboardEvent& keyboard_event);
-  WebInputEventResult HandleMouseWheelEvent(
-      const WebMouseWheelEvent& wheel_event);
 
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;

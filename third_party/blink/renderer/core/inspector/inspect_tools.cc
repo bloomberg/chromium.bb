@@ -133,6 +133,21 @@ void SearchingForNodeTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
 }
 
+bool SearchingForNodeTool::HandleInputEvent(LocalFrameView* frame_view,
+                                            const WebInputEvent& input_event,
+                                            bool* swallow_next_mouse_up,
+                                            bool* swallow_next_escape_up) {
+  if (input_event.GetType() == WebInputEvent::kGestureScrollBegin ||
+      input_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+    hovered_node_.Clear();
+    event_target_node_.Clear();
+    overlay_->ScheduleUpdate();
+    return false;
+  }
+  return InspectTool::HandleInputEvent(
+      frame_view, input_event, swallow_next_mouse_up, swallow_next_escape_up);
+}
+
 bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
   LocalFrame* frame = overlay_->GetFrame();
   if (!frame || !frame->View() || !frame->ContentLayoutObject())
