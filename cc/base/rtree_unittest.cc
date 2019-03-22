@@ -128,7 +128,9 @@ TEST(RTreeTest, GetBoundsNonOverlapping) {
   rtree.Build(rects);
 
   EXPECT_EQ(gfx::Rect(5, 6, 19, 20), rtree.GetBounds());
-  EXPECT_EQ(rects, rtree.GetAllBoundsForTracing());
+  std::map<size_t, gfx::Rect> expected_all_bounds = {{0, rects[0]},
+                                                     {1, rects[1]}};
+  EXPECT_EQ(expected_all_bounds, rtree.GetAllBoundsForTracing());
 }
 
 TEST(RTreeTest, GetBoundsOverlapping) {
@@ -140,7 +142,22 @@ TEST(RTreeTest, GetBoundsOverlapping) {
   rtree.Build(rects);
 
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
-  EXPECT_EQ(rects, rtree.GetAllBoundsForTracing());
+  std::map<size_t, gfx::Rect> expected_all_bounds = {{0, rects[0]},
+                                                     {1, rects[1]}};
+  EXPECT_EQ(expected_all_bounds, rtree.GetAllBoundsForTracing());
+}
+
+TEST(RTreeTest, GetBoundsWithEmptyRect) {
+  std::vector<gfx::Rect> rects;
+  rects.push_back(gfx::Rect());
+  rects.push_back(gfx::Rect(5, 5, 5, 5));
+
+  RTree<size_t> rtree;
+  rtree.Build(rects);
+
+  EXPECT_EQ(gfx::Rect(5, 5, 5, 5), rtree.GetBounds());
+  std::map<size_t, gfx::Rect> expected_all_bounds = {{1, rects[1]}};
+  EXPECT_EQ(expected_all_bounds, rtree.GetAllBoundsForTracing());
 }
 
 TEST(RTreeTest, BuildAfterReset) {
@@ -161,7 +178,9 @@ TEST(RTreeTest, BuildAfterReset) {
   // Should be able to rebuild from a reset rtree.
   rtree.Build(rects);
   EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
-  EXPECT_EQ(rects, rtree.GetAllBoundsForTracing());
+  std::map<size_t, gfx::Rect> expected_all_bounds = {
+      {0, rects[0]}, {1, rects[1]}, {2, rects[2]}, {3, rects[3]}};
+  EXPECT_EQ(expected_all_bounds, rtree.GetAllBoundsForTracing());
 }
 
 TEST(RTreeTest, Payload) {
