@@ -167,4 +167,8 @@ interface PasswordGenerationDriver {
   // Instructs the browser that form no longer contains a generated password and
   // the presaved form should be removed.
   PasswordNoLongerGenerated(PasswordForm password_form);
+
+  // Communicates to the browser that a scroll event happened on the frame. This
+  // event affects the password generation popup position.
+  FrameWasScrolled();
 };

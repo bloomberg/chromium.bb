@@ -453,11 +453,6 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
 #endif
 }
 
-void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
-  if (popup_controller_)
-    popup_controller_->HideAndDestroy();
-}
-
 #if defined(FULL_SAFE_BROWSING)
 safe_browsing::PasswordProtectionService*
 ChromePasswordManagerClient::GetPasswordProtectionService() const {
@@ -737,9 +732,8 @@ void ChromePasswordManagerClient::GenerationAvailableForForm(
 }
 
 void ChromePasswordManagerClient::PasswordGenerationRejectedByTyping() {
-  // TODO(crbug.com/835234):The call to hide the popup should be made for
-  // desktop only.
-  HidePasswordGenerationPopup();
+  if (popup_controller_)
+    popup_controller_->GeneratedPasswordRejected();
 }
 
 void ChromePasswordManagerClient::PresaveGeneratedPassword(
@@ -775,8 +769,13 @@ void ChromePasswordManagerClient::PasswordNoLongerGenerated(
   if (controller &&
       controller->state() ==
           PasswordGenerationPopupController::kEditGeneratedPassword) {
-    HidePasswordGenerationPopup();
+    popup_controller_->GeneratedPasswordRejected();
   }
+}
+
+void ChromePasswordManagerClient::FrameWasScrolled() {
+  if (popup_controller_)
+    popup_controller_->FrameWasScrolled();
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {

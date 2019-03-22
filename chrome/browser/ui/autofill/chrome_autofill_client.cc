@@ -434,13 +434,6 @@ void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
 void ChromeAutofillClient::HideAutofillPopup() {
   if (popup_controller_.get())
     popup_controller_->Hide();
-
-  // Password generation popups behave in the same fashion and should also
-  // be hidden.
-  ChromePasswordManagerClient* password_client =
-      ChromePasswordManagerClient::FromWebContents(web_contents());
-  if (password_client)
-    password_client->HidePasswordGenerationPopup();
 }
 
 bool ChromeAutofillClient::IsAutocompleteEnabled() {

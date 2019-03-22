@@ -137,8 +137,7 @@ class ChromePasswordManagerClient
       const autofill::PasswordForm& password_form) override;
   void PasswordNoLongerGenerated(
       const autofill::PasswordForm& password_form) override;
-
-  void HidePasswordGenerationPopup();
+  void FrameWasScrolled() override;
 
 #if defined(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
