@@ -34,6 +34,8 @@ apps::mojom::IconKeyPtr IconCache::GetIconKey(const std::string& app_id) {
 }
 
 std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
@@ -42,7 +44,8 @@ std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   apps::mojom::IconKey null_icon_key;
   IconLoader::Key key(
-      icon_key ? *icon_key : null_icon_key, icon_compression, size_hint_in_dip,
+      app_type, app_id, icon_key ? *icon_key : null_icon_key, icon_compression,
+      size_hint_in_dip,
       // We pass false instead of allow_placeholder_icon, as the Value
       // already records placeholder-ness. If the allow_placeholder_icon
       // arg to this function is true, we can re-use a cache hit regardless
@@ -71,8 +74,8 @@ std::unique_ptr<IconLoader::Releaser> IconCache::LoadIconFromIconKey(
     std::move(callback).Run(cache_hit->AsIconValue());
   } else if (wrapped_loader_) {
     releaser = wrapped_loader_->LoadIconFromIconKey(
-        std::move(icon_key), icon_compression, size_hint_in_dip,
-        allow_placeholder_icon,
+        app_type, app_id, std::move(icon_key), icon_compression,
+        size_hint_in_dip, allow_placeholder_icon,
         base::BindOnce(&IconCache::OnLoadIcon, weak_ptr_factory_.GetWeakPtr(),
                        key, std::move(callback)));
   } else {

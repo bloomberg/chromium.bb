@@ -60,7 +60,8 @@ void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
+void CrostiniApps::LoadIcon(const std::string& app_id,
+                            apps::mojom::IconKeyPtr icon_key,
                             apps::mojom::IconCompression icon_compression,
                             int32_t size_hint_in_dip,
                             bool allow_placeholder_icon,
@@ -81,10 +82,10 @@ void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
       // to LoadIconFromVM.
       LoadIconFromFileWithFallback(
           icon_compression, size_hint_in_dip,
-          registry_->GetIconPath(icon_key->app_id, scale_factor),
+          registry_->GetIconPath(app_id, scale_factor),
           static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
           base::BindOnce(&CrostiniApps::LoadIconFromVM,
-                         weak_ptr_factory_.GetWeakPtr(), icon_key->app_id,
+                         weak_ptr_factory_.GetWeakPtr(), app_id,
                          icon_compression, size_hint_in_dip,
                          allow_placeholder_icon, scale_factor,
                          static_cast<IconEffects>(icon_key->icon_effects)));
@@ -218,8 +219,6 @@ apps::mojom::AppPtr CrostiniApps::Convert(
 apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   DCHECK(!app_id.empty());
 
-  static constexpr uint32_t icon_effects = 0;
-
   // Treat the Crostini Terminal as a special case, loading an icon defined by
   // a resource instead of asking the Crostini VM (or the cache of previous
   // responses from the Crostini VM). Presumably this is for bootstrapping: the
@@ -227,12 +226,12 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // should be showable even before the user has installed their first Crostini
   // app and before bringing up an Crostini VM for the first time.
   if (app_id == crostini::kCrostiniTerminalId) {
-    return apps::mojom::IconKey::New(apps::mojom::AppType::kCrostini, app_id, 0,
-                                     IDR_LOGO_CROSTINI_TERMINAL, icon_effects);
+    return apps::mojom::IconKey::New(
+        apps::mojom::IconKey::kDoesNotChangeOverTime,
+        IDR_LOGO_CROSTINI_TERMINAL, apps::IconEffects::kNone);
   }
 
-  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kCrostini, app_id,
-                                       icon_effects);
+  return icon_key_factory_.MakeIconKey(apps::IconEffects::kNone);
 }
 
 void CrostiniApps::PublishAppID(const std::string& app_id,

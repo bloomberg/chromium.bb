@@ -36,6 +36,8 @@ apps::mojom::IconKeyPtr AppServiceProxy::InnerIconLoader::GetIconKey(
 
 std::unique_ptr<IconLoader::Releaser>
 AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
@@ -43,8 +45,8 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
     apps::mojom::Publisher::LoadIconCallback callback) {
   if (overriding_icon_loader_for_testing_) {
     return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
-        std::move(icon_key), icon_compression, size_hint_in_dip,
-        allow_placeholder_icon, std::move(callback));
+        app_type, app_id, std::move(icon_key), icon_compression,
+        size_hint_in_dip, allow_placeholder_icon, std::move(callback));
   }
 
   if (host_->app_service_.is_bound() && icon_key) {
@@ -57,9 +59,9 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
     // for the app and app requested new icon. But new icon is not delivered
     // yet and you resolve old one instead. Now new icon arrives asynchronously
     // but you no longer notify the app or do?"
-    host_->app_service_->LoadIcon(std::move(icon_key), icon_compression,
-                                  size_hint_in_dip, allow_placeholder_icon,
-                                  std::move(callback));
+    host_->app_service_->LoadIcon(app_type, app_id, std::move(icon_key),
+                                  icon_compression, size_hint_in_dip,
+                                  allow_placeholder_icon, std::move(callback));
   } else {
     std::move(callback).Run(apps::mojom::IconValue::New());
   }
@@ -121,13 +123,15 @@ apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
 
 std::unique_ptr<apps::IconLoader::Releaser>
 AppServiceProxy::LoadIconFromIconKey(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
   return outer_icon_loader_.LoadIconFromIconKey(
-      std::move(icon_key), icon_compression, size_hint_in_dip,
+      app_type, app_id, std::move(icon_key), icon_compression, size_hint_in_dip,
       allow_placeholder_icon, std::move(callback));
 }
 

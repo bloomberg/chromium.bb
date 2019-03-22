@@ -126,7 +126,7 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
   if (proxy) {
     proxy->LoadIcon(
-        app_id(), apps::mojom::IconCompression::kUncompressed,
+        app_type_, app_id(), apps::mojom::IconCompression::kUncompressed,
         chip ? AppListConfig::instance().suggestion_chip_icon_dimension()
              : AppListConfig::instance().GetPreferredIconDimension(
                    display_type()),
