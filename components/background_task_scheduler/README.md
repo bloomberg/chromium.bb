@@ -97,12 +97,19 @@ be charging. They can be set on the builder like this:
 ```java
 TaskInfo.createOneOffTask(TaskIds.YOUR_FEATURE,
                             MyBackgroundTask.class,
+                            /* windowStartTimeMs= */
                             TimeUnit.MINUTES.toMillis(100)
+                            /* windowEndTimeMs= */
                             TimeUnit.MINUTES.toMillis(200))
                           .setRequiresCharging(true)
-                          .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_UNMETERED)
+                          .setRequiredNetworkType(
+                            TaskInfo.NETWORK_TYPE_UNMETERED)
                           .build();
 ```
+
+Note that the task will be run after `windowEndTimeMs` regardless of whether the
+prerequisite conditions are met. To work around this, mark the `windowEndTimeMs`
+to `Integer.MAX_VALUE`.
 
 When the task is ready for scheduling, you use the
 `BackgroundTaskSchedulerFactory` to get the current instance of the
@@ -152,35 +159,11 @@ boolean onStartTask(Context context,
 }
 ```
 
-## Background processing
-
-Even though the `BackgroundTaskScheduler` provides functionality for invoking
-code while the application is in the background, the `BackgroundTask` instance
-is still invoked on the application main thread.
-
-This means that unless the operation is extremely quick, processing must happen
-asynchronously, and the call to `onStartJob(...)` must return before the task
-has finished processing. In that case, `onStartJob(...)` must return true, and
-instead invoke the `TaskFinishedCallback` when the processing is finished, which
-typically happens on a different `Thread`, `Handler` or using an `AsyncTask`.
-
-If the task finishes while still being on the main thread, `onStartJob(...)`
-should return false, indicating that no further processsing is required.
-
-If at any time the constraints given through the `TaskInfo` object does not
-hold anymore, or if the system deems it necessary, `onStopTask(...)` will be
-invoked, requiring all activity to cease immediately. The task can return true
-if the task needs to be rescheduled since it was canceled, or false otherwise.
-
-**The system will hold a wakelock from the time `onStartTask(...)` is invoked
-until either the task itself invokes the `TaskFinishedCallback`, or
-`onStopTask(...)` is invoked.**
-
 ## Loading Native parts
 
 Some of the tasks running in the background require native parts of the browser
 to be initialized. In order to simplify implementation of such tasks, we provide
-an base `NativeBackgroundTask`
+a base `NativeBackgroundTask`
 [implementation](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/background_task_scheduler/NativeBackgroundTask.java)
 in the browser layer. It requires extending classes to implement 4 methods:
 
@@ -199,3 +182,27 @@ While in a normal execution, both `onStart...` methods are called, only one of
 the stopping methods will be triggered, depending on whether the native parts of
 the browser are loaded at the time the underlying scheduler decides to stop the
 task.
+
+## Background processing
+
+Even though the `BackgroundTaskScheduler` provides functionality for invoking
+code while the application is in the background, the `BackgroundTask` instance
+is still invoked on the application's main thread.
+
+This means that unless the operation is extremely quick, processing must happen
+asynchronously, and the call to `onStartTask*(...)` must return before the task
+has finished processing. In that case, the method should return once the
+asychronous processing has begun, and invoke the `TaskFinishedCallback` when the
+processing is finished, which typically happens on a different `Thread`,
+`Handler`, or by using an `AsyncTask`.
+
+If at any time the constraints given through the `TaskInfo` object do not hold
+anymore, or if the system deems it necessary, `onStopTask*(...)` will be
+invoked, requiring all activity to cease immediately. The task can return true
+if the task needs to be rescheduled since it was canceled, or false otherwise.
+Note that onStopTask*() is not invoked if the task itself invokes
+`TaskFinishedCallback` or if the task is cancelled by the caller.
+
+**The system will hold a wakelock from the time
+`onStartTaskBeforeNativeLoaded(...)` is invoked until either the task itself
+invokes the `TaskFinishedCallback`, or `onStopTask*(...)` is invoked.**

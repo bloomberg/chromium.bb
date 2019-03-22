@@ -319,7 +319,8 @@ public class TaskInfo {
      * @param backgroundTaskClass the {@link BackgroundTask} class that will be instantiated for
      * this task.
      * @param windowEndTimeMs the end of the window that the task can begin executing as a delta in
-     * milliseconds from now.
+     * milliseconds from now. Note that the task begins executing at this point even if the
+     * prerequisite conditions are not met.
      * @return the builder which can be used to continue configuration and {@link Builder#build()}.
      * @see TaskIds
      */
@@ -338,7 +339,8 @@ public class TaskInfo {
      * @param windowStartTimeMs the start of the window that the task can begin executing as a delta
      * in milliseconds from now.
      * @param windowEndTimeMs the end of the window that the task can begin executing as a delta in
-     * milliseconds from now.
+     * milliseconds from now. Note that the task begins executing at this point even if the
+     * prerequisite conditions are not met.
      * @return the builder which can be used to continue configuration and {@link Builder#build()}.
      * @see TaskIds
      */
