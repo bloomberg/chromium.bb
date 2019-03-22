@@ -17,8 +17,72 @@
 #include "chrome/chrome_cleaner/settings/settings.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+#include "base/base_paths.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "chrome/chrome_cleaner/engines/target/engine_commands_impl.h"  // nogncheck
+#include "chrome/chrome_cleaner/engines/target/engine_delegate.h"  // nogncheck
+#include "chrome/chrome_cleaner/engines/target/engine_delegate_factory.h"  // nogncheck
+#include "chrome/chrome_cleaner/engines/target/libraries.h"  // nogncheck
+#include "mojo/public/cpp/bindings/interface_request.h"
+#endif
+
 namespace chrome_cleaner {
 
+namespace {
+
+#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+ResultCode SpawnWithoutSandboxForTesting(
+    Engine::Name engine_name,
+    scoped_refptr<EngineClient> engine_client,
+    scoped_refptr<chrome_cleaner::MojoTaskRunner> mojo_task_runner) {
+  // Extract the libraries to the same directory as the executable. When using
+  // a sandbox this is done in RunEngineSandboxTarget.
+  base::FilePath extraction_dir;
+  CHECK(base::PathService::Get(base::DIR_EXE, &extraction_dir));
+  if (!LoadAndValidateLibraries(engine_name, extraction_dir)) {
+    NOTREACHED() << "Binary signature validation failed";
+    return RESULT_CODE_SIGNATURE_VERIFICATION_FAILED;
+  }
+
+  // EngineCommandsImpl must be created on the mojo thread. Create one that
+  // leaks deliberately since this is only for testing and it needs to outlive
+  // the EngineClient object.
+  //
+  // When using a sandbox the ptr is bound to the broker end of a pipe in
+  // EngineClient::PostBindEngineCommandsPtr and the impl is bound to the
+  // target end in EngineMojoSandboxTargetHooks::BindEngineCommandsRequest.
+  // This binds the ptr directly to the impl. There's no need for an error
+  // handling callback because there's no pipe that can have errors.
+  mojo_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<EngineClient> engine_client,
+             scoped_refptr<EngineDelegate> engine_delegate,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+            new EngineCommandsImpl(
+                engine_delegate,
+                mojo::MakeRequest(engine_client->engine_commands_ptr()),
+                task_runner, base::DoNothing::Repeatedly());
+          },
+          engine_client, CreateEngineDelegate(engine_name), mojo_task_runner));
+
+  // When using a sandbox this is done in
+  // EngineSandboxSetupHooks::TargetResumed.
+  uint32_t engine_result = engine_client->Initialize();
+  if (engine_result != EngineResultCode::kSuccess) {
+    LOG(DFATAL) << "Engine initialize failed with 0x" << std::hex
+                << engine_result << std::dec;
+    return RESULT_CODE_ENGINE_INITIALIZATION_FAILED;
+  }
+
+  return RESULT_CODE_SUCCESS;
+}
+#endif
+
+}  // namespace
 EngineSandboxSetupHooks::EngineSandboxSetupHooks(
     scoped_refptr<EngineClient> engine_client)
     : engine_client_(engine_client) {}
@@ -64,6 +128,15 @@ std::pair<ResultCode, scoped_refptr<EngineClient>> SpawnEngineSandbox(
                           base::Unretained(registry_logger)),
       connection_error_callback, mojo_task_runner,
       std::move(interface_metadata_observer));
+
+#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+  if (chrome_cleaner::Settings::GetInstance()
+          ->run_without_sandbox_for_testing()) {
+    ResultCode result_code = SpawnWithoutSandboxForTesting(
+        engine_name, engine_client, mojo_task_runner);
+    return std::make_pair(result_code, engine_client);
+  }
+#endif
 
   EngineSandboxSetupHooks mojo_setup_hooks(engine_client.get());
   ResultCode result_code =
