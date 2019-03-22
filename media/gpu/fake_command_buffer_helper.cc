@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/test/fake_command_buffer_helper.h"
+#include "media/gpu/fake_command_buffer_helper.h"
 
 #include "base/logging.h"
 

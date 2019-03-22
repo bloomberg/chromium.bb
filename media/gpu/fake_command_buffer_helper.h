@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_TEST_FAKE_COMMAND_BUFFER_HELPER_H_
-#define MEDIA_GPU_TEST_FAKE_COMMAND_BUFFER_HELPER_H_
+#ifndef MEDIA_GPU_FAKE_COMMAND_BUFFER_HELPER_H_
+#define MEDIA_GPU_FAKE_COMMAND_BUFFER_HELPER_H_
 
 #include <map>
 #include <set>
@@ -78,4 +78,4 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_TEST_FAKE_COMMAND_BUFFER_HELPER_H_
+#endif  // MEDIA_GPU_FAKE_COMMAND_BUFFER_HELPER_H_
