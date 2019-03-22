@@ -1181,7 +1181,7 @@ void ComputedStyle::ApplyMotionPathTransform(
     point.SetY(float_distance * sin(deg2rad(angle)));
   } else {
     float zoom = EffectiveZoom();
-    const StylePath& motion_path = ToStylePath(*path);
+    const StylePath& motion_path = To<StylePath>(*path);
     float path_length = motion_path.length();
     float float_distance =
         FloatValueForLength(distance, path_length * zoom) / zoom;

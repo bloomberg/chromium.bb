@@ -27,7 +27,7 @@ StylePath* GetPath(const CSSProperty& property, const ComputedStyle& style) {
       BasicShape* offset_path = style.OffsetPath();
       if (!offset_path || offset_path->GetType() != BasicShape::kStylePathType)
         return nullptr;
-      return ToStylePath(style.OffsetPath());
+      return To<StylePath>(style.OffsetPath());
     }
     default:
       NOTREACHED();
