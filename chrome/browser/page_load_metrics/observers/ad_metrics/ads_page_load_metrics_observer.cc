@@ -14,8 +14,10 @@
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/page_load_metrics/resource_tracker.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -132,7 +134,7 @@ AdsPageLoadMetricsObserver::OnCommit(
 
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] = nullptr;
-  ProcessOngoingNavigationResource(navigation_handle->GetFrameTreeNodeId());
+  ProcessOngoingNavigationResource(navigation_handle->GetRenderFrameHost());
   return CONTINUE_OBSERVING;
 }
 
@@ -177,7 +179,7 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   if (id_and_data != ad_frames_data_.end() && id_and_data->second) {
     DCHECK(frame_navigated);
     if (id_and_data->second->frame_navigated()) {
-      ProcessOngoingNavigationResource(ad_id);
+      ProcessOngoingNavigationResource(ad_host);
       return;
     }
     previous_data = id_and_data->second;
@@ -269,7 +271,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 
   RecordAdFrameData(frame_tree_node_id, is_adframe, ad_host,
                     /*frame_navigated=*/true);
-  ProcessOngoingNavigationResource(frame_tree_node_id);
+  ProcessOngoingNavigationResource(ad_host);
 }
 
 void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
@@ -332,8 +334,11 @@ void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
     content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
-  for (auto const& resource : resources)
-    UpdateResource(rfh, resource);
+  for (auto const& resource : resources) {
+    ProcessResourceForPage(rfh->GetProcess()->GetID(), resource);
+    ProcessResourceForFrame(rfh->GetFrameTreeNodeId(),
+                            rfh->GetProcess()->GetID(), resource);
+  }
 }
 
 void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
@@ -435,13 +440,56 @@ bool AdsPageLoadMetricsObserver::DetectAds(
   return DetectSubresourceFilterAd(navigation_handle->GetFrameTreeNodeId());
 }
 
+int AdsPageLoadMetricsObserver::GetUnaccountedAdBytes(
+    int process_id,
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) const {
+  if (!resource->reported_as_ad_resource)
+    return 0;
+  content::GlobalRequestID global_request_id(process_id, resource->request_id);
+
+  // Resource just started loading.
+  if (!GetDelegate()->GetResourceTracker().HasPreviousUpdateForResource(
+          global_request_id))
+    return 0;
+
+  // If the resource had already started loading, and is now labeled as an ad,
+  // but was not before, we need to account for all the previously received
+  // bytes.
+  auto const& previous_update =
+      GetDelegate()->GetResourceTracker().GetPreviousUpdateForResource(
+          global_request_id);
+  bool is_new_ad = !previous_update->reported_as_ad_resource;
+  return is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
+}
+
+void AdsPageLoadMetricsObserver::ProcessResourceForPage(
+    int process_id,
+    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  // Log per-resource histograms for complete resources.
+  if (resource->is_complete)
+    RecordResourceHistograms(resource);
+
+  auto mime_type = FrameData::GetResourceMimeType(resource);
+  int unaccounted_ad_bytes = GetUnaccountedAdBytes(process_id, resource);
+  aggregate_frame_data_->ProcessResourceLoadInFrame(resource);
+  if (unaccounted_ad_bytes)
+    aggregate_frame_data_->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
+  if (resource->is_main_frame_resource) {
+    main_frame_data_->ProcessResourceLoadInFrame(resource);
+    if (unaccounted_ad_bytes)
+      main_frame_data_->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
+  }
+}
+
 void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     FrameTreeNodeId frame_tree_node_id,
+    int process_id,
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
   const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
   if (id_and_data == ad_frames_data_.end()) {
     if (resource->is_primary_frame_resource) {
-      // Only hold onto primary resources if their load has finished.
+      // Only hold onto primary resources if their load has finished, otherwise
+      // we will receive a future update for them if the navigation finishes.
       if (!resource->is_complete)
         return;
 
@@ -461,73 +509,23 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
   }
 
-  aggregate_frame_data_->ProcessResourceLoadInFrame(resource);
-  if (resource->is_main_frame_resource)
-    main_frame_data_->ProcessResourceLoadInFrame(resource);
-
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
   FrameData* ancestor_data = id_and_data->second;
   if (!ancestor_data)
     return;
+
+  auto mime_type = FrameData::GetResourceMimeType(resource);
+  int unaccounted_ad_bytes = GetUnaccountedAdBytes(process_id, resource);
   ancestor_data->ProcessResourceLoadInFrame(resource);
+  if (unaccounted_ad_bytes)
+    ancestor_data->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
 
   if (ancestor_data->size_intervention_status() ==
       FrameData::FrameSizeInterventionStatus::kTriggered) {
     RecordSingleFeatureUsage(
         GetDelegate()->GetWebContents()->GetMainFrame(),
         blink::mojom::WebFeature::kAdFrameSizeIntervention);
-  }
-}
-
-void AdsPageLoadMetricsObserver::AdjustAdBytesForFrame(
-    FrameTreeNodeId frame_tree_node_id,
-    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
-    int64_t unaccounted_ad_bytes) {
-  const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
-  FrameData* ancestor_data = id_and_data->second;
-  if (!ancestor_data)
-    return;
-  ancestor_data->AdjustAdBytes(unaccounted_ad_bytes,
-                               FrameData::GetResourceMimeType(resource));
-}
-
-void AdsPageLoadMetricsObserver::UpdateResource(
-    content::RenderFrameHost* rfh,
-    const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  content::GlobalRequestID global_id(rfh->GetProcess()->GetID(),
-                                     resource->request_id);
-  ProcessResourceForFrame(rfh->GetFrameTreeNodeId(), resource);
-  auto it = page_resources_.find(global_id);
-
-  if (resource->reported_as_ad_resource) {
-    // If the resource had already started loading, and is now labeled as an ad,
-    // but was not before, we need to account for all the previously received
-    // bytes.
-    bool is_new_ad =
-        (it != page_resources_.end()) && !it->second->reported_as_ad_resource;
-    int unaccounted_ad_bytes =
-        is_new_ad ? resource->received_data_length - resource->delta_bytes : 0;
-    if (unaccounted_ad_bytes)
-      AdjustAdBytesForFrame(rfh->GetFrameTreeNodeId(), resource,
-                            unaccounted_ad_bytes);
-  }
-
-  // Update resource map.
-  if (resource->is_complete) {
-    RecordResourceHistograms(resource);
-    if (it != page_resources_.end())
-      page_resources_.erase(it);
-  } else {
-    // Must clone resource so it will be accessible when the observer is
-    // destroyed.
-    if (it != page_resources_.end()) {
-      it->second = resource->Clone();
-    } else {
-      page_resources_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(global_id),
-                              std::forward_as_tuple(resource->Clone()));
-    }
   }
 }
 
@@ -590,11 +588,11 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
                        aggregate_frame_data_->ad_bytes());
   size_t unfinished_bytes = 0;
-  for (auto const& kv : page_resources_)
+  for (auto const& kv :
+       GetDelegate()->GetResourceTracker().unfinished_resources())
     unfinished_bytes += kv.second->received_data_length;
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Unfinished",
                        unfinished_bytes);
-
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::AdPageLoad builder(source_id);
   builder.SetTotalBytes(aggregate_frame_data_->network_bytes() >> 10)
@@ -632,8 +630,10 @@ void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   RecordHistogramsForAdTagging(FrameData::FrameVisibility::kVisible);
   RecordHistogramsForAdTagging(FrameData::FrameVisibility::kAnyVisibility);
   RecordPageResourceTotalHistograms(source_id);
-  for (auto const& kv : page_resources_)
+  for (auto const& kv :
+       GetDelegate()->GetResourceTracker().unfinished_resources()) {
     RecordResourceHistograms(kv.second);
+  }
 }
 
 // Computes a percentage given the numerator and denominator, bounded to 100%.
@@ -886,12 +886,14 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
 }
 
 void AdsPageLoadMetricsObserver::ProcessOngoingNavigationResource(
-    FrameTreeNodeId frame_tree_node_id) {
+    content::RenderFrameHost* rfh) {
+  if (!rfh)
+    return;
   const auto& frame_id_and_request =
-      ongoing_navigation_resources_.find(frame_tree_node_id);
+      ongoing_navigation_resources_.find(rfh->GetFrameTreeNodeId());
   if (frame_id_and_request == ongoing_navigation_resources_.end())
     return;
-
-  ProcessResourceForFrame(frame_tree_node_id, frame_id_and_request->second);
+  ProcessResourceForFrame(rfh->GetFrameTreeNodeId(), rfh->GetProcess()->GetID(),
+                          frame_id_and_request->second);
   ongoing_navigation_resources_.erase(frame_id_and_request);
 }

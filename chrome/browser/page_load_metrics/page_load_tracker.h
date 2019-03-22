@@ -14,6 +14,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
+#include "chrome/browser/page_load_metrics/resource_tracker.h"
 #include "chrome/browser/scoped_visibility_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
@@ -198,6 +199,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   base::TimeTicks GetNavigationStart() const override;
   bool DidCommit() const override;
   const ScopedVisibilityTracker& GetVisibilityTracker() const override;
+  const ResourceTracker& GetResourceTracker() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -399,6 +401,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // This member counts consecutive provisional aborts that share a url. It will
   // always be less than or equal to |aborted_chain_size_|.
   const int aborted_chain_size_same_url_;
+
+  // Keeps track of actively loading resources on the page.
+  ResourceTracker resource_tracker_;
 
   // Interface to chrome features. Must outlive the class.
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
