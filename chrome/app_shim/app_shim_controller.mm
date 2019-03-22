@@ -26,19 +26,35 @@
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
+namespace {
+// The maximum amount of time to wait for Chrome's AppShimHostManager to be
+// ready.
+constexpr base::TimeDelta kPollTimeoutSeconds =
+    base::TimeDelta::FromSeconds(60);
+
+// The period in between attempts to check of Chrome's AppShimHostManager is
+// ready.
+constexpr base::TimeDelta kPollPeriodMsec =
+    base::TimeDelta::FromMilliseconds(100);
+}  // namespace
+
 AppShimController::AppShimController(
-    const app_mode::ChromeAppModeInfo* app_mode_info)
+    const app_mode::ChromeAppModeInfo* app_mode_info,
+    base::scoped_nsobject<NSRunningApplication> chrome_running_app)
     : app_mode_info_(app_mode_info),
+      chrome_running_app_(chrome_running_app),
       shim_binding_(this),
       host_request_(mojo::MakeRequest(&host_)),
       delegate_([[AppShimDelegate alloc] init]),
       launch_app_done_(false),
-      ping_chrome_reply_received_(false),
       attention_request_id_(0) {
   // Since AppShimController is created before the main message loop starts,
   // NSApp will not be set, so use sharedApplication.
   NSApplication* sharedApplication = [NSApplication sharedApplication];
   [sharedApplication setDelegate:delegate_];
+
+  // Start polling to see if Chrome is ready to connect.
+  PollForChromeReady(kPollTimeoutSeconds);
 }
 
 AppShimController::~AppShimController() {
@@ -47,19 +63,36 @@ AppShimController::~AppShimController() {
   [sharedApplication setDelegate:nil];
 }
 
-void AppShimController::OnPingChromeReply(bool success) {
-  ping_chrome_reply_received_ = true;
-  if (!success) {
-    [NSApp terminate:nil];
+void AppShimController::PollForChromeReady(
+    const base::TimeDelta& time_until_timeout) {
+  // If the Chrome application we planned to connect to is not running, quit.
+  if ([chrome_running_app_ isTerminated])
+    LOG(FATAL) << "Running chrome instance terminated before connecting.";
+
+  // Check to see if the app shim socket symlink path exists. If it does, then
+  // we know that the AppShimHostManager is listening in the browser process,
+  // and we can connect.
+  base::FilePath user_data_dir = base::FilePath(app_mode_info_->user_data_dir)
+                                     .DirName()
+                                     .DirName()
+                                     .DirName();
+  CHECK(!user_data_dir.empty());
+  base::FilePath symlink_path =
+      user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+  if (base::PathExists(symlink_path)) {
+    InitBootstrapPipe();
     return;
   }
 
-  InitBootstrapPipe();
-}
-
-void AppShimController::OnPingChromeTimeout() {
-  if (!ping_chrome_reply_received_)
-    [NSApp terminate:nil];
+  // Otherwise, try again after a brief delay.
+  if (time_until_timeout < kPollPeriodMsec)
+    LOG(FATAL) << "Timed out waiting for running chrome instance to be ready.";
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AppShimController::PollForChromeReady,
+                     base::Unretained(this),
+                     time_until_timeout - kPollPeriodMsec),
+      kPollPeriodMsec);
 }
 
 void AppShimController::InitBootstrapPipe() {

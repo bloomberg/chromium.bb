@@ -5,6 +5,8 @@
 #ifndef CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 #define CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 
+#import <AppKit/AppKit.h>
+
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -19,19 +21,10 @@
 // process, and generally controls the lifetime of the app shim process.
 class AppShimController : public chrome::mojom::AppShim {
  public:
-  explicit AppShimController(const app_mode::ChromeAppModeInfo* app_mode_info);
+  explicit AppShimController(
+      const app_mode::ChromeAppModeInfo* app_mode_info,
+      base::scoped_nsobject<NSRunningApplication> chrome_running_app);
   ~AppShimController() override;
-
-  // Called when the main Chrome process responds to the Apple Event ping that
-  // was sent, or when the ping fails (if |success| is false).
-  void OnPingChromeReply(bool success);
-
-  // Called |kPingChromeTimeoutSeconds| after startup, to allow a timeout on the
-  // ping event to be detected.
-  void OnPingChromeTimeout();
-
-  // Connects to Chrome and sends a LaunchApp message.
-  void InitBootstrapPipe();
 
   chrome::mojom::AppShimHost* host() const { return host_.get(); }
 
@@ -66,7 +59,15 @@ class AppShimController : public chrome::mojom::AppShim {
   // Terminates the app shim process.
   void Close();
 
+  // Connects to Chrome and sends a LaunchApp message.
+  void InitBootstrapPipe();
+
+  // Check to see if Chrome's AppShimHostManager has been initialized. If it
+  // has, then connect.
+  void PollForChromeReady(const base::TimeDelta& time_until_timeout);
+
   const app_mode::ChromeAppModeInfo* const app_mode_info_;
+  base::scoped_nsobject<NSRunningApplication> chrome_running_app_;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
   chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;
@@ -77,7 +78,6 @@ class AppShimController : public chrome::mojom::AppShim {
 
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
-  bool ping_chrome_reply_received_;
   NSInteger attention_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
