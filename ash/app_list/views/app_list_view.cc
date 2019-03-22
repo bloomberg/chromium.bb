@@ -818,12 +818,9 @@ void AppListView::EndDrag(const gfx::Point& location) {
       case AppListViewState::HALF:
         app_list_height = std::min(fullscreen_height, kHalfAppListHeight);
         break;
-      case AppListViewState::PEEKING: {
-        const int peeking_height =
-            AppListConfig::instance().peeking_app_list_height();
-        app_list_height = peeking_height;
+      case AppListViewState::PEEKING:
+        app_list_height = AppListConfig::instance().peeking_app_list_height();
         break;
-      }
       case AppListViewState::CLOSED:
         NOTREACHED();
         break;
@@ -893,24 +890,30 @@ void AppListView::EndDrag(const gfx::Point& location) {
 void AppListView::SetChildViewsForStateTransition(
     AppListViewState target_state) {
   if (target_state != AppListViewState::PEEKING &&
-      target_state != AppListViewState::FULLSCREEN_ALL_APPS)
+      target_state != AppListViewState::FULLSCREEN_ALL_APPS &&
+      target_state != AppListViewState::HALF) {
+    return;
+  }
+
+  app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
+      target_state);
+
+  if (target_state == AppListViewState::HALF)
     return;
 
   if (GetAppsContainerView()->IsInFolderView())
     GetAppsContainerView()->ResetForShowApps();
 
+  app_list_main_view_->contents_view()->SetActiveState(
+      ash::AppListState::kStateApps, !is_side_shelf_);
+
   if (target_state == AppListViewState::PEEKING) {
-    app_list_main_view_->contents_view()->SetActiveState(
-        ash::AppListState::kStateStart);
-    // Set the apps to first page at STATE_START state.
+    // Set the apps to the initial page when PEEKING.
     PaginationModel* pagination_model = GetAppsPaginationModel();
     if (pagination_model->total_pages() > 0 &&
         pagination_model->selected_page() != 0) {
       pagination_model->SelectPage(0, false /* animate */);
     }
-  } else {
-    app_list_main_view_->contents_view()->SetActiveState(
-        ash::AppListState::kStateApps, !is_side_shelf_);
   }
 }
 
@@ -1299,9 +1302,8 @@ void AppListView::SetState(AppListViewState new_state) {
   if (is_side_shelf_)
     Layout();
 
-  if (new_state_override == AppListViewState::CLOSED) {
+  if (new_state_override == AppListViewState::CLOSED)
     return;
-  }
 
   if (fullscreen_widget_->IsActive()) {
     // Reset the focus to initially focused view. This should be

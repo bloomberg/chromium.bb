@@ -1000,11 +1000,9 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  // Bail on STATE_START or no apps page to make PaginationModel happy.
-  if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
-      pagination_model_.total_pages() <= 0) {
+  // If |pagination_model_| is empty, don't handle scroll events.
+  if (pagination_model_.total_pages() <= 0)
     return;
-  }
 
   // If the event is a scroll down in clamshell mode on the first page, don't
   // let |pagination_controller_| handle it. Unless it occurs in a folder.
@@ -1125,11 +1123,9 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
 
 bool AppsGridView::HandleScroll(const gfx::Vector2d& offset,
                                 ui::EventType type) {
-  // Bail on STATE_START or no apps page to make PaginationModel happy.
-  if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
-      pagination_model_.total_pages() <= 0) {
+  // If |pagination_model_| is empty, don't handle scroll events.
+  if (pagination_model_.total_pages() <= 0)
     return false;
-  }
 
   return pagination_controller_->OnScroll(offset, type);
 }

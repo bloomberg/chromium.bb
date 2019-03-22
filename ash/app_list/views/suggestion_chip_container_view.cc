@@ -158,8 +158,7 @@ void SuggestionChipContainerView::OnTabletModeChanged(bool started) {
 bool SuggestionChipContainerView::IgnoreUpdateAndLayout() const {
   // Ignore update and layout when this view is not shown.
   const ash::AppListState state = contents_view_->GetActiveState();
-  return state != ash::AppListState::kStateStart &&
-         state != ash::AppListState::kStateApps;
+  return state != ash::AppListState::kStateApps;
 }
 
 }  // namespace app_list

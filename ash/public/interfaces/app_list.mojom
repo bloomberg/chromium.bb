@@ -91,7 +91,7 @@ struct SearchResultMetadata {
 enum AppListState {
   kStateApps = 0,
   kStateSearchResults,
-  kStateStart,
+  kStateStart_DEPRECATED,
   kStateEmbeddedAssistant,
 };
 
