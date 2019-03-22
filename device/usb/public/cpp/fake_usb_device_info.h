@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "device/usb/public/cpp/mock_usb_mojo_device.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "url/gurl.h"
@@ -70,6 +71,8 @@ class FakeUsbDeviceInfo : public base::RefCounted<FakeUsbDeviceInfo> {
   const mojom::UsbDeviceInfo& GetDeviceInfo() { return device_info_; }
   void AddConfig(mojom::UsbConfigurationInfoPtr config);
   bool SetActiveConfig(uint8_t value);
+  void SetMockDevice(MockUsbMojoDevice* device) { mock_device_ = device; }
+  MockUsbMojoDevice* mock_device() const { return mock_device_; }
 
  protected:
   friend class RefCounted<FakeUsbDeviceInfo>;
@@ -79,6 +82,7 @@ class FakeUsbDeviceInfo : public base::RefCounted<FakeUsbDeviceInfo> {
   void SetDefault();
   mojom::UsbDeviceInfo device_info_;
   base::ObserverList<Observer> observer_list_;
+  MockUsbMojoDevice* mock_device_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(FakeUsbDeviceInfo);
 };
 
