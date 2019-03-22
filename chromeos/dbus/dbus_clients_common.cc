@@ -23,7 +23,6 @@
 #include "chromeos/dbus/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/machine_learning_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -80,8 +79,6 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
     gsm_sms_client_.reset(gsm_sms_client);
   }
 
-  machine_learning_client_ = MachineLearningClient::Create(client_impl_type);
-
   if (use_real_clients)
     modem_messaging_client_.reset(ModemMessagingClient::Create());
   else
@@ -108,7 +105,6 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   cras_audio_client_->Init(system_bus);
   cryptohome_client_->Init(system_bus);
   gsm_sms_client_->Init(system_bus);
-  machine_learning_client_->Init(system_bus);
   modem_messaging_client_->Init(system_bus);
   permission_broker_client_->Init(system_bus);
   session_manager_client_->Init(system_bus);

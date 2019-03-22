@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
@@ -31,10 +31,12 @@ class ServiceConnectionTest : public testing::Test {
  public:
   ServiceConnectionTest() = default;
 
+  void SetUp() override { MachineLearningClient::InitializeFake(); }
+
+  void TearDown() override { MachineLearningClient::Shutdown(); }
+
  protected:
   static void SetUpTestCase() {
-    DBusThreadManager::Initialize();
-
     static base::Thread ipc_thread("ipc");
     ipc_thread.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

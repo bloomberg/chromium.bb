@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/machine_learning_client.h"
+#include "chromeos/dbus/machine_learning/machine_learning_client.h"
 
 #include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/fake_machine_learning_client.h"
+#include "chromeos/dbus/machine_learning/fake_machine_learning_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -19,9 +19,12 @@ namespace chromeos {
 
 namespace {
 
+MachineLearningClient* g_instance = nullptr;
+
 class MachineLearningClientImpl : public MachineLearningClient {
  public:
-  MachineLearningClientImpl() : weak_ptr_factory_(this) {}
+  MachineLearningClientImpl() = default;
+  ~MachineLearningClientImpl() override = default;
 
   // MachineLearningClient:
   void BootstrapMojoConnection(
@@ -38,9 +41,7 @@ class MachineLearningClientImpl : public MachineLearningClient {
             weak_ptr_factory_.GetWeakPtr(), std::move(result_callback)));
   }
 
- protected:
-  // DBusClient:
-  void Init(dbus::Bus* const bus) override {
+  void Init(dbus::Bus* const bus) {
     ml_service_proxy_ =
         bus->GetObjectProxy(ml::kMachineLearningServiceName,
                             dbus::ObjectPath(ml::kMachineLearningServicePath));
@@ -58,20 +59,43 @@ class MachineLearningClientImpl : public MachineLearningClient {
   }
 
   // Must be last class member.
-  base::WeakPtrFactory<MachineLearningClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<MachineLearningClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MachineLearningClientImpl);
 };
 
 }  // namespace
 
+MachineLearningClient::MachineLearningClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
+
+MachineLearningClient::~MachineLearningClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
 // static
-std::unique_ptr<MachineLearningClient> MachineLearningClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return std::make_unique<MachineLearningClientImpl>();
-  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
-  return std::make_unique<FakeMachineLearningClient>();
+void MachineLearningClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  (new MachineLearningClientImpl())->Init(bus);
+}
+
+// static
+void MachineLearningClient::InitializeFake() {
+  new FakeMachineLearningClient();
+}
+
+// static
+void MachineLearningClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+MachineLearningClient* MachineLearningClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

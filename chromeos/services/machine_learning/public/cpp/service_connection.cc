@@ -8,8 +8,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/machine_learning_client.h"
+#include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -89,7 +88,7 @@ void ServiceConnectionImpl::BindMachineLearningServiceIfNeeded() {
 
   // Send the file descriptor for the other end of |platform_channel| to the
   // ML service daemon over D-Bus.
-  DBusThreadManager::Get()->GetMachineLearningClient()->BootstrapMojoConnection(
+  MachineLearningClient::Get()->BootstrapMojoConnection(
       platform_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
       base::BindOnce(&ServiceConnectionImpl::OnBootstrapMojoConnectionResponse,
                      base::Unretained(this)));
