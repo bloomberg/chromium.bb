@@ -454,6 +454,8 @@ void OfflineInternalsUIMessageHandler::HandleSetPrefetchTestingHeader(
 
   offline_pages::prefetch_prefs::SetPrefetchTestingHeader(
       prefs, args->GetList()[0].GetString());
+
+  offline_pages::prefetch_prefs::SetEnabledByServer(prefs, true);
 }
 
 void OfflineInternalsUIMessageHandler::HandleGetPrefetchTestingHeader(
