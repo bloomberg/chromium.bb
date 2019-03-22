@@ -309,3 +309,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_validate_packet_number_post_decryption,
     false)
+
+// If this flag and quic_rpm_decides_when_to_send_acks is true, use uber
+// received packet manager instead of the single received packet manager.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_uber_received_packet_manager,
+          false)

@@ -1627,6 +1627,8 @@ component("net") {
       "third_party/quiche/src/quic/core/tls_server_handshaker.h",
       "third_party/quiche/src/quic/core/uber_quic_stream_id_manager.cc",
       "third_party/quiche/src/quic/core/uber_quic_stream_id_manager.h",
+      "third_party/quiche/src/quic/core/uber_received_packet_manager.cc",
+      "third_party/quiche/src/quic/core/uber_received_packet_manager.h",
       "third_party/quiche/src/quic/platform/api/quic_aligned.h",
       "third_party/quiche/src/quic/platform/api/quic_arraysize.h",
       "third_party/quiche/src/quic/platform/api/quic_bug_tracker.h",
