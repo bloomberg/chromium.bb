@@ -44,8 +44,6 @@ const char kTooManyParseFailuresWarning[] =
     "first *.";
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
-const char kIndexRulesTimeHistogram[] =
-    "Extensions.DeclarativeNetRequest.IndexRulesTime";
 const char kManifestRulesCountHistogram[] =
     "Extensions.DeclarativeNetRequest.ManifestRulesCount";
 

@@ -40,7 +40,9 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
                            int* expected_checksum = nullptr);
 
 // Helper to return a RulesetSource bound to temporary files.
-RulesetSource CreateTemporarySource(size_t id = 1, size_t priority = 1);
+RulesetSource CreateTemporarySource(size_t id = 1,
+                                    size_t priority = 1,
+                                    size_t rule_count_limit = 100);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

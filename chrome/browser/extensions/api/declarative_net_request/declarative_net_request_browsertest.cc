@@ -358,10 +358,13 @@ class DeclarativeNetRequestBrowserTest
     // Ensure the ruleset is also loaded on the IO thread.
     content::RunAllTasksUntilIdle();
 
-    tester.ExpectTotalCount(kIndexRulesTimeHistogram, 1);
-    tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 1);
-    tester.ExpectUniqueSample(kManifestRulesCountHistogram,
-                              rules.size() /*sample*/, 1 /*count*/);
+    // The histograms below are not logged for unpacked extensions.
+    if (GetParam() == ExtensionLoadType::PACKED) {
+      tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram,
+                              1 /* count */);
+      tester.ExpectBucketCount(kManifestRulesCountHistogram,
+                               rules.size() /*sample*/, 1 /* count */);
+    }
     tester.ExpectTotalCount(
         "Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime", 1);
     tester.ExpectUniqueSample(

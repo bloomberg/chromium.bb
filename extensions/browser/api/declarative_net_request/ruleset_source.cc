@@ -13,7 +13,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,20 +62,22 @@ InstallWarning CreateInstallWarning(const std::string& message) {
                         manifest_keys::kDeclarativeRuleResourcesKey);
 }
 
-// Helper function to index |rules| and persist them to |indexed_path|.
+// Helper function to index |rules| and persist them in indexed/flatbuffer
+// format.
 ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
-                                   const base::FilePath& indexed_path,
+                                   const RulesetSource& source,
                                    std::vector<InstallWarning>* warnings,
-                                   int* ruleset_checksum) {
+                                   int* ruleset_checksum,
+                                   size_t* rules_count) {
   DCHECK(warnings);
   DCHECK(ruleset_checksum);
+  DCHECK(rules_count);
 
   if (!rules.is_list())
     return ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED);
 
   FlatRulesetIndexer indexer;
 
-  const size_t kRuleCountLimit = dnr_api::MAX_NUMBER_OF_RULES;
   bool rule_count_exceeded = false;
 
   // Limit the maximum number of rule unparsed warnings to 5.
@@ -84,7 +85,6 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   bool unparsed_warnings_limit_exeeded = false;
   size_t unparsed_warning_count = 0;
 
-  base::ElapsedTimer timer;
   {
     std::set<int> id_set;  // Ensure all ids are distinct.
 
@@ -132,7 +132,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
       if (parse_result != ParseResult::SUCCESS)
         return ParseInfo(parse_result, rule_id);
 
-      if (indexer.indexed_rules_count() >= kRuleCountLimit) {
+      if (indexer.indexed_rules_count() >= source.rule_count_limit()) {
         rule_count_exceeded = true;
         break;
       }
@@ -141,9 +141,11 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
     }
   }
   indexer.Finish();
-  UMA_HISTOGRAM_TIMES(kIndexRulesTimeHistogram, timer.Elapsed());
 
-  if (!PersistIndexedRuleset(indexed_path, indexer.GetData(), ruleset_checksum))
+  *rules_count = indexer.indexed_rules_count();
+
+  if (!PersistIndexedRuleset(source.indexed_path(), indexer.GetData(),
+                             ruleset_checksum))
     return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET);
 
   if (rule_count_exceeded)
@@ -156,10 +158,6 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
         std::to_string(kMaxUnparsedRulesWarnings))));
   }
 
-  UMA_HISTOGRAM_TIMES(kIndexAndPersistRulesTimeHistogram, timer.Elapsed());
-  UMA_HISTOGRAM_COUNTS_100000(kManifestRulesCountHistogram,
-                              indexer.indexed_rules_count());
-
   return ParseInfo(ParseResult::SUCCESS);
 }
 
@@ -171,11 +169,13 @@ void OnSafeJSONParserSuccess(
 
   std::vector<InstallWarning> warnings;
   int ruleset_checksum;
-  const ParseInfo info = IndexAndPersistRulesImpl(*root, source.indexed_path(),
-                                                  &warnings, &ruleset_checksum);
+  size_t rules_count;
+  base::ElapsedTimer timer;
+  const ParseInfo info = IndexAndPersistRulesImpl(
+      *root, source, &warnings, &ruleset_checksum, &rules_count);
   if (info.result() == ParseResult::SUCCESS) {
     std::move(callback).Run(IndexAndPersistRulesResult::CreateSuccessResult(
-        ruleset_checksum, std::move(warnings)));
+        ruleset_checksum, std::move(warnings), rules_count, timer.Elapsed()));
     return;
   }
 
@@ -196,11 +196,15 @@ void OnSafeJSONParserError(RulesetSource::IndexAndPersistRulesCallback callback,
 // static
 IndexAndPersistRulesResult IndexAndPersistRulesResult::CreateSuccessResult(
     int ruleset_checksum,
-    std::vector<InstallWarning> warnings) {
+    std::vector<InstallWarning> warnings,
+    size_t rules_count,
+    base::TimeDelta index_and_persist_time) {
   IndexAndPersistRulesResult result;
   result.success = true;
   result.ruleset_checksum = ruleset_checksum;
   result.warnings = std::move(warnings);
+  result.rules_count = rules_count;
+  result.index_and_persist_time = index_and_persist_time;
   return result;
 }
 
@@ -225,24 +229,27 @@ RulesetSource RulesetSource::Create(const Extension& extension) {
   return RulesetSource(
       declarative_net_request::DNRManifestData::GetRulesetPath(extension),
       file_util::GetIndexedRulesetPath(extension.path()), kDefaultRulesetID,
-      kDefaultRulesetPriority);
+      kDefaultRulesetPriority, dnr_api::MAX_NUMBER_OF_RULES);
 }
 
 RulesetSource::RulesetSource(base::FilePath json_path,
                              base::FilePath indexed_path,
                              size_t id,
-                             size_t priority)
+                             size_t priority,
+                             size_t rule_count_limit)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
       id_(id),
-      priority_(priority) {}
+      priority_(priority),
+      rule_count_limit_(rule_count_limit) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  return RulesetSource(json_path_, indexed_path_, id_, priority_);
+  return RulesetSource(json_path_, indexed_path_, id_, priority_,
+                       rule_count_limit_);
 }
 
 IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {
@@ -259,11 +266,13 @@ IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {
 
   std::vector<InstallWarning> warnings;
   int ruleset_checksum;
-  const ParseInfo info = IndexAndPersistRulesImpl(*root, indexed_path_,
-                                                  &warnings, &ruleset_checksum);
+  size_t rules_count;
+  base::ElapsedTimer timer;
+  const ParseInfo info = IndexAndPersistRulesImpl(
+      *root, *this, &warnings, &ruleset_checksum, &rules_count);
   if (info.result() == ParseResult::SUCCESS) {
-    return IndexAndPersistRulesResult::CreateSuccessResult(ruleset_checksum,
-                                                           std::move(warnings));
+    return IndexAndPersistRulesResult::CreateSuccessResult(
+        ruleset_checksum, std::move(warnings), rules_count, timer.Elapsed());
   }
 
   error = info.GetErrorDescription(GetFilename(json_path_));

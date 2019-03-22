@@ -62,13 +62,15 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
   return load_result == RulesetMatcher::kLoadSuccess;
 }
 
-RulesetSource CreateTemporarySource(size_t id, size_t priority) {
+RulesetSource CreateTemporarySource(size_t id,
+                                    size_t priority,
+                                    size_t rule_count_limit) {
   base::FilePath json_path;
   base::FilePath indexed_path;
   CHECK(base::CreateTemporaryFile(&json_path));
   CHECK(base::CreateTemporaryFile(&indexed_path));
   return RulesetSource(std::move(json_path), std::move(indexed_path), id,
-                       priority);
+                       priority, rule_count_limit);
 }
 
 }  // namespace declarative_net_request
