@@ -44,6 +44,10 @@ const puppeteer = require('puppeteer');
     page.on('request', (request) => {
       console.log('Request: ', request.url());
     });
+
+    page.on('close', () => {
+      process.exit(1);
+    });
   }
 
   page.on('console', message => {
