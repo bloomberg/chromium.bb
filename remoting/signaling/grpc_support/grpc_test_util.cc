@@ -25,7 +25,7 @@ bool WaitForCompletion(const base::Location& from_here,
 void WaitForCompletionAndAssertOk(const base::Location& from_here,
                                   grpc::CompletionQueue* completion_queue,
                                   void* expected_tag) {
-  bool ok = WaitForCompletion(FROM_HERE, completion_queue, expected_tag);
+  bool ok = WaitForCompletion(from_here, completion_queue, expected_tag);
   DCHECK(ok) << "Event is not ok. Location: " << from_here.ToString();
 }
 

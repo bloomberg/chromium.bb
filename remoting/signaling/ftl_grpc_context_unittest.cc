@@ -28,11 +28,16 @@ namespace {
 
 constexpr char kFakeUserEmail[] = "fake@gmail.com";
 constexpr char kFakeAccessToken[] = "Dummy Token";
+constexpr char kFakeFtlAuthToken[] = "Dummy FTL Token";
 
 using PullMessagesCallback =
     FtlGrpcContext::RpcCallback<ftl::PullMessagesResponse>;
+using IncomingMessageCallback =
+    GrpcAsyncDispatcher::RpcStreamCallback<ftl::ReceiveMessagesResponse>;
 using PullMessagesResponder =
     test::GrpcServerResponder<ftl::PullMessagesResponse>;
+using ReceiveMessagesResponder =
+    test::GrpcServerStreamResponder<ftl::ReceiveMessagesResponse>;
 
 PullMessagesCallback QuitRunLoopOnPullMessagesCallback(
     base::RunLoop* run_loop) {
@@ -54,8 +59,14 @@ class FtlGrpcContextTest : public testing::Test {
       google::internal::communications::instantmessaging::v1::Messaging;
 
   void SendFakePullMessagesRequest(PullMessagesCallback on_response);
+  void SendFakeReceiveMessagesRequest(
+      FtlGrpcContext::StreamStartedCallback on_stream_started,
+      const IncomingMessageCallback& on_incoming_msg,
+      GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed);
   std::unique_ptr<PullMessagesResponder> HandlePullMessages(
       ftl::PullMessagesRequest* request);
+  std::unique_ptr<ReceiveMessagesResponder> HandleReceiveMessages(
+      ftl::ReceiveMessagesRequest* request);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<FtlGrpcContext> context_;
@@ -93,10 +104,28 @@ void FtlGrpcContextTest::SendFakePullMessagesRequest(
                        request, std::move(on_response));
 }
 
+void FtlGrpcContextTest::SendFakeReceiveMessagesRequest(
+    FtlGrpcContext::StreamStartedCallback on_stream_started,
+    const IncomingMessageCallback& on_incoming_msg,
+    GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed) {
+  context_->ExecuteServerStreamingRpc(
+      base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
+                     base::Unretained(stub_.get())),
+      ftl::ReceiveMessagesRequest(), std::move(on_stream_started),
+      on_incoming_msg, std::move(on_channel_closed));
+}
+
 std::unique_ptr<PullMessagesResponder> FtlGrpcContextTest::HandlePullMessages(
     ftl::PullMessagesRequest* request) {
   return server_->HandleRequest(&Messaging::AsyncService::RequestPullMessages,
                                 request);
+}
+
+std::unique_ptr<ReceiveMessagesResponder>
+FtlGrpcContextTest::HandleReceiveMessages(
+    ftl::ReceiveMessagesRequest* request) {
+  return server_->HandleStreamRequest(
+      &Messaging::AsyncService::RequestReceiveMessages, request);
 }
 
 TEST_F(FtlGrpcContextTest, VerifyAPIKeyIsProvided) {
@@ -153,10 +182,8 @@ TEST_F(FtlGrpcContextTest, NoAuthTokenIfNotSet) {
 }
 
 TEST_F(FtlGrpcContextTest, HasAuthTokenIfSet) {
-  constexpr char dummy_ftl_token[] = "Dummy FTL Token";
-
   base::RunLoop run_loop;
-  context_->SetAuthToken(dummy_ftl_token);
+  context_->SetAuthToken(kFakeFtlAuthToken);
 
   SendFakePullMessagesRequest(QuitRunLoopOnPullMessagesCallback(&run_loop));
 
@@ -164,9 +191,54 @@ TEST_F(FtlGrpcContextTest, HasAuthTokenIfSet) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ftl::PullMessagesRequest request;
         auto responder = HandlePullMessages(&request);
-        ASSERT_EQ(dummy_ftl_token, request.header().auth_token_payload());
+        ASSERT_EQ(kFakeFtlAuthToken, request.header().auth_token_payload());
         responder->Respond(ftl::PullMessagesResponse(), grpc::Status::OK);
       }));
+  run_loop.Run();
+}
+
+TEST_F(FtlGrpcContextTest, ServerStreamingScenario) {
+  base::RunLoop run_loop;
+  context_->SetAuthToken(kFakeFtlAuthToken);
+
+  ftl::InboxMessage fake_inbox_message;
+  fake_inbox_message.set_message_id("msg_1");
+
+  std::unique_ptr<ScopedGrpcServerStream> server_stream;
+  std::unique_ptr<ReceiveMessagesResponder> responder;
+
+  SendFakeReceiveMessagesRequest(
+      // On stream started
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ScopedGrpcServerStream> stream) {
+            server_stream = std::move(stream);
+
+            ftl::ReceiveMessagesRequest request;
+            responder = HandleReceiveMessages(&request);
+            ASSERT_TRUE(request.has_header());
+            ASSERT_FALSE(request.header().request_id().empty());
+            ASSERT_FALSE(request.header().app().empty());
+            ASSERT_TRUE(request.header().has_client_info());
+            ASSERT_EQ(kFakeFtlAuthToken, request.header().auth_token_payload());
+
+            ftl::ReceiveMessagesResponse response;
+            response.set_allocated_inbox_message(
+                new ftl::InboxMessage(fake_inbox_message));
+            responder->SendMessage(response);
+          }),
+
+      // On message received
+      base::BindLambdaForTesting(
+          [&](const ftl::ReceiveMessagesResponse& response) {
+            ASSERT_EQ(fake_inbox_message.message_id(),
+                      response.inbox_message().message_id());
+            responder->Close(grpc::Status::OK);
+          }),
+
+      // On channel closed
+      test::CheckStatusThenQuitRunLoopCallback(FROM_HERE, grpc::StatusCode::OK,
+                                               &run_loop));
+
   run_loop.Run();
 }
 

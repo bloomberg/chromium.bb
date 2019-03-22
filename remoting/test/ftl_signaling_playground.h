@@ -45,7 +45,6 @@ class FtlSignalingPlayground {
                      OAuthTokenGetter::Status status,
                      const std::string& user_email,
                      const std::string& access_token);
-  void HandleGrpcStatusError(const grpc::Status& status);
 
   void GetIceServer(base::OnceClosure on_done);
   void OnGetIceServerResponse(base::OnceClosure on_done,
@@ -60,8 +59,12 @@ class FtlSignalingPlayground {
   void PullMessages(base::OnceClosure on_done);
   void OnPullMessagesResponse(base::OnceClosure on_done,
                               const grpc::Status& status);
+  void StartReceivingMessages(base::OnceClosure on_done);
+  void StopReceivingMessages(base::OnceClosure on_done);
   void OnMessageReceived(const std::string& sender_id,
                          const std::string& message);
+  void OnStartReceivingMessagesDone(base::OnceClosure on_done,
+                                    const grpc::Status& status);
 
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;

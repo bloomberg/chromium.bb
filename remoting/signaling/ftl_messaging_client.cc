@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/signaling/ftl_message_reception_channel.h"
 
 namespace remoting {
 
@@ -28,6 +30,12 @@ FtlMessagingClient::FtlMessagingClient(FtlGrpcContext* context)
     : weak_factory_(this) {
   context_ = context;
   messaging_stub_ = Messaging::NewStub(context_->channel());
+  reception_channel_ = std::make_unique<FtlMessageReceptionChannel>();
+  reception_channel_->Initialize(
+      base::BindRepeating(&FtlMessagingClient::OpenReceiveMessagesStream,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&FtlMessagingClient::OnMessageReceived,
+                          weak_factory_.GetWeakPtr()));
 }
 
 FtlMessagingClient::~FtlMessagingClient() = default;
@@ -44,6 +52,24 @@ void FtlMessagingClient::PullMessages(DoneCallback on_done) {
       ftl::PullMessagesRequest(),
       base::BindOnce(&FtlMessagingClient::OnPullMessagesResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
+}
+
+void FtlMessagingClient::StartReceivingMessages(DoneCallback on_done) {
+  reception_channel_->StartReceivingMessages(std::move(on_done));
+}
+
+void FtlMessagingClient::StopReceivingMessages() {
+  reception_channel_->StopReceivingMessages();
+}
+
+void FtlMessagingClient::SetMessageReceptionChannelForTesting(
+    std::unique_ptr<MessageReceptionChannel> channel) {
+  reception_channel_ = std::move(channel);
+  reception_channel_->Initialize(
+      base::BindRepeating(&FtlMessagingClient::OpenReceiveMessagesStream,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&FtlMessagingClient::OnMessageReceived,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void FtlMessagingClient::OnPullMessagesResponse(
@@ -70,7 +96,6 @@ void FtlMessagingClient::OnPullMessagesResponse(
     return;
   }
 
-  // TODO(yuweih): May need retry logic.
   VLOG(0) << "Acking " << ack_request.messages_size() << " messages";
 
   AckMessages(ack_request, std::move(on_done));
@@ -90,7 +115,21 @@ void FtlMessagingClient::OnAckMessagesResponse(
     DoneCallback on_done,
     const grpc::Status& status,
     const ftl::AckMessagesResponse& response) {
+  // TODO(yuweih): Handle failure.
   std::move(on_done).Run(status);
+}
+
+void FtlMessagingClient::OpenReceiveMessagesStream(
+    base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
+        on_stream_started,
+    const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
+        on_incoming_msg,
+    base::OnceCallback<void(const grpc::Status&)> on_channel_closed) {
+  context_->ExecuteServerStreamingRpc(
+      base::BindOnce(&Messaging::Stub::AsyncReceiveMessages,
+                     base::Unretained(messaging_stub_.get())),
+      ftl::ReceiveMessagesRequest(), std::move(on_stream_started),
+      on_incoming_msg, std::move(on_channel_closed));
 }
 
 void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
@@ -105,6 +144,13 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
   ftl::ChromotingMessage chromoting_message;
   chromoting_message.ParseFromString(message.message());
   callback_list_.Notify(message.sender_id().id(), chromoting_message.message());
+}
+
+void FtlMessagingClient::OnMessageReceived(const ftl::InboxMessage& message) {
+  RunMessageCallbacks(message);
+  ftl::AckMessagesRequest ack_request;
+  AddMessageToAckRequest(message, &ack_request);
+  AckMessages(ack_request, base::DoNothing());
 }
 
 }  // namespace remoting

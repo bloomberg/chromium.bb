@@ -17,6 +17,8 @@
 namespace remoting {
 
 class FtlGrpcContext;
+class MessageReceptionChannel;
+class ScopedGrpcServerStream;
 
 // A class for sending and receiving messages via the FTL API.
 class FtlMessagingClient final {
@@ -44,6 +46,18 @@ class FtlMessagingClient final {
   // server's inbox.
   void PullMessages(DoneCallback on_done);
 
+  // Opens a stream to continuously receive new messages from the server and
+  // calls the registered MessageCallback once a new message is received.
+  // |on_done| is called once the stream is successfully opened or failed to
+  // open due to an error.
+  void StartReceivingMessages(DoneCallback on_done);
+
+  // Stops the stream for continuously receiving new messages.
+  void StopReceivingMessages();
+
+  void SetMessageReceptionChannelForTesting(
+      std::unique_ptr<MessageReceptionChannel> channel);
+
  private:
   using Messaging =
       google::internal::communications::instantmessaging::v1::Messaging;
@@ -59,10 +73,20 @@ class FtlMessagingClient final {
                              const grpc::Status& status,
                              const ftl::AckMessagesResponse& response);
 
+  void OpenReceiveMessagesStream(
+      base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>
+          on_stream_started,
+      const base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>&
+          on_incoming_msg,
+      base::OnceCallback<void(const grpc::Status&)> on_channel_closed);
+
   void RunMessageCallbacks(const ftl::InboxMessage& message);
+
+  void OnMessageReceived(const ftl::InboxMessage& message);
 
   FtlGrpcContext* context_;
   std::unique_ptr<Messaging::Stub> messaging_stub_;
+  std::unique_ptr<MessageReceptionChannel> reception_channel_;
   base::CallbackList<void(const std::string&, const std::string&)>
       callback_list_;
 
