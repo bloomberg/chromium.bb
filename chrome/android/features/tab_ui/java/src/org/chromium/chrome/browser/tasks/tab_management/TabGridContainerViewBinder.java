@@ -37,8 +37,8 @@ class TabGridContainerViewBinder {
                 view.startHiding(model.get(ANIMATE_VISIBILITY_CHANGES));
             }
         } else if (IS_INCOGNITO == propertyKey) {
-            view.setBackgroundColor(
-                    ColorUtils.getDefaultThemeColor(view.getResources(), model.get(IS_INCOGNITO)));
+            view.setBackgroundColor(ColorUtils.getPrimaryBackgroundColor(
+                    view.getResources(), model.get(IS_INCOGNITO)));
         } else if (VISIBILITY_LISTENER == propertyKey) {
             view.setVisibilityListener(model.get(VISIBILITY_LISTENER));
         } else if (INITIAL_SCROLL_INDEX == propertyKey) {
