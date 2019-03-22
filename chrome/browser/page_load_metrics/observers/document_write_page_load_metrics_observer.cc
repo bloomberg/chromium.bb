@@ -95,6 +95,8 @@ void DocumentWritePageLoadMetricsObserver::LogLoadingBehaviorMetrics(
 }
 
 void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    content::RenderFrameHost* rfh,
+    int behavior_flags,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if ((info.main_frame_metadata.behavior_flags &
        blink::WebLoadingBehaviorFlag::

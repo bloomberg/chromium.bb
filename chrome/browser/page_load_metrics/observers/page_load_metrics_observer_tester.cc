@@ -103,6 +103,16 @@ void PageLoadMetricsObserverTester::SimulateTimingAndMetadataUpdate(
                                web_contents()->GetMainFrame());
 }
 
+void PageLoadMetricsObserverTester::SimulateMetadataUpdate(
+    const mojom::PageLoadMetadata& metadata,
+    content::RenderFrameHost* rfh) {
+  mojom::PageLoadTiming timing;
+  InitPageLoadTimingForTest(&timing);
+  SimulatePageLoadTimingUpdate(timing, metadata, mojom::PageLoadFeatures(),
+                               mojom::FrameRenderDataUpdate(),
+                               mojom::CpuTiming(), rfh);
+}
+
 void PageLoadMetricsObserverTester::SimulateFeaturesUpdate(
     const mojom::PageLoadFeatures& new_features) {
   SimulatePageLoadTimingUpdate(

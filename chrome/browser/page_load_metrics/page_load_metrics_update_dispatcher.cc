@@ -455,7 +455,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateMainFrameTiming(std::move(new_timing));
     UpdateMainFrameRenderData(std::move(render_data));
   } else {
-    UpdateSubFrameMetadata(std::move(new_metadata));
+    UpdateSubFrameMetadata(render_frame_host, std::move(new_metadata));
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
     UpdateSubFrameRenderData(render_frame_host, std::move(render_data));
   }
@@ -532,17 +532,12 @@ void PageLoadMetricsUpdateDispatcher::UpdateFrameCpuTiming(
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
+    content::RenderFrameHost* render_frame_host,
     mojom::PageLoadMetadataPtr subframe_metadata) {
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
-  const int last_subframe_loading_behavior_flags =
-      subframe_metadata_->behavior_flags;
   subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
-  if (last_subframe_loading_behavior_flags ==
-      subframe_metadata_->behavior_flags)
-    return;
-
-  client_->OnSubframeMetadataChanged();
+  client_->OnSubframeMetadataChanged(render_frame_host, *subframe_metadata);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(

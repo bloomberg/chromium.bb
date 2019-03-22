@@ -108,7 +108,9 @@ class PageLoadMetricsUpdateDispatcher {
         content::RenderFrameHost* rfh,
         const mojom::PageLoadTiming& timing) = 0;
     virtual void OnMainFrameMetadataChanged() = 0;
-    virtual void OnSubframeMetadataChanged() = 0;
+    virtual void OnSubframeMetadataChanged(
+        content::RenderFrameHost* rfh,
+        const mojom::PageLoadMetadata& metadata) = 0;
     virtual void OnSubFrameRenderDataChanged(
         content::RenderFrameHost* rfh,
         const mojom::FrameRenderDataUpdate& render_data) = 0;
@@ -172,7 +174,8 @@ class PageLoadMetricsUpdateDispatcher {
                             mojom::CpuTimingPtr new_timing);
 
   void UpdateMainFrameMetadata(mojom::PageLoadMetadataPtr new_metadata);
-  void UpdateSubFrameMetadata(mojom::PageLoadMetadataPtr subframe_metadata);
+  void UpdateSubFrameMetadata(content::RenderFrameHost* render_frame_host,
+                              mojom::PageLoadMetadataPtr subframe_metadata);
 
   void UpdateMainFrameRenderData(mojom::FrameRenderDataUpdatePtr render_data);
   void UpdateSubFrameRenderData(content::RenderFrameHost* render_frame_host,

@@ -37,6 +37,8 @@ class DocumentWritePageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   void OnLoadingBehaviorObserved(
+      content::RenderFrameHost* rfh,
+      int behavior_flags,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   enum DocumentWriteLoadingBehavior {

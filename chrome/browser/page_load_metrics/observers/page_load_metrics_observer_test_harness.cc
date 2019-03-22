@@ -65,6 +65,12 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
   tester_->SimulateTimingAndMetadataUpdate(timing, metadata);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateMetadataUpdate(
+    const mojom::PageLoadMetadata& metadata,
+    content::RenderFrameHost* rfh) {
+  tester_->SimulateMetadataUpdate(metadata, rfh);
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateResourceDataUseUpdate(
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
   tester_->SimulateResourceDataUseUpdate(resources);
