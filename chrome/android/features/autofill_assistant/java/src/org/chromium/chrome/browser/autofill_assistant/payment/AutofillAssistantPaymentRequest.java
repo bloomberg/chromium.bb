@@ -412,7 +412,6 @@ public class AutofillAssistantPaymentRequest {
                             // Address is complete and user was in the "Add flow": add an item to
                             // the list.
                             mShippingAddressesSection.addAndSelectItem(editedAddress);
-                            mDelegate.onShippingAddressChanged(editedAddress.getProfile());
                         }
 
                         if (mContactSection != null) {
@@ -425,10 +424,15 @@ public class AutofillAssistantPaymentRequest {
                                     PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
                         }
                     }
-                }
 
+                    AutofillAddress selectedAddress =
+                            (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+                    mDelegate.onShippingAddressChanged(
+                            selectedAddress == null ? null : selectedAddress.getProfile());
+                }
                 // If |editedAddress| is null, the user has cancelled out of the "Add flow". No
                 // action to take (if an address was selected in the UI, it will stay selected).
+
                 mUI.updateSection(
                         PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
             }
@@ -452,10 +456,12 @@ public class AutofillAssistantPaymentRequest {
                         // Contact is complete and we were in the "Add flow": add an item to the
                         // list.
                         mContactSection.addAndSelectItem(editedContact);
-                        mDelegate.onContactInfoChanged(editedContact);
                     }
                     // If contact is complete and (toEdit != null), no action needed: the contact
                     // was already selected in the UI.
+
+                    mDelegate.onContactInfoChanged(
+                            (AutofillContact) mContactSection.getSelectedItem());
                 }
                 // If |editedContact| is null, the user has cancelled out of the "Add flow". No
                 // action to take (if a contact was selected in the UI, it will stay selected).
@@ -482,10 +488,14 @@ public class AutofillAssistantPaymentRequest {
                     } else if (toEdit == null) {
                         // Card is complete and we were in the "Add flow": add an item to the list.
                         mPaymentMethodsSection.addAndSelectItem(editedCard);
-                        mDelegate.onCreditCardChanged(editedCard.getCard());
                     }
                     // If card is complete and (toEdit != null), no action needed: the card was
                     // already selected in the UI.
+
+                    AutofillPaymentInstrument selectedCard =
+                            (AutofillPaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+                    mDelegate.onCreditCardChanged(
+                            selectedCard == null ? null : selectedCard.getCard());
                 }
                 // If |editedCard| is null, the user has cancelled out of the "Add flow". No action
                 // to take (if another card was selected prior to the add flow, it will stay
