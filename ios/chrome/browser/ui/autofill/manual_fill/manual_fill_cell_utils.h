@@ -18,9 +18,6 @@ static const CGFloat kChipsHorizontalMargin = -1;
 // The multiplier for the base system spacing at the top margin.
 static const CGFloat TopSystemSpacingMultiplier = 1.58;
 
-// The multiplier for the base system spacing between elements (vertical).
-static const CGFloat MiddleSystemSpacingMultiplier = 1.83;
-
 // The multiplier for the base system spacing at the bottom margin.
 static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 
@@ -54,7 +51,6 @@ void AppendVerticalConstraintsSpacingForViews(
     NSArray<UIView*>* views,
     UIView* container,
     CGFloat topSystemSpacingMultiplier,
-    CGFloat middleSystemSpacingMultiplier,
     CGFloat BottomSystemSpacingMultiplier);
 
 // Adds constraints to the given list, for the given |views|, so as to lay them

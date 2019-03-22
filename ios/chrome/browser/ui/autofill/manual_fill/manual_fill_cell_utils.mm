@@ -35,9 +35,9 @@ void AppendVerticalConstraintsSpacingForViews(
     NSMutableArray<NSLayoutConstraint*>* constraints,
     NSArray<UIView*>* views,
     UIView* container) {
-  AppendVerticalConstraintsSpacingForViews(
-      constraints, views, container, TopSystemSpacingMultiplier,
-      MiddleSystemSpacingMultiplier, BottomSystemSpacingMultiplier);
+  AppendVerticalConstraintsSpacingForViews(constraints, views, container,
+                                           TopSystemSpacingMultiplier,
+                                           BottomSystemSpacingMultiplier);
 }
 
 void AppendVerticalConstraintsSpacingForViews(
@@ -45,7 +45,6 @@ void AppendVerticalConstraintsSpacingForViews(
     NSArray<UIView*>* views,
     UIView* container,
     CGFloat topSystemSpacingMultiplier,
-    CGFloat middleSystemSpacingMultiplier,
     CGFloat bottomSystemSpacingMultiplier) {
   // Multipliers of these constraints are calculated based on a 24 base
   // system spacing.
@@ -56,7 +55,7 @@ void AppendVerticalConstraintsSpacingForViews(
         addObject:[view.topAnchor
                       constraintEqualToSystemSpacingBelowAnchor:previousAnchor
                                                      multiplier:multiplier]];
-    multiplier = middleSystemSpacingMultiplier;
+    multiplier = 1.0;
     previousAnchor = view.bottomAnchor;
   }
   multiplier = bottomSystemSpacingMultiplier;
