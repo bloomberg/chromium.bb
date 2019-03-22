@@ -5189,7 +5189,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
           // Most of the time, streams start with a keyframe. In that case,
           // ref_frame_map will have been filled in at that point and will not
-          // contain any -1's. However, streams are explicitly allowed to start
+          // contain any NULLs. However, streams are explicitly allowed to start
           // with an intra-only frame, so long as they don't then signal a
           // reference to a slot that hasn't been set yet. That's what we are
           // checking here.
