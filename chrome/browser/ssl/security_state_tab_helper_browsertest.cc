@@ -382,9 +382,8 @@ void CheckSecurityInfoForSecure(
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       helper->GetVisibleSecurityState();
   EXPECT_EQ(expect_security_level, helper->GetSecurityLevel());
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(expect_sha1_in_chain, security_info.sha1_in_chain);
+  EXPECT_EQ(expect_sha1_in_chain,
+            security_state::IsSHA1InChain(*visible_security_state));
   EXPECT_EQ(expect_displayed_mixed_content,
             visible_security_state->displayed_mixed_content);
   EXPECT_EQ(expect_ran_mixed_content,
@@ -408,9 +407,7 @@ void CheckSecurityInfoForNonCommitted(content::WebContents* contents) {
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.sha1_in_chain);
+  EXPECT_FALSE(security_state::IsSHA1InChain(*visible_security_state));
   EXPECT_FALSE(visible_security_state->displayed_mixed_content);
   EXPECT_FALSE(visible_security_state->ran_mixed_content);
   EXPECT_FALSE(
@@ -630,9 +627,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpPage) {
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.sha1_in_chain);
+  EXPECT_FALSE(security_state::IsSHA1InChain(*visible_security_state));
   EXPECT_FALSE(visible_security_state->displayed_mixed_content);
   EXPECT_FALSE(visible_security_state->ran_mixed_content);
   EXPECT_FALSE(

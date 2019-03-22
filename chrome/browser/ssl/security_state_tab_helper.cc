@@ -90,23 +90,11 @@ SecurityStateTabHelper::SecurityStateTabHelper(
 
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
-void SecurityStateTabHelper::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
-  security_state::GetSecurityInfo(
-      GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
-      base::BindRepeating(&IsOriginSecureWithWhitelist,
-                          GetSecureOriginsAndPatterns()),
-      result);
-}
-
 security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() const {
-  security_state::SecurityInfo result;
-  security_state::GetSecurityInfo(
-      GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
+  return security_state::GetSecurityLevel(
+      *GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
       base::BindRepeating(&IsOriginSecureWithWhitelist,
-                          GetSecureOriginsAndPatterns()),
-      &result);
-  return result.security_level;
+                          GetSecureOriginsAndPatterns()));
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>
@@ -191,7 +179,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
-  RecordSecurityLevel(*GetVisibleSecurityState().get(), GetSecurityLevel());
+  RecordSecurityLevel(*GetVisibleSecurityState(), GetSecurityLevel());
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "components/security_state/core/security_state.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 
 namespace content {
@@ -15,23 +16,18 @@ class WebContents;
 }  // namespace content
 
 namespace security_state {
-struct SecurityInfo;
-struct VisibleSecurityState;
-}  // namespace security_state
 
-namespace security_state {
-
-// Retrieves the visible security state that is relevant to GetSecurityInfo()
-// from the current page in |web_contents|.
+// Retrieves the visible security state from the current page in |web_contents|.
 std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
     content::WebContents* web_contents);
 
 // Returns the SecurityStyle that should be applied to a WebContents
-// with the given |security_info|. Populates
+// with the given |security_level| and |visible_security_state|. Populates
 // |security_style_explanations| to explain why the returned
 // SecurityStyle was chosen.
 blink::WebSecurityStyle GetSecurityStyle(
-    const security_state::SecurityInfo& security_info,
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations);
 
 }  // namespace security_state
