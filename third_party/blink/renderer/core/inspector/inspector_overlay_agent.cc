@@ -604,8 +604,7 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig(),
-                               InspectorHighlightContrastInfo(), true);
+  InspectorHighlight highlight(node, InspectorHighlight::DefaultConfig());
   *result = highlight.AsProtocolValue();
   return Response::OK();
 }

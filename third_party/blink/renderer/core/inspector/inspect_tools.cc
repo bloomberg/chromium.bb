@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
-#include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -28,22 +27,15 @@ namespace blink {
 
 namespace {
 
-InspectorHighlightContrastInfo FetchContrast(Node* node) {
-  InspectorHighlightContrastInfo result;
-  if (!node->IsElementNode())
-    return result;
-
-  Vector<Color> bgcolors;
-  String font_size;
-  String font_weight;
-  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
-                                         &font_weight);
-  if (bgcolors.size() == 1) {
-    result.font_size = font_size;
-    result.font_weight = font_weight;
-    result.background_color = bgcolors[0];
-  }
-  return result;
+std::unique_ptr<InspectorHighlightConfig> ParseConfig(const String& config) {
+  std::unique_ptr<protocol::Value> value =
+      protocol::StringUtil::parseJSON(config);
+  if (!value)
+    return std::make_unique<InspectorHighlightConfig>();
+  protocol::ErrorSupport errors;
+  std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config =
+      protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
+  return InspectorOverlayAgent::ToHighlightConfig(highlight_config.get());
 }
 
 Node* HoveredNodeForPoint(LocalFrame* frame,
@@ -98,15 +90,7 @@ SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
                                            bool ua_shadow,
                                            const String& config)
     : dom_agent_(dom_agent), ua_shadow_(ua_shadow) {
-  std::unique_ptr<protocol::Value> value =
-      protocol::StringUtil::parseJSON(config);
-  if (!value)
-    return;
-  protocol::ErrorSupport errors;
-  std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config =
-      protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
-  highlight_config_ =
-      InspectorOverlayAgent::ToHighlightConfig(highlight_config.get());
+  highlight_config_ = ParseConfig(config);
 }
 
 void SearchingForNodeTool::Trace(blink::Visitor* visitor) {
@@ -116,16 +100,17 @@ void SearchingForNodeTool::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_target_node_);
 }
 
+CString SearchingForNodeTool::GetDataResourceName() {
+  return "inspect_tool_highlight.html";
+}
+
 void SearchingForNodeTool::Draw(float scale) {
   Node* node = hovered_node_.Get();
   if (!hovered_node_)
     return;
-  bool append_element_info = (node->IsElementNode() || node->IsTextNode()) &&
-                             !omit_tooltip_ && highlight_config_->show_info &&
-                             node->GetLayoutObject() &&
-                             node->GetDocument().GetFrame();
-  InspectorHighlight highlight(node, *highlight_config_, contrast_info_,
-                               append_element_info);
+  InspectorHighlightConfig config = *highlight_config_;
+  config.show_info = !omit_tooltip_ && config.show_info;
+  InspectorHighlight highlight(node, config);
   if (event_target_node_) {
     highlight.AppendEventTargetQuads(event_target_node_.Get(),
                                      *highlight_config_);
@@ -187,8 +172,6 @@ bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
     event_target_node_ = nullptr;
   omit_tooltip_ = event.GetModifiers() &
                   (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
-
-  contrast_info_ = FetchContrast(node);
   NodeHighlightRequested(node);
   return true;
 }
@@ -260,8 +243,10 @@ NodeHighlightTool::NodeHighlightTool(
     std::unique_ptr<InspectorHighlightConfig> highlight_config)
     : node_(node),
       selector_list_(selector_list),
-      highlight_config_(std::move(highlight_config)) {
-  contrast_info_ = FetchContrast(node);
+      highlight_config_(std::move(highlight_config)) {}
+
+CString NodeHighlightTool::GetDataResourceName() {
+  return "inspect_tool_highlight.html";
 }
 
 bool NodeHighlightTool::ForwardEventsToOverlay() {
@@ -274,12 +259,7 @@ void NodeHighlightTool::Draw(float scale) {
 }
 
 void NodeHighlightTool::DrawNode() {
-  bool append_element_info = (node_->IsElementNode() || node_->IsTextNode()) &&
-                             highlight_config_->show_info &&
-                             node_->GetLayoutObject() &&
-                             node_->GetDocument().GetFrame();
-  InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
-                               append_element_info);
+  InspectorHighlight highlight(node_.Get(), *highlight_config_);
   std::unique_ptr<protocol::DictionaryValue> highlight_json =
       highlight.AsProtocolValue();
   overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
@@ -299,8 +279,7 @@ void NodeHighlightTool::DrawMatchingSelector() {
 
   for (unsigned i = 0; i < elements->length(); ++i) {
     Element* element = elements->item(i);
-    InspectorHighlight highlight(element, *highlight_config_, contrast_info_,
-                                 false);
+    InspectorHighlight highlight(element, *highlight_config_);
     overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
   }
 }
