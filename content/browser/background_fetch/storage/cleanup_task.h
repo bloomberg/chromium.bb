@@ -17,7 +17,6 @@ namespace content {
 namespace background_fetch {
 
 // Deletes inactive registrations marked for deletion.
-// TODO(crbug.com/780025): Log failed deletions to UMA.
 class CleanupTask : public background_fetch::DatabaseTask {
  public:
   explicit CleanupTask(DatabaseTaskHost* host);

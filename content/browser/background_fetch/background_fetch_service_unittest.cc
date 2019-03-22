@@ -776,8 +776,6 @@ TEST_F(BackgroundFetchServiceTest, UpdateUI) {
   // This test starts a new Background Fetch, completes the registration, and
   // checks that updates to the title using UpdateUI are successfully reflected
   // back when calling GetRegistration.
-  // TODO(crbug.com/766156): Add tests that UpdateUI() updates the UI of any
-  // existing notifications, rather than merely updating the stored title.
 
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
