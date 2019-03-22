@@ -69,6 +69,11 @@ class AccountConsistencyModeManager : public KeyedService {
   // builds lacking an API key. For testing, set to have Dice enabled in tests.
   static void SetIgnoreMissingOAuthClientForTesting();
 
+  // Returns true is the AccountConsistencyModeManager should be instantiated
+  // for the profile. Guest, incognito and system sessions do not instantiate
+  // the service.
+  static bool ShouldBuildServiceForProfile(Profile* profile);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            MigrateAtCreation);

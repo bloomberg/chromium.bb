@@ -36,8 +36,11 @@ AccountConsistencyModeManagerFactory::~AccountConsistencyModeManagerFactory() =
 KeyedService* AccountConsistencyModeManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   DCHECK(!context->IsOffTheRecord());
-  return new AccountConsistencyModeManager(
-      Profile::FromBrowserContext(context));
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  return AccountConsistencyModeManager::ShouldBuildServiceForProfile(profile)
+             ? new AccountConsistencyModeManager(profile)
+             : nullptr;
 }
 
 void AccountConsistencyModeManagerFactory::RegisterProfilePrefs(
