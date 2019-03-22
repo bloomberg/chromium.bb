@@ -19,14 +19,13 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.media.MediaDrmSessionManager.SessionId;
 import org.chromium.media.MediaDrmSessionManager.SessionInfo;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
-import java.util.Scanner;
 import java.util.UUID;
 
 // Implementation Notes of MediaDrmBridge:
@@ -412,18 +411,13 @@ public class MediaDrmBridge {
     @CalledByNative
     private static int getFirstApiLevel() {
         int firstApiLevel = 0;
-        Scanner scanner = null;
-        // If first_api_level property is set, return it.
         try {
-            Process process = new ProcessBuilder("getprop", FIRST_API_LEVEL).start();
-            scanner = new Scanner(process.getInputStream());
-            firstApiLevel = Integer.parseInt(scanner.nextLine().trim());
-        } catch (IOException | NumberFormatException e) {
+            final Class<?> systemProperties = Class.forName("android.os.SystemProperties");
+            final Method getInt = systemProperties.getMethod("getInt", String.class, int.class);
+            firstApiLevel = (Integer) getInt.invoke(null, FIRST_API_LEVEL, 0);
+        } catch (Exception e) {
+            Log.e("Exception while getting system property %s. Using default.", FIRST_API_LEVEL, e);
             firstApiLevel = 0;
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
         }
         return firstApiLevel;
     }
