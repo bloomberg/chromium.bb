@@ -382,7 +382,7 @@ struct AutocompleteMatch {
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
-  AutocompleteProvider* provider;
+  AutocompleteProvider* provider = nullptr;
 
   // The relevance of this match. See table in autocomplete.h for scores
   // returned by various providers. This is used to rank matches among all
@@ -391,16 +391,16 @@ struct AutocompleteMatch {
   //
   // TODO(pkasting): http://b/1111299 This should be calculated algorithmically,
   // rather than being a fairly fixed value defined by the table above.
-  int relevance;
+  int relevance = 0;
 
   // How many times this result was typed in / selected from the omnibox.
   // Only set for some providers and result_types.  If it is not set,
   // its value is -1.  At the time of writing this comment, it is only
   // set for matches from HistoryURL and HistoryQuickProvider.
-  int typed_count;
+  int typed_count = -1;
 
   // True if the user should be able to delete this match.
-  bool deletable;
+  bool deletable = false;
 
   // This string is loaded into the location bar when the item is selected
   // by pressing the arrow keys. This may be different than a URL, for example,
@@ -420,7 +420,7 @@ struct AutocompleteMatch {
   // should only set this flag if ".com" will be inline autocompleted;
   // and a navigation to "foo/" (an intranet host) or search for "foo"
   // should set this flag.
-  bool allowed_to_be_default_match;
+  bool allowed_to_be_default_match = false;
 
   // The URL to actually load when the autocomplete item is selected. This URL
   // should be canonical so we can compare URLs with strcmp to avoid dupes.
@@ -438,7 +438,7 @@ struct AutocompleteMatch {
   std::string image_url;
 
   // Optional override to use for types that specify an icon sub-type.
-  DocumentType document_type;
+  DocumentType document_type = DocumentType::NONE;
 
   // Holds the common part of tail suggestion.
   base::string16 tail_suggest_common_prefix;
@@ -453,7 +453,7 @@ struct AutocompleteMatch {
 
   // If true, UI-level code should swap the contents and description fields
   // before displaying.
-  bool swap_contents_and_description;
+  bool swap_contents_and_description = false;
 
   // A rich-format version of the display for the dropdown.
   base::Optional<SuggestionAnswer> answer;
@@ -461,19 +461,19 @@ struct AutocompleteMatch {
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set
   // it to GENERATED.
-  ui::PageTransition transition;
+  ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
 
   // Type of this match.
-  Type type;
+  Type type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
 
   // True if we saw a tab that matched this suggestion.
-  bool has_tab_match;
+  bool has_tab_match = false;
 
   // Used to identify the specific source / type for suggestions by the
   // suggest server. See |result_subtype_identifier| in omnibox.proto for more
   // details.
   // The identifier 0 is reserved for cases where this specific type is unset.
-  int subtype_identifier;
+  int subtype_identifier = 0;
 
   // Set with a keyword provider match if this match can show a keyword hint.
   // For example, if this is a SearchProvider match for "www.amazon.com",
@@ -499,14 +499,14 @@ struct AutocompleteMatch {
   base::string16 keyword;
 
   // Set in matches originating from keyword results.
-  bool from_keyword;
+  bool from_keyword = false;
 
   // Set to a matching pedal if appropriate.  The pedal is not owned, and the
   // owning OmniboxPedalProvider must outlive this.
   OmniboxPedal* pedal = nullptr;
 
   // True if this match is from a previous result.
-  bool from_previous;
+  bool from_previous = false;
 
   // Optional search terms args.  If present,
   // AutocompleteController::UpdateAssistedQueryStats() will incorporate this
