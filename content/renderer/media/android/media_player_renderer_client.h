@@ -82,9 +82,6 @@ class CONTENT_EXPORT MediaPlayerRendererClient
 
   void OnScopedSurfaceRequested(const base::UnguessableToken& request_token);
 
-  // Used to forward calls to the MediaPlayerRenderer living in the Browser.
-  std::unique_ptr<media::MojoRenderer> mojo_renderer_;
-
   // Owns the StreamTexture whose surface is used by MediaPlayerRenderer.
   // Provides the VideoFrames to |sink_|.
   media::ScopedStreamTextureWrapper stream_texture_wrapper_;
