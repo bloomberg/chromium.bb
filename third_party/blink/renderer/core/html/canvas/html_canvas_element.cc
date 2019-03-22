@@ -321,7 +321,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     DidDraw();
   }
 
-  if (context_->CreationAttributes().desynchronized &&
+  if (context_->CreationAttributes().low_latency &&
       origin_trials::LowLatencyCanvasEnabled(&GetDocument())) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);

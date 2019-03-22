@@ -21,7 +21,7 @@ WebGLContextAttributes* ToWebGLContextAttributes(
   result->setFailIfMajorPerformanceCaveat(
       attrs.fail_if_major_performance_caveat);
   result->setXrCompatible(attrs.xr_compatible);
-  result->setDesynchronized(attrs.desynchronized);
+  result->setLowLatency(attrs.low_latency);
   return result;
 }
 
