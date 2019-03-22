@@ -15,7 +15,7 @@
 // 2. JNI calls to route background task events to native.
 // The life cycle of this object is owned by a keyed service in native.
 class NotificationBackgroundTaskSchedulerAndroid
-    : public NotificationBackgroundTaskScheduler {
+    : public notifications::NotificationBackgroundTaskScheduler {
  public:
   NotificationBackgroundTaskSchedulerAndroid();
   ~NotificationBackgroundTaskSchedulerAndroid() override;
