@@ -25,7 +25,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -88,7 +87,6 @@ public class TrustedWebActivityTest {
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         connection.newSession(token);
-
         connection.overridePackageNameForSessionForTesting(token, packageName);
     }
 
@@ -104,7 +102,6 @@ public class TrustedWebActivityTest {
 
     @Test
     @MediumTest
-    @FlakyTest(message = "https://crbug.com/943847")
     public void launchesTwa() throws TimeoutException, InterruptedException {
         Intent intent = createTrustedWebActivityIntent(mTestPage);
         spoofVerification(PACKAGE_NAME, mTestPage);
