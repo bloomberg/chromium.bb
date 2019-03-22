@@ -92,6 +92,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
   // task executor.
   virtual std::unique_ptr<Sequence> CreateSequence() = 0;
 
+  // Called if InProcessCommandBuffer is not passed a client TaskRunner.
+  virtual void PostNonNestableToClient(base::OnceClosure callback) = 0;
+
   const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
   gl::GLSurfaceFormat share_group_surface_format() const {
