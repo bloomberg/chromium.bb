@@ -111,7 +111,8 @@ GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
 #if defined(USE_OZONE)
   // Always use GL_TEXTURE_2D as the target for RGB textures.
   // https://crbug.com/916728
-  if (format == gfx::BufferFormat::RGBA_8888 ||
+  if (format == gfx::BufferFormat::R_8 || format == gfx::BufferFormat::RG_88 ||
+      format == gfx::BufferFormat::RGBA_8888 ||
       format == gfx::BufferFormat::RGBX_8888 ||
       format == gfx::BufferFormat::BGRX_8888) {
     return false;
