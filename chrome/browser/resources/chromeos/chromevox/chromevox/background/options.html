@@ -220,14 +220,17 @@
   <div class="chromeos option">
     <label>
       <paper-icon-button icon="cr:expand-more"
+        aria-describedby="developer-options-label" aria-expanded="false"
         class="developer-option-icon-button"
         id="chromevox-developer-options-more"
         name="chromevox-developer-options"></paper-icon-button>
       <paper-icon-button icon="cr:expand-less"
+        aria-describedby="developer-options-label" aria-expanded="true"
         class="developer-option-icon-button"
         id="chromevox-developer-options-less"
         name="chromevox-developer-options" hidden></paper-icon-button>
-      <span class="i18n" msgid="options_developer_options">
+      <span class="i18n" msgid="options_developer_options"
+            id="developer-options-label">
         Enable developer options
       </span>
     </label>
@@ -269,9 +272,11 @@
      <div class="settings-expand-row" id="show-developer-log">
       <label>
         <paper-icon-button icon="cr:open-in-new"
+          aria-describedby="show-log-label"
           class="developer-option-icon-button" id="open-developer-log">
         </paper-icon-button>
-        <span class="i18n settings-description" msgid="options_show_log">
+        <span class="i18n settings-description" msgid="options_show_log"
+              id="show-log-label">
           Show Log</span>
         <span class="i18n settings-sub-description"
           msgid="options_show_log_key">Search + O + W</span>
