@@ -2098,6 +2098,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'tidus',
       'veyron_mighty',
       'veyron_minnie',
+      'veyron_speedy',
       'winky',
       'wizpig',
       'wolf',
