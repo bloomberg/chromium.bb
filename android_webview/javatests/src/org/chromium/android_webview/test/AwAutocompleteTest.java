@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertEquals;
 
-import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 
@@ -16,7 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -27,7 +26,7 @@ import java.util.concurrent.Callable;
 /**
  * AwAutocompleteTest only runs below Android O.
  */
-@DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
+@DisabledTest
 public class AwAutocompleteTest {
     public static final String FILE = "/login.html";
     public static final String TITLE = "DONE";
