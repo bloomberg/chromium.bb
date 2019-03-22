@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(() => {
+  class MyElement1 extends HTMLElement {}
+  customElements.define('my-element1', MyElement1);
+  const element = new MyElement1();
+  const internals = element.attachInternals();
+
+  assert_throws('InvalidStateError', () => { internals.setFormValue(''); });
+  assert_throws('InvalidStateError', () => { internals.form; });
+}, 'Form-related operations and attributes should throw InvalidStateErrors for' +
+     'non-form-associated custom elements.');
+</script>
+</body>

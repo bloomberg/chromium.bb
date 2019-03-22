@@ -1,0 +1,12 @@
+{# Note that goog.provide is understood by the Closure Compiler even if the
+   Closure base library is unavailable. See https://crbug.com/898692 #}
+goog.provide('{{module.namespace}}.{{union.name}}');
+
+{{module.namespace}}.{{union.name}} = class {
+  constructor() {
+{%- for field in fields %}
+    /** @type { {{field.kind|lite_closure_type_with_nullability}} } */
+    this.{{field.name}};
+{%-  endfor %}
+  }
+};

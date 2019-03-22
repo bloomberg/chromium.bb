@@ -1,0 +1,13 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+main frame - didReceiveTitle: SignedHTTPExchange UseCounter
+main frame - didFinishDocumentLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+frame "sxg_iframe" - didReceiveTitle: 
+frame "sxg_iframe" - didStartProvisionalLoadForFrame
+frame "sxg_iframe" - didFailProvisionalLoadWithError
+This is a testharness.js-based test.
+FAIL SignedHTTPExchange inner response documents are use counted. promise_test: Unhandled rejection with value: "timeout"
+Harness: the test ran to completion.
+

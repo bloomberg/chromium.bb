@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matthew Denton <mpdenton@chromium.org>
+Date: Fri, 16 Nov 2018 10:32:17 -0800
+Subject: [PATCH 09/10] Fix ossfuzz.c to compile and run with our config
+
+---
+ third_party/sqlite/src/test/ossfuzz.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/third_party/sqlite/src/test/ossfuzz.c b/third_party/sqlite/src/test/ossfuzz.c
+index a8a637f2ac85..7b69015129d9 100644
+--- a/third_party/sqlite/src/test/ossfuzz.c
++++ b/third_party/sqlite/src/test/ossfuzz.c
+@@ -30,6 +30,7 @@ void ossfuzz_set_debug_flags(unsigned x){
+   mDebug = x;
+ }
+
++#ifndef SQLITE_OMIT_PROGRESS_CALLBACK
+ /* Return the current real-world time in milliseconds since the
+ ** Julian epoch (-4714-11-24).
+ */
+@@ -46,6 +47,7 @@ static sqlite3_int64 timeOfDay(void){
+   }
+   return t;
+ }
++#endif
+
+ /* An instance of the following object is passed by pointer as the
+ ** client data to various callbacks.
+@@ -133,6 +135,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+     uSelector = 0xfd;
+   }
+
++#ifdef SQLITE_OMIT_AUTOINIT
++  rc = sqlite3_initialize();
++  if( rc ) return 0;
++#endif
++
+   /* Open the database connection.  Only use an in-memory database. */
+   rc = sqlite3_open_v2("fuzz.db", &cx.db,
+            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_MEMORY, 0);
+--
+2.18.0
+

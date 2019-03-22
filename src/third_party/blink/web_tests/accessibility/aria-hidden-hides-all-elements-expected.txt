@@ -1,0 +1,11 @@
+This tests aria-hidden on a parent node will hide all these special subclass objects, unless they are focusable.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS content.childrenCount is 6
+PASS content.childrenCount is 7
+PASS content.childrenCount is 6
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

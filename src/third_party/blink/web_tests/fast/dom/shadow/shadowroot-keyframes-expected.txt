@@ -1,0 +1,7 @@
+CONSOLE WARNING: line 28: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+PASS getBackgroundColor(shadowRootWithKeyframe.getElementById('box')) is "rgb(0, 0, 255)"
+PASS getBackgroundColor(shadowRootWithoutKeyframe.getElementById('box')) is "rgb(255, 0, 0)"

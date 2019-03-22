@@ -1,0 +1,9 @@
+[document web]
+++[paragraph]
+++++[text] name='Before.'
+++[separator] name='Dividing line' horizontal
+++[paragraph]
+++++[text] name='Middle.'
+++[separator] horizontal
+++[paragraph]
+++++[text] name='After.'

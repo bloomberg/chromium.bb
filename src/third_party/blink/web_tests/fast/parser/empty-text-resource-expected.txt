@@ -1,0 +1,3 @@
+Test for bug 26764: Uncaught NOT_FOUND_ERR: DOMException 8 loading empty text file.
+
+PASS

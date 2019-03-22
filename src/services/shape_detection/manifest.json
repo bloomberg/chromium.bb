@@ -1,0 +1,16 @@
+{
+  "name": "shape_detection",
+  "display_name": "Shape Detection Service",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "face_detection": [ "shape_detection.mojom.FaceDetectionProvider" ],
+        "barcode_detection": [ "shape_detection.mojom.BarcodeDetectionProvider" ],
+        "text_detection": [ "shape_detection.mojom.TextDetection" ]
+      }
+    }
+  }
+}

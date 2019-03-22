@@ -1,0 +1,11 @@
+[document web]
+++[section]
+++++[dateeditor]
+++++++[section]
+++++++++[section]
+++++++++++[spin button] name='Month' valuetext:0
+++++++++++++[text] name='---------'
+++++++++++[text] name=' '
+++++++++++[spin button] name='Year' valuetext:0
+++++++++++++[text] name='----'
+++++++[push button] name='Show date picker' haspopup:menu

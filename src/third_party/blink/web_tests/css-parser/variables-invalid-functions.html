@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="help" href="https://drafts.csswg.org/css-env-1/">
+    <title>Test env() and var() throw syntax errors if used with invalid functions</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <style>
+      div {
+        --a: 0px;
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+    // This value is expected if the syntax is valid.
+    const workingValue = "0px";
+
+    // This value is expected if the syntax is invalid.
+    const pageDefaultValue = "10px";
+
+    // This value is expected if the calc() syntax is valid.
+    const workingCalcValue = "20px";
+
+    const testCases = [
+      { style: "", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: env(safe-area-inset-left)", expectedPropertyValue: workingValue },
+
+      // min and max() are not supported.
+      { style: "margin-left: min(env(safe-area-inset-left))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(safe-area-inset-left), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(safe-area-inset-left, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(safe-area-inset-left, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(test))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(test), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(test, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(env(test, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(safe-area-inset-left))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(safe-area-inset-left), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(safe-area-inset-left, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(safe-area-inset-left, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(test))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(test), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(test, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(env(test, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+
+      // calc() should work.
+      { style: "margin-left: calc(env(safe-area-inset-left) + 20px)", expectedPropertyValue: workingCalcValue },
+      { style: "margin-left: calc(env(safe-area-inset-left, 0px) + 20px)", expectedPropertyValue: workingCalcValue },
+      { style: "margin-left: calc(env(safe-area-inset-left, 0) + 20px)", expectedPropertyValue: workingCalcValue },
+      { style: "margin-left: calc(env(test) + 20px)", expectedPropertyValue: "0px" },
+      { style: "margin-left: calc(env(test, 1px) + 20px)", expectedPropertyValue: "21px" },
+
+      // min and max() are not supported.
+      { style: "margin-left: min(var(--a))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--a), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--a, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--a, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--b))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--b), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--b, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: min(var(--b, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--a))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--a), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--a, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--a, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--b))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--b), 1px)", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--b, 1px))", expectedPropertyValue: pageDefaultValue },
+      { style: "margin-left: max(var(--b, 1px), 1px)", expectedPropertyValue: pageDefaultValue },
+
+      // calc() should work.
+      { style: "margin-left: calc(var(--a) + 20px)", expectedPropertyValue: workingCalcValue },
+      { style: "margin-left: calc(var(--a, 0px) + 20px)", expectedPropertyValue: workingCalcValue },
+      { style: "margin-left: calc(var(--a, 0) + 20px)", expectedPropertyValue: workingCalcValue },
+      { style: "margin-left: calc(var(--b) + 20px)", expectedPropertyValue: "0px" },
+      { style: "margin-left: calc(var(--b, 1px) + 20px)", expectedPropertyValue: "21px" },
+    ];
+
+    testCases.forEach((testcase) => {
+      test(() => {
+        const elem = document.createElement("div");
+        const style = window.getComputedStyle(elem);
+
+        document.body.appendChild(elem);
+        elem.style.cssText = testcase.style;
+
+        assert_equals(style.getPropertyValue("margin-left"), testcase.expectedPropertyValue);
+      }, testcase.style + " " + testcase.expectedPropertyValue);
+    });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+Tests stability of performance metrics list.
+
+
+Metrics reported:
+AdSubframes
+AudioHandlers
+DetachedScriptStates
+Documents
+DomContentLoaded
+FirstMeaningfulPaint
+Frames
+JSEventListeners
+JSHeapTotalSize
+JSHeapUsedSize
+LayoutCount
+LayoutDuration
+LayoutObjects
+MediaKeySessions
+MediaKeys
+NavigationStart
+Nodes
+PausableObjects
+RTCPeerConnections
+RecalcStyleCount
+RecalcStyleDuration
+ResourceFetchers
+Resources
+ScriptDuration
+ScriptPromises
+TaskDuration
+TaskOtherDuration
+Timestamp
+UACSSResources
+V8CompileDuration
+V8PerContextDatas
+WorkerGlobalScopes
+

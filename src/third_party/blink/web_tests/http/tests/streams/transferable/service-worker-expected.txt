@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS service-worker
+FAIL serviceWorker.controller.postMessage should be able to transfer a ReadableStream Failed to execute 'postMessage' on 'ServiceWorker': Value at index 0 does not have a transferable type.
+FAIL postMessage in a service worker should be able to transfer ReadableStream promise_test: Unhandled rejection with value: "Failed to execute 'postMessage' on 'Client': Value at index 0 does not have a transferable type."
+Harness: the test ran to completion.
+

@@ -1,0 +1,5 @@
+specific_include_rules = {
+  "policy_browsertest\.cc": [
+    "+ash/shell.h",
+  ]
+}

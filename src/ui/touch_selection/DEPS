@@ -1,0 +1,9 @@
+include_rules = [
+  "+services/ws/public/mojom",
+  "+ui/aura",
+  "+ui/aura_extra",
+  "+ui/base",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/resources"
+]

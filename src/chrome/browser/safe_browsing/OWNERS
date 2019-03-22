@@ -1,0 +1,7 @@
+nparker@chromium.org
+vakh@chromium.org
+
+# For interstitial-related changes:
+per-file *safe_browsing_blocking_page*=felt@chromium.org
+
+# COMPONENT: Services>Safebrowsing

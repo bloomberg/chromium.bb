@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<canvas>
+  <ul id="container"><li>One</li><li>Two</li><li>Three</li></ul>
+</canvas>
+
+<script>
+test(function(t) {
+    var container = document.getElementById("container");
+    var axContainer = accessibilityController.accessibleElementById("container");
+    assert_equals(axContainer.childrenCount, 3, "Initial");
+
+    var newNode = document.createElement("li");
+    newNode.innerText = "Four";
+    container.appendChild(newNode);
+    assert_equals(axContainer.childrenCount, 4, "After appendChild");
+
+    container.removeChild(newNode);
+    assert_equals(axContainer.childrenCount, 3, "After removeChild");
+}, "Children count is correct inside a canvas");
+
+</script>

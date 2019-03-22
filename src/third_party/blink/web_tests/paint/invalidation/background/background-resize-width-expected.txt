@@ -1,0 +1,282 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [800, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image'",
+      "position": [8, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+      "position": [58, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+      "position": [108, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image fixed-width'",
+      "position": [158, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image percent-width'",
+      "position": [208, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image percent-width'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image left'",
+      "position": [258, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image right'",
+      "position": [308, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image right'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image center'",
+      "position": [358, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
+      "position": [408, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+      "position": [458, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+      "position": [508, 8],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated'",
+      "position": [8, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
+      "position": [8, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
+      "position": [8, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated fixed-width'",
+      "position": [158, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated percent-width'",
+      "position": [208, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-width'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated left'",
+      "position": [258, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated left'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated right'",
+      "position": [308, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated right'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+      "position": [358, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+      "position": [408, 108],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+      "position": [458, 108],
+      "bounds": [55, 40],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+      "position": [508, 108],
+      "bounds": [55, 40],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+          "rect": [0, 0, 55, 40],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+

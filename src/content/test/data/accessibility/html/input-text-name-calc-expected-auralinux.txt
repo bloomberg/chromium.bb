@@ -1,0 +1,10 @@
+[document web]
+++[entry] name='Title0' explicit-name:true
+++[entry] name='Label1' description='Title1' explicit-name:true
+++[entry] name='AriaLabel2' description='Title2' explicit-name:true
+++[entry] name='LabelledBy3' description='Title3' explicit-name:true
+++[entry] name='Placeholder4' explicit-name:true
+++[entry] name='ARIA Placeholder4a' explicit-name:true
+++[entry] name='Placeholder4b' explicit-name:true
+++[entry] name='Placeholder5' description='Title5' explicit-name:true
+++[entry] name='LabelledBy6' description='DescribedBy6' explicit-name:true

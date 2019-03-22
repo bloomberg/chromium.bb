@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+ Copyright 2018 The Chromium Authors. All rights reserved.
+ Use of this source code is governed by a BSD-style license that can be
+ found in the LICENSE file.
+-->
+
+<head>
+  <title>Super Size Tiger View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4285f4">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,500" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="options.css">
+  <style>
+body {
+  grid-template-columns: auto;
+  grid-template-areas: "appbar" "select";
+}
+form {
+  grid-area: 'select';
+  margin: auto;
+}
+  </style>
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 256x256" type="image/x-icon">
+  <script>
+/**
+ * @param {string[]} options
+ */
+function buildOptions(options) {
+  const fragment = document.createDocumentFragment();
+  for (const option of options) {
+    const optionEl = document.createElement('option');
+    optionEl.value = option;
+    optionEl.textContent = option;
+    fragment.appendChild(optionEl);
+  }
+  return fragment;
+}
+
+/**
+ * Is `v1` a larger version than `v2`?
+ * @param {string} v1
+ * @param {string} v2
+ */
+function isGreaterOrEqual(v1, v2) {
+  const [version1] = v1.split('.', 1).map(n => parseInt(n, 10));
+  const [version2] = v2.split('.', 1).map(n => parseInt(n, 10));
+  return version1 >= version2;
+}
+
+(async () => {
+  const response = await fetch('milestones/milestones.json');
+  const {pushed} = await response.json();
+
+  if (document.readyState === 'loading') {
+    await new Promise(resolve => {
+      document.onreadystatechange = () => {
+        if (document.readyState !== 'loading') {
+          resolve();
+          document.onreadystatechange = null;
+        }
+      }
+    });
+  }
+
+  /** @type {HTMLFormElement} */
+  const form = document.getElementById('select-form');
+  const selMode = form.elements.namedItem('mode');
+  const selCpu = form.elements.namedItem('cpu');
+  const selApk = form.elements.namedItem('apk');
+  const selVersion1 = form.elements.namedItem('version1');
+  const selVersion2 = form.elements.namedItem('version2');
+  const btnOpen = form.querySelector('button[type="submit"]');
+  const msgBadCompare = form.querySelector('.msg-bad-compare');
+
+  selCpu.appendChild(buildOptions(pushed.cpu));
+  selApk.appendChild(buildOptions(pushed.apk));
+  const versionOptions = buildOptions(pushed.version);
+  selVersion1.appendChild(versionOptions.cloneNode(true));
+  selVersion2.appendChild(versionOptions);
+
+  function selectOption(optList, index) {
+    const n = optList.length;
+    if (n > 0) optList[((index % n) + n) % n].selected = true;
+  }
+  selectOption(selVersion1.querySelectorAll('option'), -2);
+  selectOption(selVersion2.querySelectorAll('option'), -1);
+
+  let viewMode = null;
+  function readViewMode() {
+    viewMode = document.querySelector('#sel-mode').value;
+    form.classList.toggle('mode-view', viewMode === 'view');
+  }
+  readViewMode();
+
+  function disableButtonIfNoDiffPair() {
+    const isDisabled = (viewMode === 'compare') &&
+        isGreaterOrEqual(selVersion1.value, selVersion2.value);
+    btnOpen.disabled = isDisabled;
+    msgBadCompare.classList.toggle('visible', isDisabled);
+  }
+  disableButtonIfNoDiffPair();
+
+  selMode.addEventListener('change', () => {
+    readViewMode();
+    disableButtonIfNoDiffPair();
+  });
+
+  function getDataUrl() {
+    let ret = `${cpu.value}/${apk.value}/`;
+    if (viewMode === 'view') {
+      ret += `report_${selVersion2.value}.ndjson`;
+    } else if (viewMode === 'compare') {
+      ret += `report_${selVersion1.value}_${selVersion2.value}.ndjson`;
+    }
+    return ret;
+  }
+
+  selVersion1.addEventListener('change', disableButtonIfNoDiffPair);
+  selVersion2.addEventListener('change', disableButtonIfNoDiffPair);
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const dataUrl = getDataUrl();
+    // Exclude unwind_cfi via a filter as a work-around for it being included
+    // in the size data. It's a file that exists in dev but not beta/stable.
+    window.open(`viewer.html?load_url=milestones/${dataUrl}` +
+                `&exclude=assets%2Funwind_cfi`);
+  });
+})();
+  </script>
+</head>
+
+<body>
+  <div class="scrim toggle-options" hidden></div>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <h1 class="headline">Super Size Tiger View</h1>
+    </div>
+  </header>
+
+  <form id="select-form">
+    <h2 class="subhead">Select milestones to
+      <select id="sel-mode" class="sel-small" name="mode">
+        <option value="view">view</option>
+        <option value="compare" selected="selected">compare</option>
+      </select>
+    </h2>
+    <p class="select-wrapper">
+      <select id="cpu" class="sel-big" name="cpu"></select>
+      <label class="select-label" for="cpu">Architecture</label>
+    </p>
+    <p class="select-wrapper">
+      <select id="apk" class="sel-big" name="apk"></select>
+      <label class="select-label" for="apk">APK</label>
+    </p>
+    <p class="select-wrapper hide-on-mode-view">
+      <select id="version1" class="sel-big" name="version1"></select>
+      <label class="select-label" for="version1">Version 1</label>
+    </p>
+    <p class="select-wrapper">
+      <select id="version2" class="sel-big" name="version2"></select>
+      <label class="select-label" for="version2">
+        Version <span class="hide-on-mode-view"> 2</span>
+      </label>
+    </p>
+
+    <button type="submit" class="text-button filled-button">
+      Open report
+    </button>
+    <div class="msg-bad-compare">Version 1 must be older than Version 2</div>
+    <div style="margin:20pt 0 10pt"><b>Note:</b> AndroidWebview.apk size information exists only for M71 and above.</div>
+    <div>To upload your own .ndjson file, use the upload button within <a href="viewer.html">the viewer</a>.</div>
+  </form>
+</body>
+
+</html>

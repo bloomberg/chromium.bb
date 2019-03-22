@@ -1,0 +1,36 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Serialization format for GWP ASan crashdata, written to the minidump using
+// stream ID 0x4B6B0004.
+
+syntax = "proto2";
+
+package gwp_asan;
+
+option optimize_for = LITE_RUNTIME;
+
+message Crash {
+  enum ErrorType {
+    // These should not be renumbered and should be kept in sync with
+    // AllocatorState::ErrorType in allocator_state.h
+    USE_AFTER_FREE = 0;
+    BUFFER_UNDERFLOW = 1;
+    BUFFER_OVERFLOW = 2;
+    DOUBLE_FREE = 3;
+    UNKNOWN = 4;
+  }
+
+  message AllocationInfo {
+    repeated uint64 stack_trace = 1 [packed = true];
+    optional uint64 thread_id = 2;
+  }
+
+  optional ErrorType error_type = 1;
+  optional uint64 allocation_address = 2;
+  optional uint64 allocation_size = 3;
+
+  optional AllocationInfo allocation = 4;
+  optional AllocationInfo deallocation = 5;
+}

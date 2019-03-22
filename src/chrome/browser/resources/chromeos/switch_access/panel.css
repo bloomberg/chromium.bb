@@ -1,0 +1,26 @@
+/**
+ * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  background: white;
+  border: 5px solid grey;
+  margin: 0;
+  padding: 4px 3px 5px 3px;
+}
+body > div {
+  padding: 2px;
+}
+.action {
+  font-size: 150%;
+  margin: auto 2px;
+}
+.focus {
+  outline: solid thick #78e428;  /** light green from automation_manager.js */
+}
+div.focus {
+  outline-color: #de742f;  /** dark orange from automation_manager.js */
+}
+

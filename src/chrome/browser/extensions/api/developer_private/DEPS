@@ -1,0 +1,10 @@
+specific_include_rules = {
+  "show_permissions_dialog_helper.cc": [
+    #TODO(https://crbug.com/873872): Remove this.
+    "+chrome/browser/apps/platform_apps/app_load_service.h",
+  ],
+  "developer_private_api_unittest.cc": [
+    # Allow the unittest to create a data_decoder service.
+    "+services/data_decoder"
+  ],
+}

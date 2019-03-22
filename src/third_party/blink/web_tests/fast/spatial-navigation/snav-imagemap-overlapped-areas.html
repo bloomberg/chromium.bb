@@ -1,0 +1,38 @@
+<map name="map" title="map" id="firstmap">
+  <area shape="circle" coords="45,45,25" href="#" id="1">
+  <area shape="rect" coords="45,60,95,110" href="#" id="2">
+  <area shape="poly" coords="80,20,130,20,130,180,30,180,30,130,80,130" href="#" id="3">
+  <area shape="default" href="#" id="4">
+</map>
+
+<a id="start" href="a"><img src="resources/green.png" width=50px height=50px></a>
+<div>
+  <img src="resources/green.png" width=200px height=200px usemap="#map">
+</div>
+<a id="5" href="a"><img src="resources/green.png" width=50px height=50px></a>
+
+<p>This test tests that areas of an imagemap can be reached with spatial navigation even if they are overlapped.</p>
+
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/snav-testharness.js"></script>
+<script>
+  var resultMap = [
+    ["Down", "4"],
+    ["Down", "1"],
+    ["Down", "2"],
+    ["Down", "5"],
+    ["Up", "4"],
+    ["Up", "3"],
+    ["Up", "2"],
+    ["Left", "1"],
+    ["Right", "3"],
+    ["Left", "2"],
+    ["Up", "1"],
+    ["Up", "start"],
+  ];
+
+  // Start at a known place.
+  document.getElementById("start").focus();
+  snav.assertFocusMoves(resultMap);
+</script>

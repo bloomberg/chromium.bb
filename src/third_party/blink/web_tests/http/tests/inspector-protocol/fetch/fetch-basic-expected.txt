@@ -1,0 +1,14 @@
+Tests basic function of the fetch domain.
+Request to undefined, type: Document
+Request to undefined, type: XHR
+Response after Fetch.fulfillRequest: overriden response body
+Request to undefined, type: XHR
+Response after fetch.continueRequest: Hello world
+Request to undefined, type: XHR
+Response after fetch.continueRequest with new URL: ******************************************
+Request to undefined, type: XHR
+Response after fetch.failRequest: fail
+Sending invalid header (should result in error)
+Request to undefined, type: XHR
+Got error: Invalid header
+

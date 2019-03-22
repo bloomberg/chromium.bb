@@ -1,0 +1,84 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<dom-module id="assistant-voice-match">
+  <template>
+    <link rel="stylesheet" href="../login/oobe_flex_layout.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
+    <link rel="stylesheet" href="assistant_voice_match.css">
+    <oobe-dialog id="voice-match-dialog" role="dialog" has-buttons hide-shadow
+        no-footer-padding no-header class="intro">
+      <div slot="footer">
+        <div class="container">
+          <img id="logo" src="assistant_logo.png">
+          <div id="intro-container">
+            <div class="title" i18n-content="assistantVoiceMatchTitle"></div>
+            <div class="content" i18n-content="assistantVoiceMatchMessage">
+            </div>
+            <img id="voice-match-img" src="assistant_voice_match.png">
+          </div>
+          <div id="recording-container">
+            <div class="title" id="title-recording"
+                i18n-content="assistantVoiceMatchRecording"></div>
+            <div class="title" id="title-completed"
+                i18n-content="assistantVoiceMatchCompleted"></div>
+            <voice-match-entry id="voice-entry-0">
+              <div class="entry-content"
+                  i18n-content="assistantVoiceMatchInstruction0"></div>
+            </voice-match-entry>
+            <voice-match-entry id="voice-entry-1">
+              <div class="entry-content"
+                  i18n-content="assistantVoiceMatchInstruction1"></div>
+            </voice-match-entry>
+            <voice-match-entry id="voice-entry-2">
+              <div class="entry-content"
+                  i18n-content="assistantVoiceMatchInstruction2"></div>
+            </voice-match-entry>
+            <voice-match-entry id="voice-entry-3">
+              <div class="entry-content"
+                  i18n-content="assistantVoiceMatchInstruction3"></div>
+            </voice-match-entry>
+            <voice-match-entry id="voice-uploading">
+              <div class="entry-content"
+                  i18n-content="assistantVoiceMatchUploading"></div>
+            </voice-match-entry>
+            <div class="content" id="footer-text"
+                i18n-content="assistantVoiceMatchFooter"></div>
+          </div>
+          <div id="already-setup-container">
+            <div class="title" id="title-already-setup"
+                i18n-content="assistantVoiceMatchAlreadySetupTitle"></div>
+            <div class="content"
+                i18n-content="assistantVoiceMatchAlreadySetupMessage"></div>
+          </div>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinNoThanksButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="later-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinLaterButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinAgreeButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="done-button" inverse on-tap="onDoneTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinSaveButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="next-button" inverse on-tap="onDoneTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="next"></div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

@@ -1,0 +1,27 @@
+This is a testharness.js-based test.
+FAIL Logical properties can be animated using object notation assert_equals: expected "50px" but got "100px"
+FAIL Logical properties can be animated using array notation assert_equals: expected "50px" but got "100px"
+PASS Logical properties are NOT stored as physical properties
+FAIL Logical properties in animations respect the writing-mode assert_equals: expected "50px" but got "100px"
+FAIL Logical properties in animations respect the direction assert_equals: expected "50px" but got "100px"
+PASS Physical properties win over logical properties in object notation
+PASS Physical properties win over logical properties in array notation
+PASS Physical properties with variables win over logical properties
+FAIL Logical shorthands follow the usual prioritization based on number of component longhands assert_equals: expected "300px" but got "0px"
+FAIL Physical longhands win over logical shorthands assert_equals: expected "200px" but got "100px"
+PASS Logical longhands win over physical shorthands
+FAIL Physical shorthands win over logical shorthands assert_equals: expected "200px" but got "100px"
+FAIL Physical shorthands using variables win over logical shorthands assert_equals: expected "200px" but got "100px"
+FAIL Physical properties and logical properties can be mixed assert_equals: expected "250px" but got "300px"
+FAIL Physical shorthands and logical shorthands can be mixed assert_equals: expected "250px" but got "150px"
+PASS Physical properties win over logical properties even when some keyframes only have logical properties
+FAIL Animations update when the writing-mode is changed assert_equals: expected "50px" but got "100px"
+PASS Filling animations update when the writing-mode is changed
+FAIL Animations with implicit from values update when the writing-mode is changed assert_equals: expected "250px" but got "300px"
+FAIL Animations with overlapping physical and logical properties update when the writing-mode is changed assert_equals: expected "50px" but got "100px"
+FAIL Animations update when the writing-mode is changed through a CSS variable assert_equals: expected "50px" but got "100px"
+FAIL Animations update when the direction is changed assert_equals: expected "50px" but got "100px"
+PASS writing-mode is not animatable
+PASS direction is not animatable
+Harness: the test ran to completion.
+

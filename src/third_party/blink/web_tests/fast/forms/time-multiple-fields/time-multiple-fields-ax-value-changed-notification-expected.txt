@@ -1,0 +1,16 @@
+This test checks value changed accessibility notifications.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+Focus Hours=12
+Focus Minutes=34
+ValueChanged Minutes=05
+ValueChanged Minutes=05
+ValueChanged Minutes=05
+ValueChanged Minutes=05
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

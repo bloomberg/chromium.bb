@@ -1,0 +1,35 @@
+<html>
+<title>create service worker</title>
+<script>
+// Copy of //content/test/data/service_worker/create_service_worker.html.
+
+// Simulates navigator.serviceWorker.ready, which can't be used since this
+// document may not be in-scope.
+async function whenReady(registration) {
+  if (registration.active)
+    return;
+  // If there's no .active, .waiting will activate before .installing.
+  const nextActiveWorker = registration.waiting || registration.installing;
+  return new Promise((resolve, reject) => {
+    nextActiveWorker.addEventListener('statechange', event => {
+      if (nextActiveWorker.state == 'activated')
+        resolve();
+      if (nextActiveWorker.state == 'redundant')
+        reject('worker became redundant');
+    });
+  });
+}
+
+async function register(worker_url, scope) {
+  try {
+    const init = scope ? {scope} : {};
+    const registration =
+        await navigator.serviceWorker.register(worker_url, init);
+    await whenReady(registration);
+    return 'DONE';
+  } catch (error) {
+    return `${error}`;
+  }
+}
+</script>
+</html>

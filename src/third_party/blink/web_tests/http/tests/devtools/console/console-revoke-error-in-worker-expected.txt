@@ -1,0 +1,13 @@
+Tests that console revokes lazily handled promise rejections.
+
+Creating worker with promise
+
+Message added: error log
+1 error
+console-message-wrapper console-error-level
+
+Handling promise
+
+Enable verbose filter
+console-message-wrapper console-verbose-level
+

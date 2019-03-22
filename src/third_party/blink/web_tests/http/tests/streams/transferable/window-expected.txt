@@ -1,0 +1,10 @@
+CONSOLE ERROR: line 43: Uncaught (in promise) Error: assert_array_equals: there should be no ports in the event lengths differ, expected 0 got 1
+CONSOLE ERROR: line 43: Uncaught (in promise) Error: assert_array_equals: there should be no ports in the event lengths differ, expected 0 got 1
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = assert_array_equals: there should be no ports in the event lengths differ, expected 0 got 1
+FAIL window.postMessage should be able to transfer a ReadableStream Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type.
+FAIL port.postMessage should be able to transfer a ReadableStream Failed to execute 'postMessage' on 'MessagePort': Value at index 0 does not have a transferable type.
+FAIL the same ReadableStream posted multiple times should arrive together Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type.
+FAIL transfer to and from an iframe should work promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type."
+Harness: the test ran to completion.
+

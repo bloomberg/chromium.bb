@@ -1,0 +1,23 @@
+This test checks value changed accessibility notifications.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+Focus =AXValueDescription: 10
+Focus =AXValueDescription: 09
+Focus =AXValueDescription: 2012
+Focus =AXValueDescription: 12
+Focus =AXValueDescription: 34
+ValueChanged =AXValueDescription: 04
+ValueChanged =AXValueDescription: 04
+ValueChanged =AXValueDescription: 2013
+ValueChanged =AXValueDescription: 2013
+ValueChanged =AXValueDescription: 02
+ValueChanged =AXValueDescription: 02
+ValueChanged =AXValueDescription: 33
+ValueChanged =AXValueDescription: 33
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

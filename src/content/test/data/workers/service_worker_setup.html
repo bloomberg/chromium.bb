@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>register a service worker</title>
+<script>
+async function setup() {
+  await navigator.serviceWorker.register('service_worker.js');
+  await navigator.serviceWorker.ready;
+  return 'ok';
+}
+
+function hasController() {
+  return !!navigator.serviceWorker.controller;
+}
+</script>

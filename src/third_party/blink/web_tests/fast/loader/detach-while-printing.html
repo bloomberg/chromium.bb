@@ -1,0 +1,11 @@
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+print();
+setTimeout(() => {
+  var child = document.querySelector('object');
+  child.parentNode.removeChild(child);
+});
+</script>
+<object data="/404-dir-should-not-exist/"></object>
+Test passes if we don't crash.

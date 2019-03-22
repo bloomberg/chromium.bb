@@ -1,0 +1,3 @@
+# JAR and AAR files will be fetched via CIPD.
+libs/*/*.jar
+libs/*/*.aar

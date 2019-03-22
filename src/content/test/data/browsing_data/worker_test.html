@@ -1,0 +1,35 @@
+<html>
+<script>
+
+  function success_() {
+    domAutomationController.send(true);
+  }
+
+  function failure_() {
+    domAutomationController.send(false);
+  }
+
+  function installServiceWorker() {
+    navigator.serviceWorker.register('/?file=empty_worker.js').then(function() {
+      navigator.serviceWorker.ready.then(success_);
+    }).catch(failure_);
+  }
+
+  function updateServiceWorker() {
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      registrations[0].update().then(success_).catch(failure_);
+    });
+  }
+
+  function hasServiceWorker() {
+    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+      domAutomationController.send(registrations.length > 0);
+    });
+  }
+
+</script>
+<body>
+  This page is used to test creation, update and deletion service workers.
+</body>
+
+</html>

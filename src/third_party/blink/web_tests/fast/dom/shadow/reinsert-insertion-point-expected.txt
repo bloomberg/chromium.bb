@@ -1,0 +1,8 @@
+CONSOLE WARNING: line 9: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
+PASS inside.offsetHeight > 0 is true
+PASS inside.offsetHeight > 0 is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+Should be visible

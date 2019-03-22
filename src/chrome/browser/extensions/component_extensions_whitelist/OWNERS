@@ -1,0 +1,8 @@
+# Adding new component extensions requires approval from the Extensions Tech
+# Lead. See comment in whitelist.h
+set noparent
+
+rdevlin.cronin@chromium.org
+
+# TEAM: extensions-dev@chromium.org
+# COMPONENT: Platform>Extensions

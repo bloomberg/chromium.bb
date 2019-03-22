@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/chrome_cleaner",
+  "+sandbox/win/src",
+  "+third_party/protobuf/src/google/protobuf",
+]

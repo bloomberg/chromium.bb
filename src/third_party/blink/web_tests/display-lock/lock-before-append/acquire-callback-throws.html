@@ -1,0 +1,43 @@
+<!doctype HTML>
+
+<!--
+Runs an acquireDisplayLock, the callback throws.
+-->
+
+<style>
+#container {
+  contain: content;
+  width: 100px;
+  height: 100px;
+  background: lightblue;
+}
+</style>
+
+<div id="log"></div>
+
+<script>
+if (window.testRunner)
+  window.testRunner.waitUntilDone();
+
+function throwingFunction(context) {
+  throw "Expected Exception";
+}
+
+function finishTest(status_string) {
+  if (document.getElementById("log").innerHTML === "")
+    document.getElementById("log").innerHTML = status_string;
+  if (window.testRunner)
+    window.testRunner.notifyDone();
+}
+
+function acquire() {
+  let container = document.createElement("div");
+  container.id = "container";
+  container.acquireDisplayLock(throwingFunction).then(
+    () => { finishTest("FAIL"); },
+    () => { finishTest("PASS"); });
+  document.body.appendChild(container);
+}
+
+window.onload = acquire;
+</script>

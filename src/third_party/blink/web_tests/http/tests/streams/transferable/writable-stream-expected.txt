@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL window.postMessage should be able to transfer a WritableStream Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type.
+FAIL a locked WritableStream should not be transferable assert_throws: postMessage should throw function "() => postMessage(ws, '*', [ws])" threw object "TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type." that is not a DOMException DataCloneError: property "code" is equal to undefined, expected 25
+FAIL window.postMessage should be able to transfer a {readable, writable} pair Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type.
+Harness: the test ran to completion.
+

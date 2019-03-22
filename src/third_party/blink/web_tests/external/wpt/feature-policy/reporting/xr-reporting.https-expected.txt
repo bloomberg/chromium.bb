@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL XR Report Format assert_throws: XR device access should not be allowed in this document. function "function() { throw e }" threw object "NotFoundError: No devices found." that is not a DOMException SecurityError: property "code" is equal to 8, expected 18
+Harness: the test ran to completion.
+

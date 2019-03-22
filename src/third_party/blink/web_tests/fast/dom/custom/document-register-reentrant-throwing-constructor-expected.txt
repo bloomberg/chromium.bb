@@ -1,0 +1,10 @@
+CONSOLE WARNING: line 32: document.registerElement is deprecated and will be removed in M73, around March 2019. Please use window.customElements.define instead. See https://www.chromestatus.com/features/4642138092470272 for more details.
+Fuzzing document.registerElement() through getters. PASS unless crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+Constructor object isn't created.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

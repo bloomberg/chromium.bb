@@ -1,0 +1,242 @@
+Verifies that imported HAR files create matching NetworkRequests
+requests: [
+  {
+    "url": "http://localhost:8000/",
+    "documentURL": "http://localhost:8000/",
+    "initiator": {
+      "type": "other"
+    },
+    "requestFormData": null,
+    "connectionId": "2945",
+    "requestMethod": "GET",
+    "requestHeaders": [
+      {
+        "name": "Host",
+        "value": "localhost:8000"
+      }
+    ],
+    "mimeType": "text/html",
+    "responseHeaders": [
+      {
+        "name": "Content-Type",
+        "value": "text/html;charset=ISO-8859-1"
+      }
+    ],
+    "statusCode": 200,
+    "statusText": "OK",
+    "protocol": "http/1.1",
+    "resourceSize": 4633,
+    "transferSize": 4821,
+    "cached": false,
+    "cachedInMemory": false,
+    "contentData": {
+      "error": null,
+      "content": "fake page data",
+      "encoded": false
+    },
+    "remoteAddress": "[::1]:80",
+    "resourceType": {
+      "_name": "document",
+      "_title": "Document",
+      "_category": {
+        "title": "Documents",
+        "shortTitle": "Doc"
+      },
+      "_isTextType": true
+    },
+    "priority": "VeryHigh",
+    "finished": true,
+    "timing": {
+      "proxyStart": 2.0154479999188335,
+      "proxyEnd": 2.4644479999188333,
+      "requestTime": 1542746587.755448,
+      "dnsStart": -1,
+      "dnsEnd": -1,
+      "connectStart": -1,
+      "connectEnd": -1,
+      "sslStart": -1,
+      "sslEnd": -1,
+      "workerStart": -1,
+      "workerReady": -1,
+      "sendStart": 2.4644479999188333,
+      "sendEnd": 2.534447999918833,
+      "pushStart": 0,
+      "pushEnd": 0,
+      "receiveHeadersEnd": 5.624447982991114
+    },
+    "endTime": 1542746587.7661417
+  },
+  {
+    "url": "http://localhost:8000/post-endpoint",
+    "documentURL": "http://localhost:8000/",
+    "initiator": {
+      "type": "parser",
+      "url": "http://localhost/",
+      "lineNumber": 1
+    },
+    "requestFormData": "one=urlencodedvalueone&two=urlencodedvaluetwo",
+    "connectionId": "2945",
+    "requestMethod": "POST",
+    "requestHeaders": [],
+    "mimeType": "image/x-icon",
+    "responseHeaders": [],
+    "statusCode": 200,
+    "statusText": "OK",
+    "protocol": "http/1.1",
+    "resourceSize": 1150,
+    "transferSize": 1417,
+    "cached": false,
+    "cachedInMemory": false,
+    "contentData": {
+      "error": null,
+      "content": null,
+      "encoded": false
+    },
+    "remoteAddress": "[::1]:80",
+    "resourceType": {
+      "_name": "image",
+      "_title": "Image",
+      "_category": {
+        "title": "Images",
+        "shortTitle": "Img"
+      },
+      "_isTextType": false
+    },
+    "priority": "Low",
+    "finished": true,
+    "timing": {
+      "proxyStart": 1.7575360001232476,
+      "proxyEnd": 2.2485360001232477,
+      "requestTime": 1542746587.8705359,
+      "dnsStart": -1,
+      "dnsEnd": -1,
+      "connectStart": -1,
+      "connectEnd": -1,
+      "sslStart": -1,
+      "sslEnd": -1,
+      "workerStart": -1,
+      "workerReady": -1,
+      "sendStart": 2.2485360001232477,
+      "sendEnd": 2.3095360001232477,
+      "pushStart": 0,
+      "pushEnd": 0,
+      "receiveHeadersEnd": 2.828536113491282
+    },
+    "endTime": 1542746587.8738945
+  },
+  {
+    "url": "http://localhost:8000/js_file.js",
+    "documentURL": "http://localhost:8000/",
+    "initiator": {
+      "type": "parser",
+      "url": "http://localhost/",
+      "lineNumber": 1
+    },
+    "requestFormData": null,
+    "connectionId": "2945",
+    "requestMethod": "GET",
+    "requestHeaders": [],
+    "mimeType": "undefined",
+    "responseHeaders": [],
+    "statusCode": 200,
+    "statusText": "OK",
+    "protocol": "http/1.1",
+    "resourceSize": 1150,
+    "transferSize": 1417,
+    "cached": false,
+    "cachedInMemory": false,
+    "contentData": {
+      "error": null,
+      "content": null,
+      "encoded": false
+    },
+    "remoteAddress": "[::1]:80",
+    "resourceType": {
+      "_name": "script",
+      "_title": "Script",
+      "_category": {
+        "title": "Scripts",
+        "shortTitle": "JS"
+      },
+      "_isTextType": true
+    },
+    "priority": "Low",
+    "finished": true,
+    "timing": {
+      "proxyStart": 1.7575360001232476,
+      "proxyEnd": 2.2485360001232477,
+      "requestTime": 1542746587.8705359,
+      "dnsStart": -1,
+      "dnsEnd": -1,
+      "connectStart": -1,
+      "connectEnd": -1,
+      "sslStart": -1,
+      "sslEnd": -1,
+      "workerStart": -1,
+      "workerReady": -1,
+      "sendStart": 2.2485360001232477,
+      "sendEnd": 2.3095360001232477,
+      "pushStart": 0,
+      "pushEnd": 0,
+      "receiveHeadersEnd": 2.828536113491282
+    },
+    "endTime": 1542746587.8738945
+  },
+  {
+    "url": "http://localhost:8000/endpoint",
+    "documentURL": "http://localhost:8000/",
+    "initiator": {
+      "type": "script"
+    },
+    "requestFormData": null,
+    "connectionId": "2945",
+    "requestMethod": "GET",
+    "requestHeaders": [],
+    "mimeType": "undefined",
+    "responseHeaders": [],
+    "statusCode": 200,
+    "statusText": "OK",
+    "protocol": "http/1.1",
+    "resourceSize": 1150,
+    "transferSize": 1417,
+    "cached": false,
+    "cachedInMemory": false,
+    "contentData": {
+      "error": null,
+      "content": null,
+      "encoded": false
+    },
+    "remoteAddress": "[::1]:80",
+    "resourceType": {
+      "_name": "fetch",
+      "_title": "Fetch",
+      "_category": {
+        "title": "XHR and Fetch",
+        "shortTitle": "XHR"
+      },
+      "_isTextType": true
+    },
+    "priority": "Low",
+    "finished": true,
+    "timing": {
+      "proxyStart": 1.7575360001232476,
+      "proxyEnd": 2.2485360001232477,
+      "requestTime": 1542746587.8705359,
+      "dnsStart": -1,
+      "dnsEnd": -1,
+      "connectStart": -1,
+      "connectEnd": -1,
+      "sslStart": -1,
+      "sslEnd": -1,
+      "workerStart": -1,
+      "workerReady": -1,
+      "sendStart": 2.2485360001232477,
+      "sendEnd": 2.3095360001232477,
+      "pushStart": 0,
+      "pushEnd": 0,
+      "receiveHeadersEnd": 2.828536113491282
+    },
+    "endTime": 1542746587.8738945
+  }
+]
+

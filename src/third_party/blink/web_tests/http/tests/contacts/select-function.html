@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources.js"></script>
+
+<script>
+promise_test(function() {
+  return assert_promise_rejects_with_message(
+      navigator.contacts.select({}),
+      new DOMException('ContactsManager::select is not yet implemented', 'NotSupportedError'),
+      'navigator.contacts.select');
+}, 'Select function throws exception.');
+</script>

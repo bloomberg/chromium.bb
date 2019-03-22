@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<body>
+<style>
+:focus {
+  outline: 0;
+  box-shadow: 0 0 2px green;
+}
+</style>
+<p><a id="start" href="#link1">Link 1</a></p>
+<p><a id="end" href="#link2">Link 2</a></p>
+
+<script>
+if (window.testRunner) {
+  testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
+  testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
+}
+
+if (window.eventSender) {
+  // Start at a known place.
+  document.getElementById("start").focus();
+  // Focus should move to the second link, and focus ring should be be the
+  // default focus ring (not hidden), and without the green box-shadow.
+  eventSender.keyDown('ArrowDown');
+}
+
+</script>
+</body>

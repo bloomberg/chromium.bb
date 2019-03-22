@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<style>
+.scroller {
+  height: 100px;
+  width: 100px;
+  overflow: scroll;
+}
+
+.content {
+  height: 500px;
+  width: 500px;
+}
+</style>
+
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+
+<div class='scroller'>
+  <div class='content'></div>
+</div>
+<script>
+const gValidScrollOffsetValues = [
+  'auto',
+  0,
+  'calc(100% - 80px)',
+];
+
+const gValidScrollOffsetSuffixes = [
+  // Relative lengths.
+  'em',
+  'ex',
+  'ch',
+  'rem',
+  'vw',
+  'vh',
+  'vmin',
+  'vmax',
+  // Absolute lengths.
+  'cm',
+  'mm',
+  'q',
+  'in',
+  'pc',
+  'pt',
+  'px',
+  // Percentage.
+  '%',
+];
+
+// These are deliberately incomplete, just a random sampling of invalid
+// values/units.
+const gInvalidScrollOffsetValues = [
+  '',
+  'calc(360deg / 4)',
+  'left',
+  '#ff0000',
+  'rgb(0, 128, 0)',
+  'url("http://www.example.com/pinkish.gif")',
+  'this_is_garbage',
+  // Multiple valid values.
+  '100px 5%',
+];
+
+const gInvalidScrollOffsetSuffixes = [
+  'deg',
+  's',
+  'Hz',
+  'dpi',
+];
+
+// Positive tests.
+
+for (let offset of gValidScrollOffsetValues) {
+  test(function() {
+    const scroller = document.querySelector('.scroller');
+    const scrollTimeline = new ScrollTimeline(
+      { scrollSource: scroller, timeRange: 100,
+        startScrollOffset: offset, endScrollOffset: offset });
+
+    // Special case for 0; this is a valid value, but like computed style will
+    // be output as '0px' when queried.
+    if (offset == 0)
+      offset = '0px';
+
+    assert_equals(scrollTimeline.startScrollOffset, offset);
+    assert_equals(scrollTimeline.endScrollOffset, offset);
+  }, '\'' + offset + '\' is a valid scroll offset value');
+}
+
+for (const suffix of gValidScrollOffsetSuffixes) {
+  test(function() {
+    const offset = '75' + suffix;
+    const scroller = document.querySelector('.scroller');
+    const scrollTimeline = new ScrollTimeline(
+      { scrollSource: scroller, timeRange: 100,
+        startScrollOffset: offset, endScrollOffset: offset });
+
+    assert_equals(scrollTimeline.startScrollOffset, offset);
+    assert_equals(scrollTimeline.endScrollOffset, offset);
+  }, '\'' + suffix + '\' is a valid scroll offset unit');
+}
+
+// Negative tests.
+
+for (const offset of gInvalidScrollOffsetValues) {
+  test(function() {
+    const scroller = document.querySelector('.scroller');
+    const constructorFunc = function() { new ScrollTimeline(
+      { scrollSource: scroller, timeRange: 100,
+        startScrollOffset: offset, endScrollOffset: offset }) };
+    assert_throws(new TypeError(), constructorFunc);
+  }, '\'' + offset + '\' is an invalid scroll offset value');
+}
+
+for (const suffix of gInvalidScrollOffsetSuffixes) {
+  test(function() {
+    const offset = '75' + suffix;
+    const scroller = document.querySelector('.scroller');
+    const constructorFunc = function() { new ScrollTimeline(
+      { scrollSource: scroller, timeRange: 100,
+        startScrollOffset: offset, endScrollOffset: offset }) };
+    assert_throws(new TypeError(), constructorFunc);
+  }, '\'' + suffix + '\' is an invalid scroll offset unit');
+}
+</script>

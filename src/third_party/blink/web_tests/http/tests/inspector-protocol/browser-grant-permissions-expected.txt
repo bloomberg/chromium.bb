@@ -1,0 +1,14 @@
+Test that permissions could be granted
+- Granted: ["geolocation"]
+- Granted: ["audioCapture"]
+- Granted: ["geolocation","audioCapture"]
+- Failed to grant: ["eee"]  error: Unknown permission type: eee
+- Resetting all permissions
+[
+    [0] : INITIAL '': denied
+    [1] : CHANGED 'geolocation': granted
+    [2] : CHANGED 'geolocation': denied
+    [3] : CHANGED 'geolocation': granted
+    [4] : CHANGED 'geolocation': denied
+]
+

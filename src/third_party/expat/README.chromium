@@ -1,0 +1,35 @@
+Name: Expat XML Parser
+Short Name: expat
+URL: https://github.com/libexpat/libexpat
+Version: 2.2.6
+License: MIT
+License File: files/COPYING
+Security Critical: yes
+
+Description:
+  This is Expat XML parser - very lightweight C library for parsing XML.
+  Expat is distributed under an MIT license detailed in files/COPYING.
+
+  We include it here because libjingle depends on it.
+
+Import process:
+  git clone https://github.com/libexpat/libexpat.git
+  cd libexpat/expat
+  ./buildconf.sh
+  ./configure
+  cp expat_config.h $CHROMIUM_SRC/third_party/expat/files/lib
+  cd lib
+  cp *.c *.def *.h $CHROMIUM_SRC/third_party/expat/files/lib
+  cd $CHROMIUM_SRC/third_party/expat
+  patch -p3 < 0001-Do-not-redefine-lean-and-mean.patch
+  patch -p3 < 0002-Add-missing-include-for-malloc-free.patch
+
+Patches:
+    0001-Do-not-redefine-lean-and-mean.patch:
+      * Do not redefine WIN32_LEAN_AND_MEAN which breaks the Windows
+        build because it uses -Werror,-Wmacro-redefined .
+    0002-Add-missing-include-for-malloc-free.patch:
+      * Include stdlib.h for declaration of malloc, free.
+
+Added files:
+  lib/expat_config.h (a generated config file)

@@ -1,0 +1,10 @@
+CONSOLE WARNING: HTML Imports is deprecated and will be removed in M73, around March 2019. Please use ES modules instead. See https://www.chromestatus.com/features/5144752345317376 for more details.
+Tests that an imported document's readyState is "complete"
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS i.import.readyState is "complete"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

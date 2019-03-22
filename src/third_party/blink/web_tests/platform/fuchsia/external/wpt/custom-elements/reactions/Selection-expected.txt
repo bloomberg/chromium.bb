@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL deleteFromDocument on Selection must enqueue a disconnected reaction define_new_custom_element is not defined
+Harness: the test ran to completion.
+

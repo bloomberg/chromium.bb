@@ -1,0 +1,15 @@
+include_rules = [
+  "+chromeos/chromeos_features.h",
+  "+components/ukm",
+  "+mojo/public",
+  "+services/metrics/public/cpp",
+  "+services/service_manager/public",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/compositor",
+  "+ui/display",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/ozone/public",
+  "+ui/wm",
+]

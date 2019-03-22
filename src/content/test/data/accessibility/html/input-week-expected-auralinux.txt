@@ -1,0 +1,12 @@
+[document web]
+++[section]
+++++[dateeditor]
+++++++[section]
+++++++++[section]
+++++++++++[text] name='Week '
+++++++++++[spin button] name='Week'
+++++++++++++[text] name='--'
+++++++++++[text] name=', '
+++++++++++[spin button] name='Year'
+++++++++++++[text] name='----'
+++++++[push button] name='Show date picker' haspopup:menu

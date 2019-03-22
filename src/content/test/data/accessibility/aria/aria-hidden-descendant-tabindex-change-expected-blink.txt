@@ -1,0 +1,3 @@
+rootWebArea
+++slider horizontal invisible name='Slider #2 now focusable'
+++group name='finished'

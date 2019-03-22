@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<style>
+.box {
+  width: 100px;
+  height: 100px;
+  background-color: #0f0;
+}
+</style>
+
+<div id="first" class="box"></div>
+<div id="second" class="box"></div>
+
+<script type="text/worklet">
+registerAnimator("first_animator", class {
+  animate(currentTime, effect) {
+    // Unset effect.localTime is equivalent to 'undefined'
+  }
+});
+
+registerAnimator("second_animator", class {
+  animate(currentTime, effect) {
+    // explicitly set the localtime to undefined
+    effect.localTime = undefined;
+  }
+});
+
+</script>
+
+<script src="resources/animation-worklet-tests.js"></script>
+
+<script>
+
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+runInAnimationWorklet(
+  document.querySelector('script[type*=worklet]').textContent
+).then(_ => {
+
+  for (let testcase of ['first', 'second']) {
+    const animation = new WorkletAnimation(`${testcase}_animator`,
+      new KeyframeEffect(document.getElementById(testcase),
+        [
+          { transform: 'translateY(200px)' },
+          { transform: 'translateY(0px)' }
+        ], {
+          duration: 1000,
+        }
+      )
+    );
+    animation.play();
+  }
+
+  if (window.testRunner) {
+    waitTwoAnimationFrames(_ => {
+      testRunner.notifyDone();
+    });
+  }
+});
+</script>

@@ -1,0 +1,43 @@
+<html dir=rtl style="-webkit-writing-mode:vertical-lr">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
+<script>
+  var testScrolls = [
+    {distance: 10, expectedX: 110, expectedY: -100, direction: 'right'},
+    {distance: 30, expectedX: 80, expectedY: -100, direction: 'left'},
+    {distance: 10, expectedX: 80, expectedY: -90, direction: 'down'},
+    {distance: 30, expectedX: 80, expectedY: -120, direction: 'up'},
+  ];
+  var currentTest = -1;
+
+  function startNextTestCase() {
+    currentTest++;
+    if (currentTest >= testScrolls.length)
+      return;
+
+    var testCase = testScrolls[currentTest];
+    promise_test(async () => {
+      await mouseMoveTo(100, 100);
+      await smoothScroll(testCase.distance, 100, 100,
+          GestureSourceType.MOUSE_INPUT, testCase.direction, SPEED_INSTANT);
+      await waitFor( () => {
+        return window.scrollX == testCase.expectedX &&
+            window.scrollY == testCase.expectedY;
+      });
+        startNextTestCase();
+      }, 'scroll ' + testCase.direction);
+  }
+
+  window.onload = function() {
+    window.addEventListener("mousewheel", function (e){}, false);
+    window.scrollTo(100, -100);
+    startNextTestCase();
+  }
+</script>
+
+<body style="margin:0">
+  <div id="div" style="whitespace:nowrap; width: 4000px; height: 1000px; border: 1px solid red;">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</div>
+  <div id="console"></div>
+</body>
+</html>

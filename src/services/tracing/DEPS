@@ -1,0 +1,6 @@
+include_rules = [
+  "+services/service_manager/public",
+  "+third_party/perfetto/include",
+  "+third_party/perfetto/protos/perfetto",
+  "+third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h",
+]

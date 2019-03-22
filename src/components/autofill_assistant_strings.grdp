@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <if expr="is_android">
+    <message name="IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR" desc="Text label that is shown when autofill assistant cannot help anymore, because something went wrong.">
+      Something went wrong. You can finish your order on the website.
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP" desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action." formatter_data="android_java">
+      I cannot help anymore, please continue on your own.
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP" desc="Text label shown next to an UNDO button when user action indicate they want to continue on their own." formatter_data="android_java">
+      Continue manually?
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_LOADING" desc="Text label that is shown during the loading of the first page, right after being triggered.">
+      Opening <ph name="SITE_NAME">$1<ex>google.com</ex></ph>…
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM" desc="Text on the payment request primary button to confirm payment information [CHAR-LIMIT=32]" formatter_data="android_java">
+      Continue
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ." formatter_data="android_java">
+      The screening is different from what you selected. Continue?
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ." formatter_data="android_java">
+      Go back
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown." formatter_data="android_java">
+      Google Assistant in Chrome first run screen is shown
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_AVAILABLE_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant is available." formatter_data="android_java">
+      Google Assistant in Chrome is available near bottom of the screen
+    </message>
+  </if>
+</grit-part>

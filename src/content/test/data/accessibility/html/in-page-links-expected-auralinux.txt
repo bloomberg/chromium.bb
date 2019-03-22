@@ -1,0 +1,35 @@
+[document web]
+++[link] name='Empty anchor'
+++++[text] name='Empty anchor'
+++[text] name=' '
+++[link] name='Anchor with content'
+++++[text] name='Anchor with content'
+++[text] name=' '
+++[link] name='Anchor with ID'
+++++[text] name='Anchor with ID'
+++[text] name=' '
+++[link] name='Empty span'
+++++[text] name='Empty span'
+++[text] name=' '
+++[link] name='Span with content'
+++++[text] name='Span with content'
+++[text] name=' '
+++[link] name='Paragraph with content'
+++++[text] name='Paragraph with content'
+++[paragraph]
+++++[link]
+++++[text] name='After empty anchor'
+++[paragraph]
+++++[link] name='Anchor with content'
+++++++[text] name='Anchor with content'
+++[paragraph]
+++++[link] name='Anchor with ID'
+++++++[text] name='Anchor with ID'
+++[paragraph]
+++++[section]
+++++[text] name='After empty span'
+++[paragraph]
+++++[section]
+++++++[text] name='Span with content'
+++[paragraph]
+++++[text] name='Paragraph with content'

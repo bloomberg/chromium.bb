@@ -1,0 +1,17 @@
+This is a testharness.js-based test.
+PASS UTF-7 should not be supported
+PASS utf-7 should not be supported
+PASS UTF-32 with BOM should decode as UTF-16LE
+FAIL UTF-32 with no BOM should decode as UTF-8 assert_equals: Decoding with UTF-32 expected "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+0080" but got "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+00C2/U+20AC"
+PASS utf-32 with BOM should decode as UTF-16LE
+FAIL utf-32 with no BOM should decode as UTF-8 assert_equals: Decoding with utf-32 expected "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+0080" but got "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+00C2/U+20AC"
+PASS UTF-32LE with BOM should decode as UTF-16LE
+FAIL UTF-32LE with no BOM should decode as UTF-8 assert_equals: Decoding with UTF-32LE expected "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+0080" but got "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+00C2/U+20AC"
+PASS utf-32le with BOM should decode as UTF-16LE
+FAIL utf-32le with no BOM should decode as UTF-8 assert_equals: Decoding with utf-32le expected "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+0080" but got "U+0041/U+0000/U+0000/U+0000/U+0042/U+0000/U+0000/U+00C2/U+20AC"
+FAIL UTF-32be with no BOM should decode as UTF-8 assert_equals: Decoding with UTF-32be expected "U+0000/U+0000/U+0000/U+0041/U+0000/U+0000/U+0000/U+0042/U+0080" but got "U+0000/U+0000/U+0000/U+0041/U+0000/U+0000/U+0000/U+0042/U+00C2/U+20AC"
+FAIL UTF-32be with BOM should decode as UTF-8 assert_equals: Decoding with UTF-32be expected "U+0000/U+0000/U+FFFD/U+FFFD/U+0000/U+0000/U+0000/U+0041/U+0000/U+0080/U+0042" but got "U+0000/U+0000/U+00FE/U+00FF/U+0000/U+0000/U+0000/U+0041/U+0000/U+00C2/U+20AC/U+0042"
+FAIL utf-32be with no BOM should decode as UTF-8 assert_equals: Decoding with utf-32be expected "U+0000/U+0000/U+0000/U+0041/U+0000/U+0000/U+0000/U+0042/U+0080" but got "U+0000/U+0000/U+0000/U+0041/U+0000/U+0000/U+0000/U+0042/U+00C2/U+20AC"
+FAIL utf-32be with BOM should decode as UTF-8 assert_equals: Decoding with utf-32be expected "U+0000/U+0000/U+FFFD/U+FFFD/U+0000/U+0000/U+0000/U+0041/U+0000/U+0080/U+0042" but got "U+0000/U+0000/U+00FE/U+00FF/U+0000/U+0000/U+0000/U+0041/U+0000/U+00C2/U+20AC/U+0042"
+Harness: the test ran to completion.
+

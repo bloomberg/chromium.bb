@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS window.postMessage should be able to transfer a WritableStream
+PASS a locked WritableStream should not be transferable
+PASS window.postMessage should be able to transfer a {readable, writable} pair
+Harness: the test ran to completion.
+

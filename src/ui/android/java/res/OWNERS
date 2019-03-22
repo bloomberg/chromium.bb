@@ -1,0 +1,14 @@
+# This restriction is in place to avoid accidential addition to our top level
+# layout files, such as add duplicated assets, or introducing new colors when
+# we don't want them.
+set noparent
+
+dtrainor@chromium.org
+huayinz@chromium.org
+mdjones@chromium.org
+tedchoc@chromium.org
+twellington@chromium.org
+yusufo@chromium.org
+
+# COMPONENT: UI>Browser>Mobile
+# OS: Android

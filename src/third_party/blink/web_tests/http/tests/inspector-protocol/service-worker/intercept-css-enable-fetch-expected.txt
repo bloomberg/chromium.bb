@@ -1,0 +1,3 @@
+Verifies that service workers do not throw errors from devtools css enable initiated fetch.
+finished awaiting for css enable
+

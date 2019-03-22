@@ -1,0 +1,11 @@
+[document web]
+++[list]
+++++[list item]
+++++++[static] name='• '
+++++++[text] name='Item 1'
+++++[list item]
+++++++[static] name='• '
+++++++[text] name='Item 2'
+++++[list item]
+++++++[static] name='• '
+++++++[text] name='Item 3'

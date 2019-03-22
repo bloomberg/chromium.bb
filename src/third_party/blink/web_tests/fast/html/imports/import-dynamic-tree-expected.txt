@@ -1,0 +1,10 @@
+CONSOLE WARNING: line 14: HTML Imports is deprecated and will be removed in M73, around March 2019. Please use ES modules instead. See https://www.chromestatus.com/features/5144752345317376 for more details.
+This test ensures that script-added import lets its child blocks following scripts.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS window.trace is ['START root', 'child1', 'child2', 'END root']
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

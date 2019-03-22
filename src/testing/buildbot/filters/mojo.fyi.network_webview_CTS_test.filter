@@ -1,0 +1,30 @@
+# These CTS tests currently fail when run with --enable-features=NetworkService,NetworkServiceInProcess
+#
+# Note: webview aims to support running network service in-process, so the
+# tests are also running with NS IP. Multiprocess webview currently does not
+# support running NS OOP, https://crbug.com/882650
+
+# failing tests, https://crbug.com/902330
+android.webkit.cts.WebViewClientTest#testDoUpdateVisitedHistory
+android.webkit.cts.WebViewClientTest#testLoadPage
+android.webkit.cts.WebViewClientTest#testOnFormResubmission
+android.webkit.cts.WebViewClientTest#testOnReceivedError
+android.webkit.cts.WebViewClientTest#testOnReceivedErrorForSubresource
+android.webkit.cts.WebViewClientTest#testOnReceivedHttpAuthRequest
+android.webkit.cts.WebViewClientTest#testOnReceivedHttpError
+android.webkit.cts.WebViewClientTest#testOnReceivedLoginRequest
+android.webkit.cts.WebViewClientTest#testOnSafeBrowsingHit
+android.webkit.cts.WebViewClientTest#testOnScaleChanged
+android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoading
+android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow
+
+# passing tests
+android.webkit.cts.WebViewClientTest#testOnRenderProcessGone
+android.webkit.cts.WebViewClientTest#testOnRenderProcessGoneDefault
+android.webkit.cts.WebViewClientTest#testOnUnhandledKeyEvent
+android.webkit.cts.WebViewClientTest#testShouldOverrideKeyEvent
+android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingDefault
+
+# failing for other reasons, to determine more precisely
+android.webkit.cts.WebViewClientTest#testShouldInterceptRequestParams
+android.webkit.cts.WebViewClientTest#testShouldInterceptRequestResponse

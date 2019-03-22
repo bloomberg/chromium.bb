@@ -1,0 +1,9 @@
+MediaElementAudioSourceNode with same-origin source
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS Correctly found some non-zero values.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,18 @@
+Name: libcxx-pretty-printers
+URL: https://github.com/LeszekSwirski/libcxx-pretty-printers
+Version: dc4eb17426ce62262992d7c52aa1140f9b707c37
+License: GPL v3
+License File: LICENSE
+Security Critical: no
+
+Description:
+GDB Pretty Printers for libc++ of Clang/LLVM
+
+Local patches:
+None
+
+Upgrading:
+$ git clone https://github.com/LeszekSwirski/libcxx-pretty-printers.git
+$ rm -rf .git .gitignore
+* Add README.chromium
+* Add OWNERS

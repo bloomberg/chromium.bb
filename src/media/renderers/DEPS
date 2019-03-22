@@ -1,0 +1,13 @@
+# Do NOT add net/ or ui/base without a great reason, they're huge!
+include_rules = [
+  "+components/viz/client",
+  "+components/viz/common",
+  "+third_party/khronos/GLES2",
+  "+ul/gl/gl_enums.h",
+]
+
+specific_include_rules = {
+  ".*_unittest.cc": [
+    "+components/viz/test",
+  ],
+}

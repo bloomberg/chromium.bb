@@ -1,0 +1,3 @@
+[document web]
+++[footer]
+++++[text] name='Footer element'

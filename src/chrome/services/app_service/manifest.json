@@ -1,0 +1,20 @@
+{
+  "name": "apps",
+  "display_name": "App Service",
+  "sandbox_type": "none",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "app_service": [
+          "apps.mojom.AppService"
+        ]
+      },
+      "requires": {
+        "preferences": [
+          "pref_client"
+        ]
+      }
+     }
+  }
+}
+

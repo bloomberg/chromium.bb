@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL Constructors assert_throws: function "() => { new FormData(null); }" did not throw
+PASS empty formdata
+PASS formdata with string
+PASS formdata with named string
+PASS formdata from form
+Harness: the test ran to completion.
+

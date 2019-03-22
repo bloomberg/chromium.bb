@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+FAIL Missing arguments assert_throws: function "() => memory.grow()" did not throw
+PASS Branding
+PASS Zero initial
+PASS Zero initial with valueOf
+PASS Non-zero initial
+PASS Zero initial with respected maximum
+PASS Zero initial with respected maximum grown twice
+PASS Zero initial growing too much
+FAIL Out-of-range argument: undefined assert_throws: function "() => memory.grow(value)" did not throw
+FAIL Out-of-range argument: NaN assert_throws: function "() => memory.grow(value)" did not throw
+FAIL Out-of-range argument: Infinity assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): maximum memory size exceeded" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Out-of-range argument: -Infinity assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): trying to shrink memory" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Out-of-range argument: -1 assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): trying to shrink memory" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Out-of-range argument: 4294967296 assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): maximum memory size exceeded" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Out-of-range argument: 68719476736 assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): maximum memory size exceeded" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Out-of-range argument: "0x100000000" assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): maximum memory size exceeded" ("RangeError") expected object "TypeError" ("TypeError")
+FAIL Out-of-range argument: object "[object Object]" assert_throws: function "() => memory.grow(value)" threw object "RangeError: WebAssembly.Memory.grow(): maximum memory size exceeded" ("RangeError") expected object "TypeError" ("TypeError")
+PASS Stray argument
+Harness: the test ran to completion.
+
