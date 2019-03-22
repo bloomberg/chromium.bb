@@ -119,7 +119,9 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
   task_queue_.AddTask(
       std::make_unique<StaleEntryFinalizerTask>(this, prefetch_store));
 
-  // Second, move FINISHED to ZOMBIE.
+  // Second, move FINISHED to ZOMBIE. This also just needs to run regularly to
+  // report various prefetch item metrics. Note that we're not running this in
+  // the background task due to crbug.com/944615.
   task_queue_.AddTask(
       std::make_unique<MetricsFinalizationTask>(prefetch_store));
 
@@ -210,13 +212,6 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
 
   task_queue_.AddTask(std::make_unique<ImportCleanupTask>(
       service_->GetPrefetchStore(), service_->GetPrefetchImporter()));
-
-  // This task should be last, because it is least important for correct
-  // operation of the system, and because any reconciliation tasks might
-  // generate more entries in the FINISHED state that the finalization task
-  // could pick up.
-  task_queue_.AddTask(
-      std::make_unique<MetricsFinalizationTask>(service_->GetPrefetchStore()));
 }
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
