@@ -254,14 +254,20 @@ Document* DOMImplementation::createDocument(const String& type,
     }
   }
 
+  if (RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled() &&
+      plugin_data && plugin_data->IsMimeHandlerViewMimeType(type)) {
+    // Plugins handled by MimeHandlerView do not create a PluginDocument. They
+    // are rendered inside cross-process frames and the notion of a PluginView
+    // (which is associated with PluginDocument) is irrelevant here.
+    return HTMLDocument::Create(init);
+  }
+
   // PDF is one image type for which a plugin can override built-in support.
   // We do not want QuickTime to take over all image types, obviously.
   if ((type == "application/pdf" || type == "text/pdf") && plugin_data &&
       plugin_data->SupportsMimeType(type)) {
-    return RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()
-               ? HTMLDocument::Create(init)
-               : PluginDocument::Create(
-                     init, plugin_data->PluginBackgroundColorForMimeType(type));
+    return PluginDocument::Create(
+        init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   // multipart/x-mixed-replace is only supported for images.
   if (MIMETypeRegistry::IsSupportedImageResourceMIMEType(type) ||

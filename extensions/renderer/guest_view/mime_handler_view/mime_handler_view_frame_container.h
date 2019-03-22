@@ -34,7 +34,6 @@ namespace extensions {
 // for an embedded MimeHandlerView extension in a cross-origin frame.
 class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
  public:
-  static bool IsSupportedMimeType(const std::string& mime_type);
   static bool Create(const blink::WebElement& plugin_element,
                      const GURL& resource_url,
                      const std::string& mime_type,

@@ -12926,4 +12926,26 @@ TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {
   helper.Reset();
 }
 
+class MimeHandlerViewDocumentTest
+    : public WebFrameTest,
+      public testing::WithParamInterface<
+          bool /* mime_handler_view_in_cross_process_frame */> {};
+
+TEST_P(MimeHandlerViewDocumentTest, DocumentType) {
+  bool cross_process = GetParam();
+  RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(
+      cross_process);
+  ScopedFakePluginRegistry fake_plugins;
+  RegisterMockedHttpURLLoadWithMimeType("test.pdf", "application/pdf");
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "test.pdf");
+  WebViewImpl* web_view = web_view_helper.GetWebView();
+  WebLocalFrameImpl* web_frame = web_view->MainFrameImpl();
+  Document* document = web_frame->GetFrame()->GetDocument();
+  ASSERT_TRUE(document);
+  ASSERT_TRUE(document->IsHTMLDocument());
+  EXPECT_NE(cross_process, document->IsPluginDocument());
+}
+
+INSTANTIATE_TEST_SUITE_P(P, MimeHandlerViewDocumentTest, testing::Bool());
 }  // namespace blink

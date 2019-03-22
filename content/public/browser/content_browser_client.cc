@@ -979,4 +979,9 @@ ContentBrowserClient::GetWideColorGamutHeuristic() const {
 }
 #endif
 
+base::flat_set<std::string> ContentBrowserClient::GetMimeHandlerViewMimeTypes(
+    ResourceContext* resource_context) {
+  return base::flat_set<std::string>();
+}
+
 }  // namespace content

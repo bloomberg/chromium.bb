@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGIN_UTILS_H_
 #define CHROME_BROWSER_PLUGINS_PLUGIN_UTILS_H_
 
+#include <string>
+
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -59,6 +62,11 @@ class PluginUtils {
   static std::string GetExtensionIdForMimeType(
       content::ResourceContext* resource_context,
       const std::string& mime_type);
+
+  // Returns a map populated with MIME types that are handled by an extension as
+  // keys and the corresponding extensions Ids as values.
+  static base::flat_map<std::string, std::string> GetMimeTypeToExtensionIdMap(
+      content::ResourceContext* resource_context);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PluginUtils);

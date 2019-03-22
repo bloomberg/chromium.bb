@@ -468,9 +468,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
   // externally to load the required handelrs.
-  virtual bool IsPluginHandledExternally(HTMLPlugInElement&,
-                                         const KURL&,
-                                         const String&) {
+  virtual bool MaybeCreateMimeHandlerView(HTMLPlugInElement&,
+                                          const KURL&,
+                                          const String&) {
     return false;
   }
 

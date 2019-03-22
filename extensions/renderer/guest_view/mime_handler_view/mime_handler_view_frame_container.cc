@@ -46,13 +46,6 @@ void MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::OnDestruct() {
   container_->DestroyFrameContainer();
 }
 
-// static.
-bool MimeHandlerViewFrameContainer::IsSupportedMimeType(
-    const std::string& mime_type) {
-  return mime_type == "text/pdf" || mime_type == "application/pdf" ||
-         mime_type == "text/csv";
-}
-
 // static
 bool MimeHandlerViewFrameContainer::Create(
     const blink::WebElement& plugin_element,
@@ -66,8 +59,6 @@ bool MimeHandlerViewFrameContainer::Create(
     return false;
   }
 
-  if (!IsSupportedMimeType(mime_type))
-    return false;
   // Life time is managed by the class itself: when the MimeHandlerViewGuest
   // is destroyed an IPC is sent to renderer to cleanup this instance.
   return new MimeHandlerViewFrameContainer(plugin_element, resource_url,

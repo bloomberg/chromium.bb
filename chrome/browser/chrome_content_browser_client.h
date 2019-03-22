@@ -582,6 +582,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const override;
 #endif
 
+  base::flat_set<std::string> GetMimeHandlerViewMimeTypes(
+      content::ResourceContext* resource_context) override;
+
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(
       const GURL& url,

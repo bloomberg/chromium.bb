@@ -153,6 +153,18 @@ bool PluginUtils::ShouldPreferHtmlOverPlugins(
 std::string PluginUtils::GetExtensionIdForMimeType(
     content::ResourceContext* resource_context,
     const std::string& mime_type) {
+  auto map = GetMimeTypeToExtensionIdMap(resource_context);
+  auto it = map.find(mime_type);
+  if (it != map.end())
+    return it->second;
+  return std::string();
+}
+
+// static
+base::flat_map<std::string, std::string>
+PluginUtils::GetMimeTypeToExtensionIdMap(
+    content::ResourceContext* resource_context) {
+  base::flat_map<std::string, std::string> mime_type_to_extension_id_map;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   bool profile_is_off_the_record = io_data->IsOffTheRecord();
@@ -176,10 +188,14 @@ std::string PluginUtils::GetExtensionIdForMimeType(
       continue;
     }
 
-    MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
-    if (handler && handler->CanHandleMIMEType(mime_type))
-      return extension_id;
+    if (MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension)) {
+      for (const auto& supported_mime_type : handler->mime_type_set()) {
+        DCHECK(!base::ContainsKey(mime_type_to_extension_id_map,
+                                  supported_mime_type));
+        mime_type_to_extension_id_map[supported_mime_type] = extension_id;
+      }
+    }
   }
 #endif
-  return std::string();
+  return mime_type_to_extension_id_map;
 }
