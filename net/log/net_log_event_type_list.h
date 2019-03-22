@@ -913,6 +913,9 @@ EVENT_TYPE(URL_REQUEST_FILTERS_SET)
 // Measures the time while getting a reference to the back end.
 EVENT_TYPE(HTTP_CACHE_GET_BACKEND)
 
+// Measures the time while getting a disk cache entry with OpenOrCreateEntry().
+EVENT_TYPE(HTTP_CACHE_OPEN_OR_CREATE_ENTRY)
+
 // Measures the time while opening a disk cache entry.
 EVENT_TYPE(HTTP_CACHE_OPEN_ENTRY)
 

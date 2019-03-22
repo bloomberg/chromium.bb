@@ -100,8 +100,8 @@ void HttpCache::DefaultBackend::SetAppStatusListener(
 
 //-----------------------------------------------------------------------------
 
-HttpCache::ActiveEntry::ActiveEntry(disk_cache::Entry* entry)
-    : disk_entry(entry) {}
+HttpCache::ActiveEntry::ActiveEntry(disk_cache::Entry* entry, bool opened_in)
+    : disk_entry(entry), opened(opened_in) {}
 
 HttpCache::ActiveEntry::~ActiveEntry() {
   if (disk_entry) {
@@ -726,10 +726,10 @@ HttpCache::ActiveEntry* HttpCache::FindActiveEntry(const std::string& key) {
   return it != active_entries_.end() ? it->second.get() : nullptr;
 }
 
-HttpCache::ActiveEntry* HttpCache::ActivateEntry(
-    disk_cache::Entry* disk_entry) {
+HttpCache::ActiveEntry* HttpCache::ActivateEntry(disk_cache::Entry* disk_entry,
+                                                 bool opened) {
   DCHECK(!FindActiveEntry(disk_entry->GetKey()));
-  ActiveEntry* entry = new ActiveEntry(disk_entry);
+  ActiveEntry* entry = new ActiveEntry(disk_entry, opened);
   active_entries_[disk_entry->GetKey()] = base::WrapUnique(entry);
   return entry;
 }
@@ -1400,7 +1400,8 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
       try_restart_requests = true;
     } else if (item->IsValid()) {
       key = pending_op->disk_entry_struct.entry->GetKey();
-      entry = ActivateEntry(pending_op->disk_entry_struct.entry);
+      entry = ActivateEntry(pending_op->disk_entry_struct.entry,
+                            pending_op->disk_entry_struct.opened);
     } else {
       // The writer transaction is gone.
       if (!pending_op->disk_entry_struct.opened)

@@ -700,7 +700,7 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //
 // 1. Not-cached entry:
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> CreateEntry* -> AddToEntry* ->
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
 //   SendRequest* -> SuccessfulSendRequest -> OverwriteCachedResponse ->
 //   CacheWriteResponse* -> TruncateCachedData* -> TruncateCachedMetadata* ->
 //   PartialHeadersReceived -> FinishHeaders*
@@ -711,20 +711,21 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //
 // 2. Cached entry, no validation:
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
-//   BeginCacheValidation() -> SetupEntryForRead() -> FinishHeaders*
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
+//   CacheReadResponse* -> CacheDispatchValidation ->
+//   BeginPartialCacheValidation() -> BeginCacheValidation() ->
+//   SetupEntryForRead() -> FinishHeaders*
 //
 //   Read():
 //   CacheReadData*
 //
 // 3. Cached entry, validation (304):
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
-//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
-//   UpdateCachedResponse -> CacheWriteUpdatedResponse* ->
-//   UpdateCachedResponseComplete -> OverwriteCachedResponse ->
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
+//   CacheReadResponse* -> CacheDispatchValidation ->
+//   BeginPartialCacheValidation() -> BeginCacheValidation() -> SendRequest* ->
+//   SuccessfulSendRequest -> UpdateCachedResponse -> CacheWriteUpdatedResponse*
+//   -> UpdateCachedResponseComplete -> OverwriteCachedResponse ->
 //   PartialHeadersReceived -> FinishHeaders*
 //
 //   Read():
@@ -732,11 +733,12 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //
 // 4. Cached entry, validation and replace (200):
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
-//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
-//   OverwriteCachedResponse -> CacheWriteResponse* -> DoTruncateCachedData* ->
-//   TruncateCachedMetadata* -> PartialHeadersReceived -> FinishHeaders*
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
+//   CacheReadResponse* -> CacheDispatchValidation ->
+//   BeginPartialCacheValidation() -> BeginCacheValidation() -> SendRequest* ->
+//   SuccessfulSendRequest -> OverwriteCachedResponse -> CacheWriteResponse* ->
+//   DoTruncateCachedData* -> TruncateCachedMetadata* -> PartialHeadersReceived
+//   -> FinishHeaders*
 //
 //   Read():
 //   NetworkReadCacheWrite*/CacheReadData* (if other writers are also writing to
@@ -744,13 +746,13 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //
 // 5. Sparse entry, partially cached, byte range request:
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
-//   CacheQueryData* -> ValidateEntryHeadersAndContinue() ->
-//   StartPartialCacheValidation -> CompletePartialCacheValidation ->
-//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
-//   UpdateCachedResponse -> CacheWriteUpdatedResponse* ->
-//   UpdateCachedResponseComplete -> OverwriteCachedResponse ->
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
+//   CacheReadResponse* -> CacheDispatchValidation ->
+//   BeginPartialCacheValidation() -> CacheQueryData* ->
+//   ValidateEntryHeadersAndContinue() -> StartPartialCacheValidation ->
+//   CompletePartialCacheValidation -> BeginCacheValidation() -> SendRequest* ->
+//   SuccessfulSendRequest -> UpdateCachedResponse -> CacheWriteUpdatedResponse*
+//   -> UpdateCachedResponseComplete -> OverwriteCachedResponse ->
 //   PartialHeadersReceived -> FinishHeaders*
 //
 //   Read() 1:
@@ -769,7 +771,7 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 // 6. HEAD. Not-cached entry:
 //   Pass through. Don't save a HEAD by itself.
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> SendRequest*
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> SendRequest*
 //
 // 7. HEAD. Cached entry, no validation:
 //   Start():
@@ -789,10 +791,10 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //   Pass through. The request dooms the old entry, as a HEAD won't be stored by
 //   itself.
 //   Start():
-//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> CacheDispatchValidation -> BeginPartialCacheValidation() ->
-//   BeginCacheValidation() -> SendRequest* -> SuccessfulSendRequest ->
-//   OverwriteCachedResponse -> FinishHeaders*
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
+//   CacheReadResponse* -> CacheDispatchValidation ->
+//   BeginPartialCacheValidation() -> BeginCacheValidation() -> SendRequest* ->
+//   SuccessfulSendRequest -> OverwriteCachedResponse -> FinishHeaders*
 //
 // 10. HEAD. Sparse entry, partially cached:
 //   Serve the request from the cache, as long as it doesn't require
@@ -814,10 +816,10 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //
 // 13. Cached entry less than 5 minutes old, unused_since_prefetch is true:
 //   Skip validation, similar to example 2.
-//   GetBackend* -> InitEntry -> OpenEntry* -> AddToEntry* -> CacheReadResponse*
-//   -> CacheToggleUnusedSincePrefetch* -> CacheDispatchValidation ->
-//   BeginPartialCacheValidation() -> BeginCacheValidation() ->
-//   SetupEntryForRead() -> FinishHeaders*
+//   GetBackend* -> InitEntry -> OpenOrCreateEntry* -> AddToEntry* ->
+//   CacheReadResponse* -> CacheToggleUnusedSincePrefetch* ->
+//   CacheDispatchValidation -> BeginPartialCacheValidation() ->
+//   BeginCacheValidation() -> SetupEntryForRead() -> FinishHeaders*
 //
 //   Read():
 //   CacheReadData*
@@ -849,12 +851,12 @@ int HttpCache::Transaction::DoLoop(int result) {
         DCHECK_EQ(OK, rv);
         rv = DoInitEntry();
         break;
-      case STATE_OPEN_ENTRY:
+      case STATE_OPEN_OR_CREATE_ENTRY:
         DCHECK_EQ(OK, rv);
-        rv = DoOpenEntry();
+        rv = DoOpenOrCreateEntry();
         break;
-      case STATE_OPEN_ENTRY_COMPLETE:
-        rv = DoOpenEntryComplete(rv);
+      case STATE_OPEN_OR_CREATE_ENTRY_COMPLETE:
+        rv = DoOpenOrCreateEntryComplete(rv);
         break;
       case STATE_DOOM_ENTRY:
         DCHECK_EQ(OK, rv);
@@ -1137,16 +1139,16 @@ int HttpCache::Transaction::DoInitEntry() {
     return OK;
   }
 
-  TransitionToState(STATE_OPEN_ENTRY);
+  TransitionToState(STATE_OPEN_OR_CREATE_ENTRY);
   return OK;
 }
 
-int HttpCache::Transaction::DoOpenEntry() {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoOpenEntry");
+int HttpCache::Transaction::DoOpenOrCreateEntry() {
+  TRACE_EVENT0("io", "HttpCacheTransaction::DoOpenOrCreateEntry");
   DCHECK(!new_entry_);
-  TransitionToState(STATE_OPEN_ENTRY_COMPLETE);
+  TransitionToState(STATE_OPEN_OR_CREATE_ENTRY_COMPLETE);
   cache_pending_ = true;
-  net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_OPEN_ENTRY);
+  net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY);
   first_cache_access_since_ = TimeTicks::Now();
 
   // See if we already have something working with this cache key.
@@ -1154,28 +1156,60 @@ int HttpCache::Transaction::DoOpenEntry() {
   if (new_entry_)
     return OK;
 
-  // See if we could potentially quick-reject the entry based on hints the
-  // backend keeps in memory.
+  // See if we could potentially doom the entry based on hints the backend keeps
+  // in memory.
+  // Currently only SimpleCache utilizes in memory hints. If an entry is found
+  // unsuitable, and thus Doomed, SimpleCache can also optimize the
+  // OpenOrCreateEntry() call to reduce the overhead of trying to open an entry
+  // we know is doomed.
   uint8_t in_memory_info =
       cache_->GetCurrentBackend()->GetEntryInMemoryData(cache_key_);
+  bool entry_not_suitable = false;
   if (MaybeRejectBasedOnEntryInMemoryData(in_memory_info)) {
     cache_->GetCurrentBackend()->DoomEntry(cache_key_, priority_,
                                            base::DoNothing());
-    return net::ERR_CACHE_ENTRY_NOT_SUITABLE;
+    entry_not_suitable = true;
+    // Documents the case this applies in
+    DCHECK_EQ(mode_, READ_WRITE);
+    // Record this as CantConditionalize, but otherwise proceed as we would
+    // below --- as we've already dropped the old entry.
+    couldnt_conditionalize_request_ = true;
+    validation_cause_ = VALIDATION_CAUSE_ZERO_FRESHNESS;
+    cant_conditionalize_zero_freshness_from_memhint_ = true;
+    UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE);
   }
 
-  return cache_->OpenEntry(cache_key_, &new_entry_, this);
+  // mode_ can be anything but NONE or WRITE at this point (READ, UPDATE, or
+  // READ_WRITE).
+  // READ, UPDATE, certain READ_WRITEs, and some methods shouldn't create, so
+  // try only opening.
+  if (mode_ != READ_WRITE || ShouldOpenOnlyMethods()) {
+    if (entry_not_suitable) {
+      // The entry isn't suitable and we can't create a new one.
+      return net::ERR_CACHE_ENTRY_NOT_SUITABLE;
+    }
+
+    return cache_->OpenEntry(cache_key_, &new_entry_, this);
+  }
+
+  return cache_->OpenOrCreateEntry(cache_key_, &new_entry_, this);
 }
 
-int HttpCache::Transaction::DoOpenEntryComplete(int result) {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoOpenEntryComplete");
+int HttpCache::Transaction::DoOpenOrCreateEntryComplete(int result) {
+  TRACE_EVENT0("io", "HttpCacheTransaction::DoOpenOrCreateEntryComplete");
   // It is important that we go to STATE_ADD_TO_ENTRY whenever the result is
   // OK, otherwise the cache will end up with an active entry without any
   // transaction attached.
-  net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_OPEN_ENTRY,
-                                    result);
+  net_log_.EndEventWithNetErrorCode(
+      NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY, result);
+
   cache_pending_ = false;
+
   if (result == OK) {
+    if (new_entry_->opened == false) {
+      // Entry was created so mode changes to WRITE.
+      mode_ = WRITE;
+    }
     TransitionToState(STATE_ADD_TO_ENTRY);
     return OK;
   }
@@ -1185,41 +1219,48 @@ int HttpCache::Transaction::DoOpenEntryComplete(int result) {
     return OK;
   }
 
-  if (result == ERR_CACHE_ENTRY_NOT_SUITABLE) {
-    // Documents the case this applies in
-    DCHECK_EQ(mode_, READ_WRITE);
-    // Record this as CantConditionalize, but otherwise proceed as we would
-    // below --- as OpenEntry has already dropped the old entry for us.
-    couldnt_conditionalize_request_ = true;
-    validation_cause_ = VALIDATION_CAUSE_ZERO_FRESHNESS;
-    cant_conditionalize_zero_freshness_from_memhint_ = true;
-    UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE);
-  }
+  // No need to explicitly handle ERR_CACHE_ENTRY_NOT_SUITABLE as the
+  // ShouldOpenOnlyMethods() check will handle it.
 
-  if (method_ == "PUT" || method_ == "DELETE" ||
-      (method_ == "HEAD" && mode_ == READ_WRITE)) {
-    DCHECK(mode_ == READ_WRITE || mode_ == WRITE || method_ == "HEAD");
+  // We were unable to open or create an entry.
+  DLOG(WARNING) << "Unable to open or create cache entry";
+
+  if (ShouldOpenOnlyMethods()) {
+    // These methods, on failure, should bypass the cache.
     mode_ = NONE;
     TransitionToState(STATE_SEND_REQUEST);
     return OK;
   }
 
-  if (mode_ == READ_WRITE) {
-    mode_ = WRITE;
-    TransitionToState(STATE_CREATE_ENTRY);
-    return OK;
-  }
-  if (mode_ == UPDATE) {
-    // There is no cache entry to update; proceed without caching.
-    mode_ = NONE;
-    TransitionToState(STATE_SEND_REQUEST);
-    return OK;
+  // Since the operation failed, what we do next depends on the mode_ which can
+  // be the following: READ, READ_WRITE, or UPDATE. Note: mode_ cannot be WRITE
+  // or NONE at this point as DoInitEntry() handled those cases.
+
+  switch (mode_) {
+    case READ:
+      // The entry does not exist, and we are not permitted to create a new
+      // entry, so we must fail.
+      TransitionToState(STATE_FINISH_HEADERS);
+      return ERR_CACHE_MISS;
+    case READ_WRITE:
+      // Unable to open or create; set the mode to NONE in order to bypass the
+      // cache entry and read from the network directly.
+      mode_ = NONE;
+      if (partial_)
+        partial_->RestoreHeaders(&custom_request_->extra_headers);
+      TransitionToState(STATE_SEND_REQUEST);
+      break;
+    case UPDATE:
+      // There is no cache entry to update; proceed without caching.
+      DCHECK(!partial_);
+      mode_ = NONE;
+      TransitionToState(STATE_SEND_REQUEST);
+      break;
+    default:
+      NOTREACHED();
   }
 
-  // The entry does not exist, and we are not permitted to create a new entry,
-  // so we must fail.
-  TransitionToState(STATE_FINISH_HEADERS);
-  return ERR_CACHE_MISS;
+  return OK;
 }
 
 int HttpCache::Transaction::DoDoomEntry() {
@@ -1270,10 +1311,6 @@ int HttpCache::Transaction::DoCreateEntryComplete(int result) {
       break;
 
     default:
-      // We have a race here: Maybe we failed to open the entry and decided to
-      // create one, but by the time we called create, another transaction
-      // already created the entry. If we want to eliminate this issue, we
-      // need an atomic OpenOrCreate() method exposed by the disk cache.
       DLOG(WARNING) << "Unable to create cache entry";
 
       // Set the mode to NONE in order to bypass the cache entry and read from
@@ -1302,6 +1339,13 @@ int HttpCache::Transaction::DoAddToEntry() {
   cache_pending_ = true;
   net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY);
   DCHECK(entry_lock_waiting_since_.is_null());
+
+  // By this point whether the entry was created or opened is no longer relevant
+  // for this transaction. However there may be queued transactions that want to
+  // use this entry and from their perspective the entry was opened, so change
+  // the flag to reflect that.
+  new_entry_->opened = true;
+
   int rv = cache_->AddTransactionToEntry(new_entry_, this);
   DCHECK_EQ(rv, ERR_IO_PENDING);
 
@@ -2787,6 +2831,13 @@ bool HttpCache::Transaction::IsResponseConditionalizable(
     return false;
 
   return true;
+}
+
+bool HttpCache::Transaction::ShouldOpenOnlyMethods() const {
+  // These methods indicate that we should only try to open an entry and not
+  // fallback to create.
+  return method_ == "PUT" || method_ == "DELETE" ||
+         (method_ == "HEAD" && mode_ == READ_WRITE);
 }
 
 bool HttpCache::Transaction::ConditionalizeRequest() {
