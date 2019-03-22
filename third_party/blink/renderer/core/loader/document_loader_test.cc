@@ -200,14 +200,12 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutSetIfHeaderReceived) {
   WebURLResponse response(url);
   response.SetHttpStatusCode(200);
   response.SetHttpHeaderField("mixed-content", "noupgrade");
+  response.SetMimeType("text/html");
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath("foo.html"), response);
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       "https://examplenoupgrade.com/foo.html");
   EXPECT_TRUE(To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
-                  ->Loader()
-                  .GetDocumentLoader()
-                  ->GetFrame()
                   ->GetDocument()
                   ->GetMixedAutoUpgradeOptOut());
 }
