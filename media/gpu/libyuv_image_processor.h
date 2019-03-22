@@ -53,7 +53,6 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
                        const VideoFrameLayout& output_layout,
                        const gfx::Size& output_visible_size,
                        VideoFrame::StorageType output_storage_type,
-                       OutputMode output_mode,
                        ErrorCB error_cb);
 
   // ImageProcessor override
