@@ -119,7 +119,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
                              const BasicShape* basic_shape) {
   switch (basic_shape->GetType()) {
     case BasicShape::kStyleRayType: {
-      const StyleRay& ray = ToStyleRay(*basic_shape);
+      const StyleRay& ray = To<StyleRay>(*basic_shape);
       return cssvalue::CSSRayValue::Create(
           *CSSPrimitiveValue::Create(ray.Angle(),
                                      CSSPrimitiveValue::UnitType::kDegrees),
