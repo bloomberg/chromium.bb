@@ -16,7 +16,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/download_manager.h"
@@ -56,19 +55,17 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_event_router_.reset(
-      new extensions::ExtensionDownloadsEventRouter(profile_));
+      new extensions::ExtensionDownloadsEventRouter(profile_, manager));
 #endif
 
-  auto* notifier =
-      download::AllDownloadItemNotifierFactory::GetForBrowserContext(profile_);
   if (!profile_->IsOffTheRecord()) {
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile_, ServiceAccessType::EXPLICIT_ACCESS);
     history->GetNextDownloadId(
         manager_delegate_->GetDownloadIdReceiverCallback());
     download_history_.reset(new DownloadHistory(
-        notifier, std::unique_ptr<DownloadHistory::HistoryAdapter>(
-                      new DownloadHistory::HistoryAdapter(history))));
+        manager, std::unique_ptr<DownloadHistory::HistoryAdapter>(
+                     new DownloadHistory::HistoryAdapter(history))));
   }
 
   auto* download_provider = CreateDownloadOfflineContentProvider();
@@ -77,7 +74,7 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
-      notifier, std::unique_ptr<DownloadUIController::Delegate>(),
+      manager, std::unique_ptr<DownloadUIController::Delegate>(),
       download_provider));
 
 #if !defined(OS_ANDROID)
@@ -87,7 +84,7 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   // Include this download manager in the set monitored by the
   // global status updater.
   DCHECK(g_browser_process->download_status_updater());
-  g_browser_process->download_status_updater()->AddManager(notifier);
+  g_browser_process->download_status_updater()->AddManager(manager);
 
   return manager_delegate_.get();
 }

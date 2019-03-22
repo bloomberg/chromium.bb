@@ -349,7 +349,8 @@ class ExtensionDownloadsEventRouter
       extensions::api::downloads::FilenameConflictAction conflict_action,
       std::string* error);
 
-  explicit ExtensionDownloadsEventRouter(Profile* profile);
+  explicit ExtensionDownloadsEventRouter(
+      Profile* profile, content::DownloadManager* manager);
   ~ExtensionDownloadsEventRouter() override;
 
   void SetShelfEnabled(const extensions::Extension* extension, bool enabled);
@@ -399,7 +400,7 @@ class ExtensionDownloadsEventRouter
                            extensions::UnloadedExtensionReason reason) override;
 
   Profile* profile_;
-  download::AllDownloadItemNotifier* notifier_;
+  download::AllDownloadItemNotifier notifier_;
   std::set<const extensions::Extension*> shelf_disabling_extensions_;
 
   base::Time last_checked_removal_;

@@ -4,8 +4,6 @@
 
 source_set("factory") {
   sources = [
-    "all_download_item_notifier_factory.cc",
-    "all_download_item_notifier_factory.h",
     "download_service_factory.cc",
     "download_service_factory.h",
     "navigation_monitor_factory.cc",
