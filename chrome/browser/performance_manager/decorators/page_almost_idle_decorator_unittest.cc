@@ -10,7 +10,6 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/common/page_almost_idle_data.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
@@ -52,52 +51,8 @@ using MockGraphObserver = ::testing::StrictMock<LenientMockGraphObserver>;
 
 }  // namespace
 
-// A simple wrapper that exposes the internals of PageAlmostIdleData.
-class TestPageAlmostIdleData : public PageAlmostIdleData {
- public:
-  using PageAlmostIdleData::idling_timer_;
-  using PageAlmostIdleData::load_idle_state_;
-  using PageAlmostIdleData::LoadIdleState;
-};
-static_assert(sizeof(TestPageAlmostIdleData) == sizeof(PageAlmostIdleData) &&
-                  !std::is_abstract<PageAlmostIdleData>::value &&
-                  !std::is_polymorphic<PageAlmostIdleData>::value,
-              "reinterpret_cast might not be safe, rework this code!");
-
-class PageAlmostIdleDecoratorTestHelper {
- public:
-  static const base::TimeDelta kLoadedAndIdlingTimeout;
-  static const base::TimeDelta kWaitingForIdleTimeout;
-
-  static TestPageAlmostIdleData* GetOrCreateData(PageNodeImpl* page_node) {
-    return reinterpret_cast<TestPageAlmostIdleData*>(
-        PageAlmostIdleDecorator::GetOrCreateData(page_node));
-  }
-
-  static TestPageAlmostIdleData* GetData(PageNodeImpl* page_node) {
-    return reinterpret_cast<TestPageAlmostIdleData*>(
-        PageAlmostIdleDecorator::GetData(page_node));
-  }
-
-  static bool IsIdling(const PageNodeImpl* page_node) {
-    return PageAlmostIdleDecorator::IsIdling(page_node);
-  }
-};
-
-// static
-const base::TimeDelta
-    PageAlmostIdleDecoratorTestHelper::kLoadedAndIdlingTimeout =
-        PageAlmostIdleDecorator::kLoadedAndIdlingTimeout;
-// static
-const base::TimeDelta
-    PageAlmostIdleDecoratorTestHelper::kWaitingForIdleTimeout =
-        PageAlmostIdleDecorator::kWaitingForIdleTimeout;
-
 class PageAlmostIdleDecoratorTest : public GraphTestHarness {
  protected:
-  // Aliasing these here makes this unittest much more legible.
-  using LIS = TestPageAlmostIdleData::LoadIdleState;
-
   PageAlmostIdleDecoratorTest() = default;
   ~PageAlmostIdleDecoratorTest() override = default;
 
@@ -110,6 +65,10 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
 
   void TestPageAlmostIdleTransitions(bool timeout);
 
+  bool IsIdling(const PageNodeImpl* page_node) const {
+    return PageAlmostIdleDecorator::IsIdling(page_node);
+  }
+
   PageAlmostIdleDecorator* paid_ = nullptr;
 
  private:
@@ -117,6 +76,15 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
 };
 
 void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
+  static const base::TimeDelta kLoadedAndIdlingTimeout =
+      PageAlmostIdleDecorator::kLoadedAndIdlingTimeout;
+  static const base::TimeDelta kWaitingForIdleTimeout =
+      PageAlmostIdleDecorator::kWaitingForIdleTimeout;
+
+  // Aliasing these here makes this unittest much more legible.
+  using Data = PageAlmostIdleDecorator::Data;
+  using LIS = Data::LoadIdleState;
+
   ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
@@ -124,8 +92,7 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
   auto* frame_node = mock_graph.frame.get();
   auto* page_node = mock_graph.page.get();
   auto* proc_node = mock_graph.process.get();
-  auto* page_data =
-      PageAlmostIdleDecoratorTestHelper::GetOrCreateData(page_node);
+  auto* page_data = Data::GetOrCreateForTesting(page_node);
 
   // Initially the page should be in a loading not started state.
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state_);
@@ -170,11 +137,9 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
     task_env().FastForwardUntilNoTasksRemain();
     base::TimeTicks end = ResourceCoordinatorClock::NowTicks();
     base::TimeDelta elapsed = end - start;
-    EXPECT_LE(PageAlmostIdleDecoratorTestHelper::kLoadedAndIdlingTimeout,
-              elapsed);
-    EXPECT_LE(PageAlmostIdleDecoratorTestHelper::kWaitingForIdleTimeout,
-              elapsed);
-    EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::GetData(page_node));
+    EXPECT_LE(kLoadedAndIdlingTimeout, elapsed);
+    EXPECT_LE(kWaitingForIdleTimeout, elapsed);
+    EXPECT_FALSE(Data::GetForTesting(page_node));
   } else {
     // Go back to idling.
     frame_node->SetNetworkAlmostIdle(true);
@@ -185,23 +150,21 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
     task_env().FastForwardUntilNoTasksRemain();
     base::TimeTicks end = ResourceCoordinatorClock::NowTicks();
     base::TimeDelta elapsed = end - start;
-    EXPECT_LE(PageAlmostIdleDecoratorTestHelper::kLoadedAndIdlingTimeout,
-              elapsed);
-    EXPECT_GT(PageAlmostIdleDecoratorTestHelper::kWaitingForIdleTimeout,
-              elapsed);
-    EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::GetData(page_node));
+    EXPECT_LE(kLoadedAndIdlingTimeout, elapsed);
+    EXPECT_GT(kWaitingForIdleTimeout, elapsed);
+    EXPECT_FALSE(Data::GetForTesting(page_node));
   }
 
   // Firing other signals should not change the state at all.
   proc_node->SetMainThreadTaskLoadIsLow(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::GetData(page_node));
+  EXPECT_FALSE(Data::GetForTesting(page_node));
   frame_node->SetNetworkAlmostIdle(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::GetData(page_node));
+  EXPECT_FALSE(Data::GetForTesting(page_node));
 
   // Post a navigation. The state should reset.
   page_node->OnMainFrameNavigationCommitted(
       ResourceCoordinatorClock::NowTicks(), 1, "https://www.example.org");
-  page_data = PageAlmostIdleDecoratorTestHelper::GetData(page_node);
+  page_data = Data::GetForTesting(page_node);
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state_);
   EXPECT_FALSE(page_data->idling_timer_.IsRunning());
 }
@@ -238,29 +201,29 @@ TEST_F(PageAlmostIdleDecoratorTest, IsIdling) {
   auto* proc_node = mock_graph.process.get();
 
   // Neither of the idling properties are set, so IsIdling should return false.
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_FALSE(IsIdling(page_node));
 
   // Should still return false after main thread task is low.
   proc_node->SetMainThreadTaskLoadIsLow(true);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_FALSE(IsIdling(page_node));
 
   // Should return true when network is idle.
   frame_node->SetNetworkAlmostIdle(true);
-  EXPECT_TRUE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_TRUE(IsIdling(page_node));
 
   // Should toggle with main thread task low.
   proc_node->SetMainThreadTaskLoadIsLow(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_FALSE(IsIdling(page_node));
   proc_node->SetMainThreadTaskLoadIsLow(true);
-  EXPECT_TRUE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_TRUE(IsIdling(page_node));
 
   // Should return false when network is no longer idle.
   frame_node->SetNetworkAlmostIdle(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_FALSE(IsIdling(page_node));
 
   // And should stay false if main thread task also goes low again.
   proc_node->SetMainThreadTaskLoadIsLow(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));
+  EXPECT_FALSE(IsIdling(page_node));
 }
 
 }  // namespace performance_manager

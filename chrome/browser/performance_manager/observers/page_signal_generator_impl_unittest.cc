@@ -10,7 +10,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
-#include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator_test_utils.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
@@ -231,6 +230,8 @@ std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
 }  // namespace
 
 TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
+  ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
+
   MockSinglePageInSingleProcessGraph mock_graph(graph());
 
   // Create a mock receiver and register it against the psg.
@@ -238,7 +239,6 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
   page_signal_generator()->AddReceiver(std::move(mock_receiver_ptr));
 
-  ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   auto* page_node = mock_graph.page.get();
@@ -248,10 +248,10 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
       ResourceCoordinatorClock::NowTicks();
   page_node->OnMainFrameNavigationCommitted(navigation_committed_time, 1,
                                             "https://www.google.com/");
+  page_node->SetPageAlmostIdleForTesting(false);
   task_env().FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(page_node->page_almost_idle());
-  testing::PageAlmostIdleDecoratorTestUtils::DrivePageToLoadedAndIdle(
-      page_node);
+  page_node->SetPageAlmostIdleForTesting(true);
   EXPECT_TRUE(page_node->page_almost_idle());
 
   base::TimeTicks event_time = ResourceCoordinatorClock::NowTicks();
@@ -286,14 +286,18 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   // point.
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 
+  // Advance time beyond the last measurement end time so that the SystemNode
+  // sees time as advancing contiguously.
+  task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
+
   // Make sure a second run around the state machine generates a second event.
   navigation_committed_time = ResourceCoordinatorClock::NowTicks();
   page_node->OnMainFrameNavigationCommitted(navigation_committed_time, 2,
                                             "https://example.org/bobcat");
+  page_node->SetPageAlmostIdleForTesting(false);
   task_env().FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(page_node->page_almost_idle());
-  testing::PageAlmostIdleDecoratorTestUtils::DrivePageToLoadedAndIdle(
-      page_node);
+  page_node->SetPageAlmostIdleForTesting(true);
   EXPECT_TRUE(page_node->page_almost_idle());
 
   event_time = ResourceCoordinatorClock::NowTicks();

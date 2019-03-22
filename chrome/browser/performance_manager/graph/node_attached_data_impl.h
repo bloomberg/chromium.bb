@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
@@ -315,7 +316,7 @@ NodeAttachedDataImpl<DataType>::NodeAttachedDataInMap<NodeType>::GetOrCreate(
     DCHECK_EQ(DataType::UserDataKey(), base_data->key());
     return static_cast<DataType*>(base_data);
   }
-  std::unique_ptr<DataType> data = std::make_unique<DataType>();
+  std::unique_ptr<DataType> data = base::WrapUnique(new DataType());
   DataType* raw_data = data.get();
   NodeAttachedData::AttachInMap(node, std::move(data));
   return raw_data;
@@ -351,7 +352,7 @@ DataType* NodeAttachedDataImpl<DataType>::NodeAttachedDataOwnedByNodeType<
   std::unique_ptr<NodeAttachedData>* storage =
       DataType::GetUniquePtrStorage(const_cast<NodeType*>(node));
   if (!storage->get())
-    *storage = std::make_unique<DataType>();
+    *storage = base::WrapUnique(new DataType());
   DCHECK_EQ(DataType::UserDataKey(), storage->get()->key());
   return static_cast<DataType*>(storage->get());
 }

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
-#include "chrome/browser/performance_manager/common/page_almost_idle_data.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
@@ -272,7 +271,7 @@ void PageNodeImpl::LeaveGraph() {
     child_frame->RemovePageNode(this);
 }
 
-void PageNodeImpl::set_page_almost_idle(bool page_almost_idle) {
+void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {
   if (page_almost_idle_ == page_almost_idle)
     return;
   page_almost_idle_ = page_almost_idle;
@@ -405,33 +404,6 @@ void PageNodeImpl::RecomputeInterventionPolicy(
   }
 
   intervention_policy_[kIndex] = policy;
-}
-
-// static
-PageAlmostIdleData* PageNodeImpl::PageAlmostIdleHelper::GetOrCreateData(
-    PageNodeImpl* page_node) {
-  if (!page_node->page_almost_idle_data_.get())
-    page_node->page_almost_idle_data_ = std::make_unique<PageAlmostIdleData>();
-  return page_node->page_almost_idle_data_.get();
-}
-
-// static
-PageAlmostIdleData* PageNodeImpl::PageAlmostIdleHelper::GetData(
-    PageNodeImpl* page_node) {
-  return page_node->page_almost_idle_data_.get();
-}
-
-// static
-void PageNodeImpl::PageAlmostIdleHelper::DestroyData(PageNodeImpl* page_node) {
-  DCHECK(page_node->page_almost_idle_data_.get());
-  page_node->page_almost_idle_data_.reset();
-}
-
-// static
-void PageNodeImpl::PageAlmostIdleHelper::set_page_almost_idle(
-    PageNodeImpl* page_node,
-    bool page_almost_idle) {
-  page_node->set_page_almost_idle(page_almost_idle);
 }
 
 }  // namespace performance_manager

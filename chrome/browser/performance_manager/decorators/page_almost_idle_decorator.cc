@@ -6,9 +6,47 @@
 
 #include <algorithm>
 
+#include "chrome/browser/performance_manager/graph/node_attached_data_impl.h"
 #include "chrome/browser/performance_manager/resource_coordinator_clock.h"
 
 namespace performance_manager {
+
+// Provides PageAlmostIdle machinery access to some internals of a PageNodeImpl.
+class PageAlmostIdleAccess {
+ public:
+  static std::unique_ptr<NodeAttachedData>* GetUniquePtrStorage(
+      PageNodeImpl* page_node) {
+    return &page_node->page_almost_idle_data_;
+  }
+
+  static void SetPageAlmostIdle(PageNodeImpl* page_node,
+                                bool page_almost_idle) {
+    page_node->SetPageAlmostIdle(page_almost_idle);
+  }
+};
+
+namespace {
+
+using LoadIdleState = PageAlmostIdleDecorator::Data::LoadIdleState;
+
+class DataImpl : public PageAlmostIdleDecorator::Data,
+                 public NodeAttachedDataImpl<DataImpl> {
+ public:
+  struct Traits : public NodeAttachedDataOwnedByNodeType<PageNodeImpl> {};
+
+  DataImpl() = default;
+  ~DataImpl() override = default;
+
+  static std::unique_ptr<NodeAttachedData>* GetUniquePtrStorage(
+      PageNodeImpl* page_node) {
+    return PageAlmostIdleAccess::GetUniquePtrStorage(page_node);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DataImpl);
+};
+
+}  // namespace
 
 // static
 constexpr base::TimeDelta PageAlmostIdleDecorator::kLoadedAndIdlingTimeout;
@@ -55,9 +93,9 @@ void PageAlmostIdleDecorator::OnPageEventReceived(
 
   // Reset the load-idle state associated with this page as a new navigation has
   // started.
-  auto* data = GetOrCreateData(page_node);
+  auto* data = DataImpl::GetOrCreate(page_node);
   data->load_idle_state_ = LoadIdleState::kLoadingNotStarted;
-  PageNodeImpl::PageAlmostIdleHelper::set_page_almost_idle(page_node, false);
+  PageAlmostIdleAccess::SetPageAlmostIdle(page_node, false);
   UpdateLoadIdleStatePage(page_node);
 }
 
@@ -86,7 +124,7 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStateFrame(
 void PageAlmostIdleDecorator::UpdateLoadIdleStatePage(PageNodeImpl* page_node) {
   // Once the cycle is complete state transitions are no longer tracked for this
   // page. When this occurs the backing data store is deleted.
-  auto* data = GetData(page_node);
+  auto* data = DataImpl::Get(page_node);
   if (data == nullptr)
     return;
 
@@ -183,24 +221,13 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStateProcess(
 
 void PageAlmostIdleDecorator::TransitionToLoadedAndIdle(
     PageNodeImpl* page_node) {
-  auto* data = GetData(page_node);
+  auto* data = DataImpl::Get(page_node);
   data->load_idle_state_ = LoadIdleState::kLoadedAndIdle;
-  PageNodeImpl::PageAlmostIdleHelper::set_page_almost_idle(page_node, true);
+  PageAlmostIdleAccess::SetPageAlmostIdle(page_node, true);
 
   // Destroy the metadata as there are no more transitions possible. The
   // machinery will start up again if a navigation occurs.
-  PageNodeImpl::PageAlmostIdleHelper::DestroyData(page_node);
-}
-
-// static
-PageAlmostIdleData* PageAlmostIdleDecorator::GetOrCreateData(
-    PageNodeImpl* page_node) {
-  return PageNodeImpl::PageAlmostIdleHelper::GetOrCreateData(page_node);
-}
-
-// static
-PageAlmostIdleData* PageAlmostIdleDecorator::GetData(PageNodeImpl* page_node) {
-  return PageNodeImpl::PageAlmostIdleHelper::GetData(page_node);
+  DataImpl::Destroy(page_node);
 }
 
 // static
@@ -226,6 +253,23 @@ bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
              resource_coordinator::mojom::PropertyType::
                  kMainThreadTaskLoadIsLow,
              0u);
+}
+
+// static
+PageAlmostIdleDecorator::Data*
+PageAlmostIdleDecorator::Data::GetOrCreateForTesting(PageNodeImpl* page_node) {
+  return DataImpl::GetOrCreate(page_node);
+}
+
+// static
+PageAlmostIdleDecorator::Data* PageAlmostIdleDecorator::Data::GetForTesting(
+    PageNodeImpl* page_node) {
+  return DataImpl::Get(page_node);
+}
+
+// static
+bool PageAlmostIdleDecorator::Data::DestroyForTesting(PageNodeImpl* page_node) {
+  return DataImpl::Destroy(page_node);
 }
 
 }  // namespace performance_manager
