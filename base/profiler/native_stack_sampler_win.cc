@@ -377,9 +377,9 @@ bool NativeStackSamplerWin::CopyStack(HANDLE thread_handle,
 
     profile_builder->RecordMetadata();
 
-    CopyStackContentsAndRewritePointers(
-        reinterpret_cast<uintptr_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
-        reinterpret_cast<uintptr_t*>(stack_buffer->buffer()), thread_context);
+    CopyStackContentsAndRewritePointers(reinterpret_cast<uintptr_t*>(bottom),
+                                        reinterpret_cast<uintptr_t*>(top),
+                                        stack_buffer->buffer(), thread_context);
   }
 
   return true;

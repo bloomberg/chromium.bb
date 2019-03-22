@@ -316,7 +316,7 @@ class UnwindHelper {
       uintptr_t original_sp,
       size_t stack_size) {
     jni_markers_.clear();
-    uintptr_t* new_stack = reinterpret_cast<uintptr_t*>(stack_buffer->buffer());
+    uintptr_t* new_stack = stack_buffer->buffer();
     constexpr uint32_t marker_l =
         jni_generator::kJniStackMarkerValue & 0xFFFFFFFF;
     constexpr uint32_t marker_r = jni_generator::kJniStackMarkerValue >> 32;

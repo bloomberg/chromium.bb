@@ -29,7 +29,7 @@ class NativeStackSampler {
     StackBuffer(size_t buffer_size);
     ~StackBuffer();
 
-    void* buffer() const { return buffer_.get(); }
+    uintptr_t* buffer() const { return buffer_.get(); }
     size_t size() const { return size_; }
 
    private:
