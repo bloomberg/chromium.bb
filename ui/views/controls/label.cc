@@ -51,9 +51,12 @@ Label::Label() : Label(base::string16()) {
 Label::Label(const base::string16& text)
     : Label(text, style::CONTEXT_LABEL, style::STYLE_PRIMARY) {}
 
-Label::Label(const base::string16& text, int text_context, int text_style)
+Label::Label(const base::string16& text,
+             int text_context,
+             int text_style,
+             gfx::DirectionalityMode directionality_mode)
     : text_context_(text_context), context_menu_contents_(this) {
-  Init(text, style::GetFont(text_context, text_style));
+  Init(text, style::GetFont(text_context, text_style), directionality_mode);
   SetLineHeight(style::GetLineHeight(text_context, text_style));
 
   // If an explicit style is given, ignore color changes due to the NativeTheme.
@@ -63,7 +66,7 @@ Label::Label(const base::string16& text, int text_context, int text_style)
 
 Label::Label(const base::string16& text, const CustomFont& font)
     : text_context_(style::CONTEXT_LABEL), context_menu_contents_(this) {
-  Init(text, font.font_list);
+  Init(text, font.font_list, gfx::DirectionalityMode::DIRECTIONALITY_FROM_TEXT);
 }
 
 Label::~Label() {
@@ -789,11 +792,13 @@ const gfx::RenderText* Label::GetRenderTextForSelectionController() const {
   return display_text_.get();
 }
 
-void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
+void Label::Init(const base::string16& text,
+                 const gfx::FontList& font_list,
+                 gfx::DirectionalityMode directionality_mode) {
   full_text_ = gfx::RenderText::CreateHarfBuzzInstance();
   DCHECK(full_text_->MultilineSupported());
   full_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  full_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
+  full_text_->SetDirectionalityMode(directionality_mode);
   // NOTE: |full_text_| should not be elided at all. This is used to keep
   // some properties and to compute the size of the string.
   full_text_->SetElideBehavior(gfx::NO_ELIDE);
