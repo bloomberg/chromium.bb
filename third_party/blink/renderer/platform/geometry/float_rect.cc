@@ -270,8 +270,8 @@ FloatRect UnionRect(const Vector<FloatRect>& rects) {
 IntRect EnclosedIntRect(const FloatRect& rect) {
   IntPoint location = CeiledIntPoint(rect.Location());
   IntPoint max_point = FlooredIntPoint(rect.MaxXMaxYCorner());
-  IntSize size(ClampSub(max_point.X(), location.X()),
-               ClampSub(max_point.Y(), location.Y()));
+  IntSize size(base::ClampSub(max_point.X(), location.X()),
+               base::ClampSub(max_point.Y(), location.Y()));
   size.ClampNegativeToZero();
   return IntRect(location, size);
 }

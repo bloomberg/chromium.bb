@@ -29,13 +29,13 @@
 
 #include <iosfwd>
 
+#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -251,8 +251,9 @@ constexpr bool operator!=(const FloatRect& a, const FloatRect& b) {
 inline IntRect EnclosingIntRect(const FloatRect& rect) {
   IntPoint location = FlooredIntPoint(rect.Location());
   IntPoint max_point = CeiledIntPoint(rect.MaxXMaxYCorner());
-  return IntRect(location, IntSize(ClampSub(max_point.X(), location.X()),
-                                   ClampSub(max_point.Y(), location.Y())));
+  return IntRect(location,
+                 IntSize(base::ClampSub(max_point.X(), location.X()),
+                         base::ClampSub(max_point.Y(), location.Y())));
 }
 
 // Returns a valid IntRect contained within the given FloatRect.
