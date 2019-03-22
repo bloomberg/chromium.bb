@@ -1,0 +1,97 @@
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' gperf-3.0.1-orig/doc/Makefile.in gperf-3.0.1-src/doc/Makefile.in
+--- gperf-3.0.1-orig/doc/Makefile.in	2003-06-02 13:42:02.000000000 +0200
++++ gperf-3.0.1-src/doc/Makefile.in	2004-10-31 19:01:42.812500000 +0100
+@@ -62,7 +62,7 @@ MKINSTALLDIRS = $(SHELL) $(srcdir)/../mk
+ 
+ SHELL = /bin/sh
+ 
+-VPATH = $(srcdir)
++VPATH = $(srcdir) $(resdir)
+ 
+ all : info dvi ps pdf html
+ 
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' gperf-3.0.1-orig/lib/Makefile.in gperf-3.0.1-src/lib/Makefile.in
+--- gperf-3.0.1-orig/lib/Makefile.in	2002-11-25 14:00:26.000000000 +0100
++++ gperf-3.0.1-src/lib/Makefile.in	2004-10-31 19:01:42.859375000 +0100
+@@ -58,7 +58,7 @@ INSTALL_DATA = @INSTALL_DATA@
+ 
+ SHELL = /bin/sh
+ 
+-VPATH = $(srcdir)
++VPATH = $(srcdir) $(resdir)
+ 
+ OBJECTS  = getopt.o getopt1.o getline.o hash.o
+ CPPFLAGS = -I$(srcdir)
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' gperf-3.0.1-orig/src/Makefile.in gperf-3.0.1-src/src/Makefile.in
+--- gperf-3.0.1-orig/src/Makefile.in	2003-04-10 12:25:01.000000000 +0200
++++ gperf-3.0.1-src/src/Makefile.in	2004-10-31 19:36:01.593750000 +0100
+@@ -31,6 +31,7 @@ prefix = @prefix@
+ local_prefix = /usr/local
+ exec_prefix = @exec_prefix@
+ bindir = @bindir@
++resdir = ../res
+ 
+ # Programs used by "make":
+ # C compiler
+@@ -42,10 +43,10 @@ CXX = @CXX@
+ CXXFLAGS = @CXXFLAGS@
+ CXXCPP = @CXXCPP@
+ # Both C and C++ compiler
+-LDFLAGS = @LDFLAGS@
++LDFLAGS = @LDFLAGS@	 -Wl,--major-image-version=$(MAJOR) -Wl,--minor-image-version=$(MINOR)
+ # Other
+ MV = mv
+-LN = ln
++LN = cp -fp
+ RM = rm -f
+ @SET_MAKE@
+ 
+@@ -57,22 +58,33 @@ MKINSTALLDIRS = $(SHELL) $(srcdir)/../mk
+ 
+ #### End of system configuration section. ####
+ 
++VERSION=3.0.2
++MAJOR=3
++MINOR=0
++
+ SHELL = /bin/sh
+ 
+-VPATH = $(srcdir)
++VPATH = $(srcdir) $(resdir)
++
++EXEEXT=@EXEEXT@
+ 
+-OBJECTS  = version.o positions.o options.o keyword.o keyword-list.o \
++OBJECTS  = gperf-res.o version.o positions.o options.o keyword.o keyword-list.o \
+            input.o bool-array.o hash-table.o search.o output.o main.o
+ LIBS     = ../lib/libgp.a @GPERF_LIBM@
+ CPPFLAGS = -I. -I$(srcdir)/../lib
+ 
+-TARGETPROG = gperf
++TARGETPROG = gperf$(EXEEXT)
+ 
+ all : $(TARGETPROG)
+ 
+ $(TARGETPROG): $(OBJECTS)
+ 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS)
+ 
++.SUFFIXES: .c .o .rc
++# Rule to make compiled resource (Windows)
++.rc.o:
++	windres --include-dir $(resdir) -i $< -o $@
++	
+ # Don't use implicit rules, since AIX "make" and OSF/1 "make" don't always
+ # expand $< correctly in this context.
+ #
+diff -ipuwrN -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' gperf-3.0.1-orig/tests/Makefile.in gperf-3.0.1-src/tests/Makefile.in
+--- gperf-3.0.1-orig/tests/Makefile.in	2003-06-02 13:42:40.000000000 +0200
++++ gperf-3.0.1-src/tests/Makefile.in	2004-10-31 19:01:42.984375000 +0100
+@@ -45,7 +45,7 @@ RM = rm -f
+ 
+ SHELL = /bin/sh
+ 
+-VPATH = $(srcdir)
++VPATH = $(srcdir) $(resdir)
+ 
+ GPERF = ../src/gperf
+ #GPERF = valgrind --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes ../src/gperf
