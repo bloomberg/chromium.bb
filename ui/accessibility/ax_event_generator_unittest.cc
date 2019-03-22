@@ -77,6 +77,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::LANGUAGE_CHANGED:
         event_name = "LANGUAGE_CHANGED";
         break;
+      case AXEventGenerator::Event::LAYOUT_INVALIDATED:
+        event_name = "LAYOUT_INVALIDATED";
+        break;
       case AXEventGenerator::Event::LIVE_REGION_CHANGED:
         event_name = "LIVE_REGION_CHANGED";
         break;
@@ -1057,6 +1060,26 @@ TEST(AXEventGeneratorTest, IntListPropertyChanges) {
       "RELATED_NODE_CHANGED on 2, "
       "RELATED_NODE_CHANGED on 3, "
       "RELATED_NODE_CHANGED on 4",
+      DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, AriaBusyChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  AXTree tree(initial_state);
+  initial_state.nodes[0].AddBoolAttribute(ax::mojom::BoolAttribute::kBusy,
+                                          true);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].AddBoolAttribute(ax::mojom::BoolAttribute::kBusy, false);
+
+  ASSERT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ(
+      "LAYOUT_INVALIDATED on 1, "
+      "OTHER_ATTRIBUTE_CHANGED on 1",
       DumpEvents(&event_generator));
 }
 

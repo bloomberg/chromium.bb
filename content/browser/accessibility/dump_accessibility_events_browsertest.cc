@@ -207,6 +207,11 @@ void DumpAccessibilityEventsTest::RunEventTest(
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaBusyChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-busy-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaComboBoxCollapse) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-collapse.html"));
 }
