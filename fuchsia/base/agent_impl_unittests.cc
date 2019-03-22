@@ -109,10 +109,6 @@ class AgentImplTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AgentImplTest);
 };
 
-void SetBoolToTrue(bool* bool_value) {
-  *bool_value = true;
-}
-
 }  // namespace
 
 // Verify that the Agent can publish and unpublish itself.
@@ -140,56 +136,6 @@ TEST_F(AgentImplTest, PublishAndUnpublish) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(*client_disconnect_status2, ZX_ERR_PEER_CLOSED);
-}
-
-// Verify that the on-last-client callback is not invoked if the Agent channel
-// is closed, until the last component is gone.
-TEST_F(AgentImplTest, OnLastClientCallbackAfterComponentOutlivesAgent) {
-  fuchsia::modular::AgentPtr agent = CreateAgentAndConnect();
-
-  // Register an on-last-client callback.
-  bool on_last_client_called = false;
-  agent_impl_->set_on_last_client_callback(
-      base::BindOnce(&SetBoolToTrue, base::Unretained(&on_last_client_called)));
-
-  // Connect a component to the Agent.
-  fuchsia::sys::ServiceProviderPtr component_services;
-  agent->Connect(kNoServicesComponentId, component_services.NewRequest());
-
-  // Disconnect from the Agent API.
-  agent.Unbind();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(on_last_client_called);
-
-  // Disconnect the component.
-  component_services.Unbind();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(on_last_client_called);
-}
-
-// Verify that the on-last-client callback is not invoked when the last
-// component disconnects, until the Agent channel is also closed.
-TEST_F(AgentImplTest, OnLastClientCallbackAfterAgentOutlivesComponent) {
-  fuchsia::modular::AgentPtr agent = CreateAgentAndConnect();
-
-  // Register an on-last-client callback.
-  bool on_last_client_called = false;
-  agent_impl_->set_on_last_client_callback(
-      base::BindOnce(&SetBoolToTrue, base::Unretained(&on_last_client_called)));
-
-  // Connect a component to the Agent.
-  fuchsia::sys::ServiceProviderPtr component_services;
-  agent->Connect(kNoServicesComponentId, component_services.NewRequest());
-
-  // Disconnect the component.
-  component_services.Unbind();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(on_last_client_called);
-
-  // Disconnect from the Agent API.
-  agent.Unbind();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(on_last_client_called);
 }
 
 // Verify that multiple connection attempts with the different component Ids
