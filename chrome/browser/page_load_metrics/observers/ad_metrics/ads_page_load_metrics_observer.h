@@ -19,7 +19,6 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
-#include "content/public/browser/global_request_id.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
@@ -107,20 +106,19 @@ class AdsPageLoadMetricsObserver
   // each call in order to free up memory.
   bool DetectAds(content::NavigationHandle* navigation_handle);
 
+  // Gets the number of bytes that we may have not attributed to ad
+  // resources due to the resource being reported as an ad late.
+  int GetUnaccountedAdBytes(
+      int process_id,
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) const;
+
+  // Updates page level counters for resource loads.
+  void ProcessResourceForPage(
+      int process_id,
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void ProcessResourceForFrame(
       FrameTreeNodeId frame_tree_node_id,
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
-
-  void AdjustAdBytesForFrame(
-      FrameTreeNodeId frame_tree_node_id,
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
-      int64_t unaccounted_ad_bytes);
-
-  // Update all of the per-resource page counters given a new resource data
-  // update. Updates |page_resources_| to reflect the new state of the resource.
-  // Called once per ResourceDataUpdate.
-  void UpdateResource(
-      content::RenderFrameHost* rfh,
+      int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
   // Records size of resources by mime type.
@@ -134,10 +132,11 @@ class AdsPageLoadMetricsObserver
   void RecordHistograms(ukm::SourceId source_id);
   void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);
   void RecordHistogramsForCpuUsage(FrameData::FrameVisibility visibility);
-  // Checks to see if a resource is waiting for a navigation with the given
-  // |frame_tree_node_id| to commit before it can be processed. If so, call
+
+  // Checks to see if a resource is waiting for a navigation in the given
+  // RenderFrameHost to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
-  void ProcessOngoingNavigationResource(FrameTreeNodeId frame_tree_node_id);
+  void ProcessOngoingNavigationResource(content::RenderFrameHost* rfh);
 
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
   // data structure that won't move the data around.
@@ -160,15 +159,6 @@ class AdsPageLoadMetricsObserver
   // request info (delay it) until the sub-frame commits.
   std::map<FrameTreeNodeId, page_load_metrics::mojom::ResourceDataUpdatePtr>
       ongoing_navigation_resources_;
-
-  // Maps a GlobalRequestId consisting of (request_id, process_id) for a blink
-  // resource to the metadata for the resource load. GlobalRequestIds are used
-  // because this map aggregates across renderers and blink request ids are
-  // unique per-renderer. Only contains resources that have not completed
-  // loading.
-  std::map<content::GlobalRequestID,
-           page_load_metrics::mojom::ResourceDataUpdatePtr>
-      page_resources_;
 
   // Tracks byte counts only for resources loaded in the main frame.
   std::unique_ptr<FrameData> main_frame_data_;

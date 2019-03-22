@@ -291,7 +291,8 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
                           ResourceCached resource_cached,
                           int resource_size_in_kbyte,
                           std::string mime_type = "",
-                          bool is_ad_resource = false) {
+                          bool is_ad_resource = false,
+                          bool is_main_frame_resource = false) {
     std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
     page_load_metrics::mojom::ResourceDataUpdatePtr resource =
         page_load_metrics::mojom::ResourceDataUpdate::New();
@@ -304,6 +305,9 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     resource->was_fetched_via_cache = static_cast<bool>(resource_cached);
     resource->mime_type = mime_type;
     resource->is_primary_frame_resource = true;
+    resource->is_main_frame_resource =
+        render_frame_host->GetFrameTreeNodeId() ==
+        main_rfh()->GetFrameTreeNodeId();
     resources.push_back(std::move(resource));
     tester_->SimulateResourceDataUseUpdate(resources, render_frame_host);
   }
@@ -689,14 +693,16 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
   ConfigureAsSubresourceFilterOnlyURL(GURL(kNonAdUrl));
   NavigateMainFrame(kNonAdUrl);
 
-  ResourceDataUpdate(main_rfh(), ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(main_rfh(), ResourceCached::NOT_CACHED, 10,
+                     "" /* mime_type */, false /* is_ad_resource */);
 
   RenderFrameHost* subframe =
       RenderFrameHostTester::For(main_rfh())->AppendChild("foo");
   std::unique_ptr<NavigationSimulator> simulator =
       NavigationSimulator::CreateRendererInitiated(GURL(kDefaultDisallowedUrl),
                                                    subframe);
-  ResourceDataUpdate(subframe, ResourceCached::CACHED, 10);
+  ResourceDataUpdate(subframe, ResourceCached::NOT_CACHED, 10,
+                     "" /* mime_type */, true /* is_ad_resource */);
   simulator->Commit();
 
   EXPECT_NE(content::NavigationThrottle::PROCEED,
@@ -705,6 +711,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
   NavigateMainFrame(kNonAdUrl);
   TestHistograms(histogram_tester(), std::vector<ExpectedFrameBytes>(),
                  0u /* non_ad_cached_kb */, 0u /* non_ad_uncached_kb */);
+  histogram_tester().ExpectUniqueSample(
+      "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 10, 1);
 }
 
 // UKM metrics for ad page load are recorded correctly.

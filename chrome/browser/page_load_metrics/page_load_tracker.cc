@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -704,6 +705,8 @@ void PageLoadTracker::UpdateFeaturesUsage(
 void PageLoadTracker::UpdateResourceDataUse(
     content::RenderFrameHost* rfh,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources) {
+  resource_tracker_.UpdateResourceDataUse(rfh->GetProcess()->GetID(),
+                                          resources);
   for (const auto& observer : observers_) {
     observer->OnResourceDataUseObserved(rfh, resources);
   }
@@ -730,6 +733,10 @@ bool PageLoadTracker::DidCommit() const {
 
 const ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker() const {
   return visibility_tracker_;
+}
+
+const ResourceTracker& PageLoadTracker::GetResourceTracker() const {
+  return resource_tracker_;
 }
 
 }  // namespace page_load_metrics
