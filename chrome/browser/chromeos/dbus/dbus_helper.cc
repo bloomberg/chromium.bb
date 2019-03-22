@@ -15,7 +15,6 @@
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"
-#include "ui/base/ui_base_features.h"
 
 namespace chromeos {
 
@@ -28,16 +27,8 @@ void InitializeDBus() {
   // Initialize Chrome dbus clients.
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
 
-  // Features only needed in Ash. Initialize them here for non MultiProcessMash
-  // to limit the number of places where dbus handlers are initialized. For
-  // MultiProcessMash they are initialized in AshService::InitializeDBusClients.
-  if (!::features::IsMultiProcessMash()) {
-    if (bus) {
-      chromeos::HammerdClient::Initialize(bus);
-    } else {
-      chromeos::HammerdClient::InitializeFake();
-    }
-  }
+  // NOTE: base::Feature is not initialized yet, so any non MultiProcessMash
+  // dbus client initialization for Ash should be done in Shell::Init.
 
   if (bus) {
     AuthPolicyClient::Initialize(bus);
@@ -69,10 +60,6 @@ void ShutdownDBus() {
   PowerManagerClient::Shutdown();
   KerberosClient::Shutdown();
   BiodClient::Shutdown();
-
-  // See comment in InitializeDBus() for MultiProcessMash behavior.
-  if (!::features::IsMultiProcessMash())
-    chromeos::HammerdClient::Shutdown();
 
   DBusThreadManager::Shutdown();
   SystemSaltGetter::Shutdown();
