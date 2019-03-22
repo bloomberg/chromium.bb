@@ -103,6 +103,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDiscarded(Surface* surface) override;
+  void OnSurfaceDrawn(Surface* surface) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
   void UnrefResources(const std::vector<ReturnedResource>& resources) override;
@@ -312,6 +313,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   LocalSurfaceId::ParentComponent last_evicted_parent_component_;
 
   base::TimeTicks last_frame_time_;
+
+  // Initialize |last_drawn_frame_index_| as though the frame before the first
+  // has been drawn.
+  static_assert(kFrameIndexStart > 1,
+                "|last_drawn_frame_index| relies on kFrameIndexStart > 1");
+  uint64_t last_drawn_frame_index_ = kFrameIndexStart - 1;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

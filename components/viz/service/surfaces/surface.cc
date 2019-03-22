@@ -672,8 +672,11 @@ void Surface::SendAckToClient() {
 }
 
 void Surface::MarkAsDrawn() {
-  if (active_frame_data_)
-    active_frame_data_->frame_drawn = true;
+  if (!active_frame_data_)
+    return;
+  active_frame_data_->frame_drawn = true;
+  if (surface_client_)
+    surface_client_->OnSurfaceDrawn(this);
 }
 
 void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
