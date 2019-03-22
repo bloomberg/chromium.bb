@@ -1334,7 +1334,12 @@ void LockContentsView::DoLayout() {
 
   // Set preferred size before running layout actions, as layout actions may
   // depend on the preferred size to determine layout.
-  SetPreferredSize(display.size());
+  gfx::Size preferred_size = display.size();
+  preferred_size.set_height(preferred_size.height() -
+                            keyboard::KeyboardController::Get()
+                                ->GetWorkspaceOccludedBounds()
+                                .height());
+  SetPreferredSize(preferred_size);
 
   bool landscape = login_views_utils::ShouldShowLandscape(GetWidget());
   for (auto& action : layout_actions_)

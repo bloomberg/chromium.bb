@@ -1298,6 +1298,60 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
   EXPECT_TRUE(pin_view->visible());
 }
 
+TEST_F(LockContentsViewKeyboardUnitTest,
+       RotationWithKeyboardDoesNotCoverInput) {
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  ASSERT_NE(nullptr, contents);
+
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          contents->GetWidget()->GetNativeWindow());
+
+  for (int user_count = 1; user_count < 10; user_count++) {
+    SetUserCount(user_count);
+    display_manager()->SetDisplayRotation(
+        display.id(), display::Display::ROTATE_0,
+        display::Display::RotationSource::ACTIVE);
+
+    ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+    const int height_when_keyboard_shown = contents->height();
+    ASSERT_NO_FATAL_FAILURE(HideKeyboard());
+    const int height_when_keyboard_hidden = contents->height();
+    EXPECT_LT(height_when_keyboard_shown, height_when_keyboard_hidden);
+
+    ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
+
+    EXPECT_EQ(height_when_keyboard_shown, contents->height());
+    // Rotate the display to 90 degrees (portrait).
+    display_manager()->SetDisplayRotation(
+        display.id(), display::Display::ROTATE_90,
+        display::Display::RotationSource::ACTIVE);
+
+    // Rotate the display back to 0 degrees (landscape).
+    display_manager()->SetDisplayRotation(
+        display.id(), display::Display::ROTATE_0,
+        display::Display::RotationSource::ACTIVE);
+    EXPECT_EQ(height_when_keyboard_shown, contents->height());
+
+    ASSERT_NO_FATAL_FAILURE(HideKeyboard());
+
+    EXPECT_EQ(height_when_keyboard_hidden, contents->height());
+    // Rotate the display to 90 degrees (portrait).
+    display_manager()->SetDisplayRotation(
+        display.id(), display::Display::ROTATE_90,
+        display::Display::RotationSource::ACTIVE);
+
+    // Rotate the display back to 0 degrees (landscape).
+    display_manager()->SetDisplayRotation(
+        display.id(), display::Display::ROTATE_0,
+        display::Display::RotationSource::ACTIVE);
+
+    EXPECT_EQ(height_when_keyboard_hidden, contents->height());
+  }
+}
+
 // Verifies that swapping auth users while the virtual keyboard is active
 // focuses the other user's password field.
 TEST_F(LockContentsViewKeyboardUnitTest, SwitchUserWhileKeyboardShown) {
