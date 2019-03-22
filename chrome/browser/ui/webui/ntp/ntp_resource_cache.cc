@@ -255,6 +255,7 @@ void NTPResourceCache::Invalidate() {
   new_tab_html_ = nullptr;
   new_tab_incognito_css_ = nullptr;
   new_tab_css_ = nullptr;
+  new_tab_guest_html_ = nullptr;
 }
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {
