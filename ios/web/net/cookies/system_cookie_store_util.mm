@@ -21,14 +21,12 @@ namespace web {
 
 std::unique_ptr<net::SystemCookieStore> CreateSystemCookieStore(
     BrowserState* browser_state) {
-  if (@available(iOS 11, *)) {
-    if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore)) {
-      // Using WKHTTPCookieStore guarantee that cookies are always in sync and
-      // allows SystemCookieStore to handle cookies for OffTheRecord browser.
-      WKHTTPCookieStore* wk_cookie_store =
-          web::WKCookieStoreForBrowserState(browser_state);
-      return std::make_unique<web::WKHTTPSystemCookieStore>(wk_cookie_store);
-    }
+  if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore)) {
+    // Using WKHTTPCookieStore guarantee that cookies are always in sync and
+    // allows SystemCookieStore to handle cookies for OffTheRecord browser.
+    WKHTTPCookieStore* wk_cookie_store =
+        web::WKCookieStoreForBrowserState(browser_state);
+    return std::make_unique<web::WKHTTPSystemCookieStore>(wk_cookie_store);
   }
   // TODO(crbug.com/759229): Return a different CookieStore for OffTheRecord
   // browser state.

@@ -401,18 +401,6 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier,
 void DownloadTaskImpl::GetCookies(
     base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  if (@available(iOS 11, *)) {
-    GetWKCookies(callback);
-  } else {
-    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
-                               callback.Run([NSArray array]);
-                             }));
-  }
-}
-
-void DownloadTaskImpl::GetWKCookies(
-    base::Callback<void(NSArray<NSHTTPCookie*>*)> callback) {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
   auto store = WKCookieStoreForBrowserState(web_state_->GetBrowserState());
   DCHECK(store);
   [store getAllCookies:^(NSArray<NSHTTPCookie*>* cookies) {

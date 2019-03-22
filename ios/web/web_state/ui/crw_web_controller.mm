@@ -1522,37 +1522,35 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)takeSnapshotWithRect:(CGRect)rect
                   completion:(void (^)(UIImage*))completion {
-  if (@available(iOS 11, *)) {
-    if (self.webView) {
-      WKSnapshotConfiguration* configuration =
-          [[WKSnapshotConfiguration alloc] init];
-      configuration.rect = [self.webView convertRect:rect fromView:self.view];
-      __weak CRWWebController* weakSelf = self;
-      [self.webView
-          takeSnapshotWithConfiguration:configuration
-                      completionHandler:^(UIImage* snapshot, NSError* error) {
-                        // Pass nil to the completion block if there is an error
-                        // or if the web view has been removed before the
-                        // snapshot is finished.  |snapshot| can sometimes be
-                        // corrupt if it's sent due to the WKWebView's
-                        // deallocation, so callbacks received after
-                        // |-removeWebView| are ignored to prevent crashing.
-                        if (error || !weakSelf.webView) {
-                          if (error) {
-                            DLOG(ERROR) << "WKWebView snapshot error: "
-                                        << error.description;
-                          }
-                          completion(nil);
-                        } else {
-                          completion(snapshot);
-                        }
-                      }];
-      return;
-    }
+  if (!self.webView) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      completion(nil);
+    });
   }
-  dispatch_async(dispatch_get_main_queue(), ^{
-    completion(nil);
-  });
+
+  WKSnapshotConfiguration* configuration =
+      [[WKSnapshotConfiguration alloc] init];
+  configuration.rect = [self.webView convertRect:rect fromView:self.view];
+  __weak CRWWebController* weakSelf = self;
+  [self.webView
+      takeSnapshotWithConfiguration:configuration
+                  completionHandler:^(UIImage* snapshot, NSError* error) {
+                    // Pass nil to the completion block if there is an error
+                    // or if the web view has been removed before the
+                    // snapshot is finished.  |snapshot| can sometimes be
+                    // corrupt if it's sent due to the WKWebView's
+                    // deallocation, so callbacks received after
+                    // |-removeWebView| are ignored to prevent crashing.
+                    if (error || !weakSelf.webView) {
+                      if (error) {
+                        DLOG(ERROR) << "WKWebView snapshot error: "
+                                    << error.description;
+                      }
+                      completion(nil);
+                    } else {
+                      completion(snapshot);
+                    }
+                  }];
 }
 
 #pragma mark - CRWJSInjectionEvaluator (Public)
@@ -3878,12 +3876,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 // Called when web view process has been terminated.
 - (void)webViewWebProcessDidCrash {
-  if (@available(iOS 11, *)) {
-    // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
-    // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
-    // once rdar://35063950 is fixed.
-    [self removeWebView];
-  }
+  // On iOS 11 WKWebView does not repaint after crash and reload. Recreating
+  // web view fixes the issue. TODO(crbug.com/770914): Remove this workaround
+  // once rdar://35063950 is fixed.
+  [self removeWebView];
+
   _webProcessCrashed = YES;
   self.webStateImpl->CancelDialogs();
   self.webStateImpl->OnRenderProcessGone();

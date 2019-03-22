@@ -47,10 +47,7 @@ const base::Feature kWebUISchemeHandling{"WebUISchemeHandling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool WebUISchemeHandlingEnabled() {
-  if (@available(iOS 11, *)) {
-    return base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling);
-  }
-  return false;
+  return base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling);
 }
 
 }  // namespace features
