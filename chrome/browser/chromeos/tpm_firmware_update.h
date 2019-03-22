@@ -53,6 +53,16 @@ void GetAvailableUpdateModes(
     base::OnceCallback<void(const std::set<Mode>&)> completion,
     base::TimeDelta timeout);
 
+// Checks if there's a TPM firmware update available. Calls the callback
+// |completion| with the result. Result is true if there's an update available
+// and the SRK (Storage Root Key) is vulnerable, false otherwise. More
+// information: https://www.chromium.org/chromium-os/tpm_firmware_update Note:
+// This method doesn't check if policy allows TPM firmware updates. Note: This
+// method doesn't consider the case where the firmware is updated but the SRK is
+// still vulnerable.
+void UpdateAvailable(base::OnceCallback<void(bool)> completion,
+                     base::TimeDelta timeout);
+
 }  // namespace tpm_firmware_update
 }  // namespace chromeos
 
