@@ -514,7 +514,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
  private:
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
-  friend class StoragePartitionInterceptor;
+  friend class StoragePartitonInterceptor;
   class ConnectionFilterController;
   class ConnectionFilterImpl;
 

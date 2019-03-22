@@ -1032,11 +1032,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
 
 // This class allows intercepting the OpenLocalStorage method and changing
 // the parameters to the real implementation of it.
-class StoragePartitionInterceptor
+class StoragePartitonInterceptor
     : public blink::mojom::StoragePartitionServiceInterceptorForTesting,
       public RenderProcessHostObserver {
  public:
-  StoragePartitionInterceptor(
+  StoragePartitonInterceptor(
       RenderProcessHostImpl* rph,
       blink::mojom::StoragePartitionServiceRequest request,
       const url::Origin& origin_to_inject)
@@ -1089,7 +1089,7 @@ class StoragePartitionInterceptor
 
   url::Origin origin_to_inject_;
 
-  DISALLOW_COPY_AND_ASSIGN(StoragePartitionInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(StoragePartitonInterceptor);
 };
 
 void CreateTestStoragePartitionService(
@@ -1098,7 +1098,7 @@ void CreateTestStoragePartitionService(
     blink::mojom::StoragePartitionServiceRequest request) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new StoragePartitionInterceptor(rph, std::move(request), origin_to_inject);
+  new StoragePartitonInterceptor(rph, std::move(request), origin_to_inject);
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an
