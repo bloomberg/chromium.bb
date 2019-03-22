@@ -880,7 +880,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
     bool stale_copy_in_cache,
     bool can_show_network_diagnostics_dialog,
     bool is_incognito,
-    OfflineContentOnNetErrorFeatureState offline_content_feature_state,
+    bool offline_content_feature_enabled,
     bool auto_fetch_feature_enabled,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params) {
@@ -1072,39 +1072,20 @@ LocalizedError::PageState LocalizedError::GetPageState(
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON));
 
   if (IsOfflineError(error_domain, error_code) && !is_incognito) {
-    result.offline_content_feature_state = offline_content_feature_state;
-    switch (offline_content_feature_state) {
-      case OfflineContentOnNetErrorFeatureState::kDisabled:
-        break;
-      case OfflineContentOnNetErrorFeatureState::kEnabledList:
-        result.strings.SetString("suggestedOfflineContentPresentationMode",
-                                 "list");
-        result.strings.SetPath({"offlineContentList", "title"},
-                               base::Value(l10n_util::GetStringUTF16(
-                                   IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_TITLE)));
-        result.strings.SetPath(
-            {"offlineContentList", "actionText"},
-            base::Value(l10n_util::GetStringUTF16(
-                IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
-        result.strings.SetPath(
-            {"offlineContentList", "showText"},
-            base::Value(l10n_util::GetStringUTF16(IDS_SHOW)));
-        result.strings.SetPath(
-            {"offlineContentList", "hideText"},
-            base::Value(l10n_util::GetStringUTF16(IDS_HIDE)));
-        break;
-      case OfflineContentOnNetErrorFeatureState::kEnabledSummary:
-        result.strings.SetString("suggestedOfflineContentPresentationMode",
-                                 "summary");
-        result.strings.SetPath(
-            {"offlineContentSummary", "description"},
-            base::Value(l10n_util::GetStringUTF16(
-                IDS_ERRORPAGES_OFFLINE_CONTENT_SUMMARY_DESCRIPTION)));
-        result.strings.SetPath(
-            {"offlineContentSummary", "actionText"},
-            base::Value(l10n_util::GetStringUTF16(
-                IDS_ERRORPAGES_OFFLINE_CONTENT_SUMMARY_BUTTON)));
-        break;
+    result.offline_content_feature_enabled = offline_content_feature_enabled;
+    if (offline_content_feature_enabled) {
+      result.strings.SetString("suggestedOfflineContentPresentation", "on");
+      result.strings.SetPath({"offlineContentList", "title"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_TITLE)));
+      result.strings.SetPath(
+          {"offlineContentList", "actionText"},
+          base::Value(l10n_util::GetStringUTF16(
+              IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
+      result.strings.SetPath({"offlineContentList", "showText"},
+                             base::Value(l10n_util::GetStringUTF16(IDS_SHOW)));
+      result.strings.SetPath({"offlineContentList", "hideText"},
+                             base::Value(l10n_util::GetStringUTF16(IDS_HIDE)));
     }
   }
 #endif  // defined(OS_ANDROID)

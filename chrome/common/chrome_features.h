@@ -282,12 +282,6 @@ extern const base::Feature kNativeNotifications;
 
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNewNetErrorPageUI;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateParameterName[];
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateContentList[];
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateContentPreview[];
 #endif
 
 #if !defined(OS_ANDROID)

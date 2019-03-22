@@ -23,12 +23,6 @@ struct ErrorPageParams;
 
 class LocalizedError {
  public:
-  enum class OfflineContentOnNetErrorFeatureState {
-    kDisabled,
-    kEnabledSummary,
-    kEnabledList,
-  };
-
   // Information about elements shown on the error page.
   struct PageState {
     PageState();
@@ -44,8 +38,7 @@ class LocalizedError {
     bool reload_button_shown = false;
     bool show_cached_copy_button_shown = false;
     bool download_button_shown = false;
-    OfflineContentOnNetErrorFeatureState offline_content_feature_state =
-        OfflineContentOnNetErrorFeatureState::kDisabled;
+    bool offline_content_feature_enabled = false;
     bool auto_fetch_allowed = false;
   };
 
@@ -59,7 +52,7 @@ class LocalizedError {
       bool stale_copy_in_cache,
       bool can_show_network_diagnostics_dialog,
       bool is_incognito,
-      OfflineContentOnNetErrorFeatureState offline_content_feature_state,
+      bool offline_content_feature_enabled,
       bool auto_fetch_feature_enabled,
       const std::string& locale,
       std::unique_ptr<error_page::ErrorPageParams> params);

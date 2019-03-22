@@ -2478,7 +2478,7 @@ const char kNewContactsPickerDescription[] =
 
 const char kNewNetErrorPageUIName[] = "Enable new UI for net-error page";
 const char kNewNetErrorPageUIDescription[] =
-    "Selects which new UI experience to show on the net-error (Dino) page";
+    "Enables showing available offline content on the net-error (Dino) page.";
 
 const char kNewPhotoPickerName[] = "Enable new Photopicker";
 const char kNewPhotoPickerDescription[] =

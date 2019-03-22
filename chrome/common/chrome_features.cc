@@ -431,14 +431,10 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
 #if defined(OS_ANDROID)
-// Changes the net error page UI by adding suggested offline content or
-// enabling automatic fetching of the page when online again.
+// Changes the net error page UI by adding suggested offline content
+// on the dino page.
 const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
-const char kNewNetErrorPageUIAlternateParameterName[] = "ui-alternate";
-
-const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
-const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
 #endif  // OS_ANDROID
 
 #if !defined(OS_ANDROID)

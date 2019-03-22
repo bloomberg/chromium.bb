@@ -50,8 +50,7 @@ NSString* GetErrorPage(const GURL& url,
           net_error, error_page::Error::kNetErrorDomain, url, is_post,
           /*stale_copy_in_cache=*/false,
           /*can_show_network_diagnostics_dialog=*/false, is_off_the_record,
-          error_page::LocalizedError::OfflineContentOnNetErrorFeatureState::
-              kDisabled,
+          /*offline_content_feature_enabled=*/false,
           /*auto_fetch_feature_enabled=*/false,
           GetApplicationContext()->GetApplicationLocale(),
           /*params=*/nullptr);

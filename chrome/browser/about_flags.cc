@@ -969,17 +969,6 @@ const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
 #endif
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kNewNetErrorPageUIContentList = {
-    features::kNewNetErrorPageUIAlternateParameterName,
-    features::kNewNetErrorPageUIAlternateContentList};
-const FeatureEntry::FeatureParam kNewNetErrorPageUIContentPreview = {
-    features::kNewNetErrorPageUIAlternateParameterName,
-    features::kNewNetErrorPageUIAlternateContentPreview};
-
-const FeatureEntry::FeatureVariation kNewNetErrorPageUIVariations[] = {
-    {"Content List", &kNewNetErrorPageUIContentList, 1, nullptr},
-    {"Content Preview", &kNewNetErrorPageUIContentPreview, 1, nullptr}};
-
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
     chrome::android::explore_sites::kExploreSitesVariationExperimental};
@@ -3111,9 +3100,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
      flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kNewNetErrorPageUI,
-                                    kNewNetErrorPageUIVariations,
-                                    "OfflineContentOnDinoPage")},
+     FEATURE_VALUE_TYPE(features::kNewNetErrorPageUI)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

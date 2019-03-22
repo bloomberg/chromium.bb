@@ -146,8 +146,6 @@ class NetErrorHelper
   void OfflineContentAvailable(
       bool list_visible_by_prefs,
       const std::string& offline_content_json) override;
-  void OfflineContentSummaryAvailable(
-      const std::string& offline_content_summary_json) override;
   content::RenderFrame* GetRenderFrame() override;
 
 #if defined(OS_ANDROID)
