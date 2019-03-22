@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread.h"
@@ -115,7 +116,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   cros::mojom::CameraHalServerPtr camera_hal_server_;
 
-  std::set<std::unique_ptr<CameraClientObserver>> client_observers_;
+  std::set<std::unique_ptr<CameraClientObserver>, base::UniquePtrComparator>
+      client_observers_;
 
   MojoJpegDecodeAcceleratorFactoryCB jda_factory_;
 

@@ -367,12 +367,10 @@ void CameraHalDispatcherImpl::OnCameraHalServerConnectionError() {
 void CameraHalDispatcherImpl::OnCameraHalClientConnectionError(
     CameraClientObserver* client_observer) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  for (auto& it : client_observers_) {
-    if (it.get() == client_observer) {
-      client_observers_.erase(it);
-      VLOG(1) << "Camera HAL client connection lost";
-      break;
-    }
+  auto it = client_observers_.find(client_observer);
+  if (it != client_observers_.end()) {
+    client_observers_.erase(it);
+    VLOG(1) << "Camera HAL client connection lost";
   }
 }
 
