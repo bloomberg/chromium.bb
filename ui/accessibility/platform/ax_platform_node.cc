@@ -77,7 +77,13 @@ void AXPlatformNode::RemoveAXModeObserver(AXModeObserver* observer) {
 
 // static
 void AXPlatformNode::NotifyAddAXModeFlags(AXMode mode_flags) {
-  ax_mode_ |= mode_flags;
+  AXMode new_ax_mode(ax_mode_);
+  new_ax_mode |= mode_flags;
+
+  if (new_ax_mode == ax_mode_)
+    return;  // No change.
+
+  ax_mode_ = new_ax_mode;
   for (auto& observer : ax_mode_observers_.Get())
     observer.OnAXModeAdded(mode_flags);
 
