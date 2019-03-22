@@ -53,6 +53,9 @@ class UkmPageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
 
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
+
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -75,6 +78,10 @@ class UkmPageLoadMetricsObserver
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
+  // Whether the current page load is an Offline Preview. Must be called from
+  // OnCommit. Virtual for testing.
+  virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
   // Records page load timing related metrics available in PageLoadTiming, such
