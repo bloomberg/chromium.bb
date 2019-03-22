@@ -1354,8 +1354,9 @@ void NetworkContext::CreateHostResolver(
     net::HostResolver::Options options;
     options.enable_caching = false;
 
-    private_internal_resolver = host_resolver_factory_->CreateResolver(
-        options, url_request_context_->net_log());
+    private_internal_resolver =
+        host_resolver_factory_->CreateStandaloneResolver(
+            url_request_context_->net_log(), options, "");
     internal_resolver = private_internal_resolver.get();
 
     internal_resolver->SetDnsClientEnabled(true);

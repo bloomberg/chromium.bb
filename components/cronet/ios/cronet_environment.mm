@@ -359,9 +359,11 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   effective_experimental_options_ =
       std::move(config->effective_experimental_options);
 
+  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+  // global HostResolver.
   std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
       new net::MappedHostResolver(
-          net::HostResolver::CreateDefaultResolver(nullptr)));
+          net::HostResolver::CreateStandaloneResolver(nullptr)));
 
   if (!config->storage_path.empty()) {
     cronet_prefs_manager_ = std::make_unique<CronetPrefsManager>(

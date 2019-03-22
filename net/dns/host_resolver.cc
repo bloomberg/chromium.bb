@@ -97,9 +97,17 @@ HostResolver::Options::Options()
       enable_caching(true) {}
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
+    HostResolverManager* manager,
+    base::StringPiece host_mapping_rules) {
+  return HostResolver::CreateResolver(manager, host_mapping_rules);
+}
+
+std::unique_ptr<HostResolver> HostResolver::Factory::CreateStandaloneResolver(
+    NetLog* net_log,
     const Options& options,
-    NetLog* net_log) {
-  return CreateSystemResolver(options, net_log);
+    base::StringPiece host_mapping_rules) {
+  return HostResolver::CreateStandaloneResolver(net_log, options,
+                                                host_mapping_rules);
 }
 
 HostResolver::~HostResolver() = default;
@@ -143,12 +151,12 @@ HostResolver::GetDnsOverHttpsServersForTesting() const {
 }
 
 // static
-std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
-    const Options& options,
-    NetLog* net_log,
+std::unique_ptr<HostResolver> HostResolver::CreateResolver(
+    HostResolverManager* manager,
     base::StringPiece host_mapping_rules) {
-  std::unique_ptr<ContextHostResolver> resolver =
-      CreateSystemResolverImpl(options, net_log);
+  DCHECK(manager);
+
+  auto resolver = std::make_unique<ContextHostResolver>(manager);
 
   if (host_mapping_rules.empty())
     return resolver;
@@ -159,23 +167,29 @@ std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
 }
 
 // static
-std::unique_ptr<ContextHostResolver> HostResolver::CreateSystemResolverImpl(
-    const Options& options,
-    NetLog* net_log) {
+std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
+    NetLog* net_log,
+    base::Optional<Options> options,
+    base::StringPiece host_mapping_rules) {
+  auto resolver = std::make_unique<ContextHostResolver>(
+      std::make_unique<HostResolverManager>(
+          std::move(options).value_or(Options()), net_log));
+
+  if (host_mapping_rules.empty())
+    return resolver;
+  auto remapped_resolver =
+      std::make_unique<MappedHostResolver>(std::move(resolver));
+  remapped_resolver->SetRulesFromString(host_mapping_rules);
+  return remapped_resolver;
+}
+
+// static
+std::unique_ptr<ContextHostResolver>
+HostResolver::CreateStandaloneContextResolver(NetLog* net_log,
+                                              base::Optional<Options> options) {
   return std::make_unique<ContextHostResolver>(
-      std::make_unique<HostResolverManager>(options, net_log));
-}
-
-// static
-std::unique_ptr<HostResolver> HostResolver::CreateDefaultResolver(
-    NetLog* net_log) {
-  return CreateSystemResolver(Options(), net_log);
-}
-
-// static
-std::unique_ptr<ContextHostResolver> HostResolver::CreateDefaultResolverImpl(
-    NetLog* net_log) {
-  return CreateSystemResolverImpl(Options(), net_log);
+      std::make_unique<HostResolverManager>(
+          std::move(options).value_or(Options()), net_log));
 }
 
 // static

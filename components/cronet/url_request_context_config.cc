@@ -672,13 +672,15 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       disable_ipv6_on_wifi) {
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
+    // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
+    // Cronet HostResolvers.
     if (stale_dns_enable) {
       DCHECK(!disable_ipv6_on_wifi);
       host_resolver.reset(new StaleHostResolver(
-          net::HostResolver::CreateDefaultResolverImpl(net_log),
+          net::HostResolver::CreateStandaloneContextResolver(net_log),
           stale_dns_options));
     } else {
-      host_resolver = net::HostResolver::CreateDefaultResolver(net_log);
+      host_resolver = net::HostResolver::CreateStandaloneResolver(net_log);
     }
     if (disable_ipv6_on_wifi)
       host_resolver->SetNoIPv6OnWifi(true);

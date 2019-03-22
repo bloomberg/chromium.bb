@@ -114,8 +114,10 @@ std::unique_ptr<net::HostResolver> CreateHostResolver(net::NetLog* net_log) {
   std::string host_mapping_rules =
       command_line.GetSwitchValueASCII(switches::kHostResolverRules);
 
-  return net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
-                                                 net_log, host_mapping_rules);
+  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+  // global HostResolver.
+  return net::HostResolver::CreateStandaloneResolver(
+      net_log, net::HostResolver::Options(), host_mapping_rules);
 }
 
 // This is duplicated in content/browser/loader/resource_dispatcher_host_impl.cc

@@ -421,7 +421,7 @@ TEST_F(SOCKSClientSocketTest, NoIPv6RealResolver) {
   const char kHostName[] = "::1";
 
   std::unique_ptr<HostResolver> host_resolver(
-      HostResolver::CreateSystemResolver(HostResolver::Options(), nullptr));
+      HostResolver::CreateStandaloneResolver(nullptr));
 
   user_sock_ = BuildMockSocket(base::span<MockRead>(), base::span<MockWrite>(),
                                host_resolver.get(), kHostName, 80, nullptr);

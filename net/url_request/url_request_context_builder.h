@@ -237,7 +237,8 @@ class NET_EXPORT URLRequestContextBuilder {
   // set their own NetLog::Observers instead.
   void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
-  // By default host_resolver is constructed with CreateDefaultResolver.
+  // By default host_resolver is constructed with
+  // HostResolver::CreateStandaloneResolver().
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
   // If set to non-empty, the mapping rules will be applied to requests to the
   // created host resolver. See MappedHostResolver for details. Should not be

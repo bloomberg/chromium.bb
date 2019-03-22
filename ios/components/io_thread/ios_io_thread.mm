@@ -99,9 +99,10 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOSIOThread::CreateGlobalHostResolver");
 
+  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+  // single global HostResolver for iOS.
   std::unique_ptr<net::HostResolver> global_host_resolver =
-      net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
-                                              net_log);
+      net::HostResolver::CreateStandaloneResolver(net_log);
 
   return global_host_resolver;
 }

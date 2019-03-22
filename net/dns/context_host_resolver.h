@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 
@@ -33,8 +34,11 @@ struct ProcTaskParams;
 class NET_EXPORT ContextHostResolver : public HostResolver {
  public:
   // Creates a ContextHostResolver that forwards all of its requests through
-  // |impl|.
-  explicit ContextHostResolver(std::unique_ptr<HostResolverManager> impl);
+  // |manager|.
+  explicit ContextHostResolver(HostResolverManager* manager);
+  // Same except the created resolver will own its own HostResolverManager.
+  explicit ContextHostResolver(
+      std::unique_ptr<HostResolverManager> owned_manager);
   ~ContextHostResolver() override;
 
   // HostResolver methods:
@@ -72,9 +76,10 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  private:
-  // TODO(crbug.com/934402): Make this a non-owned pointer to the singleton
-  // resolver.
-  std::unique_ptr<HostResolverManager> impl_;
+  HostResolverManager* const manager_;
+  std::unique_ptr<HostResolverManager> owned_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextHostResolver);
 };
 
 }  // namespace net

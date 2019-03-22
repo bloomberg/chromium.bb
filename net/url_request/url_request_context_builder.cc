@@ -424,11 +424,15 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     DCHECK(host_mapping_rules_.empty());
     storage->set_host_resolver(std::move(host_resolver_));
   } else if (shared_host_resolver_) {
+    // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+    // global HostResolver.
     DCHECK(host_mapping_rules_.empty());
     context->set_host_resolver(shared_host_resolver_);
   } else {
-    storage->set_host_resolver(HostResolver::CreateSystemResolver(
-        HostResolver::Options(), context->net_log(), host_mapping_rules_));
+    // TODO(crbug.com/934402): Make setting a resolver or manager required, so
+    // the builder should never have to create a standalone resolver.
+    storage->set_host_resolver(HostResolver::CreateStandaloneResolver(
+        context->net_log(), HostResolver::Options(), host_mapping_rules_));
   }
 
   if (ssl_config_service_) {
