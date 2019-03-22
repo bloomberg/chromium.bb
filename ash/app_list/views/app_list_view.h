@@ -319,8 +319,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
 
-  // Set child views for FULLSCREEN_ALL_APPS and PEEKING.
-  void SetChildViewsForStateTransition(AppListViewState new_state);
+  // Set child views for |target_state|.
+  void SetChildViewsForStateTransition(AppListViewState target_state);
 
   // Converts |state| to the fullscreen equivalent.
   void ConvertAppListStateToFullscreenEquivalent(AppListViewState* state);

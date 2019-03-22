@@ -76,9 +76,7 @@ void ContentsView::Init(AppListModel* model) {
 
   horizontal_page_container_ = new HorizontalPageContainer(this, model);
 
-  // Add |horizontal_page_container_| as STATE_START corresponding page for
-  // fullscreen app list.
-  AddLauncherPage(horizontal_page_container_, ash::AppListState::kStateStart);
+  AddLauncherPage(horizontal_page_container_, ash::AppListState::kStateApps);
 
   // Search results UI.
   search_results_page_view_ = new SearchResultPageView();
@@ -119,9 +117,7 @@ void ContentsView::Init(AppListModel* model) {
                     ash::AppListState::kStateEmbeddedAssistant);
   }
 
-  AddLauncherPage(horizontal_page_container_, ash::AppListState::kStateApps);
-
-  int initial_page_index = GetPageIndexForState(ash::AppListState::kStateStart);
+  int initial_page_index = GetPageIndexForState(ash::AppListState::kStateApps);
   DCHECK_GE(initial_page_index, 0);
 
   page_before_search_ = initial_page_index;
@@ -158,6 +154,11 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   GetAppsContainerView()->SetDragAndDropHostOfCurrentAppList(
       drag_and_drop_host);
+}
+
+void ContentsView::OnAppListViewTargetStateChanged(
+    AppListViewState target_state) {
+  UpdateExpandArrowFocusBehavior(target_state);
 }
 
 void ContentsView::SetActiveState(ash::AppListState state) {
@@ -248,9 +249,6 @@ void ContentsView::ActivePageChanged() {
   app_list_pages_[GetActivePageIndex()]->OnWillBeShown();
 
   GetAppListMainView()->model()->SetState(state);
-
-  UpdateExpandArrowFocusBehavior(state);
-
   UpdateSearchBoxVisibility(state);
 }
 
@@ -373,35 +371,33 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
                                             ash::AppListState target_state) {
   if ((current_state == ash::AppListState::kStateSearchResults ||
        current_state == ash::AppListState::kStateEmbeddedAssistant) &&
-      (target_state == ash::AppListState::kStateStart ||
-       target_state == ash::AppListState::kStateApps)) {
-    // Fade in the expand arrow when search results page is opened.
+      target_state == ash::AppListState::kStateApps) {
+    // Fade in the expand arrow when search results page is closed.
     expand_arrow_view_->layer()->SetOpacity(
         gfx::Tween::FloatValueBetween(progress, 0, 1));
   } else if ((target_state == ash::AppListState::kStateSearchResults ||
               target_state == ash::AppListState::kStateEmbeddedAssistant) &&
-             (current_state == ash::AppListState::kStateStart ||
-              current_state == ash::AppListState::kStateApps)) {
-    // Fade out the expand arrow when search results page is closed.
+             current_state == ash::AppListState::kStateApps) {
+    // Fade out the expand arrow when search results page is opened.
     expand_arrow_view_->layer()->SetOpacity(
         gfx::Tween::FloatValueBetween(progress, 1, 0));
   }
 }
 
 void ContentsView::UpdateExpandArrowFocusBehavior(
-    ash::AppListState current_state) {
-  bool state_start = current_state == ash::AppListState::kStateStart;
-
+    AppListViewState target_state) {
+  const bool expand_arrow_enabled = target_state == AppListViewState::PEEKING;
   // The expand arrow is only focusable and has InkDropMode on in peeking
   // state.
-  expand_arrow_view_->SetFocusBehavior(state_start ? FocusBehavior::ALWAYS
-                                                   : FocusBehavior::NEVER);
+  expand_arrow_view_->SetFocusBehavior(
+      expand_arrow_enabled ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
   expand_arrow_view_->SetInkDropMode(
-      state_start ? views::InkDropHostView::InkDropMode::ON
-                  : views::InkDropHostView::InkDropMode::OFF);
+      expand_arrow_enabled ? views::InkDropHostView::InkDropMode::ON
+                           : views::InkDropHostView::InkDropMode::OFF);
 
   // Allow ChromeVox to focus the expand arrow only when peeking launcher.
-  expand_arrow_view_->GetViewAccessibility().OverrideIsIgnored(!state_start);
+  expand_arrow_view_->GetViewAccessibility().OverrideIsIgnored(
+      !expand_arrow_enabled);
   expand_arrow_view_->GetViewAccessibility().NotifyAccessibilityEvent(
       ax::mojom::Event::kTreeChanged);
 }
@@ -486,9 +482,6 @@ bool ContentsView::Back() {
 
   ash::AppListState state = view_to_state_[GetActivePageIndex()];
   switch (state) {
-    case ash::AppListState::kStateStart:
-      // Close the app list when Back() is called from the start page.
-      return false;
     case ash::AppListState::kStateApps: {
       PaginationModel* pagination_model =
           GetAppsContainerView()->apps_grid_view()->pagination_model();
@@ -514,7 +507,8 @@ bool ContentsView::Back() {
     case ash::AppListState::kStateEmbeddedAssistant:
       ShowEmbeddedAssistantUI(false);
       break;
-    case ash::AppListState::kInvalidState:  // Falls through.
+    case ash::AppListState::kStateStart_DEPRECATED:
+    case ash::AppListState::kInvalidState:
       NOTREACHED();
       break;
   }
@@ -658,20 +652,12 @@ bool ContentsView::ShouldLayoutPage(AppListPage* page,
                                     ash::AppListState current_state,
                                     ash::AppListState target_state) const {
   if (page == horizontal_page_container_) {
-    return (current_state == ash::AppListState::kStateStart &&
-            target_state == ash::AppListState::kStateApps) ||
-           (current_state == ash::AppListState::kStateApps &&
-            target_state == ash::AppListState::kStateStart) ||
-           (current_state == ash::AppListState::kStateSearchResults &&
-            target_state == ash::AppListState::kStateStart);
+    return (current_state == ash::AppListState::kStateSearchResults &&
+            target_state == ash::AppListState::kStateApps);
   }
 
   if (page == search_results_page_view_) {
     return ((current_state == ash::AppListState::kStateSearchResults &&
-             target_state == ash::AppListState::kStateStart) ||
-            (current_state == ash::AppListState::kStateStart &&
-             target_state == ash::AppListState::kStateSearchResults)) ||
-           ((current_state == ash::AppListState::kStateSearchResults &&
              target_state == ash::AppListState::kStateApps) ||
             (current_state == ash::AppListState::kStateApps &&
              target_state == ash::AppListState::kStateSearchResults));

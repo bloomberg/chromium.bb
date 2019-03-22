@@ -1853,7 +1853,7 @@ TEST_F(AppListViewTest, DisplayTest) {
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
 
-  ash::AppListState expected = ash::AppListState::kStateStart;
+  ash::AppListState expected = ash::AppListState::kStateApps;
   EXPECT_TRUE(main_view->contents_view()->IsStateActive(expected));
   EXPECT_EQ(expected, delegate_->GetModel()->state());
 }
@@ -1868,19 +1868,19 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
 
   ContentsView* contents_view = main_view->contents_view();
 
-  contents_view->SetActiveState(ash::AppListState::kStateStart);
+  contents_view->SetActiveState(ash::AppListState::kStateApps);
   contents_view->Layout();
 
-  IsStateShown(ash::AppListState::kStateStart);
+  IsStateShown(ash::AppListState::kStateApps);
 
   // Change pages. View should not have moved without Layout().
   contents_view->ShowSearchResults(true);
-  IsStateShown(ash::AppListState::kStateStart);
+  IsStateShown(ash::AppListState::kStateApps);
 
   // Change to a third page. This queues up the second animation behind the
   // first.
   contents_view->SetActiveState(ash::AppListState::kStateApps);
-  IsStateShown(ash::AppListState::kStateStart);
+  IsStateShown(ash::AppListState::kStateApps);
 
   // Call Layout(). Should jump to the third page.
   contents_view->Layout();
@@ -1918,10 +1918,8 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   // Check that we return to the page that we were on before the search.
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
-  // Check that typing into the search box triggers the search page.
-  EXPECT_TRUE(SetAppListState(ash::AppListState::kStateStart));
   view_->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateStart));
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
 
   base::string16 search_text = base::UTF8ToUTF16("test");
   main_view->search_box_view()->search_box()->SetText(base::string16());
@@ -1970,20 +1968,20 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   SetAppListState(ash::AppListState::kStateApps);
   EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
 
-  // The back button should return to the start page.
+  // The back button should return to the apps page.
   EXPECT_TRUE(contents_view->Back());
   contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateStart));
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
   EXPECT_FALSE(search_box_view->back_button()->visible());
 
   // Show the apps grid again.
   SetAppListState(ash::AppListState::kStateApps);
   EXPECT_NO_FATAL_FAILURE(CheckView(search_box_view->back_button()));
 
-  // Pressing ESC should return to the start page.
+  // Pressing ESC should return to the apps page.
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateStart));
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
   EXPECT_FALSE(search_box_view->back_button()->visible());
 
   // Pressing ESC from the start page should close the app list.
@@ -2002,7 +2000,7 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   // The back button should return to the start page.
   EXPECT_TRUE(contents_view->Back());
   contents_view->Layout();
-  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateStart));
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
   EXPECT_FALSE(search_box_view->back_button()->visible());
 }
 

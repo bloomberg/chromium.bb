@@ -78,6 +78,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
 
+  // Called when the target state of AppListView changes.
+  void OnAppListViewTargetStateChanged(AppListViewState target_state);
+
   // Shows/hides the search results. Hiding the search results will cause the
   // app list to return to the page that was displayed before
   // ShowSearchResults(true) was invoked.
@@ -226,8 +229,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                                 ash::AppListState current_state,
                                 ash::AppListState target_state);
 
-  // Updates the expand arrow's focus behavior based on the current state.
-  void UpdateExpandArrowFocusBehavior(ash::AppListState current_state);
+  // Updates the expand arrow's focus behavior based on AppListViewState.
+  void UpdateExpandArrowFocusBehavior(AppListViewState target_state);
 
   // Updates search box visibility based on the current state.
   void UpdateSearchBoxVisibility(ash::AppListState current_state);
