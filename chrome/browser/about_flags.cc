@@ -3236,13 +3236,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
 
-#if defined(OS_ANDROID)
-    {"enable-omnibox-voice-search-always-visible",
-     flag_descriptions::kOmniboxVoiceSearchAlwaysVisibleName,
-     flag_descriptions::kOmniboxVoiceSearchAlwaysVisibleDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kOmniboxVoiceSearchAlwaysVisible)},
-#endif  // OS_ANDROID
-
     {"enable-signed-http-exchange", flag_descriptions::kSignedHTTPExchangeName,
      flag_descriptions::kSignedHTTPExchangeDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSignedHTTPExchange)},

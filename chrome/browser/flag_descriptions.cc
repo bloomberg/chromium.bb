@@ -1460,12 +1460,6 @@ const char kOmniboxUIWhiteBackgroundOnBlurName[] =
 const char kOmniboxUIWhiteBackgroundOnBlurDescription[] =
     "Set the omnibox background white when it's unfocused";
 
-const char kOmniboxVoiceSearchAlwaysVisibleName[] =
-    "Omnibox Voice Search Always Visible";
-const char kOmniboxVoiceSearchAlwaysVisibleDescription[] =
-    "Always displays voice search icon in focused omnibox as long as voice "
-    "search is possible";
-
 const char kOmniboxZeroSuggestionsOnNTPName[] =
     "Omnibox Zero Suggestions on New Tab Page";
 const char kOmniboxZeroSuggestionsOnNTPDescription[] =
