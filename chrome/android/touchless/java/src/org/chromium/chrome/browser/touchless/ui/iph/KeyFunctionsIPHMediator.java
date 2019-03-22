@@ -8,7 +8,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.ui.base.CursorVisibilityObserver;
+import org.chromium.ui.base.CursorObserver;
 import org.chromium.ui.base.TouchlessEventHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.FutureTask;
 /**
  * Controls the UI model for key functions IPH.
  */
-public class KeyFunctionsIPHMediator implements CursorVisibilityObserver {
+public class KeyFunctionsIPHMediator implements CursorObserver {
     private final PropertyModel mModel;
     private final KeyFunctionsIPHTabObserver mKeyFunctionsIPHTabObserver;
     private FutureTask mHideTask;
@@ -29,23 +29,26 @@ public class KeyFunctionsIPHMediator implements CursorVisibilityObserver {
     KeyFunctionsIPHMediator(PropertyModel model, ActivityTabProvider activityTabProvider) {
         mModel = model;
         mKeyFunctionsIPHTabObserver = new KeyFunctionsIPHTabObserver(activityTabProvider);
-        TouchlessEventHandler.addCursorVisibilityObserver(this);
+        TouchlessEventHandler.addCursorObserver(this);
     }
 
     @Override
-    public void onCursorVisibilityChanged(boolean isCursorVisible) {
-        show(isCursorVisible);
+    public void onCursorVisibilityChanged(boolean isCursorVisible) {}
+
+    @Override
+    public void onFallbackCursorModeToggled(boolean isOn) {
+        show(isOn);
     }
 
-    private void show(boolean isCursorVisible) {
+    private void show(boolean isFallbackCursorModeOn) {
         // TODO(crbug.com/942665): Populate this.
         boolean pageOptimizedForMobile = true;
-        if ((!isCursorVisible && mHasShownOnSpatNav && pageOptimizedForMobile)
-                || (isCursorVisible && mHasShownOnFallback)) {
+        if ((!isFallbackCursorModeOn && mHasShownOnSpatNav && pageOptimizedForMobile)
+                || (isFallbackCursorModeOn && mHasShownOnFallback)) {
             return;
         }
 
-        if (isCursorVisible) {
+        if (isFallbackCursorModeOn) {
             mHasShownOnFallback = true;
         } else {
             mHasShownOnSpatNav = true;
@@ -56,12 +59,12 @@ public class KeyFunctionsIPHMediator implements CursorVisibilityObserver {
             return null;
         });
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, mHideTask, DISPLAY_DURATION_MS);
-        mModel.set(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE, isCursorVisible);
+        mModel.set(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE, isFallbackCursorModeOn);
         mModel.set(KeyFunctionsIPHProperties.IS_VISIBLE, true);
     }
 
     void destroy() {
-        TouchlessEventHandler.removeCursorVisibilityObserver(this);
+        TouchlessEventHandler.removeCursorObserver(this);
         mKeyFunctionsIPHTabObserver.destroy();
         if (mHideTask != null) mHideTask.cancel(false);
     }

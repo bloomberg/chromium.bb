@@ -226,6 +226,9 @@ interface WidgetInputHandler {
   // Sends the cursor visibility state to the render widget.
   CursorVisibilityChanged(bool visible);
 
+  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
+  FallbackCursorModeToggled(bool is_on);
+
   // This message sends a string being composed with an input method.
   ImeSetComposition(mojo_base.mojom.String16 text,
                     array<ui.mojom.ImeTextSpan> ime_text_spans,

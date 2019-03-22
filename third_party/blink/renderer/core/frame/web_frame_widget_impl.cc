@@ -500,6 +500,11 @@ void WebFrameWidgetImpl::SetCursorVisibilityState(bool is_visible) {
   GetPage()->SetIsCursorVisible(is_visible);
 }
 
+void WebFrameWidgetImpl::OnFallbackCursorModeToggled(bool is_on) {
+  // TODO(crbug.com/944575) Should support oopif.
+  NOTREACHED();
+}
+
 WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
   WebLocalFrameImpl* local_frame =

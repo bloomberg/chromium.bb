@@ -27,6 +27,10 @@ class CORE_EXPORT FallbackCursorEventManager
   FallbackCursorEventManager(LocalFrame&);
   void Trace(blink::Visitor*);
 
+  void SetIsFallbackCursorModeOn(bool is_on) {
+    is_fallback_cursor_mode_on_ = is_on;
+  }
+
   void HandleMouseMoveEvent(const WebMouseEvent&);
   void HandleMousePressEvent(const WebMouseEvent&);
 
@@ -59,6 +63,7 @@ class CORE_EXPORT FallbackCursorEventManager
 
   const Member<LocalFrame> root_frame_;
   Member<Node> current_node_;
+  bool is_fallback_cursor_mode_on_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackCursorEventManager);
 };

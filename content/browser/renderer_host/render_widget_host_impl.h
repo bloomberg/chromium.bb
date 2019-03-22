@@ -351,8 +351,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return is_last_unlocked_by_target_;
   }
 
-  // Noifies the RenderWidget of the current mouse cursor visibility state.
-  void SendCursorVisibilityState(bool is_visible);
+  // Notifies the RenderWidget of the current mouse cursor visibility state.
+  void OnCursorVisibilityStateChanged(bool is_visible);
+
+  // Notifies the RenderWidget when toggle fallback cursor mode on/off.
+  void OnFallbackCursorModeToggled(bool is_on);
 
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();

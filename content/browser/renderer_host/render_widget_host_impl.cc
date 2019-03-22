@@ -284,6 +284,9 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   void CursorVisibilityChanged(bool visible) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
+  void FallbackCursorModeToggled(bool is_on) override {
+    DLOG(WARNING) << "Input request on unbound interface";
+  }
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& range,
@@ -1667,8 +1670,12 @@ void RenderWidgetHostImpl::ShowContextMenuAtPoint(
   Send(new WidgetMsg_ShowContextMenu(GetRoutingID(), source_type, point));
 }
 
-void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
+void RenderWidgetHostImpl::OnCursorVisibilityStateChanged(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
+}
+
+void RenderWidgetHostImpl::OnFallbackCursorModeToggled(bool is_on) {
+  GetWidgetInputHandler()->FallbackCursorModeToggled(is_on);
 }
 
 // static

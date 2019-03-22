@@ -2281,7 +2281,7 @@ void RenderWidgetHostViewAura::NotifyRendererOfCursorVisibilityState(
     return;
 
   cursor_visibility_state_in_renderer_ = is_visible ? VISIBLE : NOT_VISIBLE;
-  host()->SendCursorVisibilityState(is_visible);
+  host()->OnCursorVisibilityStateChanged(is_visible);
 }
 
 void RenderWidgetHostViewAura::SetOverscrollControllerEnabled(bool enabled) {

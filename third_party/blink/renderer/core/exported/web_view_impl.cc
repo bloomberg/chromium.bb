@@ -1828,6 +1828,12 @@ void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
     AsView().page->SetIsCursorVisible(is_visible);
 }
 
+void WebViewImpl::OnFallbackCursorModeToggled(bool is_on) {
+  DCHECK(MainFrameImpl());
+  MainFrameImpl()->GetFrame()->GetEventHandler().SetIsFallbackCursorModeOn(
+      is_on);
+}
+
 void WebViewImpl::MouseCaptureLost() {
   TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
   mouse_capture_element_ = nullptr;
