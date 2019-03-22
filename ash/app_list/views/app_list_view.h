@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -53,7 +54,8 @@ constexpr int kAppListBackgroundRadius = 28;
 // and hosts a AppsGridView and passes AppListModel to it for display.
 // TODO(newcomer|weidongg): Organize the cc file to match the order of
 // definitions in this header.
-class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
+class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
+                                    public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -237,6 +239,13 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // Returns a animation metrics reportre for state transition.
   ui::AnimationMetricsReporter* GetStateTransitionMetricsReporter();
+
+  // WindowObserver overrides:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;

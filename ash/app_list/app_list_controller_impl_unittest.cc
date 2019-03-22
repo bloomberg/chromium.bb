@@ -9,8 +9,10 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -34,15 +36,30 @@ bool IsTabletMode() {
       ->IsTabletModeWindowManagerEnabled();
 }
 
+app_list::AppListView* GetAppListView() {
+  return Shell::Get()->app_list_controller()->presenter()->GetView();
+}
+
 bool GetExpandArrowViewVisibility() {
-  return Shell::Get()
-      ->app_list_controller()
-      ->presenter()
-      ->GetView()
+  return GetAppListView()
       ->app_list_main_view()
       ->contents_view()
       ->expand_arrow_view()
       ->visible();
+}
+
+app_list::SearchBoxView* GetSearchBoxView() {
+  return GetAppListView()
+      ->app_list_main_view()
+      ->contents_view()
+      ->GetSearchBoxView();
+}
+
+aura::Window* GetVirtualKeyboardWindow() {
+  return Shell::Get()
+      ->ash_keyboard_controller()
+      ->keyboard_controller()
+      ->GetKeyboardWindow();
 }
 
 }  // namespace
@@ -92,6 +109,52 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // No activatable windows. Hide the expand arrow view.
   w2.reset();
   EXPECT_FALSE(GetExpandArrowViewVisibility());
+}
+
+// In clamshell mode, when the AppListView's bottom is on the display edge
+// and app list state is HALF, the rounded corners should be hidden
+// (https://crbug.com/942084).
+TEST_F(AppListControllerImplTest, HideRoundingCorners) {
+  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
+      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+
+  // Show the app list view and click on the search box with mouse. So the
+  // VirtualKeyboard is shown.
+  Shell::Get()->app_list_controller()->presenter()->Show(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      base::TimeTicks::Now());
+  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+
+  // Wait until the virtual keyboard shows on the screen.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
+
+  // Test the following things:
+  // (1) AppListView is at the top of the screen.
+  // (2) AppListView's state is HALF.
+  // (3) AppListBackgroundShield is translated to hide the rounded corners.
+  aura::Window* native_window =
+      GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+  gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
+  EXPECT_EQ(0, app_list_screen_bounds.y());
+  EXPECT_EQ(app_list::AppListViewState::HALF,
+            GetAppListView()->app_list_state());
+  gfx::Transform expected_transform;
+  expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
+  EXPECT_EQ(
+      expected_transform,
+      GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
+
+  // Set the search box inactive and wait until the virtual keyboard is hidden.
+  GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_MOUSE_PRESSED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
+
+  // Test that the rounded corners should show again.
+  expected_transform = gfx::Transform();
+  EXPECT_EQ(
+      expected_transform,
+      GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {
