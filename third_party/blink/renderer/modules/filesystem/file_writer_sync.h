@@ -49,10 +49,6 @@ class FileWriterSync final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 
  public:
-  static FileWriterSync* Create(ExecutionContext* context) {
-    return MakeGarbageCollected<FileWriterSync>(context);
-  }
-
   explicit FileWriterSync(ExecutionContext* context);
   ~FileWriterSync() override;
   void Trace(blink::Visitor*) override;

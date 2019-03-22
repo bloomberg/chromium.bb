@@ -54,11 +54,6 @@ class MODULES_EXPORT DOMFileSystem final
   USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 
  public:
-  static DOMFileSystem* Create(ExecutionContext*,
-                               const String& name,
-                               mojom::blink::FileSystemType,
-                               const KURL& root_url);
-
   // Creates a new isolated file system for the given filesystemId.
   static DOMFileSystem* CreateIsolatedFileSystem(ExecutionContext*,
                                                  const String& filesystem_id);

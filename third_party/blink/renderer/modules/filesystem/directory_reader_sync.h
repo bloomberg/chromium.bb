@@ -47,11 +47,6 @@ class DirectoryReaderSync : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DirectoryReaderSync* Create(DOMFileSystemBase* file_system,
-                                     const String& full_path) {
-    return MakeGarbageCollected<DirectoryReaderSync>(file_system, full_path);
-  }
-
   DirectoryReaderSync(DOMFileSystemBase*, const String& full_path);
   ~DirectoryReaderSync() override = default;
 

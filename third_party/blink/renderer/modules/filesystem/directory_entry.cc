@@ -43,7 +43,7 @@ DirectoryEntry::DirectoryEntry(DOMFileSystemBase* file_system,
     : Entry(file_system, full_path) {}
 
 DirectoryReader* DirectoryEntry::createReader() {
-  return DirectoryReader::Create(file_system_, full_path_);
+  return MakeGarbageCollected<DirectoryReader>(file_system_, full_path_);
 }
 
 void DirectoryEntry::getFile(const String& path,
