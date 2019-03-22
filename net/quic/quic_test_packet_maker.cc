@@ -149,7 +149,7 @@ QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
   quic::QuicCryptoFrame crypto_frame;
   quic::test::SimpleDataProducer producer;
   quic::QuicStreamFrameDataProducer* producer_p = nullptr;
-  if (version_ < quic::QUIC_VERSION_47) {
+  if (!QuicVersionUsesCryptoFrames(version_)) {
     quic::QuicStreamFrame frame(quic::QuicUtils::GetCryptoStreamId(version_),
                                 /*fin=*/false, /*offset=*/0,
                                 data.AsStringPiece());
