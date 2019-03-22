@@ -71,6 +71,7 @@ body {
   margin-top: 8px;
   overflow: hidden;
   pointer-events: auto;
+  position: relative;
   transition: border-top 130ms ease;
   user-select: none;
 }
@@ -96,7 +97,6 @@ body {
   padding: 0 30px;
   position: relative;
   transition: all 500ms ease;
-  width: 100%;
 }
 
 .ink {
