@@ -3811,7 +3811,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _contextMenuController =
         [[CRWContextMenuController alloc] initWithWebView:self.webView
                                              browserState:browserState
-                                       injectionEvaluator:self
                                                  delegate:self];
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
@@ -5570,6 +5569,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
   }
   self.webStateImpl->HandleContextMenu(params);
+}
+
+- (void)webView:(WKWebView*)webView
+    executeJavaScript:(NSString*)javaScript
+    completionHandler:(void (^)(id, NSError*))completionHandler {
+  [self executeJavaScript:javaScript completionHandler:completionHandler];
 }
 
 #pragma mark - CRWNativeContentDelegate methods
