@@ -111,12 +111,22 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     };
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    struct MachPortsEntry {
-      // Index of Mach port in the original vector of PlatformHandleInTransits.
-      uint16_t index;
+    union MachPortsEntry {
+      // Used with ChannelPosix.
+      struct {
+        // Index of Mach port in the original vector of
+        // PlatformHandleInTransits.
+        uint16_t index;
 
-      // Mach port name.
-      uint32_t mach_port;
+        // Mach port name.
+        uint32_t mach_port;
+      } posix_entry;
+
+      // Used with ChannelMac.
+      struct {
+        // The PlatformHandle::Type.
+        uint8_t type;
+      } mach_entry;
       static_assert(sizeof(mach_port_t) <= sizeof(uint32_t),
                     "mach_port_t must be no larger than uint32_t");
     };
