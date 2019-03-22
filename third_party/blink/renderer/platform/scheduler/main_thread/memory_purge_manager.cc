@@ -47,11 +47,14 @@ int MaxTimeToPurgeAfterBackgroundedInSeconds() {
 
 }  // namespace
 
-MemoryPurgeManager::MemoryPurgeManager()
+MemoryPurgeManager::MemoryPurgeManager(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : renderer_backgrounded_(kLaunchingProcessIsBackgrounded),
       backgrounded_purge_pending_(false),
       total_page_count_(0),
-      frozen_page_count_(0) {}
+      frozen_page_count_(0) {
+  purge_timer_.SetTaskRunner(task_runner);
+}
 
 MemoryPurgeManager::~MemoryPurgeManager() = default;
 

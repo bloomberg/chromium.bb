@@ -27,6 +27,8 @@ class MemoryPurgeManagerTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
+        memory_purge_manager_(
+            scoped_task_environment_.GetMainThreadTaskRunner()),
         observed_memory_pressure_(false) {}
 
   void SetUp() override {
@@ -75,9 +77,9 @@ class MemoryPurgeManagerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  bool observed_memory_pressure_;
-
   MemoryPurgeManager memory_purge_manager_;
+
+  bool observed_memory_pressure_;
 
  private:
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel) {

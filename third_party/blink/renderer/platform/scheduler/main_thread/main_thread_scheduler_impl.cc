@@ -215,6 +215,13 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
           compositor_task_queue_->CreateQueueEnabledVoter()),
       input_task_queue_enabled_voter_(
           input_task_queue_->CreateQueueEnabledVoter()),
+      memory_purge_task_queue_(helper_.NewTaskQueue(
+          MainThreadTaskQueue::QueueCreationParams(
+              MainThreadTaskQueue::QueueType::kIdle)
+              .SetFixedPriority(
+                  TaskQueue::QueuePriority::kBestEffortPriority))),
+      memory_purge_manager_(memory_purge_task_queue_->CreateTaskRunner(
+          TaskType::kMainThreadTaskQueueMemoryPurge)),
       delayed_update_policy_runner_(
           base::BindRepeating(&MainThreadSchedulerImpl::UpdatePolicy,
                               base::Unretained(this)),
