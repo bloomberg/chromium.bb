@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"
@@ -193,6 +194,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     discoveries().push_back(std::move(discovery));
   }
 
+  FIDO_LOG(EVENT) << "Starting GetAssertion flow";
   Start();
 }
 
@@ -202,8 +204,17 @@ void GetAssertionRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-  if (state_ != State::kWaitingForTouch ||
-      !CheckUserVerificationCompatible(authenticator, request_, observer())) {
+  if (state_ != State::kWaitingForTouch) {
+    FIDO_LOG(DEBUG) << "Not dispatching request to "
+                    << authenticator->GetDisplayName()
+                    << " because no longer waiting for touch";
+    return;
+  }
+
+  if (!CheckUserVerificationCompatible(authenticator, request_, observer())) {
+    FIDO_LOG(DEBUG) << "Not dispatching request to "
+                    << authenticator->GetDisplayName()
+                    << " because authenticator is not UV-compatible";
     return;
   }
 
@@ -211,6 +222,9 @@ void GetAssertionRequestHandler::DispatchRequest(
       authenticator->WillNeedPINToGetAssertion(request_)) {
     // A PIN will be needed. Just request a touch to let the user select this
     // authenticator if they wish.
+    FIDO_LOG(DEBUG) << "Asking for touch from "
+                    << authenticator->GetDisplayName()
+                    << " because a PIN will be required";
     authenticator->GetTouch(
         base::BindOnce(&GetAssertionRequestHandler::HandleTouch,
                        weak_factory_.GetWeakPtr(), authenticator));
@@ -230,6 +244,8 @@ void GetAssertionRequestHandler::DispatchRequest(
     }
   }
 
+  FIDO_LOG(DEBUG) << "Asking for assertion from "
+                  << authenticator->GetDisplayName();
   authenticator->GetAssertion(
       std::move(request),
       base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
@@ -263,6 +279,9 @@ void GetAssertionRequestHandler::HandleResponse(
 
   if (state_ != State::kWaitingForTouch &&
       state_ != State::kWaitingForSecondTouch) {
+    FIDO_LOG(DEBUG) << "Ignoring response from "
+                    << authenticator->GetDisplayName()
+                    << " because no longer waiting for touch";
     return;
   }
 
@@ -273,6 +292,9 @@ void GetAssertionRequestHandler::HandleResponse(
 
   state_ = State::kFinished;
   if (response_code != CtapDeviceResponseCode::kSuccess) {
+    FIDO_LOG(ERROR) << "Failing assertion request due to status "
+                    << static_cast<int>(response_code) << " from "
+                    << authenticator->GetDisplayName();
     OnAuthenticatorResponse(authenticator, response_code, base::nullopt);
     return;
   }
@@ -281,6 +303,8 @@ void GetAssertionRequestHandler::HandleResponse(
       !CheckResponseCredentialIdMatchesRequestAllowList(*authenticator,
                                                         request_, *response) ||
       !CheckRequirementsOnResponseUserEntity(request_, *response)) {
+    FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
+                    << authenticator->GetDisplayName();
     OnAuthenticatorResponse(
         authenticator, CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;

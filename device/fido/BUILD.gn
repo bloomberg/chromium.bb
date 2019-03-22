@@ -143,6 +143,7 @@ component("fido") {
   deps = [
     "//components/apdu",
     "//components/cbor",
+    "//components/device_event_log",
     "//crypto",
     "//device/base",
     "//device/fido/strings",
