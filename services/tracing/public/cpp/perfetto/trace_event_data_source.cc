@@ -32,10 +32,6 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
-#if DCHECK_IS_ON()
-#include "base/task/task_scheduler/scheduler_lock_impl.h"
-#endif
-
 using TraceLog = base::trace_event::TraceLog;
 using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
@@ -121,9 +117,31 @@ void TraceEventMetadataSource::Flush(
 
 namespace {
 
+class AutoThreadLocalBoolean {
+ public:
+  explicit AutoThreadLocalBoolean(
+      base::ThreadLocalBoolean* thread_local_boolean)
+      : thread_local_boolean_(thread_local_boolean) {
+    DCHECK(!thread_local_boolean_->Get());
+    thread_local_boolean_->Set(true);
+  }
+  ~AutoThreadLocalBoolean() { thread_local_boolean_->Set(false); }
+
+ private:
+  base::ThreadLocalBoolean* thread_local_boolean_;
+  DISALLOW_COPY_AND_ASSIGN(AutoThreadLocalBoolean);
+};
+
+base::ThreadLocalBoolean* GetThreadIsInTraceEventTLS() {
+  static base::NoDestructor<base::ThreadLocalBoolean> thread_is_in_trace_event;
+  return thread_is_in_trace_event.get();
+}
+
 base::ThreadLocalStorage::Slot* ThreadLocalEventSinkSlot() {
   static base::NoDestructor<base::ThreadLocalStorage::Slot>
       thread_local_event_sink_tls([](void* event_sink) {
+        AutoThreadLocalBoolean thread_is_in_trace_event(
+            GetThreadIsInTraceEventTLS());
         delete static_cast<ThreadLocalEventSink*>(event_sink);
       });
 
@@ -199,6 +217,10 @@ void TraceEventDataSource::StartTracing(
   session_id_.fetch_add(1u, std::memory_order_relaxed);
 
   if (unbound_writer_registry) {
+    // TODO(oysteine): Investigate why trace events emitted by something in
+    // BindStartupTraceWriterRegistry() causes deadlocks.
+    AutoThreadLocalBoolean thread_is_in_trace_event(
+        GetThreadIsInTraceEventTLS());
     producer_client->BindStartupTraceWriterRegistry(
         std::move(unbound_writer_registry), data_source_config.target_buffer());
   } else {
@@ -209,6 +231,7 @@ void TraceEventDataSource::StartTracing(
       TraceConfig(data_source_config.chrome_config().trace_config());
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   ResetHistograms(trace_config);
+  ProducerClient::GetTaskRunner()->StartDeferredTasksDrainTimer();
 }
 
 void TraceEventDataSource::StopTracing(
@@ -223,6 +246,12 @@ void TraceEventDataSource::StopTracing(
           return;
         }
 
+        // It's extremely unlikely any threads are still in mid-trace-event
+        // at this point and end up posting new tasks to the PerfettoTaskRunner
+        // which end up not getting run until the next tracing session; worst
+        // case is we lose some chunk commit messages and Perfetto will
+        // scrape the chunks.
+        ProducerClient::GetTaskRunner()->StopDeferredTasksDrainTimer();
         data_source->UnregisterFromTraceLog();
 
         if (data_source->stop_complete_callback_) {
@@ -312,8 +341,9 @@ void TraceEventDataSource::Flush(
 void TraceEventDataSource::ResetIncrementalStateForTesting() {
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
-  if (thread_local_event_sink)
+  if (thread_local_event_sink) {
     thread_local_event_sink->ResetIncrementalState();
+  }
 }
 
 ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
@@ -349,6 +379,17 @@ void TraceEventDataSource::OnAddTraceEvent(
     TraceEvent* trace_event,
     bool thread_will_flush,
     base::trace_event::TraceEventHandle* handle) {
+  // Avoid re-entrancy, which can happen during PostTasks (the taskqueue can
+  // emit trace events). We discard the events in this case, as any PostTasking
+  // to deal with these events later would break the event ordering that the
+  // JSON traces rely on to merge 'A'/'B' events, as well as having to deal with
+  // updating duration of 'X' events which haven't been added yet.
+  if (GetThreadIsInTraceEventTLS()->Get()) {
+    return;
+  }
+
+  AutoThreadLocalBoolean thread_is_in_trace_event(GetThreadIsInTraceEventTLS());
+
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
 
@@ -371,24 +412,24 @@ void TraceEventDataSource::OnAddTraceEvent(
     // tracing, where the sink is created with kInvalidSessionID. Resetting the
     // sink during startup might cause data buffered in its potentially still
     // unbound StartupTraceWriter to be lost.
+    // NOTE: If the trace event we're adding disallows PostTasks (meaning
+    // events emitted while the taskqueue is locked), we can't reset the
+    // sink as the TraceWriter deletion is done through PostTask.
     if (new_session_id > kFirstSessionID &&
-        new_session_id != thread_local_event_sink->session_id()) {
+        new_session_id != thread_local_event_sink->session_id() &&
+        !(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK)) {
       delete thread_local_event_sink;
       thread_local_event_sink = nullptr;
     }
   }
 
-#if DCHECK_IS_ON()
-  // Trace events emitted by the task queue itself can happen while the task
-  // queue is locked, posting to it reentrantly would deadlock so these events
-  // need to be flagged so we can avoid PostTasks while they're being emitted.
-  // TODO(oysteine): Avoid PostTasks for events with this flag set.
-  if (!(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK)) {
-    base::internal::SchedulerLockImpl::AssertNoLockHeldOnCurrentThread();
-  }
-#endif
-
   if (!thread_local_event_sink) {
+    // Trace events emitted by the task queue itself can happen while the task
+    // queue is locked, posting to it reentrantly would deadlock so these events
+    // need to be flagged so we can avoid PostTasks while they're being emitted.
+    ScopedPerfettoPostTaskBlocker post_task_blocker(
+        !!(trace_event->flags() & TRACE_EVENT_FLAG_DISALLOW_POSTTASK));
+
     thread_local_event_sink =
         GetInstance()->CreateThreadLocalEventSink(thread_will_flush);
     ThreadLocalEventSinkSlot()->Set(thread_local_event_sink);
@@ -404,6 +445,12 @@ void TraceEventDataSource::OnUpdateDuration(
     base::trace_event::TraceEventHandle handle,
     const base::TimeTicks& now,
     const base::ThreadTicks& thread_now) {
+  if (GetThreadIsInTraceEventTLS()->Get()) {
+    return;
+  }
+
+  AutoThreadLocalBoolean thread_is_in_trace_event(GetThreadIsInTraceEventTLS());
+
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
   if (thread_local_event_sink) {
@@ -416,6 +463,10 @@ void TraceEventDataSource::FlushCurrentThread() {
   auto* thread_local_event_sink =
       static_cast<ThreadLocalEventSink*>(ThreadLocalEventSinkSlot()->Get());
   if (thread_local_event_sink) {
+    // Prevent any events from being emitted while we're deleting
+    // the sink (like from the TraceWriter being PostTask'ed for deletion).
+    AutoThreadLocalBoolean thread_is_in_trace_event(
+        GetThreadIsInTraceEventTLS());
     thread_local_event_sink->Flush();
     // TODO(oysteine): To support flushing while still recording, this needs to
     // be changed to not destruct the TLS object as that will emit any
@@ -439,8 +490,8 @@ void TraceEventDataSource::ReturnTraceWriter(
     // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
     // (which can happen as the TraceWriter destructor might make a Mojo call
     // and trigger it).
-    ProducerClient::GetTaskRunner()->DeleteSoon(FROM_HERE,
-                                                std::move(trace_writer));
+    ProducerClient::GetTaskRunner()->task_runner()->DeleteSoon(
+        FROM_HERE, std::move(trace_writer));
   }
 }
 

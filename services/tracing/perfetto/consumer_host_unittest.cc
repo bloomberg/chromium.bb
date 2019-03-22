@@ -72,7 +72,7 @@ class ThreadedPerfettoService : public mojom::TracingSession {
 
     {
       base::RunLoop wait_for_destruction;
-      ProducerClient::GetTaskRunner()->PostTaskAndReply(
+      ProducerClient::GetTaskRunner()->task_runner()->PostTaskAndReply(
           FROM_HERE, base::DoNothing(), wait_for_destruction.QuitClosure());
       wait_for_destruction.Run();
     }

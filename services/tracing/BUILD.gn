@@ -80,6 +80,7 @@ source_set("tests") {
 
   if (is_mac || is_linux || is_android || is_fuchsia) {
     sources += [
+      "public/cpp/perfetto/task_runner_unittest.cc",
       "public/cpp/perfetto/trace_event_data_source_unittest.cc",
       "public/cpp/perfetto/traced_value_proto_writer_unittest.cc",
     ]
