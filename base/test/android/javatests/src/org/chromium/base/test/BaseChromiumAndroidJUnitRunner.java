@@ -233,6 +233,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
      */
     private static class DexFileTestRequestBuilder extends TestRequestBuilder {
         final List<String> mExcludedPrefixes = new ArrayList<String>();
+        final List<String> mIncludedPrefixes = new ArrayList<String>();
         final List<DexFile> mDexFiles;
         boolean mHasClassList;
 
@@ -252,9 +253,11 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         @Override
         public TestRequestBuilder addFromRunnerArgs(RunnerArgs runnerArgs) {
             mExcludedPrefixes.addAll(runnerArgs.notTestPackages);
+            mIncludedPrefixes.addAll(runnerArgs.testPackages);
             // Without clearing, You get IllegalArgumentException:
             // Ambiguous arguments: cannot provide both test package and test class(es) to run
             runnerArgs.notTestPackages.clear();
+            runnerArgs.testPackages.clear();
             return super.addFromRunnerArgs(runnerArgs);
         }
 
@@ -300,8 +303,14 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 Enumeration<String> classNames = dexFile.entries();
                 while (classNames.hasMoreElements()) {
                     String className = classNames.nextElement();
-                    if (!className.contains("$") && !startsWithAny(className, mExcludedPrefixes)
-                            && loader.loadIfTest(className) != null) {
+                    if (!mIncludedPrefixes.isEmpty()
+                            && !startsWithAny(className, mIncludedPrefixes)) {
+                        continue;
+                    }
+                    if (startsWithAny(className, mExcludedPrefixes)) {
+                        continue;
+                    }
+                    if (!className.contains("$") && loader.loadIfTest(className) != null) {
                         addTestClass(className);
                     }
                 }
