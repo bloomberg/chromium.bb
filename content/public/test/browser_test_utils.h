@@ -848,13 +848,14 @@ ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents);
 
 // This is intended to be a robust way to assert that the accessibility
 // tree eventually gets into the correct state, without worrying about
-// the exact ordering of events received while getting there.
-//
+// the exact ordering of events received while getting there. Blocks
+// until any change happens to the accessibility tree.
+void WaitForAccessibilityTreeToChange(WebContents* web_contents);
+
 // Searches the accessibility tree to see if any node's accessible name
-// is equal to the given name. If not, sets up a notification waiter
-// that listens for any accessibility event in any frame, and checks again
-// after each event. Keeps looping until the text is found (or the
-// test times out).
+// is equal to the given name. If not, repeatedly calls
+// WaitForAccessibilityTreeToChange, above, and then checks again.
+// Keeps looping until the text is found (or the test times out).
 void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                    const std::string& name);
 

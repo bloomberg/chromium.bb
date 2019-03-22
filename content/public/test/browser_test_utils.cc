@@ -1917,6 +1917,12 @@ bool AccessibilityTreeContainsNodeWithName(BrowserAccessibility* node,
   return false;
 }
 
+void WaitForAccessibilityTreeToChange(WebContents* web_contents) {
+  AccessibilityNotificationWaiter accessibility_waiter(
+      web_contents, ui::AXMode(), ax::mojom::Event::kNone);
+  accessibility_waiter.WaitForNotification();
+}
+
 void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                    const std::string& name) {
   WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
@@ -1927,9 +1933,7 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
       main_frame->browser_accessibility_manager();
   while (!main_frame_manager || !AccessibilityTreeContainsNodeWithName(
              main_frame_manager->GetRoot(), name)) {
-    AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, ui::AXMode(), ax::mojom::Event::kNone);
-    accessibility_waiter.WaitForNotification();
+    WaitForAccessibilityTreeToChange(web_contents);
     main_frame_manager = main_frame->browser_accessibility_manager();
   }
 }
