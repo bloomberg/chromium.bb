@@ -13,8 +13,16 @@ class NavigationManager {
   constructor(desktop) {
     /**
      * Handles communication with and navigation within the Switch Access menu.
+     * @private {!MenuManager}
      */
     this.menuManager_ = new MenuManager(this, desktop);
+
+    /**
+     * Handles the details of showing and hiding the back button, when it
+     * appears alone (rather than as part of the menu).
+     * @private {!BackButtonManager}
+     */
+    this.backButtonManager_ = new BackButtonManager(this);
 
     /**
      *
@@ -83,6 +91,10 @@ class NavigationManager {
    * Open the Switch Access menu for the currently highlighted node.
    */
   enterMenu() {
+    // If the back button is focused, select it.
+    if (this.backButtonManager_.select())
+      return;
+
     // If we're currently visiting the Switch Access menu, this command should
     // select the highlighted element.
     if (this.menuManager_.selectCurrentNode())
@@ -126,6 +138,13 @@ class NavigationManager {
     if (!node)
       node = this.youngestDescendant_(this.scope_);
 
+    // We can't interact with the desktop node, so skip it.
+    if (node === this.desktop_) {
+      this.node_ = node;
+      this.moveBackward();
+      return;
+    }
+
     this.setCurrentNode_(node);
   }
 
@@ -157,6 +176,13 @@ class NavigationManager {
     // and we should start over.
     if (!node)
       node = this.scope_;
+
+    // We can't interact with the desktop node, so skip it.
+    if (node === this.desktop_) {
+      this.node_ = node;
+      this.moveForward();
+      return;
+    }
 
     this.setCurrentNode_(node);
   }
@@ -196,6 +222,9 @@ class NavigationManager {
    * interesting, perform the default action on it.
    */
   selectCurrentNode() {
+    if (this.backButtonManager_.select())
+      return;
+
     if (this.menuManager_.selectCurrentNode())
       return;
 
@@ -212,19 +241,6 @@ class NavigationManager {
         this.node_.doDefault();
         return;
       }
-
-      // Don't let user select the top-level root node (i.e., the desktop node).
-      if (this.scopeStack_.length === 0)
-        return;
-
-      // Find a previous scope that is still valid. The stack here always has
-      // at least one valid scope (i.e., the desktop node).
-      do {
-        this.scope_ = this.scopeStack_.pop();
-      } while (!this.scope_.role && this.scopeStack_.length > 0);
-
-      this.updateFocusRings_();
-      return;
     }
 
     if (SwitchAccessPredicate.isGroup(this.node_, this.scope_)) {
@@ -247,12 +263,26 @@ class NavigationManager {
           /** @type {chrome.automation.ActionType} */ (action));
   }
 
+  exitCurrentScope() {
+    if (this.scopeStack_.length === 0)
+      return;
+
+    // Find a previous scope that is still valid. The stack here always has
+    // at least one valid scope (i.e., the desktop node).
+    do {
+      this.scope_ = this.scopeStack_.pop();
+    } while (!this.scope_.role && this.scopeStack_.length > 0);
+
+    this.updateFocusRings_();
+  }
+
   /**
    * Sets up the connection between the menuPanel and menuManager.
    * @param {!PanelInterface} menuPanel
    * @return {!MenuManager}
    */
   connectMenuPanel(menuPanel) {
+    this.backButtonManager_.setMenuPanel(menuPanel);
     return this.menuManager_.connectMenuPanel(menuPanel);
   }
 
@@ -378,7 +408,7 @@ class NavigationManager {
     this.node_ = this.scope_;
     this.visitingScopeAsActionable_ = true;
 
-    this.updateFocusRings_();
+    this.updateFocusRings_(this.node_.location);
   }
 
   /**
@@ -409,12 +439,26 @@ class NavigationManager {
   }
 
   /**
-   * Set the focus rings for the current node and scope.
+   * Set the focus ring for the current node and scope.
+   * @param {chrome.accessibilityPrivate.ScreenRect=} opt_focusRect Optionally
+   *     set where the focus should be. Prevents back button from being shown.
    * @private
    */
-  updateFocusRings_() {
-    const focusRect = this.node_.location;
-    let scopeRect = this.scope_.location;
+  updateFocusRings_(opt_focusRect) {
+    if (!opt_focusRect && this.node_ === this.scope_) {
+      this.backButtonManager_.show(this.node_);
+
+      this.primaryFocusRing_.rects = [];
+      this.scopeFocusRing_.rects = [this.scope_.location];
+      chrome.accessibilityPrivate.setFocusRings(
+          [this.primaryFocusRing_, this.scopeFocusRing_]);
+
+      return;
+    }
+    this.backButtonManager_.hide();
+
+    const focusRect = opt_focusRect || this.node_.location;
+    const scopeRect = this.scope_.location;
 
     // TODO(anastasi): Make adjustments to scope rect so it draws entirely
     // outside the focus rect.
