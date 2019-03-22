@@ -153,6 +153,8 @@ Polymer({
       this.$$('#pincode').focus();
     } else if (this.showEnterPasskey_()) {
       this.$$('#passkey').focus();
+    } else if (this.showAcceptReject_()) {
+      this.$$('#accept-button').focus();
     }
   },
 
