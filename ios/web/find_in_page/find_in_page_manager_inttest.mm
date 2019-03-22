@@ -61,75 +61,62 @@ class FindInPageManagerTest : public WebTestWithWebState {
 // Tests that find in page returns a single match for text which exists only in
 // the main frame.
 TEST_F(FindInPageManagerTest, FindMatchInMainFrame) {
-  // TODO(crbug.com/872818): Remove if check after deprecate iOS 10.
-  // WebFrame will not have a key on iOS 10, so function cannot be called.
-  if (@available(iOS 11.0, *)) {
-    std::string url_spec =
-        kFindPageUrl +
-        net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
-    test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
-    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-      return GetAllWebFrames(web_state()).size() == 2;
-    }));
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
 
-    GetFindInPageManager()->Find(@"Main frame text",
-                                 FindInPageOptions::FindInPageSearch);
+  GetFindInPageManager()->Find(@"Main frame text",
+                               FindInPageOptions::FindInPageSearch);
 
-    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-      return delegate_.state();
-    }));
-    EXPECT_EQ(1, delegate_.state()->match_count);
-    EXPECT_EQ(web_state(), delegate_.state()->web_state);
-  }
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return delegate_.state();
+  }));
+  EXPECT_EQ(1, delegate_.state()->match_count);
+  EXPECT_EQ(web_state(), delegate_.state()->web_state);
 }
 
 // Checks that find in page finds text that exists within the main frame and
 // an iframe.
 TEST_F(FindInPageManagerTest, FindMatchInMainFrameAndIFrame) {
-  // TODO(crbug.com/872818): Remove if check after deprecate iOS 10.
-  // WebFrame will not have a key on iOS 10, so function cannot be called.
-  if (@available(iOS 11.0, *)) {
-    std::string url_spec =
-        kFindPageUrl +
-        net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
-    test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
-    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-      return GetAllWebFrames(web_state()).size() == 2;
-    }));
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
 
-    GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
+  GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
 
-    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-      return delegate_.state();
-    }));
-    EXPECT_EQ(2, delegate_.state()->match_count);
-    EXPECT_EQ(web_state(), delegate_.state()->web_state);
-  }
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return delegate_.state();
+  }));
+  EXPECT_EQ(2, delegate_.state()->match_count);
+  EXPECT_EQ(web_state(), delegate_.state()->web_state);
 }
 
 // Checks that find in page returns no matches for text not contained on the
 // page.
 TEST_F(FindInPageManagerTest, FindNoMatch) {
-  // TODO(crbug.com/872818): Remove if check after deprecate iOS 10.
-  // WebFrame will not have a key on iOS 10, so function cannot be called.
-  if (@available(iOS 11.0, *)) {
-    std::string url_spec =
-        kFindPageUrl +
-        net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
-    test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
-    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-      return GetAllWebFrames(web_state()).size() == 2;
-    }));
+  std::string url_spec =
+      kFindPageUrl +
+      net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
+  test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return GetAllWebFrames(web_state()).size() == 2;
+  }));
 
-    GetFindInPageManager()->Find(@"foobar",
-                                 FindInPageOptions::FindInPageSearch);
+  GetFindInPageManager()->Find(@"foobar", FindInPageOptions::FindInPageSearch);
 
-    EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-      return delegate_.state();
-    }));
-    EXPECT_EQ(0, delegate_.state()->match_count);
-    EXPECT_EQ(web_state(), delegate_.state()->web_state);
-  }
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return delegate_.state();
+  }));
+  EXPECT_EQ(0, delegate_.state()->match_count);
+  EXPECT_EQ(web_state(), delegate_.state()->web_state);
 }
 
 }  // namespace web

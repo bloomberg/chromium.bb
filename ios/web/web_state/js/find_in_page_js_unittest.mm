@@ -103,43 +103,39 @@ TEST_F(FindInPageJsTest, FindTextNoResults) {
 // Tests that FindInPage searches in child iframe and asserts that a result was
 // found.
 TEST_F(FindInPageJsTest, FindIFrameText) {
-  // TODO(crbug.com/872818): Remove if check after deprecate iOS 10.
-  // WebFrame will not have a key on iOS 10, so function cannot be called.
-  if (@available(iOS 11.0, *)) {
-    ASSERT_TRUE(LoadHtml(
-        "<iframe "
-        "srcdoc='<html><body><span>foo</span></body></html>'></iframe>"));
-    base::TimeDelta kCallJavascriptFunctionTimeout =
-        base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
-    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-      return frames_manager()->GetAllWebFrames().size() == 2;
-    }));
-    std::set<WebFrame*> all_frames = frames_manager()->GetAllWebFrames();
-    __block bool message_received = false;
-    WebFrame* child_frame = nullptr;
-    for (auto* frame : all_frames) {
-      if (frame->IsMainFrame()) {
-        continue;
-      }
-      child_frame = frame;
+  ASSERT_TRUE(LoadHtml(
+      "<iframe "
+      "srcdoc='<html><body><span>foo</span></body></html>'></iframe>"));
+  base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 2;
+  }));
+  std::set<WebFrame*> all_frames = frames_manager()->GetAllWebFrames();
+  __block bool message_received = false;
+  WebFrame* child_frame = nullptr;
+  for (auto* frame : all_frames) {
+    if (frame->IsMainFrame()) {
+      continue;
     }
-    ASSERT_TRUE(child_frame);
-    std::vector<base::Value> params;
-    params.push_back(base::Value(kFindStringFoo));
-    params.push_back(base::Value(kPumpSearchTimeout));
-    child_frame->CallJavaScriptFunction(
-        kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
-          ASSERT_TRUE(result);
-          ASSERT_TRUE(result->is_double());
-          double count = result->GetDouble();
-          ASSERT_EQ(1.0, count);
-          message_received = true;
-        }),
-        kCallJavascriptFunctionTimeout);
-    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
-      return message_received;
-    }));
+    child_frame = frame;
   }
+  ASSERT_TRUE(child_frame);
+  std::vector<base::Value> params;
+  params.push_back(base::Value(kFindStringFoo));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  child_frame->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_double());
+        double count = result->GetDouble();
+        ASSERT_EQ(1.0, count);
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return message_received;
+  }));
 }
 
 // Tests that FindInPage works when searching for white space.

@@ -230,23 +230,21 @@ TEST_P(WebStateTest, Snapshot) {
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   web_state()->TakeSnapshot(
       gfx::RectF(rect), base::BindOnce(^(const gfx::Image& snapshot) {
-        if (@available(iOS 11, *)) {
-          ASSERT_FALSE(snapshot.IsEmpty());
-          EXPECT_GT(snapshot.Width(), 0);
-          EXPECT_GT(snapshot.Height(), 0);
-          int red_pixel_x = (snapshot.Width() / 2) - 10;
-          int white_pixel_x = (snapshot.Width() / 2) + 10;
-          // Test a pixel on the left (red) side.
-          gfx::test::CheckColors(
-              gfx::test::GetPlatformImageColor(
-                  gfx::test::ToPlatformType(snapshot), red_pixel_x, 50),
-              SK_ColorRED);
-          // Test a pixel on the right (white) side.
-          gfx::test::CheckColors(
-              gfx::test::GetPlatformImageColor(
-                  gfx::test::ToPlatformType(snapshot), white_pixel_x, 50),
-              SK_ColorWHITE);
-        }
+        ASSERT_FALSE(snapshot.IsEmpty());
+        EXPECT_GT(snapshot.Width(), 0);
+        EXPECT_GT(snapshot.Height(), 0);
+        int red_pixel_x = (snapshot.Width() / 2) - 10;
+        int white_pixel_x = (snapshot.Width() / 2) + 10;
+        // Test a pixel on the left (red) side.
+        gfx::test::CheckColors(
+            gfx::test::GetPlatformImageColor(
+                gfx::test::ToPlatformType(snapshot), red_pixel_x, 50),
+            SK_ColorRED);
+        // Test a pixel on the right (white) side.
+        gfx::test::CheckColors(
+            gfx::test::GetPlatformImageColor(
+                gfx::test::ToPlatformType(snapshot), white_pixel_x, 50),
+            SK_ColorWHITE);
         snapshot_complete = true;
       }));
   WaitForCondition(^{
