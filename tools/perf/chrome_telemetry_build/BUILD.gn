@@ -94,6 +94,7 @@ group("telemetry_chrome_test_without_chrome") {
   if (is_android) {
     data += [ "//build/android/stacktrace/" ]
     data_deps += [
+      "//chrome/android/webapk/shell_apk:maps_go_webapk",
       "//build/android:devil_chromium_py",
       "//third_party/breakpad:dump_syms",
       "//third_party/breakpad:minidump_dump",
