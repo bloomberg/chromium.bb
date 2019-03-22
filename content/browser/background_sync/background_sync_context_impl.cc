@@ -88,8 +88,7 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEventsForStoragePartition(
     std::move(done_closure).Run();
     return;
   }
-  background_sync_manager_->FireReadyEventsThenRunCallback(
-      std::move(done_closure));
+  background_sync_manager_->FireReadyEvents(std::move(done_closure));
 }
 
 void BackgroundSyncContextImpl::CreateBackgroundSyncManager(

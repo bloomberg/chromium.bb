@@ -121,7 +121,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Scans the list of available events and fires those that are
   // ready to fire. For those that can't yet be fired, wakeup alarms are set.
   // Once all of this is done, invokes |callback|.
-  void FireReadyEventsThenRunCallback(base::OnceClosure callback);
+  void FireReadyEvents(base::OnceClosure callback);
 
  protected:
   BackgroundSyncManager(
@@ -254,10 +254,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   // called by FireReadyEvents.
   void RunInBackgroundIfNecessary();
 
-  // FireReadyEvents scans the list of available events and fires those that are
-  // ready to fire. For those that can't yet be fired, wakeup alarms are set.
-  void FireReadyEvents();
-
   void FireReadyEventsImpl(base::OnceClosure callback);
   void FireReadyEventsDidFindRegistration(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
@@ -319,7 +315,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // The number of registrations currently in the firing state.
   int num_firing_registrations_;
 
-  base::CancelableCallback<void()> delayed_sync_task_;
+  base::CancelableOnceClosure delayed_sync_task_;
 
   std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
 

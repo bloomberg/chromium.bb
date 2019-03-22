@@ -336,7 +336,7 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
   if (emulated_offline_sw_[service_worker_id] > 0)
     return;
   emulated_offline_sw_.erase(service_worker_id);
-  FireReadyEvents();
+  FireReadyEvents(MakeEmptyCompletion());
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
@@ -465,7 +465,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     }
   }
 
-  FireReadyEvents();
+  FireReadyEvents(MakeEmptyCompletion());
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -777,7 +777,7 @@ void BackgroundSyncManager::DidResolveRegistrationImpl(
   }
 
   registration->set_resolved();
-  FireReadyEvents();
+  FireReadyEvents(MakeEmptyCompletion());
   op_scheduler_.CompleteOperationAndRunNext();
 }
 
@@ -986,8 +986,9 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
 
   // Try firing again after the wakeup delta.
   if (!soonest_wakeup_delta.is_max() && !soonest_wakeup_delta.is_zero()) {
-    delayed_sync_task_.Reset(base::Bind(&BackgroundSyncManager::FireReadyEvents,
-                                        weak_ptr_factory_.GetWeakPtr()));
+    delayed_sync_task_.Reset(
+        base::BindOnce(&BackgroundSyncManager::FireReadyEvents,
+                       weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
     ScheduleDelayedTask(delayed_sync_task_.callback(), soonest_wakeup_delta);
   }
 
@@ -1002,14 +1003,7 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
           soonest_wakeup_delta.InMilliseconds()));
 }
 
-void BackgroundSyncManager::FireReadyEvents() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  FireReadyEventsThenRunCallback(MakeEmptyCompletion());
-}
-
-void BackgroundSyncManager::FireReadyEventsThenRunCallback(
-    base::OnceClosure callback) {
+void BackgroundSyncManager::FireReadyEvents(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_)
@@ -1317,7 +1311,7 @@ void BackgroundSyncManager::EventCompleteDidStore(
   }
 
   // Fire any ready events and call RunInBackground if anything is waiting.
-  FireReadyEvents();
+  FireReadyEvents(MakeEmptyCompletion());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
@@ -1353,7 +1347,7 @@ void BackgroundSyncManager::OnStorageWipedImpl(base::OnceClosure callback) {
 void BackgroundSyncManager::OnNetworkChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  FireReadyEvents();
+  FireReadyEvents(MakeEmptyCompletion());
 }
 
 void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,
