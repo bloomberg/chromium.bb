@@ -48,6 +48,7 @@ public class ScreenshotTabObserverTest {
 
     @Test
     @SmallTest
+    @DisabledTest
     public void testScreenshotUserCounts() {
         UserActionTester userActionTester = new UserActionTester();
         mObserver.onScreenshotTaken();
