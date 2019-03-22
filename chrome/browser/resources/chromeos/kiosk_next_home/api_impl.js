@@ -7,18 +7,56 @@
  */
 
 /**
- * Builds fake App from package name.
- * TODO(brunoad): Remove when this info is available for real.
- * @return {!kioskNextHome.App} that can be used to launch apps via
- *     arcAppsPrivate.
+ * Gets the app type from the mojo representation of an app.
+ * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
+ * @return {!kioskNextHome.AppType}
  */
-function buildApp(packageName) {
+function getAppType(mojoApp) {
+  switch (mojoApp.type) {
+    case apps.mojom.AppType.kArc:
+      return kioskNextHome.AppType.ARC;
+    case apps.mojom.AppType.kBuiltIn:
+    case apps.mojom.AppType.kExtension:
+    case apps.mojom.AppType.kWeb:
+      return kioskNextHome.AppType.CHROME;
+    default:
+      return kioskNextHome.AppType.UNKNOWN;
+  }
+}
+
+/**
+ * Gets the app readiness from the mojo representation of an app.
+ * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
+ * @return {!kioskNextHome.AppReadiness}
+ */
+function getReadiness(mojoApp) {
+  switch (mojoApp.readiness) {
+    case apps.mojom.Readiness.kReady:
+      return kioskNextHome.AppReadiness.READY;
+    case apps.mojom.Readiness.kDisabledByPolicy:
+      return kioskNextHome.AppReadiness.DISABLED;
+    case apps.mojom.Readiness.kUninstalledByUser:
+      return kioskNextHome.AppReadiness.UNINSTALLED;
+    default:
+      return kioskNextHome.AppReadiness.UNKNOWN;
+  }
+}
+
+/**
+ * Builds an app from its mojo representation coming from the AppController.
+ * @param {!chromeos.kioskNextHome.mojom.App} mojoApp
+ * @return {!kioskNextHome.App} A bridge representation of an app.
+ */
+function buildApp(mojoApp) {
   return {
-    appId: packageName,
-    type: kioskNextHome.AppType.ARC,
-    displayName: packageName,
-    packageName: packageName,
-    readiness: kioskNextHome.AppReadiness.READY,
+    appId: mojoApp.appId,
+    type: getAppType(mojoApp),
+    displayName: mojoApp.displayName,
+    // TODO(ltenorio): Add the package name here when it's available from
+    // mojo.
+    packageName: '',
+    readiness: getReadiness(mojoApp),
+    // TODO(ltenorio): Add the thumbnail when it's available from mojo.
     thumbnailImage: '',
   };
 }
@@ -33,18 +71,34 @@ class KioskNextHomeBridge {
     this.listeners_ = [];
     /** @private */
     this.identityAccessorProxy_ = new identity.mojom.IdentityAccessorProxy();
+    /** @private */
+    this.appControllerProxy_ =
+        new chromeos.kioskNextHome.mojom.AppControllerProxy();
+    /** @private */
+    this.appControllerClientCallbackRouter_ =
+        new chromeos.kioskNextHome.mojom.AppControllerClientCallbackRouter();
 
     const kioskNextHomeInterfaceBrokerProxy =
         chromeos.kioskNextHome.mojom.KioskNextHomeInterfaceBroker.getProxy();
     kioskNextHomeInterfaceBrokerProxy.getIdentityAccessor(
         this.identityAccessorProxy_.$.createRequest());
+    kioskNextHomeInterfaceBrokerProxy.getAppController(
+        this.appControllerProxy_.$.createRequest());
 
-    chrome.arcAppsPrivate.onInstalled.addListener(installedApp => {
-      for (const listener of this.listeners_) {
-        listener.onAppChanged(buildApp(installedApp.packageName));
-      }
-    });
+    // Attaching app listeners.
+    this.appControllerClientCallbackRouter_.onAppChanged.addListener(
+        mojoApp => {
+          const bridgeApp = buildApp(mojoApp);
+          for (const listener of this.listeners_) {
+            listener.onAppChanged(
+                /** @type{!kioskNextHome.App} */ (
+                    Object.assign({}, bridgeApp)));
+          }
+        });
+    this.appControllerProxy_.setClient(
+        this.appControllerClientCallbackRouter_.createProxy());
 
+    // Attaching network status listeners.
     window.addEventListener(
         'online',
         () => this.notifyNetworkStateChange(kioskNextHome.NetworkState.ONLINE));
@@ -89,23 +143,14 @@ class KioskNextHomeBridge {
 
   /** @override */
   getApps() {
-    // TODO(ltenorio): Use app controller call.
-    return new Promise((resolve, reject) => {
-      chrome.arcAppsPrivate.getLaunchableApps(launchableApps => {
-        const installedApps = [];
-        for (const launchableApp of launchableApps) {
-          installedApps.push(buildApp(launchableApp.packageName));
-        }
-        resolve(installedApps);
-      });
+    return this.appControllerProxy_.getApps().then(response => {
+      return response.apps.map(buildApp);
     });
   }
 
   /** @override */
   launchApp(appId) {
-    // TODO(brunoad): Use app service call.
-    chrome.arcAppsPrivate.launchApp(appId);
-    return Promise.resolve();
+    this.appControllerProxy_.launchApp(appId);
   }
 
   /** @override */
