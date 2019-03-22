@@ -15,7 +15,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
-#include "media/gpu/vt_video_decode_accelerator_mac.h"
+#include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_FAKE_VIDEO_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_FAKE_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_TEST_FAKE_VIDEO_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_TEST_FAKE_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -13,15 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
-#include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gl/gl_context.h"
 
 namespace media {
 
-class MEDIA_GPU_EXPORT FakeVideoDecodeAccelerator
-    : public VideoDecodeAccelerator {
+class FakeVideoDecodeAccelerator : public VideoDecodeAccelerator {
  public:
   FakeVideoDecodeAccelerator(
       const gfx::Size& size,
@@ -71,4 +69,4 @@ class MEDIA_GPU_EXPORT FakeVideoDecodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_FAKE_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_TEST_FAKE_VIDEO_DECODE_ACCELERATOR_H_
