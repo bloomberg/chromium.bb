@@ -132,7 +132,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       return To<StylePath>(basic_shape)->ComputedCSSValue();
 
     case BasicShape::kBasicShapeCircleType: {
-      const BasicShapeCircle* circle = ToBasicShapeCircle(basic_shape);
+      const BasicShapeCircle* circle = To<BasicShapeCircle>(basic_shape);
       cssvalue::CSSBasicShapeCircleValue* circle_value =
           cssvalue::CSSBasicShapeCircleValue::Create();
 
@@ -145,7 +145,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       return circle_value;
     }
     case BasicShape::kBasicShapeEllipseType: {
-      const BasicShapeEllipse* ellipse = ToBasicShapeEllipse(basic_shape);
+      const BasicShapeEllipse* ellipse = To<BasicShapeEllipse>(basic_shape);
       cssvalue::CSSBasicShapeEllipseValue* ellipse_value =
           cssvalue::CSSBasicShapeEllipseValue::Create();
 
@@ -160,7 +160,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       return ellipse_value;
     }
     case BasicShape::kBasicShapePolygonType: {
-      const BasicShapePolygon* polygon = ToBasicShapePolygon(basic_shape);
+      const BasicShapePolygon* polygon = To<BasicShapePolygon>(basic_shape);
       cssvalue::CSSBasicShapePolygonValue* polygon_value =
           cssvalue::CSSBasicShapePolygonValue::Create();
 
@@ -174,7 +174,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
       return polygon_value;
     }
     case BasicShape::kBasicShapeInsetType: {
-      const BasicShapeInset* inset = ToBasicShapeInset(basic_shape);
+      const BasicShapeInset* inset = To<BasicShapeInset>(basic_shape);
       cssvalue::CSSBasicShapeInsetValue* inset_value =
           cssvalue::CSSBasicShapeInsetValue::Create();
 

@@ -526,16 +526,16 @@ InterpolationValue basic_shape_interpolation_functions::MaybeConvertBasicShape(
     return nullptr;
   switch (shape->GetType()) {
     case BasicShape::kBasicShapeCircleType:
-      return circle_functions::ConvertBasicShape(ToBasicShapeCircle(*shape),
+      return circle_functions::ConvertBasicShape(To<BasicShapeCircle>(*shape),
                                                  zoom);
     case BasicShape::kBasicShapeEllipseType:
-      return ellipse_functions::ConvertBasicShape(ToBasicShapeEllipse(*shape),
+      return ellipse_functions::ConvertBasicShape(To<BasicShapeEllipse>(*shape),
                                                   zoom);
     case BasicShape::kBasicShapeInsetType:
-      return inset_functions::ConvertBasicShape(ToBasicShapeInset(*shape),
+      return inset_functions::ConvertBasicShape(To<BasicShapeInset>(*shape),
                                                 zoom);
     case BasicShape::kBasicShapePolygonType:
-      return polygon_functions::ConvertBasicShape(ToBasicShapePolygon(*shape),
+      return polygon_functions::ConvertBasicShape(To<BasicShapePolygon>(*shape),
                                                   zoom);
     default:
       NOTREACHED();
