@@ -284,53 +284,6 @@ finish loading). With this patch applied, there will be a noticable difference
 in the time taken to execute the button click, depending on whether the
 "norelayout" checkbox is enabled or disabled.
 
-Retired branches
-================
-
-### bugfix/iframeZoom (Shezan Baig; D34484409) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FiframeZoom)\]
-Open [this link](repros/iframeZoom.html) in Chrome, and zoom the page in and
-out. The content outside the `iframe` zooms, but the content inside the
-`iframe` does not zoom.
-
-### bugfix/selrectantialias (Shezan Baig; D32113976; upstream: [87157](https://bugs.webkit.org/show_bug.cgi?id=87157)) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Fselrectantialias)\]
-Open [this link](repros/selrectantialias.html) in Chrome. You will see "gaps"
-between the lines and the spans on the first line.
-
-The issue is that the selection highlight is drawn for each text run with anti-aliasing on. This causes "gaps" to appear around the edges where the filled rects got blended. The solution was to simply turn off anti-aliasing when filling selection rects.
-
-### feature/caretColor (Claudio Saavedra <csaavedra@igalia.com>; D38294226) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FcaretColor)\]
-This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.
-
-We needed to be able to modify the caret color independently of the font
-color.
-
-Open [this link](repros/caretColor.html) in Chrome. With this patch, the
-caret color in the entry fields will be as specified, otherwise they will be
-just black.
-
-### feature/preserveSelDirection (Shezan Baig; D36076457) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FpreserveSelDirection)\]
-This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.
-
-This branch makes it so that when text is selected inside a contenteditable,
-and then a style is applied on that text, the original selection direction
-would be preserved.
-
-Open [this link](repros/preserveSelDirection.html) in Chrome. With this
-patch applied, the anchor offset would be 5 positions higher than the focus
-offset. Without the patch, the anchor offset and focus offset will be
-switched.
-
-### feature/table-cell-selection (Shezan Baig) \[[view changes](http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FtableCellSelection)\]
-This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.
-
-Open [this link](repros/tableEditing.html) in Chrome and select the text in
-the table cells. With this patch applied, a table cell's background will be
-filled with the selection color when all the text in the cell is selected.
-
-
 * * *
 
 ###### Microsoft, Windows, Visual Studio and ClearType are registered trademarks of Microsoft Corp.
