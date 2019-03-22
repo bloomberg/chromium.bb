@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -128,6 +131,14 @@ void ArcAppTest::SetUp(Profile* profile) {
   // expect waiting in ArcAppTest setup.
   if (wait_default_apps_)
     WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
+    // Ensure that the singleton apps::ArcApps is constructed, and let it
+    // complete its set-up (including integrating with the App Service, an
+    // async Mojo service).
+    apps::ArcAppsFactory::GetForProfile(profile_);
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 void ArcAppTest::WaitForDefaultApps() {

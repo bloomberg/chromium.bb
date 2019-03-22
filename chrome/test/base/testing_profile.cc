@@ -114,6 +114,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -129,6 +130,11 @@
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_system.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/services/app_service/app_service.h"
+#include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1008,6 +1014,18 @@ void TestingProfile::SetCorsOriginAccessListForOrigin(
   // Extensions need to set the list, but just can be ignored unless they need
   // to make actual network requests beyond the CORS policy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
+}
+
+std::unique_ptr<service_manager::Service> TestingProfile::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+#if !defined(OS_ANDROID)
+  if (service_name == apps::mojom::kServiceName) {
+    return std::make_unique<apps::AppService>(std::move(request));
+  }
+#endif  // !defined(OS_ANDROID)
+
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
