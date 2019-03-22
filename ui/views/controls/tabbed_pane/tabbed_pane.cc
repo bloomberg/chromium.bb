@@ -405,6 +405,7 @@ void MdTab::OnBlur() {
 }
 
 // static
+constexpr size_t TabStrip::kNoSelectedTab;
 const char TabStrip::kViewClassName[] = "TabStrip";
 
 TabStrip::TabStrip(TabbedPane::Orientation orientation,
@@ -459,8 +460,18 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
     line_end_main_axis = SkIntToScalar(height());
   }
 
-  int selected_tab_index = GetSelectedTabIndex();
-  if (selected_tab_index >= 0) {
+  size_t selected_tab_index = GetSelectedTabIndex();
+  if (selected_tab_index == kNoSelectedTab) {
+    if (is_horizontal) {
+      canvas->sk_canvas()->drawLine(0, line_center_cross_axis,
+                                    line_end_main_axis, line_center_cross_axis,
+                                    fill_flags);
+    } else {
+      canvas->sk_canvas()->drawLine(line_center_cross_axis, 0,
+                                    line_center_cross_axis, line_end_main_axis,
+                                    fill_flags);
+    }
+  } else {
     Tab* selected_tab = GetTabAtIndex(selected_tab_index);
     SkPath path;
     SkScalar tab_height =
@@ -491,40 +502,35 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
 
     fill_flags.setStyle(cc::PaintFlags::kStroke_Style);
     canvas->DrawPath(path, fill_flags);
-  } else {
-    if (is_horizontal) {
-      canvas->sk_canvas()->drawLine(0, line_center_cross_axis,
-                                    line_end_main_axis, line_center_cross_axis,
-                                    fill_flags);
-    } else {
-      canvas->sk_canvas()->drawLine(line_center_cross_axis, 0,
-                                    line_center_cross_axis, line_end_main_axis,
-                                    fill_flags);
-    }
   }
 }
 
-Tab* TabStrip::GetTabAtIndex(int index) const {
-  return static_cast<Tab*>(const_cast<View*>(child_at(index)));
+Tab* TabStrip::GetTabAtIndex(size_t index) const {
+  DCHECK_LT(index, children().size());
+  return static_cast<Tab*>(children()[index]);
 }
 
-int TabStrip::GetSelectedTabIndex() const {
-  for (int i = 0; i < child_count(); ++i)
+size_t TabStrip::GetSelectedTabIndex() const {
+  for (size_t i = 0; i < children().size(); ++i)
     if (GetTabAtIndex(i)->selected())
       return i;
-  return -1;
+  return kNoSelectedTab;
 }
 
 Tab* TabStrip::GetSelectedTab() const {
-  int index = GetSelectedTabIndex();
-  return index >= 0 ? GetTabAtIndex(index) : nullptr;
+  size_t index = GetSelectedTabIndex();
+  return index == kNoSelectedTab ? nullptr : GetTabAtIndex(index);
 }
 
 Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
-  int index = (GetSelectedTabIndex() + delta) % child_count();
-  if (index < 0)
-    index += child_count();
-  return GetTabAtIndex(index);
+  const size_t selected_tab_index = GetSelectedTabIndex();
+  DCHECK_NE(kNoSelectedTab, selected_tab_index);
+  const size_t num_children = children().size();
+  // Clamping |delta| here ensures that even a large negative |delta| will not
+  // cause the addition in the next statement to wrap below 0.
+  delta %= static_cast<int>(num_children);
+  return GetTabAtIndex((selected_tab_index + num_children + delta) %
+                       num_children);
 }
 
 MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
@@ -684,27 +690,28 @@ TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
 
 TabbedPane::~TabbedPane() = default;
 
-int TabbedPane::GetSelectedTabIndex() const {
+size_t TabbedPane::GetSelectedTabIndex() const {
   return tab_strip_->GetSelectedTabIndex();
 }
 
-int TabbedPane::GetTabCount() {
-  DCHECK_EQ(tab_strip_->child_count(), contents_->child_count());
-  return contents_->child_count();
+size_t TabbedPane::GetTabCount() {
+  DCHECK_EQ(tab_strip_->children().size(), contents_->children().size());
+  return contents_->children().size();
 }
 
 void TabbedPane::AddTab(const base::string16& title, View* contents) {
-  AddTabAtIndex(tab_strip_->child_count(), title, contents);
+  AddTabAtIndex(tab_strip_->children().size(), title, contents);
 }
 
-void TabbedPane::AddTabAtIndex(int index,
+void TabbedPane::AddTabAtIndex(size_t index,
                                const base::string16& title,
                                View* contents) {
-  DCHECK(index >= 0 && index <= GetTabCount());
+  DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);
 
-  tab_strip_->AddChildViewAt(new MdTab(this, title, contents), index);
-  contents_->AddChildViewAt(contents, index);
+  tab_strip_->AddChildViewAt(new MdTab(this, title, contents),
+                             static_cast<int>(index));
+  contents_->AddChildViewAt(contents, static_cast<int>(index));
   if (!GetSelectedTab())
     SelectTabAt(index);
 
@@ -737,7 +744,7 @@ void TabbedPane::SelectTab(Tab* new_selected_tab) {
     listener()->TabSelectedAt(tab_strip_->GetIndexOf(new_selected_tab));
 }
 
-void TabbedPane::SelectTabAt(int index) {
+void TabbedPane::SelectTabAt(size_t index) {
   Tab* tab = tab_strip_->GetTabAtIndex(index);
   if (tab)
     SelectTab(tab);

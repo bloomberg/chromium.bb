@@ -340,10 +340,12 @@ void KeyboardShortcutView::InitViews() {
 
 void KeyboardShortcutView::InitCategoriesTabbedPane(
     base::Optional<ShortcutCategory> initial_category) {
-  // If the tab count is 0, |GetSelectedTabIndex()| will return -1, which we do
-  // not want to cache.
-  active_tab_index_ =
-      std::max(0, categories_tabbed_pane_->GetSelectedTabIndex());
+  active_tab_index_ = categories_tabbed_pane_->GetSelectedTabIndex();
+  // If the tab count is 0, GetSelectedTabIndex() will return kNoSelectedTab,
+  // which we do not want to cache.
+  if (active_tab_index_ == views::TabStrip::kNoSelectedTab)
+    active_tab_index_ = 0;
+
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   KeyboardShortcutItemListView* item_list_view = nullptr;
   const bool already_has_tabs = categories_tabbed_pane_->GetTabCount() > 0;
@@ -544,7 +546,7 @@ KeyboardShortcutView* KeyboardShortcutView::GetInstanceForTesting() {
   return g_ksv_view;
 }
 
-int KeyboardShortcutView::GetTabCountForTesting() const {
+size_t KeyboardShortcutView::GetTabCountForTesting() const {
   return categories_tabbed_pane_->GetTabCount();
 }
 

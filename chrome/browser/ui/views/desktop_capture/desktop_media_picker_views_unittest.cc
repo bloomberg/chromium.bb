@@ -89,10 +89,11 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     int index =
         GetPickerDialogView()->GetIndexOfSourceTypeForTesting(source_type);
 
-    if (index == -1)
+    if (index < 0)
       return false;
 
-    GetPickerDialogView()->GetPaneForTesting()->SelectTabAt(index);
+    GetPickerDialogView()->GetPaneForTesting()->SelectTabAt(
+        static_cast<size_t>(index));
     return true;
   }
 

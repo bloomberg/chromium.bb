@@ -95,7 +95,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
   static KeyboardShortcutView* GetInstanceForTesting();
-  int GetTabCountForTesting() const;
+  size_t GetTabCountForTesting() const;
   const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
   GetShortcutViewsForTesting() const;
   KSVSearchBoxView* GetSearchBoxViewForTesting();
@@ -125,7 +125,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   bool is_search_box_empty_ = true;
 
   // Cached value of active tab index before entering search mode.
-  int active_tab_index_ = 0;
+  size_t active_tab_index_ = 0;
 
   // Debounce for search queries.
   base::OneShotTimer debounce_timer_;
