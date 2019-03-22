@@ -102,7 +102,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       state_ = std::move(state);
       Validate();
-      SetChanged();
+      AddChanged(state_changed);
     }
     return std::max(parent_changed, state_changed);
   }

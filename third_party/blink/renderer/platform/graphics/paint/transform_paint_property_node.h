@@ -129,19 +129,23 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
               other.affected_by_outer_viewport_bounds_delta ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
-          direct_compositing_reasons != other.direct_compositing_reasons ||
           compositor_element_id != other.compositor_element_id ||
           scroll != other.scroll ||
-          affected_by_outer_viewport_bounds_delta !=
-              other.affected_by_outer_viewport_bounds_delta ||
           !StickyConstraintEquals(other)) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      if (!transform_and_origin.TransformEquals(other.transform_and_origin)) {
-        return animation_state.is_running_animation_on_compositor
-                   ? PaintPropertyChangeType::
-                         kChangedOnlyCompositedAnimationValues
-                   : PaintPropertyChangeType::kChangedOnlyValues;
+      bool transform_changed =
+          !transform_and_origin.TransformEquals(other.transform_and_origin);
+      if (!animation_state.is_running_animation_on_compositor &&
+          transform_changed) {
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      }
+      if (direct_compositing_reasons != other.direct_compositing_reasons) {
+        return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+      }
+      if (animation_state.is_running_animation_on_compositor &&
+          transform_changed) {
+        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
       }
       return PaintPropertyChangeType::kUnchanged;
     }
@@ -179,17 +183,18 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
-      SetChanged();
+      AddChanged(state_changed);
       Validate();
     }
     return std::max(parent_changed, state_changed);
   }
 
   // If |relative_to_node| is an ancestor of |this|, returns true if any node is
-  // marked changed along the path from |this| to |relative_to_node| (not
-  // included). Otherwise returns the combined changed status of the paths
-  // from |this| and |relative_to_node| to the root.
-  bool Changed(const TransformPaintPropertyNode& relative_to_node) const;
+  // marked changed, at least significance of |change|, along the path from
+  // |this| to |relative_to_node| (not included). Otherwise returns the combined
+  // changed status of the paths from |this| and |relative_to_node| to the root.
+  bool Changed(PaintPropertyChangeType change,
+               const TransformPaintPropertyNode& relative_to_node) const;
 
   bool IsIdentityOr2DTranslation() const {
     return state_.transform_and_origin.IsIdentityOr2DTranslation();
@@ -320,16 +325,17 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #endif
   }
 
-  void SetChanged() {
+  void AddChanged(PaintPropertyChangeType changed) {
     // TODO(crbug.com/814815): This is a workaround of the bug. When the bug is
     // fixed, change the following condition to
     //   DCHECK(!transform_cache_ || !transform_cache_->IsValid());
+    DCHECK_NE(PaintPropertyChangeType::kUnchanged, changed);
     if (transform_cache_ && transform_cache_->IsValid()) {
       DLOG(WARNING) << "Transform tree changed without invalidating the cache.";
       GeometryMapperTransformCache::ClearCache();
       GeometryMapperClipCache::ClearCache();
     }
-    PaintPropertyNode::SetChanged();
+    PaintPropertyNode::AddChanged(changed);
   }
 
   // For access to GetTransformCache() and SetCachedTransform.

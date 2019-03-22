@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_PROPERTY_NODE_H_
 
+#include <algorithm>
+#include <iosfwd>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -16,8 +18,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #endif
 
-#include <iosfwd>
-
 namespace blink {
 
 class ClipPaintPropertyNode;
@@ -27,12 +27,11 @@ class TransformPaintPropertyNode;
 
 // Used to report whether and how paint properties have changed. The order is
 // important - it must go from no change to the most significant change.
-enum class PaintPropertyChangeType {
+enum class PaintPropertyChangeType : unsigned char {
   kUnchanged,
   kChangedOnlyCompositedAnimationValues,
+  kChangedOnlyNonRerasterValues,
   kChangedOnlyValues,
-  // A paint property node is added or removed. This value is used only in
-  // renderer/core classes.
   kNodeAddedOrRemoved,
 };
 
@@ -88,7 +87,7 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   void ClearChangedToRoot() const { ClearChangedTo(nullptr); }
   void ClearChangedTo(const NodeType* node) const {
     for (auto* n = this; n && n != node; n = n->Parent())
-      n->changed_ = false;
+      n->changed_ = PaintPropertyChangeType::kUnchanged;
   }
 
   // Returns true if this node is an alias for its parent. A parent alias is a
@@ -126,7 +125,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   PaintPropertyNode(const NodeType* parent, bool is_parent_alias = false)
       : parent_(parent),
         is_parent_alias_(is_parent_alias),
-        changed_(!!parent) {}
+        changed_(parent ? PaintPropertyChangeType::kNodeAddedOrRemoved
+                        : PaintPropertyChangeType::kUnchanged) {}
 
   PaintPropertyChangeType SetParent(const NodeType* parent) {
     DCHECK(!IsRoot());
@@ -135,15 +135,16 @@ class PaintPropertyNode : public RefCounted<NodeType> {
       return PaintPropertyChangeType::kUnchanged;
 
     parent_ = parent;
-    static_cast<NodeType*>(this)->SetChanged();
+    static_cast<NodeType*>(this)->AddChanged(
+        PaintPropertyChangeType::kChangedOnlyValues);
     return PaintPropertyChangeType::kChangedOnlyValues;
   }
 
-  void SetChanged() {
+  void AddChanged(PaintPropertyChangeType changed) {
     DCHECK(!IsRoot());
-    changed_ = true;
+    changed_ = std::max(changed_, changed);
   }
-  bool NodeChanged() const { return changed_; }
+  PaintPropertyChangeType NodeChanged() const { return changed_; }
 
  private:
   friend class PaintPropertyNodeTest;
@@ -151,10 +152,11 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   friend class ObjectPaintProperties;
 
   scoped_refptr<const NodeType> parent_;
+
   // Indicates whether this node is an alias for its parent. Parent aliases are
   // nodes that do not affect rendering and are ignored for the purposes of
   // display item list generation.
-  bool is_parent_alias_ = false;
+  bool is_parent_alias_;
 
   // Indicates that the paint property value changed in the last update in the
   // prepaint lifecycle step. This is used for raster invalidation and damage
@@ -162,7 +164,7 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   // BlinkGenPropertyTrees, this is cleared explicitly at the end of paint (see:
   // LocalFrameView::RunPaintLifecyclePhase), otherwise this is cleared through
   // PaintController::FinishCycle.
-  mutable bool changed_ = true;
+  mutable PaintPropertyChangeType changed_;
 
 #if DCHECK_IS_ON()
   String debug_name_;
@@ -233,6 +235,14 @@ template <typename NodeType>
 std::ostream& operator<<(std::ostream& os,
                          const PaintPropertyNode<NodeType>& node) {
   return os << static_cast<const NodeType&>(node).ToString().Utf8().data();
+}
+
+PLATFORM_EXPORT const char* PaintPropertyChangeTypeToString(
+    PaintPropertyChangeType);
+
+inline std::ostream& operator<<(std::ostream& os,
+                                PaintPropertyChangeType change) {
+  return os << PaintPropertyChangeTypeToString(change);
 }
 
 }  // namespace blink

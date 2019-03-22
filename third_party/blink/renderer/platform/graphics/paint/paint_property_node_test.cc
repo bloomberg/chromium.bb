@@ -82,22 +82,30 @@ class PaintPropertyNodeTest : public testing::Test {
 
   template <typename NodeType>
   void ExpectInitialState(const Tree<NodeType>& tree) {
-    EXPECT_FALSE(tree.root->NodeChanged());
-    EXPECT_TRUE(tree.ancestor->NodeChanged());
-    EXPECT_TRUE(tree.child1->NodeChanged());
-    EXPECT_TRUE(tree.child2->NodeChanged());
-    EXPECT_TRUE(tree.grandchild1->NodeChanged());
-    EXPECT_TRUE(tree.grandchild2->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged, tree.root->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kNodeAddedOrRemoved,
+              tree.ancestor->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kNodeAddedOrRemoved,
+              tree.child1->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kNodeAddedOrRemoved,
+              tree.child2->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kNodeAddedOrRemoved,
+              tree.grandchild1->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kNodeAddedOrRemoved,
+              tree.grandchild2->NodeChanged());
   }
 
   template <typename NodeType>
   void ExpectUnchangedState(const Tree<NodeType>& tree) {
-    EXPECT_FALSE(tree.root->NodeChanged());
-    EXPECT_FALSE(tree.ancestor->NodeChanged());
-    EXPECT_FALSE(tree.child1->NodeChanged());
-    EXPECT_FALSE(tree.child2->NodeChanged());
-    EXPECT_FALSE(tree.grandchild1->NodeChanged());
-    EXPECT_FALSE(tree.grandchild2->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged, tree.root->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged,
+              tree.ancestor->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged, tree.child1->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged, tree.child2->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged,
+              tree.grandchild1->NodeChanged());
+    EXPECT_EQ(PaintPropertyChangeType::kUnchanged,
+              tree.grandchild2->NodeChanged());
   }
 
   void ExpectUnchangedState() {
@@ -156,17 +164,25 @@ TEST_F(PaintPropertyNodeTest, TransformChangeAncestor) {
       *transform.root, TransformPaintPropertyNode::State{FloatSize(1, 2)});
 
   // Test descendant->Changed(ancestor).
-  EXPECT_TRUE(transform.ancestor->Changed(*transform.root));
-  EXPECT_FALSE(transform.ancestor->Changed(*transform.ancestor));
-  EXPECT_TRUE(transform.child1->Changed(*transform.root));
-  EXPECT_FALSE(transform.child1->Changed(*transform.ancestor));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.root));
-  EXPECT_FALSE(transform.grandchild1->Changed(*transform.ancestor));
+  EXPECT_TRUE(transform.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_FALSE(transform.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_FALSE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_FALSE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
 
   // Test property->Changed(non-ancestor-property). Should combine the changed
   // flags of the two paths to the root.
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.child2));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.grandchild2));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child2));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.grandchild2));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -180,17 +196,26 @@ TEST_F(PaintPropertyNodeTest, ClipChangeAncestor) {
                                                FloatRoundedRect(1, 2, 3, 4)});
 
   // Test descendant->Changed(ancestor).
-  EXPECT_TRUE(clip.ancestor->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(clip.ancestor->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(clip.child1->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(clip.grandchild1->Changed(STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(clip.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(root), nullptr));
+  EXPECT_FALSE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                    STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
 
   // Test property->Changed(non-ancestor-property).
   // Simply walk to the root.
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(child2), nullptr));
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(grandchild2), nullptr));
+  EXPECT_TRUE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child2), nullptr));
+  EXPECT_TRUE(
+      clip.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                STATE(grandchild2), nullptr));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -205,17 +230,68 @@ TEST_F(PaintPropertyNodeTest, EffectChangeAncestor) {
   effect.ancestor->Update(*effect.root, std::move(state));
 
   // Test descendant->Changed(ancestor).
-  EXPECT_TRUE(effect.ancestor->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.ancestor->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.child1->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.grandchild1->Changed(STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
 
   // Test property->Changed(non-ancestor-property).
   // Simply walk to the root.
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(child2), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(grandchild2), nullptr));
+  EXPECT_TRUE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child2), nullptr));
+  EXPECT_TRUE(
+      effect.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                  STATE(grandchild2), nullptr));
+
+  ResetAllChanged();
+  ExpectUnchangedState();
+}
+
+TEST_F(PaintPropertyNodeTest, ChangeDirectCompositingReason) {
+  ResetAllChanged();
+  ExpectUnchangedState();
+  TransformPaintPropertyNode::State state;
+  state.direct_compositing_reasons =
+      CompositingReason::kActiveTransformAnimation;
+  transform.child1->Update(*transform.ancestor, std::move(state));
+
+  EXPECT_FALSE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyNonRerasterValues, *transform.root));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues,
+      *transform.root));
+
+  ResetAllChanged();
+  ExpectUnchangedState();
+}
+
+TEST_F(PaintPropertyNodeTest, ChangeTransformDuringCompositedAnimation) {
+  ResetAllChanged();
+  ExpectUnchangedState();
+  TransformPaintPropertyNode::AnimationState animation_state;
+  animation_state.is_running_animation_on_compositor = true;
+  transform.child1->Update(
+      *transform.ancestor,
+      TransformPaintPropertyNode::State{TransformationMatrix().Scale(2)},
+      animation_state);
+
+  EXPECT_FALSE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_FALSE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyNonRerasterValues, *transform.root));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues,
+      *transform.root));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -228,25 +304,41 @@ TEST_F(PaintPropertyNodeTest, TransformChangeOneChild) {
                            TransformPaintPropertyNode::State{FloatSize(1, 2)});
 
   // Test descendant->Changed(ancestor).
-  EXPECT_FALSE(transform.ancestor->Changed(*transform.root));
-  EXPECT_FALSE(transform.ancestor->Changed(*transform.ancestor));
-  EXPECT_TRUE(transform.child1->Changed(*transform.root));
-  EXPECT_TRUE(transform.child1->Changed(*transform.ancestor));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.ancestor));
-  EXPECT_FALSE(transform.grandchild1->Changed(*transform.child1));
-  EXPECT_FALSE(transform.child2->Changed(*transform.ancestor));
-  EXPECT_FALSE(transform.grandchild2->Changed(*transform.ancestor));
+  EXPECT_FALSE(transform.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_FALSE(transform.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_FALSE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child1));
+  EXPECT_FALSE(transform.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_FALSE(transform.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
 
   // Test property->Changed(non-ancestor-property). Need to combine the changed
   // flags of the two paths to the root.
-  EXPECT_TRUE(transform.child2->Changed(*transform.child1));
-  EXPECT_TRUE(transform.child1->Changed(*transform.child2));
-  EXPECT_TRUE(transform.child2->Changed(*transform.grandchild1));
-  EXPECT_TRUE(transform.child1->Changed(*transform.grandchild2));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.child2));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.grandchild2));
-  EXPECT_TRUE(transform.grandchild2->Changed(*transform.child1));
-  EXPECT_TRUE(transform.grandchild2->Changed(*transform.grandchild1));
+  EXPECT_TRUE(transform.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child1));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child2));
+  EXPECT_TRUE(transform.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.grandchild1));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.grandchild2));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child2));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.grandchild2));
+  EXPECT_TRUE(transform.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child1));
+  EXPECT_TRUE(transform.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.grandchild1));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -260,25 +352,44 @@ TEST_F(PaintPropertyNodeTest, ClipChangeOneChild) {
                                                FloatRoundedRect(1, 2, 3, 4)});
 
   // Test descendant->Changed(ancestor).
-  EXPECT_FALSE(clip.ancestor->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(clip.ancestor->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(root), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(ancestor), nullptr));
-  EXPECT_FALSE(clip.grandchild1->Changed(STATE(child1), nullptr));
-  EXPECT_FALSE(clip.child2->Changed(STATE(ancestor), nullptr));
-  EXPECT_FALSE(clip.grandchild2->Changed(STATE(ancestor), nullptr));
+  EXPECT_FALSE(clip.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(clip.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(root), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_FALSE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
+  EXPECT_FALSE(clip.child2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                    STATE(ancestor), nullptr));
+  EXPECT_FALSE(clip.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
 
-  // Test property->Changed(non-ancestor-property).
-  // Simply walk to the root, regardless of relative_to_state's path.
-  EXPECT_FALSE(clip.child2->Changed(STATE(child1), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(child2), nullptr));
-  EXPECT_FALSE(clip.child2->Changed(STATE(grandchild1), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(grandchild2), nullptr));
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(child2), nullptr));
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(grandchild2), nullptr));
-  EXPECT_FALSE(clip.grandchild2->Changed(STATE(child1), nullptr));
-  EXPECT_FALSE(clip.grandchild2->Changed(STATE(grandchild1), nullptr));
+  // Test property->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+  // non-ancestor-property). Simply walk to the root, regardless of
+  // relative_to_state's path.
+  EXPECT_FALSE(clip.child2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                    STATE(child1), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(child2), nullptr));
+  EXPECT_FALSE(clip.child2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                    STATE(grandchild1), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(grandchild2), nullptr));
+  EXPECT_TRUE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child2), nullptr));
+  EXPECT_TRUE(
+      clip.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                STATE(grandchild2), nullptr));
+  EXPECT_FALSE(clip.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
+  EXPECT_FALSE(
+      clip.grandchild2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                STATE(grandchild1), nullptr));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -292,26 +403,48 @@ TEST_F(PaintPropertyNodeTest, EffectChangeOneChild) {
   state.opacity = 0.9;
   effect.child1->Update(*effect.root, std::move(state));
 
-  // Test descendant->Changed(ancestor).
-  EXPECT_FALSE(effect.ancestor->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.ancestor->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(STATE(root), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(ancestor), nullptr));
-  EXPECT_FALSE(effect.grandchild1->Changed(STATE(child1), nullptr));
-  EXPECT_FALSE(effect.child2->Changed(STATE(ancestor), nullptr));
-  EXPECT_FALSE(effect.grandchild2->Changed(STATE(ancestor), nullptr));
+  // Test descendant->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+  // ancestor).
+  EXPECT_FALSE(effect.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_TRUE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_FALSE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
+  EXPECT_FALSE(effect.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_FALSE(effect.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
 
-  // Test property->Changed(non-ancestor-property).
-  // Simply walk to the root, regardless of relative_to_state's path.
-  EXPECT_FALSE(effect.child2->Changed(STATE(child1), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(STATE(child2), nullptr));
-  EXPECT_FALSE(effect.child2->Changed(STATE(grandchild1), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(STATE(grandchild2), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(child2), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(grandchild2), nullptr));
-  EXPECT_FALSE(effect.grandchild2->Changed(STATE(child1), nullptr));
-  EXPECT_FALSE(effect.grandchild2->Changed(STATE(grandchild1), nullptr));
+  // Test property->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+  // non-ancestor-property). Simply walk to the root, regardless of
+  // relative_to_state's path.
+  EXPECT_FALSE(effect.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
+  EXPECT_TRUE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child2), nullptr));
+  EXPECT_FALSE(
+      effect.child2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                             STATE(grandchild1), nullptr));
+  EXPECT_TRUE(
+      effect.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                             STATE(grandchild2), nullptr));
+  EXPECT_TRUE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child2), nullptr));
+  EXPECT_TRUE(
+      effect.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                  STATE(grandchild2), nullptr));
+  EXPECT_FALSE(effect.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
+  EXPECT_FALSE(
+      effect.grandchild2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                  STATE(grandchild1), nullptr));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -322,13 +455,20 @@ TEST_F(PaintPropertyNodeTest, TransformReparent) {
   ExpectUnchangedState();
   transform.child1->Update(*transform.child2,
                            TransformPaintPropertyNode::State{FloatSize(1, 2)});
-  EXPECT_FALSE(transform.ancestor->Changed(*transform.root));
-  EXPECT_TRUE(transform.child1->Changed(*transform.ancestor));
-  EXPECT_TRUE(transform.child1->Changed(*transform.child2));
-  EXPECT_FALSE(transform.child2->Changed(*transform.ancestor));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.ancestor));
-  EXPECT_FALSE(transform.grandchild1->Changed(*transform.child1));
-  EXPECT_TRUE(transform.grandchild1->Changed(*transform.child2));
+  EXPECT_FALSE(transform.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.root));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_TRUE(transform.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child2));
+  EXPECT_FALSE(transform.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.ancestor));
+  EXPECT_FALSE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child1));
+  EXPECT_TRUE(transform.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, *transform.child2));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -340,22 +480,34 @@ TEST_F(PaintPropertyNodeTest, ClipLocalTransformSpaceChange) {
   transform.child1->Update(*transform.ancestor,
                            TransformPaintPropertyNode::State{FloatSize(1, 2)});
 
-  EXPECT_FALSE(clip.ancestor->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(clip.ancestor->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(root), nullptr));
-  EXPECT_TRUE(clip.child1->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(clip.grandchild1->Changed(STATE(ancestor), nullptr));
-  EXPECT_FALSE(clip.grandchild1->Changed(STATE(child1), nullptr));
+  EXPECT_FALSE(clip.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(clip.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(root), nullptr));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(ancestor), nullptr));
+  EXPECT_TRUE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_FALSE(clip.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
 
   // Test with transform_not_to_check.
-  EXPECT_FALSE(clip.child1->Changed(STATE(root), transform.child1.get()));
-  EXPECT_FALSE(clip.child1->Changed(STATE(ancestor), transform.child1.get()));
+  EXPECT_FALSE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                    STATE(root), transform.child1.get()));
+  EXPECT_FALSE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                    STATE(ancestor), transform.child1.get()));
   EXPECT_TRUE(
-      clip.grandchild1->Changed(STATE(ancestor), transform.child1.get()));
-  EXPECT_TRUE(clip.child1->Changed(STATE(root), transform.ancestor.get()));
-  EXPECT_TRUE(clip.child1->Changed(STATE(ancestor), transform.ancestor.get()));
+      clip.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                STATE(ancestor), transform.child1.get()));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(root), transform.ancestor.get()));
+  EXPECT_TRUE(clip.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                   STATE(ancestor), transform.ancestor.get()));
   EXPECT_TRUE(
-      clip.grandchild1->Changed(STATE(ancestor), transform.ancestor.get()));
+      clip.grandchild1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                STATE(ancestor), transform.ancestor.get()));
 
   ResetAllChanged();
   ExpectUnchangedState();
@@ -373,21 +525,34 @@ TEST_F(PaintPropertyNodeTest, EffectLocalTransformSpaceChange) {
   transform.ancestor->Update(
       *transform.root, TransformPaintPropertyNode::State{FloatSize(1, 2)});
 
-  EXPECT_FALSE(effect.ancestor->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.ancestor->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.child1->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.child1->Changed(STATE(ancestor), nullptr));
-  EXPECT_TRUE(effect.grandchild1->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.grandchild1->Changed(STATE(ancestor), nullptr));
-  EXPECT_FALSE(effect.grandchild1->Changed(STATE(child1), nullptr));
+  EXPECT_FALSE(effect.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.ancestor->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.child1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_TRUE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(ancestor), nullptr));
+  EXPECT_FALSE(effect.grandchild1->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(child1), nullptr));
   // Effects without self or ancestor pixel-moving filter are not affected by
   // change of LocalTransformSpace.
-  EXPECT_FALSE(effect.child2->Changed(STATE(root), nullptr));
-  EXPECT_FALSE(effect.grandchild2->Changed(STATE(root), nullptr));
+  EXPECT_FALSE(effect.child2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
+  EXPECT_FALSE(effect.grandchild2->Changed(
+      PaintPropertyChangeType::kChangedOnlyValues, STATE(root), nullptr));
 
   // Test with transform_not_to_check.
-  EXPECT_FALSE(effect.child1->Changed(STATE(root), transform.child1.get()));
-  EXPECT_TRUE(effect.child1->Changed(STATE(root), transform.ancestor.get()));
+  EXPECT_FALSE(
+      effect.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                             STATE(root), transform.child1.get()));
+  EXPECT_TRUE(
+      effect.child1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                             STATE(root), transform.ancestor.get()));
 
   ResetAllChanged();
   ExpectUnchangedState();

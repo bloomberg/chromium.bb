@@ -69,8 +69,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
           color_filter != other.color_filter ||
           backdrop_filter_bounds != other.backdrop_filter_bounds ||
           blend_mode != other.blend_mode ||
-          direct_compositing_reasons != other.direct_compositing_reasons ||
-          compositor_element_id != other.compositor_element_id ||
           filters_origin != other.filters_origin) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
@@ -88,6 +86,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       if (backdrop_filter_changed &&
           !animation_state.is_running_backdrop_filter_animation_on_compositor) {
         return PaintPropertyChangeType::kChangedOnlyValues;
+      }
+      if (direct_compositing_reasons != other.direct_compositing_reasons ||
+          compositor_element_id != other.compositor_element_id) {
+        return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
       }
       if (opacity_changed || filter_changed || backdrop_filter_changed) {
         return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
@@ -120,20 +122,22 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
-      SetChanged();
+      AddChanged(state_changed);
     }
     return std::max(parent_changed, state_changed);
   }
 
   // Checks if the accumulated effect from |this| to |relative_to_state
-  // .Effect()| has changed in the space of |relative_to_state.Transform()|.
-  // We check for changes of not only effect nodes, but also LocalTransformSpace
-  // relative to |relative_to_state.Transform()| of the effect nodes having
-  // filters that move pixels. Change of OutputClip is not checked and the
-  // caller should check in other ways. |transform_not_to_check| specifies the
-  // transform node that the caller has checked or will check its change in
-  // other ways and this function should treat it as unchanged.
-  bool Changed(const PropertyTreeState& relative_to_state,
+  // .Effect()| has changed, at least significance of |change|, in the space of
+  // |relative_to_state.Transform()|. We check for changes of not only effect
+  // nodes, but also LocalTransformSpace relative to |relative_to_state
+  // .Transform()| of the effect nodes having filters that move pixels. Change
+  // of OutputClip is not checked and the caller should check in other ways.
+  // |transform_not_to_check| specifies the transform node that the caller has
+  // checked or will check its change in other ways and this function should
+  // treat it as unchanged.
+  bool Changed(PaintPropertyChangeType change,
+               const PropertyTreeState& relative_to_state,
                const TransformPaintPropertyNode* transform_not_to_check) const;
 
   const TransformPaintPropertyNode& LocalTransformSpace() const {
