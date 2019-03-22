@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_transaction.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "v8/include/v8.h"
@@ -87,16 +88,18 @@ class IDBTransactionTest : public testing::Test {
     url_loader_mock_factory_->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  void BuildTransaction(V8TestingScope& scope,
-                        std::unique_ptr<MockWebIDBDatabase> backend) {
-    db_ = IDBDatabase::Create(scope.GetExecutionContext(), std::move(backend),
-                              FakeIDBDatabaseCallbacks::Create(),
-                              scope.GetIsolate());
+  void BuildTransaction(
+      V8TestingScope& scope,
+      std::unique_ptr<MockWebIDBDatabase> database_backend,
+      std::unique_ptr<MockWebIDBTransaction> transaction_backend) {
+    db_ = IDBDatabase::Create(
+        scope.GetExecutionContext(), std::move(database_backend),
+        FakeIDBDatabaseCallbacks::Create(), scope.GetIsolate());
 
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
-        scope.GetScriptState(), kTransactionId, transaction_scope,
-        mojom::IDBTransactionMode::ReadOnly, db_.Get());
+        scope.GetScriptState(), std::move(transaction_backend), kTransactionId,
+        transaction_scope, mojom::IDBTransactionMode::ReadOnly, db_.Get());
 
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
@@ -116,9 +119,12 @@ class IDBTransactionTest : public testing::Test {
 
 TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   V8TestingScope scope;
-  auto backend = std::make_unique<MockWebIDBDatabase>();
-  EXPECT_CALL(*backend, Close()).Times(1);
-  BuildTransaction(scope, std::move(backend));
+  auto database_backend = std::make_unique<MockWebIDBDatabase>();
+  auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  EXPECT_CALL(*database_backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(database_backend),
+                   std::move(transaction_backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
       MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
@@ -152,9 +158,12 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   V8TestingScope scope;
-  auto backend = std::make_unique<MockWebIDBDatabase>();
-  EXPECT_CALL(*backend, Close()).Times(1);
-  BuildTransaction(scope, std::move(backend));
+  auto database_backend = std::make_unique<MockWebIDBDatabase>();
+  auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  EXPECT_CALL(*database_backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(database_backend),
+                   std::move(transaction_backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
       MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
@@ -194,9 +203,12 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   V8TestingScope scope;
-  auto backend = std::make_unique<MockWebIDBDatabase>();
-  EXPECT_CALL(*backend, Close()).Times(1);
-  BuildTransaction(scope, std::move(backend));
+  auto database_backend = std::make_unique<MockWebIDBDatabase>();
+  auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  EXPECT_CALL(*database_backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(database_backend),
+                   std::move(transaction_backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
       MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
@@ -233,9 +245,12 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   V8TestingScope scope;
-  auto backend = std::make_unique<MockWebIDBDatabase>();
-  EXPECT_CALL(*backend, Close()).Times(1);
-  BuildTransaction(scope, std::move(backend));
+  auto database_backend = std::make_unique<MockWebIDBDatabase>();
+  auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  EXPECT_CALL(*database_backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(database_backend),
+                   std::move(transaction_backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
       MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
@@ -279,9 +294,12 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   // This test covers the conditions of https://crbug.com/733642
 
   V8TestingScope scope;
-  auto backend = std::make_unique<MockWebIDBDatabase>();
-  EXPECT_CALL(*backend, Close()).Times(1);
-  BuildTransaction(scope, std::move(backend));
+  auto database_backend = std::make_unique<MockWebIDBDatabase>();
+  auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  EXPECT_CALL(*database_backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(database_backend),
+                   std::move(transaction_backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
       MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
@@ -323,10 +341,13 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 
 TEST_F(IDBTransactionTest, TransactionFinish) {
   V8TestingScope scope;
-  auto backend = std::make_unique<MockWebIDBDatabase>();
-  EXPECT_CALL(*backend, Commit(kTransactionId, 0)).Times(1);
-  EXPECT_CALL(*backend, Close()).Times(1);
-  BuildTransaction(scope, std::move(backend));
+  auto database_backend = std::make_unique<MockWebIDBDatabase>();
+  auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  EXPECT_CALL(*database_backend, Commit(kTransactionId, 0)).Times(1);
+  EXPECT_CALL(*database_backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(database_backend),
+                   std::move(transaction_backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
       MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();

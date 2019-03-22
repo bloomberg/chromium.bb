@@ -1056,6 +1056,8 @@ jumbo_source_set("browser") {
     "indexed_db/scopes/scope_lock_range.h",
     "indexed_db/scopes/scopes_lock_manager.cc",
     "indexed_db/scopes/scopes_lock_manager.h",
+    "indexed_db/transaction_impl.cc",
+    "indexed_db/transaction_impl.h",
     "initiator_csp_context.cc",
     "initiator_csp_context.h",
     "installedapp/installed_app_provider_impl_default.cc",

@@ -20,6 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
+#include "content/browser/indexed_db/transaction_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -108,24 +109,6 @@ DatabaseImpl::~DatabaseImpl() {
   indexed_db_context_->ConnectionClosed(origin_, connection_.get());
 }
 
-void DatabaseImpl::CreateObjectStore(int64_t transaction_id,
-                                     int64_t object_store_id,
-                                     const base::string16& name,
-                                     const IndexedDBKeyPath& key_path,
-                                     bool auto_increment) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  connection_->database()->CreateObjectStore(transaction, object_store_id, name,
-                                             key_path, auto_increment);
-}
-
 void DatabaseImpl::DeleteObjectStore(int64_t transaction_id,
                                      int64_t object_store_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -157,6 +140,7 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
 }
 
 void DatabaseImpl::CreateTransaction(
+    blink::mojom::IDBTransactionAssociatedRequest transaction_request,
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode) {
@@ -175,6 +159,9 @@ void DatabaseImpl::CreateTransaction(
       new IndexedDBBackingStore::Transaction(
           connection_->database()->backing_store()));
   connection_->database()->RegisterAndScheduleTransaction(transaction);
+
+  dispatcher_host_->CreateAndBindTransactionImpl(
+      std::move(transaction_request), origin_, transaction->AsWeakPtr());
 }
 
 void DatabaseImpl::Close() {

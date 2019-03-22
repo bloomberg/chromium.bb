@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2019 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,9 +10,6 @@
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
- * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
- *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,38 +23,33 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_TRANSACTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_TRANSACTION_H_
 
+#include <bitset>
+
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-
-namespace WTF {
-class String;
-}
 
 namespace blink {
 
-class WebIDBCallbacks;
-class WebIDBDatabaseCallbacks;
+class IDBKeyPath;
 
-class MODULES_EXPORT WebIDBFactory {
+class MODULES_EXPORT WebIDBTransaction {
  public:
-  virtual ~WebIDBFactory() = default;
+  virtual ~WebIDBTransaction() = default;
 
-  virtual void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks>) = 0;
-  virtual void GetDatabaseNames(std::unique_ptr<WebIDBCallbacks>) = 0;
-  virtual void Open(
-      const WTF::String& name,
-      int64_t version,
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
-      int64_t transaction_id,
-      std::unique_ptr<WebIDBCallbacks>,
-      std::unique_ptr<WebIDBDatabaseCallbacks>) = 0;
-  virtual void DeleteDatabase(const WTF::String& name,
-                              std::unique_ptr<WebIDBCallbacks>,
-                              bool force_close) = 0;
+  virtual void CreateObjectStore(int64_t object_store_id,
+                                 const String& name,
+                                 const IDBKeyPath&,
+                                 bool auto_increment) = 0;
+
+  virtual mojom::blink::IDBTransactionAssociatedRequest CreateRequest() = 0;
+
+ protected:
+  WebIDBTransaction() = default;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_TRANSACTION_H_

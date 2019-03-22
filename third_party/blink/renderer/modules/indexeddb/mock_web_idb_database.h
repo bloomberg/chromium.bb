@@ -18,20 +18,15 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
   MockWebIDBDatabase();
   ~MockWebIDBDatabase() override;
 
-  MOCK_METHOD5(CreateObjectStore,
-               void(int64_t transaction_id,
-                    int64_t object_store_id,
-                    const String& name,
-                    const IDBKeyPath&,
-                    bool auto_increment));
   MOCK_METHOD2(DeleteObjectStore,
                void(int64_t transaction_id, int64_t object_store_id));
   MOCK_METHOD3(RenameObjectStore,
                void(int64_t transaction_id,
                     int64_t object_store_id,
                     const String& new_name));
-  MOCK_METHOD3(CreateTransaction,
-               void(int64_t id,
+  MOCK_METHOD4(CreateTransaction,
+               void(mojom::blink::IDBTransactionAssociatedRequest request,
+                    int64_t id,
                     const Vector<int64_t>& scope,
                     mojom::IDBTransactionMode));
   MOCK_METHOD0(Close, void());

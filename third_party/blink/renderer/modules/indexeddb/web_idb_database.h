@@ -43,19 +43,16 @@ class MODULES_EXPORT WebIDBDatabase {
  public:
   virtual ~WebIDBDatabase() = default;
 
-  virtual void CreateObjectStore(int64_t transaction_id,
-                                 int64_t object_store_id,
-                                 const String& name,
-                                 const IDBKeyPath&,
-                                 bool auto_increment) = 0;
   virtual void DeleteObjectStore(int64_t transaction_id,
                                  int64_t object_store_id) = 0;
   virtual void RenameObjectStore(int64_t transaction_id,
                                  int64_t object_store_id,
                                  const String& name) = 0;
-  virtual void CreateTransaction(int64_t id,
-                                 const Vector<int64_t>& scope,
-                                 mojom::IDBTransactionMode) = 0;
+  virtual void CreateTransaction(
+      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      int64_t id,
+      const Vector<int64_t>& scope,
+      mojom::IDBTransactionMode) = 0;
   virtual void Close() = 0;
   virtual void VersionChangeIgnored() = 0;
 
