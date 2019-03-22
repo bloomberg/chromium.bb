@@ -331,8 +331,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 #if defined(OS_ANDROID)
   // https://crbug.com/778245
   if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-      base::android::SDK_VERSION_KITKAT) {
-    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat devices.";
+      base::android::SDK_VERSION_LOLLIPOP) {
+    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat and "
+                "Lollipop devices.";
     return;
   }
 #endif
