@@ -225,6 +225,8 @@ void FrameLoader::Init() {
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
+  bool success = provisional_document_loader_->PrepareForLoad();
+  DCHECK(success);
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -1032,7 +1034,8 @@ void FrameLoader::CommitNavigation(
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
 
-  provisional_document_loader_->StartLoading();
+  if (provisional_document_loader_->PrepareForLoad())
+    provisional_document_loader_->StartLoading();
   TakeObjectSnapshot();
 }
 

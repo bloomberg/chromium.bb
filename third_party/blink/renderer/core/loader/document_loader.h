@@ -177,6 +177,10 @@ class CORE_EXPORT DocumentLoader
   void SetItemForHistoryNavigation(HistoryItem* item) { history_item_ = item; }
   HistoryItem* GetHistoryItem() const { return history_item_; }
 
+  // Returns whether the load can proceed. If not, the loader will be detached
+  // already.
+  bool PrepareForLoad();
+
   void StartLoading();
   void StopLoading();
   void SetDefersLoading(bool defers);
@@ -313,13 +317,11 @@ class CORE_EXPORT DocumentLoader
                                     HistoryNavigationType);
 
   void HandleRedirect(const KURL& current_request_url);
-  // Returns true if we should proceed with navigation.
-  bool HandleResponse(const ResourceResponse&);
+  void HandleResponse();
   void HandleData(const char* data, size_t length);
 
   void LoadEmpty();
 
-  bool ShouldContinueForResponse() const;
   bool ShouldReportTimingInfoToParent();
 
   // Processes the data stored in the data_buffer_, used to avoid appending data
@@ -420,7 +422,6 @@ class CORE_EXPORT DocumentLoader
   base::UnguessableToken devtools_navigation_token_;
 
   bool defers_loading_ = false;
-  bool has_substitute_data_ = false;
 
   // Whether this load request comes with a sitcky user activation.
   bool had_sticky_activation_ = false;

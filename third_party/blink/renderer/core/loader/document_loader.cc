@@ -266,6 +266,7 @@ DocumentLoader::DocumentLoader(
   if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     redirect_chain_.push_back(url_);
 
+  response_ = params_->response.ToResourceResponse();
   probe::LifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
 }
 
@@ -605,6 +606,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       break;
   }
   DCHECK_EQ(kSentDidFinishLoad, state_);
+  params_ = nullptr;
 }
 
 void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
@@ -711,29 +713,6 @@ static bool CanShowMIMEType(const String& mime_type, LocalFrame* frame) {
          plugin_data->SupportsMimeType(mime_type);
 }
 
-bool DocumentLoader::ShouldContinueForResponse() const {
-  if (has_substitute_data_)
-    return true;
-
-  int status_code = response_.HttpStatusCode();
-  if (status_code == 204 || status_code == 205) {
-    // The server does not want us to replace the page contents.
-    return false;
-  }
-
-  if (IsContentDispositionAttachment(
-          response_.HttpHeaderField(http_names::kContentDisposition))) {
-    // The server wants us to download instead of replacing the page contents.
-    // Downloading is handled by the embedder, but we still get the initial
-    // response so that we can ignore it and clean up properly.
-    return false;
-  }
-
-  if (!CanShowMIMEType(response_.MimeType(), frame_))
-    return false;
-  return true;
-}
-
 bool DocumentLoader::ShouldReportTimingInfoToParent() {
   DCHECK(frame_);
   // <iframe>s should report the initial navigation requested by the parent
@@ -816,25 +795,18 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP(
   return csp;
 }
 
-bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
+void DocumentLoader::HandleResponse() {
   DCHECK(frame_);
-  application_cache_host_->DidReceiveResponseForMainResource(response);
-
-  AtomicString mixed_content_header = response.HttpHeaderField("mixed-content");
-  if (EqualIgnoringASCIICase(mixed_content_header, "noupgrade")) {
-    frame_->GetDocument()->SetMixedAutoupgradeOptOut(true);
-  }
+  application_cache_host_->DidReceiveResponseForMainResource(response_);
 
   // Pre-commit state, count usage the use counter associated with "this"
   // (provisional document loader) instead of frame_'s document loader.
-  if (response.DidServiceWorkerNavigationPreload())
+  if (response_.DidServiceWorkerNavigationPreload())
     UseCounter::Count(this, WebFeature::kServiceWorkerNavigationPreload);
 
-  response_ = response;
-
-  if (response.CurrentRequestUrl().ProtocolIs("ftp") &&
-      response.MimeType() == "text/vnd.chromium.ftp-dir") {
-    if (response.CurrentRequestUrl().Query() == "raw") {
+  if (response_.CurrentRequestUrl().ProtocolIs("ftp") &&
+      response_.MimeType() == "text/vnd.chromium.ftp-dir") {
+    if (response_.CurrentRequestUrl().Query() == "raw") {
       // Interpret the FTP LIST command result as text.
       response_.SetMimeType("text/plain");
     } else {
@@ -844,15 +816,9 @@ bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
     }
   }
 
-  if (!ShouldContinueForResponse()) {
-    StopLoading();
-    return false;
-  }
-
   if (frame_->Owner() && response_.IsHTTP() &&
       !cors::IsOkStatus(response_.HttpStatusCode()))
     frame_->Owner()->RenderFallbackContent(frame_);
-  return true;
 }
 
 void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
@@ -1057,6 +1023,43 @@ void DocumentLoader::LoadEmpty() {
   FinishedLoading(CurrentTimeTicks());
 }
 
+bool DocumentLoader::PrepareForLoad() {
+  if (loading_url_as_empty_document_)
+    return true;
+
+  if (!params_->body_loader) {
+    // TODO(dgozman): we should try to get rid of this case.
+    LoadFailed(ResourceError::Failure(url_));
+    return false;
+  }
+
+  if (params_->is_static_data)
+    return true;
+
+  int status_code = response_.HttpStatusCode();
+  if (status_code == 204 || status_code == 205) {
+    // The server does not want us to replace the page contents.
+    LoadFailed(ResourceError::CancelledError(url_));
+    return false;
+  }
+
+  if (IsContentDispositionAttachment(
+          response_.HttpHeaderField(http_names::kContentDisposition))) {
+    // The server wants us to download instead of replacing the page contents.
+    // Downloading is handled by the embedder, but we still get the initial
+    // response so that we can ignore it and clean up properly.
+    LoadFailed(ResourceError::CancelledError(url_));
+    return false;
+  }
+
+  if (!CanShowMIMEType(response_.MimeType(), frame_)) {
+    LoadFailed(ResourceError::CancelledError(url_));
+    return false;
+  }
+
+  return true;
+}
+
 void DocumentLoader::StartLoading() {
   StartLoadingInternal();
   params_ = nullptr;
@@ -1073,15 +1076,8 @@ void DocumentLoader::StartLoadingInternal() {
     return;
   }
 
-  if (params_->is_static_data)
-    has_substitute_data_ = true;
   body_loader_ = std::move(params_->body_loader);
-  if (!body_loader_) {
-    // TODO(dgozman): we should try to get rid of this case.
-    LoadFailed(ResourceError::Failure(url_));
-    return;
-  }
-
+  DCHECK(body_loader_);
   DCHECK(!GetTiming().NavigationStart().is_null());
   // The fetch has already started in the browser,
   // so we don't MarkFetchStart here.
@@ -1150,8 +1146,7 @@ void DocumentLoader::StartLoadingInternal() {
     HandleRedirect(redirect_response.CurrentRequestUrl());
   }
 
-  ResourceResponse response = params_->response.ToResourceResponse();
-  if (!frame_->IsMainFrame() && response.GetCTPolicyCompliance() ==
+  if (!frame_->IsMainFrame() && response_.GetCTPolicyCompliance() ==
                                     ResourceResponse::kCTPolicyDoesNotComply) {
     // Exclude main-frame navigations; those are tracked elsewhere.
     GetUseCounter().Count(
@@ -1159,28 +1154,27 @@ void DocumentLoader::StartLoadingInternal() {
         GetFrame());
   }
   MixedContentChecker::CheckMixedPrivatePublic(GetFrame(),
-                                               response.RemoteIPAddress());
-  ParseAndPersistClientHints(response);
+                                               response_.RemoteIPAddress());
+  ParseAndPersistClientHints(response_);
   PreloadHelper::LoadLinksFromHeader(
-      response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
-      *GetFrame(), nullptr, PreloadHelper::kDoNotLoadResources,
-      PreloadHelper::kLoadAll, nullptr);
-  if (!frame_->IsMainFrame() && response.HasMajorCertificateErrors()) {
+      response_.HttpHeaderField(http_names::kLink),
+      response_.CurrentRequestUrl(), *GetFrame(), nullptr,
+      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll, nullptr);
+  if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
-        GetFrame(), response, mojom::RequestContextType::HYPERLINK);
+        GetFrame(), response_, mojom::RequestContextType::HYPERLINK);
   }
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
-                                                response);
+                                                response_);
   // TODO(dgozman): remove this client call, it is only used in tests.
-  GetLocalFrameClient().DispatchDidReceiveResponse(response);
+  GetLocalFrameClient().DispatchDidReceiveResponse(response_);
   probe::DidReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
-                                    main_resource_identifier_, this, response,
+                                    main_resource_identifier_, this, response_,
                                     nullptr /* resource */);
   frame_->Console().ReportResourceResponseReceived(
-      this, main_resource_identifier_, response);
+      this, main_resource_identifier_, response_);
 
-  if (!HandleResponse(response))
-    return;
+  HandleResponse();
 
   loading_mhtml_archive_ =
       DeprecatedEqualIgnoringCase("multipart/related", response_.MimeType()) ||
@@ -1524,6 +1518,11 @@ void DocumentLoader::InstallNewDocument(
       origin_trials::StaleWhileRevalidateEnabled(document);
   document->Fetcher()->SetStaleWhileRevalidateEnabled(
       stale_while_revalidate_enabled);
+
+  if (EqualIgnoringASCIICase(response_.HttpHeaderField("mixed-content"),
+                             "noupgrade")) {
+    document->SetMixedAutoupgradeOptOut(true);
+  }
 
   // If stale while revalidate is enabled via Origin Trials count it as such.
   if (stale_while_revalidate_enabled &&
