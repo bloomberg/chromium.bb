@@ -43,6 +43,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                       Browser* browser);
   ~ProfileMenuViewBase() override;
 
+  // views::BubbleDialogDelegateView
+  ax::mojom::Role GetAccessibleWindowRole() const override;
+
   void ShowMenu();
   void SetContentsView(std::unique_ptr<views::View> view, int width_override);
 
