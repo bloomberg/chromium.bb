@@ -12366,7 +12366,8 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Canceled; no stale cached result was available."/>
   <int value="5" label="Canceled; stale cached result was available."/>
   <int value="6"
-      label="Returned stale cached result; network got NAME_NOT_RESOLVED"/>
+      label="Returned stale cached result; network got NAME_NOT_RESOLVED."/>
+  <int value="7" label="Returned stale result synchronously."/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError">
