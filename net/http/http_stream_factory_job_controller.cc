@@ -804,7 +804,8 @@ int HttpStreamFactory::JobController::DoResolveProxyComplete(int rv) {
                           ProxyServer::SCHEME_HTTP | ProxyServer::SCHEME_HTTPS |
                           ProxyServer::SCHEME_SOCKS4 |
                           ProxyServer::SCHEME_SOCKS5;
-  if (session_->IsQuicEnabled())
+  // WebSockets is not supported over QUIC.
+  if (session_->IsQuicEnabled() && !is_websocket_)
     supported_proxies |= ProxyServer::SCHEME_QUIC;
   proxy_info_.RemoveProxiesWithoutScheme(supported_proxies);
 

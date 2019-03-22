@@ -18014,6 +18014,39 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
   session->CloseAllConnections();
 }
 
+// WebSockets over QUIC is not supported, including over QUIC proxies.
+TEST_F(HttpNetworkTransactionTest, WebSocketNotSentOverQuicProxy) {
+  for (bool secure : {true, false}) {
+    SCOPED_TRACE(secure);
+    session_deps_.proxy_resolution_service =
+        ProxyResolutionService::CreateFixedFromPacResult(
+            "QUIC myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+    session_deps_.enable_quic = true;
+
+    HttpRequestInfo request;
+    request.url =
+        GURL(secure ? "ws://www.example.org/" : "wss://www.example.org/");
+    AddWebSocketHeaders(&request.extra_headers);
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    TestWebSocketHandshakeStreamCreateHelper
+        websocket_handshake_stream_create_helper;
+
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    HttpNetworkTransaction trans(LOW, session.get());
+    trans.SetWebSocketHandshakeStreamCreateHelper(
+        &websocket_handshake_stream_create_helper);
+
+    TestCompletionCallback callback;
+    int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+    rv = callback.WaitForResult();
+    EXPECT_THAT(rv, IsError(ERR_NO_SUPPORTED_PROXIES));
+  }
+}
+
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesPost) {

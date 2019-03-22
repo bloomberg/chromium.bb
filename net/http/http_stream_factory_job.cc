@@ -713,7 +713,7 @@ int HttpStreamFactory::Job::DoStart() {
   }
 
   if (!session_->params().enable_quic_proxies_for_https_urls &&
-      proxy_info_.is_quic() && !request_info_.url.SchemeIs(url::kHttpScheme)) {
+      proxy_info_.is_quic() && request_info_.url.SchemeIsCryptographic()) {
     return ERR_NOT_IMPLEMENTED;
   }
 
