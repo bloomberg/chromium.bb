@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_FAKE_VIDEO_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_FAKE_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_TEST_FAKE_VIDEO_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_TEST_FAKE_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -71,4 +71,4 @@ class MEDIA_GPU_EXPORT FakeVideoDecodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_FAKE_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_TEST_FAKE_VIDEO_DECODE_ACCELERATOR_H_
