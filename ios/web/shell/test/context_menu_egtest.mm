@@ -51,10 +51,11 @@ using testing::ElementToDismissAlert;
       "</span></body>";
 
   web::test::SetUpSimpleHttpServer(responses);
-  GREYAssert([ShellEarlGrey loadURL:initialURL],
-             @"Page did not complete loading.");
-  GREYAssert([ShellEarlGrey waitForWebViewContainingText:linkText],
-             @"Failed waiting for web view containing %s", linkText.c_str());
+  bool success = [ShellEarlGrey loadURL:initialURL];
+  GREYAssert(success, @"Page did not complete loading.");
+  success = [ShellEarlGrey waitForWebViewContainingText:linkText];
+  GREYAssert(success, @"Failed waiting for web view containing %s",
+             linkText.c_str());
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::LongPressElementForContextMenu(
@@ -95,10 +96,11 @@ using testing::ElementToDismissAlert;
       "</body>";
 
   web::test::SetUpSimpleHttpServer(responses);
-  GREYAssert([ShellEarlGrey loadURL:initialURL],
-             @"Page did not complete loading.");
-  GREYAssert([ShellEarlGrey waitForWebViewContainingText:linkText],
-             @"Failed waiting for web view containing %s", linkText.c_str());
+  bool success = [ShellEarlGrey loadURL:initialURL];
+  GREYAssert(success, @"Page did not complete loading.");
+  success = [ShellEarlGrey waitForWebViewContainingText:linkText];
+  GREYAssert(success, @"Failed waiting for web view containing %s",
+             linkText.c_str());
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::LongPressElementForContextMenu(
