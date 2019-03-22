@@ -67,7 +67,7 @@ StyleRay* GetRay(const ComputedStyle& style) {
   BasicShape* offset_path = style.OffsetPath();
   if (!offset_path || offset_path->GetType() != BasicShape::kStyleRayType)
     return nullptr;
-  return ToStyleRay(style.OffsetPath());
+  return To<StyleRay>(style.OffsetPath());
 }
 
 class UnderlyingRayModeChecker
@@ -205,7 +205,8 @@ InterpolationValue CSSRayInterpolationType::MaybeConvertValue(
     return nullptr;
 
   scoped_refptr<BasicShape> shape = BasicShapeForValue(*state, value);
-  return CreateValue(ToStyleRay(*shape).Angle(), RayMode(ToStyleRay(*shape)));
+  return CreateValue(To<StyleRay>(*shape).Angle(),
+                     RayMode(To<StyleRay>(*shape)));
 }
 
 }  // namespace blink
