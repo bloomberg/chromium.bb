@@ -22,8 +22,10 @@ from chromite.scripts import cros_extract_deps
 def NormalizeSourcePaths(source_paths):
   """Return the "normalized" form of a list of source paths.
 
-  Normalizing includes sorting the source paths in alphabetical order and remove
-  paths that are sub-path of others in the source paths.
+  Normalizing includes:
+    * Sorting the source paths in alphabetical order.
+    * Remove paths that are sub-path of others in the source paths.
+    * Ensure all the directory path strings are ended with the trailing '/'.
   """
   for i, path in enumerate(source_paths):
     assert os.path.isabs(path), 'path %s is not an aboslute path' % path
@@ -39,6 +41,8 @@ def NormalizeSourcePaths(source_paths):
       if j != i and osutils.IsSubPath(path, other):
         is_subpath_of_other = True
     if not is_subpath_of_other:
+      if os.path.isdir(path) and not path.endswith('/'):
+        path += '/'
       results.append(path)
 
   return results
@@ -72,6 +76,8 @@ def GenerateSourcePathMapping(packages, board):
   Returns:
     Map from each package to the source path (relative to the repo checkout
       root, i.e: ~/trunk/ in your cros_sdk) it depends on.
+    For each source path which is a directory, the string is ended with a
+      trailing '/'.
   """
 
   results = {}
