@@ -80,6 +80,7 @@ TEST_F(ScrollTimelineTest, CurrentTimeIsNullIfScrollSourceIsNotScrollable) {
   bool current_time_is_null = false;
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
+  EXPECT_FALSE(scroll_timeline->IsActive());
 }
 
 TEST_F(ScrollTimelineTest,
@@ -124,6 +125,7 @@ TEST_F(ScrollTimelineTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 100), kProgrammaticScroll);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
+  EXPECT_TRUE(scroll_timeline->IsActive());
 }
 
 TEST_F(ScrollTimelineTest,
@@ -158,6 +160,7 @@ TEST_F(ScrollTimelineTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kProgrammaticScroll);
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
+  EXPECT_TRUE(scroll_timeline->IsActive());
 }
 
 TEST_F(ScrollTimelineTest,

@@ -89,7 +89,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
 
   void AnimationAttached(Animation&);
 
-  bool IsActive();
+  bool IsActive() const override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }
