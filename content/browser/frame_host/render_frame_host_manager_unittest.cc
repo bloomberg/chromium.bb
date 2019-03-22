@@ -344,68 +344,19 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
   void set_webui_type(int type) { factory_.set_webui_type(type); }
 
-  void NavigateActiveAndCommit(const GURL& url, bool dont_swap_out = false) {
-    // Note: we navigate the active RenderFrameHost because previous navigations
-    // won't have committed yet, so NavigateAndCommit does the wrong thing
-    // for us.
-    controller().LoadURL(
-        url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    int entry_id = controller().GetPendingEntry()->GetUniqueID();
-
-    // Simulate the BeforeUnload_ACK that is received from the current renderer
-    // for a cross-site navigation.
-    // PlzNavigate: it is necessary to call PrepareForCommit before getting the
-    // main and the pending frame because when we are trying to navigate to a
-    // WebUI from a new tab, a RenderFrameHost is created to display it that is
-    // committed immediately (since it is a new tab). Therefore the main frame
-    // is replaced without a pending frame being created, and we don't get the
-    // right values for the RFH to navigate: we try to use the old one that has
-    // been deleted in the meantime.
-    contents()->GetMainFrame()->PrepareForCommit();
-
-    TestRenderFrameHost* old_rfh = contents()->GetMainFrame();
-    TestRenderFrameHost* active_rfh = contents()->GetPendingMainFrame()
-                                          ? contents()->GetPendingMainFrame()
-                                          : old_rfh;
-    EXPECT_TRUE(old_rfh->is_active());
-
-    // Use an observer to avoid accessing a deleted renderer later on when the
-    // state is being checked.
-    RenderFrameDeletedObserver rfh_observer(old_rfh);
-    RenderViewHostDeletedObserver rvh_observer(old_rfh->GetRenderViewHost());
-    active_rfh->SendNavigate(entry_id, true, url);
-
-    // Make sure that we start to run the unload handler at the time of commit.
-    if (old_rfh != active_rfh && !rfh_observer.deleted()) {
-      EXPECT_FALSE(old_rfh->is_active());
-    }
-
-    // Simulate the swap out ACK coming from the pending renderer.  This should
-    // either shut down the old RFH or leave it in a swapped out state.
-    if (old_rfh != active_rfh) {
-      if (dont_swap_out)
-        return;
-      old_rfh->OnSwappedOut();
-      EXPECT_TRUE(rfh_observer.deleted());
-    }
-    EXPECT_EQ(active_rfh, contents()->GetMainFrame());
-    EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
-  }
-
   // Creates a test RenderViewHost that's swapped out.
   void CreateSwappedOutRenderViewHost() {
     const GURL kChromeURL("chrome://foo");
     const GURL kDestUrl("http://www.google.com/");
 
     // Navigate our first tab to a chrome url and then to the destination.
-    NavigateActiveAndCommit(kChromeURL);
+    NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeURL);
     TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
 
     // Navigate to a cross-site URL.
-    contents()->GetController().LoadURL(
-        kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    int entry_id = contents()->GetController().GetPendingEntry()->GetUniqueID();
-    contents()->GetMainFrame()->PrepareForCommit();
+    auto navigation =
+        NavigationSimulator::CreateBrowserInitiated(kDestUrl, contents());
+    navigation->ReadyToCommit();
     EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
     // Manually increase the number of active frames in the
@@ -417,11 +368,8 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     CHECK(dest_rfh);
     EXPECT_NE(ntp_rfh, dest_rfh);
 
-    // BeforeUnload finishes.
-    ntp_rfh->SendBeforeUnloadACK(true);
-
-    dest_rfh->SendNavigate(entry_id, true, kDestUrl);
-    ntp_rfh->OnSwappedOut();
+    // Commit. This will swap out ntp_rfh.
+    navigation->Commit();
   }
 
   // Returns the RenderFrameHost that should be used in the navigation to
@@ -517,10 +465,10 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   // Navigate our first tab to the chrome url and then to the destination,
   // ensuring we grant bindings to the chrome URL.
-  NavigateActiveAndCommit(kChromeUrl);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
   EXPECT_TRUE(main_rfh()->GetEnabledBindings() &
               BINDINGS_POLICY_WEB_UI);
-  NavigateActiveAndCommit(kDestUrl);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kDestUrl);
 
   EXPECT_FALSE(contents()->GetPendingMainFrame());
 
@@ -556,7 +504,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   // Navigate both to the new tab page, and verify that they share a
   // RenderProcessHost (not a SiteInstance).
-  NavigateActiveAndCommit(kChromeUrl);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
 
   NavigationSimulator::NavigateAndCommitFromBrowser(contents2.get(),
@@ -794,7 +742,7 @@ TEST_F(RenderFrameHostManagerTest,
   const GURL kUrl2("http://www.chromium.org");
 
   // Navigate our first tab to a chrome url and then to the destination.
-  NavigateActiveAndCommit(kChromeURL);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeURL);
   TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
 
   // Create one more tab and navigate to kUrl1.  web_contents is not
@@ -831,7 +779,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // new_instance will be different, a new RenderViewHost will be created for
   // the second navigation. We have to avoid this in order to exercise the
   // target code path.
-  NavigateActiveAndCommit(kChromeUrl);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
 
   // Navigate. Note that "view source" URLs are implemented by putting the RFH
   // into a view-source mode and then navigating to the inner URL, so that's why
@@ -2809,7 +2757,7 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
   const GURL kUrl("http://a.com/");
   const GURL kUrlBar("http://a.com/bar");
 
-  NavigateActiveAndCommit(kUrl);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kUrl);
 
   controller().LoadURL(
       kUrlBar, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
@@ -2941,7 +2889,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
 // are reached when navigating same-site between two WebUIs of the same type.
 TEST_F(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
   set_should_create_webui(true);
-  NavigateActiveAndCommit(GURL("chrome://foo"));
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("chrome://foo"));
 
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
   RenderFrameHostImpl* host = manager->current_frame_host();
@@ -2984,7 +2933,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
   // but for consistency sake different types will be set for each navigation.
   set_should_create_webui(true);
   set_webui_type(1);
-  NavigateActiveAndCommit(GURL("chrome://foo"));
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
+                                                    GURL("chrome://foo"));
 
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
   RenderFrameHostImpl* host = manager->current_frame_host();
