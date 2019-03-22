@@ -237,6 +237,11 @@ void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
     return;
   }
 
+  if (service_->assistant_state()->allowed_state() !=
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    return;
+  }
+
   // TODO(updowndota): Add a dedicate API for fetching enrollment status.
   assistant_client::SpeakerIdEnrollmentConfig client_config;
   client_config.user_id = kUserID;

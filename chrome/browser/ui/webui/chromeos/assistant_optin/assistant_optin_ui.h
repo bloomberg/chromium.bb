@@ -26,11 +26,15 @@ class AssistantOptInUI : public ui::WebDialogUI {
   explicit AssistantOptInUI(content::WebUI* web_ui);
   ~AssistantOptInUI() override;
 
+  // Called when the dialog is closed.
+  void OnDialogClosed();
+
  private:
   // Called when the webui has been initialized.
   void Initialize();
 
   JSCallsContainer js_calls_container_;
+  AssistantOptInFlowScreenHandler* assistant_handler_ptr_;
   base::WeakPtrFactory<AssistantOptInUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInUI);
@@ -58,9 +62,14 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
+  void OnDialogShown(content::WebUI* webui,
+                     content::RenderViewHost* render_view_host) override;
   void OnDialogClosed(const std::string& json_retval) override;
+  bool CanCloseDialog() const override;
 
  private:
+  AssistantOptInUI* assistant_ui_ = nullptr;
+
   // Callback to run if the flow is completed.
   ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback_;
 
