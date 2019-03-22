@@ -132,6 +132,12 @@ const char kAutofillEnableToolbarStatusChipDescription[] =
     "When enabled, Autofill data related icon will be shown in the status "
     "chip next to the profile avatar icon in the toolbar.";
 
+const char kAutofillNoLocalSaveOnUnmaskSuccessName[] =
+    "Remove the option to save local copies of unmasked server cards";
+const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[] =
+    "When enabled, the server card unmask prompt will not include the checkbox "
+    "to also save the card locally on the current device upon success.";
+
 const char kAutofillNoLocalSaveOnUploadSuccessName[] =
     "Disable saving local copy of uploaded card when credit card upload "
     "succeeds";

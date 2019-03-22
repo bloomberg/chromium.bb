@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
@@ -197,6 +198,10 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
 }
 
 bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillNoLocalSaveOnUnmaskSuccess)) {
+    return false;
+  }
   // Never offer to save for incognito.
   if (is_off_the_record_)
     return false;
@@ -204,6 +209,7 @@ bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
     return false;
   if (card_.record_type() == CreditCard::LOCAL_CARD)
     return false;
+
   return OfferStoreUnmaskedCards(is_off_the_record_);
 }
 

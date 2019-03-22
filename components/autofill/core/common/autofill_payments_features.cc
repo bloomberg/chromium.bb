@@ -66,6 +66,11 @@ const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
     "AutofillLocalCardMigrationUsesStrikeSystemV2",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, will remove the option to save unmasked server cards as
+// FULL_SERVER_CARDs upon successful unmask.
+const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
+    "AutofillNoLocalSaveOnUnmaskSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, no local copy of server card will be saved when upload
 // succeeds.
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{

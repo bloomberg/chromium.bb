@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -65,7 +66,8 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   explicit TestCardUnmaskPromptController(
       TestingPrefServiceSimple* pref_service)
       : CardUnmaskPromptControllerImpl(pref_service, false),
-        can_store_locally_(true),
+        can_store_locally_(!base::FeatureList::IsEnabled(
+            features::kAutofillNoLocalSaveOnUnmaskSuccess)),
         weak_factory_(this) {}
 
   bool CanStoreLocally() const override { return can_store_locally_; }

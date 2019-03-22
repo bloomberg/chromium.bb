@@ -107,6 +107,11 @@ extern const char kWalletServiceUseSandboxDescription[];
 extern const char kAppLauncherRefreshName[];
 extern const char kAppLauncherRefreshDescription[];
 
+// Title and description for the flag to control offering to save unmasked
+// server cards locally as FULL_SERVER_CARDs upon success of credit card unmask.
+extern const char kAutofillNoLocalSaveOnUnmaskSuccessName[];
+extern const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[];
+
 // Title and description for the flag to control saving FULL_SERVER_CARDS upon
 // success of credit card upload.
 extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
