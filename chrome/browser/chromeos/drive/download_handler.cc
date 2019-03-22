@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
+#include "components/download/content/factory/all_download_item_notifier_factory.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -143,7 +144,12 @@ DownloadHandler::DownloadHandler(FileSystemInterface* file_system)
           base::TimeDelta::FromSeconds(kFreeDiskSpaceDelayInSeconds)),
       weak_ptr_factory_(this) {}
 
-DownloadHandler::~DownloadHandler() = default;
+DownloadHandler::~DownloadHandler() {
+  if (notifier_)
+    notifier_->RemoveObserver(this);
+  if (notifier_incognito_)
+    notifier_incognito_->RemoveObserver(this);
+}
 
 // static
 DownloadHandler* DownloadHandler::GetForProfile(Profile* profile) {
@@ -162,8 +168,9 @@ void DownloadHandler::Initialize(
   drive_tmp_download_path_ = drive_tmp_download_path;
 
   if (download_manager) {
-    notifier_ = std::make_unique<download::AllDownloadItemNotifier>(
-        download_manager, this);
+    notifier_ = GetDownloadNotifier(download_manager);
+    notifier_->AddObserver(this);
+
     // Remove any persisted Drive DownloadItem. crbug.com/171384
     DownloadManager::DownloadVector downloads;
     download_manager->GetAllDownloads(&downloads);
@@ -176,8 +183,14 @@ void DownloadHandler::Initialize(
 
 void DownloadHandler::ObserveIncognitoDownloadManager(
     DownloadManager* download_manager) {
-  notifier_incognito_ = std::make_unique<download::AllDownloadItemNotifier>(
-      download_manager, this);
+  notifier_incognito_ = GetDownloadNotifier(download_manager);
+  notifier_incognito_->AddObserver(this);
+}
+
+download::AllDownloadItemNotifier* DownloadHandler::GetDownloadNotifier(
+    content::DownloadManager* download_manager) {
+  return download::AllDownloadItemNotifierFactory::GetForBrowserContext(
+      download_manager->GetBrowserContext());
 }
 
 void DownloadHandler::SubstituteDriveDownloadPath(

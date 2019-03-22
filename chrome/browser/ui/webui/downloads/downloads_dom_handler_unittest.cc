@@ -24,11 +24,11 @@ namespace {
 class TestDownloadsDOMHandler : public DownloadsDOMHandler {
  public:
   TestDownloadsDOMHandler(downloads::mojom::PagePtr page,
-                          content::DownloadManager* download_manager,
+                          download::AllDownloadItemNotifier* download_notifier,
                           content::WebUI* web_ui)
       : DownloadsDOMHandler(downloads::mojom::PageHandlerRequest(),
                             std::move(page),
-                            download_manager,
+                            download_notifier,
                             web_ui) {}
 
   using DownloadsDOMHandler::FinalizeRemovals;
@@ -40,7 +40,7 @@ class TestDownloadsDOMHandler : public DownloadsDOMHandler {
 // A fixture to test DownloadsDOMHandler.
 class DownloadsDOMHandlerTest : public testing::Test {
  public:
-  DownloadsDOMHandlerTest() {}
+  DownloadsDOMHandlerTest() : notifier_(&manager_) {}
 
   // testing::Test:
   void SetUp() override {
@@ -50,6 +50,7 @@ class DownloadsDOMHandlerTest : public testing::Test {
 
   TestingProfile* profile() { return &profile_; }
   content::MockDownloadManager* manager() { return &manager_; }
+  download::AllDownloadItemNotifier* notifier() { return &notifier_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
 
  protected:
@@ -61,12 +62,13 @@ class DownloadsDOMHandlerTest : public testing::Test {
   TestingProfile profile_;
 
   testing::NiceMock<content::MockDownloadManager> manager_;
+  download::AllDownloadItemNotifier notifier_;
   content::TestWebUI web_ui_;
 };
 
 TEST_F(DownloadsDOMHandlerTest, ChecksForRemovedFiles) {
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
-  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), notifier(), web_ui());
 
   testing::Mock::VerifyAndClear(manager());
 
@@ -74,7 +76,7 @@ TEST_F(DownloadsDOMHandlerTest, ChecksForRemovedFiles) {
 }
 
 TEST_F(DownloadsDOMHandlerTest, HandleGetDownloads) {
-  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), notifier(), web_ui());
 
   handler.GetDownloads(std::vector<std::string>());
 
@@ -110,7 +112,7 @@ TEST_F(DownloadsDOMHandlerTest, ClearAll) {
 
   ASSERT_TRUE(DownloadItemModel(&completed).ShouldShowInShelf());
 
-  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), notifier(), web_ui());
   handler.RemoveDownloads(downloads);
 
   // Ensure |completed| has been "soft removed" (i.e. can be revived).

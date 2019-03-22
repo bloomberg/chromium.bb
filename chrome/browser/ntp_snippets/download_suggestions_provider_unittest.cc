@@ -257,7 +257,8 @@ class DummyHistoryAdapter : public DownloadHistory::HistoryAdapter {
 class DownloadSuggestionsProviderTest : public testing::Test {
  public:
   DownloadSuggestionsProviderTest()
-      : download_history_(&downloads_manager_for_history_,
+      : notifier_for_history_(&downloads_manager_for_history_),
+        download_history_(&notifier_for_history_,
                           std::make_unique<DummyHistoryAdapter>()),
         pref_service_(new TestingPrefServiceSimple()) {
     DownloadSuggestionsProvider::RegisterProfilePrefs(
@@ -374,6 +375,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
   // We do not use DownloadHistory functionality in the tests, so we provide an
   // empty manager to ensure no notifications, so that it does not intervene.
   ObservedMockDownloadManager downloads_manager_for_history_;
+  download::AllDownloadItemNotifier notifier_for_history_;
   DownloadHistory download_history_;
   ObservedMockDownloadManager downloads_manager_;
   FakeOfflinePageModel offline_pages_model_;

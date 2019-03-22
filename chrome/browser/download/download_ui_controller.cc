@@ -113,12 +113,13 @@ DownloadUIController::Delegate::~Delegate() {
 }
 
 DownloadUIController::DownloadUIController(
-    content::DownloadManager* manager,
+    download::AllDownloadItemNotifier* notifier,
     std::unique_ptr<Delegate> delegate,
     DownloadOfflineContentProvider* provider)
-    : download_notifier_(manager, this),
+    : notifier_(notifier),
       delegate_(std::move(delegate)),
       download_provider_(provider) {
+  notifier_->AddObserver(this);
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());
@@ -126,18 +127,20 @@ DownloadUIController::DownloadUIController(
   if (!delegate_) {
     // The Profile is guaranteed to be valid since DownloadUIController is owned
     // by DownloadService, which in turn is a profile keyed service.
-    delegate_.reset(new DownloadNotificationManager(
-        Profile::FromBrowserContext(manager->GetBrowserContext())));
+    delegate_.reset(new DownloadNotificationManager(Profile::FromBrowserContext(
+        notifier_->GetManager()->GetBrowserContext())));
   }
 #else  // defined(OS_CHROMEOS)
   if (!delegate_) {
-    delegate_.reset(new DownloadShelfUIControllerDelegate(
-        Profile::FromBrowserContext(manager->GetBrowserContext())));
+    delegate_.reset(
+        new DownloadShelfUIControllerDelegate(Profile::FromBrowserContext(
+            notifier_->GetManager()->GetBrowserContext())));
   }
 #endif  // defined(OS_ANDROID)
 }
 
 DownloadUIController::~DownloadUIController() {
+  notifier_->RemoveObserver(this);
 }
 
 void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
