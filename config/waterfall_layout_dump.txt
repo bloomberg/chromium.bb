@@ -2019,25 +2019,7 @@
   gonzo-pre-cq
   gonzo-release-tryjob
   gonzo-unittest-stress
-  gru-chrome-pfq-tryjob
-  gru-chromium-pfq-tryjob
-  gru-compile-only-pre-cq
   gru-factory-gru-9017.B-factorybranch-tryjob
-  gru-full-tryjob
-  gru-llvm-next-toolchain-tryjob
-  gru-llvm-toolchain-tryjob
-  gru-no-vmtest-pre-cq
-  gru-paladin-tryjob
-  gru-payloads-tryjob
-  gru-postsubmit-tryjob
-  gru-pre-cq
-  gru-release-afdo-generate-tryjob
-  gru-release-afdo-tryjob
-  gru-release-afdo-use-tryjob
-  gru-release-tryjob
-  gru-tot-chrome-pfq-informational-tryjob
-  gru-tot-chromium-pfq-informational-tryjob
-  gru-unittest-stress
   grunt-android-pi-pre-flight-branch-tryjob
   grunt-chrome-pfq-tryjob
   grunt-chromium-pfq-tryjob
