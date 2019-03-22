@@ -99,6 +99,7 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
+  url_loader_->SetAllowHttpErrorResults(true);
 
   if (!message.empty())
     url_loader_->AttachStringForUpload(message, kRequestContentType);
@@ -134,6 +135,10 @@ PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(
       case net::HTTP_NOT_IMPLEMENTED:
         return PrefetchRequestStatus::kShouldSuspendNotImplemented;
       case net::HTTP_FORBIDDEN:
+        // Check whether the request was forbidden because of a filter rule.
+        if (response_body && response_body->find("request forbidden by OPS") !=
+                                 std::string::npos)
+          return PrefetchRequestStatus::kShouldSuspendForbiddenByOPS;
         return PrefetchRequestStatus::kShouldSuspendForbidden;
       default:
         return PrefetchRequestStatus::kShouldRetryWithBackoff;

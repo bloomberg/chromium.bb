@@ -20,6 +20,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -47,6 +48,7 @@ public class PrefetchConfigurationTest {
     public void testWithPrefetchingFeatureEnabled() {
         AtomicBoolean isFlagEnabled = new AtomicBoolean();
         AtomicBoolean isEnabled = new AtomicBoolean();
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
             isEnabled.set(PrefetchConfiguration.isPrefetchingEnabled());
@@ -80,6 +82,7 @@ public class PrefetchConfigurationTest {
     public void testWithPrefetchingFeatureDisabled() {
         AtomicBoolean isFlagEnabled = new AtomicBoolean();
         AtomicBoolean isEnabled = new AtomicBoolean();
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             isFlagEnabled.set(PrefetchConfiguration.isPrefetchingFlagEnabled());
             isEnabled.set(PrefetchConfiguration.isPrefetchingEnabled());

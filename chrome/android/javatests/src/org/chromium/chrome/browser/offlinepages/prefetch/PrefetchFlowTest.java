@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -133,6 +134,7 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
             PrefetchTestBridge.enableLimitlessPrefetching(true);
             PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
     }
 
     @After
