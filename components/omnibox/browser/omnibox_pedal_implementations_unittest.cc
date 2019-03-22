@@ -41,7 +41,7 @@ TEST_F(OmniboxPedalImplementationsTest, ProviderFiltersPedalUpdateChrome) {
   client.set_browser_update_available(true);
   pedal = provider.FindPedalMatch(trigger);
   EXPECT_NE(pedal, nullptr) << "Pedal not discovered though condition is met.";
-  EXPECT_TRUE(pedal->IsTriggerMatch(trigger));
+  EXPECT_TRUE(pedal->IsTriggerMatch(provider.Tokenize(trigger)));
 }
 
 TEST_F(OmniboxPedalImplementationsTest, PedalClearBrowsingDataExecutes) {
@@ -55,16 +55,12 @@ TEST_F(OmniboxPedalImplementationsTest, PedalClearBrowsingDataExecutes) {
   EXPECT_EQ(url, GURL("chrome://settings/clearBrowserData"));
 }
 
-// TODO(orinj): Reinstate this unit test as soon as the re2 code is replaced.
-// It is temporarily disabled because it runs too slowly with the regex-based
-// implementation of EraseWords, but that code is soon to be eliminated on
-// another CL (crrev.com/c/1531724).
 // Exhaustive test of unordered synonym groups for concept matches; this is
 // useful in detecting possible clashes between cross-group synonym strings.
 // By ensuring that each set matches for exactly one Pedal, we can also
 // prevent clashes between concepts for different Pedals.
 TEST_F(OmniboxPedalImplementationsTest,
-       DISABLED_UnorderedSynonymExpressionsAreConceptMatches) {
+       UnorderedSynonymExpressionsAreConceptMatches) {
   const std::vector<std::vector<const char*>> literal_concept_expressions = {
       // Note: The lists below are auto-generated from raw synonym group data.
 
@@ -1834,7 +1830,8 @@ TEST_F(OmniboxPedalImplementationsTest,
     const base::string16 first_trigger = base::ASCIIToUTF16(pedal_concept[0]);
     auto iter =
         std::find_if(pedals.begin(), pedals.end(), [&](const auto& pedal) {
-          return pedal.second->IsConceptMatch(first_trigger);
+          const auto sequence = provider.Tokenize(first_trigger);
+          return pedal.second->IsConceptMatch(sequence);
         });
     EXPECT_NE(iter, pedals.end())
         << "Canonical pedal not found for: " << first_trigger;
@@ -1845,7 +1842,8 @@ TEST_F(OmniboxPedalImplementationsTest,
     for (const char* literal : pedal_concept) {
       const base::string16 expression = base::ASCIIToUTF16(literal);
       const auto is_match = [&](const auto& pedal) {
-        return pedal.second->IsConceptMatch(expression);
+        const auto sequence = provider.Tokenize(expression);
+        return pedal.second->IsConceptMatch(sequence);
       };
       iter = std::find_if(pedals.begin(), pedals.end(), is_match);
       EXPECT_NE(iter, pedals.end()) << "Pedal not found for: " << expression;

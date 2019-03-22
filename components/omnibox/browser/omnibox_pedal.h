@@ -34,6 +34,8 @@ class OmniboxClient;
 // checking trigger queries against suggested match queries.
 class OmniboxPedal {
  public:
+  typedef std::vector<int> Tokens;
+
   struct LabelStrings {
     LabelStrings(int id_hint, int id_hint_short, int id_suggestion_contents);
     const base::string16 hint;
@@ -43,23 +45,27 @@ class OmniboxPedal {
 
   class SynonymGroup {
    public:
-    // Note: synonyms must be specified in decreasing order by string length
+    // Note: synonyms must be specified in decreasing order by length
     // so that longest matches will be detected first.  For example,
     // "incognito window" must come before "incognito" so that the " window"
     // part will also be covered by this group -- otherwise it would be left
     // intact and wrongly treated as uncovered by the checking algorithm.
     // See OmniboxPedal::IsConceptMatch for the logic that necessitates order.
-    SynonymGroup(bool required, bool match_once);
-    SynonymGroup(const SynonymGroup& other);
+    SynonymGroup(bool required, bool match_once, size_t reserve_size);
+    SynonymGroup(SynonymGroup&&);
     ~SynonymGroup();
+    SynonymGroup& operator=(SynonymGroup&&);
 
-    // Removes one or more matching synonyms from given |remaining| string if
+    // Removes one or more matching synonyms from given |remaining| sequence if
     // any are found.  Returns true if checking may continue; false if no more
     // checking is required because what remains cannot be a concept match.
-    bool EraseMatchesIn(base::string16& remaining) const;
+    bool EraseMatchesIn(Tokens* remaining) const;
 
-    // TODO(orinj): Eliminate this.
-    void AddSynonym(const base::string16& synonym);
+    // Add a synonym token sequence to this group.
+    void AddSynonym(Tokens&& synonym);
+
+    // Increase acceptable input size range according to this group's content.
+    void UpdateTokenSequenceSizeRange(size_t* out_min, size_t* out_max) const;
 
    protected:
     // If this is true, a synonym of the group must be present for triggering.
@@ -78,7 +84,9 @@ class OmniboxPedal {
     // 'delete', etc.  Even though these are not strictly synonymous in natural
     // language, they are considered equivalent within the context of intention
     // to perform this Pedal's action.
-    std::vector<base::string16> synonyms_;
+    std::vector<Tokens> synonyms_;
+
+    DISALLOW_COPY_AND_ASSIGN(SynonymGroup);
   };
 
   // ExecutionContext provides the necessary structure for Pedal
@@ -103,9 +111,7 @@ class OmniboxPedal {
     base::TimeTicks match_selection_timestamp_;
   };
 
-  OmniboxPedal(LabelStrings strings,
-               GURL url,
-               std::initializer_list<const char*> triggers);
+  OmniboxPedal(LabelStrings strings, GURL url);
   virtual ~OmniboxPedal();
 
   // Provides read access to labels associated with this Pedal.
@@ -131,12 +137,13 @@ class OmniboxPedal {
   virtual const gfx::VectorIcon& GetVectorIcon() const;
 #endif
 
-  // Returns true if the preprocessed match suggestion text triggers
+  // Returns true if the preprocessed match suggestion sequence triggers
   // presentation of this Pedal.  This is not intended for general use,
   // and only OmniboxPedalProvider should need to call this method.
-  bool IsTriggerMatch(const base::string16& match_text) const;
+  bool IsTriggerMatch(const Tokens& match_sequence) const;
 
-  void AddSynonymGroup(const SynonymGroup& group);
+  // Move a synonym group into this Pedal's collection.
+  void AddSynonymGroup(SynonymGroup&& group);
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
@@ -144,17 +151,17 @@ class OmniboxPedal {
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalImplementationsTest,
                            UnorderedSynonymExpressionsAreConceptMatches);
 
-  // If a sufficient set of triggering synonym groups are present in match_text
-  // then it's a concept match and this returns true.  If a required group is
-  // not present, or if match_text contains extraneous text not covered by any
-  // synonym group, then it's not a concept match and this returns false.
-  bool IsConceptMatch(const base::string16& match_text) const;
+  // If a sufficient set of triggering synonym groups are present in
+  // match_sequence then it's a concept match and this returns true.  If a
+  // required group is not present, or if match_sequence contains extraneous
+  // tokens not covered by any synonym group, then it's not a concept match and
+  // this returns false.
+  bool IsConceptMatch(const Tokens& match_sequence) const;
 
   // Use this for the common case of navigating to a URL.
   void OpenURL(ExecutionContext& context, const GURL& url) const;
 
   std::vector<SynonymGroup> synonym_groups_;
-  std::unordered_set<base::string16> triggers_;
   LabelStrings strings_;
 
   // For navigation Pedals, this holds the destination URL; for action Pedals,
