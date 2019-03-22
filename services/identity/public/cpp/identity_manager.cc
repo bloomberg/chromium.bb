@@ -320,6 +320,10 @@ void IdentityManager::LegacySetPrimaryAccount(
     const std::string& gaia_id,
     const std::string& email_address) {
   signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
+
+  // TODO(https://crbug.com/944012): Unify the firing of this observer
+  // notification between ChromeOS and other platforms.
+  FireOnPrimaryAccountSetNotification(GetPrimaryAccountInfo());
 }
 #endif
 
@@ -430,10 +434,15 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
   return account_info;
 }
 
-void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
+void IdentityManager::FireOnPrimaryAccountSetNotification(
+    const AccountInfo& primary_account_info) {
   for (auto& observer : observer_list_) {
-    observer.OnPrimaryAccountSet(account_info);
+    observer.OnPrimaryAccountSet(primary_account_info);
   }
+}
+
+void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
+  FireOnPrimaryAccountSetNotification(account_info);
 }
 
 void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
