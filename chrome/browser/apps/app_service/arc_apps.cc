@@ -195,7 +195,8 @@ void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
+void ArcApps::LoadIcon(const std::string& app_id,
+                       apps::mojom::IconKeyPtr icon_key,
                        apps::mojom::IconCompression icon_compression,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
@@ -207,7 +208,7 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
     // the Play Store icon (the UI for enabling and installing Android apps)
     // should be showable even before the user has installed their first
     // Android app and before bringing up an Android VM for the first time.
-    if (icon_key->app_id == arc::kPlayStoreAppId) {
+    if (app_id == arc::kPlayStoreAppId) {
       LoadPlayStoreIcon(icon_compression, size_hint_in_dip,
                         static_cast<IconEffects>(icon_key->icon_effects),
                         std::move(callback));
@@ -218,10 +219,10 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
     // LoadIconFromVM.
     LoadIconFromFileWithFallback(
         icon_compression, size_hint_in_dip,
-        GetCachedIconFilePath(icon_key->app_id, size_hint_in_dip),
+        GetCachedIconFilePath(app_id, size_hint_in_dip),
         static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
         base::BindOnce(&ArcApps::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
-                       icon_key->app_id, icon_compression, size_hint_in_dip,
+                       app_id, icon_compression, size_hint_in_dip,
                        allow_placeholder_icon,
                        static_cast<IconEffects>(icon_key->icon_effects)));
     return;
@@ -359,8 +360,7 @@ void ArcApps::OnAppIconUpdated(const std::string& app_id,
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(apps::mojom::AppType::kArc,
-                                                app_id, icon_effects);
+  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
   Publish(std::move(app));
 }
 
@@ -476,8 +476,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->short_name = app->name;
 
   static constexpr uint32_t icon_effects = 0;
-  app->icon_key = icon_key_factory_.MakeIconKey(apps::mojom::AppType::kArc,
-                                                app_id, icon_effects);
+  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
 
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;

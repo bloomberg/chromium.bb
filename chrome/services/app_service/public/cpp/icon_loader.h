@@ -51,6 +51,8 @@ class IconLoader {
   // This can return nullptr, meaning that the IconLoader does not track when
   // the icon is no longer actively used by the caller.
   virtual std::unique_ptr<Releaser> LoadIconFromIconKey(
+      apps::mojom::AppType app_type,
+      const std::string& app_id,
       apps::mojom::IconKeyPtr icon_key,
       apps::mojom::IconCompression icon_compression,
       int32_t size_hint_in_dip,
@@ -59,6 +61,7 @@ class IconLoader {
 
   // Convenience method that calls LoadIconFromIconKey(GetIconKey(app_id), etc).
   std::unique_ptr<Releaser> LoadIcon(
+      apps::mojom::AppType app_type,
       const std::string& app_id,
       apps::mojom::IconCompression icon_compression,
       int32_t size_hint_in_dip,
@@ -75,9 +78,9 @@ class IconLoader {
   // callers, are expected to refer to a Key.
   class Key {
    public:
-    // apps::mojom::IconKey fields.
     apps::mojom::AppType app_type_;
     std::string app_id_;
+    // apps::mojom::IconKey fields.
     uint64_t timeline_;
     int32_t resource_id_;
     uint32_t icon_effects_;
@@ -86,7 +89,9 @@ class IconLoader {
     int32_t size_hint_in_dip_;
     bool allow_placeholder_icon_;
 
-    Key(const apps::mojom::IconKey& icon_key,
+    Key(apps::mojom::AppType app_type,
+        const std::string& app_id,
+        const apps::mojom::IconKey& icon_key,
         apps::mojom::IconCompression icon_compression,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon);

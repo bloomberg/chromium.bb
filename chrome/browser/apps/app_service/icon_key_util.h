@@ -29,9 +29,7 @@ class IncrementingIconKeyFactory {
  public:
   IncrementingIconKeyFactory();
 
-  apps::mojom::IconKeyPtr MakeIconKey(apps::mojom::AppType app_type,
-                                      const std::string& app_id,
-                                      uint32_t icon_effects);
+  apps::mojom::IconKeyPtr MakeIconKey(uint32_t icon_effects);
 
  private:
   uint64_t last_timeline_;

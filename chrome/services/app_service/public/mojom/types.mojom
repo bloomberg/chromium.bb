@@ -90,8 +90,6 @@ struct IconKey {
 
   const int32 kInvalidResourceId = 0;
 
-  AppType app_type;
-  string app_id;
   // A monotonically increasing number so that, after an icon update, a new
   // IconKey, one that is different in terms of field-by-field equality, can be
   // broadcast by a Publisher.

@@ -30,11 +30,12 @@ class AppsIconCacheTest : public testing::Test {
 
    private:
     apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override {
-      return apps::mojom::IconKey::New(apps::mojom::AppType::kWeb, app_id, 0, 0,
-                                       0);
+      return apps::mojom::IconKey::New(0, 0, 0);
     }
 
     std::unique_ptr<Releaser> LoadIconFromIconKey(
+        apps::mojom::AppType app_type,
+        const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
         apps::mojom::IconCompression icon_compression,
         int32_t size_hint_in_dip,
@@ -63,6 +64,7 @@ class AppsIconCacheTest : public testing::Test {
                           const std::string& app_id,
                           HitOrMiss expect_hom,
                           bool allow_placeholder_icon = false) {
+    static constexpr auto app_type = apps::mojom::AppType::kWeb;
     static constexpr auto icon_compression =
         apps::mojom::IconCompression::kUncompressed;
     static constexpr int32_t size_hint_in_dip = 1;
@@ -70,7 +72,7 @@ class AppsIconCacheTest : public testing::Test {
     int before = fake->NumLoadIconFromIconKeyCalls();
 
     UniqueReleaser releaser =
-        loader->LoadIcon(app_id, icon_compression, size_hint_in_dip,
+        loader->LoadIcon(app_type, app_id, icon_compression, size_hint_in_dip,
                          allow_placeholder_icon, base::DoNothing());
 
     int after = fake->NumLoadIconFromIconKeyCalls();

@@ -39,7 +39,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   }
 
   app->icon_key = apps::mojom::IconKey::New(
-      apps::mojom::AppType::kBuiltIn, internal_app.app_id, 0,
+      apps::mojom::IconKey::kDoesNotChangeOverTime,
       internal_app.icon_resource_id, apps::IconEffects::kNone);
 
   app->last_launch_time = base::Time();
@@ -111,6 +111,7 @@ void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
 }
 
 void BuiltInChromeOsApps::LoadIcon(
+    const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,

@@ -18,12 +18,14 @@ IconLoader::Releaser::~Releaser() {
   std::move(closure_).Run();
 }
 
-IconLoader::Key::Key(const apps::mojom::IconKey& icon_key,
+IconLoader::Key::Key(apps::mojom::AppType app_type,
+                     const std::string& app_id,
+                     const apps::mojom::IconKey& icon_key,
                      apps::mojom::IconCompression icon_compression,
                      int32_t size_hint_in_dip,
                      bool allow_placeholder_icon)
-    : app_type_(icon_key.app_type),
-      app_id_(icon_key.app_id),
+    : app_type_(app_type),
+      app_id_(app_id),
       timeline_(icon_key.timeline),
       resource_id_(icon_key.resource_id),
       icon_effects_(icon_key.icon_effects),
@@ -59,14 +61,15 @@ bool IconLoader::Key::operator<(const Key& that) const {
 }
 
 std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(
+    apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
-  return LoadIconFromIconKey(GetIconKey(app_id), icon_compression,
-                             size_hint_in_dip, allow_placeholder_icon,
-                             std::move(callback));
+  return LoadIconFromIconKey(app_type, app_id, GetIconKey(app_id),
+                             icon_compression, size_hint_in_dip,
+                             allow_placeholder_icon, std::move(callback));
 }
 
 }  // namespace apps

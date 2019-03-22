@@ -125,15 +125,16 @@ void ExtensionApps::Connect(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void ExtensionApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
+void ExtensionApps::LoadIcon(const std::string& app_id,
+                             apps::mojom::IconKeyPtr icon_key,
                              apps::mojom::IconCompression icon_compression,
                              int32_t size_hint_in_dip,
                              bool allow_placeholder_icon,
                              LoadIconCallback callback) {
   if (icon_key) {
-    LoadIconFromExtension(
-        icon_compression, size_hint_in_dip, profile_, icon_key->app_id,
-        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
+    LoadIconFromExtension(icon_compression, size_hint_in_dip, profile_, app_id,
+                          static_cast<IconEffects>(icon_key->icon_effects),
+                          std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.
@@ -440,8 +441,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
   }
-  app->icon_key =
-      icon_key_factory_.MakeIconKey(app_type_, extension->id(), icon_effects);
+  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);

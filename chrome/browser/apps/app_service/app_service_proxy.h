@@ -48,6 +48,8 @@ class AppServiceProxy : public KeyedService,
   // apps::IconLoader overrides.
   apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
   std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
+      apps::mojom::AppType app_type,
+      const std::string& app_id,
       apps::mojom::IconKeyPtr icon_key,
       apps::mojom::IconCompression icon_compression,
       int32_t size_hint_in_dip,
@@ -114,6 +116,8 @@ class AppServiceProxy : public KeyedService,
     // apps::IconLoader overrides.
     apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
     std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
+        apps::mojom::AppType app_type,
+        const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
         apps::mojom::IconCompression icon_compression,
         int32_t size_hint_in_dip,

@@ -258,19 +258,21 @@ up-front. Instead of sending an icon at all possible resolutions, the
 `Publisher` sends an `IconKey`: enough information to load the icon at given
 resolutions.
 
-An `IconKey` holds an `AppType app_type` and `string app_id`, plus additional
-data. For example, some icons are statically built into the Chrome or Chrome OS
-binary, as PNG-formatted resources, and can be loaded (synchronously, without
-sandboxing). They can be loaded from the `IconKey.resource_id`. Other icons are
-dynamically (and asynchronously) loaded from the extension database on disk.
-They can be loaded just from the `app_id` alone.
+An `IconKey` augments the `AppType app_type` and `string app_id`. For example,
+some icons are statically built into the Chrome or Chrome OS binary, as
+PNG-formatted resources, and can be loaded (synchronously, without sandboxing).
+They can be loaded from the `IconKey.resource_id`. Other icons are dynamically
+(and asynchronously) loaded from the extension database on disk. The base icon
+can be loaded just from the `app_id` alone.
 
 In either case, the `IconKey.icon_effects` bitmask holds whether to apply
-various image processing effects such as desaturation to gray.
+further image processing effects such as desaturation to gray.
 
     interface AppService {
       // App Icon Factory methods.
       LoadIcon(
+          AppType app_type,
+          string app_id,
           IconKey icon_key,
           IconCompression icon_compression,
           int32 size_hint_in_dip,
@@ -282,6 +284,7 @@ various image processing effects such as desaturation to gray.
     interface Publisher {
       // App Icon Factory methods.
       LoadIcon(
+          string app_id,
           IconKey icon_key,
           IconCompression icon_compression,
           int32 size_hint_in_dip,
@@ -291,8 +294,6 @@ various image processing effects such as desaturation to gray.
     };
 
     struct IconKey {
-      AppType app_type,
-      string app_id,
       // A monotonically increasing number so that, after an icon update, a new
       // IconKey, one that is different in terms of field-by-field equality, can be
       // broadcast by a Publisher.

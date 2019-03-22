@@ -46,12 +46,13 @@ class FakePublisher : public apps::mojom::Publisher {
     subscribers_.AddPtr(std::move(subscriber));
   }
 
-  void LoadIcon(apps::mojom::IconKeyPtr icon_key,
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override {
-    load_icon_app_id = icon_key->app_id;
+    load_icon_app_id = app_id;
     std::move(callback).Run(apps::mojom::IconValue::New());
   }
 
@@ -196,11 +197,12 @@ TEST_F(AppServiceImplTest, PubSub) {
     pub0.load_icon_app_id = "-";
     pub1.load_icon_app_id = "-";
     pub2.load_icon_app_id = "-";
-    auto icon_key = apps::mojom::IconKey::New(app_type, "o", 0, 0, 0);
+    auto icon_key = apps::mojom::IconKey::New(0, 0, 0);
     constexpr bool allow_placeholder_icon = false;
     impl.LoadIcon(
-        std::move(icon_key), apps::mojom::IconCompression::kUncompressed,
-        size_hint_in_dip, allow_placeholder_icon,
+        app_type, "o", std::move(icon_key),
+        apps::mojom::IconCompression::kUncompressed, size_hint_in_dip,
+        allow_placeholder_icon,
         base::BindOnce(
             [](bool* ran, apps::mojom::IconValuePtr iv) { *ran = true; },
             &callback_ran));
