@@ -82,17 +82,17 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
 
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(60), LayoutUnit()),
             results[0]->InlineOffsetToContainerBox());
-  EXPECT_EQ("789", ToNGPhysicalTextFragment(
+  EXPECT_EQ("789", To<NGPhysicalTextFragment>(
                        results[0]->FirstChild()->PhysicalFragment())
                        .Text());
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit(10)),
             results[1]->InlineOffsetToContainerBox());
-  EXPECT_EQ("123456789", ToNGPhysicalTextFragment(
+  EXPECT_EQ("123456789", To<NGPhysicalTextFragment>(
                              results[1]->FirstChild()->PhysicalFragment())
                              .Text());
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit(20)),
             results[2]->InlineOffsetToContainerBox());
-  EXPECT_EQ("123", ToNGPhysicalTextFragment(
+  EXPECT_EQ("123", To<NGPhysicalTextFragment>(
                        results[2]->FirstChild()->PhysicalFragment())
                        .Text());
 }
@@ -213,7 +213,7 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   const NGPaintFragment& outer_text = *line1.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             outer_text.PhysicalFragment().Type());
-  EXPECT_EQ("12345 ", ToNGPhysicalTextFragment(outer_text.PhysicalFragment())
+  EXPECT_EQ("12345 ", To<NGPhysicalTextFragment>(outer_text.PhysicalFragment())
                           .Text()
                           .ToString());
   // TODO(kojii): This is still incorrect.

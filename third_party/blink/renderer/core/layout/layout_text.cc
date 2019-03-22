@@ -284,8 +284,8 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     for (const NGPaintFragment* fragment : fragments) {
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+      const auto& text_fragment =
+          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces
@@ -608,8 +608,8 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
     if (UNLIKELY(HasFlippedBlocksWritingMode()))
       block_for_flipping = ContainingBlock();
     for (const NGPaintFragment* fragment : fragments) {
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+      const auto& text_fragment =
+          To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
       if (start > text_fragment.EndOffset() ||
           end < text_fragment.StartOffset())
         continue;
@@ -1577,7 +1577,7 @@ UChar32 LayoutText::FirstCharacterAfterWhitespaceCollapsing() const {
   }
   if (const NGPaintFragment* paint_fragment = FirstInlineFragment()) {
     const StringView text =
-        ToNGPhysicalTextFragment(paint_fragment->PhysicalFragment()).Text();
+        To<NGPhysicalTextFragment>(paint_fragment->PhysicalFragment()).Text();
     return text.length() ? text.CodepointAt(0) : 0;
   }
   return 0;
@@ -1590,7 +1590,7 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
   }
   if (const NGPaintFragment* paint_fragment = FirstInlineFragment()) {
     const StringView text =
-        ToNGPhysicalTextFragment(
+        To<NGPhysicalTextFragment>(
             paint_fragment->LastForSameLayoutObject()->PhysicalFragment())
             .Text();
     return text.length() ? text.CodepointAt(text.length() - 1) : 0;

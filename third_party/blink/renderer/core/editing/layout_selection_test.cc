@@ -43,7 +43,7 @@ class LayoutSelectionTestBase : public EditingTestBase {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_text);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       const unsigned text_start =
-          ToNGPhysicalTextFragment(fragments.begin()->PhysicalFragment())
+          To<NGPhysicalTextFragment>(fragments.begin()->PhysicalFragment())
               .StartOffset();
       for (const NGPaintFragment* fragment : fragments) {
         const LayoutSelectionStatus status =

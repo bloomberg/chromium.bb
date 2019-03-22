@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -140,11 +141,12 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   friend class NGInlineNodeLegacy;
 };
 
-DEFINE_TYPE_CASTS(NGInlineNode,
-                  NGLayoutInputNode,
-                  node,
-                  node->IsInline(),
-                  node.IsInline());
+template <>
+struct DowncastTraits<NGInlineNode> {
+  static bool AllowFrom(const NGLayoutInputNode& node) {
+    return node.IsInline();
+  }
+};
 
 }  // namespace blink
 

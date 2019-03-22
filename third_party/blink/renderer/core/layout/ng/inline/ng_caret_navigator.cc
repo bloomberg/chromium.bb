@@ -109,11 +109,8 @@ NGCaretNavigator::Line NGCaretNavigator::ContainingLineOf(
   for (const auto child : context_.CurrentFragment()->Children()) {
     if (!child->IsLineBox())
       continue;
-    const NGPhysicalLineBoxFragment* line =
-        ToNGPhysicalLineBoxFragment(child.get());
-    DCHECK(line->BreakToken());
-    DCHECK(line->BreakToken()->IsInlineType());
-    const NGInlineBreakToken* token = ToNGInlineBreakToken(line->BreakToken());
+    const auto* line = To<NGPhysicalLineBoxFragment>(child.get());
+    const auto* token = To<NGInlineBreakToken>(line->BreakToken());
     const unsigned line_end =
         token->IsFinished() ? GetText().length() : token->TextOffset();
     if (line_end > index)

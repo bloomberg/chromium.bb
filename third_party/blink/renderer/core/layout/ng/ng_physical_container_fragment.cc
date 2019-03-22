@@ -126,8 +126,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     return;
   }
 
-  if (const NGPhysicalLineBoxFragment* descendant_line_box =
-          ToNGPhysicalLineBoxFragmentOrNull(descendant.get())) {
+  if (const auto* descendant_line_box =
+          DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
     descendant_line_box->AddOutlineRectsForNormalChildren(
         outline_rects, additional_offset + descendant.Offset().ToLayoutPoint(),
         outline_type);

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -19,11 +20,12 @@ class CORE_EXPORT NGLineBoxFragment final : public NGFragment {
       : NGFragment(writing_mode, physical_fragment) {}
 };
 
-DEFINE_TYPE_CASTS(NGLineBoxFragment,
-                  NGFragment,
-                  fragment,
-                  fragment->Type() == NGPhysicalFragment::kFragmentLineBox,
-                  fragment.Type() == NGPhysicalFragment::kFragmentLineBox);
+template <>
+struct DowncastTraits<NGLineBoxFragment> {
+  static bool AllowFrom(const NGFragment& fragment) {
+    return fragment.Type() == NGPhysicalFragment::kFragmentLineBox;
+  }
+};
 
 }  // namespace blink
 

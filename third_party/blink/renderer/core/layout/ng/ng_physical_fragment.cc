@@ -165,7 +165,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
     return;
   }
 
-  if (fragment->IsLineBox()) {
+  if (const auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(fragment)) {
     if (flags & NGPhysicalFragment::DumpType) {
       builder->Append("LineBox");
       has_content = true;
@@ -175,7 +175,6 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
     builder->Append("\n");
 
     if (flags & NGPhysicalFragment::DumpSubtree) {
-      const auto* line_box = ToNGPhysicalLineBoxFragment(fragment);
       for (auto& child : line_box->Children()) {
         AppendFragmentToString(child.get(), child.Offset(), builder, flags,
                                indent + 2);
@@ -184,7 +183,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
     }
   }
 
-  if (fragment->IsText()) {
+  if (const auto* text = DynamicTo<NGPhysicalTextFragment>(fragment)) {
     if (flags & NGPhysicalFragment::DumpType) {
       builder->Append("Text");
       has_content = true;
@@ -193,7 +192,6 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
                                               builder, flags, has_content);
 
     if (flags & NGPhysicalFragment::DumpTextOffsets) {
-      const auto* text = ToNGPhysicalTextFragment(fragment);
       if (has_content)
         builder->Append(" ");
       builder->Append("start: ");
@@ -278,8 +276,8 @@ void NGPhysicalFragment::Destroy() const {
 }
 
 const ComputedStyle& NGPhysicalFragment::Style() const {
-  if (Type() == kFragmentLineBox)
-    return ToNGPhysicalLineBoxFragment(this)->Style();
+  if (auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(this))
+    return line_box->Style();
   switch (StyleVariant()) {
     case NGStyleVariant::kStandard:
       DCHECK(GetLayoutObject());
@@ -288,7 +286,7 @@ const ComputedStyle& NGPhysicalFragment::Style() const {
       DCHECK(GetLayoutObject());
       return *GetLayoutObject()->FirstLineStyle();
     case NGStyleVariant::kEllipsis:
-      return ToNGPhysicalTextFragment(this)->Style();
+      return To<NGPhysicalTextFragment>(this)->Style();
   }
   NOTREACHED();
   return *GetLayoutObject()->Style();
@@ -404,11 +402,9 @@ const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
   NGBlockNode block_node = NGBlockNode(block_flow);
   DCHECK(block_node.CanUseNewLayout());
   NGLayoutInputNode node = block_node.FirstChild();
-  DCHECK(node);
-  DCHECK(node.IsInline());
 
   // TODO(xiaochengh): Handle ::first-line.
-  return ToNGInlineNode(node).ItemsData(false).items;
+  return To<NGInlineNode>(node).ItemsData(false).items;
 }
 
 TouchAction NGPhysicalFragment::EffectiveWhitelistedTouchAction() const {
@@ -419,7 +415,7 @@ TouchAction NGPhysicalFragment::EffectiveWhitelistedTouchAction() const {
 UBiDiLevel NGPhysicalFragment::BidiLevel() const {
   switch (Type()) {
     case kFragmentText:
-      return ToNGPhysicalTextFragment(*this).BidiLevel();
+      return To<NGPhysicalTextFragment>(*this).BidiLevel();
     case kFragmentBox:
     case kFragmentRenderedLegend:
       return ToNGPhysicalBoxFragment(*this).BidiLevel();
@@ -433,7 +429,7 @@ UBiDiLevel NGPhysicalFragment::BidiLevel() const {
 TextDirection NGPhysicalFragment::ResolvedDirection() const {
   switch (Type()) {
     case kFragmentText:
-      return ToNGPhysicalTextFragment(*this).ResolvedDirection();
+      return To<NGPhysicalTextFragment>(*this).ResolvedDirection();
     case kFragmentBox:
     case kFragmentRenderedLegend:
       DCHECK(IsInline() && IsAtomicInline());
@@ -457,7 +453,7 @@ String NGPhysicalFragment::ToString() const {
                                    StringForBoxType(*this).Ascii().data()));
       break;
     case kFragmentText: {
-      const NGPhysicalTextFragment& text = ToNGPhysicalTextFragment(*this);
+      const auto& text = To<NGPhysicalTextFragment>(*this);
       output.Append(String::Format(", TextType: %u, Text: (%u,%u) \"",
                                    text.TextType(), text.StartOffset(),
                                    text.EndOffset()));

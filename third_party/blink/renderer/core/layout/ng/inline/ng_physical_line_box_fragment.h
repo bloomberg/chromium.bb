@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -82,11 +83,12 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   NGLinkStorage children_[];
 };
 
-DEFINE_TYPE_CASTS(NGPhysicalLineBoxFragment,
-                  NGPhysicalFragment,
-                  fragment,
-                  fragment->Type() == NGPhysicalFragment::kFragmentLineBox,
-                  fragment.Type() == NGPhysicalFragment::kFragmentLineBox);
+template <>
+struct DowncastTraits<NGPhysicalLineBoxFragment> {
+  static bool AllowFrom(const NGPhysicalFragment& fragment) {
+    return fragment.Type() == NGPhysicalFragment::kFragmentLineBox;
+  }
+};
 
 }  // namespace blink
 

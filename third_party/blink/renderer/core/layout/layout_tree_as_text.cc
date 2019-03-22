@@ -451,12 +451,12 @@ static void WriteTextRun(WTF::TextStream& ts,
 static void WriteTextFragment(WTF::TextStream& ts,
                               const NGPhysicalFragment& physical_fragment,
                               NGPhysicalOffset offset_to_container_box) {
-  if (!physical_fragment.IsText())
+  const auto* physical_text_fragment =
+      DynamicTo<NGPhysicalTextFragment>(physical_fragment);
+  if (!physical_text_fragment)
     return;
-  const NGPhysicalTextFragment& physical_text_fragment =
-      ToNGPhysicalTextFragment(physical_fragment);
   const ComputedStyle& style = physical_fragment.Style();
-  NGTextFragment fragment(style.GetWritingMode(), physical_text_fragment);
+  NGTextFragment fragment(style.GetWritingMode(), *physical_text_fragment);
   if (UNLIKELY(style.IsFlippedBlocksWritingMode())) {
     if (physical_fragment.GetLayoutObject()) {
       LayoutRect rect(offset_to_container_box.ToLayoutPoint(),
@@ -475,7 +475,7 @@ static void WriteTextFragment(WTF::TextStream& ts,
       (offset_to_container_box.left + fragment.InlineSize()).Ceil() - x;
   ts << "text run at (" << x << "," << y << ") width " << logical_width;
   ts << ": "
-     << QuoteAndEscapeNonPrintables(physical_text_fragment.Text().ToString());
+     << QuoteAndEscapeNonPrintables(physical_text_fragment->Text().ToString());
   ts << "\n";
 }
 

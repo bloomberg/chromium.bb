@@ -146,7 +146,7 @@ NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
     // something with split inlines, and nested oof/fixed descendants maybe.
     if (children_[i]->IsLineBox()) {
       const auto& line_box_fragment =
-          ToNGPhysicalLineBoxFragment(*children_[i]);
+          To<NGPhysicalLineBoxFragment>(*children_[i]);
       for (const auto& line_box_child : line_box_fragment.Children()) {
         if (line_box_child->GetLayoutObject() == child) {
           return offsets_[i] + line_box_child.Offset().ConvertToLogical(

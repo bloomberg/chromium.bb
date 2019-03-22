@@ -123,9 +123,7 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
 }
 
 bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
-  DCHECK(BreakToken());
-  DCHECK(BreakToken()->IsInlineType());
-  const NGInlineBreakToken& break_token = ToNGInlineBreakToken(*BreakToken());
+  const auto& break_token = To<NGInlineBreakToken>(*BreakToken());
   return !break_token.IsFinished() && !break_token.IsForcedBreak();
 }
 

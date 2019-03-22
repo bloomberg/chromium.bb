@@ -65,7 +65,7 @@ const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(
         break;
       case kInlineBreakToken:
         if (child->InputNode().GetLayoutBox() == &layout_object)
-          return ToNGInlineBreakToken(child);
+          return To<NGInlineBreakToken>(child);
         break;
     }
   }

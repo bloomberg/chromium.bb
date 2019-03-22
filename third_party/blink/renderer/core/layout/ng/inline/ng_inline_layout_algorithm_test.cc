@@ -53,19 +53,22 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGInlineChildLayoutContext context;
   scoped_refptr<const NGLayoutResult> layout_result =
       inline_node.Layout(constraint_space, nullptr, &context);
-  auto* line1 = ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment());
+  auto* line1 =
+      To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment());
   EXPECT_FALSE(line1->BreakToken()->IsFinished());
 
   // Perform 2nd layout with the break token from the 1st line.
   scoped_refptr<const NGLayoutResult> layout_result2 =
       inline_node.Layout(constraint_space, line1->BreakToken(), &context);
-  auto* line2 = ToNGPhysicalLineBoxFragment(layout_result2->PhysicalFragment());
+  auto* line2 =
+      To<NGPhysicalLineBoxFragment>(layout_result2->PhysicalFragment());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
   // Perform 3rd layout with the break token from the 2nd line.
   scoped_refptr<const NGLayoutResult> layout_result3 =
       inline_node.Layout(constraint_space, line2->BreakToken(), &context);
-  auto* line3 = ToNGPhysicalLineBoxFragment(layout_result3->PhysicalFragment());
+  auto* line3 =
+      To<NGPhysicalLineBoxFragment>(layout_result3->PhysicalFragment());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
 }
 
@@ -86,12 +89,12 @@ TEST_F(NGInlineLayoutAlgorithmTest, GenerateHyphen) {
       GetBoxFragmentByElementId("container");
   EXPECT_EQ(2u, block->Children().size());
   const NGPhysicalLineBoxFragment& line1 =
-      ToNGPhysicalLineBoxFragment(*block->Children()[0].get());
+      To<NGPhysicalLineBoxFragment>(*block->Children()[0].get());
 
   // The hyphen is in its own NGPhysicalTextFragment.
   EXPECT_EQ(2u, line1.Children().size());
   EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
-  const auto& hyphen = ToNGPhysicalTextFragment(*line1.Children()[1].get());
+  const auto& hyphen = To<NGPhysicalTextFragment>(*line1.Children()[1].get());
   EXPECT_EQ(String(u"\u2010"), hyphen.Text().ToString());
   // It should have the same LayoutObject as the hyphened word.
   EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), hyphen.GetLayoutObject());
@@ -115,13 +118,13 @@ TEST_F(NGInlineLayoutAlgorithmTest, GenerateEllipsis) {
   scoped_refptr<const NGPhysicalBoxFragment> block =
       GetBoxFragmentByElementId("container");
   EXPECT_EQ(1u, block->Children().size());
-  const NGPhysicalLineBoxFragment& line1 =
-      ToNGPhysicalLineBoxFragment(*block->Children()[0].get());
+  const auto& line1 =
+      To<NGPhysicalLineBoxFragment>(*block->Children()[0].get());
 
   // The ellipsis is in its own NGPhysicalTextFragment.
   EXPECT_EQ(2u, line1.Children().size());
   EXPECT_EQ(NGPhysicalFragment::kFragmentText, line1.Children()[1]->Type());
-  const auto& ellipsis = ToNGPhysicalTextFragment(*line1.Children()[1].get());
+  const auto& ellipsis = To<NGPhysicalTextFragment>(*line1.Children()[1].get());
   EXPECT_EQ(String(u"\u2026"), ellipsis.Text().ToString());
   // It should have the same LayoutObject as the clipped word.
   EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), ellipsis.GetLayoutObject());
@@ -161,8 +164,8 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   EXPECT_EQ(LayoutUnit(), container->Size().height);
 
   EXPECT_EQ(2u, container->Children().size());
-  const NGPhysicalLineBoxFragment& linebox =
-      ToNGPhysicalLineBoxFragment(*container->Children()[0]);
+  const auto& linebox =
+      To<NGPhysicalLineBoxFragment>(*container->Children()[0]);
 
   EXPECT_EQ(1u, linebox.Children().size());
   EXPECT_EQ(NGPhysicalSize(), linebox.Size());
@@ -197,8 +200,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, BoxForEndMargin) {
   const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
   ASSERT_TRUE(block_box);
   EXPECT_EQ(2u, block_box->Children().size());
-  const NGPhysicalLineBoxFragment& line_box1 =
-      ToNGPhysicalLineBoxFragment(*block_box->Children()[0].get());
+  const auto& line_box1 =
+      To<NGPhysicalLineBoxFragment>(*block_box->Children()[0].get());
   EXPECT_EQ(2u, line_box1.Children().size());
 
   // The <span> generates a box fragment for the 2nd line because it has a
@@ -267,7 +270,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   scoped_refptr<const NGLayoutResult> layout_result =
       inline_node.Layout(space, nullptr, &context);
 
-  auto* line = ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment());
+  auto* line = To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment());
   EXPECT_EQ(LayoutUnit(96), line->Size().height);
   NGPhysicalOffset img_offset = line->Children()[0].Offset();
   EXPECT_EQ(LayoutUnit(0), img_offset.top);

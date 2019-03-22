@@ -66,14 +66,14 @@ void NGAbstractInlineTextBox::Detach() {
 }
 
 bool NGAbstractInlineTextBox::HasSoftWrapToNextLine() const {
-  return ToNGPhysicalLineBoxFragment(
+  return To<NGPhysicalLineBoxFragment>(
              fragment_->ContainerLineBox()->PhysicalFragment())
       .HasSoftWrapToNextLine();
 }
 
 const NGPhysicalTextFragment& NGAbstractInlineTextBox::PhysicalTextFragment()
     const {
-  return ToNGPhysicalTextFragment(fragment_->PhysicalFragment());
+  return To<NGPhysicalTextFragment>(fragment_->PhysicalFragment());
 }
 
 bool NGAbstractInlineTextBox::NeedsLayout() const {
@@ -86,7 +86,7 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
   const NGPaintFragment* next_fragment = NextTextFragmentForSameLayoutObject();
   if (!next_fragment)
     return false;
-  return ToNGPhysicalTextFragment(next_fragment->PhysicalFragment())
+  return To<NGPhysicalTextFragment>(next_fragment->PhysicalFragment())
              .StartOffset() != PhysicalTextFragment().EndOffset();
 }
 

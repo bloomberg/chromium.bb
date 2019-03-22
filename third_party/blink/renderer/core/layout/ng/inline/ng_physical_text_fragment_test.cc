@@ -30,8 +30,9 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
     Vector<scoped_refptr<const NGPhysicalTextFragment>> result;
     for (const auto& child :
          NGInlineFragmentTraversal::DescendantsOf(*root_fragment)) {
-      if (child.fragment->IsText())
-        result.push_back(ToNGPhysicalTextFragment(child.fragment.get()));
+      if (auto* text_child_fragment =
+              DynamicTo<NGPhysicalTextFragment>(child.fragment.get()))
+        result.push_back(text_child_fragment);
     }
     return result;
   }

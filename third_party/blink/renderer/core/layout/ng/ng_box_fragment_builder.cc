@@ -80,7 +80,7 @@ void NGBoxFragmentBuilder::RemoveChildren() {
 NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
   DCHECK(has_block_fragmentation_);
-  if (child.IsInline()) {
+  if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {
     if (inline_break_tokens_.IsEmpty()) {
       // In some cases we may want to break before the first line, as a last
       // resort. We need a break token for that as well, so that the machinery
@@ -88,7 +88,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
       // formatting context, rather than concluding that we're done with the
       // whole thing.
       inline_break_tokens_.push_back(NGInlineBreakToken::Create(
-          ToNGInlineNode(child), /* style */ nullptr, /* item_index */ 0,
+          *child_inline_node, /* style */ nullptr, /* item_index */ 0,
           /* text_offset */ 0, NGInlineBreakToken::kDefault));
     }
     return *this;
@@ -128,7 +128,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
   // We need to resume at the right inline location in the next fragment, but
   // broken floats, which are resumed and positioned by the parent block layout
   // algorithm, need to be ignored by the inline layout algorithm.
-  ToNGInlineBreakToken(inline_break_tokens_.back().get())->SetIgnoreFloats();
+  To<NGInlineBreakToken>(inline_break_tokens_.back().get())->SetIgnoreFloats();
   return *this;
 }
 
@@ -279,8 +279,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
 
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
-      const NGPhysicalLineBoxFragment* linebox =
-          ToNGPhysicalLineBoxFragment(children_[i].get());
+      const auto* linebox = To<NGPhysicalLineBoxFragment>(children_[i].get());
       const NGPhysicalOffset linebox_offset = offsets_[i].ConvertToPhysical(
           GetWritingMode(), Direction(),
           ToNGPhysicalSize(Size(), GetWritingMode()), linebox->Size());
@@ -309,8 +308,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
       // Traverse lineboxes of anonymous box.
       for (const auto& child : box_fragment->Children()) {
         if (child->IsLineBox()) {
-          const NGPhysicalLineBoxFragment* linebox =
-              ToNGPhysicalLineBoxFragment(child.get());
+          const auto* linebox = To<NGPhysicalLineBoxFragment>(child.get());
           const NGPhysicalOffset linebox_offset = child.Offset() + box_offset;
           GatherInlineContainerFragmentsFromLinebox(inline_containing_block_map,
                                                     &containing_linebox_map,

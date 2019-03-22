@@ -833,7 +833,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   NGBreakToken* last_break_token = last_fragment.fragment.BreakToken();
   DCHECK(last_break_token);
   DCHECK(!last_break_token->IsFinished());
-  return ToNGInlineBreakToken(last_break_token);
+  return To<NGInlineBreakToken>(last_break_token);
 }
 
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
@@ -1251,11 +1251,12 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   DCHECK(!child.IsOutOfFlowPositioned());
   DCHECK(!child.CreatesNewFormattingContext());
 
-  if (child.IsInline() && !child_break_token) {
+  auto* child_inline_node = DynamicTo<NGInlineNode>(child);
+  if (child_inline_node && !child_break_token) {
     DCHECK(!*previous_inline_break_token);
     bool aborted = false;
     *previous_inline_break_token = TryReuseFragmentsFromCache(
-        ToNGInlineNode(child), previous_inflow_position, &aborted);
+        *child_inline_node, previous_inflow_position, &aborted);
     if (*previous_inline_break_token)
       return true;
     if (aborted)
@@ -1263,7 +1264,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   }
 
   bool is_non_empty_inline =
-      child.IsInline() && !ToNGInlineNode(child).IsEmptyInline();
+      child_inline_node && !child_inline_node->IsEmptyInline();
   bool has_clearance_past_adjoining_floats =
       child.IsBlock() &&
       HasClearancePastAdjoiningFloats(container_builder_.AdjoiningFloatTypes(),
@@ -1529,7 +1530,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       empty_block_affected_by_clearance);
 
   *previous_inline_break_token =
-      child.IsInline() ? ToNGInlineBreakToken(
+      child.IsInline() ? To<NGInlineBreakToken>(
                              layout_result->PhysicalFragment()->BreakToken())
                        : nullptr;
 
@@ -2189,8 +2190,7 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
                                          const NGPhysicalFragment* child,
                                          LayoutUnit child_offset) {
   if (child->IsLineBox()) {
-    const NGPhysicalLineBoxFragment* line_box =
-        ToNGPhysicalLineBoxFragment(child);
+    const auto* line_box = To<NGPhysicalLineBoxFragment>(child);
 
     // Skip over a line-box which is empty. These don't have any baselines which
     // should be added.
