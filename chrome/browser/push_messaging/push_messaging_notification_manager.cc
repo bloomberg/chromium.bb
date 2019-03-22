@@ -270,30 +270,16 @@ void PushMessagingNotificationManager::ProcessSilentPush(
       database_data,
       base::BindOnce(
           &PushMessagingNotificationManager::DidWriteNotificationData,
-          weak_factory_.GetWeakPtr(), origin, database_data.notification_data,
-          std::move(message_handled_closure)));
+          weak_factory_.GetWeakPtr(), std::move(message_handled_closure)));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
-    const GURL& origin,
-    const blink::PlatformNotificationData& notification_data,
     base::OnceClosure message_handled_closure,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!success) {
+  if (!success)
     DLOG(ERROR) << "Writing forced notification to database should not fail";
-    std::move(message_handled_closure).Run();
-    return;
-  }
-
-  // Do not pass service worker scope. The origin will be used instead of the
-  // service worker scope to determine whether a notification should be
-  // attributed to a WebAPK on Android. This is OK because this code path is hit
-  // rarely.
-  PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
-      profile_, notification_id, GURL() /* service_worker_scope */, origin,
-      notification_data, blink::NotificationResources());
 
   std::move(message_handled_closure).Run();
 }

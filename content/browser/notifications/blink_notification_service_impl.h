@@ -73,21 +73,9 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   bool ValidateNotificationResources(
       const blink::NotificationResources& notification_resources);
 
-  void DisplayPersistentNotificationWithId(
-      int64_t service_worker_registration_id,
-      const blink::PlatformNotificationData& platform_notification_data,
-      const blink::NotificationResources& notification_resources,
-      DisplayPersistentNotificationCallback callback,
-      bool success,
-      const std::string& notification_id);
-
-  void DisplayPersistentNotificationWithServiceWorkerOnIOThread(
-      const std::string& notification_id,
-      const blink::PlatformNotificationData& platform_notification_data,
-      const blink::NotificationResources& notification_resources,
-      DisplayPersistentNotificationCallback callback,
-      blink::ServiceWorkerStatusCode service_worker_status,
-      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidWriteNotificationData(DisplayPersistentNotificationCallback callback,
+                                bool success,
+                                const std::string& notification_id);
 
   void DidGetNotifications(
       const std::string& filter_tag,

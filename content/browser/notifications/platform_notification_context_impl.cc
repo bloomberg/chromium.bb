@@ -495,7 +495,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     bool initialized) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(database_data.notification_id.empty());
-  if (!initialized) {
+  if (!initialized || !service_proxy_) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
         base::BindOnce(std::move(callback), /* success= */ false,
@@ -552,6 +552,10 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     return;
   }
 
+  // Only store resources for notifications that will be scheduled.
+  if (!CanTrigger(write_database_data))
+    write_database_data.notification_resources = base::nullopt;
+
   NotificationDatabase::Status status =
       database_->WriteNotificationData(origin, write_database_data);
 
@@ -559,19 +563,27 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
                             NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
-    if (CanTrigger(write_database_data) && service_proxy_) {
+    if (CanTrigger(write_database_data)) {
       if (replaces_existing)
         service_proxy_->CloseNotification(notification_id);
+
       // Schedule notification to be shown.
       service_proxy_->ScheduleTrigger(
           write_database_data.notification_data.show_trigger_timestamp.value());
+
+      // Respond with success as this notification got scheduled successfully.
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+          base::BindOnce(std::move(callback), /* success= */ true,
+                         write_database_data.notification_id));
+      return;
     }
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(std::move(callback), /* success= */ true,
-                       write_database_data.notification_id));
-
+    // Display the notification immediately.
+    write_database_data.notification_resources =
+        database_data.notification_resources;
+    service_proxy_->DisplayNotification(std::move(write_database_data),
+                                        std::move(callback));
     return;
   }
 

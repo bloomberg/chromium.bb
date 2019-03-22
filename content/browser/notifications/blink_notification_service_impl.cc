@@ -207,93 +207,26 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
   database_data.origin = origin_.GetURL();
   database_data.service_worker_registration_id = service_worker_registration_id;
   database_data.notification_data = platform_notification_data;
+  database_data.notification_resources = notification_resources;
 
   // TODO(https://crbug.com/870258): Validate resources are not too big (either
   // here or in the mojo struct traits).
 
-  if (platform_notification_data.show_trigger_timestamp &&
-      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
-    // TODO(knollr): Let PlatformNotificationContext display all notifications,
-    // even non scheduled ones and always set resources here.
-    database_data.notification_resources = notification_resources;
-  }
-
   notification_context_->WriteNotificationData(
       next_persistent_id, service_worker_registration_id, origin_.GetURL(),
       database_data,
-      base::BindOnce(
-          &BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId,
-          weak_factory_for_ui_.GetWeakPtr(), service_worker_registration_id,
-          platform_notification_data, notification_resources,
-          std::move(callback)));
+      base::BindOnce(&BlinkNotificationServiceImpl::DidWriteNotificationData,
+                     weak_factory_for_ui_.GetWeakPtr(), std::move(callback)));
 }
 
-void BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId(
-    int64_t service_worker_registration_id,
-    const blink::PlatformNotificationData& platform_notification_data,
-    const blink::NotificationResources& notification_resources,
+void BlinkNotificationServiceImpl::DidWriteNotificationData(
     DisplayPersistentNotificationCallback callback,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!success) {
-    std::move(callback).Run(PersistentNotificationError::INTERNAL_ERROR);
-    return;
-  }
-
-  if (platform_notification_data.show_trigger_timestamp &&
-      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
-    // This notification will be handled by the |notification_context_| because
-    // it has to be scheduled rather than displayed immediately.
-    // TODO(knollr): Let PlatformNotificationContext display all notifications,
-    // even non scheduled ones to make this code path go away.
-    std::move(callback).Run(PersistentNotificationError::NONE);
-    return;
-  }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &ServiceWorkerContextWrapper::FindReadyRegistrationForId,
-          service_worker_context_, service_worker_registration_id,
-          origin_.GetURL(),
-          base::BindOnce(
-              &BlinkNotificationServiceImpl::
-                  DisplayPersistentNotificationWithServiceWorkerOnIOThread,
-              weak_factory_for_io_.GetWeakPtr(), notification_id,
-              platform_notification_data, notification_resources,
-              std::move(callback))));
-}
-
-void BlinkNotificationServiceImpl::
-    DisplayPersistentNotificationWithServiceWorkerOnIOThread(
-        const std::string& notification_id,
-        const blink::PlatformNotificationData& platform_notification_data,
-        const blink::NotificationResources& notification_resources,
-        DisplayPersistentNotificationCallback callback,
-        blink::ServiceWorkerStatusCode service_worker_status,
-        scoped_refptr<ServiceWorkerRegistration> registration) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  PersistentNotificationError error =
-      PersistentNotificationError::INTERNAL_ERROR;
-
-  // Display the notification if the Service Worker's origin matches the origin
-  // of the notification's sender.
-  if (service_worker_status == blink::ServiceWorkerStatusCode::kOk &&
-      registration->scope().GetOrigin() == origin_.GetURL()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &PlatformNotificationService::DisplayPersistentNotification,
-            base::Unretained(GetNotificationService()), browser_context_,
-            notification_id, registration->scope(), origin_.GetURL(),
-            platform_notification_data, notification_resources));
-
-    error = PersistentNotificationError::NONE;
-  }
-
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), error));
+  std::move(callback).Run(success
+                              ? PersistentNotificationError::NONE
+                              : PersistentNotificationError::INTERNAL_ERROR);
 }
 
 void BlinkNotificationServiceImpl::ClosePersistentNotification(
