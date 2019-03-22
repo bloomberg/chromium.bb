@@ -57,6 +57,8 @@ source_set("lib") {
     "notification_entry.h",
     "notification_schedule_service_impl.cc",
     "notification_schedule_service_impl.h",
+    "notification_scheduler_context.cc",
+    "notification_scheduler_context.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "proto_db_collection_store.cc",
