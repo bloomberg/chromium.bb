@@ -19,7 +19,7 @@ node tests.js ${HTTP}/tests.html "$*" | tee -a tests.log | \
 kill ${HTTP_SERVER_PID} > /dev/null 2>&1
 
 # Compare their hash to the golden hash values.
-if [[ $(cmp tests.hash images.golden.hash) ]]; then
+if [[ $(cmp tests.hash images.golden.hash 2>&1) ]]; then
   echo "tests FAIL" || exit 1
 else
   echo "tests PASS"
