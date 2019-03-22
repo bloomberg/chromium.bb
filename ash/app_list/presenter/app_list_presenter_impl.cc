@@ -184,14 +184,18 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
-bool AppListPresenterImpl::CloseOpenedPage() {
+bool AppListPresenterImpl::HandleCloseOpenFolder() {
   if (!is_visible_)
     return false;
 
-  // If the app list is currently visible, there should be an existing view.
-  DCHECK(view_);
+  return view_->HandleCloseOpenFolder();
+}
 
-  return view_->CloseOpenedPage();
+bool AppListPresenterImpl::HandleCloseOpenSearchBox() {
+  if (!is_visible_)
+    return false;
+
+  return view_->HandleCloseOpenSearchBox();
 }
 
 ash::ShelfAction AppListPresenterImpl::ToggleAppList(
