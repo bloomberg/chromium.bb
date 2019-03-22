@@ -438,8 +438,6 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
     drp_test_context_->SetDataReductionProxyEnabled(
         enable_data_reduction_proxy);
-    settings->set_data_reduction_proxy_enabled_pref_name_for_test(
-        drp_test_context_->GetDataReductionProxyEnabledPrefName());
     settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
         drp_test_context_->request_context_getter(), profile(),
