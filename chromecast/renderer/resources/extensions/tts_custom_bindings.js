@@ -5,9 +5,6 @@
 // Custom binding for the tts API.
 
 var idGenerator = requireNative('id_generator');
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
 var lazyBG = requireNative('lazy_background_page');
 
 apiBridge.registerCustomHook(function(api) {
@@ -49,9 +46,7 @@ apiBridge.registerCustomHook(function(api) {
       // Balanced in eventHandler.
       lazyBG.IncrementKeepaliveCount();
     }
-    sendRequest('tts.speak', args,
-                bindingUtil ? undefined : this.definition.parameters,
-                undefined);
+    bindingUtil.sendRequest('tts.speak', args, undefined, undefined);
     return id;
   });
 });
