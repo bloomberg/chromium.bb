@@ -183,9 +183,8 @@
     self.cardholderButton.hidden = YES;
   }
 
-  AppendVerticalConstraintsSpacingForViews(
-      self.dynamicConstraints, verticalViews, self.contentView,
-      TopSystemSpacingMultiplier, 1, BottomSystemSpacingMultiplier);
+  AppendVerticalConstraintsSpacingForViews(self.dynamicConstraints,
+                                           verticalViews, self.contentView);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 

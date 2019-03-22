@@ -316,9 +316,8 @@
     self.emailAddressButton.hidden = YES;
   }
 
-  AppendVerticalConstraintsSpacingForViews(
-      self.dynamicConstraints, verticalLeadViews, self.contentView,
-      TopSystemSpacingMultiplier, 1, BottomSystemSpacingMultiplier);
+  AppendVerticalConstraintsSpacingForViews(self.dynamicConstraints,
+                                           verticalLeadViews, self.contentView);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 

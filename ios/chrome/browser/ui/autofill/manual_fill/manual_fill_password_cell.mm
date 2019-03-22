@@ -205,7 +205,7 @@ static const CGFloat NoMultiplier = 1.0;
   self.dynamicConstraints = [[NSMutableArray alloc] init];
   AppendVerticalConstraintsSpacingForViews(
       self.dynamicConstraints, verticalLeadViews, self.contentView,
-      topSystemSpacingMultiplier, 1, bottomSystemSpacingMultiplier);
+      topSystemSpacingMultiplier, bottomSystemSpacingMultiplier);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
