@@ -38,6 +38,7 @@ group("pdf_fuzzers") {
     if (pdf_enable_xfa) {
       deps += [
         ":pdf_bidi_fuzzer",
+        ":pdf_cfgas_stringformatter_fuzzer",
         ":pdf_cfx_barcode_fuzzer",
         ":pdf_codec_jpeg_fuzzer",
         ":pdf_css_fuzzer",
@@ -287,6 +288,13 @@ if (pdf_enable_v8) {
       sources = []
       deps = [
         "//third_party/pdfium/testing/fuzzers:pdf_cfx_barcode_fuzzer_src",
+      ]
+    }
+
+    fuzzer_test("pdf_cfgas_stringformatter_fuzzer") {
+      sources = []
+      deps = [
+        "//third_party/pdfium/testing/fuzzers:pdf_cfgas_stringformatter_fuzzer_src",
       ]
     }
 
