@@ -86,7 +86,14 @@ void AppShimController::PollForChromeReady(
   CHECK(!user_data_dir.empty());
   base::FilePath symlink_path =
       user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
-  if (base::PathExists(symlink_path)) {
+
+  // If the MojoChannelMac signal file is present, the browser is running
+  // with Mach IPC instead of socket-based IPC, and the shim can connect
+  // via that.
+  base::FilePath mojo_channel_mac_signal_file =
+      user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
+  if (base::PathExists(symlink_path) ||
+      base::PathExists(mojo_channel_mac_signal_file)) {
     InitBootstrapPipe();
     return;
   }
