@@ -266,9 +266,8 @@ bool ScrollAnimator::SendAnimationToCompositor() {
   if (scrollable_area_->ShouldScrollOnMainThread())
     return false;
 
-  std::unique_ptr<CompositorKeyframeModel> animation =
-      CompositorKeyframeModel::Create(
-          *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0, 0);
+  auto animation = std::make_unique<CompositorKeyframeModel>(
+      *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0, 0);
   // Being here means that either there is an animation that needs
   // to be sent to the compositor, or an animation that needs to
   // be updated (a new scroll event before the previous animation

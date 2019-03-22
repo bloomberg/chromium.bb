@@ -31,7 +31,7 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     DedicatedWorker* worker_object)
     : ThreadedMessagingProxyBase(execution_context),
       worker_object_(worker_object) {
-  worker_object_proxy_ = DedicatedWorkerObjectProxy::Create(
+  worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxy>(
       this, GetParentExecutionContextTaskRunners());
 }
 
