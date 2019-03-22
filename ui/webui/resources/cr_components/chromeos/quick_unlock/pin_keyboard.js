@@ -413,11 +413,10 @@ Polymer({
 
   /**
    * Disables the backspace button if nothing is entered.
-   * @param {string} value
    * @private
    */
-  hasInput_: function(value) {
-    return value.length > 0 && this.selectionStart_ > 0;
+  hasInput_: function() {
+    return this.value.length > 0;
   },
 
   /**
