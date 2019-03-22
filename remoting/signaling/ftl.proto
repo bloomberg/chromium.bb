@@ -194,3 +194,25 @@ message AckMessagesRequest {
 message AckMessagesResponse {
   ResponseHeader header = 1;
 }
+
+message ReceiveMessagesRequest {
+  RequestHeader header = 1;
+}
+
+message ReceiveMessagesResponse {
+  message Pong {}
+
+  message StartOfBatch { int32 count = 1; }
+
+  message EndOfBatch {}
+
+  message RefreshResult {}
+
+  oneof body {
+    InboxMessage inbox_message = 2;
+    Pong pong = 3;
+    StartOfBatch start_of_batch = 4;
+    EndOfBatch end_of_batch = 5;
+    RefreshResult refresh_result = 6;
+  }
+}

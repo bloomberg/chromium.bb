@@ -15,6 +15,7 @@
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_dispatcher.h"
+#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace remoting {
@@ -25,6 +26,8 @@ class FtlGrpcContext final {
   template <typename ResponseType>
   using RpcCallback =
       base::OnceCallback<void(const grpc::Status&, const ResponseType&)>;
+  using StreamStartedCallback =
+      base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>;
 
   static std::string GetChromotingAppIdentifier();
 
@@ -47,6 +50,26 @@ class FtlGrpcContext final {
     GetOAuthTokenAndExecuteRpc(std::move(execute_rpc_with_context));
   }
 
+  // |request| doesn't need to set the header field since this class will set
+  // it for you.
+  template <typename RequestType, typename ResponseType>
+  void ExecuteServerStreamingRpc(
+      GrpcAsyncDispatcher::AsyncServerStreamingRpcFunction<RequestType,
+                                                           ResponseType> rpc,
+      const RequestType& request,
+      StreamStartedCallback on_stream_started,
+      const GrpcAsyncDispatcher::RpcStreamCallback<ResponseType>&
+          on_incoming_msg,
+      GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed) {
+    auto execute_rpc_with_context = base::BindOnce(
+        &FtlGrpcContext::ExecuteServerStreamingRpcWithContext<RequestType,
+                                                              ResponseType>,
+        weak_factory_.GetWeakPtr(), std::move(rpc), request,
+        std::move(on_stream_started), on_incoming_msg,
+        std::move(on_channel_closed));
+    GetOAuthTokenAndExecuteRpc(std::move(execute_rpc_with_context));
+  }
+
   std::shared_ptr<grpc::ChannelInterface> channel() { return channel_; }
 
   void SetChannelForTesting(std::shared_ptr<grpc::ChannelInterface> channel);
@@ -64,6 +87,23 @@ class FtlGrpcContext final {
     request.set_allocated_header(BuildRequestHeader().release());
     dispatcher_.ExecuteAsyncRpc(std::move(rpc), std::move(context), request,
                                 std::move(callback));
+  }
+
+  template <typename RequestType, typename ResponseType>
+  void ExecuteServerStreamingRpcWithContext(
+      GrpcAsyncDispatcher::AsyncServerStreamingRpcFunction<RequestType,
+                                                           ResponseType> rpc,
+      RequestType request,
+      StreamStartedCallback on_stream_started,
+      const GrpcAsyncDispatcher::RpcStreamCallback<ResponseType>&
+          on_incoming_msg,
+      GrpcAsyncDispatcher::RpcChannelClosedCallback on_channel_closed,
+      std::unique_ptr<grpc::ClientContext> context) {
+    request.set_allocated_header(BuildRequestHeader().release());
+    auto scoped_stream = dispatcher_.ExecuteAsyncServerStreamingRpc(
+        std::move(rpc), std::move(context), request, on_incoming_msg,
+        std::move(on_channel_closed));
+    std::move(on_stream_started).Run(std::move(scoped_stream));
   }
 
   void GetOAuthTokenAndExecuteRpc(

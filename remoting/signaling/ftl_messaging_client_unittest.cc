@@ -22,6 +22,7 @@
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_support/grpc_async_test_server.h"
 #include "remoting/signaling/grpc_support/grpc_test_util.h"
+#include "remoting/signaling/message_reception_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,6 +30,9 @@ namespace remoting {
 
 namespace {
 
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::Property;
 using ::testing::Return;
 
 using PullMessagesResponder =
@@ -59,6 +63,32 @@ ftl::InboxMessage CreateMessage(const std::string& message_id,
   return message;
 }
 
+class MockMessageReceptionChannel : public MessageReceptionChannel {
+ public:
+  MockMessageReceptionChannel() = default;
+  ~MockMessageReceptionChannel() override = default;
+
+  // MessageReceptionChannel implementations.
+  void Initialize(const StreamOpener& stream_opener,
+                  const MessageCallback& on_incoming_msg) override {
+    stream_opener_ = stream_opener;
+    on_incoming_msg_ = on_incoming_msg;
+  }
+
+  MOCK_METHOD1(StartReceivingMessages, void(DoneCallback));
+  MOCK_METHOD0(StopReceivingMessages, void());
+
+  StreamOpener* stream_opener() { return &stream_opener_; }
+
+  MessageCallback* on_incoming_msg() { return &on_incoming_msg_; }
+
+ private:
+  StreamOpener stream_opener_;
+  MessageCallback on_incoming_msg_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMessageReceptionChannel);
+};
+
 }  // namespace
 
 class FtlMessagingClientTest : public testing::Test {
@@ -67,6 +97,9 @@ class FtlMessagingClientTest : public testing::Test {
   void TearDown() override;
 
  protected:
+  using Messaging =
+      google::internal::communications::instantmessaging::v1::Messaging;
+
   // Calls are scheduled sequentially and handled on the server thread.
   void ServerWaitAndRespondToPullMessagesRequest(
       const ftl::PullMessagesResponse& response,
@@ -75,15 +108,13 @@ class FtlMessagingClientTest : public testing::Test {
       base::OnceCallback<grpc::Status(const ftl::AckMessagesRequest&)> handler,
       base::OnceClosure on_done);
 
+  std::unique_ptr<test::GrpcAsyncTestServer> server_;
+  scoped_refptr<base::SequencedTaskRunner> server_task_runner_;
   std::unique_ptr<FtlMessagingClient> messaging_client_;
+  MockMessageReceptionChannel* mock_message_reception_channel_;
 
  private:
-  using Messaging =
-      google::internal::communications::instantmessaging::v1::Messaging;
-
-  std::unique_ptr<test::GrpcAsyncTestServer> server_;
   std::unique_ptr<test::FtlGrpcTestEnvironment> test_environment_;
-  scoped_refptr<base::SequencedTaskRunner> server_task_runner_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
@@ -96,6 +127,9 @@ void FtlMessagingClientTest::SetUp() {
       server_->CreateInProcessChannel());
   messaging_client_ =
       std::make_unique<FtlMessagingClient>(test_environment_->context());
+  auto channel = std::make_unique<MockMessageReceptionChannel>();
+  mock_message_reception_channel_ = channel.get();
+  messaging_client_->SetMessageReceptionChannelForTesting(std::move(channel));
 }
 
 void FtlMessagingClientTest::TearDown() {
@@ -227,6 +261,98 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_ReturnsAndAcksTwoMessages) {
         return grpc::Status::OK;
       }),
       base::DoNothing());
+
+  run_loop.Run();
+}
+
+TEST_F(FtlMessagingClientTest,
+       TestStartReceivingMessages_DoneCallbackForwarded) {
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(*mock_message_reception_channel_, StartReceivingMessages(_))
+      .WillOnce(Invoke([&](FtlMessagingClient::DoneCallback callback) {
+        std::move(callback).Run(
+            grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
+      }));
+
+  messaging_client_->StartReceivingMessages(
+      base::BindLambdaForTesting([&](const grpc::Status& status) {
+        ASSERT_EQ(grpc::StatusCode::UNAUTHENTICATED, status.error_code());
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(FtlMessagingClientTest, TestStopReceivingMessages_CallForwarded) {
+  EXPECT_CALL(*mock_message_reception_channel_, StopReceivingMessages())
+      .WillOnce(Return());
+  messaging_client_->StopReceivingMessages();
+}
+
+TEST_F(FtlMessagingClientTest,
+       TestStreamOpener_StreamsTwoMessagesThenCloseByClient) {
+  base::RunLoop run_loop;
+
+  std::unique_ptr<test::GrpcServerStreamResponder<ftl::ReceiveMessagesResponse>>
+      responder;
+  std::unique_ptr<ScopedGrpcServerStream> scoped_stream;
+
+  ftl::ReceiveMessagesResponse response_1;
+  response_1.mutable_inbox_message()->set_message_id(kMessage1Id);
+  ftl::ReceiveMessagesResponse response_2;
+  response_2.mutable_pong();
+
+  server_task_runner_->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ftl::ReceiveMessagesRequest request;
+        // This blocks the server thread until the client opens the stream.
+        responder = server_->HandleStreamRequest(
+            &Messaging::AsyncService::RequestReceiveMessages, &request);
+        ASSERT_TRUE(responder->SendMessage(response_1));
+        ASSERT_TRUE(responder->SendMessage(response_2));
+      }));
+
+  base::MockCallback<
+      base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>>
+      mock_on_incoming_msg;
+  EXPECT_CALL(mock_on_incoming_msg, Run(_))
+      .WillOnce([&](const ftl::ReceiveMessagesResponse& response) {
+        ASSERT_EQ(kMessage1Id, response.inbox_message().message_id());
+      })
+      .WillOnce([&](const ftl::ReceiveMessagesResponse& response) {
+        ASSERT_TRUE(response.has_pong());
+        DCHECK(scoped_stream);
+        scoped_stream.reset();
+        run_loop.QuitWhenIdle();
+      });
+
+  mock_message_reception_channel_->stream_opener()->Run(
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ScopedGrpcServerStream> stream) {
+            scoped_stream = std::move(stream);
+          }),
+      mock_on_incoming_msg.Get(),
+      base::BindOnce([](const grpc::Status&) { NOTREACHED(); }));
+
+  run_loop.Run();
+}
+
+TEST_F(FtlMessagingClientTest,
+       TestOnMessageReceived_MessagePassedToSubscriberAndAcked) {
+  base::RunLoop run_loop;
+
+  ftl::InboxMessage message = CreateMessage(kMessage1Id, kMessage1Text);
+  mock_message_reception_channel_->on_incoming_msg()->Run(message);
+
+  ServerWaitAndRespondToAckMessagesRequest(
+      base::BindLambdaForTesting([&](const ftl::AckMessagesRequest& request) {
+        EXPECT_EQ(1, request.messages_size());
+        EXPECT_EQ(kFakeReceiverId, request.messages(0).receiver_id().id());
+        EXPECT_EQ(kMessage1Id, request.messages(0).message_id());
+        return grpc::Status::OK;
+      }),
+      run_loop.QuitWhenIdleClosure());
 
   run_loop.Run();
 }

@@ -20,7 +20,7 @@ class ScopedGrpcServerStream {
  public:
   explicit ScopedGrpcServerStream(
       base::WeakPtr<internal::GrpcAsyncServerStreamingCallDataBase> call_data);
-  ~ScopedGrpcServerStream();
+  virtual ~ScopedGrpcServerStream();
 
  private:
   base::WeakPtr<internal::GrpcAsyncServerStreamingCallDataBase> call_data_;

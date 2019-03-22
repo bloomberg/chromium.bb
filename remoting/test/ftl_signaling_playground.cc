@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
@@ -60,6 +61,35 @@ std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
   }
   printf("%s", read_prompt.c_str());
   return ReadString();
+}
+
+// Wait for the user to press enter key on an anonymous thread and calls
+// |on_done| once it is done.
+void WaitForEnterKey(base::OnceClosure on_done) {
+  base::PostTaskWithTraitsAndReply(FROM_HERE, {base::MayBlock()},
+                                   base::BindOnce([]() { getchar(); }),
+                                   std::move(on_done));
+}
+
+void PrintGrpcStatusError(const grpc::Status& status) {
+  DCHECK(!status.ok());
+  fprintf(stderr, "RPC failed. Code=%d, Message=%s\n", status.error_code(),
+          status.error_message().c_str());
+  switch (status.error_code()) {
+    case grpc::StatusCode::UNAVAILABLE:
+      fprintf(stderr,
+              "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
+              "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
+              "root certificates.\n");
+      break;
+    case grpc::StatusCode::UNAUTHENTICATED:
+      fprintf(
+          stderr,
+          "Request is unauthenticated. Make sure you have run SignInGaia.\n");
+      break;
+    default:
+      break;
+  }
 }
 
 }  // namespace
@@ -116,25 +146,29 @@ void FtlSignalingPlayground::StartLoop() {
   while (true) {
     printf(
         "\nOptions:\n"
-        "  1. GetIceServer\n"
-        "  2. SignInGaia\n"
+        "  1. SignInGaia\n"
+        "  2. GetIceServer\n"
         "  3. PullMessages\n"
-        "  4. Quit\n\n"
+        "  4. ReceiveMessages\n"
+        "  5. Quit\n\n"
         "Your choice [number]: ");
     int choice = 0;
     base::StringToInt(ReadString(), &choice);
     base::RunLoop run_loop;
     switch (choice) {
       case 1:
-        GetIceServer(run_loop.QuitClosure());
+        SignInGaia(run_loop.QuitClosure());
         break;
       case 2:
-        SignInGaia(run_loop.QuitClosure());
+        GetIceServer(run_loop.QuitClosure());
         break;
       case 3:
         PullMessages(run_loop.QuitClosure());
         break;
       case 4:
+        StartReceivingMessages(run_loop.QuitWhenIdleClosure());
+        break;
+      case 5:
         return;
       default:
         fprintf(stderr, "Unknown option\n");
@@ -200,27 +234,6 @@ void FtlSignalingPlayground::OnAccessToken(base::OnceClosure on_done,
   std::move(on_done).Run();
 }
 
-void FtlSignalingPlayground::HandleGrpcStatusError(const grpc::Status& status) {
-  DCHECK(!status.ok());
-  LOG(ERROR) << "RPC failed. Code=" << status.error_code() << ", "
-             << "Message=" << status.error_message();
-  switch (status.error_code()) {
-    case grpc::StatusCode::UNAVAILABLE:
-      VLOG(0)
-          << "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
-          << "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
-          << "root certificates.";
-      break;
-    case grpc::StatusCode::UNAUTHENTICATED:
-      VLOG(0) << "Grpc request failed to authenticate. "
-              << "Trying to reauthenticate...";
-      AuthenticateAndResetServices();
-      break;
-    default:
-      break;
-  }
-}
-
 void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
   DCHECK(peer_to_peer_stub_);
   VLOG(0) << "Running GetIceServer...";
@@ -254,7 +267,7 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
       }
     }
   } else {
-    HandleGrpcStatusError(status);
+    PrintGrpcStatusError(status);
   }
   std::move(on_done).Run();
 }
@@ -316,7 +329,13 @@ void FtlSignalingPlayground::OnSignInGaiaResponse(
     ftl_context_->SetAuthToken(response.auth_token().payload());
     VLOG(0) << "Auth token set on FtlClient";
   } else {
-    HandleGrpcStatusError(status);
+    if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
+      VLOG(0) << "Grpc request failed to authenticate. "
+              << "Trying to reauthenticate...";
+      AuthenticateAndResetServices();
+    } else {
+      PrintGrpcStatusError(status);
+    }
   }
   std::move(on_done).Run();
 }
@@ -334,12 +353,20 @@ void FtlSignalingPlayground::OnPullMessagesResponse(
     base::OnceClosure on_done,
     const grpc::Status& status) {
   if (!status.ok()) {
-    if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
-      fprintf(stderr, "Please run SignInGaia first\n");
-    } else {
-      HandleGrpcStatusError(status);
-    }
+    PrintGrpcStatusError(status);
   }
+  std::move(on_done).Run();
+}
+
+void FtlSignalingPlayground::StartReceivingMessages(base::OnceClosure on_done) {
+  VLOG(0) << "Running StartReceivingMessages...";
+  messaging_client_->StartReceivingMessages(
+      base::BindOnce(&FtlSignalingPlayground::OnStartReceivingMessagesDone,
+                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+}
+
+void FtlSignalingPlayground::StopReceivingMessages(base::OnceClosure on_done) {
+  messaging_client_->StopReceivingMessages();
   std::move(on_done).Run();
 }
 
@@ -350,6 +377,25 @@ void FtlSignalingPlayground::OnMessageReceived(const std::string& sender_id,
       "  Sender ID=%s\n"
       "  Message=%s\n",
       sender_id.c_str(), message.c_str());
+}
+
+void FtlSignalingPlayground::OnStartReceivingMessagesDone(
+    base::OnceClosure on_done,
+    const grpc::Status& status) {
+  if (status.error_code() == grpc::StatusCode::CANCELLED) {
+    printf("ReceiveMessages stream canceled by client.\n");
+    std::move(on_done).Run();
+    return;
+  }
+  if (!status.ok()) {
+    PrintGrpcStatusError(status);
+    std::move(on_done).Run();
+    return;
+  }
+  printf("Started receiving messages. Press enter to stop streaming...\n");
+  WaitForEnterKey(base::BindOnce(&FtlSignalingPlayground::StopReceivingMessages,
+                                 weak_factory_.GetWeakPtr(),
+                                 std::move(on_done)));
 }
 
 }  // namespace remoting
