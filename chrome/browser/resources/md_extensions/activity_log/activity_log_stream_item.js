@@ -148,6 +148,7 @@ cr.define('extensions', function() {
     onExpandClick_: function() {
       if (this.isExpandable_) {
         this.set('data.expanded', !this.data.expanded);
+        this.fire('resize-stream');
       }
     },
   });

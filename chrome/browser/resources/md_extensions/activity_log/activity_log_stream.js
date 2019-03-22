@@ -73,6 +73,10 @@ cr.define('extensions', function() {
       },
     },
 
+    listeners: {
+      'resize-stream': 'onResizeStream_',
+    },
+
     /**
      * Instance of |extensionActivityListener_| bound to |this|.
      * @private {!Function}
@@ -92,8 +96,13 @@ cr.define('extensions', function() {
     },
 
     /** @private */
+    onResizeStream_: function(e) {
+      this.$$('iron-list').notifyResize();
+    },
+
+    /** @private */
     clearStream_: function() {
-      this.activityStream_ = [];
+      this.splice('activityStream_', 0, this.activityStream_.length);
     },
 
     /** @private */
@@ -144,10 +153,12 @@ cr.define('extensions', function() {
         return;
       }
 
-      const streamItems = processActivityForStream(activity);
-      for (const item of streamItems) {
-        this.push('activityStream_', item);
-      }
+      this.splice(
+          'activityStream_', this.activityStream_.length, 0,
+          ...processActivityForStream(activity));
+
+      // Used to update the scrollbar.
+      this.$$('iron-list').notifyResize();
     },
   });
 
