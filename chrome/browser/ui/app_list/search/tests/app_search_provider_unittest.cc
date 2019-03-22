@@ -248,6 +248,9 @@ TEST_F(AppSearchProviderTest, Basic) {
                                             arc_test().fake_apps().begin() + 2);
   arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   CreateSearch();
 
   EXPECT_EQ("", RunQuery("!@#$-,-_"));
@@ -309,7 +312,7 @@ TEST_F(AppSearchProviderTest, UninstallExtension) {
   service_->UninstallExtension(kPackagedApp1Id,
                                extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
 
-  // Allow async AppSearchProvider::UpdateResults to run.
+  // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
 
   // Uninstalling an app should update the result list without needing to start
@@ -329,6 +332,9 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
   arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+
   CreateSearch();
 
   EXPECT_TRUE(results().empty());
@@ -338,7 +344,7 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
   arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
-  // Allow async AppSearchProvider::UpdateResults to run.
+  // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("Fake App 0", RunQuery("fapp0"));
@@ -348,7 +354,7 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
   arc_test().app_instance()->RefreshAppList();
   arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
-  // Allow async AppSearchProvider::UpdateResults to run.
+  // Allow async callbacks to run.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(results().empty());
