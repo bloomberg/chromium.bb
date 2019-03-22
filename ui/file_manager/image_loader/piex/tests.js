@@ -8,7 +8,7 @@ const program = require('commander');
 
 program.usage('server [options]')
   .description('piex wasm raw image preview test runner')
-  .option('-d, --debug' , 'enable debug mode');
+  .option('-d, --debug', 'enable debug mode');
 
 program.on('--help', function help() {
   const text = require('chalk');
@@ -50,12 +50,14 @@ const puppeteer = require('puppeteer');
     });
   }
 
-  page.on('console', message => {
+  page.on('console', (message) => {
     console.log(message.text());
   });
 
-  await page.goto(process.argv[2], {
-    waitUntil: 'networkidle2'
+  const url = process.argv[2];
+  await page.goto(url, {waitUntil: 'networkidle2'}).catch((error) => {
+    console.log(error.message, url);
+    process.exit(1);
   });
 
   await page.mainFrame().waitForFunction('document.title == "READY"');
