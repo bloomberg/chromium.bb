@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
+#import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
