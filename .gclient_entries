@@ -99,7 +99,7 @@ entries = {
   'src/tools/luci-go:infra/tools/luci/swarming/${platform}': 'https://chrome-infra-packages.appspot.com/infra/tools/luci/swarming/${platform}@git_revision:f140d0c3c6acecf6ca6cd8d66ddad9421158ab40',
   'src/tools/page_cycler/acid3': 'https://chromium.googlesource.com/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
   'src/tools/swarming_client': 'https://chromium.googlesource.com/infra/luci/client-py.git@0e3e1c4dc4e79f25a5b58fcbc135dc93183c0c54',
-  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@fc19b088f1ee6e4cf05d9ec5a0f2299ab60a1cfe',
+  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@8c42ed9e1e49460dd68819834adec90c0e369ddb',
   'src/buildtools/clang_format/script': 'https://chromium.googlesource.com/chromium/llvm-project/cfe/tools/clang-format.git@96636aa0e9f047f17447f2d45a094d0b59ed7917',
   'src/buildtools/third_party/libc++/trunk': 'https://chromium.googlesource.com/chromium/llvm-project/libcxx.git@2199647acb904b91eea0a5e045f5b227c87d6e85',
   'src/buildtools/third_party/libc++abi/trunk': 'https://chromium.googlesource.com/chromium/llvm-project/libcxxabi.git@c3f4753f7139c73063304235781e4f7788a94c06',
