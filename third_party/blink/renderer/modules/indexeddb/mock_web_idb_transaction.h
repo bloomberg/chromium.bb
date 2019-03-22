@@ -26,6 +26,7 @@ class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
                     const String& name,
                     const IDBKeyPath&,
                     bool auto_increment));
+  MOCK_METHOD1(DeleteObjectStore, void(int64_t object_store_id));
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 };

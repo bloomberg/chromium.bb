@@ -24,11 +24,6 @@ WebIDBDatabaseImpl::WebIDBDatabaseImpl(
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
 
-void WebIDBDatabaseImpl::DeleteObjectStore(int64_t transaction_id,
-                                           int64_t object_store_id) {
-  database_->DeleteObjectStore(transaction_id, object_store_id);
-}
-
 void WebIDBDatabaseImpl::RenameObjectStore(int64_t transaction_id,
                                            int64_t object_store_id,
                                            const String& new_name) {

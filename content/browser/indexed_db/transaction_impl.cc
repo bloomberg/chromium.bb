@@ -49,4 +49,17 @@ void TransactionImpl::CreateObjectStore(int64_t object_store_id,
                                             name, key_path, auto_increment);
 }
 
+void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!transaction_)
+    return;
+
+  IndexedDBConnection* connection = transaction_->connection();
+  if (!connection->IsConnected())
+    return;
+
+  connection->database()->DeleteObjectStore(transaction_.get(),
+                                            object_store_id);
+}
+
 }  // namespace content

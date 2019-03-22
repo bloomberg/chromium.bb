@@ -36,6 +36,7 @@ class TransactionImpl : public blink::mojom::IDBTransaction {
                          const base::string16& name,
                          const blink::IndexedDBKeyPath& key_path,
                          bool auto_increment) override;
+  void DeleteObjectStore(int64_t object_store_id) override;
 
  private:
   base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;

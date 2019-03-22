@@ -38,8 +38,6 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
   ~DatabaseImpl() override;
 
   // blink::mojom::IDBDatabase implementation
-  void DeleteObjectStore(int64_t transaction_id,
-                         int64_t object_store_id) override;
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const base::string16& new_name) override;

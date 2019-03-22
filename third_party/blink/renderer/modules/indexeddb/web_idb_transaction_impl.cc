@@ -35,4 +35,8 @@ void WebIDBTransactionImpl::CreateObjectStore(int64_t object_store_id,
                                   auto_increment);
 }
 
+void WebIDBTransactionImpl::DeleteObjectStore(int64_t object_store_id) {
+  transaction_->DeleteObjectStore(object_store_id);
+}
+
 }  // namespace blink

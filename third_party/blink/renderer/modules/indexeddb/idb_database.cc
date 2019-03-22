@@ -346,8 +346,8 @@ void IDBDatabase::deleteObjectStore(const String& name,
     return;
   }
 
-  backend_->DeleteObjectStore(version_change_transaction_->Id(),
-                              object_store_id);
+  version_change_transaction_->transaction_backend()->DeleteObjectStore(
+      object_store_id);
   version_change_transaction_->ObjectStoreDeleted(object_store_id, name);
   metadata_.object_stores.erase(object_store_id);
 }
