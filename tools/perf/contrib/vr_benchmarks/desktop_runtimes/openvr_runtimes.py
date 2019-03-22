@@ -116,6 +116,8 @@ class OpenVRRuntimeMock(_OpenVRRuntimeBase):
     # environment variables pointing towards the mock implementation. When
     # OpenVR starts, it checks if these are set, and if so, uses the
     # implementation that they specify instead of loading the real one.
+    # TODO(https://crbug.com/944890): Switch to setting these only when the
+    # browser is started once the functionality is added.
     os.environ[self.OPENVR_OVERRIDE_ENV_VAR] = self._mock_runtime_directory
     # We don't really care about what these are set to, but they need to be set
     # in order for the mock to work.
