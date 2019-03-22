@@ -20,8 +20,8 @@ const int kDefaultHeight = 235;
 
 // Material design dialog width and height in DIPs.
 const int kDefaultWidthMd = 530;
-const int kDefaultHeightWithTimezone = 255;
-const int kDefaultHeightWithoutTimezone = 215;
+const int kDefaultHeightWithTimezone = 286;
+const int kDefaultHeightWithoutTimezone = 228;
 
 }  // namespace
 

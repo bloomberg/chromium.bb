@@ -2759,6 +2759,15 @@
   <message name="IDS_SET_TIME_TIME_LABEL" desc="Label for the time input element.">
     System time
   </message>
+  <message name="IDS_MD_SET_TIME_DATE_LABEL" desc="Label for the Material Design date input element.">
+    Date
+  </message>
+  <message name="IDS_MD_SET_TIME_TIME_LABEL" desc="Label for the Material Design time input element.">
+    Time
+  </message>
+  <message name="IDS_MD_SET_TIME_TIMEZONE_LABEL" desc="Label for the Material Design timezone select element.">
+    Timezone
+  </message>
 
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE" desc="Title of a prompt dialog for granting permissions to a volume (eg. USB drive, SD card, MTP device) with the specified name. Only used for screen readers (a11y); not visible.">
     Permission requested
