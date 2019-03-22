@@ -11,12 +11,18 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
+#include "chrome/browser/ui/webui/chromeos/arc_graphics_tracing/arc_graphics_jank_detector.h"
 #include "components/exo/shell_surface_util.h"
-#include "components/exo/wm_helper_chromeos.h"
+#include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/aura_constants.h"
@@ -30,35 +36,120 @@ namespace {
 constexpr char kKeyIcon[] = "icon";
 constexpr char kKeyTitle[] = "title";
 constexpr char kKeyTasks[] = "tasks";
-constexpr char kTaskIdPrefix[] = "org.chromium.arc.";
 
-// Scans for all ARC windows and and extracts the title and optionally icon.
-void CreateTaskMap(aura::Window* window, base::DictionaryValue* tasks) {
-  if (!window->IsVisible())
-    return;
+// Maximum interval to display.
+constexpr base::TimeDelta kMaxIntervalToDisplay =
+    base::TimeDelta::FromSecondsD(2.0);
 
-  // ARC window is top level window, all its parents have type not set.
-  if (window->type() == aura::client::WINDOW_TYPE_UNKNOWN) {
-    for (aura::Window* child_window : window->children())
-      CreateTaskMap(child_window, tasks);
-    return;
+std::unique_ptr<base::Value> BuildGraphicsModel(
+    const std::string& data,
+    base::DictionaryValue tasks_info,
+    const base::TimeTicks& time_min,
+    const base::TimeTicks& time_max) {
+  arc::ArcTracingModel common_model;
+  const base::TimeTicks time_min_clamped =
+      std::max(time_min, time_max - kMaxIntervalToDisplay);
+  common_model.SetMinMaxTime(
+      (time_min_clamped - base::TimeTicks()).InMicroseconds(),
+      (time_max - base::TimeTicks()).InMicroseconds());
+
+  if (!common_model.Build(data)) {
+    LOG(ERROR) << "Failed to build common model";
+    return nullptr;
   }
 
-  // Verifies if this is top-level ARC window.
-  const std::string* arc_app_id = exo::GetShellApplicationId(window);
-  if (!arc_app_id)
+  arc::ArcTracingGraphicsModel graphics_model;
+  if (!graphics_model.Build(common_model)) {
+    LOG(ERROR) << "Failed to build graphic buffers model";
+    return nullptr;
+  }
+
+  std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
+  model->SetKey(kKeyTasks, std::move(tasks_info));
+
+  return model;
+}
+
+}  // namespace
+
+ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
+    : wm_helper_(exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance()
+                                              : nullptr),
+      weak_ptr_factory_(this) {
+  DCHECK(wm_helper_);
+}
+
+ArcGraphicsTracingHandler::~ArcGraphicsTracingHandler() {
+  if (tracing_active_)
+    StopTracing();
+}
+
+void ArcGraphicsTracingHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "startTracing",
+      base::BindRepeating(&ArcGraphicsTracingHandler::HandleStartTracing,
+                          base::Unretained(this)));
+}
+
+void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
+                                                  aura::Window* gained_active,
+                                                  aura::Window* lost_active) {
+  // Handle ARC current active window if any.
+  DiscardActiveArcWindow();
+
+  active_task_id_ =
+      ArcAppWindowLauncherController::GetWindowTaskId(gained_active);
+  if (active_task_id_ <= 0)
     return;
 
-  // Root surface may not have task id.
-  const size_t prefix_pos = arc_app_id->find(kTaskIdPrefix);
-  if (prefix_pos)
+  arc_active_window_ = gained_active;
+  arc_active_window_->AddObserver(this);
+  // Limit tracing by newly activated window.
+  tracing_time_min_ = TRACE_TIME_TICKS_NOW();
+  jank_detector_ =
+      std::make_unique<ArcGraphicsJankDetector>(base::BindRepeating(
+          &ArcGraphicsTracingHandler::OnJankDetected, base::Unretained(this)));
+
+  UpdateActiveArcWindowInfo();
+
+  exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
+  DCHECK(surface);
+  surface->SetCommitCallback(base::BindRepeating(
+      &ArcGraphicsTracingHandler::OnCommit, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  jank_detector_->OnSample();
+}
+
+void ArcGraphicsTracingHandler::OnJankDetected() {
+  StopTracing();
+}
+
+void ArcGraphicsTracingHandler::OnWindowPropertyChanged(aura::Window* window,
+                                                        const void* key,
+                                                        intptr_t old) {
+  DCHECK_EQ(arc_active_window_, window);
+  if (key != aura::client::kAppIconKey)
     return;
 
+  UpdateActiveArcWindowInfo();
+}
+
+void ArcGraphicsTracingHandler::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(arc_active_window_, window);
+  DiscardActiveArcWindow();
+}
+
+void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
+  DCHECK(arc_active_window_);
   base::DictionaryValue task_information;
-  task_information.SetKey(kKeyTitle, base::Value(window->GetTitle()));
+  task_information.SetKey(kKeyTitle,
+                          base::Value(arc_active_window_->GetTitle()));
 
   const gfx::ImageSkia* app_icon =
-      window->GetProperty(aura::client::kAppIconKey);
+      arc_active_window_->GetProperty(aura::client::kAppIconKey);
   if (app_icon) {
     std::vector<unsigned char> png_data;
     if (gfx::PNGCodec::EncodeBGRASkBitmap(
@@ -72,50 +163,21 @@ void CreateTaskMap(aura::Window* window, base::DictionaryValue* tasks) {
     }
   }
 
-  tasks->SetKey(arc_app_id->c_str() + strlen(kTaskIdPrefix),
-                std::move(task_information));
+  tasks_info_.SetKey(base::StringPrintf("%d", active_task_id_),
+                     std::move(task_information));
 }
 
-std::unique_ptr<base::Value> BuildGraphicsModel(const std::string& data) {
-  arc::ArcTracingModel common_model;
-  if (!common_model.Build(data)) {
-    LOG(ERROR) << "Failed to build common model";
-    return nullptr;
-  }
+void ArcGraphicsTracingHandler::DiscardActiveArcWindow() {
+  if (!arc_active_window_)
+    return;
 
-  arc::ArcTracingGraphicsModel graphics_model;
-  if (!graphics_model.Build(common_model)) {
-    LOG(ERROR) << "Failed to build graphic buffers model";
-    return nullptr;
-  }
+  exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
+  DCHECK(surface);
+  surface->SetCommitCallback(exo::Surface::CommitCallback());
 
-  std::unique_ptr<base::DictionaryValue> model = graphics_model.Serialize();
-  base::DictionaryValue tasks;
-  // Scan for ARC++ windows
-  // TODO(https://crbug.com/887156): Fix the mash.
-  if (!features::IsMultiProcessMash()) {
-    CreateTaskMap(
-        exo::WMHelperChromeOS::GetInstance()->GetPrimaryDisplayContainer(
-            ash::kShellWindowId_DefaultContainer),
-        &tasks);
-  }
-  model->SetKey(kKeyTasks, std::move(tasks));
-
-  return model;
-}
-
-}  // namespace
-
-ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
-    : weak_ptr_factory_(this) {}
-
-ArcGraphicsTracingHandler::~ArcGraphicsTracingHandler() = default;
-
-void ArcGraphicsTracingHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
-      "startTracing",
-      base::BindRepeating(&ArcGraphicsTracingHandler::HandleStartTracing,
-                          base::Unretained(this)));
+  arc_active_window_->RemoveObserver(this);
+  jank_detector_.reset();
+  arc_active_window_ = nullptr;
 }
 
 void ArcGraphicsTracingHandler::StartTracing(double duration) {
@@ -123,6 +185,7 @@ void ArcGraphicsTracingHandler::StartTracing(double duration) {
       "-*,exo,viz,toplevel,gpu,cc,blink,disabled-by-default-android "
       "gfx,disabled-by-default-android hal",
       base::trace_event::RECORD_CONTINUOUSLY);
+  tracing_active_ = true;
   config.EnableSystrace();
   content::TracingController::GetInstance()->StartTracing(
       config, base::BindOnce(&ArcGraphicsTracingHandler::OnTracingStarted,
@@ -130,13 +193,36 @@ void ArcGraphicsTracingHandler::StartTracing(double duration) {
 }
 
 void ArcGraphicsTracingHandler::StopTracing() {
-  content::TracingController::GetInstance()->StopTracing(
-      content::TracingController::CreateStringEndpoint(
-          base::BindRepeating(&ArcGraphicsTracingHandler::OnTracingStopped,
-                              weak_ptr_factory_.GetWeakPtr())));
+  tracing_active_ = false;
+  DiscardActiveArcWindow();
+  tracing_timer_.Stop();
+  wm_helper_->RemoveActivationObserver(this);
+
+  tracing_time_max_ = TRACE_TIME_TICKS_NOW();
+
+  content::TracingController* const controller =
+      content::TracingController::GetInstance();
+
+  if (!controller->IsTracing())
+    return;
+
+  controller->StopTracing(content::TracingController::CreateStringEndpoint(
+      base::BindRepeating(&ArcGraphicsTracingHandler::OnTracingStopped,
+                          weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ArcGraphicsTracingHandler::OnTracingStarted(double duration) {
+  tasks_info_.Clear();
+
+  aura::Window* const current_active = wm_helper_->GetActiveWindow();
+  if (current_active) {
+    OnWindowActivated(ActivationReason::ACTIVATION_CLIENT /* not used */,
+                      current_active, nullptr);
+  }
+  wm_helper_->AddActivationObserver(this);
+
+  tracing_time_min_ = TRACE_TIME_TICKS_NOW();
+
   tracing_timer_.Start(FROM_HERE, base::TimeDelta::FromSecondsD(duration),
                        base::BindOnce(&ArcGraphicsTracingHandler::StopTracing,
                                       base::Unretained(this)));
@@ -150,7 +236,9 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&BuildGraphicsModel, std::move(string_data)),
+      base::BindOnce(&BuildGraphicsModel, std::move(string_data),
+                     std::move(tasks_info_), tracing_time_min_,
+                     tracing_time_max_),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
                      weak_ptr_factory_.GetWeakPtr()));
 }
