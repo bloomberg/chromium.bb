@@ -938,6 +938,11 @@ Shell::~Shell() {
   local_state_.reset();
   shell_delegate_.reset();
 
+  if (!::features::IsMultiProcessMash()) {
+    // Must be shut down after detachable_base_handler_.
+    chromeos::HammerdClient::Shutdown();
+  }
+
   for (auto& observer : shell_observers_)
     observer.OnShellDestroyed();
 
@@ -964,6 +969,19 @@ void Shell::Init(
     // Accessibility node tree serialization needs to "jump the fence" and
     // convert between ash proxy and mus client windows.
     views::AXAuraWindowUtils::Set(std::make_unique<AXAshWindowUtils>());
+  }
+
+  if (!::features::IsMultiProcessMash()) {
+    // DBus clients only needed in Ash. For MultiProcessMash these are
+    // initialized in AshService::InitializeDBusClients.
+    dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+    if (bus) {
+      // Required by DetachableBaseHandler.
+      chromeos::HammerdClient::Initialize(bus);
+    } else {
+      // Required by DetachableBaseHandler.
+      chromeos::HammerdClient::InitializeFake();
+    }
   }
 
   // This creates the MessageCenter object which is used by some other objects
