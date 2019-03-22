@@ -217,14 +217,12 @@ const HostMappingRules* HttpStreamFactory::GetHostMappingRules() const {
 }
 
 void HttpStreamFactory::OnJobControllerComplete(JobController* controller) {
-  for (auto it = job_controller_set_.begin(); it != job_controller_set_.end();
-       ++it) {
-    if (it->get() == controller) {
-      job_controller_set_.erase(it);
-      return;
-    }
+  auto it = job_controller_set_.find(controller);
+  if (it != job_controller_set_.end()) {
+    job_controller_set_.erase(it);
+  } else {
+    NOTREACHED();
   }
-  NOTREACHED();
 }
 
 HttpStreamFactory::PreconnectingProxyServer::PreconnectingProxyServer(
