@@ -12,9 +12,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/composition_text.h"
-#include "ui/base/ime/ime_text_span.h"
-#include "ui/gfx/range/mojo/range_struct_traits.h"
 
 namespace ws {
 
@@ -85,26 +82,6 @@ TEST_F(IMEStructTraitsTest, CandidateWindowEntry) {
   EXPECT_EQ(input.annotation, output.annotation);
   EXPECT_EQ(input.description_title, output.description_title);
   EXPECT_EQ(input.description_body, output.description_body);
-}
-
-TEST_F(IMEStructTraitsTest, CompositionText) {
-  ui::CompositionText input;
-  input.text = base::UTF8ToUTF16("abcdefghij");
-  ui::ImeTextSpan ime_text_span_1(0, 2, ui::ImeTextSpan::Thickness::kThin);
-  ime_text_span_1.underline_color = SK_ColorGRAY;
-  input.ime_text_spans.push_back(ime_text_span_1);
-  ui::ImeTextSpan ime_text_span_2(ui::ImeTextSpan::Type::kComposition, 3, 6,
-                                  ui::ImeTextSpan::Thickness::kThick,
-                                  SK_ColorGREEN);
-  ime_text_span_2.underline_color = SK_ColorRED;
-  input.ime_text_spans.push_back(ime_text_span_2);
-  input.selection = gfx::Range(1, 7);
-
-  ui::CompositionText output;
-  EXPECT_TRUE(mojom::CompositionText::Deserialize(
-      mojom::CompositionText::Serialize(&input), &output));
-
-  EXPECT_EQ(input, output);
 }
 
 }  // namespace ws

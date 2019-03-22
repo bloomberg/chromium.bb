@@ -7,7 +7,6 @@ module content.mojom;
 import "content/common/native_types.mojom";
 import "content/common/input/input_handler.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "services/ws/public/mojom/ime/ime.mojom";
 import "ui/base/ime/mojo/ime_types.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
@@ -168,7 +167,7 @@ interface RenderWidgetHostNSViewClient {
   // it is the result of GetActiveWidget.
   ImeSetComposition(
       mojo_base.mojom.String16 text,
-      array<ws.mojom.ImeTextSpan> ime_text_spans,
+      array<ui.mojom.ImeTextSpan> ime_text_spans,
       gfx.mojom.Range replacement_range,
       int32 selection_start,
       int32 selection_end);

@@ -4,6 +4,9 @@
 
 mojom = "//ui/base/ime/mojo/ime_types.mojom"
 public_headers = [
+  "//ui/base/ime/composition_text.h",
+  "//ui/base/ime/ime_text_span.h",
+  "//ui/base/ime/text_input_client.h",
   "//ui/base/ime/text_input_mode.h",
   "//ui/base/ime/text_input_type.h",
 ]
@@ -14,8 +17,16 @@ sources = [
 public_deps = [
   "//ui/base/ime:ime_types",
 ]
+deps = [
+  "//ui/gfx/range",
+  "//ui/gfx/range/mojo:struct_traits",
+]
 
 type_mappings = [
+  "ui.mojom.CompositionText=ui::CompositionText",
+  "ui.mojom.FocusReason=ui::TextInputClient::FocusReason",
+  "ui.mojom.ImeTextSpan=ui::ImeTextSpan",
+  "ui.mojom.ImeTextSpanThickness=ui::ImeTextSpan::Thickness",
   "ui.mojom.TextInputType=ui::TextInputType",
   "ui.mojom.TextInputMode=ui::TextInputMode",
 ]

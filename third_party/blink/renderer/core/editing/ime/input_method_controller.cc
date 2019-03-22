@@ -912,7 +912,7 @@ void InputMethodController::SetComposition(
   if (ime_text_spans.IsEmpty()) {
     GetDocument().Markers().AddCompositionMarker(
         CompositionEphemeralRange(), Color::kTransparent,
-        ws::mojom::ImeTextSpanThickness::kThin,
+        ui::mojom::ImeTextSpanThickness::kThin,
         LayoutTheme::GetTheme().PlatformDefaultCompositionBackgroundColor());
     return;
   }

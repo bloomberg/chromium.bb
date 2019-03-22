@@ -538,10 +538,10 @@ source_set("blink_headers") {
   public_deps = [
     "//net",
     "//services/service_manager/public/cpp",
-    "//services/ws/public/mojom/ime",
     "//skia",
     "//third_party/blink/public/common",
     "//ui/accessibility:ax_enums_mojo",
+    "//ui/base/ime/mojo",
     "//url",
   ]
 

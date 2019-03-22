@@ -969,6 +969,7 @@ test("ui_base_unittests") {
     deps += [
       "//ui/base/ime",
       "//ui/base/ime/mojo:test_interfaces",
+      "//ui/gfx/range/mojo:struct_traits",
     ]
   }
 

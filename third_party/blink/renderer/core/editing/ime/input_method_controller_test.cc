@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 
-using ws::mojom::ImeTextSpanThickness;
+using ui::mojom::ImeTextSpanThickness;
 
 namespace blink {
 

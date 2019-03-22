@@ -8,9 +8,12 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/mojo/ime_struct_traits_test.mojom.h"
+#include "ui/gfx/range/mojo/range_struct_traits.h"
 
 namespace ui {
 
@@ -91,6 +94,26 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
     ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
     EXPECT_EQ(kTextInputTypes[i], type_out);
   }
+}
+
+TEST_F(IMEStructTraitsTest, CompositionText) {
+  ui::CompositionText input;
+  input.text = base::UTF8ToUTF16("abcdefghij");
+  ui::ImeTextSpan ime_text_span_1(0, 2, ui::ImeTextSpan::Thickness::kThin);
+  ime_text_span_1.underline_color = SK_ColorGRAY;
+  input.ime_text_spans.push_back(ime_text_span_1);
+  ui::ImeTextSpan ime_text_span_2(ui::ImeTextSpan::Type::kComposition, 3, 6,
+                                  ui::ImeTextSpan::Thickness::kThick,
+                                  SK_ColorGREEN);
+  ime_text_span_2.underline_color = SK_ColorRED;
+  input.ime_text_spans.push_back(ime_text_span_2);
+  input.selection = gfx::Range(1, 7);
+
+  ui::CompositionText output;
+  EXPECT_TRUE(mojom::CompositionText::Deserialize(
+      mojom::CompositionText::Serialize(&input), &output));
+
+  EXPECT_EQ(input, output);
 }
 
 }  // namespace ui

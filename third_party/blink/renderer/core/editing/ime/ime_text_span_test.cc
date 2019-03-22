@@ -12,7 +12,7 @@ namespace {
 ImeTextSpan CreateImeTextSpan(unsigned start_offset, unsigned end_offset) {
   return ImeTextSpan(ImeTextSpan::Type::kComposition, start_offset, end_offset,
                      Color::kTransparent,
-                     ws::mojom::ImeTextSpanThickness::kNone,
+                     ui::mojom::ImeTextSpanThickness::kNone,
                      Color::kTransparent);
 }
 

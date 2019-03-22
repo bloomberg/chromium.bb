@@ -42,8 +42,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
-IPC_ENUM_TRAITS_MAX_VALUE(ws::mojom::ImeTextSpanThickness,
-                          ws::mojom::ImeTextSpanThickness::kThick)
+IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::ImeTextSpanThickness,
+                          ui::mojom::ImeTextSpanThickness::kThick)
 
 IPC_STRUCT_TRAITS_BEGIN(viz::Selection<gfx::SelectionBound>)
   IPC_STRUCT_TRAITS_MEMBER(start)
