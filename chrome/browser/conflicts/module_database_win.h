@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -28,6 +29,7 @@ class ThirdPartyConflictsManager;
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 // A class that keeps track of all modules loaded across Chrome processes.
@@ -50,11 +52,17 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   static constexpr base::TimeDelta kIdleTimeout =
       base::TimeDelta::FromSeconds(10);
 
-  // Creates the ModuleDatabase. Lives on the sequence where it is created.
+  // Creates the ModuleDatabase. Must be created and set on the sequence
+  // returned by GetTaskRunner().
   ModuleDatabase();
   ~ModuleDatabase() override;
 
-  // Retrieves the singleton global instance of the ModuleDatabase.
+  // Returns the SequencedTaskRunner on which the ModuleDatabase lives. Can be
+  // called on any thread.
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
+
+  // Retrieves the singleton global instance of the ModuleDatabase. Must only be
+  // called on the sequence returned by GetTaskRunner().
   static ModuleDatabase* GetInstance();
 
   // Sets the global instance of the ModuleDatabase. Ownership is passed to the
@@ -99,7 +107,8 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
                     uint32_t module_time_date_stamp);
 
   // Forwards the module load event to the ModuleDatabase global instance via
-  // OnModuleLoad(). Provided for convenience.
+  // OnModuleLoad() on the ModuleDatabase task runner. Can be called on any
+  // threads. Provided for convenience.
   static void HandleModuleLoadEvent(content::ProcessType process_type,
                                     const base::FilePath& module_path,
                                     uint32_t module_size,

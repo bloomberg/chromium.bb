@@ -10,13 +10,15 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/lazy_task_runner.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "content/public/browser/browser_task_traits.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/enterprise_util.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
@@ -39,7 +41,7 @@ static_assert(content::PROCESS_TYPE_BROWSER == 2,
               "assumes browser process type has value 2");
 constexpr uint32_t kFirstValidProcessType = content::PROCESS_TYPE_BROWSER;
 
-ModuleDatabase* g_module_database_win_instance = nullptr;
+ModuleDatabase* g_module_database = nullptr;
 
 #if defined(GOOGLE_CHROME_BUILD)
 // Returns true if either the IncompatibleApplicationsWarning or
@@ -85,22 +87,31 @@ ModuleDatabase::ModuleDatabase()
 ModuleDatabase::~ModuleDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (this == g_module_database_win_instance)
-    g_module_database_win_instance = nullptr;
+  if (this == g_module_database)
+    g_module_database = nullptr;
+}
+
+// static
+scoped_refptr<base::SequencedTaskRunner> ModuleDatabase::GetTaskRunner() {
+  static base::LazySequencedTaskRunner g_task_runner =
+      LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+          base::TaskTraits(content::BrowserThread::UI));
+
+  return g_task_runner.Get();
 }
 
 // static
 ModuleDatabase* ModuleDatabase::GetInstance() {
-  return g_module_database_win_instance;
+  return g_module_database;
 }
 
 // static
 void ModuleDatabase::SetInstance(
     std::unique_ptr<ModuleDatabase> module_database) {
-  DCHECK_EQ(nullptr, g_module_database_win_instance);
+  DCHECK_EQ(nullptr, g_module_database);
   // This is deliberately leaked. It can be cleaned up by manually deleting the
   // ModuleDatabase.
-  g_module_database_win_instance = module_database.release();
+  g_module_database = module_database.release();
 }
 
 void ModuleDatabase::StartDrainingModuleLoadAttemptsLog() {
@@ -201,8 +212,16 @@ void ModuleDatabase::HandleModuleLoadEvent(content::ProcessType process_type,
                                            const base::FilePath& module_path,
                                            uint32_t module_size,
                                            uint32_t module_time_date_stamp) {
-  ModuleDatabase::GetInstance()->OnModuleLoad(
-      process_type, module_path, module_size, module_time_date_stamp);
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](content::ProcessType process_type,
+             const base::FilePath& module_path, uint32_t module_size,
+             uint32_t module_time_date_stamp) {
+            ModuleDatabase::GetInstance()->OnModuleLoad(
+                process_type, module_path, module_size, module_time_date_stamp);
+          },
+          process_type, module_path, module_size, module_time_date_stamp));
 }
 
 void ModuleDatabase::OnModuleBlocked(const base::FilePath& module_path,

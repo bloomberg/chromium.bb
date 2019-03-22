@@ -127,11 +127,6 @@ void RegisterThirdPartyModuleListComponent(
     ComponentUpdateService* component_update_service) {
   DVLOG(1) << "Registering Third Party Module List component.";
 
-  // Check if component is needed. The ThirdPartyConflictsManager instance only
-  // exists when the module list is needed.
-  if (!ModuleDatabase::GetInstance()->third_party_conflicts_manager())
-    return;
-
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<ThirdPartyModuleListComponentInstallerPolicy>());
   installer->Register(
