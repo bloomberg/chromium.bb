@@ -577,15 +577,38 @@ public class MediaDrmBridge {
     private void provision() {
         // This should only be called if no MediaCrypto needed.
         assert mMediaDrm != null;
+        assert !mProvisioningPending;
         assert !mRequiresMediaCrypto;
 
         // Provision only works for origin isolated storage.
         if (!mOriginSet) {
+            Log.e(TAG, "Calling provision() without an origin.");
             nativeOnProvisioningComplete(mNativeMediaDrmBridge, false);
             return;
         }
 
-        startProvisioning();
+        // The security level used for provisioning cannot be set and is cached from when a need for
+        // provisioning is last detected. So if we call startProvisioning() it will use the default
+        // security level, which may not match the security level needed. As a result this code must
+        // call openSession(), which will result in the security level being cached. We don't care
+        // about the session, so if it opens simply close it.
+        try {
+            // This will throw a NotProvisionedException if provisioning needed. If it succeeds,
+            // assume this origin ID is already provisioned.
+            byte[] drmId = openSession();
+
+            // Provisioning is not required. If a session was actually opened, close it.
+            if (drmId != null) {
+                SessionId sessionId = SessionId.createTemporarySessionId(drmId);
+                closeSessionNoException(sessionId);
+            }
+
+            // Indicate that provisioning succeeded.
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, true);
+
+        } catch (android.media.NotProvisionedException e) {
+            startProvisioning();
+        }
     }
 
     /**
@@ -1131,8 +1154,8 @@ public class MediaDrmBridge {
     /**
      * Called when the provision response is received.
      *
-     * @param isResponseReceived Flag set to true if commincation with provision server was
-     * successful.
+     * @param isResponseReceived Flag set to true if communication with
+     * provision server was successful.
      * @param response Response data from the provision server.
      */
     @CalledByNative
