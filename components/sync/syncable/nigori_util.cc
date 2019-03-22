@@ -13,6 +13,7 @@
 
 #include "base/containers/queue.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/syncable/directory.h"
@@ -211,6 +212,9 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
           generated_specifics.SerializeAsString()) {
     DVLOG(2) << "Specifics of type " << ModelTypeToString(type)
              << " already match, dropping change.";
+    UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeRedundantPut",
+                              ModelTypeToHistogramInt(type),
+                              static_cast<int>(MODEL_TYPE_COUNT));
     return true;
   }
 
