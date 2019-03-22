@@ -154,7 +154,7 @@ ExecutionContext* BackgroundFetchRegistration::GetExecutionContext() const {
 }
 
 ScriptPromise BackgroundFetchRegistration::abort(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   DCHECK(registration_);
@@ -217,7 +217,7 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
             "available."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Convert |request| to mojom::blink::FetchAPIRequestPtr.

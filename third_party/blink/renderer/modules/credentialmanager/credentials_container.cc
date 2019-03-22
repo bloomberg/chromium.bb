@@ -419,7 +419,7 @@ CredentialsContainer::CredentialsContainer() = default;
 ScriptPromise CredentialsContainer::get(
     ScriptState* script_state,
     const CredentialRequestOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type = RequiredOriginType::kSecureAndSameWithAncestors;
@@ -526,7 +526,7 @@ ScriptPromise CredentialsContainer::get(
 
 ScriptPromise CredentialsContainer::store(ScriptState* script_state,
                                           Credential* credential) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type =
@@ -571,7 +571,7 @@ ScriptPromise CredentialsContainer::create(
     ScriptState* script_state,
     const CredentialCreationOptions* options,
     ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type =
@@ -689,7 +689,7 @@ ScriptPromise CredentialsContainer::create(
 
 ScriptPromise CredentialsContainer::preventSilentAccess(
     ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   const auto required_origin_type = RequiredOriginType::kSecure;
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))

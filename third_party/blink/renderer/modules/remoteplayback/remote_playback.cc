@@ -102,7 +102,7 @@ ExecutionContext* RemotePlayback::GetExecutionContext() const {
 ScriptPromise RemotePlayback::watchAvailability(
     ScriptState* script_state,
     V8RemotePlaybackAvailabilityCallback* callback) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(
@@ -134,7 +134,7 @@ ScriptPromise RemotePlayback::watchAvailability(
 
 ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
                                                       int id) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(
@@ -158,7 +158,7 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
 
 ScriptPromise RemotePlayback::cancelWatchAvailability(
     ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(
@@ -177,7 +177,7 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
 }
 
 ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(

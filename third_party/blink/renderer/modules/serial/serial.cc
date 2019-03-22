@@ -66,7 +66,7 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
                                            kFeaturePolicyBlocked));
   }
 
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   get_ports_promises_.insert(resolver);
 
   EnsureServiceConnection();
@@ -101,7 +101,7 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   request_port_promises_.insert(resolver);
 
   EnsureServiceConnection();

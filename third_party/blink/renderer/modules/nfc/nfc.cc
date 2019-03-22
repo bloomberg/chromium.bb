@@ -722,7 +722,7 @@ ScriptPromise NFC::push(ScriptState* script_state,
         "NDEFMessage exceeds maximum supported size.");
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
@@ -739,7 +739,7 @@ ScriptPromise NFC::cancelPush(ScriptState* script_state, const String& target) {
   if (!promise.IsEmpty())
     return promise;
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   auto callback = WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
                             WrapPersistent(resolver));
@@ -767,7 +767,7 @@ ScriptPromise NFC::watch(ScriptState* script_state,
     }
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   auto watch_callback =
       WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
@@ -792,7 +792,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state, int32_t id) {
                                   "Provided watch id cannot be found.");
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   nfc_->CancelWatch(id,
                     WTF::Bind(&NFC::OnRequestCompleted, WrapPersistent(this),
@@ -808,7 +808,7 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state) {
     return promise;
 
   callbacks_.clear();
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   nfc_->CancelAllWatches(WTF::Bind(&NFC::OnRequestCompleted,
                                    WrapPersistent(this),

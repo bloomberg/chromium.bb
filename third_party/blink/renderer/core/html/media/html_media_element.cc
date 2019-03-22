@@ -2384,7 +2384,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
   // is called, |play_promise_resolvers_| needs to be populated. What this code
   // does is to populate |play_promise_resolvers_| before calling ::play() and
   // remove the Promise if ::play() failed.
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   play_promise_resolvers_.push_back(resolver);
 

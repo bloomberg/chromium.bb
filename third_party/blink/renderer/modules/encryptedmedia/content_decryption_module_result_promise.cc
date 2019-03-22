@@ -39,7 +39,7 @@ ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
     ScriptState* script_state,
     const char* interface_name,
     const char* property_name)
-    : resolver_(ScriptPromiseResolver::Create(script_state)),
+    : resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       interface_name_(interface_name),
       property_name_(property_name) {}
 

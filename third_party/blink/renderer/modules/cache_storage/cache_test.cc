@@ -75,8 +75,8 @@ class ScopedFetcherForTests final
     }
 
     if (response_) {
-      ScriptPromiseResolver* resolver =
-          ScriptPromiseResolver::Create(script_state);
+      auto* resolver =
+          MakeGarbageCollected<ScriptPromiseResolver>(script_state);
       const ScriptPromise promise = resolver->Promise();
       resolver->Resolve(response_);
       response_ = nullptr;

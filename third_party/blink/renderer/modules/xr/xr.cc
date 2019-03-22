@@ -138,7 +138,7 @@ ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
                                            kFeaturePolicyBlocked));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (mode == "inline") {
@@ -250,7 +250,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
         "Inline AR is deprecated and will be removed soon."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PendingSessionQuery* query = MakeGarbageCollected<PendingSessionQuery>(

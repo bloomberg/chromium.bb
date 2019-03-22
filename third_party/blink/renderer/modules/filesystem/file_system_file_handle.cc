@@ -23,7 +23,7 @@ FileSystemFileHandle::FileSystemFileHandle(DOMFileSystemBase* file_system,
     : FileSystemBaseHandle(file_system, full_path) {}
 
 ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
   FileSystemDispatcher::From(ExecutionContext::From(script_state))
       .GetFileSystemManager()
@@ -44,7 +44,7 @@ ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
 }
 
 ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
   KURL file_system_url = filesystem()->CreateFileSystemURL(this);
 

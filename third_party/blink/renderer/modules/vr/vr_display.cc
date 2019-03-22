@@ -395,7 +395,7 @@ ScriptPromise VRDisplay::requestPresent(
 
   ReportPresentationResult(PresentationResult::kRequested);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If the VRDisplay does not advertise the ability to present reject the
@@ -624,7 +624,7 @@ void VRDisplay::OnNonImmersiveSessionRequestReturned(
 
 ScriptPromise VRDisplay::exitPresent(ScriptState* script_state) {
   DVLOG(1) << __FUNCTION__;
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!is_presenting_) {

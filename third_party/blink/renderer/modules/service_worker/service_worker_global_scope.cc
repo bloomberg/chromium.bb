@@ -457,7 +457,7 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
   if (!execution_context)
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->SkipWaiting(WTF::Bind(&DidSkipWaiting, WrapPersistent(resolver)));
   return resolver->Promise();

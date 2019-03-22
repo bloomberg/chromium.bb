@@ -344,7 +344,7 @@ ScriptPromise CookieStore::subscribeToChanges(
     return ScriptPromise();
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   int64_t service_worker_registration_id =
       scope->registration()->RegistrationId();
   subscription_backend_->AppendSubscriptions(
@@ -366,7 +366,7 @@ ScriptPromise CookieStore::getChangeSubscriptions(
     return ScriptPromise();
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto* scope = To<ServiceWorkerGlobalScope>(GetExecutionContext());
   int64_t service_worker_registration_id =
       scope->registration()->RegistrationId();
@@ -458,7 +458,7 @@ ScriptPromise CookieStore::DoRead(
     return ScriptPromise();
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   backend_->GetAllForUrl(
       default_cookie_url_, default_site_for_cookies_,
       std::move(backend_options),
@@ -519,7 +519,7 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   backend_->SetCanonicalCookie(
       std::move(canonical_cookie.value()), default_cookie_url_,
       default_site_for_cookies_,

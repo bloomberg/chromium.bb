@@ -60,7 +60,7 @@ std::string StateToString(DisplayLockContext::State state) {
 // Helper function that returns an immediately rejected promise.
 ScriptPromise GetRejectedPromise(ScriptState* script_state,
                                  const char* rejection_reason) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
   resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                         rejection_reason));
@@ -69,7 +69,7 @@ ScriptPromise GetRejectedPromise(ScriptState* script_state,
 
 // Helper function that returns an immediately resolved promise.
 ScriptPromise GetResolvedPromise(ScriptState* script_state) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
   resolver->Resolve();
   return promise;
@@ -174,7 +174,8 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   // If we're already connected then we need to ensure that 1. layout is clean
   // and 2. we have removed the current painted output.
   if (ConnectedToView()) {
-    acquire_resolver_ = ScriptPromiseResolver::Create(script_state);
+    acquire_resolver_ =
+        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     state_ = kPendingAcquire;
     MarkPaintLayerNeedsRepaint();
     ScheduleAnimation();
@@ -202,7 +203,7 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
     return update_resolver_->Promise();
   }
 
-  update_resolver_ = ScriptPromiseResolver::Create(script_state);
+  update_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   StartUpdateIfNeeded();
   return update_resolver_->Promise();
 }
@@ -228,8 +229,10 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
   DCHECK_NE(state_, kCommitting);
   // We might already have a resolver if we called updateAndCommit() before
   // this.
-  if (!commit_resolver_)
-    commit_resolver_ = ScriptPromiseResolver::Create(script_state);
+  if (!commit_resolver_) {
+    commit_resolver_ =
+        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  }
   auto promise = commit_resolver_->Promise();
   StartCommit();
   return promise;
@@ -259,7 +262,7 @@ ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
   }
 
   CancelTimeoutTask();
-  commit_resolver_ = ScriptPromiseResolver::Create(script_state);
+  commit_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   StartUpdateIfNeeded();
   return commit_resolver_->Promise();
 }

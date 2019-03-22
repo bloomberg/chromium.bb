@@ -69,7 +69,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
         script_state, CreateInvalidDescriptorError());
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
   GetService()->RemoteDescriptorReadValue(
@@ -135,7 +135,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   Vector<uint8_t> value_vector;
   value_vector.Append(value.Bytes(), value.ByteLength());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
   GetService()->RemoteDescriptorWriteValue(

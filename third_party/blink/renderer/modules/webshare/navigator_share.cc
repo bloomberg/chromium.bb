@@ -181,7 +181,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     DCHECK(service_);
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ShareClientImpl* client =
       MakeGarbageCollected<ShareClientImpl>(this, resolver);
   clients_.insert(client);

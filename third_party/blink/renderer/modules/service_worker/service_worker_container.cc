@@ -234,7 +234,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     ScriptState* script_state,
     const String& url,
     const RegistrationOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // TODO(asamidoi): Remove this check after module loading for
@@ -370,7 +370,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 ScriptPromise ServiceWorkerContainer::getRegistration(
     ScriptState* script_state,
     const String& document_url) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -422,7 +422,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
 
 ScriptPromise ServiceWorkerContainer::getRegistrations(
     ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!provider_) {

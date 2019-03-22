@@ -24,7 +24,7 @@ namespace blink {
 ScriptPromise ShapeDetector::detect(
     ScriptState* script_state,
     const ImageBitmapSourceUnion& image_source) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // ImageDatas cannot be tainted by definition.

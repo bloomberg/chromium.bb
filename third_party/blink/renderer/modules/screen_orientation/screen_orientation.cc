@@ -148,7 +148,7 @@ void ScreenOrientation::SetAngle(uint16_t angle) {
 
 ScriptPromise ScreenOrientation::lock(ScriptState* state,
                                       const AtomicString& lock_string) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(state);
   ScriptPromise promise = resolver->Promise();
 
   Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;

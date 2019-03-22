@@ -219,7 +219,7 @@ WebIDBFactory* IDBFactory::GetFactory(ExecutionContext* execution_context) {
 
 ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (!ExecutionContext::From(script_state)
            ->GetSecurityOrigin()

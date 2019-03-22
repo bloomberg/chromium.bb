@@ -47,8 +47,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsCalled) {
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(updater);
   event->SetEventPhase(Event::kCapturingPhase);
-  ScriptPromiseResolver* payment_details =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* payment_details =
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   event->updateWith(scope.GetScriptState(), payment_details->Promise(),
                     scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -67,8 +67,8 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsFailureCalled) {
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(updater);
   event->SetEventPhase(Event::kCapturingPhase);
-  ScriptPromiseResolver* payment_details =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* payment_details =
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   event->updateWith(scope.GetScriptState(), payment_details->Promise(),
                     scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -87,7 +87,8 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateWithoutDispatching) {
 
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
@@ -103,13 +104,15 @@ TEST(PaymentRequestUpdateEventTest, CannotUpdateTwice) {
   event->SetEventPhase(Event::kCapturingPhase);
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
@@ -123,7 +126,8 @@ TEST(PaymentRequestUpdateEventTest, UpdaterNotRequired) {
 
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -156,7 +160,8 @@ TEST(PaymentRequestUpdateEventTest, AddressChangeUpdateWithTimeout) {
 
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -189,7 +194,8 @@ TEST(PaymentRequestUpdateEventTest, OptionChangeUpdateWithTimeout) {
 
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -208,8 +214,8 @@ TEST(PaymentRequestUpdateEventTest, AddressChangePromiseTimeout) {
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(request);
   event->SetEventPhase(Event::kCapturingPhase);
-  ScriptPromiseResolver* payment_details =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* payment_details =
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   String error_message;
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
@@ -241,8 +247,8 @@ TEST(PaymentRequestUpdateEventTest, OptionChangePromiseTimeout) {
   event->SetTrusted(true);
   event->SetPaymentDetailsUpdater(request);
   event->SetEventPhase(Event::kCapturingPhase);
-  ScriptPromiseResolver* payment_details =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto* payment_details =
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   String error_message;
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
@@ -269,7 +275,8 @@ TEST(PaymentRequestUpdateEventTest, NotAllowUntrustedEvent) {
 
   event->updateWith(
       scope.GetScriptState(),
-      ScriptPromiseResolver::Create(scope.GetScriptState())->Promise(),
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState())
+          ->Promise(),
       scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());

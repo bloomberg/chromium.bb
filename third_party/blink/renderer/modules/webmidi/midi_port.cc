@@ -103,7 +103,7 @@ ScriptPromise MIDIPort::open(ScriptState* script_state) {
   if (connection_ == kConnectionStateOpen)
     return Accept(script_state);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kMiscPlatformAPI)
       ->PostTask(FROM_HERE,
@@ -127,7 +127,7 @@ ScriptPromise MIDIPort::close(ScriptState* script_state) {
   if (connection_ == kConnectionStateClosed)
     return Accept(script_state);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kMiscPlatformAPI)
       ->PostTask(FROM_HERE,

@@ -350,8 +350,8 @@ ScriptPromise RTCQuicTransport::getStats(ScriptState* script_state,
         "The RTCQuicTransport's state is not 'connecting' or 'connected'.");
     return ScriptPromise();
   }
-  ScriptPromiseResolver* promise_resolver =
-      ScriptPromiseResolver::Create(script_state);
+  auto* promise_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   uint32_t request_id = ++get_stats_id_counter_;
   stats_promise_map_.Set(request_id, promise_resolver);
   proxy_->GetStats(request_id);

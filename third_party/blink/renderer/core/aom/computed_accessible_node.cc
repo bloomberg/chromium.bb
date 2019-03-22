@@ -55,7 +55,7 @@ ComputedAccessibleNodePromiseResolver::ComputedAccessibleNodePromiseResolver(
     ScriptState* script_state,
     Element& element)
     : element_(element),
-      resolver_(ScriptPromiseResolver::Create(script_state)),
+      resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       resolve_with_node_(false),
       ax_context_(std::make_unique<AXContext>(element_->GetDocument())) {}
 

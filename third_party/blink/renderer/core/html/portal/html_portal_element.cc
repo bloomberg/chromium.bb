@@ -112,7 +112,7 @@ BlinkTransferableMessage ActivateDataAsMessage(
 
 ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
                                           PortalActivateOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   ExceptionState exception_state(script_state->GetIsolate(),

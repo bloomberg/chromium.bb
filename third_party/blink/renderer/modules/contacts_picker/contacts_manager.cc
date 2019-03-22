@@ -98,7 +98,7 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
                                      "At least one property must be provided"));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   bool include_names = false;
