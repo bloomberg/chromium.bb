@@ -351,11 +351,4 @@
     </message>
   </if>
 
-  <!-- iOS specific error page messages -->
-  <if expr="is_ios">
-    <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE_NO_EMPHASIS" desc="Summary in the error page when we can't connect to a site. [iOS only]">
-      The webpage at <ph name="SITE">$1<ex>google.xom</ex></ph> might be temporarily down or it may have moved permanently to a new web address.
-    </message>
-  </if>
-
 </grit-part>
