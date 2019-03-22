@@ -30,6 +30,7 @@
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -126,14 +127,19 @@ const int kMaxExtractorTasks = 8;
 
 std::unique_ptr<DomDistillerService> CreateDomDistillerService(
     content::BrowserContext* context,
+    SimpleFactoryKey* key,
     const base::FilePath& db_path,
     const FileToUrlMap& file_to_url_map) {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
+  // Setting up PrefService for DistilledPagePrefs.
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      new sync_preferences::TestingPrefServiceSyncable();
+  DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
+
   auto* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForBrowserContext(
-          context);
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(key, pref_service);
 
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.
@@ -176,11 +182,6 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
   std::unique_ptr<DistillerFactory> distiller_factory(
       new TestDistillerFactoryImpl(std::move(distiller_url_fetcher_factory),
                                    options, file_to_url_map));
-
-  // Setting up PrefService for DistilledPagePrefs.
-  sync_preferences::TestingPrefServiceSyncable* pref_service =
-      new sync_preferences::TestingPrefServiceSyncable();
-  DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
   return std::unique_ptr<DomDistillerService>(new DomDistillerService(
       std::move(dom_distiller_store), std::move(distiller_factory),
@@ -359,8 +360,9 @@ class ContentExtractor : public ContentBrowserTest {
         command_line, &file_to_url_map);
     content::BrowserContext* context =
         shell()->web_contents()->GetBrowserContext();
-    service_ =
-        CreateDomDistillerService(context, db_dir_.GetPath(), file_to_url_map);
+    key_ = std::make_unique<SimpleFactoryKey>(context->GetPath());
+    service_ = CreateDomDistillerService(context, key_.get(), db_dir_.GetPath(),
+                                         file_to_url_map);
     PumpQueue();
   }
 
@@ -434,6 +436,8 @@ class ContentExtractor : public ContentBrowserTest {
   size_t pending_tasks_;
   size_t max_tasks_;
   size_t next_request_;
+
+  std::unique_ptr<SimpleFactoryKey> key_;
 
   base::ScopedTempDir db_dir_;
   std::unique_ptr<net::ScopedDefaultHostResolverProc>

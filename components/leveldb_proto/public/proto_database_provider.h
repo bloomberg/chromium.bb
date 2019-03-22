@@ -26,13 +26,15 @@ class ProtoDatabaseProvider : public KeyedService {
   using GetSharedDBInstanceCallback =
       base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)>;
 
-  static ProtoDatabaseProvider* Create(const base::FilePath& profile_dir);
-
   template <typename P, typename T = P>
   static std::unique_ptr<ProtoDatabase<P, T>> CreateUniqueDB(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
     return std::make_unique<ProtoDatabaseImpl<P, T>>(task_runner);
   }
+
+  // Do not create this directly, instead use the ProtoDatabaseProviderFactory
+  // for the embedder to ensure there's only one per context.
+  ProtoDatabaseProvider(const base::FilePath& profile_dir);
 
   // |db_type|: Each database should have a type specified in ProtoDbType enum.
   // This type is used to index data in the shared database. |unique_db_dir|:
@@ -56,8 +58,6 @@ class ProtoDatabaseProvider : public KeyedService {
   friend class TestProtoDatabaseProvider;
   template <typename T_>
   friend class ProtoDatabaseImplTest;
-
-  ProtoDatabaseProvider(const base::FilePath& profile_dir);
 
   base::FilePath profile_dir_;
   scoped_refptr<SharedProtoDatabase> db_;

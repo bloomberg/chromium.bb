@@ -35,7 +35,8 @@ TrackerFactory::TrackerFactory()
     : BrowserContextKeyedServiceFactory(
           "feature_engagement::Tracker",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+  // Add this when this factory is a SimpleKeyedServiceFactory:
+  // DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 TrackerFactory::~TrackerFactory() = default;
@@ -52,8 +53,8 @@ KeyedService* TrackerFactory::BuildServiceInstanceFor(
       chrome::kFeatureEngagementTrackerStorageDirname);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()
-          ->GetForBrowserContext(context);
+      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
+          profile->GetSimpleFactoryKey(), profile->GetPrefs());
   return feature_engagement::Tracker::Create(
       storage_dir, background_task_runner, db_provider);
 }

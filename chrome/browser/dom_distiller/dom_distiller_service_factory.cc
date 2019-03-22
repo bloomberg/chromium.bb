@@ -50,22 +50,26 @@ DomDistillerServiceFactory::GetForBrowserContext(
 DomDistillerServiceFactory::DomDistillerServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "DomDistillerService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  // Add this when this factory is a SimpleKeyedServiceFactory:
+  // DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+}
 
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 
 KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   base::FilePath database_dir(
-      profile->GetPath().Append(FILE_PATH_LITERAL("Articles")));
+      context->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForBrowserContext(
-          profile);
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
+          profile->GetSimpleFactoryKey(), profile->GetPrefs());
 
   auto db = db_provider->GetDB<ArticleEntry>(
       leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, database_dir,
@@ -75,10 +79,10 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       new DomDistillerStore(std::move(db)));
 
   std::unique_ptr<DistillerPageFactory> distiller_page_factory(
-      new DistillerPageWebContentsFactory(profile));
+      new DistillerPageWebContentsFactory(context));
   std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
+          content::BrowserContext::GetDefaultStoragePartition(context)
               ->GetURLLoaderFactoryForBrowserProcess()));
 
   dom_distiller::proto::DomDistillerOptions options;
@@ -94,7 +98,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
       std::move(distiller_url_fetcher_factory), options));
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs(
-      new DistilledPagePrefs(Profile::FromBrowserContext(profile)->GetPrefs()));
+      new DistilledPagePrefs(profile->GetPrefs()));
 
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(
