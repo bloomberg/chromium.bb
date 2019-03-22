@@ -3300,8 +3300,8 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   if (try_split_only) {
     av1_simple_motion_search_based_split(
         cpi, x, mi_row, mi_col, bsize, &partition_none_allowed,
-        &partition_horz_allowed, &partition_vert_allowed,
-        &do_rectangular_split);
+        &partition_horz_allowed, &partition_vert_allowed, &do_rectangular_split,
+        &do_square_split);
   }
 
   const int try_prune_rect =

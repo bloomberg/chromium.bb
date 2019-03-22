@@ -82,7 +82,8 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
 void av1_simple_motion_search_based_split(
     AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
     BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *do_rectangular_split) {
+    int *partition_vert_allowed, int *do_rectangular_split,
+    int *do_square_split) {
   const NN_CONFIG *nn_config = NULL;
   float split_only_thresh = 0.0f;
   if (bsize == BLOCK_128X128) {
@@ -117,6 +118,10 @@ void av1_simple_motion_search_based_split(
       *partition_horz_allowed = 0;
       *partition_vert_allowed = 0;
       *do_rectangular_split = 0;
+    }
+    // TODO(Venkat): Experiment to skip only rectangular/extended parititions
+    if (cpi->sf.simple_motion_search_split_only >= 2) {
+      if (score < -split_only_thresh) *do_square_split = 0;
     }
   }
 }

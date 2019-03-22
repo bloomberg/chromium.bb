@@ -28,7 +28,8 @@
 void av1_simple_motion_search_based_split(
     AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
     BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *do_rectangular_split);
+    int *partition_vert_allowed, int *do_rectangular_split,
+    int *do_square_split);
 
 // Performs a simple_motion_search with two reference frames and extract
 // the variance of residues. Then use the features to determine whether we want
