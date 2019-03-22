@@ -694,6 +694,18 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
     return;
   }
 
+  // Stop the current fade in animation if we shouldn't be animating.
+  if (wm::GetWindowState(window)->IsMinimized() &&
+      animation_type == OVERVIEW_ANIMATION_NONE) {
+    views::Widget* minimized_widget = transform_window_.minimized_widget();
+    if (minimized_widget) {
+      minimized_widget->GetNativeWindow()
+          ->layer()
+          ->GetAnimator()
+          ->StopAnimating();
+    }
+  }
+
   gfx::Transform transform = ScopedOverviewTransformWindow::GetTransformForRect(
       screen_rect, overview_item_bounds);
   ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
