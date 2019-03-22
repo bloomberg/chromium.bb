@@ -361,10 +361,9 @@ bool NativeStackSamplerMac::CopyStack(mach_port_t thread_port,
 
   profile_builder->RecordMetadata();
 
-  CopyStackAndRewritePointers(
-      reinterpret_cast<uintptr_t*>(stack_buffer->buffer()),
-      reinterpret_cast<uintptr_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
-      thread_state);
+  CopyStackAndRewritePointers(stack_buffer->buffer(),
+                              reinterpret_cast<uintptr_t*>(bottom),
+                              reinterpret_cast<uintptr_t*>(top), thread_state);
 
   *stack_top = reinterpret_cast<uintptr_t>(stack_buffer->buffer()) + stack_size;
 
