@@ -80,9 +80,9 @@ TEST_F(FindInPageManagerImplTest, FindMatchesMultipleFrames) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_two_matches_ptr->last_javascript_call());
+            frame_with_two_matches_ptr->GetLastJavaScriptCall());
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return fake_delegate_.state();
@@ -106,9 +106,9 @@ TEST_F(FindInPageManagerImplTest, FrameCancelFind) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_null_result_ptr->last_javascript_call());
+            frame_with_null_result_ptr->GetLastJavaScriptCall());
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return fake_delegate_.state();
@@ -131,9 +131,9 @@ TEST_F(FindInPageManagerImplTest, ReturnLatestFind) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_two_matches_ptr->last_javascript_call());
+            frame_with_two_matches_ptr->GetLastJavaScriptCall());
   test_web_state_->RemoveWebFrame(kOneMatchFrameId);
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
@@ -154,7 +154,7 @@ TEST_F(FindInPageManagerImplTest, DestroyWebStateDuringFind) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   test_web_state_ = nullptr;
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_delegate_.state());
@@ -175,9 +175,9 @@ TEST_F(FindInPageManagerImplTest, FrameUnavailableAfterDelegateCallback) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_two_matches_ptr->last_javascript_call());
+            frame_with_two_matches_ptr->GetLastJavaScriptCall());
   test_web_state_->RemoveWebFrame(kTwoMatchesFrameId);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
@@ -204,15 +204,15 @@ TEST_F(FindInPageManagerImplTest, FrameRespondsWithPending) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_two_matches_ptr->last_javascript_call());
+            frame_with_two_matches_ptr->GetLastJavaScriptCall());
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
     return fake_delegate_.state();
   }));
   EXPECT_EQ("__gCrWeb.findInPage.pumpSearch(100.0);",
-            frame_with_two_matches_ptr->last_javascript_call());
+            frame_with_two_matches_ptr->GetLastJavaScriptCall());
   EXPECT_EQ(3, fake_delegate_.state()->match_count);
 }
 
@@ -227,7 +227,7 @@ TEST_F(FindInPageManagerImplTest, DelegateNotSet) {
   GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
 
   EXPECT_EQ("__gCrWeb.findInPage.findString(\"foo\", 100.0);",
-            frame_with_one_match_ptr->last_javascript_call());
+            frame_with_one_match_ptr->GetLastJavaScriptCall());
   base::RunLoop().RunUntilIdle();
 }
 
