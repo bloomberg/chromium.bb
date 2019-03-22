@@ -282,10 +282,17 @@ class SimpleBuilder(generic_builders.Builder):
       self._RunStage(scheduler_stages.ScheduleSlavesStage, self.sync_stage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(build_stages.UpdateSDKStage)
+    # Run SyncChrome and UpdateSDK in parallel. UpdateSDK takes > 2hrs with
+    # "--latest-toolchain" and SyncChrome can often take 1 hr. so syncing
+    # Chrome in parallel gives a decent speedup. For non-toolchain builders,
+    # it still results in a smaller improvement of 10-15 mins.
+    parallel_stages = [
+        lambda: self._RunStage(build_stages.UpdateSDKStage),
+        lambda: self._RunStage(chrome_stages.SyncChromeStage),
+    ]
+    parallel.RunParallelSteps(parallel_stages)
     self._RunStage(build_stages.RegenPortageCacheStage)
     self.RunSetupBoard()
-    self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(android_stages.AndroidMetadataStage)
 
