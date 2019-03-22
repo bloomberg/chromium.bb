@@ -881,9 +881,6 @@ extern const char kOmniboxUIVerticalMarginDescription[];
 extern const char kOmniboxUIWhiteBackgroundOnBlurName[];
 extern const char kOmniboxUIWhiteBackgroundOnBlurDescription[];
 
-extern const char kOmniboxVoiceSearchAlwaysVisibleName[];
-extern const char kOmniboxVoiceSearchAlwaysVisibleDescription[];
-
 extern const char kOmniboxZeroSuggestionsOnNTPName[];
 extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
 

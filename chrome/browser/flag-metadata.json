@@ -1474,11 +1474,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-omnibox-voice-search-always-visible",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-oobe-recommend-apps-screen",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
