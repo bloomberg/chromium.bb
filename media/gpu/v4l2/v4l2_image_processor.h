@@ -84,7 +84,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
     JobRecord();
     ~JobRecord();
     scoped_refptr<VideoFrame> input_frame;
-    int output_buffer_index = -1;
     FrameReadyCB ready_cb;
     LegacyFrameReadyCB legacy_ready_cb;
     scoped_refptr<VideoFrame> output_frame;
@@ -118,8 +117,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
 
   // ImageProcessor implementation.
   bool ProcessInternal(scoped_refptr<VideoFrame> frame,
-                       int output_buffer_index,
-                       std::vector<base::ScopedFD> output_dmabuf_fds,
                        LegacyFrameReadyCB cb) override;
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                        scoped_refptr<VideoFrame> output_frame,

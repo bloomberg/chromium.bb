@@ -59,8 +59,6 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
   // ImageProcessor override
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   bool ProcessInternal(scoped_refptr<VideoFrame> frame,
-                       int output_buffer_index,
-                       std::vector<base::ScopedFD> output_dmabuf_fds,
                        LegacyFrameReadyCB cb) override;
 #endif
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,

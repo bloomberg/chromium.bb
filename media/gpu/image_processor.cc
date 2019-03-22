@@ -31,12 +31,8 @@ ImageProcessor::ImageProcessor(const VideoFrameLayout& input_layout,
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
-                             int output_buffer_index,
-                             std::vector<base::ScopedFD> output_dmabuf_fds,
                              LegacyFrameReadyCB cb) {
-  return ProcessInternal(std::move(frame), output_buffer_index,
-                         std::move(output_dmabuf_fds),
-                         BindToCurrentLoop(std::move(cb)));
+  return ProcessInternal(std::move(frame), BindToCurrentLoop(std::move(cb)));
 }
 #endif
 
