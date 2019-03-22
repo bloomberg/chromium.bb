@@ -573,4 +573,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-selected-changed.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsButtonClick) {
+  RunEventTest(FILE_PATH_LITERAL("button-click.html"));
+}
+
 }  // namespace content

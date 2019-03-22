@@ -97,6 +97,10 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
   switch (event_type) {
+    case ax::mojom::Event::kClicked:
+      if (ui::IsInvokable(node->GetData()))
+        FireUiaAccessibilityEvent(UIA_Invoke_InvokedEventId, node);
+      break;
     case ax::mojom::Event::kEndOfTest: {
       // Event tests use kEndOfTest as a sentinel to mark the end of the test.
       Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
