@@ -3000,9 +3000,6 @@ static void update_picked_ref_frames_mask(MACROBLOCK *const x, int ref_type,
 // TODO(jinging,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
-// TODO(chiyotsai@google.com): Move these ml related varables to a seprate file
-// to separate low level ml logic from partition logic
-#define NUM_SIMPLE_MOTION_FEATURES 28
 static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
                               TileDataEnc *tile_data, TOKENEXTRA **tp,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -3189,14 +3186,14 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   // Use simple_motion_search to prune partitions. This must be done prior to
   // PARTITION_SPLIT to propagate the initial mvs to a smaller blocksize.
   const int try_split_only =
-      cpi->sf.simple_motion_search_split_only && bsize >= BLOCK_8X8 &&
-      do_square_split && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
+      cpi->sf.simple_motion_search_split_only && do_square_split &&
+      bsize >= BLOCK_8X8 && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
       mi_col + mi_size_wide[bsize] <= cm->mi_cols && !frame_is_intra_only(cm) &&
       !av1_superres_scaled(cm);
 
   if (try_split_only) {
     av1_simple_motion_search_based_split(
-        cpi, x, mi_row, mi_col, bsize, &partition_none_allowed,
+        cpi, x, pc_tree, mi_row, mi_col, bsize, &partition_none_allowed,
         &partition_horz_allowed, &partition_vert_allowed, &do_rectangular_split,
         &do_square_split);
   }
@@ -3208,15 +3205,11 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
        (prune_horz && prune_vert)) &&
       (partition_horz_allowed || partition_vert_allowed) && bsize >= BLOCK_8X8;
 
-  float simple_motion_features[NUM_SIMPLE_MOTION_FEATURES] = { 0.0f };
-  int simple_motion_features_are_valid = 0;
-
   if (try_prune_rect) {
     av1_simple_motion_search_prune_part(
         cpi, x, pc_tree, mi_row, mi_col, bsize, &partition_none_allowed,
         &partition_horz_allowed, &partition_vert_allowed, &do_square_split,
-        &do_rectangular_split, &prune_horz, &prune_vert, simple_motion_features,
-        &simple_motion_features_are_valid);
+        &do_rectangular_split, &prune_horz, &prune_vert);
   }
 
   // Max and min square partition levels are defined as the partition nodes that
@@ -3370,10 +3363,9 @@ BEGIN_PARTITION_SEARCH:
             this_rdc.rdcost < INT64_MAX && this_rdc.rdcost >= 0 &&
             this_rdc.rate < INT_MAX && this_rdc.rate >= 0 &&
             (do_square_split || do_rectangular_split)) {
-          av1_simple_motion_search_early_term_none(
-              cpi, x, pc_tree, mi_row, mi_col, bsize, &this_rdc,
-              &terminate_partition_search, simple_motion_features,
-              &simple_motion_features_are_valid);
+          av1_simple_motion_search_early_term_none(cpi, x, pc_tree, mi_row,
+                                                   mi_col, bsize, &this_rdc,
+                                                   &terminate_partition_search);
         }
       }
     }
@@ -4648,7 +4640,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
     pc_root->index = 0;
 
-    if ((sf->simple_motion_search_prune_rect ||
+    if ((sf->simple_motion_search_split_only ||
+         sf->simple_motion_search_prune_rect ||
          sf->simple_motion_search_early_term_none ||
          sf->firstpass_simple_motion_search_early_term) &&
         !frame_is_intra_only(cm)) {

@@ -99,7 +99,15 @@ typedef struct PC_TREE {
   PC_TREE_STATS pc_tree_stats;
   CB_TREE_SEARCH cb_search_range;
   int index;
+
+  // Simple motion search_features
   MV mv_ref_fulls[REF_FRAMES];
+  unsigned int sms_none_feat[2];
+  unsigned int sms_split_feat[8];
+  unsigned int sms_rect_feat[8];
+  int sms_none_valid;
+  int sms_split_valid;
+  int sms_rect_valid;
 } PC_TREE;
 
 void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);

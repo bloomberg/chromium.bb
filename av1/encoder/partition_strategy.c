@@ -21,6 +21,10 @@
 #include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
 
+static void simple_motion_search_prune_part_features(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, float *features, int features_to_get);
+
 // Performs a simple_motion_search with a single reference frame and extract
 // the variance of residues. Here features is assumed to be a length 6 array.
 // After this function is called, we will store the following in to features:
@@ -80,13 +84,13 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   }
 }
 
-void av1_simple_motion_search_based_split(
+static void simple_motion_search_based_split_fast(
     AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
     BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
     int *partition_vert_allowed, int *do_rectangular_split,
     int *do_square_split) {
   const NN_CONFIG *nn_config = NULL;
-  float split_only_thresh = 0.0f;
+  float split_only_thresh = 1.0f;
   if (bsize == BLOCK_128X128) {
     nn_config = &av1_simple_motion_search_based_split_nn_config_128;
     split_only_thresh = av1_simple_motion_search_based_split_thresh_128;
@@ -100,35 +104,99 @@ void av1_simple_motion_search_based_split(
     nn_config = &av1_simple_motion_search_based_split_nn_config_16;
     split_only_thresh = av1_simple_motion_search_based_split_thresh_16;
   } else if (bsize == BLOCK_8X8) {
-    // Disable BLOCK_8X8 for now
-#if !CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8
-    nn_config = &av1_simple_motion_search_based_split_nn_config_8;
-    split_only_thresh = av1_simple_motion_search_based_split_thresh_8;
-#endif
+    return;
   } else {
     assert(0 && "Unexpected block size in simple_motion_based_split");
+    return;
   }
-  if (nn_config) {
-    float features[6] = { 0 };
-    float score = 0;
-    get_res_var_features(cpi, x, mi_row, mi_col, bsize, features);
-    av1_nn_predict(features, nn_config, &score);
 
-    if (score > split_only_thresh) {
-      *partition_none_allowed = 0;
-      *partition_horz_allowed = 0;
-      *partition_vert_allowed = 0;
-      *do_rectangular_split = 0;
-    }
-    if (cpi->sf.simple_motion_search_split_only >= 2) {
-      if (score < -split_only_thresh) *do_square_split = 0;
-      // For larger scores (>split_only_thresh), none and rectangular partitions
-      // are skipped. As score reduces, possibility of split decreases. Hence
-      // for near larger scores (.875 * split_only_thresh to split_only_thresh)
-      // none partition is disabled, but rectangular partitions are evaluated
-      // additionally.
-      if (score > (split_only_thresh * 0.875)) *partition_none_allowed = 0;
-    }
+  float features[FEATURE_SIZE_SMS_SPLIT_FAST] = { 0.0f };
+  float score = 0.0f;
+  get_res_var_features(cpi, x, mi_row, mi_col, bsize, features);
+  av1_nn_predict(features, nn_config, &score);
+
+  if (score > split_only_thresh) {
+    *partition_none_allowed = 0;
+    *partition_horz_allowed = 0;
+    *partition_vert_allowed = 0;
+    *do_rectangular_split = 0;
+  }
+  if (cpi->sf.simple_motion_search_split_only >= 2) {
+    if (score < -split_only_thresh) *do_square_split = 0;
+    // For larger scores (>split_only_thresh), none and rectangular partitions
+    // are skipped. As score reduces, possibility of split decreases. Hence
+    // for near larger scores (.875 * split_only_thresh to split_only_thresh)
+    // none partition is disabled, but rectangular partitions are evaluated
+    // additionally.
+    if (score > (split_only_thresh * 0.875)) *partition_none_allowed = 0;
+  }
+}
+
+void av1_simple_motion_search_based_split(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
+    int *partition_horz_allowed, int *partition_vert_allowed,
+    int *do_rectangular_split, int *do_square_split) {
+  if (cpi->sf.simple_motion_search_split_speed >= 2) {
+    simple_motion_search_based_split_fast(
+        cpi, x, mi_row, mi_col, bsize, partition_none_allowed,
+        partition_horz_allowed, partition_vert_allowed, do_rectangular_split,
+        do_square_split);
+
+    return;
+  }
+
+  const NN_CONFIG *nn_config = NULL;
+  const float *ml_mean = NULL, *ml_std = NULL;
+  float split_only_thresh = 1.0f;
+  if (bsize == BLOCK_128X128) {
+    ml_mean = av1_simple_motion_search_split_mean_128;
+    ml_std = av1_simple_motion_search_split_std_128;
+    nn_config = &av1_simple_motion_search_split_nn_config_128;
+    split_only_thresh = av1_simple_motion_search_split_thresh_128;
+  } else if (bsize == BLOCK_64X64) {
+    ml_mean = av1_simple_motion_search_split_mean_64;
+    ml_std = av1_simple_motion_search_split_std_64;
+    nn_config = &av1_simple_motion_search_split_nn_config_64;
+    split_only_thresh = av1_simple_motion_search_split_thresh_64;
+  } else if (bsize == BLOCK_32X32) {
+    ml_mean = av1_simple_motion_search_split_mean_32;
+    ml_std = av1_simple_motion_search_split_std_32;
+    nn_config = &av1_simple_motion_search_split_nn_config_32;
+    split_only_thresh = av1_simple_motion_search_split_thresh_32;
+  } else if (bsize == BLOCK_16X16) {
+    ml_mean = av1_simple_motion_search_split_mean_16;
+    ml_std = av1_simple_motion_search_split_std_16;
+    nn_config = &av1_simple_motion_search_split_nn_config_16;
+    split_only_thresh = av1_simple_motion_search_split_thresh_16;
+  } else if (bsize == BLOCK_8X8) {
+    ml_mean = av1_simple_motion_search_split_mean_8;
+    ml_std = av1_simple_motion_search_split_std_8;
+    nn_config = &av1_simple_motion_search_split_nn_config_8;
+    split_only_thresh = av1_simple_motion_search_split_thresh_8;
+  } else {
+    assert(0 && "Unexpected block size in simple_motion_based_split");
+    return;
+  }
+
+  float features[FEATURE_SIZE_SMS_SPLIT] = { 0.0f };
+  simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
+                                           bsize, features,
+                                           FEATURE_SMS_SPLIT_MODEL_FLAG);
+  for (int idx = 0; idx < FEATURE_SIZE_SMS_SPLIT; idx++) {
+    features[idx] = (features[idx] - ml_mean[idx]) / ml_std[idx];
+  }
+
+  float score = 0.0f;
+
+  av1_nn_predict(features, nn_config, &score);
+  aom_clear_system_state();
+
+  if (score > split_only_thresh) {
+    *partition_none_allowed = 0;
+    *partition_horz_allowed = 0;
+    *partition_vert_allowed = 0;
+    *do_rectangular_split = 0;
   }
 }
 
@@ -211,12 +279,11 @@ static int simple_motion_search_get_best_ref(
 // features[18] = DC q_index
 static void simple_motion_search_prune_part_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
-    int mi_col, BLOCK_SIZE bsize, float *features) {
+    int mi_col, BLOCK_SIZE bsize, float *features, int features_to_get) {
   // TODO(chiyotsai@google.com): Cache the result of the motion search from the
   // larger bsize.
   const int w_mi = mi_size_wide[bsize];
   const int h_mi = mi_size_high[bsize];
-  int f_idx = 0;
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
   assert(cpi->ref_frame_flags & av1_ref_frame_flag_list[LAST_FRAME] ||
          cpi->ref_frame_flags & av1_ref_frame_flag_list[ALTREF_FRAME]);
@@ -227,56 +294,77 @@ static void simple_motion_search_prune_part_features(
   const int num_refs = 1;
   const int use_subpixel = 1;
 
-  unsigned int int_features[FEATURE_SIZE_SMS_PRUNE_PART - 1];
-
   // Doing whole block first to update the mv
-  simple_motion_search_get_best_ref(
-      cpi, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs, use_subpixel,
-      4, &int_features[f_idx], &int_features[f_idx + 1]);
-  f_idx += 2;
+  if (!pc_tree->sms_none_valid && features_to_get & FEATURE_SMS_NONE_FLAG) {
+    simple_motion_search_get_best_ref(cpi, x, pc_tree, mi_row, mi_col, bsize,
+                                      ref_list, num_refs, use_subpixel, 4,
+                                      &pc_tree->sms_none_feat[0],
+                                      &pc_tree->sms_none_feat[1]);
+    pc_tree->sms_none_valid = 1;
+  }
 
   // Split subblocks
-  BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
-  int r_idx = 0;
-  for (r_idx = 0; r_idx < 4; r_idx++) {
-    const int sub_mi_col = mi_col + (r_idx & 1) * w_mi / 2;
-    const int sub_mi_row = mi_row + (r_idx >> 1) * h_mi / 2;
+  if (!pc_tree->sms_split_valid && features_to_get & FEATURE_SMS_SPLIT_FLAG) {
+    const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
+    for (int r_idx = 0; r_idx < 4; r_idx++) {
+      const int sub_mi_col = mi_col + (r_idx & 1) * w_mi / 2;
+      const int sub_mi_row = mi_row + (r_idx >> 1) * h_mi / 2;
 
-    simple_motion_search_get_best_ref(
-        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
-        use_subpixel, r_idx, &int_features[f_idx], &int_features[f_idx + 1]);
-    f_idx += 2;
+      simple_motion_search_get_best_ref(
+          cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+          use_subpixel, r_idx, &pc_tree->sms_split_feat[2 * r_idx],
+          &pc_tree->sms_split_feat[2 * r_idx + 1]);
+    }
+
+    pc_tree->sms_split_valid = 1;
   }
 
-  // Horz subblocks
-  subsize = get_partition_subsize(bsize, PARTITION_HORZ);
-  for (r_idx = 0; r_idx < 2; r_idx++) {
-    const int sub_mi_col = mi_col + 0;
-    const int sub_mi_row = mi_row + r_idx * h_mi / 2;
+  // Rectangular subblocks
+  if (!pc_tree->sms_rect_valid && features_to_get & FEATURE_SMS_RECT_FLAG) {
+    // Horz subblock
+    BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_HORZ);
+    for (int r_idx = 0; r_idx < 2; r_idx++) {
+      const int sub_mi_col = mi_col + 0;
+      const int sub_mi_row = mi_row + r_idx * h_mi / 2;
 
-    simple_motion_search_get_best_ref(
-        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
-        use_subpixel, -1, &int_features[f_idx], &int_features[f_idx + 1]);
+      simple_motion_search_get_best_ref(
+          cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+          use_subpixel, -1, &pc_tree->sms_rect_feat[2 * r_idx],
+          &pc_tree->sms_rect_feat[2 * r_idx + 1]);
+    }
 
-    f_idx += 2;
-  }
+    // Vert subblock
+    subsize = get_partition_subsize(bsize, PARTITION_VERT);
+    for (int r_idx = 0; r_idx < 2; r_idx++) {
+      const int sub_mi_col = mi_col + r_idx * w_mi / 2;
+      const int sub_mi_row = mi_row + 0;
 
-  // Vert subblock
-  subsize = get_partition_subsize(bsize, PARTITION_VERT);
-  for (r_idx = 0; r_idx < 2; r_idx++) {
-    const int sub_mi_col = mi_col + r_idx * w_mi / 2;
-    const int sub_mi_row = mi_row + 0;
-
-    simple_motion_search_get_best_ref(
-        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
-        use_subpixel, -1, &int_features[f_idx], &int_features[f_idx + 1]);
-
-    f_idx += 2;
+      simple_motion_search_get_best_ref(
+          cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+          use_subpixel, -1, &pc_tree->sms_rect_feat[4 + 2 * r_idx],
+          &pc_tree->sms_rect_feat[4 + 2 * r_idx + 1]);
+    }
+    pc_tree->sms_rect_valid = 1;
   }
 
   aom_clear_system_state();
-  for (int idx = 0; idx < f_idx; idx++) {
-    features[idx] = logf(1.0f + (float)int_features[idx]);
+  int f_idx = 0;
+  if (features_to_get & FEATURE_SMS_NONE_FLAG) {
+    for (int sub_idx = 0; sub_idx < 2; sub_idx++) {
+      features[f_idx++] = logf(1.0f + pc_tree->sms_none_feat[sub_idx]);
+    }
+  }
+
+  if (features_to_get & FEATURE_SMS_SPLIT_FLAG) {
+    for (int sub_idx = 0; sub_idx < 8; sub_idx++) {
+      features[f_idx++] = logf(1.0f + pc_tree->sms_split_feat[sub_idx]);
+    }
+  }
+
+  if (features_to_get & FEATURE_SMS_RECT_FLAG) {
+    for (int sub_idx = 0; sub_idx < 8; sub_idx++) {
+      features[f_idx++] = logf(1.0f + pc_tree->sms_rect_feat[sub_idx]);
+    }
   }
 
   const MACROBLOCKD *xd = &x->e_mbd;
@@ -297,8 +385,6 @@ static void simple_motion_search_prune_part_features(
   features[f_idx++] = (float)has_left;
   features[f_idx++] = (float)mi_size_wide_log2[left_bsize];
   features[f_idx++] = (float)mi_size_high_log2[left_bsize];
-
-  assert(f_idx == FEATURE_SIZE_SMS_PRUNE_PART);
 }
 
 void av1_simple_motion_search_prune_part(
@@ -306,13 +392,13 @@ void av1_simple_motion_search_prune_part(
     int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
     int *partition_horz_allowed, int *partition_vert_allowed,
     int *do_square_split, int *do_rectangular_split, int *prune_horz,
-    int *prune_vert, float *features, int *valid) {
+    int *prune_vert) {
   const AV1_COMMON *const cm = &cpi->common;
   // Get model parameters
   const NN_CONFIG *nn_config = NULL;
   const float *prune_thresh = NULL, *only_thresh = NULL;
   const float *ml_mean = NULL, *ml_std = NULL;
-  float normalized_features[FEATURE_SIZE_SMS_PRUNE_PART] = { 0.0f };
+  float features[FEATURE_SIZE_SMS_PRUNE_PART] = { 0.0f };
 
   if (bsize == BLOCK_128X128) {
     nn_config = &av1_simple_motion_search_prune_part_nn_config_128;
@@ -359,11 +445,10 @@ void av1_simple_motion_search_prune_part(
 
   // Get features
   simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
-                                           bsize, features);
-  *valid = 1;
+                                           bsize, features,
+                                           FEATURE_SMS_PRUNE_PART_FLAG);
   for (int f_idx = 0; f_idx < FEATURE_SIZE_SMS_PRUNE_PART; f_idx++) {
-    normalized_features[f_idx] =
-        (features[f_idx] - ml_mean[f_idx]) / ml_std[f_idx];
+    features[f_idx] = (features[f_idx] - ml_mean[f_idx]) / ml_std[f_idx];
   }
 
   // Get probabilities
@@ -373,7 +458,7 @@ void av1_simple_motion_search_prune_part(
                               ? PARTITION_TYPES
                               : EXT_PARTITION_TYPES;
 
-  av1_nn_predict(normalized_features, nn_config, scores);
+  av1_nn_predict(features, nn_config, scores);
   aom_clear_system_state();
 
   av1_nn_softmax(scores, probs, num_classes);
@@ -399,24 +484,23 @@ void av1_simple_motion_search_prune_part(
 //  - The frame is not intra only
 //  - The current bsize is > BLOCK_8X8
 //  - blk_row + blk_height/2 < total_rows and blk_col + blk_width/2 < total_cols
-void av1_simple_motion_search_early_term_none(
-    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
-    int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
-    int *early_terminate, float *simple_motion_features,
-    int *simple_motion_features_are_valid) {
+void av1_simple_motion_search_early_term_none(AV1_COMP *const cpi,
+                                              MACROBLOCK *x, PC_TREE *pc_tree,
+                                              int mi_row, int mi_col,
+                                              BLOCK_SIZE bsize,
+                                              const RD_STATS *none_rdc,
+                                              int *early_terminate) {
   // TODO(chiyotsai@google.com): There are other features we can extract from
   // PARTITION_NONE. Play with this later.
-  int f_idx = 0;
-  if (!*simple_motion_features_are_valid) {
-    simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
-                                             bsize, simple_motion_features);
-    *simple_motion_features_are_valid = 1;
-  }
-  f_idx = 25;
+  float features[FEATURE_SIZE_SMS_TERM_NONE] = { 0.0f };
+  simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
+                                           bsize, features,
+                                           FEATURE_SMS_PRUNE_PART_FLAG);
+  int f_idx = FEATURE_SIZE_SMS_PRUNE_PART;
 
-  simple_motion_features[f_idx++] = logf(1.0f + (float)none_rdc->rate);
-  simple_motion_features[f_idx++] = logf(1.0f + (float)none_rdc->dist);
-  simple_motion_features[f_idx++] = logf(1.0f + (float)none_rdc->rdcost);
+  features[f_idx++] = logf(1.0f + (float)none_rdc->rate);
+  features[f_idx++] = logf(1.0f + (float)none_rdc->dist);
+  features[f_idx++] = logf(1.0f + (float)none_rdc->rdcost);
 
   assert(f_idx == FEATURE_SIZE_SMS_TERM_NONE);
 
@@ -447,8 +531,8 @@ void av1_simple_motion_search_early_term_none(
   if (ml_model) {
     float score = 0.0f;
     for (f_idx = 0; f_idx < FEATURE_SIZE_SMS_TERM_NONE; f_idx++) {
-      score += ml_model[f_idx] *
-               (simple_motion_features[f_idx] - ml_mean[f_idx]) / ml_std[f_idx];
+      score +=
+          ml_model[f_idx] * (features[f_idx] - ml_mean[f_idx]) / ml_std[f_idx];
     }
     score += ml_model[FEATURE_SIZE_SMS_TERM_NONE];
 

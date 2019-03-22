@@ -16,20 +16,31 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encoder.h"
 
+#define FEATURE_SIZE_SMS_SPLIT_FAST 6
+#define FEATURE_SIZE_SMS_SPLIT 17
 #define FEATURE_SIZE_SMS_PRUNE_PART 25
 #define FEATURE_SIZE_SMS_TERM_NONE 28
 #define FEATURE_SIZE_FP_SMS_TERM_NONE 20
 #define FEATURE_SIZE_MAX_MIN_PART_PRED 13
 #define MAX_NUM_CLASSES_MAX_MIN_PART_PRED 4
 
+#define FEATURE_SMS_NONE_FLAG 1
+#define FEATURE_SMS_SPLIT_FLAG (1 << 1)
+#define FEATURE_SMS_RECT_FLAG (1 << 2)
+
+#define FEATURE_SMS_PRUNE_PART_FLAG \
+  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG | FEATURE_SMS_RECT_FLAG)
+#define FEATURE_SMS_SPLIT_MODEL_FLAG \
+  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG)
+
 // Performs a simple_motion_search with a single reference frame and extract
 // the variance of residues. Then use the features to determine whether we want
 // to go straight to splitting without trying PARTITION_NONE
 void av1_simple_motion_search_based_split(
-    AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
-    BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *do_rectangular_split,
-    int *do_square_split);
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
+    int *partition_horz_allowed, int *partition_vert_allowed,
+    int *do_rectangular_split, int *do_square_split);
 
 // Performs a simple_motion_search with two reference frames and extract
 // the variance of residues. Then use the features to determine whether we want
@@ -39,7 +50,7 @@ void av1_simple_motion_search_prune_part(
     int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
     int *partition_horz_allowed, int *partition_vert_allowed,
     int *do_square_split, int *do_rectangular_split, int *prune_horz,
-    int *prune_vert, float *features, int *valid);
+    int *prune_vert);
 
 // Early terminates PARTITION_NONE using simple_motion_search features and the
 // rate, distortion, and rdcost of PARTITION_NONE. This is only called when:
@@ -47,11 +58,12 @@ void av1_simple_motion_search_prune_part(
 //  - The frame is not intra only
 //  - The current bsize is > BLOCK_8X8
 //  - blk_row + blk_height/2 < total_rows and blk_col + blk_width/2 < total_cols
-void av1_simple_motion_search_early_term_none(
-    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
-    int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
-    int *early_terminate, float *simple_motion_features,
-    int *simple_motion_features_are_valid);
+void av1_simple_motion_search_early_term_none(AV1_COMP *const cpi,
+                                              MACROBLOCK *x, PC_TREE *pc_tree,
+                                              int mi_row, int mi_col,
+                                              BLOCK_SIZE bsize,
+                                              const RD_STATS *none_rdc,
+                                              int *early_terminate);
 
 // Early terminates after PARTITION_NONE in firstpass of two pass partition
 // search.
@@ -116,10 +128,15 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
 }
 
 static INLINE void init_simple_motion_search_mvs(PC_TREE *pc_tree) {
-  for (int idx = 0; idx < REF_FRAMES; idx++) {
-    pc_tree->mv_ref_fulls[idx].row = 0;
-    pc_tree->mv_ref_fulls[idx].col = 0;
-  }
+  av1_zero(pc_tree->mv_ref_fulls);
+
+  av1_zero(pc_tree->sms_none_feat);
+  av1_zero(pc_tree->sms_split_feat);
+  av1_zero(pc_tree->sms_rect_feat);
+  av1_zero(pc_tree->sms_none_valid);
+  av1_zero(pc_tree->sms_split_valid);
+  av1_zero(pc_tree->sms_rect_valid);
+
   if (pc_tree->block_size >= BLOCK_8X8) {
     init_simple_motion_search_mvs(pc_tree->split[0]);
     init_simple_motion_search_mvs(pc_tree->split[1]);

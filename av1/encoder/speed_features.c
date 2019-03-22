@@ -138,6 +138,9 @@ static void set_good_speed_feature_framesize_dependent(
       sf->ml_partition_search_breakout_thresh[4] = -1;   // BLOCK_128X128
 
       sf->firstpass_simple_motion_search_early_term = 1;
+      // TODO(chiyotsai@google.com): Try to disable two pass partition search
+      // and turn on hdres
+      sf->simple_motion_search_split_speed = 1;
     }
   }
 
@@ -165,6 +168,7 @@ static void set_good_speed_feature_framesize_dependent(
   }
 
   if (speed >= 3) {
+    sf->simple_motion_search_split_speed = 2;
     if (is_720p_or_larger) {
       sf->partition_search_breakout_dist_thr = (1 << 25);
       sf->partition_search_breakout_rate_thr = 200;
@@ -731,6 +735,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_obmc_in_uniform_mv_field = 0;
   sf->skip_wm_in_uniform_mv_field = 0;
   sf->adaptive_interp_filter_search = 0;
+  sf->simple_motion_search_split_speed = 2;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;
