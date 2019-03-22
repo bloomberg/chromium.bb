@@ -284,7 +284,9 @@ void ControllerPresentationConnection::Init(
 
   DidChangeState(mojom::blink::PresentationConnectionState::CONNECTING);
   target_connection_ = std::move(connection_ptr);
-  connection_binding_.Bind(std::move(connection_request));
+  connection_binding_.Bind(
+      std::move(connection_request),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
 }
 
 void ControllerPresentationConnection::CloseInternal() {
@@ -332,7 +334,9 @@ void ReceiverPresentationConnection::Init(
     mojom::blink::PresentationConnectionPtr controller_connection_ptr,
     mojom::blink::PresentationConnectionRequest receiver_connection_request) {
   target_connection_ = std::move(controller_connection_ptr);
-  connection_binding_.Bind(std::move(receiver_connection_request));
+  connection_binding_.Bind(
+      std::move(receiver_connection_request),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
 
   target_connection_->DidChangeState(
       mojom::blink::PresentationConnectionState::CONNECTED);
