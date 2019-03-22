@@ -12,8 +12,6 @@ source_set("ui") {
     "file_locations.mm",
     "native_content_controller.h",
     "native_content_controller.mm",
-    "orientation_limiting_navigation_controller.h",
-    "orientation_limiting_navigation_controller.mm",
     "prerender_final_status.h",
     "side_swipe_gesture_recognizer.h",
     "side_swipe_gesture_recognizer.mm",
