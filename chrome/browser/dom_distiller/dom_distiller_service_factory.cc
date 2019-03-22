@@ -51,8 +51,7 @@ DomDistillerServiceFactory::DomDistillerServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "DomDistillerService",
           BrowserContextDependencyManager::GetInstance()) {
-  // Add this when this factory is a SimpleKeyedServiceFactory:
-  // DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {}

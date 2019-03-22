@@ -35,8 +35,7 @@ TrackerFactory::TrackerFactory()
     : BrowserContextKeyedServiceFactory(
           "feature_engagement::Tracker",
           BrowserContextDependencyManager::GetInstance()) {
-  // Add this when this factory is a SimpleKeyedServiceFactory:
-  // DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 TrackerFactory::~TrackerFactory() = default;

@@ -42,7 +42,7 @@ KeyedService* SimpleKeyedServiceFactory::SetTestingFactoryAndUse(
 SimpleKeyedServiceFactory::SimpleKeyedServiceFactory(
     const char* name,
     SimpleDependencyManager* manager)
-    : KeyedServiceFactory(name, manager) {}
+    : KeyedServiceFactory(name, manager, SIMPLE) {}
 
 SimpleKeyedServiceFactory::~SimpleKeyedServiceFactory() {}
 

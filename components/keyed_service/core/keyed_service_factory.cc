@@ -13,9 +13,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 KeyedServiceFactory::KeyedServiceFactory(const char* name,
-                                         DependencyManager* manager)
-    : KeyedServiceBaseFactory(name, manager) {
-}
+                                         DependencyManager* manager,
+                                         Type type)
+    : KeyedServiceBaseFactory(name, manager, type) {}
 
 KeyedServiceFactory::~KeyedServiceFactory() {
   DCHECK(mapping_.empty());

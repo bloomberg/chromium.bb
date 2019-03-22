@@ -27,7 +27,7 @@ class KeyedService;
 class KEYED_SERVICE_EXPORT KeyedServiceFactory
     : public KeyedServiceBaseFactory {
  protected:
-  KeyedServiceFactory(const char* name, DependencyManager* manager);
+  KeyedServiceFactory(const char* name, DependencyManager* manager, Type type);
   ~KeyedServiceFactory() override;
 
   // A callback that supplies the instance of a KeyedService for a given
