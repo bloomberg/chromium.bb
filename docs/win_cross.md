@@ -80,7 +80,7 @@ Add `target_os = "win"` to your args.gn.  Then just build, e.g.
 For now, one needs to use the rbe backend, not the (default) borg backend:
 
     goma_auth.py login
-    GOMA_STUBBY_PROXY_IP_ADDRESS=rbe-staging1.endpoints.cxx-compiler-service.cloud.goog GOMA_USE_CASE=rbe-staging goma_ctl.py ensure_start
+    GOMA_SERVER_HOST=rbe-staging1.endpoints.cxx-compiler-service.cloud.goog goma_ctl.py ensure_start
 
 ## Copying and running chrome
 
