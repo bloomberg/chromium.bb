@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -140,6 +141,28 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
     resolver->Reject(exception_state);
     return promise;
   }
+  if (is_activating_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "activate() has already been called on this HTMLPortalElement.");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+  if (DocumentPortals::From(GetDocument()).IsPortalInDocumentActivating()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "activate() has already been called on another "
+        "HTMLPortalElement in this document.");
+    resolver->Reject(exception_state);
+    return promise;
+  }
+  if (GetDocument().GetPage()->InsidePortal()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot activate a portal that is inside another portal.");
+    resolver->Reject(exception_state);
+    return promise;
+  }
 
   BlinkTransferableMessage data =
       ActivateDataAsMessage(script_state, options, exception_state);
@@ -152,6 +175,7 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
   // garbage collected while there is a pending callback.
   // We also pass the ownership of the PortalPtr, which guarantees that the
   // PortalPtr stays alive until the callback is called.
+  is_activating_ = true;
   auto* raw_portal_ptr = portal_ptr_.get();
   raw_portal_ptr->Activate(std::move(data),
                            WTF::Bind(
