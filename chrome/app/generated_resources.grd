@@ -5512,17 +5512,6 @@ the Bookmarks menu.">
         <message name="IDS_FEEDBACK_ADDITIONAL_INFO_LABEL" desc="Text for the group label to indicate that some fields are optional.">
           Additional info (optional)
         </message>
-
-        <!-- Feedback Dialog SRT Prompt -->
-        <message name="IDS_FEEDBACK_SRT_PROMPT_BODY" desc="Body text explaining what the Chrome Software Removal Tool is">
-          Is Chrome crashing, showing unusual startup pages, toolbars, or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Cleanup Tool.
-        </message>
-        <message name="IDS_FEEDBACK_SRT_PROMPT_ACCEPT_BUTTON" desc="Button which takes the user to the Chrome Software Removal Tool download page">
-          Download Chrome Cleanup Tool
-        </message>
-        <message name="IDS_FEEDBACK_SRT_PROMPT_DECLINE_BUTTON" desc="Button which declines a prompt and takes the user to the form for filing feedback">
-          Skip
-        </message>
       </if>
 
       <!-- Clear Browsing Data -->

@@ -99,10 +99,6 @@ ChromeFeedbackPrivateDelegate::GetStrings(
   SET_STRING("sysinfoPageExpandBtn", IDS_ABOUT_SYS_EXPAND);
   SET_STRING("sysinfoPageCollapseBtn", IDS_ABOUT_SYS_COLLAPSE);
   SET_STRING("sysinfoPageStatusLoading", IDS_FEEDBACK_SYSINFO_PAGE_LOADING);
-  // And the localized strings needed for the SRT Download Prompt.
-  SET_STRING("srtPromptBody", IDS_FEEDBACK_SRT_PROMPT_BODY);
-  SET_STRING("srtPromptAcceptButton", IDS_FEEDBACK_SRT_PROMPT_ACCEPT_BUTTON);
-  SET_STRING("srtPromptDeclineButton", IDS_FEEDBACK_SRT_PROMPT_DECLINE_BUTTON);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();

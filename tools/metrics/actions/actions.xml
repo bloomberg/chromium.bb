@@ -5404,6 +5404,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Feedback.SrtPromptAccepted">
+  <obsolete>This was never fully implemented.</obsolete>
   <owner>tmartino@chromium.org</owner>
   <description>
     User accepted invitation on Feedback form to download Software Removal Tool.
@@ -5411,6 +5412,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Feedback.SrtPromptClosed">
+  <obsolete>This was never fully implemented.</obsolete>
   <owner>tmartino@chromium.org</owner>
   <description>
     User closed Feedback form when prompted to download Software Removal Tool.
@@ -5418,6 +5420,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Feedback.SrtPromptDeclined">
+  <obsolete>This was never fully implemented.</obsolete>
   <owner>tmartino@chromium.org</owner>
   <description>
     User declined invitation on Feedback form to download Software Removal Tool.

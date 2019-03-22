@@ -400,28 +400,4 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
   }
 }
 
-ExtensionFunction::ResponseAction
-FeedbackPrivateLogSrtPromptResultFunction::Run() {
-  std::unique_ptr<feedback_private::LogSrtPromptResult::Params> params(
-      feedback_private::LogSrtPromptResult::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  const feedback_private::SrtPromptResult result = params->result;
-
-  switch (result) {
-    case feedback_private::SRT_PROMPT_RESULT_ACCEPTED:
-      base::RecordAction(base::UserMetricsAction("Feedback.SrtPromptAccepted"));
-      break;
-    case feedback_private::SRT_PROMPT_RESULT_DECLINED:
-      base::RecordAction(base::UserMetricsAction("Feedback.SrtPromptDeclined"));
-      break;
-    case feedback_private::SRT_PROMPT_RESULT_CLOSED:
-      base::RecordAction(base::UserMetricsAction("Feedback.SrtPromptClosed"));
-      break;
-    default:
-      return RespondNow(Error("Invalid arugment."));
-  }
-  return RespondNow(NoArguments());
-}
-
 }  // namespace extensions

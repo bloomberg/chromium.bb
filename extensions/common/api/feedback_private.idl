@@ -25,10 +25,6 @@ namespace feedbackPrivate {
     // page is disabled for this flow.
     login,
 
-    // Flow where a prompt to download the Chrome Cleanup Tool is displayed
-    // prior to showing the feedback form.
-    showSrtPrompt,
-
     // Flow when the feedback is requested from the sad tab ("Aw, Snap!") page
     // when the renderer crashes.
     sadTabCrash,
@@ -105,18 +101,6 @@ namespace feedbackPrivate {
   // The type of the landing page shown to the user when the feedback report is
   // successfully sent.
   enum LandingPageType {normal, techstop};
-
-  // Result of presenting the user with a prompt to download SRT.
-  enum SrtPromptResult {
-    // User clicked the "Learn More" button.
-    accepted,
-
-    // User declined the prompt and proceeded to the feedback page.
-    declined,
-
-    // User closed the window altogether.
-    closed
-  };
 
   // Allowed log sources on Chrome OS.
   enum LogSource {
@@ -217,10 +201,6 @@ namespace feedbackPrivate {
     // strings as a dictionary mapping from string identifier to the
     // translated string to use in the feedback app UI.
     static void getStrings(FeedbackFlow flow, GetStringsCallback callback);
-
-    // Logs whether the user accepted a prompt to try the Software Removal
-    // Tool.
-    static void logSrtPromptResult(SrtPromptResult result);
 
     // Reads from a log source indicated by <code>source</code>.
     // <p>If <code>incremental</code> is false:
