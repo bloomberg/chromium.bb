@@ -6,28 +6,24 @@
  * A single action, that can be taken on a set of entries.
  * @interface
  */
-function Action() {
-}
+function Action() {}
 
 /**
  * Executes this action on the set of entries.
  */
-Action.prototype.execute = () => {
-};
+Action.prototype.execute = () => {};
 
 /**
  * Checks whether this action can execute on the set of entries.
  *
  * @return {boolean} True if the function can execute, false if not.
  */
-Action.prototype.canExecute = () => {
-};
+Action.prototype.canExecute = () => {};
 
 /**
  * @return {?string}
  */
-Action.prototype.getTitle = () => {
-};
+Action.prototype.getTitle = () => {};
 
 /**
  * @typedef {{
@@ -144,8 +140,8 @@ DriveShareAction.prototype.getTitle = () => {
  * @constructor
  * @struct
  */
-function DriveToggleOfflineAction(entries, metadataModel, driveSyncHandler, ui,
-    value, onExecute) {
+function DriveToggleOfflineAction(
+    entries, metadataModel, driveSyncHandler, ui, value, onExecute) {
   /**
    * @private {!Array<!Entry>}
    * @const
@@ -192,35 +188,37 @@ function DriveToggleOfflineAction(entries, metadataModel, driveSyncHandler, ui,
  * @param {function()} onExecute
  * @return {DriveToggleOfflineAction}
  */
-DriveToggleOfflineAction.create = (entries, metadataModel, driveSyncHandler, ui, value, onExecute) => {
-  if (!loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
-    if (entries.some((entry) => entry.isDirectory)) {
-      return null;
-    }
-  }
+DriveToggleOfflineAction.create =
+    (entries, metadataModel, driveSyncHandler, ui, value, onExecute) => {
+      if (!loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
+        if (entries.some((entry) => entry.isDirectory)) {
+          return null;
+        }
+      }
 
-  const actionableEntries = entries.filter(entry => {
-    if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
-      return false;
-    }
-    const metadata = metadataModel.getCache(
-        [entry], ['hosted', 'pinned'])[0];
-    if (metadata.hosted) {
-      return false;
-    }
-    if (metadata.pinned === value) {
-      return false;
-    }
-    return true;
-  });
+      const actionableEntries = entries.filter(entry => {
+        if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
+          return false;
+        }
+        const metadata =
+            metadataModel.getCache([entry], ['hosted', 'pinned'])[0];
+        if (metadata.hosted) {
+          return false;
+        }
+        if (metadata.pinned === value) {
+          return false;
+        }
+        return true;
+      });
 
-  if (actionableEntries.length === 0) {
-    return null;
-  }
+      if (actionableEntries.length === 0) {
+        return null;
+      }
 
-  return new DriveToggleOfflineAction(actionableEntries, metadataModel,
-      driveSyncHandler, ui, value, onExecute);
-};
+      return new DriveToggleOfflineAction(
+          actionableEntries, metadataModel, driveSyncHandler, ui, value,
+          onExecute);
+    };
 
 /**
  * @override
@@ -244,19 +242,16 @@ DriveToggleOfflineAction.prototype.execute = function() {
       }
       currentEntry = entries.shift();
       chrome.fileManagerPrivate.pinDriveFile(
-          currentEntry,
-          this.value_,
-          steps.entryPinned);
+          currentEntry, this.value_, steps.entryPinned);
     },
 
     // Check the result of pinning.
     entryPinned: () => {
       error = !!chrome.runtime.lastError;
       if (error && this.value_) {
-        this.metadataModel_.get([currentEntry], ['size']).then(
-            results => {
-              steps.showError(results[0].size);
-            });
+        this.metadataModel_.get([currentEntry], ['size']).then(results => {
+          steps.showError(results[0].size);
+        });
         return;
       }
       this.metadataModel_.notifyEntriesChanged([currentEntry]);
@@ -276,9 +271,9 @@ DriveToggleOfflineAction.prototype.execute = function() {
     showError: size => {
       this.ui_.alertDialog.showHtml(
           str('DRIVE_OUT_OF_SPACE_HEADER'),
-          strf('DRIVE_OUT_OF_SPACE_MESSAGE',
-               unescape(currentEntry.name),
-               util.bytesToString(size)),
+          strf(
+              'DRIVE_OUT_OF_SPACE_MESSAGE', unescape(currentEntry.name),
+              util.bytesToString(size)),
           null, null, null);
     }
   };
@@ -338,18 +333,19 @@ function DriveCreateFolderShortcutAction(entry, shortcutsModel, onExecute) {
  * @param {function()} onExecute
  * @return {DriveCreateFolderShortcutAction}
  */
-DriveCreateFolderShortcutAction.create = (entries, volumeManager, shortcutsModel, onExecute) => {
-  if (entries.length !== 1 || entries[0].isFile) {
-    return null;
-  }
-  const locationInfo = volumeManager.getLocationInfo(entries[0]);
-  if (!locationInfo || locationInfo.isSpecialSearchRoot ||
-      locationInfo.isRootEntry) {
-    return null;
-  }
-  return new DriveCreateFolderShortcutAction(
-      entries[0], shortcutsModel, onExecute);
-};
+DriveCreateFolderShortcutAction.create =
+    (entries, volumeManager, shortcutsModel, onExecute) => {
+      if (entries.length !== 1 || entries[0].isFile) {
+        return null;
+      }
+      const locationInfo = volumeManager.getLocationInfo(entries[0]);
+      if (!locationInfo || locationInfo.isSpecialSearchRoot ||
+          locationInfo.isRootEntry) {
+        return null;
+      }
+      return new DriveCreateFolderShortcutAction(
+          entries[0], shortcutsModel, onExecute);
+    };
 
 /**
  * @override
@@ -407,14 +403,15 @@ function DriveRemoveFolderShortcutAction(entry, shortcutsModel, onExecute) {
  * @param {function()} onExecute
  * @return {DriveRemoveFolderShortcutAction}
  */
-DriveRemoveFolderShortcutAction.create = (entries, shortcutsModel, onExecute) => {
-  if (entries.length !== 1 || entries[0].isFile ||
-      !shortcutsModel.exists(entries[0])) {
-    return null;
-  }
-  return new DriveRemoveFolderShortcutAction(
-      entries[0], shortcutsModel, onExecute);
-};
+DriveRemoveFolderShortcutAction.create =
+    (entries, shortcutsModel, onExecute) => {
+      if (entries.length !== 1 || entries[0].isFile ||
+          !shortcutsModel.exists(entries[0])) {
+        return null;
+      }
+      return new DriveRemoveFolderShortcutAction(
+          entries[0], shortcutsModel, onExecute);
+    };
 
 /**
  * @override
@@ -571,14 +568,14 @@ function CustomAction(entries, id, title, onExecute) {
  * @override
  */
 CustomAction.prototype.execute = function() {
-  chrome.fileManagerPrivate.executeCustomAction(this.entries_, this.id_,
-      () => {
-        if (chrome.runtime.lastError) {
-          console.error('Failed to execute a custom action because of: ' +
-            chrome.runtime.lastError.message);
-        }
-        this.onExecute_();
-      });
+  chrome.fileManagerPrivate.executeCustomAction(this.entries_, this.id_, () => {
+    if (chrome.runtime.lastError) {
+      console.error(
+          'Failed to execute a custom action because of: ' +
+          chrome.runtime.lastError.message);
+    }
+    this.onExecute_();
+  });
 };
 
 /**
@@ -703,109 +700,113 @@ ActionsModel.prototype.initialize = function() {
     return this.initializePromise_;
   }
 
-  this.initializePromise_ = new Promise((fulfill, reject) => {
-    if (this.destroyed_) {
-      reject();
-      return;
-    }
-    this.initializePromiseReject_ = reject;
+  this.initializePromise_ =
+      new Promise((fulfill, reject) => {
+        if (this.destroyed_) {
+          reject();
+          return;
+        }
+        this.initializePromiseReject_ = reject;
 
-    const volumeInfo = this.entries_.length >= 1 &&
-        this.volumeManager_.getVolumeInfo(this.entries_[0]);
-    if (!volumeInfo) {
-      fulfill({});
-      return;
-    }
-    // All entries need to be on the same volume to execute ActionsModel
-    // commands.
-    // TODO(sashab): Move this to util.js.
-    for (let i = 1; i < this.entries_.length; i++) {
-      const volumeInfoToCompare =
-          this.volumeManager_.getVolumeInfo(this.entries_[i]);
-      if (!volumeInfoToCompare ||
-          volumeInfoToCompare.volumeId != volumeInfo.volumeId) {
-        fulfill({});
-        return;
-      }
-    }
-
-    const actions = {};
-    switch (volumeInfo.volumeType) {
-      // For Drive, actions are constructed directly in the Files app code.
-      case VolumeManagerCommon.VolumeType.DRIVE:
-        const shareAction = DriveShareAction.create(
-            this.entries_, this.metadataModel_, this.volumeManager_, this.ui_);
-        if (shareAction) {
-          actions[ActionsModel.CommonActionId.SHARE] = shareAction;
+        const volumeInfo = this.entries_.length >= 1 &&
+            this.volumeManager_.getVolumeInfo(this.entries_[0]);
+        if (!volumeInfo) {
+          fulfill({});
+          return;
+        }
+        // All entries need to be on the same volume to execute ActionsModel
+        // commands.
+        // TODO(sashab): Move this to util.js.
+        for (let i = 1; i < this.entries_.length; i++) {
+          const volumeInfoToCompare =
+              this.volumeManager_.getVolumeInfo(this.entries_[i]);
+          if (!volumeInfoToCompare ||
+              volumeInfoToCompare.volumeId != volumeInfo.volumeId) {
+            fulfill({});
+            return;
+          }
         }
 
-        const saveForOfflineAction = DriveToggleOfflineAction.create(
-            this.entries_, this.metadataModel_, this.driveSyncHandler_,
-            this.ui_, true, this.invalidate_.bind(this));
-        if (saveForOfflineAction) {
-          actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE] =
-              saveForOfflineAction;
-        }
+        const actions = {};
+        switch (volumeInfo.volumeType) {
+          // For Drive, actions are constructed directly in the Files app code.
+          case VolumeManagerCommon.VolumeType.DRIVE:
+            const shareAction = DriveShareAction.create(
+                this.entries_, this.metadataModel_, this.volumeManager_,
+                this.ui_);
+            if (shareAction) {
+              actions[ActionsModel.CommonActionId.SHARE] = shareAction;
+            }
 
-        const offlineNotNecessaryAction = DriveToggleOfflineAction.create(
-            this.entries_, this.metadataModel_, this.driveSyncHandler_,
-            this.ui_, false, this.invalidate_.bind(this));
-        if (offlineNotNecessaryAction) {
-          actions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY] =
-              offlineNotNecessaryAction;
-        }
+            const saveForOfflineAction = DriveToggleOfflineAction.create(
+                this.entries_, this.metadataModel_, this.driveSyncHandler_,
+                this.ui_, true, this.invalidate_.bind(this));
+            if (saveForOfflineAction) {
+              actions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE] =
+                  saveForOfflineAction;
+            }
 
-        const createFolderShortcutAction =
-            DriveCreateFolderShortcutAction.create(this.entries_,
-                this.volumeManager_, this.shortcutsModel_,
-                this.invalidate_.bind(this));
-        if (createFolderShortcutAction) {
-          actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT] =
-              createFolderShortcutAction;
-        }
+            const offlineNotNecessaryAction = DriveToggleOfflineAction.create(
+                this.entries_, this.metadataModel_, this.driveSyncHandler_,
+                this.ui_, false, this.invalidate_.bind(this));
+            if (offlineNotNecessaryAction) {
+              actions[ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY] =
+                  offlineNotNecessaryAction;
+            }
 
-        const removeFolderShortcutAction =
-            DriveRemoveFolderShortcutAction.create(this.entries_,
-                this.shortcutsModel_, this.invalidate_.bind(this));
-        if (removeFolderShortcutAction) {
-          actions[ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT] =
-              removeFolderShortcutAction;
-        }
+            const createFolderShortcutAction =
+                DriveCreateFolderShortcutAction.create(
+                    this.entries_, this.volumeManager_, this.shortcutsModel_,
+                    this.invalidate_.bind(this));
+            if (createFolderShortcutAction) {
+              actions[ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT] =
+                  createFolderShortcutAction;
+            }
 
-        const manageInDriveAction = DriveManageAction.create(
-            this.entries_, this.volumeManager_, this.ui_);
-        if (manageInDriveAction) {
-          actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE] =
-              manageInDriveAction;
-        }
+            const removeFolderShortcutAction =
+                DriveRemoveFolderShortcutAction.create(
+                    this.entries_, this.shortcutsModel_,
+                    this.invalidate_.bind(this));
+            if (removeFolderShortcutAction) {
+              actions[ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT] =
+                  removeFolderShortcutAction;
+            }
 
-        fulfill(actions);
-        break;
+            const manageInDriveAction = DriveManageAction.create(
+                this.entries_, this.volumeManager_, this.ui_);
+            if (manageInDriveAction) {
+              actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE] =
+                  manageInDriveAction;
+            }
 
-      // For FSP, fetch custom actions via an API.
-      case VolumeManagerCommon.VolumeType.PROVIDED:
-        chrome.fileManagerPrivate.getCustomActions(this.entries_,
-            customActions => {
-              if (chrome.runtime.lastError) {
-                console.error('Failed to fetch custom actions because of: ' +
-                    chrome.runtime.lastError.message);
-              } else {
-                customActions.forEach(action => {
-                  actions[action.id] = new CustomAction(
-                      this.entries_, action.id, action.title || null,
-                      this.invalidate_.bind(this));
+            fulfill(actions);
+            break;
+
+          // For FSP, fetch custom actions via an API.
+          case VolumeManagerCommon.VolumeType.PROVIDED:
+            chrome.fileManagerPrivate.getCustomActions(
+                this.entries_, customActions => {
+                  if (chrome.runtime.lastError) {
+                    console.error(
+                        'Failed to fetch custom actions because of: ' +
+                        chrome.runtime.lastError.message);
+                  } else {
+                    customActions.forEach(action => {
+                      actions[action.id] = new CustomAction(
+                          this.entries_, action.id, action.title || null,
+                          this.invalidate_.bind(this));
+                    });
+                  }
+                  fulfill(actions);
                 });
-              }
-              fulfill(actions);
-            });
-        break;
+            break;
 
-      default:
-        fulfill(actions);
-    }
-  }).then(actions => {
-    this.actions_ = actions;
-  });
+          default:
+            fulfill(actions);
+        }
+      }).then(actions => {
+        this.actions_ = actions;
+      });
 
   return this.initializePromise_;
 };

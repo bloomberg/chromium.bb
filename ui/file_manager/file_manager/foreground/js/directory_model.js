@@ -26,7 +26,8 @@ function DirectoryModel(
     singleSelection, fileFilter, metadataModel, volumeManager,
     fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
-      new FileListSingleSelectionModel() : new FileListSelectionModel();
+      new FileListSingleSelectionModel() :
+      new FileListSelectionModel();
 
   this.runningScan_ = null;
   this.pendingScan_ = null;
@@ -40,12 +41,12 @@ function DirectoryModel(
   this.ignoreCurrentDirectoryDeletion_ = false;
 
   this.directoryChangeQueue_ = new AsyncUtil.Queue();
-  this.rescanAggregator_ = new AsyncUtil.Aggregator(
-      this.rescanSoon.bind(this, true), 500);
+  this.rescanAggregator_ =
+      new AsyncUtil.Aggregator(this.rescanSoon.bind(this, true), 500);
 
   this.fileFilter_ = fileFilter;
-  this.fileFilter_.addEventListener('changed',
-                                    this.onFilterChanged_.bind(this));
+  this.fileFilter_.addEventListener(
+      'changed', this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ =
       new FileListContext(fileFilter, metadataModel, volumeManager);
@@ -70,11 +71,9 @@ function DirectoryModel(
    */
   this.fileWatcher_ = new FileWatcher();
   this.fileWatcher_.addEventListener(
-      'watcher-directory-changed',
-      this.onWatcherDirectoryChanged_.bind(this));
+      'watcher-directory-changed', this.onWatcherDirectoryChanged_.bind(this));
   util.addEventListenerToBackgroundComponent(
-      fileOperationManager,
-      'entries-changed',
+      fileOperationManager, 'entries-changed',
       this.onEntriesChanged_.bind(this));
 
   /** @private {string} */
@@ -223,31 +222,32 @@ DirectoryModel.prototype.isCurrentRootVolumeType_ = function(volumeType) {
  */
 DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
     (selection, updateFunc) => {
-  // Begin change.
-  selection.beginChange();
+      // Begin change.
+      selection.beginChange();
 
-  // If dispatchNeeded is true, we should ensure the change event is
-  // dispatched.
-  let dispatchNeeded = updateFunc();
+      // If dispatchNeeded is true, we should ensure the change event is
+      // dispatched.
+      let dispatchNeeded = updateFunc();
 
-  // Check if the change event is dispatched in the endChange function
-  // or not.
-  const eventDispatched = () => {
-    dispatchNeeded = false;
-  };
-  selection.addEventListener('change', eventDispatched);
-  selection.endChange();
-  selection.removeEventListener('change', eventDispatched);
+      // Check if the change event is dispatched in the endChange function
+      // or not.
+      const eventDispatched = () => {
+        dispatchNeeded = false;
+      };
+      selection.addEventListener('change', eventDispatched);
+      selection.endChange();
+      selection.removeEventListener('change', eventDispatched);
 
-  // If the change event have been already dispatched, dispatchNeeded is false.
-  if (dispatchNeeded) {
-    const event = new Event('change');
-    // The selection status (selected or not) is not changed because
-    // this event is caused by the change of selected item.
-    event.changes = [];
-    selection.dispatchEvent(event);
-  }
-};
+      // If the change event have been already dispatched, dispatchNeeded is
+      // false.
+      if (dispatchNeeded) {
+        const event = new Event('change');
+        // The selection status (selected or not) is not changed because
+        // this event is caused by the change of selected item.
+        event.changes = [];
+        selection.dispatchEvent(event);
+      }
+    };
 
 /**
  * Sets to ignore current directory deletion. This method is used to prevent
@@ -270,8 +270,7 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
   if (!this.ignoreCurrentDirectoryDeletion_) {
     // If the change is deletion of currentDir, move up to its parent directory.
     directoryEntry.getDirectory(
-        directoryEntry.fullPath, {create: false}, () => {},
-        () => {
+        directoryEntry.fullPath, {create: false}, () => {}, () => {
           const volumeInfo =
               this.volumeManager_.getVolumeInfo(assert(directoryEntry));
           if (volumeInfo) {
@@ -293,17 +292,20 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
       }
     });
 
-    util.URLsToEntries(addedOrUpdatedFileUrls).then(result => {
-      deletedFileUrls = deletedFileUrls.concat(result.failureUrls);
+    util.URLsToEntries(addedOrUpdatedFileUrls)
+        .then(result => {
+          deletedFileUrls = deletedFileUrls.concat(result.failureUrls);
 
-      // Passing the resolved entries and failed URLs as the removed files.
-      // The URLs are removed files and they chan't be resolved.
-      this.partialUpdate_(result.entries, deletedFileUrls);
-    }).catch(error => {
-      console.error('Error in proceeding the changed event.', error,
-                    'Fallback to force-refresh');
-      this.rescanAggregator_.run();
-    });
+          // Passing the resolved entries and failed URLs as the removed files.
+          // The URLs are removed files and they chan't be resolved.
+          this.partialUpdate_(result.entries, deletedFileUrls);
+        })
+        .catch(error => {
+          console.error(
+              'Error in proceeding the changed event.', error,
+              'Fallback to force-refresh');
+          this.rescanAggregator_.run();
+        });
   } else {
     // Invokes force refresh if the detailed information isn't provided.
     // This can occur very frequently (e.g. when copying files into Downlaods)
@@ -388,7 +390,8 @@ DirectoryModel.prototype.setSelectedEntries_ = function(value) {
 DirectoryModel.prototype.getLeadEntry_ = function() {
   const index = this.fileListSelection_.leadIndex;
   return index >= 0 ?
-      /** @type {Entry} */ (this.getFileList().item(index)) : null;
+      /** @type {Entry} */ (this.getFileList().item(index)) :
+      null;
 };
 
 /**
@@ -495,9 +498,8 @@ DirectoryModel.prototype.rescan = function(refresh) {
     }
   };
 
-  this.scan_(dirContents,
-             refresh,
-             successCallback, () => {}, () => {}, () => {});
+  this.scan_(
+      dirContents, refresh, successCallback, () => {}, () => {}, () => {});
 };
 
 /**
@@ -599,8 +601,9 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents, callback) {
   // Clear the table, and start scanning.
   cr.dispatchSimpleEvent(this, 'scan-started');
   fileList.splice(0, fileList.length);
-  this.scan_(this.currentDirContents_, false,
-             onDone, onFailed, onUpdated, onCancelled);
+  this.scan_(
+      this.currentDirContents_, false, onDone, onFailed, onUpdated,
+      onCancelled);
 };
 
 /**
@@ -609,8 +612,8 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents, callback) {
  * @param {Array<string>} removedUrls URLs of removed files.
  * @private
  */
-DirectoryModel.prototype.partialUpdate_ =
-    function(changedEntries, removedUrls) {
+DirectoryModel.prototype.partialUpdate_ = function(
+    changedEntries, removedUrls) {
   // This update should be included in the current running update.
   if (this.pendingScan_) {
     return;
@@ -620,8 +623,8 @@ DirectoryModel.prototype.partialUpdate_ =
     // Do update after the current scan is finished.
     const previousScan = this.runningScan_;
     const onPreviousScanCompleted = () => {
-      previousScan.removeEventListener('scan-completed',
-                                       onPreviousScanCompleted);
+      previousScan.removeEventListener(
+          'scan-completed', onPreviousScanCompleted);
       // Run the update asynchronously.
       Promise.resolve().then(() => {
         this.partialUpdate_(changedEntries, removedUrls);
@@ -634,11 +637,9 @@ DirectoryModel.prototype.partialUpdate_ =
   const onFinish = () => {
     this.runningScan_ = null;
 
-    this.currentDirContents_.removeEventListener(
-        'scan-completed', onCompleted);
+    this.currentDirContents_.removeEventListener('scan-completed', onCompleted);
     this.currentDirContents_.removeEventListener('scan-failed', onFailure);
-    this.currentDirContents_.removeEventListener(
-        'scan-cancelled', onCancelled);
+    this.currentDirContents_.removeEventListener('scan-cancelled', onCancelled);
   };
 
   const onCompleted = () => {
@@ -677,9 +678,8 @@ DirectoryModel.prototype.partialUpdate_ =
  * @private
  */
 DirectoryModel.prototype.scan_ = function(
-    dirContents,
-    refresh,
-    successCallback, failureCallback, updatedCallback, cancelledCallback) {
+    dirContents, refresh, successCallback, failureCallback, updatedCallback,
+    cancelledCallback) {
   const self = this;
 
   /**
@@ -708,9 +708,8 @@ DirectoryModel.prototype.scan_ = function(
 
     // Record metric for Downloads directory.
     if (!dirContents.isSearch()) {
-      const locationInfo =
-          this.volumeManager_.getLocationInfo(
-              assert(dirContents.getDirectoryEntry()));
+      const locationInfo = this.volumeManager_.getLocationInfo(
+          assert(dirContents.getDirectoryEntry()));
       const volumeInfo = locationInfo && locationInfo.volumeInfo;
       if (volumeInfo &&
           volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS &&
@@ -767,7 +766,8 @@ DirectoryModel.prototype.scan_ = function(
  * @private
  */
 DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
-  console.assert(this.currentDirContents_ !== dirContents,
+  console.assert(
+      this.currentDirContents_ !== dirContents,
       'Give directory contents instance must be different from current one.');
   cr.dispatchSimpleEvent(this, 'begin-update-files');
   this.updateSelectionAndPublishEvent_(this.fileListSelection_, () => {
@@ -793,8 +793,10 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
     if (this.fileListSelection_.selectedIndexes.length == 0 &&
         selectedIndices.length != 0) {
       const maxIdx = Math.max.apply(null, selectedIndices);
-      this.selectIndex(Math.min(maxIdx - selectedIndices.length + 2,
-                                this.getFileList().length) - 1);
+      this.selectIndex(
+          Math.min(
+              maxIdx - selectedIndices.length + 2, this.getFileList().length) -
+          1);
       forceChangeEvent = true;
     } else if (isCheckSelectMode) {
       // Otherwise, ensure check select mode is retained if it was previously
@@ -834,24 +836,26 @@ DirectoryModel.prototype.onEntriesChanged_ = function(event) {
           entries[i].getParent(resolve, reject);
         }));
       }
-      Promise.all(parentPromises).then(parents => {
-        const entriesToAdd = [];
-        for (let i = 0; i < parents.length; i++) {
-          if (!util.isSameEntry(parents[i], this.getCurrentDirEntry())) {
-            continue;
-          }
-          const index = this.findIndexByEntry_(entries[i]);
-          if (index >= 0) {
-            this.getFileList().replaceItem(
-                this.getFileList().item(index), entries[i]);
-          } else {
-            entriesToAdd.push(entries[i]);
-          }
-        }
-        this.partialUpdate_(entriesToAdd, []);
-      }).catch(error => {
-        console.error(error.stack || error);
-      });
+      Promise.all(parentPromises)
+          .then(parents => {
+            const entriesToAdd = [];
+            for (let i = 0; i < parents.length; i++) {
+              if (!util.isSameEntry(parents[i], this.getCurrentDirEntry())) {
+                continue;
+              }
+              const index = this.findIndexByEntry_(entries[i]);
+              if (index >= 0) {
+                this.getFileList().replaceItem(
+                    this.getFileList().item(index), entries[i]);
+              } else {
+                entriesToAdd.push(entries[i]);
+              }
+            }
+            this.partialUpdate_(entriesToAdd, []);
+          })
+          .catch(error => {
+            console.error(error.stack || error);
+          });
       break;
 
     case util.EntryChangedKind.DELETED:
@@ -952,28 +956,28 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
   const dirContents = this.currentDirContents_;
 
   return new Promise((onFulfilled, onRejected) => {
-    dirContents.prefetchMetadata(
-        [newDirectory], false, onFulfilled);
-  }).then((sequence => {
-    // If current directory has changed during the prefetch, do not try to
-    // select new directory.
-    if (sequence !== this.changeDirectorySequence_) {
-      return Promise.reject();
-    }
+           dirContents.prefetchMetadata([newDirectory], false, onFulfilled);
+         })
+      .then((sequence => {
+              // If current directory has changed during the prefetch, do not
+              // try to select new directory.
+              if (sequence !== this.changeDirectorySequence_) {
+                return Promise.reject();
+              }
 
-    // If target directory is already in the list, just select it.
-    const existing = this.getFileList().slice().filter(e => {
-      return e.name === newDirectory.name;
-    });
-    if (existing.length) {
-      this.selectEntry(newDirectory);
-    } else {
-      this.fileListSelection_.beginChange();
-      this.getFileList().splice(0, 0, newDirectory);
-      this.selectEntry(newDirectory);
-      this.fileListSelection_.endChange();
-    }
-  }).bind(null, this.changeDirectorySequence_));
+              // If target directory is already in the list, just select it.
+              const existing = this.getFileList().slice().filter(e => {
+                return e.name === newDirectory.name;
+              });
+              if (existing.length) {
+                this.selectEntry(newDirectory);
+              } else {
+                this.fileListSelection_.beginChange();
+                this.getFileList().splice(0, 0, newDirectory);
+                this.selectEntry(newDirectory);
+                this.fileListSelection_.endChange();
+              }
+            }).bind(null, this.changeDirectorySequence_));
 };
 
 /**
@@ -1021,9 +1025,9 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
     this.currentDirContents_.cancelScan();
   }
 
-  this.directoryChangeQueue_.run(((sequence, queueTaskCallback) => {
-    this.fileWatcher_.changeWatchedDirectory(dirEntry)
-        .then(() => {
+  this.directoryChangeQueue_.run(
+      ((sequence, queueTaskCallback) => {
+        this.fileWatcher_.changeWatchedDirectory(dirEntry).then(() => {
           if (this.changeDirectorySequence_ !== sequence) {
             queueTaskCallback();
             return;
@@ -1036,27 +1040,24 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
             return;
           }
 
-          const previousDirEntry =
-              this.currentDirContents_.getDirectoryEntry();
-          this.clearAndScan_(
-               newDirectoryContents,
-               result => {
-                 // Calls the callback of the method when successful.
-                 if (result && opt_callback) {
-                   opt_callback();
-                 }
+          const previousDirEntry = this.currentDirContents_.getDirectoryEntry();
+          this.clearAndScan_(newDirectoryContents, result => {
+            // Calls the callback of the method when successful.
+            if (result && opt_callback) {
+              opt_callback();
+            }
 
-                 // Notify that the current task of this.directoryChangeQueue_
-                 // is completed.
-                 setTimeout(queueTaskCallback, 0);
-               });
+            // Notify that the current task of this.directoryChangeQueue_
+            // is completed.
+            setTimeout(queueTaskCallback, 0);
+          });
 
           // For tests that open the dialog to empty directories, everything
           // is loaded at this point.
           util.testSendMessage('directory-change-complete');
-          const previousVolumeInfo =
-              previousDirEntry ?
-              this.volumeManager_.getVolumeInfo(previousDirEntry) : null;
+          const previousVolumeInfo = previousDirEntry ?
+              this.volumeManager_.getVolumeInfo(previousDirEntry) :
+              null;
           // VolumeInfo for dirEntry.
           const currentVolumeInfo = this.getCurrentVolumeInfo();
           const event = new Event('directory-changed');
@@ -1065,7 +1066,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
           this.dispatchEvent(event);
         });
-  }).bind(null, this.changeDirectorySequence_));
+      }).bind(null, this.changeDirectorySequence_));
 };
 
 /**
@@ -1114,8 +1115,7 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
 
     start: function() {
       if (!this.active_) {
-        this.dm_.addEventListener('directory-changed',
-                                  this.onDirectoryChange_);
+        this.dm_.addEventListener('directory-changed', this.onDirectoryChange_);
         this.active_ = true;
         this.hasChanged = false;
       }
@@ -1123,8 +1123,8 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
 
     stop: function() {
       if (this.active_) {
-        this.dm_.removeEventListener('directory-changed',
-                                     this.onDirectoryChange_);
+        this.dm_.removeEventListener(
+            'directory-changed', this.onDirectoryChange_);
         this.active_ = false;
       }
     },
@@ -1281,11 +1281,12 @@ DirectoryModel.prototype.hasCurrentDirEntryBeenUnmounted_ = function(
  * @return {DirectoryContents} Directory contents.
  * @private
  */
-DirectoryModel.prototype.createDirectoryContents_ =
-    function(context, entry, opt_query) {
+DirectoryModel.prototype.createDirectoryContents_ = function(
+    context, entry, opt_query) {
   const query = (opt_query || '').trimLeft();
   const locationInfo = this.volumeManager_.getLocationInfo(entry);
-  const canUseDriveSearch = this.volumeManager_.getDriveConnectionState().type !==
+  const canUseDriveSearch =
+      this.volumeManager_.getDriveConnectionState().type !==
           VolumeManagerCommon.DriveConnectionType.OFFLINE &&
       (locationInfo && locationInfo.isDriveBased);
 
@@ -1347,8 +1348,7 @@ DirectoryModel.prototype.createDirectoryContents_ =
     }
     return DirectoryContents.createForDriveMetadataSearch(
         context,
-        /** @type {!FakeEntry} */ (entry),
-        searchType);
+        /** @type {!FakeEntry} */ (entry), searchType);
   }
   // Local fetch or search.
   return DirectoryContents.createForDirectory(
@@ -1383,9 +1383,8 @@ DirectoryModel.prototype.clearLastSearchQuery = function() {
  *     gets cleared.
  * TODO(olege): Change callbacks to events.
  */
-DirectoryModel.prototype.search = function(query,
-                                           onSearchRescan,
-                                           onClearSearch) {
+DirectoryModel.prototype.search = function(
+    query, onSearchRescan, onClearSearch) {
   this.lastSearchQuery_ = query;
   this.clearSearch_();
   const currentDirEntry = this.getCurrentDirEntry();
@@ -1395,38 +1394,36 @@ DirectoryModel.prototype.search = function(query,
   }
 
   this.changeDirectorySequence_++;
-  this.directoryChangeQueue_.run(((sequence, callback) => {
-    if (this.changeDirectorySequence_ !== sequence) {
-      callback();
-      return;
-    }
+  this.directoryChangeQueue_.run(
+      ((sequence, callback) => {
+        if (this.changeDirectorySequence_ !== sequence) {
+          callback();
+          return;
+        }
 
-    if (!(query || '').trimLeft()) {
-      if (this.isSearching()) {
+        if (!(query || '').trimLeft()) {
+          if (this.isSearching()) {
+            const newDirContents = this.createDirectoryContents_(
+                this.currentFileListContext_, assert(currentDirEntry));
+            this.clearAndScan_(newDirContents, callback);
+          } else {
+            callback();
+          }
+          return;
+        }
+
         const newDirContents = this.createDirectoryContents_(
-            this.currentFileListContext_,
-            assert(currentDirEntry));
-        this.clearAndScan_(newDirContents,
-                           callback);
-      } else {
-        callback();
-      }
-      return;
-    }
+            this.currentFileListContext_, assert(currentDirEntry), query);
+        if (!newDirContents) {
+          callback();
+          return;
+        }
 
-    const newDirContents = this.createDirectoryContents_(
-        this.currentFileListContext_, assert(currentDirEntry), query);
-    if (!newDirContents) {
-      callback();
-      return;
-    }
-
-    this.onSearchCompleted_ = onSearchRescan;
-    this.onClearSearch_ = onClearSearch;
-    this.addEventListener('scan-completed', this.onSearchCompleted_);
-    this.clearAndScan_(newDirContents,
-                       callback);
-  }).bind(null, this.changeDirectorySequence_));
+        this.onSearchCompleted_ = onSearchRescan;
+        this.onClearSearch_ = onClearSearch;
+        this.addEventListener('scan-completed', this.onSearchCompleted_);
+        this.clearAndScan_(newDirContents, callback);
+      }).bind(null, this.changeDirectorySequence_));
 };
 
 /**

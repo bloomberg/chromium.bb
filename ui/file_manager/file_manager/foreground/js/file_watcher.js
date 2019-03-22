@@ -59,8 +59,7 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
       // When watched directory is deleted by the change in parent directory,
       // notify it as watcher directory changed.
       this.watchedDirectoryEntry_.getDirectory(
-          this.watchedDirectoryEntry_.fullPath, {create: false}, null,
-          () => {
+          this.watchedDirectoryEntry_.fullPath, {create: false}, null, () => {
             fireWatcherDirectoryChanged(null);
           });
     }
@@ -95,10 +94,10 @@ FileWatcher.prototype.resetWatchedEntry_ = function() {
       // Release the watched directory.
       if (this.watchedDirectoryEntry_) {
         chrome.fileManagerPrivate.removeFileWatch(
-            this.watchedDirectoryEntry_,
-            result => {
+            this.watchedDirectoryEntry_, result => {
               if (chrome.runtime.lastError) {
-                console.error('Failed to remove the watcher because of: ' +
+                console.error(
+                    'Failed to remove the watcher because of: ' +
                     chrome.runtime.lastError.message);
               }
               // Even on error reset the watcher locally, so at least the
@@ -126,22 +125,19 @@ FileWatcher.prototype.changeWatchedEntry_ = function(entry) {
     const setEntryClosure = () => {
       // Run the tasks in the queue to avoid races.
       this.queue_.run(callback => {
-        chrome.fileManagerPrivate.addFileWatch(
-            entry,
-            result => {
-              if (chrome.runtime.lastError) {
-                // Most probably setting the watcher is not supported on the
-                // file system type.
-                console.info('File watchers not supported for: ' +
-                    entry.toURL());
-                this.watchedDirectoryEntry_ = null;
-                fulfill();
-              } else {
-                this.watchedDirectoryEntry_ = assert(entry);
-                fulfill();
-              }
-              callback();
-            });
+        chrome.fileManagerPrivate.addFileWatch(entry, result => {
+          if (chrome.runtime.lastError) {
+            // Most probably setting the watcher is not supported on the
+            // file system type.
+            console.info('File watchers not supported for: ' + entry.toURL());
+            this.watchedDirectoryEntry_ = null;
+            fulfill();
+          } else {
+            this.watchedDirectoryEntry_ = assert(entry);
+            fulfill();
+          }
+          callback();
+        });
       });
     };
 

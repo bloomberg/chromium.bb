@@ -148,24 +148,24 @@ FolderShortcutsDataModel.prototype = {
       const group = new AsyncUtil.Group();
       list.forEach(function(path) {
         group.add(((path, callback) => {
-          const url =
-              this.lastDriveRootURL_ && this.convertStoredPathToUrl_(path);
-          if (url && volumeInfo) {
-            window.webkitResolveLocalFileSystemURL(
-                url,
-                entry => {
-                  onResolveSuccess(path, entry);
-                  callback();
-                },
-                () => {
-                  onResolveFailure(path, url);
-                  callback();
-                });
-          } else {
-            onResolveFailure(path, url);
-            callback();
-          }
-        }).bind(null, path));
+                    const url = this.lastDriveRootURL_ &&
+                        this.convertStoredPathToUrl_(path);
+                    if (url && volumeInfo) {
+                      window.webkitResolveLocalFileSystemURL(
+                          url,
+                          entry => {
+                            onResolveSuccess(path, entry);
+                            callback();
+                          },
+                          () => {
+                            onResolveFailure(path, url);
+                            callback();
+                          });
+                    } else {
+                      onResolveFailure(path, url);
+                      callback();
+                    }
+                  }).bind(null, path));
       }, this);
 
       // Save the model after finishing.
@@ -198,7 +198,8 @@ FolderShortcutsDataModel.prototype = {
     this.queue_.run(callback => {
       chrome.storage.sync.get(FolderShortcutsDataModel.NAME, value => {
         if (chrome.runtime.lastError) {
-          console.error('Failed to load shortcut paths from chrome.storage: ' +
+          console.error(
+              'Failed to load shortcut paths from chrome.storage: ' +
               chrome.runtime.lastError.message);
           callback();
           return;
@@ -341,8 +342,7 @@ FolderShortcutsDataModel.prototype = {
       addedIndex = this.length;
     }
 
-    this.firePermutedEvent_(
-        this.calculatePermutation_(oldArray, this.array_));
+    this.firePermutedEvent_(this.calculatePermutation_(oldArray, this.array_));
     return addedIndex;
   },
 
@@ -411,12 +411,12 @@ FolderShortcutsDataModel.prototype = {
 
     // TODO(mtomasz): Migrate to URL.
     const paths = this.array_
-                    .map(entry => {
-                      return entry.toURL();
-                    })
-                    .map(this.convertUrlToStoredPath_.bind(this))
-                    .concat(Object.keys(this.pendingPaths_))
-                    .concat(Object.keys(this.unresolvablePaths_));
+                      .map(entry => {
+                        return entry.toURL();
+                      })
+                      .map(this.convertUrlToStoredPath_.bind(this))
+                      .concat(Object.keys(this.pendingPaths_))
+                      .concat(Object.keys(this.unresolvablePaths_));
 
     const prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;
@@ -519,8 +519,8 @@ FolderShortcutsDataModel.prototype = {
       console.warn(path + ' is neither a drive mount path nor a stored path.');
       return null;
     }
-    return this.lastDriveRootURL_ + encodeURIComponent(
-        path.substr(STORED_DRIVE_MOUNT_PATH.length));
+    return this.lastDriveRootURL_ +
+        encodeURIComponent(path.substr(STORED_DRIVE_MOUNT_PATH.length));
   },
 
   /**
@@ -539,7 +539,7 @@ FolderShortcutsDataModel.prototype = {
       return null;
     }
 
-    return STORED_DRIVE_MOUNT_PATH + '/' + decodeURIComponent(
-        url.substr(this.lastDriveRootURL_.length));
+    return STORED_DRIVE_MOUNT_PATH + '/' +
+        decodeURIComponent(url.substr(this.lastDriveRootURL_.length));
   },
 };

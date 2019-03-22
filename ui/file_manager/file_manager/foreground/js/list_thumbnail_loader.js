@@ -120,9 +120,9 @@ ListThumbnailLoader.VolumeType;
  * @return {number} Number of prefetch requests.
  * @private
  */
-ListThumbnailLoader.prototype.getNumOfPrefetch_ = function () {
+ListThumbnailLoader.prototype.getNumOfPrefetch_ = function() {
   switch (/** @type {?ListThumbnailLoader.VolumeType} */
-      (this.currentVolumeType_)) {
+          (this.currentVolumeType_)) {
     case VolumeManagerCommon.VolumeType.MTP:
       return 0;
     case ListThumbnailLoader.TEST_VOLUME_TYPE:
@@ -140,7 +140,7 @@ ListThumbnailLoader.prototype.getNumOfPrefetch_ = function () {
  */
 ListThumbnailLoader.prototype.getNumOfMaxActiveTasks_ = function() {
   switch (/** @type {?ListThumbnailLoader.VolumeType} */
-      (this.currentVolumeType_)) {
+          (this.currentVolumeType_)) {
     case VolumeManagerCommon.VolumeType.MTP:
       return 1;
     case ListThumbnailLoader.TEST_VOLUME_TYPE:
@@ -258,8 +258,7 @@ ListThumbnailLoader.prototype.continue_ = function() {
 
   // If the entry is a directory, already in cache as valid or fetching, skip.
   const thumbnail = this.cache_.get(entry.toURL());
-  if (entry.isDirectory ||
-      (thumbnail && !thumbnail.outdated) ||
+  if (entry.isDirectory || (thumbnail && !thumbnail.outdated) ||
       this.active_[entry.toURL()]) {
     this.cursor_++;
     this.continue_();
@@ -421,53 +420,59 @@ ListThumbnailLoader.Task.EXIF_IO_ERROR_DELAY = 3000;
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
   let ioError = false;
-  return this.thumbnailModel_.get([this.entry_]).then(metadatas => {
-    // When it failed to read exif header with an IO error, do not generate
-    // thumbnail at this time since it may success in the second try. If it
-    // failed to read at 0 byte, it would be an IO error.
-    if (metadatas[0].thumbnail.urlError &&
-        metadatas[0].thumbnail.urlError.errorDescription ===
-            'Error: Unexpected EOF @0') {
-      ioError = true;
-      return Promise.reject();
-    }
-    return metadatas[0];
-  }).then(metadata => {
-    const loadTargets = [
-      ThumbnailLoader.LoadTarget.CONTENT_METADATA,
-      ThumbnailLoader.LoadTarget.EXTERNAL_METADATA
-    ];
+  return this.thumbnailModel_.get([this.entry_])
+      .then(metadatas => {
+        // When it failed to read exif header with an IO error, do not generate
+        // thumbnail at this time since it may success in the second try. If it
+        // failed to read at 0 byte, it would be an IO error.
+        if (metadatas[0].thumbnail.urlError &&
+            metadatas[0].thumbnail.urlError.errorDescription ===
+                'Error: Unexpected EOF @0') {
+          ioError = true;
+          return Promise.reject();
+        }
+        return metadatas[0];
+      })
+      .then(metadata => {
+        const loadTargets = [
+          ThumbnailLoader.LoadTarget.CONTENT_METADATA,
+          ThumbnailLoader.LoadTarget.EXTERNAL_METADATA
+        ];
 
-    // If the file is on a provided file system which is based on network, then
-    // don't generate thumbnails from file entry, as it could cause very high
-    // network traffic.
-    const volumeInfo = this.volumeManager_.getVolumeInfo(this.entry_);
-    if (volumeInfo && (volumeInfo.volumeType !==
-        VolumeManagerCommon.VolumeType.PROVIDED ||
-        volumeInfo.source !== VolumeManagerCommon.Source.NETWORK)) {
-      loadTargets.push(ThumbnailLoader.LoadTarget.FILE_ENTRY);
-    }
+        // If the file is on a provided file system which is based on network,
+        // then don't generate thumbnails from file entry, as it could cause
+        // very high network traffic.
+        const volumeInfo = this.volumeManager_.getVolumeInfo(this.entry_);
+        if (volumeInfo &&
+            (volumeInfo.volumeType !==
+                 VolumeManagerCommon.VolumeType.PROVIDED ||
+             volumeInfo.source !== VolumeManagerCommon.Source.NETWORK)) {
+          loadTargets.push(ThumbnailLoader.LoadTarget.FILE_ENTRY);
+        }
 
-    return new this.thumbnailLoaderConstructor_(
-        this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadata,
-        undefined /* opt_mediaType */, loadTargets)
-        .loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL);
-  }).then(result => {
-    return new ListThumbnailLoader.ThumbnailData(
-        this.entry_.toURL(), result.data, result.width, result.height);
-  }).catch(() => {
-    // If an error happens during generating of a thumbnail, then return
-    // an empty object, so we don't retry the thumbnail over and over
-    // again.
-    const thumbnailData = new ListThumbnailLoader.ThumbnailData(
-          this.entry_.toURL(), null, null, null);
-    if (ioError) {
-      // If fetching a thumbnail from EXIF fails due to an IO error, then try to
-      // refetch it in the future, but not earlier than in 3 second.
-      setTimeout(() => {
-        thumbnailData.outdated = true;
-      }, ListThumbnailLoader.Task.EXIF_IO_ERROR_DELAY);
-    }
-    return thumbnailData;
-  });
+        return new this
+            .thumbnailLoaderConstructor_(
+                this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadata,
+                undefined /* opt_mediaType */, loadTargets)
+            .loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL);
+      })
+      .then(result => {
+        return new ListThumbnailLoader.ThumbnailData(
+            this.entry_.toURL(), result.data, result.width, result.height);
+      })
+      .catch(() => {
+        // If an error happens during generating of a thumbnail, then return
+        // an empty object, so we don't retry the thumbnail over and over
+        // again.
+        const thumbnailData = new ListThumbnailLoader.ThumbnailData(
+            this.entry_.toURL(), null, null, null);
+        if (ioError) {
+          // If fetching a thumbnail from EXIF fails due to an IO error, then
+          // try to refetch it in the future, but not earlier than in 3 second.
+          setTimeout(() => {
+            thumbnailData.outdated = true;
+          }, ListThumbnailLoader.Task.EXIF_IO_ERROR_DELAY);
+        }
+        return thumbnailData;
+      });
 };
