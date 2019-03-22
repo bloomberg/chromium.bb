@@ -1,0 +1,291 @@
+@rem = '--*-Perl-*--
+@echo off
+if "%OS%" == "Windows_NT" goto WinNT
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+goto endofperl
+:WinNT
+"%~dp0perl.exe" -x -S %0 %*
+if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
+if %errorlevel% == 9009 echo You do not have Perl in your PATH.
+if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
+goto endofperl
+@rem ';
+#!usr/bin/perl -w
+#line 15
+
+# $Id: cpandb 33 2011-06-13 04:17:28Z stro $
+
+use strict;
+use warnings;
+use CPAN::SQLite;
+use CPAN::SQLite::Util qw(%chaps);
+use Getopt::Long;
+my ($CPAN, $setup, $help, $reindex, $index, $query,
+    $db_name, $db_dir, $module, $dist, $cpanid, $update);
+
+my $rc = GetOptions('CPAN=s' => \$CPAN,
+                    'db_name=s' => \$db_name,
+                    'db_dir=s' => \$db_dir,
+                    'setup' => \$setup,
+                    'update' => \$update,
+                    'help' => \$help,
+                    'module=s' => \$module,
+                    'dist=s' => \$dist,
+                    'cpanid=s' => \$cpanid,
+                    'reindex=s' => \$reindex);
+
+$query = ($module or $dist or $cpanid);
+$index = ($update or $reindex or $setup);
+
+if ($help or not $rc or not ($index or $query)) {
+    print <<"END";
+
+Setup, maintain, and search the CPAN::SQLite database
+Usage:
+   $^X $0 --setup
+   $^X $0 --update
+   $^X $0 --reindex dist_name
+
+   $^X $0 --module  Mod::Name
+   $^X $0 --dist  Distname
+   $^X $0 --cpanid  CPANID
+
+   $^X $0 --help
+END
+    exit(1);
+}
+
+if (defined $setup and defined $reindex) {
+  die "Must reindex on an exisiting database";
+}
+
+if ($index) {
+  my $obj = CPAN::SQLite->new(CPAN => $CPAN,
+                              setup => $setup,
+                              db_name => $db_name,
+                              db_dir => $db_dir,
+                              reindex => $reindex,
+                             );
+  $obj->index();
+}
+else {
+
+  my $max_results = 100;
+  my $obj = CPAN::SQLite->new(CPAN => $CPAN,
+                              db_name => $db_name,
+                              db_dir => $db_dir,
+                              max_results => $max_results);
+  my $results;
+
+  RESULTS : {
+    $module and do {
+      $obj->query(mode => 'module', name => $module);
+      $results = $obj->{results};
+      if (not $results) {
+        print qq{\nNo module by name of "$module" was found.\n};
+        print qq{Error: $obj->{error}\n} if $obj->{error};
+      }
+      else {
+        my $abs = $results->{mod_abs} || '';
+        my $dslip = '';
+        if (my $dslip_info = $results->{dslip_info}) {
+          foreach my $entry (@$dslip_info) {
+            $dslip .= "  $entry->{desc}: $entry->{what}\n";
+          }
+        }
+        my $chapter_desc = $results->{chapter_desc} || '';
+        print << "EOI";
+
+Module: $results->{mod_name}
+Abstract: $abs
+Version: $results->{mod_vers}
+Chapter: $chapter_desc
+Distribution: $results->{dist_name}
+CPAN author: $results->{cpanid}
+CPAN file: $results->{dist_file}
+Download: $results->{download}
+dslip info:
+$dslip
+EOI
+      }
+      last RESULTS;
+    };
+    $dist and do {
+      $obj->query(mode => 'dist', name => $dist);
+      $results = $obj->{results};
+      if (not $results) {
+        print qq{\nNo distribution by name of "$dist" was found.\n};
+        print qq{Error: $obj->{error}\n} if $obj->{error};
+      }
+      else {
+        my $abs = $results->{dist_abs} || '';
+        my $dslip = '';
+        if (my $dslip_info = $results->{dslip_info}) {
+          foreach my $entry (@$dslip_info) {
+            $dslip .= "  $entry->{desc}: $entry->{what}\n";
+          }
+        }
+        print << "EOI";
+
+Distribution: $results->{dist_name}
+Abstract: $abs
+Version: $results->{dist_vers}
+CPAN author: $results->{cpanid}
+CPAN file: $results->{dist_file}
+Download: $results->{download}
+dslip info:
+$dslip
+EOI
+      }
+      my $mods = $results->{mods};
+      if ($mods and (ref($mods) eq 'ARRAY')) {
+        print qq{\nProvided modules:\n};
+        foreach my $item(@$mods) {
+          my $abs = $item->{mod_abs} || '';
+          print qq{  $item->{mod_name}: $abs\n};
+        }
+      }
+      last RESULTS;
+    };
+    $cpanid and do {
+      $obj->query(mode => 'author', name => $cpanid);
+      $results = $obj->{results};
+      if (not $results) {
+        print qq{\nNo cpanid by name of "$cpanid" was found.\n};
+        print qq{Error: $obj->{error}\n} if $obj->{error};
+      }
+      else {
+        print << "EOI";
+
+CPANID: $results->{cpanid}
+Full Name: $results->{fullname}
+email: $results->{email}
+EOI
+      }
+      my $dists = $results->{dists};
+      if ($dists and (ref($dists) eq 'ARRAY')) {
+        print qq{\nAvailable distributions:\n};
+        foreach my $item(@$dists) {
+          my $abs = $item->{dist_abs} || '';
+          print qq{  $item->{dist_file}: $abs\n};
+        }
+      }
+      last RESULTS;
+    };
+  }
+}
+
+__END__
+
+=head1 NAME
+
+cpandb - interface to C<CPAN::SQLite>
+
+=head1 DESCRIPTION
+
+This script is an interface to the routines of
+L<CPAN::SQLite> for setting up, maintaining and
+searching a C<DBD::SQLite> database
+of CPAN. Available options can be grouped into
+three categories.
+
+=head2 Common options
+
+These are options which are common to both setting up
+and maintaining the database or performing queries on it.
+These are
+
+=over 3
+
+=item * C<--CPAN  '/path/to/CPAN'>
+
+This specifies the path to where the index files are
+to be stored. This could be a local CPAN mirror,
+defined here by the presence of a F<MIRRORED.BY> file beneath
+this directory, or a local directory in which to store
+these files from a remote CPAN mirror. In the latter case,
+the index files are fetched from a remote CPAN mirror,
+using the same list that C<CPAN.pm> uses, if this is
+configured, and are updated if they are more than one
+day old.
+
+If the C<CPAN> option is not given, it will default
+to C<cpan_home> of L<CPAN::>, if this is configured,
+with the sources being found under C<keep_source_where>.
+A fatal error results if such a directory isn't found.
+Updates to these index files are assumed here to be
+handled by C<CPAN.pm>.
+
+=item * C<--db_name  'cpan-sqlite'>
+
+This is the name of the database that C<DBD::SQLite>
+will use. If not given, this defaults to C<cpandb-sqlite>.
+
+=item * C<--db_dir  '/path/to/db/dir'>
+
+This specifies the path to where the database file is
+found. If not given, it defaults to the
+C<cpan_home> directory of C<CPAN.pm>, if present, or to
+the directory in which the script was invoked.
+
+=back
+
+=head2 Indexing options
+
+These are options which are used for setting up and
+maintaining the database. These include
+
+=over 3
+
+=item * C<--setup>
+
+This specifies that the database is to be created and
+populated from the CPAN indices; any exisiting database
+will be overwritten.
+
+=item * C<--update>
+
+This is used to update an exisiting database,
+which must have first been created with the C<setup>
+option.
+
+=item * C<--reindex 'dist_name'>
+
+This specifies that the CPAN distribution C<dist_name>
+is to be reindexed.
+
+=back
+
+=head2 Querying options
+
+These options are used to query the database. Available
+options are
+
+=over 3
+
+=item * C<--module Mod::Name>
+
+This provides information on the specified module name.
+
+=item * C<--dist Dist-Name>
+
+This provides information on the specified distribution name.
+
+=item * C<--cpanid CPANID>
+
+This provides information on the specified CPAN author id
+
+=back
+
+All search terms are assumed to be exact matches in a
+case-insensitive manner.
+
+=head1 SEE ALSO
+
+L<CPAN::SQLite>.
+
+=cut
+
+
+__END__
+:endofperl

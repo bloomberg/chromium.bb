@@ -1,0 +1,9 @@
+URL: http://strawberryperl.com/releases.html
+Version: 5.16.0.1 / 32bit PortableZIP edition.
+License File: licenses/License.rtf
+Description: Strawberry Perl for Windows.
+
+Local Modifications:
+
+Add perl_wrap.bat that sets environment and forwards to real perl binary.
+Based on portableshell.bat from distribution.

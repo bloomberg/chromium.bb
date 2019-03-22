@@ -1,0 +1,161 @@
+OpenCL extension specification template.
+Revision $Revision: 10641 $ last modified on $Date: 2010-03-10 00:30:25 -0800 (Wed, 10 Mar 2010) $.
+
+An extension specification is a (usually) plain text file containing a
+series of sections describing different aspects of the extension. Fields
+to be filled in for an actual extension specification are described in
+the text in <angle brackets> following each section header.
+
+For an example of a published extension following this template, see
+
+    http://www.khronos.org/registry/cl/extensions/khr/cl_khr_gl_sharing.txt
+
+---------------------------- TEMPLATE STARTS HERE ----------------------------
+
+XXX - Not complete yet!!!
+
+   <Leave the XXX warning in until the extension is complete, and
+    preferably implemented and approved by the appropriate group.>
+
+Name Strings
+
+   <The name returned in the platform or device extension string
+    corresponding to this extension. Names should be of the form
+    cl_<prefix>_<name> where <prefix> is "khr" for a Khronos-approved
+    extension, a vendor tag for a single-vendor extension, and "ext" for
+    a multivendor (but not Khronos-approved) extension. Use the same
+    prefix as for other Khronos API extensions, such as OpenGL.
+    Precedent suggests that the vendor/multivendor tags should be
+    lowercase for OpenCL even though they're uppercase for all other
+    APIs.>
+
+Contributors
+
+   <List contributors to the extension specification and their
+    affiliations, one person/line.>
+
+Contact
+
+   <List the principal extension author and their email address,
+    preferably obfuscated by e.g. changing the "@" into "'at'" or
+    similar.>
+
+IP Status
+
+   <List any known IP claims bearing on the functionality of the
+    extension, e.g. published IP disclosures to Khronos, patent numbers,
+    pointers to IP statements by companies, etc. If no claims or
+    disclosures are known to exist state that instead.>
+
+Version
+
+   <Document revision number and modification date,
+    e.g. "Version 7, April 27, 2009" or similar>
+
+Number
+
+   <"TBD" until the extension is completed and posted to the
+    Khronos Registry>
+
+Status
+
+   <E.g. "Complete. Version ## approved by the OpenCL Working Group." or
+    "Incomplete - DO NOT SHIP" or similar. When an extension is ratified
+    by the Khronos Promoters, note that as well, along with the date.>
+
+Extension Type
+
+   <Either "OpenCL platform extension" or "OpenCL device extension">
+
+Dependencies
+
+   <List all dependencies on minimum core versions of OpenCL (e.g.
+    "OpenCL 1.0 is required"), other required extensions, and other
+    required features (e.g. "OpenGL 3.1 is required"). Also list any
+    existing registered extensions which this extension is modified by,
+    should they be present, in a form like "This extension is affected
+    by CL_<prefix>_<name>". Also describe which release of the OpenCL
+    specification document this extension is written against.>
+
+Overview
+
+   <Brief summary of what the extension is for, what functionality
+    it provides, and why someone might want to use it>
+
+Header File
+
+   <List the OpenCL header file which will define the extension API
+    interfaces, if there is an API component.>
+
+New Procedures and Functions
+
+   <List each new entry point in the form used in the OpenCL
+    Specification. New entry points must end with the same <prefix> as
+    in the extension name, but the <prefix> should be uppercase instead
+    of lowercase, e.g. "clNewFunctionKHR".>
+
+New Tokens
+
+   <List each new token together with its assigned hexadecimal value.
+    Until values are assigned by the Khronos Registrar from the
+    enumerant registry (see
+    https://cvs.khronos.org/svn/repos/registry/trunk/cl/token_registry.txt
+    in Khronos Subversion), use the value "0x????".
+
+    New token names must end with '_' followed by the same <prefix> as
+    new entry points. Precede tokens by a summary of which functions
+    they are used in and how. Examples:
+
+    Returned by clCreateContext when an invalid OpenCL context
+    is specified in properties:
+
+	CL_INVALID_GL_CONTEXT_KHR		    0x????
+
+    Accepted as the <param_name> argument of clGetGLContextInfoKHR:
+
+	CL_CGL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR    0x????
+   >
+
+Additions to Chapter NNN / Appendix AAA of the OpenCL <version> Specification
+
+   <For each section of the Specification modified by this extension,
+    write a corresponding section describing those changes. Typically
+    this is done by describing the section and paragraph of the change,
+    followed by new language in quotes (again, see gl_sharing.txt).>
+
+Interactions with other extensions
+
+   <When this extension modifies an existing extension's functionality,
+    for each such interaction, include a high-level section
+    "Interactions with CL_<prefix>_<name>" followed by a summary of the
+    interaction.>
+
+Issues
+
+   <Keep track of issues encountered during the development of the
+    extension. Each issue should be numbered separately and include its
+    status (RESOLVED, UNRESOLVED, DISCUSSION, etc.) followed by as much
+    detail as appropriate. Don't delete issues unless they become
+    entirely irrelevant due to wholesale rewriting of the extension.
+    It's probably best not to renumber issues either.>
+
+Sample Code
+
+   <Include any sample code, or a pointer to it, for using this
+    extension here.>
+
+Conformance Tests
+
+   <Summarize conformances tests or conformance test proposals for this
+    extension here.>
+
+Revision History
+
+   <List the revision history of the extension here. Each revision
+    should include its number, date of revision, author of the revision,
+    and a high-level summary of changes. Proposed Khronos extensions
+    should be maintained in Khronos Subversion prior to approval, in the
+    "drafts" area of the OpenCL Extension Registry:
+
+    https://cvs.khronos.org/svn/repos/registry/trunk/cl/extensions/KHR/drafts/
+   >

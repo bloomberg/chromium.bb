@@ -1,0 +1,103 @@
+=head1 NAME
+
+Imager::regmach - documents the register virtual machine used by
+Imager::transform2().
+
+=head1 SYNOPSIS
+
+The register machine is a complete rewrite of the stack machine
+originally used by Imager::transform(), written for use by
+Imager::transform2().
+
+=head1 DESCRIPTION
+
+(This document might be a little incoherent.)
+
+The register machine is a fast implementation of a small instruction
+set designed for evaluating an arithmetic expression to produce a
+color for an image.
+
+The machine takes as input:
+
+=over 4
+
+=item instructions
+
+An array of instructions
+
+=item numeric registers
+
+An array of numeric registers.  Some registers are initialized as
+literals.
+
+=item color registers
+
+An array of color registers.  Currently these registers aren't
+initialized.
+
+=item input images
+
+An array of Imager i_img pointers.  The C<getpn> operators read pixels
+from these images.
+
+=back
+
+The instructions supplied each take up to 4 input numeric or color
+registers with a single output numeric or color register.  The
+machine attempts to execute instructions as safely as possible,
+assuming that correct instructions have been provided, eg. the machine
+protects against divide by zero, but doesn't check register numbers
+for validity.
+
+The final instruction must be a C<ret> instruction, which returns the
+result ;)
+
+=head2 Adding new instructions
+
+To add a new instruction:
+
+=over 4
+
+=item 1
+
+Add a new opcode to the enumeration in F<regmach.h> - make sure to add
+comment after the enum name giving the input registers (C<rX> for
+numeric, C<pX> for color) that the instruction takes.  These must be in
+the order that the instruction expects to take the.  Put a letter (r
+or p) after -> to indicate the result type.
+
+=item 2
+
+Add a case to F<regmach.c> that executes the instruction.
+
+=item 3
+
+make
+
+=back
+
+The F<Makefile> should rebuild the F<Regops.pm> file, and your new
+instruction will be added as a function.
+
+If you want to add a single alternative instruction that might take
+different argument types (it must take the same number of parameters),
+create another instruction with that name followed by a p.  The
+current expression parsers explicitly look for such instruction names.
+
+=head2 Future directions
+
+Conditional and non-conditional jumps to implement iteration.  This
+will break the current optimizer in L<Imager::Expr> (and the compilers
+for both expression compilers, for that matter.)
+
+Complex arithmetic (Addi suggested this one).  This would most likely
+be a separate machine.  Otherwise we'll have a very significant
+performance loss.
+
+=head1 WARNINGS
+
+If you feed bad 'machine code' to the register machine, you have a
+good chance of a C<SIGSEGV>.
+
+=cut
+

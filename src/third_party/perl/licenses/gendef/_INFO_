@@ -1,0 +1,4 @@
+Package: gendef-rev4724
+Homepage: http://mingw-w64.sourceforge.net/
+Sources: https://mingw-w64.svn.sourceforge.net/svnroot/mingw-w64/trunk/mingw-w64-tools/gendef
+Comment: from mingw-w64 svn/trunk (revision 4724)

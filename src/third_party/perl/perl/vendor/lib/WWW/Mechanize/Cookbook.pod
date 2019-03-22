@@ -1,0 +1,86 @@
+=head1 NAME
+
+WWW::Mechanize::Cookbook - Recipes for using WWW::Mechanize
+
+=head1 INTRODUCTION
+
+First, please note that many of these are possible just using
+L<LWP::UserAgent>.  Since C<WWW::Mechanize> is a subclass of
+L<LWP::UserAgent>, whatever works on C<LWP::UserAgent> should work
+on C<WWW::Mechanize>.  See the L<lwpcook> man page included with
+the L<libwww-perl> distribution.
+
+=head1 BASICS
+
+=head2 Launch the WWW::Mechanize browser
+
+    use WWW::Mechanize;
+
+    my $mech = WWW::Mechanize->new( autocheck => 1 );
+
+The C<< autocheck => 1 >> tells Mechanize to die if any IO fails,
+so you don't have to manually check.  It's easier that way.  If you
+want to do your own error checking, leave it out.
+
+=head2 Fetch a page
+
+    $mech->get( "http://search.cpan.org" );
+    print $mech->content;
+
+C<< $mech->content >> contains the raw HTML from the web page.  It
+is not parsed or handled in any way, at least through the C<content>
+method.
+
+=head2 Fetch a page into a file
+
+Sometimes you want to dump your results directly into a file.  For
+example, there's no reason to read a JPEG into memory if you're
+only going to write it out immediately.  This can also help with
+memory issues on large files.
+
+    $mech->get( "http://www.cpan.org/src/stable.tar.gz",
+                ":content_file" => "stable.tar.gz" );
+
+=head2 Fetch a password-protected page
+
+Generally, just call C<credentials> before fetching the page.
+
+    $mech->credentials( 'admin' => 'password' );
+    $mech->get( 'http://10.11.12.13/password.html' );
+    print $mech->content();
+
+=head1 LINKS
+
+=head2 Find all image links
+
+Find all links that point to a JPEG, GIF or PNG.
+
+    my @links = $mech->find_all_links(
+        tag => "a", url_regex => qr/\.(jpe?g|gif|png)$/i );
+
+=head2 Find all download links
+
+Find all links that have the word "download" in them.
+
+    my @links = $mech->find_all_links(
+        tag => "a", text_regex => qr/\bdownload\b/i );
+
+=head1 APPLICATIONS
+
+=head2 Check all pages on a web site
+
+Use Abe Timmerman's L<WWW::CheckSite>
+L<http://search.cpan.org/dist/WWW-CheckSite/>
+
+=head1 SEE ALSO
+
+L<WWW::Mechanize>
+
+=head1 AUTHORS
+
+Copyright 2005-2010 Andy Lester C<< <andy@petdance.com> >>
+
+Later contributions by Peter Scott, Mark Stosberg and others.  See
+Acknowledgements section in L<WWW::Mechanize> for more.
+
+=cut
