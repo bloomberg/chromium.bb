@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_id.h"
@@ -103,7 +104,7 @@ struct RenderPageInfo {
 // each mirrored entry. Existing elements should never have their assigned
 // values changed. Changes should also be reflected in
 // |PrefetchTaskTestBase::kOrderedPrefetchItemStates|.
-enum class PrefetchItemState {
+enum class PrefetchItemState : int {
   // New request just received from the client.
   NEW_REQUEST = 0,
   // The item has been included in a GeneratePageBundle RPC requesting the
@@ -139,6 +140,8 @@ enum class PrefetchItemState {
   // Max item state, needed for histograms
   kMaxValue = ZOMBIE
 };
+
+base::Optional<PrefetchItemState> ToPrefetchItemState(int value);
 
 // Error codes used to identify the reason why a prefetch entry has finished
 // processing in the pipeline. This values are only meaningful for entries in
