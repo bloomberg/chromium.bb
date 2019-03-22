@@ -59,6 +59,13 @@ class FtlSignalingPlayground {
   void PullMessages(base::OnceClosure on_done);
   void OnPullMessagesResponse(base::OnceClosure on_done,
                               const grpc::Status& status);
+  void SendMessage(base::OnceClosure on_done);
+  void DoSendMessage(const std::string& receiver_id,
+                     const std::string& registration_id,
+                     base::OnceClosure on_done,
+                     bool should_keep_running);
+  void OnSendMessageResponse(base::OnceCallback<void(bool)> on_continue,
+                             const grpc::Status& status);
   void StartReceivingMessages(base::OnceClosure on_done);
   void StopReceivingMessages(base::OnceClosure on_done);
   void OnMessageReceived(const std::string& sender_id,

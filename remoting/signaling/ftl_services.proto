@@ -29,4 +29,6 @@ service Messaging {
       returns (remoting.ftl.AckMessagesResponse) {}
   rpc ReceiveMessages(remoting.ftl.ReceiveMessagesRequest)
       returns (stream remoting.ftl.ReceiveMessagesResponse) {}
+  rpc SendMessage(remoting.ftl.InboxSendRequest)
+      returns (remoting.ftl.InboxSendResponse) {}
 }

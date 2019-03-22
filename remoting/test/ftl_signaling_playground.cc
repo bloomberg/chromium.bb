@@ -150,7 +150,8 @@ void FtlSignalingPlayground::StartLoop() {
         "  2. GetIceServer\n"
         "  3. PullMessages\n"
         "  4. ReceiveMessages\n"
-        "  5. Quit\n\n"
+        "  5. SendMessage\n"
+        "  6. Quit\n\n"
         "Your choice [number]: ");
     int choice = 0;
     base::StringToInt(ReadString(), &choice);
@@ -169,6 +170,9 @@ void FtlSignalingPlayground::StartLoop() {
         StartReceivingMessages(run_loop.QuitWhenIdleClosure());
         break;
       case 5:
+        SendMessage(run_loop.QuitClosure());
+        break;
+      case 6:
         return;
       default:
         fprintf(stderr, "Unknown option\n");
@@ -356,6 +360,64 @@ void FtlSignalingPlayground::OnPullMessagesResponse(
     PrintGrpcStatusError(status);
   }
   std::move(on_done).Run();
+}
+
+void FtlSignalingPlayground::SendMessage(base::OnceClosure on_done) {
+  DCHECK(messaging_client_);
+  VLOG(0) << "Running SendMessage...";
+
+  printf("Receiver ID: ");
+  std::string receiver_id = ReadString();
+
+  printf("Receiver registration ID (base64, optional): ");
+  std::string registration_id_base64 = ReadString();
+
+  std::string registration_id;
+  bool success = base::Base64Decode(registration_id_base64, &registration_id);
+  if (!success) {
+    fprintf(stderr, "Your input can't be base64 decoded.\n");
+    std::move(on_done).Run();
+    return;
+  }
+  DoSendMessage(receiver_id, registration_id, std::move(on_done), true);
+}
+
+void FtlSignalingPlayground::DoSendMessage(const std::string& receiver_id,
+                                           const std::string& registration_id,
+                                           base::OnceClosure on_done,
+                                           bool should_keep_running) {
+  if (!should_keep_running) {
+    std::move(on_done).Run();
+    return;
+  }
+
+  printf("Message (enter nothing to quit): ");
+  std::string message = ReadString();
+
+  if (message.empty()) {
+    std::move(on_done).Run();
+    return;
+  }
+
+  auto on_continue = base::BindOnce(&FtlSignalingPlayground::DoSendMessage,
+                                    weak_factory_.GetWeakPtr(), receiver_id,
+                                    registration_id, std::move(on_done));
+
+  messaging_client_->SendMessage(
+      receiver_id, registration_id, message,
+      base::BindOnce(&FtlSignalingPlayground::OnSendMessageResponse,
+                     weak_factory_.GetWeakPtr(), std::move(on_continue)));
+}
+
+void FtlSignalingPlayground::OnSendMessageResponse(
+    base::OnceCallback<void(bool)> on_continue,
+    const grpc::Status& status) {
+  if (!status.ok()) {
+    PrintGrpcStatusError(status);
+  } else {
+    printf("Message successfully sent.\n");
+  }
+  std::move(on_continue).Run(status.ok());
 }
 
 void FtlSignalingPlayground::StartReceivingMessages(base::OnceClosure on_done) {

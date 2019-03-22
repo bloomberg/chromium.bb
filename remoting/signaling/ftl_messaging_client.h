@@ -45,6 +45,10 @@ class FtlMessagingClient final {
   // |on_done| is called once the messages have been received and acked on the
   // server's inbox.
   void PullMessages(DoneCallback on_done);
+  void SendMessage(const std::string& destination,
+                   const std::string& destination_registration_id,
+                   const std::string& message_text,
+                   DoneCallback on_done);
 
   // Opens a stream to continuously receive new messages from the server and
   // calls the registered MessageCallback once a new message is received.
@@ -65,6 +69,10 @@ class FtlMessagingClient final {
   void OnPullMessagesResponse(DoneCallback on_done,
                               const grpc::Status& status,
                               const ftl::PullMessagesResponse& response);
+
+  void OnSendMessageResponse(DoneCallback on_done,
+                             const grpc::Status& status,
+                             const ftl::InboxSendResponse& response);
 
   void AckMessages(const ftl::AckMessagesRequest& request,
                    DoneCallback on_done);
