@@ -132,8 +132,7 @@ function MainWindowComponent(
   directoryModel.addEventListener(
       'directory-changed', this.onDirectoryChanged_.bind(this));
   volumeManager.addEventListener(
-      'drive-connection-changed',
-      this.onDriveConnectionChanged_.bind(this));
+      'drive-connection-changed', this.onDriveConnectionChanged_.bind(this));
   this.onDriveConnectionChanged_();
   document.addEventListener('keydown', this.onKeyDown_.bind(this));
   document.addEventListener('keyup', this.onKeyUp_.bind(this));
@@ -378,8 +377,7 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
 
     case 'Enter':  // Enter => Change directory or perform default action.
       const selection = this.selectionHandler_.selection;
-      if (selection.totalCount === 1 &&
-          selection.entries[0].isDirectory &&
+      if (selection.totalCount === 1 && selection.entries[0].isDirectory &&
           !DialogType.isFolderDialog(this.dialogType_)) {
         const item = this.ui_.listContainer.currentList.getListItemByIndex(
             selection.indexes[0]);
@@ -427,7 +425,8 @@ MainWindowComponent.prototype.onDirectoryChanged_ = function(event) {
   event = /** @type {DirectoryChangeEvent} */ (event);
 
   const newVolumeInfo = event.newDirEntry ?
-      this.volumeManager_.getVolumeInfo(event.newDirEntry) : null;
+      this.volumeManager_.getVolumeInfo(event.newDirEntry) :
+      null;
 
   // Update unformatted volume status.
   if (newVolumeInfo && newVolumeInfo.error) {
@@ -448,13 +447,15 @@ MainWindowComponent.prototype.onDirectoryChanged_ = function(event) {
     this.ui_.locationLine.show(event.newDirEntry);
     // Updates UI.
     if (this.dialogType_ === DialogType.FULL_PAGE) {
-      const locationInfo = this.volumeManager_.getLocationInfo(event.newDirEntry);
+      const locationInfo =
+          this.volumeManager_.getLocationInfo(event.newDirEntry);
       if (locationInfo) {
         const label = util.getEntryLabel(locationInfo, event.newDirEntry);
         document.title = `${str('FILEMANAGER_APP_NAME')} - ${label}`;
       } else {
-        console.error('Could not find location info for entry: '
-                      + event.newDirEntry.fullPath);
+        console.error(
+            'Could not find location info for entry: ' +
+            event.newDirEntry.fullPath);
       }
     }
   } else {

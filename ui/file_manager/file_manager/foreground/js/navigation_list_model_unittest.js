@@ -237,8 +237,7 @@ function testAddAndRemoveVolumes() {
       (model.item(4)).volumeInfo.volumeId);
 
   // Create a shortcut on the 'hoge' volume.
-  shortcutListModel.splice(
-      1, 0, new MockFileEntry(hoge, '/shortcut2'));
+  shortcutListModel.splice(1, 0, new MockFileEntry(hoge, '/shortcut2'));
 
   assertEquals(6, model.length);
   assertEquals(

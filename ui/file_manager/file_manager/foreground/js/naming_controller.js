@@ -31,7 +31,7 @@ function NamingController(
    */
   this.alertDialog_ = alertDialog;
 
- /**
+  /**
    * @type {!cr.ui.dialogs.ConfirmDialog}
    * @const
    * @private
@@ -97,8 +97,8 @@ NamingController.prototype.validateFileName = function(
  * @return {Promise<string>}
  */
 NamingController.prototype.validateFileNameForSaving = function(filename) {
-  const directory = /** @type {DirectoryEntry} */ (
-      this.directoryModel_.getCurrentDirEntry());
+  const directory =
+      /** @type {DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry());
   const currentDirUrl = directory.toURL().replace(/\/?$/, '/');
   const fileUrl = currentDirUrl + encodeURIComponent(filename);
 
@@ -209,8 +209,8 @@ NamingController.prototype.restoreItemBeingRenamed = function() {
     return;
   }
 
-  const leadListItem = this.listContainer_.findListItemForNode(
-      this.listContainer_.renameInput);
+  const leadListItem =
+      this.listContainer_.findListItemForNode(this.listContainer_.renameInput);
   if (this.listContainer_.currentListType == ListContainer.ListType.DETAIL) {
     this.listContainer_.table.updateFileMetadata(leadListItem, leadEntry);
   }
@@ -274,8 +274,8 @@ NamingController.prototype.commitRename_ = function() {
     return;
   }
 
-  const renamedItemElement = this.listContainer_.findListItemForNode(
-      this.listContainer_.renameInput);
+  const renamedItemElement =
+      this.listContainer_.findListItemForNode(this.listContainer_.renameInput);
   const nameNode = renamedItemElement.querySelector('.filename-label');
 
   input.validation_ = true;
@@ -336,9 +336,9 @@ NamingController.prototype.commitRename_ = function() {
   // parent if the directory content is a search result. Fix it to do proper
   // validation.
   this.validateFileName(
-      /** @type {!DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry()),
-      newName,
-      validationDone.bind(this));
+      /** @type {!DirectoryEntry} */ (
+          this.directoryModel_.getCurrentDirEntry()),
+      newName, validationDone.bind(this));
 };
 
 /**
@@ -347,8 +347,8 @@ NamingController.prototype.commitRename_ = function() {
 NamingController.prototype.cancelRename_ = function() {
   this.listContainer_.renameInput.currentEntry = null;
 
-  const item = this.listContainer_.findListItemForNode(
-      this.listContainer_.renameInput);
+  const item =
+      this.listContainer_.findListItemForNode(this.listContainer_.renameInput);
   if (item) {
     item.removeAttribute('renaming');
   }

@@ -100,8 +100,8 @@ function TaskController(
    * @private {!cr.ui.Command}
    * @const
    */
-  this.defaultTaskCommand_ = assertInstanceof(
-      document.querySelector('#default-task'), cr.ui.Command);
+  this.defaultTaskCommand_ =
+      assertInstanceof(document.querySelector('#default-task'), cr.ui.Command);
 
   /**
    * More actions command that uses #open-with as selector due to the open-with
@@ -239,30 +239,29 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
 TaskController.prototype.changeDefaultTask_ = function(selection, task) {
   const entries = selection.entries;
 
-  Promise.all(entries.map((entry) => this.getMimeType_(entry))).then(mimeTypes => {
-    chrome.fileManagerPrivate.setDefaultTask(
-        task.taskId,
-        entries,
-        mimeTypes,
-        util.checkAPIError);
-    this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
+  Promise.all(entries.map((entry) => this.getMimeType_(entry)))
+      .then(mimeTypes => {
+        chrome.fileManagerPrivate.setDefaultTask(
+            task.taskId, entries, mimeTypes, util.checkAPIError);
+        this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
 
-    // Update task menu button unless the task button was updated other
-    // selection.
-    if (this.selectionHandler_.selection === selection) {
-      this.tasks_ = null;
-      this.getFileTasks()
-          .then(tasks => {
-            tasks.display(this.ui_.taskMenuButton, this.ui_.shareMenuButton);
-          })
-          .catch(error => {
-            if (error) {
-              console.error(error.stack || error);
-            }
-          });
-    }
-    this.selectionHandler_.onFileSelectionChanged();
-  });
+        // Update task menu button unless the task button was updated other
+        // selection.
+        if (this.selectionHandler_.selection === selection) {
+          this.tasks_ = null;
+          this.getFileTasks()
+              .then(tasks => {
+                tasks.display(
+                    this.ui_.taskMenuButton, this.ui_.shareMenuButton);
+              })
+              .catch(error => {
+                if (error) {
+                  console.error(error.stack || error);
+                }
+              });
+        }
+        this.selectionHandler_.onFileSelectionChanged();
+      });
 };
 
 /**
@@ -371,29 +370,28 @@ TaskController.prototype.getFileTasks = function() {
     return this.tasks_;
   }
   this.tasksEntries_ = selection.entries;
-  this.tasks_ =
-      selection.computeAdditional(this.metadataModel_).then(() => {
-        if (this.selectionHandler_.selection !== selection) {
-          if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
-            this.tasks_ = null;
+  this.tasks_ = selection.computeAdditional(this.metadataModel_).then(() => {
+    if (this.selectionHandler_.selection !== selection) {
+      if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
+        this.tasks_ = null;
+      }
+      return Promise.reject();
+    }
+    return FileTasks
+        .create(
+            this.volumeManager_, this.metadataModel_, this.directoryModel_,
+            this.ui_, selection.entries, assert(selection.mimeTypes),
+            this.taskHistory_, this.namingController_, this.crostini_)
+        .then(tasks => {
+          if (this.selectionHandler_.selection !== selection) {
+            if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
+              this.tasks_ = null;
+            }
+            return Promise.reject();
           }
-          return Promise.reject();
-        }
-        return FileTasks
-            .create(
-                this.volumeManager_, this.metadataModel_, this.directoryModel_,
-                this.ui_, selection.entries, assert(selection.mimeTypes),
-                this.taskHistory_, this.namingController_, this.crostini_)
-            .then(tasks => {
-              if (this.selectionHandler_.selection !== selection) {
-                if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
-                  this.tasks_ = null;
-                }
-                return Promise.reject();
-              }
-              return tasks;
-            });
-      });
+          return tasks;
+        });
+  });
   return this.tasks_;
 };
 

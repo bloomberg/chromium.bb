@@ -179,43 +179,47 @@ function testStory(callback) {
 
   resolveGetLatestCallback([entry2]);
 
-  reportPromise(waitUntil(() => {
-    // Assert that thumbnailLoaded event is fired for Test2.jpg.
-    return thumbnailLoadedEvents.length === 1;
-  }).then(() => {
-    const event = thumbnailLoadedEvents.shift();
-    assertEquals('filesystem:volume-id/Test2.jpg', event.fileUrl);
-    assertTrue(event.dataUrl.length > 0);
-    assertEquals(160, event.width);
-    assertEquals(160, event.height);
+  reportPromise(
+      waitUntil(() => {
+        // Assert that thumbnailLoaded event is fired for Test2.jpg.
+        return thumbnailLoadedEvents.length === 1;
+      })
+          .then(() => {
+            const event = thumbnailLoadedEvents.shift();
+            assertEquals('filesystem:volume-id/Test2.jpg', event.fileUrl);
+            assertTrue(event.dataUrl.length > 0);
+            assertEquals(160, event.width);
+            assertEquals(160, event.height);
 
-    // Since thumbnail of Test2.jpg is loaded into the cache,
-    // getThumbnailFromCache returns thumbnail for the image.
-    const thumbnail = listThumbnailLoader.getThumbnailFromCache(entry2);
-    assertEquals('filesystem:volume-id/Test2.jpg', thumbnail.fileUrl);
-    assertTrue(thumbnail.dataUrl.length > 0);
-    assertEquals(160, thumbnail.width);
-    assertEquals(160, thumbnail.height);
+            // Since thumbnail of Test2.jpg is loaded into the cache,
+            // getThumbnailFromCache returns thumbnail for the image.
+            const thumbnail = listThumbnailLoader.getThumbnailFromCache(entry2);
+            assertEquals('filesystem:volume-id/Test2.jpg', thumbnail.fileUrl);
+            assertTrue(thumbnail.dataUrl.length > 0);
+            assertEquals(160, thumbnail.width);
+            assertEquals(160, thumbnail.height);
 
-    // Assert that new task is enqueued.
-    return waitUntil(() => {
-      return hasPendingGetLatestCallback([entry1]) &&
-          hasPendingGetLatestCallback([entry4]) &&
-          Object.keys(getCallbacks).length === 2;
-    });
-  }).then(() => {
-    // Set high priority range to 2 - 4.
-    listThumbnailLoader.setHighPriorityRange(2, 4);
+            // Assert that new task is enqueued.
+            return waitUntil(() => {
+              return hasPendingGetLatestCallback([entry1]) &&
+                  hasPendingGetLatestCallback([entry4]) &&
+                  Object.keys(getCallbacks).length === 2;
+            });
+          })
+          .then(() => {
+            // Set high priority range to 2 - 4.
+            listThumbnailLoader.setHighPriorityRange(2, 4);
 
-    resolveGetLatestCallback([entry1]);
+            resolveGetLatestCallback([entry1]);
 
-    // Assert that task for (Test3.jpg) is enqueued.
-    return waitUntil(() => {
-      return hasPendingGetLatestCallback([entry3]) &&
-          hasPendingGetLatestCallback([entry4]) &&
-          Object.keys(getCallbacks).length === 2;
-    });
-  }), callback);
+            // Assert that task for (Test3.jpg) is enqueued.
+            return waitUntil(() => {
+              return hasPendingGetLatestCallback([entry3]) &&
+                  hasPendingGetLatestCallback([entry4]) &&
+                  Object.keys(getCallbacks).length === 2;
+            });
+          }),
+      callback);
 }
 
 /**
@@ -245,42 +249,50 @@ function testCache(callback) {
   resolveGetLatestCallback([entry2]);
   assertEquals(0, Object.keys(getCallbacks).length);
 
-  reportPromise(waitUntil(() => {
-    return areEntriesInCache([entry3, entry2, entry1]);
-  }).then(() => {
-    // Move high priority range to 1 - 3.
-    listThumbnailLoader.setHighPriorityRange(1, 3);
-    resolveGetLatestCallback([entry4]);
-    assertEquals(0, Object.keys(getCallbacks).length);
+  reportPromise(
+      waitUntil(() => {
+        return areEntriesInCache([entry3, entry2, entry1]);
+      })
+          .then(() => {
+            // Move high priority range to 1 - 3.
+            listThumbnailLoader.setHighPriorityRange(1, 3);
+            resolveGetLatestCallback([entry4]);
+            assertEquals(0, Object.keys(getCallbacks).length);
 
-    return waitUntil(() => {
-      return areEntriesInCache([entry4, entry3, entry2, entry1]);
-    });
-  }).then(() => {
-    // Move high priority range to 4 - 6.
-    listThumbnailLoader.setHighPriorityRange(4, 6);
-    resolveGetLatestCallback([entry5]);
-    resolveGetLatestCallback([entry6]);
-    assertEquals(0, Object.keys(getCallbacks).length);
+            return waitUntil(() => {
+              return areEntriesInCache([entry4, entry3, entry2, entry1]);
+            });
+          })
+          .then(() => {
+            // Move high priority range to 4 - 6.
+            listThumbnailLoader.setHighPriorityRange(4, 6);
+            resolveGetLatestCallback([entry5]);
+            resolveGetLatestCallback([entry6]);
+            assertEquals(0, Object.keys(getCallbacks).length);
 
-    return waitUntil(() => {
-      return areEntriesInCache([entry6, entry5, entry4, entry3, entry2]);
-    });
-  }).then(() => {
-    // Move high priority range to 3 - 5.
-    listThumbnailLoader.setHighPriorityRange(3, 5);
-    assertEquals(0, Object.keys(getCallbacks).length);
-    assertTrue(areEntriesInCache([entry6, entry5, entry4, entry3, entry2]));
+            return waitUntil(() => {
+              return areEntriesInCache(
+                  [entry6, entry5, entry4, entry3, entry2]);
+            });
+          })
+          .then(() => {
+            // Move high priority range to 3 - 5.
+            listThumbnailLoader.setHighPriorityRange(3, 5);
+            assertEquals(0, Object.keys(getCallbacks).length);
+            assertTrue(
+                areEntriesInCache([entry6, entry5, entry4, entry3, entry2]));
 
-    // Move high priority range to 0 - 2.
-    listThumbnailLoader.setHighPriorityRange(0, 2);
-    resolveGetLatestCallback([entry1]);
-    assertEquals(0, Object.keys(getCallbacks).length);
+            // Move high priority range to 0 - 2.
+            listThumbnailLoader.setHighPriorityRange(0, 2);
+            resolveGetLatestCallback([entry1]);
+            assertEquals(0, Object.keys(getCallbacks).length);
 
-    return waitUntil(() => {
-      return areEntriesInCache([entry3, entry2, entry1, entry6, entry5]);
-    });
-  }), callback);
+            return waitUntil(() => {
+              return areEntriesInCache(
+                  [entry3, entry2, entry1, entry6, entry5]);
+            });
+          }),
+      callback);
 }
 
 /**
@@ -296,9 +308,11 @@ function testErrorHandling(callback) {
   resolveGetLatestCallback([entry2]);
 
   // Assert that new task is enqueued for entry3.
-  reportPromise(waitUntil(() => {
-    return hasPendingGetLatestCallback([entry3]);
-  }), callback);
+  reportPromise(
+      waitUntil(() => {
+        return hasPendingGetLatestCallback([entry3]);
+      }),
+      callback);
 }
 
 /**
@@ -314,18 +328,20 @@ function testSortedEvent(callback) {
 
   // In order to assert that following task enqueues are fired by sorted event,
   // wait until all thumbnail loads are completed.
-  reportPromise(waitUntil(() => {
-    return thumbnailLoadedEvents.length === 2;
-  }).then(() => {
-    // After the sort, list should be
-    // directory1, entry5, entry4, entry3, entry2, entry1.
-    fileListModel.sort('name', 'desc');
+  reportPromise(
+      waitUntil(() => {
+        return thumbnailLoadedEvents.length === 2;
+      }).then(() => {
+        // After the sort, list should be
+        // directory1, entry5, entry4, entry3, entry2, entry1.
+        fileListModel.sort('name', 'desc');
 
-    return waitUntil(() => {
-      return hasPendingGetLatestCallback([entry5]) &&
-          hasPendingGetLatestCallback([entry4]);
-    });
-  }), callback);
+        return waitUntil(() => {
+          return hasPendingGetLatestCallback([entry5]) &&
+              hasPendingGetLatestCallback([entry4]);
+        });
+      }),
+      callback);
 }
 
 /**
@@ -339,25 +355,27 @@ function testChangeEvent(callback) {
   resolveGetLatestCallback([entry2]);
   assertEquals(0, Object.keys(getCallbacks).length);
 
-  reportPromise(waitUntil(() => {
-    return thumbnailLoadedEvents.length === 2;
-  }).then(() => {
-    // entry1 is changed.
-    const changeEvent = new Event('change');
-    changeEvent.index = 1;
-    fileListModel.dispatchEvent(changeEvent);
+  reportPromise(
+      waitUntil(() => {
+        return thumbnailLoadedEvents.length === 2;
+      }).then(() => {
+        // entry1 is changed.
+        const changeEvent = new Event('change');
+        changeEvent.index = 1;
+        fileListModel.dispatchEvent(changeEvent);
 
-    // cache of entry1 should become invalid.
-    const thumbnail = listThumbnailLoader.getThumbnailFromCache(entry1);
-    assertTrue(thumbnail.outdated);
+        // cache of entry1 should become invalid.
+        const thumbnail = listThumbnailLoader.getThumbnailFromCache(entry1);
+        assertTrue(thumbnail.outdated);
 
-    resolveGetLatestCallback([entry1]);
+        resolveGetLatestCallback([entry1]);
 
-    // Wait until thumbnailLoaded event is fired again for the change.
-    return waitUntil(() => {
-      return thumbnailLoadedEvents.length === 3;
-    });
-  }), callback);
+        // Wait until thumbnailLoaded event is fired again for the change.
+        return waitUntil(() => {
+          return thumbnailLoadedEvents.length === 3;
+        });
+      }),
+      callback);
 }
 
 /**
@@ -380,7 +398,7 @@ function testDirectoryScanIsRunning() {
   // Items are added during directory scan.
   isScanningForTest = true;
 
-  listThumbnailLoader.setHighPriorityRange(0,2);
+  listThumbnailLoader.setHighPriorityRange(0, 2);
   fileListModel.push(directory1, entry1, entry2);
   assertEquals(0, Object.keys(getCallbacks).length);
 
@@ -401,7 +419,7 @@ function testExifIOError(callback) {
       /** @type {!VolumeManager} */ ({
         getVolumeInfo: function(entry) {
           return {
-            volumeType: currentVolumeType
+            volumeType: currentVolumeType,
           };
         },
       }),
@@ -410,7 +428,7 @@ function testExifIOError(callback) {
           return Promise.resolve([{
             thumbnail: {
               urlError: {
-                errorDescription: 'Error: Unexpected EOF @0'
+                errorDescription: 'Error: Unexpected EOF @0',
               },
             },
           }]);
@@ -421,11 +439,13 @@ function testExifIOError(callback) {
         assertTrue(false);
       });
 
-  return reportPromise(task.fetch().then(thumbnailData => {
-    assertEquals(null, thumbnailData.dataUrl);
-    assertFalse(thumbnailData.outdated);
-    return waitUntil(() => {
-      return thumbnailData.outdated;
-    });
-  }), callback);
+  return reportPromise(
+      task.fetch().then(thumbnailData => {
+        assertEquals(null, thumbnailData.dataUrl);
+        assertFalse(thumbnailData.outdated);
+        return waitUntil(() => {
+          return thumbnailData.outdated;
+        });
+      }),
+      callback);
 }

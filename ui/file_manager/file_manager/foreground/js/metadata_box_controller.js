@@ -26,10 +26,10 @@ function MetadataBoxController(
    */
   this.quickViewModel_ = quickViewModel;
 
- /**
-  * @type {FilesMetadataBox} metadataBox
-  * @private
-  */
+  /**
+   * @type {FilesMetadataBox} metadataBox
+   * @private
+   */
   this.metadataBox_ = null;
 
   /**

@@ -14,10 +14,7 @@
  * @struct
  */
 function ScanController(
-    directoryModel,
-    listContainer,
-    spinnerController,
-    commandHandler,
+    directoryModel, listContainer, spinnerController, commandHandler,
     selectionHandler) {
   /**
    * @type {!DirectoryModel}

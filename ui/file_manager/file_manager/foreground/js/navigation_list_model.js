@@ -689,8 +689,7 @@ class NavigationListModel extends cr.EventTarget {
       // Add partitions as entries.
       for (const partition of removableGroup) {
         // Only add partition if it doesn't exist as a child already.
-        if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) ===
-            -1) {
+        if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) === -1) {
           removableEntry.addEntry(new VolumeEntry(partition.volumeInfo));
         }
       }

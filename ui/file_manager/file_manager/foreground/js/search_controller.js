@@ -154,7 +154,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
       {
         query: searchString,
         types: 'ALL',
-        maxResults: 4
+        maxResults: 4,
       },
       suggestions => {
         this.autocompleteSuggestionsBusy_ = false;
@@ -186,8 +186,8 @@ SearchController.prototype.onItemSelect_ = function() {
   // If the entry is the search item or no entry is selected, just change to
   // the search result.
   if (!selectedItem || selectedItem.isHeaderItem) {
-    const query = selectedItem ?
-        selectedItem.searchQuery : this.searchBox_.inputElement.value;
+    const query = selectedItem ? selectedItem.searchQuery :
+                                 this.searchBox_.inputElement.value;
     this.search_(query);
     return;
   }
@@ -223,12 +223,10 @@ SearchController.prototype.onItemSelect_ = function() {
       return;
     }
     // If the parent entry can be /drive/other.
-    this.directoryModel_.changeDirectoryEntry(
-        parentEntry,
-        () => {
-          this.directoryModel_.selectEntry(entry);
-          this.taskController_.executeEntryTask(entry);
-        });
+    this.directoryModel_.changeDirectoryEntry(parentEntry, () => {
+      this.directoryModel_.selectEntry(entry);
+      this.taskController_.executeEntryTask(entry);
+    });
   });
 };
 
@@ -238,7 +236,6 @@ SearchController.prototype.onItemSelect_ = function() {
  * @private
  */
 SearchController.prototype.search_ = function(searchString) {
-
   const onSearchRescan = function() {
     // If the current location is somewhere in Drive, all files in Drive can
     // be listed as search results regardless of current location.
@@ -254,12 +251,9 @@ SearchController.prototype.search_ = function(searchString) {
   };
 
   const onClearSearch = function() {
-    this.locationLine_.show(
-        this.directoryModel_.getCurrentDirEntry());
+    this.locationLine_.show(this.directoryModel_.getCurrentDirEntry());
   };
 
   this.directoryModel_.search(
-      searchString,
-      onSearchRescan.bind(this),
-      onClearSearch.bind(this));
+      searchString, onSearchRescan.bind(this), onClearSearch.bind(this));
 };
