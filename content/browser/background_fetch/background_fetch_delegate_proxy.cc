@@ -107,9 +107,6 @@ class BackgroundFetchDelegateProxy::Core
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(request);
 
-    // TODO(crbug/757760): This can be nullptr, if the delegate has shut down,
-    // in which case we need to make sure this is retried when the browser
-    // restarts.
     auto* delegate = browser_context_->GetBackgroundFetchDelegate();
     if (!delegate)
       return;

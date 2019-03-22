@@ -23,8 +23,6 @@ void BackgroundFetchRegistrationNotifier::AddObserver(
   // Observe connection errors, which occur when the JavaScript object or the
   // renderer hosting them goes away. (For example through navigation.) The
   // observer gets freed together with |this|, thus the Unretained is safe.
-  // TODO(crbug.com/777764): This doesn't actually work for the cases where
-  // the closing of the binding is non-exceptional.
   observer.set_connection_error_handler(
       base::BindOnce(&BackgroundFetchRegistrationNotifier::OnConnectionError,
                      base::Unretained(this), unique_id, observer.get()));

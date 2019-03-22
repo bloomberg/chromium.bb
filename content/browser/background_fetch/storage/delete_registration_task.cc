@@ -34,7 +34,6 @@ void DCheckRegistrationNotActive(const std::string& unique_id,
           << "Must call MarkRegistrationForDeletion before DeleteRegistration";
       return;
     case DatabaseStatus::kFailed:
-      return;  // TODO(crbug.com/780025): Consider logging failure to UMA.
     case DatabaseStatus::kNotFound:
       return;
   }
@@ -105,8 +104,6 @@ void DeleteRegistrationTask::DidGetRegistration(
       AbandonFetches(service_worker_registration_id_);
       std::move(done_closure).Run();
     }
-  } else {
-    // TODO(crbug.com/780025): Log failure to UMA.
   }
 #endif  // DCHECK_IS_ON()
 
