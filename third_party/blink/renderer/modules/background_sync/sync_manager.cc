@@ -32,7 +32,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
                              "Registration failed - no active Service Worker"));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::SyncRegistrationOptionsPtr sync_registration =
@@ -48,7 +48,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
 }
 
 ScriptPromise SyncManager::getTags(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   GetBackgroundSyncServicePtr()->GetRegistrations(

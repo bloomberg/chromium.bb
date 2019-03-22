@@ -64,7 +64,7 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // The document context is the only reasonable context from which to ask the
@@ -95,7 +95,7 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
 }
 
 ScriptPromise PushManager::getSubscription(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PushProvider()->GetSubscription(

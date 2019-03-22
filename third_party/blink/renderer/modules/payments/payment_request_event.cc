@@ -72,7 +72,7 @@ const String& PaymentRequestEvent::instrumentKey() const {
 
 ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
                                               const String& url) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 

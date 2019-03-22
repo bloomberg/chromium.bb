@@ -116,7 +116,8 @@ ScriptPromise ClipboardPromise::CreateForWriteText(ScriptState* script_state,
 ClipboardPromise::ClipboardPromise(ScriptState* script_state)
     : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
       script_state_(script_state),
-      script_promise_resolver_(ScriptPromiseResolver::Create(script_state)),
+      script_promise_resolver_(
+          MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       buffer_(mojom::ClipboardBuffer::kStandard),
       clipboard_representation_index_(0),
       file_reading_task_runner_(

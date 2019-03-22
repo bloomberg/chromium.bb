@@ -818,7 +818,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
 
   payment_provider_->Show(is_user_gesture);
 
-  accept_resolver_ = ScriptPromiseResolver::Create(script_state);
+  accept_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return accept_resolver_->Promise();
 }
 
@@ -845,7 +845,7 @@ ScriptPromise PaymentRequest::abort(ScriptState* script_state) {
             "No show() or retry() in progress, so nothing to abort"));
   }
 
-  abort_resolver_ = ScriptPromiseResolver::Create(script_state);
+  abort_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   payment_provider_->Abort();
   return abort_resolver_->Promise();
 }
@@ -862,7 +862,8 @@ ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
       !RuntimeEnabledFeatures::PaymentRequestHasEnrolledInstrumentEnabled();
   payment_provider_->CanMakePayment(legacy_mode);
 
-  can_make_payment_resolver_ = ScriptPromiseResolver::Create(script_state);
+  can_make_payment_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return can_make_payment_resolver_->Promise();
 }
 
@@ -884,7 +885,7 @@ ScriptPromise PaymentRequest::hasEnrolledInstrument(ScriptState* script_state) {
   payment_provider_->HasEnrolledInstrument(per_method_quota);
 
   has_enrolled_instrument_resolver_ =
-      ScriptPromiseResolver::Create(script_state);
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return has_enrolled_instrument_resolver_->Promise();
 }
 
@@ -976,7 +977,7 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
       payments::mojom::blink::PaymentValidationErrors::From(
           const_cast<PaymentValidationErrors*>(errors)));
 
-  retry_resolver_ = ScriptPromiseResolver::Create(script_state);
+  retry_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   return retry_resolver_->Promise();
 }
@@ -1022,7 +1023,8 @@ ScriptPromise PaymentRequest::Complete(ScriptState* script_state,
   // The payment provider should respond in PaymentRequest::OnComplete().
   payment_provider_->Complete(payments::mojom::blink::PaymentComplete(result));
 
-  complete_resolver_ = ScriptPromiseResolver::Create(script_state);
+  complete_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return complete_resolver_->Promise();
 }
 

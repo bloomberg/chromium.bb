@@ -93,7 +93,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT,
                          "name", CacheStorageTracedValue(cache_name));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
@@ -157,7 +157,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT,
                          "name", CacheStorageTracedValue(cache_name));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
@@ -208,7 +208,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT,
                          "name", CacheStorageTracedValue(cache_name));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
@@ -259,7 +259,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorage::Keys",
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {
@@ -320,7 +320,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                          "request", CacheStorageTracedValue(mojo_request),
                          "options", CacheStorageTracedValue(mojo_options));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ScriptPromise promise = resolver->Promise();
 
   if (!IsAllowed(script_state)) {

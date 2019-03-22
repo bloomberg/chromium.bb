@@ -49,7 +49,8 @@ ScriptPromise FileSystemWriter::WriteBlob(ScriptState* script_state,
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError));
   }
-  pending_operation_ = ScriptPromiseResolver::Create(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
   writer_->Write(
       position, blob->AsMojoBlob(),
@@ -161,7 +162,8 @@ ScriptPromise FileSystemWriter::WriteStream(ScriptState* script_state,
   stream_loader_ = FetchDataLoader::CreateLoaderAsDataPipe(
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kInternalDefault));
-  pending_operation_ = ScriptPromiseResolver::Create(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
   auto* client = MakeGarbageCollected<StreamWriterClient>(this);
   stream_loader_->Start(consumer, client);
@@ -178,7 +180,8 @@ ScriptPromise FileSystemWriter::truncate(ScriptState* script_state,
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError));
   }
-  pending_operation_ = ScriptPromiseResolver::Create(script_state);
+  pending_operation_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = pending_operation_->Promise();
   writer_->Truncate(size, WTF::Bind(&FileSystemWriter::TruncateComplete,
                                     WrapPersistent(this)));

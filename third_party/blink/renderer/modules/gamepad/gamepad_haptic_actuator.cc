@@ -90,7 +90,7 @@ ScriptPromise GamepadHapticActuator::playEffect(
     ScriptState* script_state,
     const String& type,
     const GamepadEffectParameters* params) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (params->duration() < 0.0 || params->startDelay() < 0.0 ||
       params->strongMagnitude() < 0.0 || params->strongMagnitude() > 1.0 ||
@@ -162,7 +162,7 @@ void GamepadHapticActuator::ResetVibrationIfNotPreempted() {
 }
 
 ScriptPromise GamepadHapticActuator::reset(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   auto callback = WTF::Bind(&GamepadHapticActuator::OnResetCompleted,
                             WrapPersistent(this), WrapPersistent(resolver));

@@ -451,7 +451,7 @@ ResolveTask::ResolveTask(ScriptState* script_state,
                nullptr,
                String(),
                exception_state),
-      resolver_(ScriptPromiseResolver::Create(script_state)) {
+      resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {
   DCHECK(IsMainThread());
   if (exception_state.HadException())
     return;

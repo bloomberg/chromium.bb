@@ -167,7 +167,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   Platform::Current()->RecordRapporURL("VR.WebVR.GetDisplays",
                                        GetDocument()->Url());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   Controller()->GetDisplays(resolver);
 

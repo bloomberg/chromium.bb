@@ -475,7 +475,7 @@ ScriptPromise CSSStyleSheet::replace(ScriptState* script_state,
   SetText(text, true /* allow_import_rules */, exception_state);
   if (!IsLoading())
     return ScriptPromise::Cast(script_state, ToV8(this, script_state));
-  resolver_ = ScriptPromiseResolver::Create(script_state);
+  resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   return resolver_->Promise();
 }
 

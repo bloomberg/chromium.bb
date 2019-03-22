@@ -158,7 +158,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   controller->GetPresentationService()->StartPresentation(
       urls_,
@@ -179,7 +179,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   ControllerPresentationConnection* existing_connection =
       controller->FindExistingConnection(urls_, id);

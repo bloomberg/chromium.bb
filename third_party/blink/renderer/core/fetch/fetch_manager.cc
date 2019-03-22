@@ -846,7 +846,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
                                   FetchRequestData* request,
                                   AbortSignal* signal,
                                   ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   DCHECK(signal);

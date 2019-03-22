@@ -64,7 +64,7 @@ ScriptPromise ScriptedTaskQueue::postTask(ScriptState* script_state,
                                           AbortSignal* signal) {
   CallbackId id = next_callback_id_++;
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (signal) {
     if (signal->aborted()) {

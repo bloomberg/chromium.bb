@@ -79,7 +79,7 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
                                            "Current frame is detached."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   requests_.insert(resolver);
 
@@ -109,7 +109,7 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     WebUserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   PromiseResolverCallbacks* callbacks =
       PromiseResolverCallbacks::Create(resolver);
 

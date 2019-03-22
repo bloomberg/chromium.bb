@@ -76,7 +76,7 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
 }  // namespace
 
 ScriptPromise StorageManager::persist(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
@@ -100,7 +100,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
 }
 
 ScriptPromise StorageManager::persisted(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
@@ -121,7 +121,7 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
 }
 
 ScriptPromise StorageManager::estimate(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL

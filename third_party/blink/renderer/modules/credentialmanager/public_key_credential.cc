@@ -47,7 +47,7 @@ PublicKeyCredential::PublicKeyCredential(
 ScriptPromise
 PublicKeyCredential::isUserVerifyingPlatformAuthenticatorAvailable(
     ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // Ignore calls if the current realm execution context is no longer valid,

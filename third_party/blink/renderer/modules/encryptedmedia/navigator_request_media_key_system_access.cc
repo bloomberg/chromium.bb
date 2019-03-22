@@ -158,7 +158,7 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
     const String& key_system,
     const HeapVector<Member<MediaKeySystemConfiguration>>&
         supported_configurations)
-    : resolver_(ScriptPromiseResolver::Create(script_state)),
+    : resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       key_system_(key_system),
       supported_configurations_(supported_configurations.size()) {
   for (wtf_size_t i = 0; i < supported_configurations.size(); ++i) {

@@ -257,7 +257,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
           this,
           GetExecutionContext()->GetTaskRunner(TaskType::kFileReading))),
       factory_(&factory),
-      resolver_(ScriptPromiseResolver::Create(script_state)),
+      resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       crop_rect_(crop_rect),
       options_(options) {}
 

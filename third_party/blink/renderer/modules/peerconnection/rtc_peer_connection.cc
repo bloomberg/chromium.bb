@@ -840,7 +840,7 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
   }
   call_setup_state_tracker_.NoteOffererStateEvent(
       OffererState::kCreateOfferPending, HasDocumentMedia());
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestPromiseImpl::Create(
@@ -940,7 +940,7 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
 
   call_setup_state_tracker_.NoteAnswererStateEvent(
       AnswererState::kCreateAnswerPending, HasDocumentMedia());
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestPromiseImpl::Create(
@@ -1221,7 +1221,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   }
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetLocalDescription,
                                  *session_description_init);
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
       GetRTCVoidRequestOperationType(SetSdpOperationType::kSetLocalDescription,
@@ -1322,7 +1322,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
 
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetRemoteDescription,
                                  *session_description_init);
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
       GetRTCVoidRequestOperationType(SetSdpOperationType::kSetRemoteDescription,
@@ -1646,7 +1646,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
                                            unsupported_params_string));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   std::unique_ptr<WebRTCCertificateObserver> certificate_observer(
@@ -1687,7 +1687,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
       base::nullopt, this, resolver, "RTCPeerConnection", "addIceCandidate");
@@ -1980,7 +1980,7 @@ ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(
     V8RTCStatsCallback* success_callback,
     MediaStreamTrack* selector) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   UseCounter::Count(context,
@@ -2008,8 +2008,7 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
           DOMException::Create(DOMExceptionCode::kOperationError,
                                "Internal error: release in progress"));
     }
-    ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::Create(script_state);
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
     peer_handler_->GetStats(
         std::make_unique<WebRTCStatsReportCallbackResolver>(resolver),

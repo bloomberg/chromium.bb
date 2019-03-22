@@ -228,7 +228,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
                              "Failed to update a ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Update(
       WTF::Bind(&DidUpdate, WrapPersistent(resolver), WrapPersistent(this)));
   return resolver->Promise();
@@ -243,7 +243,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
                              "ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Unregister(WTF::Bind(&DidUnregister, WrapPersistent(resolver)));
   return resolver->Promise();
 }

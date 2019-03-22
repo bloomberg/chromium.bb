@@ -731,7 +731,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                          "request", CacheStorageTracedValue(mojo_request),
                          "options", CacheStorageTracedValue(mojo_options));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ScriptPromise promise = resolver->Promise();
   if (request->method() != http_names::kGET && !options->ignoreMethod()) {
     resolver->Resolve();
@@ -795,7 +795,7 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
 ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
                                   const Request* request,
                                   const CacheQueryOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ScriptPromise promise = resolver->Promise();
 
   mojom::blink::CacheQueryOptionsPtr mojo_options =
@@ -904,7 +904,7 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
 ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                                 const Request* request,
                                 const CacheQueryOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ScriptPromise promise = resolver->Promise();
 
   Vector<mojom::blink::BatchOperationPtr> batch_operations;
@@ -978,7 +978,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
   TRACE_EVENT_WITH_FLOW0("CacheStorage", "Cache::PutImpl",
                          TRACE_ID_GLOBAL(trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ScriptPromise promise = resolver->Promise();
   BarrierCallbackForPut* barrier_callback =
       MakeGarbageCollected<BarrierCallbackForPut>(
@@ -1069,7 +1069,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
 ScriptPromise Cache::KeysImpl(ScriptState* script_state,
                               const Request* request,
                               const CacheQueryOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   const ScriptPromise promise = resolver->Promise();
 
   mojom::blink::CacheQueryOptionsPtr mojo_options =

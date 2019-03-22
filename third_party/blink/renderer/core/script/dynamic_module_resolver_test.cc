@@ -209,7 +209,7 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto* promise_resolver =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
   auto* capture = MakeGarbageCollected<CaptureExportedStringFunction>(
@@ -246,7 +246,7 @@ TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto* promise_resolver =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
   auto* capture =
@@ -272,7 +272,7 @@ TEST(DynamicModuleResolverTest, FetchFailure) {
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto* promise_resolver =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
   auto* capture =
@@ -302,7 +302,7 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto* promise_resolver =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
   auto* capture =
@@ -341,7 +341,7 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto* promise_resolver =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
 
   auto* capture = MakeGarbageCollected<CaptureExportedStringFunction>(
@@ -381,7 +381,7 @@ TEST(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
       KURL("https://example.com/correct/dependency.js"));
 
   auto* promise_resolver =
-      ScriptPromiseResolver::Create(scope.GetScriptState());
+      MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
   auto* resolver = DynamicModuleResolver::Create(modulator);
   KURL wrong_base_url("https://example.com/wrong/bar.js");
   KURL correct_base_url("https://example.com/correct/baz.js");

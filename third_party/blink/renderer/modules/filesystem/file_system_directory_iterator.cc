@@ -44,7 +44,7 @@ ScriptPromise FileSystemDirectoryIterator::next(ScriptState* script_state) {
 
   if (has_more_entries_) {
     DCHECK(!pending_next_);
-    pending_next_ = ScriptPromiseResolver::Create(script_state);
+    pending_next_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     return pending_next_->Promise();
   }
 

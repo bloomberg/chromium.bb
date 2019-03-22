@@ -130,7 +130,7 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
   }
 
   EnsureServiceConnection();
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   get_devices_requests_.insert(resolver);
   service_->GetDevices(WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
                                  WrapPersistent(resolver)));
@@ -163,7 +163,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   Vector<UsbDeviceFilterPtr> filters;
   if (options->hasFilters()) {

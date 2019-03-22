@@ -24,7 +24,7 @@ ScriptPromise FileSystemDirectoryHandle::getFile(
     const FileSystemGetFileOptions* options) {
   FileSystemFlags* flags = FileSystemFlags::Create();
   flags->setCreateFlag(options->create());
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =
@@ -42,7 +42,7 @@ ScriptPromise FileSystemDirectoryHandle::getDirectory(
     const FileSystemGetDirectoryOptions* options) {
   FileSystemFlags* flags = FileSystemFlags::Create();
   flags->setCreateFlag(options->create());
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =
@@ -61,7 +61,7 @@ ScriptPromise FileSystemDirectoryHandle::getSystemDirectory(
     const GetSystemDirectoryOptions* options) {
   auto* context = ExecutionContext::From(script_state);
 
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =
@@ -105,7 +105,7 @@ ScriptValue FileSystemDirectoryHandle::getEntries(ScriptState* script_state) {
 
 ScriptPromise FileSystemDirectoryHandle::removeRecursively(
     ScriptState* script_state) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =

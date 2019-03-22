@@ -3121,7 +3121,7 @@ class AddOneFunction : public ScriptFunction {
 
 ScriptPromise Internals::createResolvedPromise(ScriptState* script_state,
                                                ScriptValue value) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(value);
   return promise;
@@ -3129,7 +3129,7 @@ ScriptPromise Internals::createResolvedPromise(ScriptState* script_state,
 
 ScriptPromise Internals::createRejectedPromise(ScriptState* script_state,
                                                ScriptValue value) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Reject(value);
   return promise;
@@ -3346,7 +3346,7 @@ Vector<String> Internals::getCSSPropertyAliases() const {
 ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
                                            Document* document,
                                            uint32_t feature) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures)) {
     resolver->Reject();

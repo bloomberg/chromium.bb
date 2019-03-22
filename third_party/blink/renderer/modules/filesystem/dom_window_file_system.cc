@@ -179,7 +179,8 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
 ScriptPromise CreateFileHandle(ScriptState* script_state,
                                const mojom::blink::FileSystemEntryPtr& entry,
                                bool is_directory) {
-  auto* new_resolver = ScriptPromiseResolver::Create(script_state);
+  auto* new_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = new_resolver->Promise();
   auto* fs = DOMFileSystem::CreateIsolatedFileSystem(
       ExecutionContext::From(script_state), entry->file_system_id);
@@ -236,7 +237,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
   if (options->hasAccepts())
     accepts = ConvertAccepts(options->accepts());
 
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise resolver_result = resolver->Promise();
   FileSystemDispatcher::From(document).GetFileSystemManager().ChooseEntry(
       ConvertChooserType(options->type(), options->multiple()),

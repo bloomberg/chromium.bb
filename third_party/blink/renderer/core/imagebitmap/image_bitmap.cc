@@ -969,7 +969,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
                                        Document* document,
                                        ScriptState* script_state,
                                        const ImageBitmapOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   scoped_refptr<Image> input = image->CachedImage()->GetImage();

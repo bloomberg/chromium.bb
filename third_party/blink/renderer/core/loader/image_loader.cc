@@ -932,7 +932,7 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   UseCounter::Count(GetElement()->GetDocument(), WebFeature::kImageDecodeAPI);
 
   auto* request = MakeGarbageCollected<DecodeRequest>(
-      this, ScriptPromiseResolver::Create(script_state));
+      this, MakeGarbageCollected<ScriptPromiseResolver>(script_state));
   Microtask::EnqueueMicrotask(
       WTF::Bind(&DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
   decode_requests_.push_back(request);

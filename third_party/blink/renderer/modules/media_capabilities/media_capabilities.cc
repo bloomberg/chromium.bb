@@ -403,7 +403,7 @@ MediaCapabilities::MediaCapabilities() = default;
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaDecodingConfiguration* configuration) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   String message;
@@ -494,7 +494,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 ScriptPromise MediaCapabilities::encodingInfo(
     ScriptState* script_state,
     const MediaEncodingConfiguration* configuration) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsValidMediaConfiguration(configuration)) {

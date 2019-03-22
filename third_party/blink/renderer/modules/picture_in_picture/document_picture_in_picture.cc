@@ -41,7 +41,7 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
                                            kNoPictureInPictureElement));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   DCHECK(IsHTMLVideoElement(picture_in_picture_element));

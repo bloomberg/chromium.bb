@@ -173,7 +173,7 @@ void AudioContext::Trace(blink::Visitor* visitor) {
 ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (ContextState() == kClosed) {
@@ -208,7 +208,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
                              "cannot resume a closed AudioContext"));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If we're already running, just resolve; nothing else needs to be done.
@@ -289,7 +289,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
                              "has already been closed."));
   }
 
-  close_resolver_ = ScriptPromiseResolver::Create(script_state);
+  close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = close_resolver_->Promise();
 
   // Stops the rendering, but it doesn't release the resources here.

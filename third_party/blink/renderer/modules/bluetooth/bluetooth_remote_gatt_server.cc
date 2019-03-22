@@ -107,7 +107,7 @@ void BluetoothRemoteGATTServer::ConnectCallback(
 }
 
 ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::WebBluetoothService* service =
@@ -230,7 +230,7 @@ ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
                           BluetoothOperation::kServicesRetrieval));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   AddToActiveAlgorithms(resolver);
 

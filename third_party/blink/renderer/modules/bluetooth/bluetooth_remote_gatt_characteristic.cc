@@ -133,7 +133,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::readValue(
         script_state, CreateInvalidCharacteristicError());
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
 
@@ -202,7 +202,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   Vector<uint8_t> value_vector;
   value_vector.Append(value.Bytes(), value.ByteLength());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
 
@@ -251,7 +251,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
         script_state, CreateInvalidCharacteristicError());
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
 
@@ -286,7 +286,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
         script_state, CreateInvalidCharacteristicError());
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
 
@@ -351,7 +351,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::GetDescriptorsImpl(
         script_state, CreateInvalidCharacteristicError());
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   GetGatt()->AddToActiveAlgorithms(resolver);
 

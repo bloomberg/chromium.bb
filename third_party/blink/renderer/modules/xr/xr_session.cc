@@ -312,7 +312,7 @@ ScriptPromise XRSession::requestReferenceSpace(
                                            kUnknownReferenceSpace));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(reference_space);
 
@@ -401,7 +401,7 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   ray_mojo->direction->y = ray->direction()->y();
   ray_mojo->direction->z = ray->direction()->z();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   EnsureEnvironmentErrorHandler();
@@ -470,7 +470,7 @@ ScriptPromise XRSession::end(ScriptState* script_state) {
 
   ForceEnd();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // TODO(bajones): If there's any work that needs to be done asynchronously on

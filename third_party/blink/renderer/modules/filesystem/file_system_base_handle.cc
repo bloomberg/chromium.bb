@@ -17,7 +17,7 @@ FileSystemBaseHandle::FileSystemBaseHandle(DOMFileSystemBase* file_system,
     : EntryBase(file_system, full_path) {}
 
 ScriptPromise FileSystemBaseHandle::getParent(ScriptState* script_state) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =
@@ -32,7 +32,7 @@ ScriptPromise FileSystemBaseHandle::getParent(ScriptState* script_state) {
 ScriptPromise FileSystemBaseHandle::moveTo(ScriptState* script_state,
                                            FileSystemDirectoryHandle* parent,
                                            const String& name) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =
@@ -47,7 +47,7 @@ ScriptPromise FileSystemBaseHandle::moveTo(ScriptState* script_state,
 ScriptPromise FileSystemBaseHandle::copyTo(ScriptState* script_state,
                                            FileSystemDirectoryHandle* parent,
                                            const String& name) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =
@@ -60,7 +60,7 @@ ScriptPromise FileSystemBaseHandle::copyTo(ScriptState* script_state,
 }
 
 ScriptPromise FileSystemBaseHandle::remove(ScriptState* script_state) {
-  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
   auto success_callback_wrapper =

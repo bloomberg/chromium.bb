@@ -158,7 +158,7 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If the current origin is a file scheme, it will unlikely return a
@@ -184,7 +184,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
@@ -209,7 +209,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
@@ -254,7 +254,7 @@ ScriptPromise Permissions::requestAll(
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   Vector<PermissionDescriptorPtr> internal_permissions_copy;
