@@ -106,8 +106,17 @@ GURL GetCanonicalizedSameDocumentUrl(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-// Extracts the AMP viewer URL from an AMP cache URL, as encoded in a fragment
-// parameter.
+bool IsLikelyAmpCacheUrl(const GURL& url) {
+  // Our heuristic to identify AMP cache URLs is to check for the presence of
+  // the amp_js_v query param.
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() == "amp_js_v")
+      return true;
+  }
+  return false;
+}
+
+// Extracts the AMP viewer URL from a URL, as encoded in a fragment parameter.
 GURL GetViewerUrlFromCacheUrl(const GURL& url) {
   // The viewer URL is encoded in the fragment as a query string parameter
   // (&viewerURL=<URL>). net::QueryIterator only operates on the query string,
@@ -143,7 +152,7 @@ AMPPageLoadMetricsObserver::OnCommit(
     ukm::SourceId source_id) {
   current_url_ = navigation_handle->GetURL();
   view_type_ = GetAMPViewType(current_url_);
-  ProcessMainFrameNavigation(navigation_handle, view_type_);
+  ProcessMainFrameNavigation(navigation_handle);
   return CONTINUE_OBSERVING;
 }
 
@@ -160,6 +169,7 @@ void AMPPageLoadMetricsObserver::OnCommitSameDocumentNavigation(
   // document, if any.
   MaybeRecordAmpDocumentMetrics();
   current_main_frame_nav_info_ = nullptr;
+  ProcessMainFrameNavigation(navigation_handle);
 
   AMPViewType same_document_view_type = GetAMPViewType(url);
   if (same_document_view_type == AMPViewType::NONE)
@@ -169,8 +179,6 @@ void AMPPageLoadMetricsObserver::OnCommitSameDocumentNavigation(
   UMA_HISTOGRAM_ENUMERATION(
       std::string(kHistogramPrefix).append("SameDocumentView"),
       same_document_view_type, AMPViewType::AMP_VIEW_TYPE_LAST);
-
-  ProcessMainFrameNavigation(navigation_handle, same_document_view_type);
 }
 
 void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
@@ -188,30 +196,22 @@ void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
       navigation_handle->GetParentFrame()->GetParent() != nullptr)
     return;
 
-  // Only track frames that have AMP cache URLs.
-  if (GetAMPViewType(navigation_handle->GetURL()) != AMPViewType::AMP_CACHE)
+  // Only track frames that have AMP cache-like URLs.
+  if (!IsLikelyAmpCacheUrl(navigation_handle->GetURL()))
     return;
 
   GURL viewer_url = GetViewerUrlFromCacheUrl(navigation_handle->GetURL());
   if (viewer_url.is_empty())
     return;
 
-  // Record information about the AMP document loaded in this subframe, which we
-  // may use later to record metrics.
+  // Record information about the document loaded in this subframe, which we may
+  // use later to record metrics. Note that we don't yet know if the document in
+  // the subframe is an AMP document. That's determined in
+  // OnLoadingBehaviorObserved.
   auto& subframe_info =
       amp_subframe_info_[navigation_handle->GetRenderFrameHost()];
   subframe_info.viewer_url = viewer_url;
   subframe_info.navigation_start = navigation_handle->NavigationStart();
-
-  // If the current MainFrameNavigationInfo doesn't yet have a subframe
-  // RenderFrameHost, and its URL matches our viewer URL, then associate the
-  // MainFrameNavigationInfo with this frame.
-  if (current_main_frame_nav_info_ &&
-      current_main_frame_nav_info_->subframe_rfh == nullptr &&
-      subframe_info.viewer_url == current_main_frame_nav_info_->url) {
-    current_main_frame_nav_info_->subframe_rfh =
-        navigation_handle->GetRenderFrameHost();
-  }
 }
 
 void AMPPageLoadMetricsObserver::OnFrameDeleted(content::RenderFrameHost* rfh) {
@@ -346,15 +346,11 @@ void AMPPageLoadMetricsObserver::OnComplete(
 }
 
 void AMPPageLoadMetricsObserver::ProcessMainFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    AMPViewType view_type) {
-  if (view_type != AMPViewType::GOOGLE_SEARCH_AMP_VIEWER)
-    return;
-
+    content::NavigationHandle* navigation_handle) {
   // Find the subframe RenderFrameHost hosting the AMP document for this
   // navigation. Note that in some cases, the subframe may not exist yet, in
-  // which case logic in OnDidFinishSubFrameNavigation will associate the
-  // subframe with current_main_frame_nav_info_.
+  // which case logic in OnLoadingBehaviorObserved will associate the subframe
+  // with current_main_frame_nav_info_.
   content::RenderFrameHost* subframe_rfh = nullptr;
   for (const auto& kv : amp_subframe_info_) {
     if (navigation_handle->GetURL() == kv.second.viewer_url) {
@@ -371,6 +367,38 @@ void AMPPageLoadMetricsObserver::ProcessMainFrameNavigation(
       navigation_handle->IsSameDocument()});
 }
 
+void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    content::RenderFrameHost* subframe_rfh,
+    int behavior_flags,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (subframe_rfh == nullptr)
+    return;
+
+  if ((behavior_flags &
+       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) ==
+      0)
+    return;
+
+  auto it = amp_subframe_info_.find(subframe_rfh);
+  if (it == amp_subframe_info_.end())
+    return;
+
+  SubFrameInfo& subframe_info = it->second;
+  if (subframe_info.amp_document_loaded)
+    return;
+
+  subframe_info.amp_document_loaded = true;
+
+  // If the current MainFrameNavigationInfo doesn't yet have a subframe
+  // RenderFrameHost, and its URL matches the AMP subframe's viewer URL, then
+  // associate the MainFrameNavigationInfo with this frame.
+  if (current_main_frame_nav_info_ &&
+      current_main_frame_nav_info_->subframe_rfh == nullptr &&
+      subframe_info.viewer_url == current_main_frame_nav_info_->url) {
+    current_main_frame_nav_info_->subframe_rfh = subframe_rfh;
+  }
+}
+
 void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   if (current_main_frame_nav_info_ == nullptr ||
       current_main_frame_nav_info_->subframe_rfh == nullptr)
@@ -382,6 +410,9 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
 
   const SubFrameInfo& subframe_info = it->second;
   if (subframe_info.viewer_url != current_main_frame_nav_info_->url)
+    return;
+
+  if (!subframe_info.amp_document_loaded)
     return;
 
   // TimeDeltas in subframe_info are relative to the navigation start in the AMP

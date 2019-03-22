@@ -479,9 +479,11 @@ class PageLoadMetricsObserver {
   virtual void OnFirstInputInPage(const mojom::PageLoadTiming& timing,
                                   const PageLoadExtraInfo& extra_info) {}
 
-  // Invoked when there is a change in either the main_frame_metadata or the
-  // subframe_metadata's loading behavior_flags.
-  virtual void OnLoadingBehaviorObserved(const PageLoadExtraInfo& extra_info) {}
+  // Invoked when there is an update to the loading behavior_flags in the given
+  // frame.
+  virtual void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
+                                         int behavior_flags,
+                                         const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when new use counter features are observed across all frames.
   virtual void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,

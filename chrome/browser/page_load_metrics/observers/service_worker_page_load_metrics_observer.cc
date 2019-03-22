@@ -396,6 +396,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
+    content::RenderFrameHost* rfh,
+    int behavior_flags,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info) || logged_ukm_event_)
     return;

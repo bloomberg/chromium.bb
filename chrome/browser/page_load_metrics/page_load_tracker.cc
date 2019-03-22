@@ -676,14 +676,18 @@ void PageLoadTracker::OnSubFrameRenderDataChanged(
 void PageLoadTracker::OnMainFrameMetadataChanged() {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnLoadingBehaviorObserved(extra_info);
+    observer->OnLoadingBehaviorObserved(
+        nullptr, extra_info.main_frame_metadata.behavior_flags, extra_info);
   }
 }
 
-void PageLoadTracker::OnSubframeMetadataChanged() {
+void PageLoadTracker::OnSubframeMetadataChanged(
+    content::RenderFrameHost* rfh,
+    const mojom::PageLoadMetadata& metadata) {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnLoadingBehaviorObserved(extra_info);
+    observer->OnLoadingBehaviorObserved(rfh, metadata.behavior_flags,
+                                        extra_info);
   }
 }
 

@@ -184,7 +184,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::RenderFrameHost* rfh,
       const mojom::FrameRenderDataUpdate& render_data) override;
   void OnMainFrameMetadataChanged() override;
-  void OnSubframeMetadataChanged() override;
+  void OnSubframeMetadataChanged(
+      content::RenderFrameHost* rfh,
+      const mojom::PageLoadMetadata& metadata) override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& new_features) override;

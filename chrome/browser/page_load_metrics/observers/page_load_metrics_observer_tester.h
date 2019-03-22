@@ -54,6 +54,8 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                                content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::PageLoadMetadata& metadata);
+  void SimulateMetadataUpdate(const mojom::PageLoadMetadata& metadata,
+                              content::RenderFrameHost* rfh);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources);
