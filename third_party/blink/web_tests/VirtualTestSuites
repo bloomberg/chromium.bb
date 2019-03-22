@@ -1016,26 +1016,6 @@
     "args": ["--enable-features=FreezeFramesOnVisibility"]
   },
   {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "http/tests/navigation",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "http/tests/security",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "mhtml",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "external/wpt/feature-policy/feature-policy-for-sandbox",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
     "prefix": "insecure-device-sensor-events",
     "base": "http/tests/security/powerfulFeatureRestrictions/",
     "args": ["--disable-features=RestrictDeviceSensorEventsToSecureContexts"]
