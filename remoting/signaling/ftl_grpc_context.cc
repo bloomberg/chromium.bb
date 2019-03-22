@@ -28,6 +28,16 @@ std::string FtlGrpcContext::GetChromotingAppIdentifier() {
   return kChromotingAppIdentifier;
 }
 
+// static
+ftl::Id FtlGrpcContext::BuildIdFromString(const std::string& ftl_id) {
+  ftl::Id id;
+  id.set_id(ftl_id);
+  id.set_app(GetChromotingAppIdentifier());
+  // TODO(yuweih): Migrate to IdType.Type.CHROMOTING_ID.
+  id.set_type(ftl::IdType_Type_EMAIL);
+  return id;
+}
+
 FtlGrpcContext::FtlGrpcContext(OAuthTokenGetter* token_getter)
     : weak_factory_(this) {
   DCHECK(token_getter);

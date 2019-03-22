@@ -30,6 +30,7 @@ class FtlGrpcContext final {
       base::OnceCallback<void(std::unique_ptr<ScopedGrpcServerStream>)>;
 
   static std::string GetChromotingAppIdentifier();
+  static ftl::Id BuildIdFromString(const std::string& ftl_id);
 
   explicit FtlGrpcContext(OAuthTokenGetter* token_getter);
   ~FtlGrpcContext();
