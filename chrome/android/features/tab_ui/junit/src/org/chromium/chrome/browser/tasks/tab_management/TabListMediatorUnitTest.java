@@ -124,7 +124,7 @@ public class TabListMediatorUnitTest {
         mModel = new TabListModel();
         mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
-                getClass().getSimpleName());
+                null, getClass().getSimpleName());
     }
 
     @After

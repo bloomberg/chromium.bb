@@ -12,20 +12,27 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -211,5 +218,28 @@ class GridTabSwitcherMediator
         mFullscreenManager.removeListener(mFullscreenListener);
         mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                 mTabModelObserver);
+    }
+
+    @Nullable
+    TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
+        if (!ableToCreateGroup(tab)) return null;
+
+        return tabId -> {
+            Tab parentTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
+            mTabModelSelector.getCurrentModel().commitAllTabClosures();
+            mTabModelSelector.openNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
+                    TabLaunchType.FROM_CHROME_UI, parentTab,
+                    mTabModelSelector.isIncognitoSelected());
+        };
+    }
+
+    private boolean ableToCreateGroup(Tab tab) {
+        return FeatureUtilities.isTabGroupsAndroidEnabled()
+                && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
+                && mTabModelSelector.getTabModelFilterProvider()
+                           .getCurrentTabModelFilter()
+                           .getRelatedTabList(tab.getId())
+                           .size()
+                == 1;
     }
 }

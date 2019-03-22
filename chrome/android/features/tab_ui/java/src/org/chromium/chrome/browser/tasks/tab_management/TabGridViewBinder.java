@@ -11,6 +11,7 @@ import android.graphics.drawable.InsetDrawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
@@ -72,6 +73,15 @@ class TabGridViewBinder {
             fetcher.fetch(callback);
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
+        } else if (TabProperties.CREATE_GROUP_LISTENER == propertyKey) {
+            TabListMediator.TabActionListener listener =
+                    item.get(TabProperties.CREATE_GROUP_LISTENER);
+            if (listener == null) {
+                holder.createGroupButton.setVisibility(View.GONE);
+                return;
+            }
+            holder.createGroupButton.setVisibility(View.VISIBLE);
+            holder.createGroupButton.setOnClickListener(view -> listener.run(holder.getTabId()));
         }
     }
 
