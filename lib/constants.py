@@ -891,14 +891,16 @@ _QUERIES = {
 
 # Default gerrit query used to find changes for CQ.
 CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=1' % _QUERIES,
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=1 AND '
+    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
     lambda change: change.IsMergeable())
 
 # The PreCQ does not require the CQ bit to be set if it's a recent CL, or if
 # the Trybot-Ready flag has been set.
 PRECQ_READY_QUERY = (
     '%(open)s AND (%(approved)s AND label:Commit-Queue>=1 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Trybot-Ready=+1)' % _QUERIES,
+    'label:Code-Review=+2 AND -age:2h OR label:Trybot-Ready=+1) AND '
+    '-label:Legacy-Commit-Queue=-1' % _QUERIES,
     lambda change: (not change.IsBeingMerged() and
                     change.HasApproval('CRVW', '2') or
                     change.HasApproval('TRY', '1')))
