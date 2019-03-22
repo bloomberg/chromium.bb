@@ -103,8 +103,8 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
 
   if (box->IsLayoutCustom())
     ToLayoutCustom(box)->SetConstraintData(constraint_data_);
-
-  box->ForceLayout();
+  // TODO(cbiesinger): Can this just be ForceLayout()?
+  box->ForceLayoutWithPaintInvalidation();
 
   box->ClearOverrideContainingBlockContentSize();
   box->ClearOverridePercentageResolutionBlockSize();

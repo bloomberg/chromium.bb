@@ -1333,7 +1333,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   void ForceLayout();
-  void ForceChildLayout();
+  void ForceLayoutWithPaintInvalidation() {
+    SetShouldDoFullPaintInvalidation();
+    ForceLayout();
+  }
 
   // Used for element state updates that cannot be fixed with a paint
   // invalidation and do not need a relayout.

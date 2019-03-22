@@ -905,7 +905,7 @@ int LayoutTableSection::CalcRowLogicalHeight() {
         if (cell->HasOverrideLogicalHeight()) {
           cell->ClearIntrinsicPadding();
           cell->ClearOverrideSize();
-          cell->ForceChildLayout();
+          cell->ForceLayout();
         }
 
         if (cell->ResolvedRowSpan() == 1)
@@ -1965,7 +1965,7 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
   // Alignment within a cell is based off the calculated height, which becomes
   // irrelevant once the cell has been resized based off its percentage.
   cell.SetOverrideLogicalHeightFromRowHeight(LayoutUnit(row_height));
-  cell.ForceChildLayout();
+  cell.ForceLayout();
 
   // If the baseline moved, we may have to update the data for our row. Find
   // out the new baseline.

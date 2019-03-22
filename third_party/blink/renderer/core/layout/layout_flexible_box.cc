@@ -857,7 +857,7 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
                                           child);
     if (child.NeedsLayout() || child_layout_type == kForceLayout ||
         !intrinsic_size_along_main_axis_.Contains(&child)) {
-      child.ForceChildLayout();
+      child.ForceLayout();
       CacheChildMainSize(child);
     }
     main_axis_extent = intrinsic_size_along_main_axis_.at(&child);
@@ -1187,7 +1187,7 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
     if (child.NeedsLayout() ||
         (IsColumnFlow() && layout_type == kForceLayout)) {
       child.ClearOverrideSize();
-      child.ForceChildLayout();
+      child.ForceLayout();
       CacheChildMainSize(child);
       layout_type = kLayoutIfNeeded;
     }
@@ -1651,13 +1651,13 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     if (child_needs_relayout) {
       // TODO(cbiesinger): Why is this necessary?
       child.SetLogicalHeight(LayoutUnit());
-      child.ForceChildLayout();
+      child.ForceLayout();
     }
   } else if (!flex_item.MainAxisIsInlineAxis() &&
              child.StyleRef().LogicalWidth().IsAuto()) {
     if (flex_item.cross_axis_size != child.LogicalWidth()) {
       child.SetOverrideLogicalWidth(flex_item.cross_axis_size);
-      child.ForceChildLayout();
+      child.ForceLayout();
     }
   }
 }
