@@ -1,0 +1,88 @@
+# Build Configuration for Travis
+dist: trusty
+
+language: cpp
+
+env:
+  global:
+    - CPPFLAGS=""
+    - CFLAGS="-Werror -Werror=unused -Werror=unused-function"
+    - CXXFLAGS="-Werror -Werror=unused -Werror=unused-function -Wno-deprecated-register" # glib uses register and clang raises a warning
+    - CONFIGURE_OPTS="--with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-graphite2"
+    - NOCONFIGURE=1
+    # COVERITY_SCAN_TOKEN
+    - secure: "k6l/18dpsoPAf0E5RQWCr+rgjbHns0H3k0WzSYovCoVg0B7RVlV8x8OjyEOBzEvXI4aaHRdH6MHCPDFnX4fa7ysImlT6LxxIG8YhDdLkJWyS0hHbcJiGxko9AhAGzOZcDl8fZi13d697wagMqqXpjN5v2T/AQm8t4X9z2otJosY="
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      script:
+        # Remove these two lines when Travis updated its distro
+        - wget http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2 && tar xf freetype-2.9.tar.bz2 && cd freetype-2.9 && ./autogen.sh && ./configure && make -j4 && cd ..
+        - export LD_LIBRARY_PATH="$PWD/freetype-2.9/objs/.libs"
+
+        - ./autogen.sh
+        - ./configure $CONFIGURE_OPTS --enable-gtk-doc --enable-code-coverage
+        - make
+        - make check || .ci/fail.sh
+        - rm -rf freetype-2.9
+      after_success:
+        - bash .ci/run-coveralls.sh # coveralls.io code coverage
+        - bash <(curl -s https://codecov.io/bash) # codecov.io code coverage
+        - bash .ci/deploy-docs.sh
+        - bash .ci/trigger-coverity.sh
+
+    - os: linux
+      compiler: clang
+      script:
+        # Remove these two lines when Travis updated its distro
+        - wget http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2 && tar xf freetype-2.9.tar.bz2 && cd freetype-2.9 && ./autogen.sh && ./configure && make -j4 && cd ..
+        - export LD_LIBRARY_PATH="$PWD/freetype-2.9/objs/.libs"
+
+        - ./autogen.sh
+        - ./configure $CONFIGURE_OPTS
+        - make
+        - make check || .ci/fail.sh
+
+    - os: osx
+      compiler: clang
+      install:
+        - brew update;
+          # Workaround Travis/brew bug
+        - brew uninstall libtool && brew install libtool
+        - brew install ragel freetype glib gobject-introspection cairo icu4c graphite2 || true
+        - brew link --force icu4c # icu4c is keg-only
+      script:
+        - ./autogen.sh
+        - ./configure $CONFIGURE_OPTS --with-coretext
+        - make
+        - make check || .ci/fail.sh
+
+notifications:
+  irc: "irc.freenode.org#harfbuzz"
+  email: harfbuzz-bots-chatter@googlegroups.com
+
+addons:
+  apt:
+    packages:
+      - pkg-config # for autogen.sh
+      - ragel
+      - lcov
+      - gtk-doc-tools
+      - libfreetype6-dev # for font function
+      - libglib2.0-dev # for font functions / tests / utils
+      - libcairo2-dev # for utils
+      - libicu-dev # for extra unicode functions
+      - libgraphite2-dev # for extra shapers
+      #- libgirepository1.0-dev # for gobject-introspection
+
+  coverity_scan:
+    project:
+      name: behdad/harfbuzz
+      version: 1.0
+      description: HarfBuzz OpenType text shaping engine
+    notification_email: harfbuzz-bots-chatter@googlegroups.com
+    build_command_prepend: ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-graphite2
+    build_command: make
+    branch_pattern: coverity_scan

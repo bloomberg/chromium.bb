@@ -1,0 +1,12 @@
+tests/MORX-31.tests
+tests/MORX-41.tests
+
+# Non-Unicode cmap
+tests/CMAP-3.tests
+
+# Rounding differences
+tests/SHARAN-1.tests
+tests/SHBALI-1.tests
+tests/SHBALI-2.tests
+tests/SHKNDA-2.tests
+tests/SHKNDA-3.tests
