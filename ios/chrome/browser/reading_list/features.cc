@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/reading_list/features.h"
 
-#include "ios/web/public/features.h"
-
 namespace reading_list {
 
 const base::Feature kOfflineVersionWithoutNativeContent{
