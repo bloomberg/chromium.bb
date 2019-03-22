@@ -154,8 +154,9 @@ class Adapter : public AlsReader::Observer,
   base::Optional<MonotoneCubicSpline> GetGlobalCurveForTesting() const;
   base::Optional<MonotoneCubicSpline> GetPersonalCurveForTesting() const;
 
-  // Returns the actual log average over |ambient_light_values_|.
-  base::Optional<double> GetAverageAmbientForTesting(base::TimeTicks now);
+  // Returns the average and std-dev over |ambient_light_values_|.
+  base::Optional<AlsAvgStdDev> GetAverageAmbientWithStdDevForTesting(
+      base::TimeTicks now);
   double GetBrighteningThresholdForTesting() const;
   double GetDarkeningThresholdForTesting() const;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/adapter.h"
 
 #include <map>
+#include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/memory/ptr_util.h"
@@ -38,6 +39,27 @@ namespace power {
 namespace auto_screen_brightness {
 
 namespace {
+
+// Checks |result.avg| and |result.stddev| are the same as that
+// calculated from the |expected_data|.
+void CheckAverageAndStdDev(const AlsAvgStdDev& result,
+                           const std::vector<double>& expected_data) {
+  const size_t count = expected_data.size();
+  CHECK_NE(count, 0u);
+  double expected_avg = 0;
+  double expected_stddev = 0;
+
+  for (const auto& i : expected_data) {
+    expected_avg += i;
+    expected_stddev += i * i;
+  }
+
+  expected_avg = expected_avg / count;
+  expected_stddev =
+      std::sqrt(expected_stddev / count - expected_avg * expected_avg);
+  EXPECT_DOUBLE_EQ(result.avg, expected_avg);
+  EXPECT_DOUBLE_EQ(result.stddev, expected_stddev);
+}
 
 // Testing modeller.
 class FakeModeller : public Modeller {
@@ -450,8 +472,11 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   fake_als_reader_.ReportAmbientLightUpdate(10);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog(10.0));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {10});
+
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    ConvertToLog(10.0) + 0.1);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
@@ -461,8 +486,11 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   fake_als_reader_.ReportAmbientLightUpdate(20);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog(15.0));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {10, 20});
+
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    ConvertToLog(15.0) + 0.1);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
@@ -473,7 +501,8 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   // triggered.
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
+  EXPECT_EQ(adapter_->GetAverageAmbientWithStdDevForTesting(
+                thread_bundle_.NowTicks()),
             base::nullopt);
 
   // A new ALS value triggers a brightness change.
@@ -481,8 +510,11 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
   fake_als_reader_.ReportAmbientLightUpdate(40);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 3);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog(40));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {40});
+
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    ConvertToLog(40.0) + 0.1);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
@@ -556,10 +588,13 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   // changed.
   fake_als_reader_.ReportAmbientLightUpdate(20);
   thread_bundle_.RunUntilIdle();
-  double expected_log_avg = ConvertToLog(20);
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            expected_log_avg);
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {20});
+
+  double expected_log_avg = ConvertToLog(20);
   double expected_brightening_threshold = expected_log_avg + 1;
   double expected_darkening_threshold = expected_log_avg - 0.2;
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
@@ -573,8 +608,11 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   fake_als_reader_.ReportAmbientLightUpdate(21);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1, test_observer_.num_changes());
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog((20 + 21) / 2.0));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {20, 21});
+
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    expected_brightening_threshold);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
@@ -585,8 +623,11 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   fake_als_reader_.ReportAmbientLightUpdate(15);
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog((20 + 21 + 15) / 3.0));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {20, 21, 15});
+
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    expected_brightening_threshold);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
@@ -599,8 +640,11 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 2);
   expected_log_avg = ConvertToLog((20 + 21 + 15 + 5) / 4.0);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            expected_log_avg);
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {20, 21, 15, 5});
+
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(),
                    expected_log_avg + 1);
   EXPECT_DOUBLE_EQ(adapter_->GetDarkeningThresholdForTesting(),
@@ -609,15 +653,19 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(8);
   thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog((20 + 21 + 15 + 5 + 8) / 5.0));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {20, 21, 15, 5, 8});
 
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(9);
   thread_bundle_.RunUntilIdle();
 
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            ConvertToLog((21 + 15 + 5 + 8 + 9) / 5.0));
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {21, 15, 5, 8, 9});
 }
 
 TEST_F(AdapterTest, UsePersonalCurve) {
@@ -649,8 +697,11 @@ TEST_F(AdapterTest, UsePersonalCurve) {
             power_manager::BacklightBrightnessChange_Cause_MODEL);
 
   const double expected_log_avg = ConvertToLog((10 + 20) / 2.0);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            expected_log_avg);
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {10, 20});
+
   const double expected_brightness_percent =
       personal_curve_->Interpolate(expected_log_avg);
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
@@ -671,8 +722,10 @@ TEST_F(AdapterTest, UseGlobalCurve) {
   thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
   const double expected_log_avg1 = ConvertToLog(10);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            expected_log_avg1);
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {10});
 
   const double expected_brightness_percent1 =
       global_curve_->Interpolate(expected_log_avg1);
@@ -689,8 +742,10 @@ TEST_F(AdapterTest, UseGlobalCurve) {
             power_manager::BacklightBrightnessChange_Cause_MODEL);
 
   const double expected_log_avg2 = ConvertToLog(20);
-  EXPECT_EQ(adapter_->GetAverageAmbientForTesting(thread_bundle_.NowTicks()),
-            expected_log_avg2);
+  CheckAverageAndStdDev(
+      adapter_->GetAverageAmbientWithStdDevForTesting(thread_bundle_.NowTicks())
+          .value(),
+      {20});
   const double expected_brightness_percent2 =
       global_curve_->Interpolate(expected_log_avg2);
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),

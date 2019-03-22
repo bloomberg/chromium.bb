@@ -222,14 +222,10 @@ base::Optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
   return personal_curve_;
 }
 
-base::Optional<double> Adapter::GetAverageAmbientForTesting(
+base::Optional<AlsAvgStdDev> Adapter::GetAverageAmbientWithStdDevForTesting(
     base::TimeTicks now) {
   DCHECK(ambient_light_values_);
-  const base::Optional<double> avg = ambient_light_values_->AverageAmbient(now);
-  if (!avg)
-    return base::nullopt;
-
-  return ConvertToLog(avg.value());
+  return ambient_light_values_->AverageAmbientWithStdDev(now);
 }
 
 double Adapter::GetBrighteningThresholdForTesting() const {
@@ -390,13 +386,12 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
 
 void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
   DCHECK(ambient_light_values_);
-  const base::Optional<double> average_ambient_lux_opt =
-      ambient_light_values_->AverageAmbient(now);
-  if (!average_ambient_lux_opt)
+  const base::Optional<AlsAvgStdDev> als_avg_stddev =
+      ambient_light_values_->AverageAmbientWithStdDev(now);
+  if (!als_avg_stddev)
     return;
 
-  const double log_average_ambient_lux =
-      ConvertToLog(average_ambient_lux_opt.value());
+  const double log_average_ambient_lux = ConvertToLog(als_avg_stddev->avg);
 
   const base::Optional<BrightnessChangeCause> brightness_change_cause =
       CanAdjustBrightness(log_average_ambient_lux);

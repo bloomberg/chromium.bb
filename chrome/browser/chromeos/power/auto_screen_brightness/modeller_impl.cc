@@ -173,12 +173,12 @@ void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
   DCHECK(ambient_light_values_);
   const base::TimeTicks now = tick_clock_->NowTicks();
   // We don't add any training data if there is no ambient light sample.
-  const base::Optional<double> average_ambient_lux_opt =
-      ambient_light_values_->AverageAmbient(now);
-  if (!average_ambient_lux_opt)
+  const base::Optional<AlsAvgStdDev> als_avg_stddev =
+      ambient_light_values_->AverageAmbientWithStdDev(now);
+  if (!als_avg_stddev)
     return;
 
-  const double average_ambient_lux = average_ambient_lux_opt.value();
+  const double average_ambient_lux = als_avg_stddev->avg;
   data_cache_.push_back({old_brightness_percent, new_brightness_percent,
                          ConvertToLog(average_ambient_lux), now});
 
@@ -226,7 +226,12 @@ base::Optional<double> ModellerImpl::AverageAmbientForTesting(
     base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ambient_light_values_);
-  return ambient_light_values_->AverageAmbient(now);
+  const base::Optional<AlsAvgStdDev> als_avg_stddev =
+      ambient_light_values_->AverageAmbientWithStdDev(now);
+  if (!als_avg_stddev)
+    return base::nullopt;
+
+  return als_avg_stddev->avg;
 }
 
 size_t ModellerImpl::NumberTrainingDataPointsForTesting() const {
