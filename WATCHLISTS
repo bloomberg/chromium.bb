@@ -1250,6 +1250,10 @@
     'nfc': {
       'filepath': '/nfc/',
     },
+    'notification_scheduler': {
+      'filepath': 'chrome/browser/notifications/proto/|'\
+        'chrome/browser/notifications/scheduler/'
+    },
     'notifications': {
       'filepath': 'chrome/browser/extensions/api/notifications/|'\
         'chrome/browser/notifications/|'\
@@ -2346,6 +2350,7 @@
     'netinfo': ['jkarlin+watch@chromium.org'],
     'network_service': ['network-service-reviews@chromium.org'],
     'nfc': ['mattreynolds+watch@chromium.org'],
+    'notification_scheduler': ['xingliu+watch@chromium.org'],
     'notifications': ['peter@chromium.org'],
     'nqe': ['tbansal+watch-nqe@chromium.org'],
     'ntp_snippets': ['ntp-dev+reviews@chromium.org'],
