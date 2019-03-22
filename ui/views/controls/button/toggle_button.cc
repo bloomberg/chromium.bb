@@ -37,7 +37,7 @@ constexpr int kThumbInset = 2;
 // Class representing the thumb (the circle that slides horizontally).
 class ToggleButton::ThumbView : public InkDropHostView {
  public:
-  ThumbView() : color_ratio_(0.0f) {}
+  ThumbView() = default;
   ~ThumbView() override = default;
 
   void Update(const gfx::Rect& bounds, float color_ratio) {
@@ -105,7 +105,7 @@ class ToggleButton::ThumbView : public InkDropHostView {
   }
 
   // Color ratio between 0 and 1 that controls the thumb color.
-  float color_ratio_;
+  float color_ratio_ = 0.0f;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbView);
 };

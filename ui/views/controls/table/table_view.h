@@ -83,24 +83,24 @@ class VIEWS_EXPORT TableView
     ui::TableColumn column;
 
     // Starting x-coordinate of the column.
-    int x;
+    int x = 0;
 
     // Width of the column.
-    int width;
+    int width = 0;
   };
 
   // Describes a sorted column.
   struct VIEWS_EXPORT SortDescriptor {
-    SortDescriptor() : column_id(-1), ascending(true) {}
+    SortDescriptor() = default;
     SortDescriptor(int column_id, bool ascending)
         : column_id(column_id),
           ascending(ascending) {}
 
     // ID of the sorted column.
-    int column_id;
+    int column_id = -1;
 
     // Is the sort ascending?
-    bool ascending;
+    bool ascending = true;
   };
 
   using SortDescriptors = std::vector<SortDescriptor>;
@@ -239,10 +239,10 @@ class VIEWS_EXPORT TableView
     PaintRegion();
     ~PaintRegion();
 
-    int min_row;
-    int max_row;
-    int min_column;
-    int max_column;
+    int min_row = 0;
+    int max_row = 0;
+    int min_column = 0;
+    int max_column = 0;
   };
 
   // Returns the horizontal margin between the bounds of a cell and its
@@ -345,7 +345,7 @@ class VIEWS_EXPORT TableView
   // |visible_column_index| indexes into |visible_columns_|.
   AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
-  ui::TableModel* model_;
+  ui::TableModel* model_ = nullptr;
 
   std::vector<ui::TableColumn> columns_;
 
@@ -355,14 +355,14 @@ class VIEWS_EXPORT TableView
 
   // The active visible column. Used for keyboard access to functionality such
   // as sorting and resizing. -1 if no visible column is active.
-  int active_visible_column_index_;
+  int active_visible_column_index_ = -1;
 
   // Used to draw a focus indicator around the active cell.
   std::unique_ptr<FocusRing> focus_ring_;
 
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.
-  TableHeader* header_;
+  TableHeader* header_ = nullptr;
 
   const TableTypes table_type_;
 
@@ -375,7 +375,7 @@ class VIEWS_EXPORT TableView
   // is selected then.
   bool select_on_remove_ = true;
 
-  TableViewObserver* observer_;
+  TableViewObserver* observer_ = nullptr;
 
   // The selection, in terms of the model.
   ui::ListSelectionModel selection_model_;
@@ -386,10 +386,10 @@ class VIEWS_EXPORT TableView
 
   // Width of the ScrollView last time Layout() was invoked. Used to determine
   // when we should invoke UpdateVisibleColumnSizes().
-  int last_parent_width_;
+  int last_parent_width_ = 0;
 
   // The width we layout to. This may differ from |last_parent_width_|.
-  int layout_width_;
+  int layout_width_ = 0;
 
   // Current sort.
   SortDescriptors sort_descriptors_;
@@ -398,10 +398,10 @@ class VIEWS_EXPORT TableView
   std::vector<int> view_to_model_;
   std::vector<int> model_to_view_;
 
-  TableGrouper* grouper_;
+  TableGrouper* grouper_ = nullptr;
 
   // True if in SetVisibleColumnWidth().
-  bool in_set_visible_column_width_;
+  bool in_set_visible_column_width_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };

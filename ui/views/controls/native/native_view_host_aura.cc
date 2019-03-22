@@ -30,7 +30,7 @@ namespace views {
 
 class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
  public:
-  ClippingWindowDelegate() : native_view_(nullptr) {}
+  ClippingWindowDelegate() = default;
   ~ClippingWindowDelegate() override = default;
 
   void set_native_view(aura::Window* native_view) {
@@ -71,7 +71,7 @@ class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
   void GetHitTestMask(SkPath* mask) const override {}
 
  private:
-  aura::Window* native_view_;
+  aura::Window* native_view_ = nullptr;
 };
 
 NativeViewHostAura::NativeViewHostAura(NativeViewHost* host) : host_(host) {}

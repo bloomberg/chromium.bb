@@ -281,20 +281,20 @@ class VIEWS_EXPORT MenuController
     ~State();
 
     // The selected menu item.
-    MenuItemView* item;
+    MenuItemView* item = nullptr;
 
     // Used to capture a hot tracked child button when a nested menu is opened
     // and to restore the hot tracked state when exiting a nested menu.
-    Button* hot_button;
+    Button* hot_button = nullptr;
 
     // If item has a submenu this indicates if the submenu is showing.
-    bool submenu_open;
+    bool submenu_open = false;
 
     // Bounds passed to the run menu. Used for positioning the first menu.
     gfx::Rect initial_bounds;
 
     // Position of the initial menu.
-    MenuAnchorPosition anchor;
+    MenuAnchorPosition anchor = MenuAnchorPosition::kTopLeft;
 
     // The direction child menus have opened in.
     std::list<bool> open_leading;
@@ -303,7 +303,7 @@ class VIEWS_EXPORT MenuController
     gfx::Rect monitor_bounds;
 
     // Is the current menu a context menu.
-    bool context_menu;
+    bool context_menu = false;
   };
 
   // Used by GetMenuPart to indicate the menu part at a particular location.

@@ -49,16 +49,16 @@ class VIEWS_EXPORT TableHeader : public views::View {
  private:
   // Used to track the column being resized.
   struct ColumnResizeDetails {
-    ColumnResizeDetails() : column_index(0), initial_x(0), initial_width(0) {}
+    ColumnResizeDetails() = default;
 
     // Index into table_->visible_columns() that is being resized.
-    int column_index;
+    int column_index = 0;
 
     // X-coordinate of the mouse at the time the resize started.
-    int initial_x;
+    int initial_x = 0;
 
     // Width of the column when the drag started.
-    int initial_width;
+    int initial_width = 0;
   };
 
   // If not already resizing and |event| is over a resizable column starts
