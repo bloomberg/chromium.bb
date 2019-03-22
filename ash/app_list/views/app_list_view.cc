@@ -690,6 +690,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
       ->set_arrow_key_traversal_enabled_for_widget(true);
 
   widget_observer_ = std::make_unique<FullscreenWidgetObserver>(this);
+  fullscreen_widget_->GetNativeView()->AddObserver(this);
 }
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
@@ -1586,6 +1587,32 @@ AppListViewState AppListView::CalculateStateAfterShelfDrag(
 ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
   state_animation_metrics_reporter_->Start(is_tablet_mode_);
   return state_animation_metrics_reporter_.get();
+}
+
+void AppListView::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(fullscreen_widget_->GetNativeView(), window);
+  window->RemoveObserver(this);
+}
+
+void AppListView::OnWindowBoundsChanged(aura::Window* window,
+                                        const gfx::Rect& old_bounds,
+                                        const gfx::Rect& new_bounds,
+                                        ui::PropertyChangeReason reason) {
+  DCHECK_EQ(fullscreen_widget_->GetNativeView(), window);
+
+  // When the virtual keyboard shows, the AppListView is moved upward to avoid
+  // the overlapping area with the virtual keyboard. As a result, its bottom
+  // side may be on the display edge. Stop showing the rounded corners under
+  // this circumstance.
+  const bool hide_rounded_corners =
+      app_list_state_ == AppListViewState::HALF && new_bounds.y() == 0;
+
+  gfx::Transform transform;
+  if (hide_rounded_corners)
+    transform.Translate(0, -kAppListBackgroundRadius);
+
+  app_list_background_shield_->SetTransform(transform);
+  app_list_background_shield_->SchedulePaint();
 }
 
 void AppListView::UpdateChildViewsYPositionAndOpacity() {
