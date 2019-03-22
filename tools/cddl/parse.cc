@@ -234,14 +234,13 @@ AstNode* ParseValue(Parser* p) {
   return node;
 }
 
-
 // Determines whether an occurrence operator (such as '*' or '?') prefacing
 // the group definition occurs before the next whitespace character, and
 // creates a new Occurrence node if so.
 AstNode* ParseOccur(Parser* p) {
   Parser p_speculative{p->data};
 
-  if (*p_speculative.data == '?'|| *p_speculative.data == '+') {
+  if (*p_speculative.data == '?' || *p_speculative.data == '+') {
     p_speculative.data++;
   } else {
     SkipUint(&p_speculative);
@@ -419,6 +418,43 @@ AstNode* ParseGroup(Parser* p) {
                  absl::string_view(orig, p->data - orig), group_choice);
 }
 
+// Parse optional range operator .. (inlcusive) or ... (exclusive)
+// ABNF rule: rangeop = "..." / ".."
+AstNode* ParseRangeop(Parser* p) {
+  const char* orig = p->data;
+  if (orig[0] != '.') {
+    return nullptr;
+  }
+  if (orig[1] != '.') {
+    return nullptr;
+  }
+  if (orig[2] != '.') {
+    // rangeop ..
+    p->data = orig + 2;
+  } else {
+    // rangeop ...
+    p->data = orig + 3;
+  }
+  return AddNode(p, AstNode::Type::kRangeop,
+                 absl::string_view(orig, p->data - orig));
+}
+
+// Parse optional control operator .id
+// ABNF rule: ctlop = "." id
+AstNode* ParseCtlop(Parser* p) {
+  const char* orig = p->data;
+  if (orig[0] != '.') {
+    return nullptr;
+  }
+  p->data = orig + 1;
+  AstNode* id = ParseId(p);
+  if (!id) {
+    return nullptr;
+  }
+  return AddNode(p, AstNode::Type::kCtlop,
+                 absl::string_view(orig, p->data - orig), id);
+}
+
 AstNode* ParseType2(Parser* p) {
   const char* orig = p->data;
   const char* it = p->data;
@@ -576,10 +612,20 @@ AstNode* ParseType1(Parser* p) {
   if (!type2) {
     return nullptr;
   }
-  // TODO(btolsch): rangeop + ctlop
-  // if (!HandleSpace(p)) {
-  //   return false;
-  // }
+  SkipWhitespace(p, false);
+  AstNode* rangeop_or_ctlop = ParseRangeop(p);
+  if (!rangeop_or_ctlop) {
+    rangeop_or_ctlop = ParseCtlop(p);
+  }
+  if (rangeop_or_ctlop) {
+    SkipWhitespace(p, false);
+    AstNode* param = ParseType2(p);
+    if (!param) {
+      return nullptr;
+    }
+    type2->sibling = rangeop_or_ctlop;
+    rangeop_or_ctlop->sibling = param;
+  }
   return AddNode(p, AstNode::Type::kType1,
                  absl::string_view(orig, p->data - orig), type2);
 }
@@ -778,7 +824,7 @@ AstNode* ParseGroupEntryWithInlineGroupDefinition(Parser* p) {
   }
   ++p_speculative.data;
   SkipWhitespace(&p_speculative);
-  AstNode* group = ParseGroup(&p_speculative);   // Recursive call here.
+  AstNode* group = ParseGroup(&p_speculative);  // Recursive call here.
   if (!group) {
     return nullptr;
   }
