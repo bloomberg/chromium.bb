@@ -1,0 +1,239 @@
+Hmm...  Looks like a unified diff to me...
+can't find file to patch at input line 4
+Perhaps you used the wrong -p or --strip option?
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/config.hin bison-2.3-src/config.hin
+|--- bison-2.3-orig/config.hin	2006-06-05 10:32:16.000000000 +0200
+|+++ bison-2.3-src/config.hin	2008-02-20 23:25:07.859375000 +0100
+--------------------------
+No file to patch.  Skipping patch.
+Hunk #1 ignored at 411.
+1 out of 1 hunk ignored
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/lib/subpipe.c bison-2.3-src/lib/subpipe.c
+|--- bison-2.3-orig/lib/subpipe.c	2006-01-22 08:38:49.000000000 +0100
+|+++ bison-2.3-src/lib/subpipe.c	2008-02-20 19:58:31.406250000 +0100
+--------------------------
+Patching file lib/subpipe.c using Plan A...
+Hunk #1 succeeded at 78 (offset -5 lines).
+Hunk #2 succeeded at 113 with fuzz 2 (offset -8 lines).
+Hunk #3 succeeded at 173 (offset -9 lines).
+Not setting time of file lib/subpipe.c (time mismatch)
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/lib/subpipe.h bison-2.3-src/lib/subpipe.h
+|--- bison-2.3-orig/lib/subpipe.h	2006-02-09 09:18:57.000000000 +0100
+|+++ bison-2.3-src/lib/subpipe.h	2008-02-20 19:58:31.437500000 +0100
+--------------------------
+Patching file lib/subpipe.h using Plan A...
+Hunk #1 succeeded at 25 (offset -1 lines).
+Not setting time of file lib/subpipe.h (time mismatch)
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/src/Makefile.in bison-2.3-src/src/Makefile.in
+|--- bison-2.3-orig/src/Makefile.in	2006-06-05 10:32:00.000000000 +0200
+|+++ bison-2.3-src/src/Makefile.in	2008-02-20 20:17:20.984375000 +0100
+--------------------------
+Patching file src/Makefile.in using Plan A...
+Hunk #1 FAILED at 17.
+Hunk #2 FAILED at 88.
+Hunk #3 succeeded at 368 with fuzz 2 (offset 207 lines).
+Hunk #4 FAILED at 393.
+Hunk #5 succeeded at 512 with fuzz 2 (offset 268 lines).
+Hunk #6 FAILED at 546.
+Hunk #7 succeeded at 563 (offset 275 lines).
+Hunk #8 succeeded at 711 with fuzz 2 (offset 309 lines).
+Not setting time of file src/Makefile.in (time mismatch)
+4 out of 8 hunks FAILED -- saving rejects to file src/Makefile.in.rej
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/src/main.c bison-2.3-src/src/main.c
+|--- bison-2.3-orig/src/main.c	2005-12-10 00:51:26.000000000 +0100
+|+++ bison-2.3-src/src/main.c	2008-02-20 21:17:13.937500000 +0100
+--------------------------
+Patching file src/main.c using Plan A...
+Hunk #1 FAILED at 47.
+Not setting time of file src/main.c (time mismatch)
+1 out of 1 hunk FAILED -- saving rejects to file src/main.c.rej
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/src/output.c bison-2.3-src/src/output.c
+|--- bison-2.3-orig/src/output.c	2006-05-14 23:40:35.000000000 +0200
+|+++ bison-2.3-src/src/output.c	2008-02-21 17:19:11.609375000 +0100
+--------------------------
+Patching file src/output.c using Plan A...
+Hunk #1 succeeded at 39.
+Hunk #2 FAILED at 514.
+Hunk #3 succeeded at 590 (offset 10 lines).
+Hunk #4 FAILED at 636.
+Not setting time of file src/output.c (time mismatch)
+2 out of 4 hunks FAILED -- saving rejects to file src/output.c.rej
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/atlocal.in bison-2.3-src/tests/atlocal.in
+|--- bison-2.3-orig/tests/atlocal.in	2005-09-19 10:22:17.000000000 +0200
+|+++ bison-2.3-src/tests/atlocal.in	2008-02-21 17:14:13.375000000 +0100
+--------------------------
+Patching file tests/atlocal.in using Plan A...
+Hunk #1 succeeded at 4 with fuzz 2 (offset 2 lines).
+Not setting time of file tests/atlocal.in (time mismatch)
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/bison.in bison-2.3-src/tests/bison.in
+|--- bison-2.3-orig/tests/bison.in	2004-10-05 12:58:58.000000000 +0200
+|+++ bison-2.3-src/tests/bison.in	2008-02-20 22:56:41.531250000 +0100
+--------------------------
+Patching file tests/bison.in using Plan A...
+Hunk #1 succeeded at 3.
+Not setting time of file tests/bison.in (time mismatch)
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/calc.at bison-2.3-src/tests/calc.at
+|--- bison-2.3-orig/tests/calc.at	2006-03-12 15:45:27.000000000 +0100
+|+++ bison-2.3-src/tests/calc.at	2008-02-20 19:58:31.515625000 +0100
+--------------------------
+Patching file tests/calc.at using Plan A...
+Hunk #1 FAILED at 489.
+Not setting time of file tests/calc.at (time mismatch)
+1 out of 1 hunk FAILED -- saving rejects to file tests/calc.at.rej
+Hmm...  The next patch looks like a unified diff to me...
+The text leading up to this was:
+--------------------------
+|diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.3-orig/tests/testsuite bison-2.3-src/tests/testsuite
+|--- bison-2.3-orig/tests/testsuite	2006-06-05 10:32:58.000000000 +0200
+|+++ bison-2.3-src/tests/testsuite	2008-02-21 17:03:43.671875000 +0100
+--------------------------
+Patching file tests/testsuite using Plan A...
+Hunk #1 FAILED at 878.
+Hunk #2 FAILED at 1550.
+Hunk #3 FAILED at 6463.
+Hunk #4 FAILED at 6624.
+Hunk #5 FAILED at 6786.
+Hunk #6 FAILED at 7087.
+Hunk #7 FAILED at 7602.
+Hunk #8 FAILED at 8152.
+Hunk #9 FAILED at 8636.
+Hunk #10 FAILED at 9079.
+Hunk #11 FAILED at 9525.
+Hunk #12 FAILED at 9878.
+Hunk #13 FAILED at 11231.
+Hunk #14 FAILED at 11729.
+Hunk #15 FAILED at 12440.
+Hunk #16 FAILED at 12937.
+Hunk #17 FAILED at 13681.
+Hunk #18 FAILED at 14174.
+Hunk #19 FAILED at 14881.
+Hunk #20 FAILED at 15378.
+Hunk #21 FAILED at 16091.
+Hunk #22 FAILED at 16589.
+Hunk #23 FAILED at 17300.
+Hunk #24 FAILED at 17797.
+Hunk #25 FAILED at 18510.
+Hunk #26 FAILED at 19002.
+Hunk #27 FAILED at 19733.
+Hunk #28 FAILED at 20230.
+Hunk #29 FAILED at 20974.
+Hunk #30 FAILED at 21462.
+Hunk #31 FAILED at 22196.
+Hunk #32 FAILED at 22684.
+Hunk #33 FAILED at 23387.
+Hunk #34 FAILED at 23885.
+Hunk #35 FAILED at 24627.
+Hunk #36 FAILED at 25115.
+Hunk #37 FAILED at 25840.
+Hunk #38 FAILED at 26333.
+Hunk #39 FAILED at 27071.
+Hunk #40 FAILED at 27559.
+Hunk #41 FAILED at 28271.
+Hunk #42 FAILED at 28769.
+Hunk #43 FAILED at 29480.
+Hunk #44 FAILED at 29977.
+Hunk #45 FAILED at 30721.
+Hunk #46 FAILED at 31214.
+Hunk #47 FAILED at 31921.
+Hunk #48 FAILED at 32418.
+Hunk #49 FAILED at 33131.
+Hunk #50 FAILED at 33629.
+Hunk #51 FAILED at 34340.
+Hunk #52 FAILED at 34837.
+Hunk #53 FAILED at 35550.
+Hunk #54 FAILED at 36042.
+Hunk #55 FAILED at 36782.
+Hunk #56 FAILED at 37274.
+Hunk #57 FAILED at 38014.
+Hunk #58 FAILED at 38502.
+Hunk #59 FAILED at 39236.
+Hunk #60 FAILED at 39724.
+Hunk #61 FAILED at 40427.
+Hunk #62 FAILED at 40925.
+Hunk #63 FAILED at 41667.
+Hunk #64 FAILED at 42155.
+Hunk #65 FAILED at 42889.
+Hunk #66 FAILED at 43377.
+Hunk #67 FAILED at 44111.
+Hunk #68 FAILED at 44599.
+Hunk #69 FAILED at 45375.
+Hunk #70 FAILED at 45868.
+Hunk #71 FAILED at 46639.
+Hunk #72 FAILED at 47127.
+Hunk #73 FAILED at 47894.
+Hunk #74 FAILED at 48382.
+Hunk #75 FAILED at 49149.
+Hunk #76 FAILED at 49637.
+Hunk #77 FAILED at 50404.
+Hunk #78 FAILED at 50892.
+Hunk #79 FAILED at 51668.
+Hunk #80 FAILED at 52156.
+Hunk #81 FAILED at 52923.
+Hunk #82 FAILED at 53411.
+Hunk #83 FAILED at 53965.
+Hunk #84 FAILED at 54205.
+Hunk #85 FAILED at 54455.
+Hunk #86 FAILED at 54601.
+Hunk #87 FAILED at 54798.
+Hunk #88 FAILED at 57360.
+Hunk #89 FAILED at 58078.
+Hunk #90 FAILED at 58333.
+Hunk #91 FAILED at 58623.
+Hunk #92 FAILED at 58849.
+Hunk #93 FAILED at 59075.
+Hunk #94 FAILED at 59335.
+Hunk #95 FAILED at 60126.
+Hunk #96 FAILED at 60604.
+Hunk #97 FAILED at 61079.
+Hunk #98 FAILED at 61557.
+Hunk #99 FAILED at 62037.
+Hunk #100 FAILED at 62520.
+Hunk #101 FAILED at 63000.
+Hunk #102 FAILED at 63483.
+Hunk #103 FAILED at 63963.
+Hunk #104 FAILED at 64175.
+Hunk #105 FAILED at 64381.
+Hunk #106 FAILED at 64627.
+Hunk #107 FAILED at 64810.
+Hunk #108 FAILED at 64968.
+Hunk #109 FAILED at 65118.
+Hunk #110 FAILED at 65283.
+Hunk #111 FAILED at 65465.
+Hunk #112 FAILED at 65635.
+Hunk #113 FAILED at 65787.
+Hunk #114 FAILED at 65943.
+Hunk #115 FAILED at 66162.
+Hunk #116 FAILED at 66376.
+Hunk #117 FAILED at 66680.
+Hunk #118 FAILED at 66870.
+Hunk #119 FAILED at 67025.
+Hunk #120 FAILED at 67199.
+Not setting time of file tests/testsuite (time mismatch)
+120 out of 120 hunks FAILED -- saving rejects to file tests/testsuite.rej
+done

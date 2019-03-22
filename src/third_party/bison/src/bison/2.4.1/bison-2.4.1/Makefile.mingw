@@ -1,0 +1,32 @@
+export DEFSPLUS= -DPDC_DLL_BUILD
+export INCLUDESPLUS= 
+export CFLAGSPLUS= 
+export LDFLAGSPLUS= 
+export LIBSPLUS= 
+export DLLFLAG=  
+sedfiles=Makefile libtool config.h
+BUILDDIR=$(shell cygpath -m `pwd`)
+BUILD0DIR=$(shell basename $(BUILDDIR))
+SRCDIR=../$(BUILD0DIR)-src
+INSTALLDIR=$(BUILD0DIR)
+INSTALLDIR=$(shell echo $(BUILD0DIR) | sed -e "s/-[^-]*$$//")
+PREFIX=c:/progra~1/$(INSTALLDIR)
+
+export ac_cv_path_M4=m4
+
+.PHONY: all 
+all: CONF MFSED
+CONF:
+#	if [ ! -e Makefile.in.sed ]; then \
+#		cp -fp k:/Makefile.in.sed .; \
+#	fi
+#	find.exe $(SRCDIR) -iname Makefile.in -exec sed -i -f Makefile.in.sed '{}' ';'
+	$(SRCDIR)/configure --prefix="$(PREFIX)" --srcdir="$(SRCDIR)" 
+	
+#		--infodir="$(PREFIX)/info" --mandir="$(PREFIX)/man" --docdir="$(PREFIX)/doc" 
+	
+-include $(DVLDIR)/makefile.chg
+
+#	make all
+#	make check
+#	make install prefix=c:/temp/$(INSTALLDIR)                                 
