@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ios/web/public/features.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
