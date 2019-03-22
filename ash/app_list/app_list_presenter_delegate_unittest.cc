@@ -841,41 +841,6 @@ TEST_F(AppListPresenterDelegateTest,
       GetPrimaryShelf()->shelf_layout_manager()->GetShelfBackgroundType());
 }
 
-// Tests that the app list in HALF with an active search transitions to PEEKING
-// after the body is clicked/tapped.
-TEST_P(AppListPresenterDelegateTest, HalfToPeekingByClickOrTap) {
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  ui::test::EventGenerator* generator = GetEventGenerator();
-
-  // Transition to half app list by entering text.
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
-
-  // Click or Tap the app list view body.
-  if (TestMouseEventParam()) {
-    generator->MoveMouseTo(GetPointOutsideSearchbox());
-    generator->ClickLeftButton();
-    generator->ReleaseLeftButton();
-  } else {
-    generator->GestureTapAt(GetPointOutsideSearchbox());
-  }
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
-
-  // Click or Tap the app list view body again.
-  if (TestMouseEventParam()) {
-    generator->MoveMouseTo(GetPointOutsideSearchbox());
-    generator->ClickLeftButton();
-    generator->ReleaseLeftButton();
-  } else {
-    generator->GestureTapAt(GetPointOutsideSearchbox());
-  }
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
-  GetAppListTestHelper()->CheckVisibility(false);
-}
-
 // Tests that the half app list closes itself if the user taps outside its
 // bounds.
 TEST_P(AppListPresenterDelegateTest, TapAndClickOutsideClosesHalfAppList) {
