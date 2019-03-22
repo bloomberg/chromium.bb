@@ -117,11 +117,21 @@ if get_option('color-management-colord')
 		error('cms-colord requires colord >= 0.1.27 which was not found. Or, you can use \'-Dcolor-management-colord=false\'.')
 	endif
 
+	plugin_colord_deps = [ dep_libweston, dep_colord ]
+
+	foreach depname : [ 'glib-2.0', 'gobject-2.0' ]
+		dep = dependency(depname, required: false)
+		if not dep.found()
+			error('cms-colord requires \'@0@\' which was not found. If you rather not build this, set \'-Dcolor-management-colord=false\'.'.format(depname))
+		endif
+		plugin_colord_deps += dep
+	endforeach
+
 	plugin_colord = shared_library(
 		'cms-colord',
 		srcs_colord,
 		include_directories: include_directories('..', '../shared'),
-		dependencies: [ dep_libweston, dep_colord ],
+		dependencies: plugin_colord_deps,
 		name_prefix: '',
 		install: true,
 		install_dir: dir_module_weston
