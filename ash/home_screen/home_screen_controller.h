@@ -33,6 +33,11 @@ class ASH_EXPORT HomeScreenController : public WallpaperControllerObserver {
   // Shows the home screen.
   void Show();
 
+  // Takes the user to the home screen, either by ending Overview Mode/Split
+  // View Mode or by minimizing the other windows. Returns false if there was
+  // nothing to do because the given display was already "home".
+  bool GoHome(int64_t display_id);
+
   // Sets the delegate for home screen animations.
   void SetDelegate(HomeScreenDelegate* delegate);
 

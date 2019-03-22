@@ -116,6 +116,7 @@ enum ShelfItemType {
   TYPE_PINNED_APP,
 
   // Toggles visiblity of the app list.
+  // TODO(michaelpg): Rename App List item to Home Button.
   TYPE_APP_LIST,
 
   // The browser shortcut button, the browser may be running or not.
