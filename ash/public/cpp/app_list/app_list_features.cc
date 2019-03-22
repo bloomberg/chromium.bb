@@ -27,8 +27,12 @@ const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAdaptiveResultRanker{
     "EnableAdaptiveResultRanker", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableAppSearchResultRanker{
-    "EnableAppSearchResultRanker", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableQueryBasedAppsRanker{
+    "EnableQueryBasedAppsRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableZeroStateAppsRanker{
+    "EnableZeroStateAppsRanker", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableQueryBasedMixedTypesRanker{
+    "EnableQueryBasedMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableEmbeddedAssistantUI{
@@ -72,8 +76,16 @@ bool IsAdaptiveResultRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableAdaptiveResultRanker);
 }
 
-bool IsAppSearchResultRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAppSearchResultRanker);
+bool IsQueryBasedAppsRankerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableQueryBasedAppsRanker);
+}
+
+bool IsZeroStateAppsRankerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableZeroStateAppsRanker);
+}
+
+bool IsQueryBasedMixedTypesEnabled() {
+  return base::FeatureList::IsEnabled(kEnableQueryBasedMixedTypesRanker);
 }
 
 bool IsAppReinstallZeroStateEnabled() {
@@ -104,7 +116,7 @@ std::string AnswerServerQuerySuffix() {
 
 std::string AppSearchResultRankerPredictorName() {
   const std::string predictor_name = base::GetFieldTrialParamValueByFeature(
-      kEnableAppSearchResultRanker, "app_search_result_ranker_predictor_name");
+      kEnableZeroStateAppsRanker, "app_search_result_ranker_predictor_name");
   if (!predictor_name.empty())
     return predictor_name;
   return std::string("MrfuAppLaunchPredictor");

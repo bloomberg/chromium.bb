@@ -22,11 +22,11 @@
 
 namespace {
 
-// When ranking with the |AppSearchResultRanker| is enabled, this boost is
+// When ranking with the |QueryBasedAppsRanker| is enabled, this boost is
 // added to all shortcuts that the ranker knows about.
 constexpr float kDefaultRankerScoreBoost = 0.0f;
 
-// When ranking with the |AppSearchResultRanker| is enabled, its scores are
+// When ranking with the |QueryBasedAppsRanker| is enabled, its scores are
 // multiplied by this amount.
 constexpr float kDefaultRankerScoreCoefficient = 0.1f;
 
@@ -87,9 +87,9 @@ void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
   // implemented, split the |rank_arc_app_shortcuts| flag into two flags to
   // control zero-state and query-based re-ranking individually.
   const bool should_rerank =
-      app_list_features::IsAppSearchResultRankerEnabled() &&
+      app_list_features::IsQueryBasedAppsRankerEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
-          app_list_features::kEnableAppSearchResultRanker,
+          app_list_features::kEnableQueryBasedAppsRanker,
           "rank_arc_app_shortcuts", false) &&
       ranker_ != nullptr;
   // Maps app IDs to their score according to |ranker_|.
@@ -99,10 +99,10 @@ void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
   if (should_rerank) {
     ranker_scores = ranker_->Rank();
     ranker_score_coefficient = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAppSearchResultRanker,
+        app_list_features::kEnableQueryBasedAppsRanker,
         "arc_app_shortcuts_query_coefficient", ranker_score_coefficient);
     ranker_score_boost = base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAppSearchResultRanker,
+        app_list_features::kEnableQueryBasedAppsRanker,
         "arc_app_shortcuts_query_boost", ranker_score_boost);
   }
 

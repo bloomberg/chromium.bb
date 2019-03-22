@@ -55,14 +55,14 @@ class ArcAppShortcutsSearchProviderTest
   void CreateRanker(const std::map<std::string, std::string>& params = {}) {
     if (!params.empty()) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          app_list_features::kEnableAppSearchResultRanker, params);
+          app_list_features::kEnableQueryBasedAppsRanker, params);
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       ranker_ =
           std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
                                                   /*is_ephemeral_user=*/false);
     } else {
       scoped_feature_list_.InitWithFeatures(
-          {}, {app_list_features::kEnableAppSearchResultRanker});
+          {}, {app_list_features::kEnableQueryBasedAppsRanker});
     }
   }
 

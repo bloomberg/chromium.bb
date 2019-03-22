@@ -94,7 +94,7 @@ AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
     : predictor_filename_(
           profile_path.AppendASCII(kAppLaunchPredictorFilename)),
       weak_factory_(this) {
-  if (!app_list_features::IsAppSearchResultRankerEnabled())
+  if (!app_list_features::IsZeroStateAppsRankerEnabled())
     return;
 
   predictor_ =
