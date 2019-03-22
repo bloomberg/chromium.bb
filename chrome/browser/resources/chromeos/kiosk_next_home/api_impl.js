@@ -52,9 +52,7 @@ function buildApp(mojoApp) {
     appId: mojoApp.appId,
     type: getAppType(mojoApp),
     displayName: mojoApp.displayName,
-    // TODO(ltenorio): Add the package name here when it's available from
-    // mojo.
-    packageName: '',
+    packageName: mojoApp.androidPackageName,
     readiness: getReadiness(mojoApp),
     // TODO(ltenorio): Add the thumbnail when it's available from mojo.
     thumbnailImage: '',

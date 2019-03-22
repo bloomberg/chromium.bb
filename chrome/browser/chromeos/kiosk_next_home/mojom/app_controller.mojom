@@ -19,6 +19,10 @@ struct App {
   // Name used when displaying the app in an app list or grid.
   string display_name;
 
+  // Android package name for this app.
+  // This field will only be present if this is an ARC app.
+  string android_package_name;
+
   // The current state of readiness for this app.
   // It can tell if the app is suspended, uninstalled, etc.
   apps.mojom.Readiness readiness;
