@@ -34,9 +34,12 @@ public class TabProperties {
 
     public static final WritableBooleanPropertyKey IS_SELECTED = new WritableBooleanPropertyKey();
 
+    public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
+            CREATE_GROUP_LISTENER = new WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS_TAB_GRID =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,
-                    THUMBNAIL_FETCHER, TITLE, IS_SELECTED};
+                    THUMBNAIL_FETCHER, TITLE, IS_SELECTED, CREATE_GROUP_LISTENER};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
             TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED, TITLE};

@@ -63,11 +63,25 @@ class TabListMediator {
             mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback);
         }
     }
+
+    /**
+     * An interface to get the onClickListener for "Create group" button.
+     */
+    public interface CreateGroupButtonProvider {
+        /**
+         * @return {@link TabActionListener} to create tab group. If the given {@link Tab} is not
+         * able to create group, return null;
+         */
+        @Nullable
+        TabActionListener getCreateGroupButtonOnClickListener(Tab tab);
+    }
+
     private final TabListFaviconProvider mTabListFaviconProvider;
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final ThumbnailProvider mThumbnailProvider;
     private final TitleProvider mTitleProvider;
+    private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final String mComponentName;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
@@ -164,17 +178,22 @@ class TabListMediator {
      * @param thumbnailProvider {@link ThumbnailProvider} to provide screenshot related details.
      * @param titleProvider {@link TitleProvider} for a given tab's title to show.
      * @param tabListFaviconProvider Provider for all favicon related drawables.
+     * @param createGroupButtonProvider {@link CreateGroupButtonProvider} to provide "Create group"
+     *                                   button information. It's null when "Create group" is not
+     *                                   possible.
      * @param componentName This is a unique string to identify different components.
      */
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
-            TabListFaviconProvider tabListFaviconProvider, String componentName) {
+            TabListFaviconProvider tabListFaviconProvider,
+            @Nullable CreateGroupButtonProvider createGroupButtonProvider, String componentName) {
         mTabModelSelector = tabModelSelector;
         mThumbnailProvider = thumbnailProvider;
         mModel = model;
         mTabListFaviconProvider = tabListFaviconProvider;
         mComponentName = componentName;
         mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
+        mCreateGroupButtonProvider = createGroupButtonProvider;
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
@@ -251,6 +270,12 @@ class TabListMediator {
     }
 
     private void addTabInfoToModel(final Tab tab, int index, boolean isSelected) {
+        TabActionListener createGroupButtonOnClickListener = null;
+        if (isSelected && mCreateGroupButtonProvider != null) {
+            createGroupButtonOnClickListener =
+                    mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
+        }
+
         PropertyModel tabInfo =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
@@ -260,7 +285,9 @@ class TabListMediator {
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
+                        .with(TabProperties.CREATE_GROUP_LISTENER, createGroupButtonOnClickListener)
                         .build();
+
         if (index >= mModel.size()) {
             mModel.add(tabInfo);
         } else {
