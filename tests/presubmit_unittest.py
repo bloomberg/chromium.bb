@@ -976,6 +976,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'subprocess',
         'tbr',
         'tempfile',
+        'temporary_directory',
         'thread_pool',
         'time',
         'traceback',

@@ -518,6 +518,9 @@ class InputApi(object):
     self.cStringIO = cStringIO
     self.fnmatch = fnmatch
     self.gclient_paths = gclient_paths
+    # TODO(yyanagisawa): stop exposing this when python3 become default.
+    # Since python3's tempfile has TemporaryDirectory, we do not need this.
+    self.temporary_directory = gclient_utils.temporary_directory
     self.glob = glob.glob
     self.json = json
     self.logging = logging.getLogger('PRESUBMIT')
