@@ -435,25 +435,6 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     CreateSkSurfaceForGL();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    if (!output_device_) {
-      if (surface_handle_ == gpu::kNullSurfaceHandle) {
-        output_device_ =
-            std::make_unique<SkiaOutputDeviceOffscreen>(gr_context());
-      } else {
-#if defined(USE_X11)
-        if (gpu_preferences_.disable_vulkan_surface) {
-          output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-              gr_context(), surface_handle_);
-        } else {
-          output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-              vulkan_context_provider_, surface_handle_);
-        }
-#else
-        output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
-            vulkan_context_provider_, surface_handle_);
-#endif
-      }
-    }
     output_device_->Reshape(size);
     sk_surface_ = output_device_->DrawSurface();
 #else
@@ -533,7 +514,14 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     OnSwapBuffers();
     gpu::SwapBuffersCompleteParams params;
     params.swap_response.swap_start = base::TimeTicks::Now();
-    params.swap_response.result = output_device_->SwapBuffers();
+    if (capabilities_.supports_post_sub_buffer) {
+      DCHECK(frame.sub_buffer_rect);
+      DCHECK(!frame.sub_buffer_rect->IsEmpty());
+      params.swap_response.result =
+          output_device_->PostSubBuffer(*frame.sub_buffer_rect);
+    } else {
+      params.swap_response.result = output_device_->SwapBuffers();
+    }
     params.swap_response.swap_end = base::TimeTicks::Now();
     sk_surface_ = output_device_->DrawSurface();
     DidSwapBuffersComplete(params);
@@ -956,6 +944,26 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
   DCHECK(context_state_);
   supports_alpha_ = true;
   capabilities_.flipped_output_surface = true;
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (surface_handle_ == gpu::kNullSurfaceHandle) {
+    output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(gr_context());
+  } else {
+#if defined(USE_X11)
+    if (gpu_preferences_.disable_vulkan_surface) {
+      output_device_ =
+          std::make_unique<SkiaOutputDeviceX11>(gr_context(), surface_handle_);
+    } else {
+      output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
+          vulkan_context_provider_, surface_handle_);
+    }
+#else
+    output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
+        vulkan_context_provider_, surface_handle_);
+#endif
+  }
+  capabilities_.supports_post_sub_buffer =
+      output_device_->SupportPostSubBuffer();
+#endif
 }
 
 void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(

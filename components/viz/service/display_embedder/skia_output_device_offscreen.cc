@@ -18,8 +18,8 @@ sk_sp<SkSurface> SkiaOutputDeviceOffscreen::DrawSurface() {
 }
 
 void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size) {
-  auto image_info = SkImageInfo::Make(
-      size.width(), size.height(), kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+  auto image_info =
+      SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
   draw_surface_ =
       SkSurface::MakeRenderTarget(gr_context_, SkBudgeted::kNo, image_info);
 }
