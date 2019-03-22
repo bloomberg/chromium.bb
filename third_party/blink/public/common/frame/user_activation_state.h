@@ -33,7 +33,8 @@ namespace blink {
 // activation.
 //
 // - After a certain time limit (few seconds), the transient bit is deactivated.
-// Internally this is updated lazily on state polling.
+// (Internally, the class doens't store the transient bit, but stores the bit's
+// expiry time instead.)
 //
 //
 // Same-origin Visibility of User Activation
