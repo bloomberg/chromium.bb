@@ -74,21 +74,17 @@ def GenerateSourcePathMapping(packages, board):
       root, i.e: ~/trunk/ in your cros_sdk) it depends on.
   """
 
-  # For every package, there are 3 sources of direct dependencies source paths:
-  # 1) The directory of the ebuild file.
-  # 2) The cros workon source dirs (for cros_workon package)
-  # 3) The paths to all eclasses files the ebuild inherits from (if any).
   results = {}
 
   packages_to_ebuild_paths = portage_util.FindEbuildsForPackages(
       packages, sysroot=cros_build_lib.GetSysroot(board),
       error_code_ok=False)
 
-  # 1) Add the directory of ebuild files.
+  # Source paths which are the directory of ebuild files.
   for package, ebuild_path in packages_to_ebuild_paths.iteritems():
     results[package] = [ebuild_path]
 
-  # 2) The cros workon source paths
+  # Source paths which are cros workon source paths.
   buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
   manifest = git.ManifestCheckout.Cached(buildroot)
   for package, ebuild_path in packages_to_ebuild_paths.iteritems():
@@ -103,7 +99,7 @@ def GenerateSourcePathMapping(packages, board):
     for path in workon_subtrees:
       results[package].append(path)
 
-  # 3) The eclasses which ebuilds inherits from.
+  # Source paths which are the eclasses which ebuilds inherit from.
   # For now, we just include all the whole eclass directory.
   # TODO(crbug.com/917174): for each package, expand the enalysis to output
   # only the path to eclass files which the packakge depends on.
@@ -116,6 +112,14 @@ def GenerateSourcePathMapping(packages, board):
         use_inherit = True
     if use_inherit:
       results[package].extend(_ECLASS_DIRS)
+
+  # Source paths which are the overlay directories for the given board
+  # (packages are board specific).
+  if board:
+    overlay_directories = portage_util.FindOverlays(
+        overlay_type='both', board=board)
+    for package in results:
+      results[package].extend(overlay_directories)
 
   for p in results:
     results[p] = NormalizeSourcePaths(results[p])
