@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -43,6 +42,11 @@ class TabListMediator {
     }
 
     /**
+     * An interface to get the title to be used for a tab.
+     */
+    public interface TitleProvider { String getTitle(Tab tab); }
+
+    /**
      * The object to set to TabProperties.THUMBNAIL_FETCHER for the TabGridViewBinder to obtain
      * the thumbnail asynchronously.
      */
@@ -62,7 +66,8 @@ class TabListMediator {
     private final TabListFaviconProvider mTabListFaviconProvider;
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
-    private final TabContentManager mTabContentManager;
+    private final ThumbnailProvider mThumbnailProvider;
+    private final TitleProvider mTitleProvider;
     private final String mComponentName;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
@@ -130,7 +135,7 @@ class TabListMediator {
         public void onTitleUpdated(Tab updatedTab) {
             int index = mModel.indexFromId(updatedTab.getId());
             if (index == TabModel.INVALID_TAB_INDEX) return;
-            mModel.get(index).set(TabProperties.TITLE, updatedTab.getTitle());
+            mModel.get(index).set(TabProperties.TITLE, mTitleProvider.getTitle(updatedTab));
         }
 
         @Override
@@ -156,18 +161,20 @@ class TabListMediator {
      * @param model The Model to keep state about a list of {@link Tab}s.
      * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
      *                                                 the tabs concerned.
-     * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
+     * @param thumbnailProvider {@link ThumbnailProvider} to provide screenshot related details.
+     * @param titleProvider {@link TitleProvider} for a given tab's title to show.
+     * @param tabListFaviconProvider Provider for all favicon related drawables.
      * @param componentName This is a unique string to identify different components.
      */
-
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager, TabListFaviconProvider tabListFaviconProvider,
-            String componentName) {
+            @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
+            TabListFaviconProvider tabListFaviconProvider, String componentName) {
         mTabModelSelector = tabModelSelector;
-        mTabContentManager = tabContentManager;
+        mThumbnailProvider = thumbnailProvider;
         mModel = model;
         mTabListFaviconProvider = tabListFaviconProvider;
         mComponentName = componentName;
+        mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
@@ -247,7 +254,7 @@ class TabListMediator {
         PropertyModel tabInfo =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
-                        .with(TabProperties.TITLE, tab.getTitle())
+                        .with(TabProperties.TITLE, mTitleProvider.getTitle(tab))
                         .with(TabProperties.FAVICON,
                                 mTabListFaviconProvider.getDefaultFaviconDrawable())
                         .with(TabProperties.IS_SELECTED, isSelected)
@@ -269,9 +276,10 @@ class TabListMediator {
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
 
-        ThumbnailFetcher callback =
-                new ThumbnailFetcher(mTabContentManager::getTabThumbnailWithCallback, tab);
-        tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
+        if (mThumbnailProvider != null) {
+            ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab);
+            tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
+        }
         tab.addObserver(mTabObserver);
     }
 }
