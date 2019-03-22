@@ -945,7 +945,7 @@ CanvasRenderingContext2D::getContextAttributes() const {
     settings->setPixelFormat(PixelFormatAsString());
   }
   if (origin_trials::LowLatencyCanvasEnabled(&canvas()->GetDocument()))
-    settings->setLowLatency(canvas()->LowLatencyEnabled());
+    settings->setDesynchronized(canvas()->LowLatencyEnabled());
   return settings;
 }
 
