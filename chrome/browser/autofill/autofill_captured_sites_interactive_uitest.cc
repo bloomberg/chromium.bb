@@ -64,8 +64,11 @@ struct GetParamAsString {
 base::FilePath GetReplayFilesDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
-    return src_dir.Append(
-        FILE_PATH_LITERAL("chrome/test/data/autofill/captured_sites"));
+    return src_dir.AppendASCII("chrome")
+        .AppendASCII("test")
+        .AppendASCII("data")
+        .AppendASCII("autofill")
+        .AppendASCII("captured_sites");
   } else {
     src_dir.clear();
     return src_dir;

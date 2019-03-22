@@ -340,16 +340,18 @@ bool TestRecipeReplayer::StartWebPageReplayServer(
   args.push_back(base::StringPrintf("--https_port=%d", kHostHttpsPort));
   args.push_back(base::StringPrintf(
       "--inject_scripts=%s,%s",
-      FilePathToUTF8(
-          src_dir.AppendASCII("third_party/catapult/web_page_replay_go")
-              .AppendASCII("deterministic.js")
-              .value())
+      FilePathToUTF8(src_dir.AppendASCII("third_party")
+                         .AppendASCII("catapult")
+                         .AppendASCII("web_page_replay_go")
+                         .AppendASCII("deterministic.js")
+                         .value())
           .c_str(),
-      FilePathToUTF8(
-          src_dir
-              .AppendASCII("chrome/test/data/web_page_replay_go_helper_scripts")
-              .AppendASCII("automation_helper.js")
-              .value())
+      FilePathToUTF8(src_dir.AppendASCII("chrome")
+                         .AppendASCII("test")
+                         .AppendASCII("data")
+                         .AppendASCII("web_page_replay_go_helper_scripts")
+                         .AppendASCII("automation_helper.js")
+                         .value())
           .c_str()));
 
   // Specify the capture file.
@@ -413,27 +415,40 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::LaunchOptions options = base::LaunchOptionsForTest();
-  base::FilePath src_dir;
-  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+  base::FilePath exe_dir;
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &exe_dir)) {
     ADD_FAILURE() << "Failed to extract the Chromium source directory!";
     return false;
   }
 
-  base::FilePath web_page_replay_binary_dir = src_dir.AppendASCII(
-      "third_party/catapult/telemetry/telemetry/internal/bin");
+  base::FilePath web_page_replay_binary_dir = exe_dir.AppendASCII("third_party")
+                                                  .AppendASCII("catapult")
+                                                  .AppendASCII("telemetry")
+                                                  .AppendASCII("telemetry")
+                                                  .AppendASCII("internal")
+                                                  .AppendASCII("bin");
   options.current_directory = web_page_replay_binary_dir;
 
 #if defined(OS_WIN)
-  std::string wpr_executable_binary = "win/x86_64/wpr";
+  base::FilePath wpr_executable_binary =
+      base::FilePath(FILE_PATH_LITERAL("win"))
+          .AppendASCII("x86_64")
+          .AppendASCII("wpr.exe");
 #elif defined(OS_MACOSX)
-  std::string wpr_executable_binary = "mac/x86_64/wpr";
+  base::FilePath wpr_executable_binary =
+      base::FilePath(FILE_PATH_LITERAL("mac"))
+          .AppendASCII("x86_64")
+          .AppendASCII("wpr");
 #elif defined(OS_POSIX)
-  std::string wpr_executable_binary = "linux/x86_64/wpr";
+  base::FilePath wpr_executable_binary =
+      base::FilePath(FILE_PATH_LITERAL("linux"))
+          .AppendASCII("x86_64")
+          .AppendASCII("wpr");
 #else
 #error Plaform is not supported.
 #endif
   base::CommandLine full_command(
-      web_page_replay_binary_dir.AppendASCII(wpr_executable_binary));
+      web_page_replay_binary_dir.Append(wpr_executable_binary));
   full_command.AppendArg(cmd);
 
   // Ask web page replay to use the custom certificate and key files used to
@@ -442,8 +457,18 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
   // test autofill.
   // The custom cert and key files are different from those of the offical
   // WPR releases. The custom files are made to work on iOS.
-  base::FilePath web_page_replay_support_file_dir = src_dir.AppendASCII(
-      "components/test/data/autofill/web_page_replay_support_files");
+  base::FilePath src_dir;
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+    ADD_FAILURE() << "Failed to extract the Chromium source directory!";
+    return false;
+  }
+
+  base::FilePath web_page_replay_support_file_dir =
+      src_dir.AppendASCII("components")
+          .AppendASCII("test")
+          .AppendASCII("data")
+          .AppendASCII("autofill")
+          .AppendASCII("web_page_replay_support_files");
   full_command.AppendArg(base::StringPrintf(
       "--https_cert_file=%s",
       FilePathToUTF8(
