@@ -3867,7 +3867,7 @@ void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
 
-bool RenderFrameImpl::IsPluginHandledExternally(
+bool RenderFrameImpl::MaybeCreateMimeHandlerView(
     const blink::WebElement& plugin_element,
     const blink::WebURL& url,
     const blink::WebString& suggested_mime_type) {

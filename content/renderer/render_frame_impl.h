@@ -1351,7 +1351,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() override;
-  bool IsPluginHandledExternally(
+  bool MaybeCreateMimeHandlerView(
       const blink::WebElement& plugin_element,
       const blink::WebURL& url,
       const blink::WebString& suggested_mime_type) override;

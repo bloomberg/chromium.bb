@@ -102,13 +102,6 @@ PendingNavigationMap* GetPendingFullPageNavigationsMap() {
   return instance.get();
 }
 
-// Returns true if the mime type is relevant to MimeHandlerView.
-bool IsRelevantMimeType(const std::string& mime_type) {
-  // TODO(ekaramad): Figure out what other relevant mime-types are, e.g., for
-  // quick office.
-  return mime_type == "application/pdf" || mime_type == "text/pdf";
-}
-
 PendingFullPageNavigation::PendingFullPageNavigation(
     int32_t frame_tree_node_id,
     const GURL& resource_url,
@@ -182,8 +175,6 @@ void MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     std::string* payload,
     uint32_t* data_pipe_size) {
   if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return;
-  if (!IsRelevantMimeType(mime_type))
     return;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
   auto html_str =

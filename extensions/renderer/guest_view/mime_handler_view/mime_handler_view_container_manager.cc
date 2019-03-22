@@ -75,8 +75,6 @@ void MimeHandlerViewContainerManager::CreateFrameContainer(
     const GURL& resource_url,
     const std::string& mime_type,
     const std::string& view_id) {
-  // TODO(ekaramad): Implement (https://crbug.com/659750).
-  DCHECK(MimeHandlerViewFrameContainer::IsSupportedMimeType(mime_type));
   auto* child = render_frame()->GetWebFrame()->FirstChild();
   if (!child || child->IsWebRemoteFrame())
     return;

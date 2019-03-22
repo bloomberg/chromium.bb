@@ -84,6 +84,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/policy/cloud/policy_header_navigation_throttle.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -5607,3 +5608,15 @@ ChromeContentBrowserClient::GetWideColorGamutHeuristic() const {
   return WideColorGamutHeuristic::kNone;
 }
 #endif
+
+base::flat_set<std::string>
+ChromeContentBrowserClient::GetMimeHandlerViewMimeTypes(
+    content::ResourceContext* resource_context) {
+  base::flat_set<std::string> mime_types;
+#if BUILDFLAG(ENABLE_PLUGINS)
+  auto map = PluginUtils::GetMimeTypeToExtensionIdMap(resource_context);
+  for (const auto& pair : map)
+    mime_types.insert(pair.first);
+#endif
+  return mime_types;
+}

@@ -175,11 +175,17 @@ bool HTMLPlugInElement::RequestObjectInternal(
   if (!AllowedToLoadObject(completed_url, service_type_))
     return false;
 
-  handled_externally_ =
-      GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
-          *this, completed_url,
-          service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
-                                  : service_type_);
+  ObjectContentType object_type = GetObjectContentType();
+  if (object_type == ObjectContentType::kMimeHandlerViewPlugin) {
+    // The plugin might be handled externally using MimeHandlerView. If so, and
+    // there is no ContentFrame(), LoadOrRedirectSubframe call will create one.
+    handled_externally_ =
+        GetDocument().GetFrame()->Client()->MaybeCreateMimeHandlerView(
+            *this, completed_url,
+            service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
+                                    : service_type_);
+  }
+
   if (handled_externally_) {
     ResetInstance();
     // This is a temporary placeholder and the logic around
@@ -187,9 +193,9 @@ bool HTMLPlugInElement::RequestObjectInternal(
     // depending on OOPIFs instead of WebPlugin (https://crbug.com/659750).
     completed_url = BlankURL();
   }
-  ObjectContentType object_type = GetObjectContentType();
   if (object_type == ObjectContentType::kFrame ||
-      object_type == ObjectContentType::kImage || handled_externally_) {
+      object_type == ObjectContentType::kImage ||
+      object_type == ObjectContentType::kMimeHandlerViewPlugin) {
     if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
       // During lazy reattaching, the plugin element loses EmbeddedContentView.
       // Since the ContentFrame() is not torn down the options here are to
@@ -541,6 +547,11 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
   PluginData* plugin_data = GetDocument().GetFrame()->GetPluginData();
   bool plugin_supports_mime_type =
       plugin_data && plugin_data->SupportsMimeType(mime_type);
+  if (plugin_supports_mime_type &&
+      plugin_data->IsMimeHandlerViewMimeType(mime_type) &&
+      RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
+    return ObjectContentType::kMimeHandlerViewPlugin;
+  }
 
   if (MIMETypeRegistry::IsSupportedImageMIMEType(mime_type)) {
     return should_prefer_plug_ins_for_images_ && plugin_supports_mime_type

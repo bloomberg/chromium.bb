@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
     // The associated crash is due to handling an IPC which is only used on the
     // frame-based MimeHandlerView.
   }
-  RunTest("test_iframe.html");
+  RunTest("test_iframe_basic.html");
   auto* guest_view = GuestViewBase::FromWebContents(
       GetGuestViewManager()->WaitForSingleGuestCreated());
   ASSERT_TRUE(guest_view);
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
   RunTest("test_postmessage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
   RunTest("testBasic.csv");
 }
 

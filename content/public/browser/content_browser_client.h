@@ -1538,6 +1538,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns kNone by default.
   virtual WideColorGamutHeuristic GetWideColorGamutHeuristic() const;
 #endif
+
+  // Obtains the list of MIME types that are handled by a MimeHandlerView.
+  virtual base::flat_set<std::string> GetMimeHandlerViewMimeTypes(
+      ResourceContext* resource_context);
 };
 
 }  // namespace content

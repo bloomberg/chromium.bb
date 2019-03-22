@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "content/browser/plugin_service_impl.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -55,6 +57,9 @@ void PluginRegistryImpl::GetPluginsComplete(
     const std::vector<WebPluginInfo>& all_plugins) {
   PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
   std::vector<blink::mojom::PluginInfoPtr> plugins;
+  base::flat_set<std::string> mime_handler_view_mime_types =
+      GetContentClient()->browser()->GetMimeHandlerViewMimeTypes(
+          resource_context_);
 
   const int child_process_id = -1;
   const int routing_id = MSG_ROUTING_NONE;
@@ -71,12 +76,17 @@ void PluginRegistryImpl::GetPluginsComplete(
       plugin_blink->description = plugin.desc;
       plugin_blink->filename = plugin.path.BaseName();
       plugin_blink->background_color = plugin.background_color;
+      plugin_blink->may_use_mime_handler_view = false;
       for (const auto& mime_type : plugin.mime_types) {
         auto mime_type_blink = blink::mojom::PluginMimeType::New();
         mime_type_blink->mime_type = mime_type.mime_type;
         mime_type_blink->description = mime_type.description;
         mime_type_blink->file_extensions = mime_type.file_extensions;
         plugin_blink->mime_types.push_back(std::move(mime_type_blink));
+        if (!plugin_blink->may_use_mime_handler_view) {
+          plugin_blink->may_use_mime_handler_view = base::ContainsKey(
+              mime_handler_view_mime_types, mime_type.mime_type);
+        }
       }
       plugins.push_back(std::move(plugin_blink));
     }

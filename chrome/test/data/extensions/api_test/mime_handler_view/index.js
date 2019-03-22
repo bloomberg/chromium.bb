@@ -98,6 +98,13 @@ var tests = [
     Promise.all([printMessageArrived, contentRead]).then(chrome.test.succeed);
   },
 
+  function testIframeBasic() {
+    checkStreamDetails('testIframeBasic.csv', true);
+    fetchUrl(streamDetails.streamUrl)
+        .then(expectSuccessfulRead)
+        .then(chrome.test.succeed);
+  },
+
   function testAbort() {
     checkStreamDetails('testAbort.csv', false);
     chrome.mimeHandlerPrivate.abortStream(function() {
