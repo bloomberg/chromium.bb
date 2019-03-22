@@ -41,7 +41,10 @@ class SimpleThreadScheduler : public ThreadScheduler {
                                Thread::IdleTask) override;
 
   // Do nothing (the observer won't get notified).
-  void AddRAILModeObserver(WebRAILModeObserver*) override;
+  void AddRAILModeObserver(RAILModeObserver*) override;
+
+  // Do nothing.
+  void RemoveRAILModeObserver(RAILModeObserver const*) override;
 
   // Return the thread task runner (there's no separate task runner for them).
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;

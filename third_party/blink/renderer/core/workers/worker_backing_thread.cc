@@ -56,10 +56,6 @@ void MemoryPressureNotificationToWorkerThreadIsolates(
   WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(level);
 }
 
-void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode rail_mode) {
-  WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(rail_mode);
-}
-
 WorkerBackingThread::WorkerBackingThread(const ThreadCreationParams& params)
     : backing_thread_(std::make_unique<WebThreadSupportingGC>(params)) {}
 
@@ -123,14 +119,6 @@ void WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(
   MutexLocker lock(IsolatesMutex());
   for (v8::Isolate* isolate : Isolates())
     isolate->MemoryPressureNotification(level);
-}
-
-// static
-void WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(
-    v8::RAILMode rail_mode) {
-  MutexLocker lock(IsolatesMutex());
-  for (v8::Isolate* isolate : Isolates())
-    isolate->SetRAILMode(rail_mode);
 }
 
 }  // namespace blink

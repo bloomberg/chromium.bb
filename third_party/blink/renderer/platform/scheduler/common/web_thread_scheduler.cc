@@ -178,10 +178,6 @@ void WebThreadScheduler::SetTopLevelBlameContext(
   NOTREACHED();
 }
 
-void WebThreadScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {
-  NOTREACHED();
-}
-
 void WebThreadScheduler::SetRendererProcessType(WebRendererProcessType type) {
   NOTREACHED();
 }

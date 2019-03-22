@@ -1201,7 +1201,6 @@ void RenderThreadImpl::InitializeWebKit(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
-  main_thread_scheduler_->AddRAILModeObserver(this);
 
   main_thread_compositor_task_runner_ =
       main_thread_scheduler_->CompositorTaskRunner();
@@ -1593,11 +1592,6 @@ bool RenderThreadImpl::UsingSynchronousCompositing() {
   return GetContentClient()->UsingSynchronousCompositing();
 }
 #endif
-
-void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
-  blink::MainThreadIsolate()->SetRAILMode(rail_mode);
-  blink::SetRAILModeOnWorkerThreadIsolates(rail_mode);
-}
 
 bool RenderThreadImpl::IsMainThread() {
   return !!current();

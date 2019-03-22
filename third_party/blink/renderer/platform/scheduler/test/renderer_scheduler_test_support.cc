@@ -174,7 +174,8 @@ class SimpleThreadScheduler : public ThreadScheduler {
   void PostIdleTask(const base::Location&, Thread::IdleTask) override {}
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override {}
-  void AddRAILModeObserver(WebRAILModeObserver*) override {}
+  void AddRAILModeObserver(RAILModeObserver*) override {}
+  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
   std::unique_ptr<WebThreadScheduler::RendererPauseHandle> PauseScheduler()
       override {
     return nullptr;

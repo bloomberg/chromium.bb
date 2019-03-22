@@ -77,6 +77,21 @@ base::TimeDelta GetWakeUpDuration() {
   return base::TimeDelta::FromMilliseconds(duration_ms);
 }
 
+v8::RAILMode RAILModeToV8RAILMode(RAILMode rail_mode) {
+  switch (rail_mode) {
+    case RAILMode::kResponse:
+      return v8::RAILMode::PERFORMANCE_RESPONSE;
+    case RAILMode::kAnimation:
+      return v8::RAILMode::PERFORMANCE_ANIMATION;
+    case RAILMode::kIdle:
+      return v8::RAILMode::PERFORMANCE_IDLE;
+    case RAILMode::kLoad:
+      return v8::RAILMode::PERFORMANCE_LOAD;
+    default:
+      NOTREACHED();
+  }
+}
+
 const char* BackgroundStateToString(bool is_backgrounded) {
   if (is_backgrounded) {
     return "renderer_backgrounded";
@@ -1382,13 +1397,13 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
           kFastCompositingIdleTimeThreshold;
 
   Policy new_policy;
-  new_policy.rail_mode() = v8::PERFORMANCE_ANIMATION;
+  new_policy.rail_mode() = RAILMode::kAnimation;
   new_policy.use_case() = main_thread_only().current_use_case;
 
   switch (new_policy.use_case()) {
     case UseCase::kCompositorGesture:
       if (main_thread_only().blocking_input_expected_soon) {
-        new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
+        new_policy.rail_mode() = RAILMode::kResponse;
         new_policy.compositor_priority() =
             TaskQueue::QueuePriority::kHighestPriority;
       } else {
@@ -1406,7 +1421,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
                                              ? TaskQueue::kHighestPriority
                                              : TaskQueue::kNormalPriority;
       if (main_thread_only().blocking_input_expected_soon)
-        new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
+        new_policy.rail_mode() = RAILMode::kResponse;
       break;
 
     case UseCase::kMainThreadCustomInputHandling:
@@ -1428,13 +1443,13 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy.compositor_priority() =
           TaskQueue::QueuePriority::kHighestPriority;
       if (main_thread_only().blocking_input_expected_soon)
-        new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
+        new_policy.rail_mode() = RAILMode::kResponse;
       break;
 
     case UseCase::kTouchstart:
       new_policy.compositor_priority() =
           TaskQueue::QueuePriority::kHighestPriority;
-      new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
+      new_policy.rail_mode() = RAILMode::kResponse;
       new_policy.loading_queue_policy().is_deferred = true;
       new_policy.timer_queue_policy().is_deferred = true;
       break;
@@ -1444,12 +1459,12 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // driven gesture.
       if (main_thread_only().blocking_input_expected_soon &&
           any_thread().last_gesture_was_compositor_driven) {
-        new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
+        new_policy.rail_mode() = RAILMode::kResponse;
       }
       break;
 
     case UseCase::kLoading:
-      new_policy.rail_mode() = v8::PERFORMANCE_LOAD;
+      new_policy.rail_mode() = RAILMode::kLoad;
       // TODO(skyostil): Experiment with increasing loading and default queue
       // priorities and throttling rendering frame rate.
       break;
@@ -1460,7 +1475,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   // TODO(skyostil): Add an idle state for foreground tabs too.
   if (main_thread_only().renderer_hidden)
-    new_policy.rail_mode() = v8::PERFORMANCE_IDLE;
+    new_policy.rail_mode() = RAILMode::kIdle;
 
   if (main_thread_only().renderer_pause_count != 0) {
     new_policy.loading_queue_policy().is_paused = true;
@@ -1506,6 +1521,9 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   main_thread_only().rail_mode_for_tracing = new_policy.rail_mode();
   if (new_policy.rail_mode() != main_thread_only().current_policy.rail_mode()) {
+    if (isolate()) {
+      isolate()->SetRAILMode(RAILModeToV8RAILMode(new_policy.rail_mode()));
+    }
     for (auto& observer : main_thread_only().rail_mode_observers) {
       observer.OnRAILModeChanged(new_policy.rail_mode());
     }
@@ -2011,7 +2029,7 @@ void MainThreadSchedulerImpl::TaskQueuePolicy::AsValueInto(
 }
 
 MainThreadSchedulerImpl::Policy::Policy()
-    : rail_mode_(v8::PERFORMANCE_ANIMATION),
+    : rail_mode_(RAILMode::kAnimation),
       should_disable_throttling_(false),
       frozen_when_backgrounded_(false),
       compositor_priority_(
@@ -2189,10 +2207,14 @@ void MainThreadSchedulerImpl::SetTopLevelBlameContext(
   ipc_task_queue_->SetBlameContext(blame_context);
 }
 
-void MainThreadSchedulerImpl::AddRAILModeObserver(
-    WebRAILModeObserver* observer) {
+void MainThreadSchedulerImpl::AddRAILModeObserver(RAILModeObserver* observer) {
   main_thread_only().rail_mode_observers.AddObserver(observer);
   observer->OnRAILModeChanged(main_thread_only().current_policy.rail_mode());
+}
+
+void MainThreadSchedulerImpl::RemoveRAILModeObserver(
+    RAILModeObserver const* observer) {
+  main_thread_only().rail_mode_observers.RemoveObserver(observer);
 }
 
 void MainThreadSchedulerImpl::SetRendererProcessType(
@@ -2652,15 +2674,15 @@ const char* MainThreadSchedulerImpl::UseCaseToString(UseCase use_case) {
 }
 
 // static
-const char* MainThreadSchedulerImpl::RAILModeToString(v8::RAILMode rail_mode) {
+const char* MainThreadSchedulerImpl::RAILModeToString(RAILMode rail_mode) {
   switch (rail_mode) {
-    case v8::PERFORMANCE_RESPONSE:
+    case RAILMode::kResponse:
       return "response";
-    case v8::PERFORMANCE_ANIMATION:
+    case RAILMode::kAnimation:
       return "animation";
-    case v8::PERFORMANCE_IDLE:
+    case RAILMode::kIdle:
       return "idle";
-    case v8::PERFORMANCE_LOAD:
+    case RAILMode::kLoad:
       return "load";
     default:
       NOTREACHED();

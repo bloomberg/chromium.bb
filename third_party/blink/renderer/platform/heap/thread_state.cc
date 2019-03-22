@@ -194,9 +194,9 @@ ThreadState::ThreadState()
   heap_ = std::make_unique<ThreadHeap>(this);
 }
 
-// Implementation for WebRAILModeObserver
-void ThreadState::OnRAILModeChanged(v8::RAILMode new_mode) {
-  should_optimize_for_load_time_ = new_mode == v8::RAILMode::PERFORMANCE_LOAD;
+// Implementation for RAILModeObserver
+void ThreadState::OnRAILModeChanged(RAILMode new_mode) {
+  should_optimize_for_load_time_ = new_mode == RAILMode::kLoad;
   // When switching RAIL mode to load we try to avoid incremental marking as
   // the write barrier cost is noticeable on throughput and garbage
   // accumulated during loading is likely to be alive during that phase. The

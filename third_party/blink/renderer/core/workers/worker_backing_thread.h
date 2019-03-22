@@ -49,8 +49,6 @@ class CORE_EXPORT WorkerBackingThread final {
   static void MemoryPressureNotificationToWorkerThreadIsolates(
       v8::MemoryPressureLevel);
 
-  static void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode);
-
  private:
   std::unique_ptr<WebThreadSupportingGC> backing_thread_;
   v8::Isolate* isolate_ = nullptr;

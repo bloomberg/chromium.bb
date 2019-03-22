@@ -218,13 +218,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   virtual void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context);
 
-  // The renderer scheduler maintains an estimated RAIL mode[1]. This observer
-  // can be used to get notified when the mode changes. The observer will be
-  // called on the main thread and must outlive this class.
-  // [1]
-  // https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail
-  virtual void AddRAILModeObserver(WebRAILModeObserver* observer);
-
   // Sets the kind of renderer process. Should be called on the main thread
   // once.
   virtual void SetRendererProcessType(WebRendererProcessType type);
