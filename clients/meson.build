@@ -236,7 +236,7 @@ demo_clients = [
 			text_input_unstable_v1_client_protocol_h,
 			text_input_unstable_v1_protocol_c,
 		],
-		'deps': [ 'pangocairo' ]
+		'deps': [ 'pangocairo', 'gobject-2.0' ]
 	},
 	{ 'basename': 'eventdemo' },
 	{ 'basename': 'flower' },
