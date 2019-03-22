@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
@@ -36,9 +37,19 @@ AssistantClient::AssistantClient()
 AssistantClient::~AssistantClient() {
   DCHECK(g_instance);
   g_instance = nullptr;
+
+  if (identity_manager_)
+    identity_manager_->RemoveObserver(this);
 }
 
 void AssistantClient::MaybeInit(Profile* profile) {
+  if (!profile_) {
+    profile_ = profile;
+    identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
+    identity_manager_->AddObserver(this);
+  }
+  DCHECK_EQ(profile_, profile);
+
   if (assistant::IsAssistantAllowedForProfile(profile) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return;
@@ -85,4 +96,11 @@ void AssistantClient::OnAssistantStatusChanged(bool running) {
 void AssistantClient::RequestAssistantStructure(
     RequestAssistantStructureCallback callback) {
   RequestAssistantStructureForActiveBrowserWindow(std::move(callback));
+}
+
+void AssistantClient::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
+  if (initialized_)
+    return;
+
+  MaybeInit(profile_);
 }

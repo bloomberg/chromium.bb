@@ -647,5 +647,10 @@ bool ShouldSkipOobePostLogin() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kOobeSkipPostLogin);
 }
 
+bool IsGaiaServicesDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableGaiaServices);
+}
+
 }  // namespace switches
 }  // namespace chromeos

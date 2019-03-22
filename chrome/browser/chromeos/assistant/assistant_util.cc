@@ -72,7 +72,11 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
   }
 
-  if (!ui::DeviceUsesKeyboardLayout2()) {
+  // Bypass the account type check when using fake gaia login, e.g. in Tast
+  // tests, or the account is logged in a device with a physical Assistant key
+  // on keyboard.
+  if (!chromeos::switches::IsGaiaServicesDisabled() &&
+      !ui::DeviceUsesKeyboardLayout2()) {
     // Only enable non-dasher accounts for devices without physical key.
     bool account_supported = false;
     auto* identity_manager =
