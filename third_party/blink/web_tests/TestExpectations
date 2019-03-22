@@ -3025,6 +3025,7 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-star-allow.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-backgrounds/background-clip/clip-text-dynamic-2.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
