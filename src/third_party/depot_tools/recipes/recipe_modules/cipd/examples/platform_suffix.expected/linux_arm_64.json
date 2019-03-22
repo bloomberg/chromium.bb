@@ -1,0 +1,13 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "linux-arm64"
+    ],
+    "name": "platform_suffix"
+  },
+  {
+    "jsonResult": null,
+    "name": "$result"
+  }
+]

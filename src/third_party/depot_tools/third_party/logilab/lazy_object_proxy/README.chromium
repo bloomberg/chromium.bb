@@ -1,0 +1,11 @@
+URL: https://github.com/ionelmc/python-lazy-object-proxy
+URL: https://pypi.org/project/lazy-object-proxy/#files
+Version: 1.3.1
+License: BSD-2
+License File: LICENSE
+
+Description:
+This directory contains the lazy-object-proxy module, required for pylint.
+
+Local Modifications:
+None

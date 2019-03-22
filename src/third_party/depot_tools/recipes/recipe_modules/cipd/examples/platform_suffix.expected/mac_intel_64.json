@@ -1,0 +1,13 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "mac-amd64"
+    ],
+    "name": "platform_suffix"
+  },
+  {
+    "jsonResult": null,
+    "name": "$result"
+  }
+]

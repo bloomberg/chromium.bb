@@ -1,0 +1,15 @@
+Name: httplib2
+Short Name: httplib2
+URL: https://github.com/httplib2/httplib2
+Version: 0.11.3
+Revision: 70fb0c820d2e8211992b402d34444e4b32a1cb6e
+License: MIT License
+
+Description:
+A comprehensive HTTP client library in Python.
+
+Local Modifications:
+Only python2 version is kept. Test and packaging code stripped.
+
+Notes:
+Required by oauth2client library.
