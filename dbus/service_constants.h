@@ -215,6 +215,17 @@ const char kPluginVmServiceInterface[] =
 const char kPluginVmServiceGetLicenseDataMethod[] =
     "GetLicenseData";
 
+const char kGesturePropertiesServiceName[] =
+    "org.chromium.GesturePropertiesService";
+const char kGesturePropertiesServicePath[] =
+    "/org/chromium/GesturePropertiesService";
+const char kGesturePropertiesServiceInterface[] =
+    "org.chromium.GesturePropertiesServiceInterface";
+const char kGesturePropertiesServiceListDevicesMethod[] = "ListDevices";
+const char kGesturePropertiesServiceListPropertiesMethod[] = "ListProperties";
+const char kGesturePropertiesServiceGetPropertyMethod[] = "GetProperty";
+const char kGesturePropertiesServiceSetPropertyMethod[] = "SetProperty";
+
 }  // namespace chromeos
 
 namespace cromo {
