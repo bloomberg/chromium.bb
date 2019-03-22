@@ -142,6 +142,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int seek_backward_count() const { return seek_backward_count_; }
   int seek_forward_count() const { return seek_forward_count_; }
 
+  void SimulateMediaSessionInfoChanged(mojom::MediaSessionInfoPtr session_info);
   void SimulateMediaSessionActionsChanged(
       const std::vector<mojom::MediaSessionAction>& actions);
   void Flush();

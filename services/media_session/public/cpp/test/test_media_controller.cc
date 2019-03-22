@@ -210,6 +210,14 @@ void TestMediaController::Seek(base::TimeDelta seek_time) {
   }
 }
 
+void TestMediaController::SimulateMediaSessionInfoChanged(
+    mojom::MediaSessionInfoPtr session_info) {
+  observers_.ForAllPtrs(
+      [&session_info](mojom::MediaControllerObserver* observer) {
+        observer->MediaSessionInfoChanged(session_info.Clone());
+      });
+}
+
 void TestMediaController::SimulateMediaSessionActionsChanged(
     const std::vector<mojom::MediaSessionAction>& actions) {
   observers_.ForAllPtrs([&actions](mojom::MediaControllerObserver* observer) {

@@ -67,7 +67,7 @@ class ASH_EXPORT MediaController
 
   // media_session::mojom::MediaControllerObserver:
   void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr session_info) override {}
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
       const base::Optional<media_session::MediaMetadata>& metadata) override {}
   void MediaSessionActionsChanged(
@@ -80,7 +80,9 @@ class ASH_EXPORT MediaController
   FRIEND_TEST_ALL_PREFIXES(MediaSessionAcceleratorTest,
                            MediaGlobalAccelerators_NextTrack);
   FRIEND_TEST_ALL_PREFIXES(MediaSessionAcceleratorTest,
-                           MediaGlobalAccelerators_PlayPause);
+                           MediaGlobalAccelerators_Play);
+  FRIEND_TEST_ALL_PREFIXES(MediaSessionAcceleratorTest,
+                           MediaGlobalAccelerators_Pause);
   FRIEND_TEST_ALL_PREFIXES(MediaSessionAcceleratorTest,
                            MediaGlobalAccelerators_PrevTrack);
   FRIEND_TEST_ALL_PREFIXES(MediaSessionAcceleratorTest,
@@ -106,6 +108,10 @@ class ASH_EXPORT MediaController
   // Whether the active media session currently supports any action that has a
   // media key.
   bool supported_media_session_action_ = false;
+
+  // The info about the current media session. It will be null if there is not
+  // a current session.
+  media_session::mojom::MediaSessionInfoPtr media_session_info_;
 
   // Mojo pointer to the active media session controller.
   media_session::mojom::MediaControllerPtr media_session_controller_ptr_;
