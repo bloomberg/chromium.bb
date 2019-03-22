@@ -147,9 +147,11 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 
   // TODO(nasko): Replace this URL with one with a custom WebUI object that
   // doesn't have restrictive CSP, so the test can successfully add an
-  // iframe and test the actual throttle blocking. Currently the CSP policy
-  // will just block the navigation prior to the throttle being even
-  // invoked. See http://crbug.com/776900.
+  // iframe and test the actual throttle blocking. The default CSP policy
+  // on WebUI objects will just block the navigation prior to the throttle
+  // being even invoked. For now use the blob-internals URL, which is not
+  // backed by WebUI and does not have CSP policy attached to it.
+  // See http://crbug.com/776900.
   GURL chrome_url = GURL(std::string(kChromeUIScheme) + "://" +
                          std::string(kChromeUIBlobInternalsHost));
   EXPECT_TRUE(NavigateToURL(shell(), chrome_url));
@@ -203,6 +205,34 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
     navigation_observer.Wait();
 
     EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+  }
+}
+
+// Verify that a chrome: scheme document cannot add iframes with web content
+// and does not crash if the navigation is blocked by CSP.
+// See https://crbug.com/944086.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       WebFrameInChromeSchemeDisallowedByCSP) {
+  // Use the chrome://gpu WebUI, which has a restrictive CSP disallowing
+  // subframes. This will cause the navigation to fail due to the CSP check
+  // and ensure this behaves the same way as the repros steps in
+  // https://crbug.com/944086.
+  GURL chrome_url = GURL(std::string(kChromeUIScheme) + "://" +
+                         std::string(kChromeUIGpuHost));
+  EXPECT_TRUE(NavigateToURL(shell(), chrome_url));
+  EXPECT_EQ(chrome_url, shell()->web_contents()->GetLastCommittedURL());
+
+  {
+    GURL web_url(embedded_test_server()->GetURL("/title2.html"));
+    TestNavigationObserver navigation_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecJs(
+        shell(), JsReplace("var frame = document.createElement('iframe');\n"
+                           "frame.src = $1;\n"
+                           "document.body.appendChild(frame);\n",
+                           web_url)));
+    navigation_observer.Wait();
+
+    EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
   }
 }
 

@@ -1378,8 +1378,14 @@ void NavigationRequest::OnRequestFailedInternal(
 
   DCHECK(render_frame_host_);
 
-  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host_,
-                                                           common_params_.url);
+  // The check for WebUI should be performed only if error page isolation is
+  // enabled for this failed navigation. It is possible for subframe error page
+  // to be committed in a WebUI process as shown in https://crbug.com/944086.
+  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          frame_tree_node_->IsMainFrame())) {
+    NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+        render_frame_host_, common_params_.url);
+  }
 
   has_stale_copy_in_cache_ = status.exists_in_cache;
 
