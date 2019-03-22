@@ -6,10 +6,10 @@
 
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
-#include <atlsafe.h>
 
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_safearray.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
@@ -38,7 +38,7 @@ namespace ui {
 
 #define EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(safearray, expected_property_values) \
   {                                                                         \
-    EXPECT_EQ(8U, ::SafeArrayGetElemsize(rectangles));                      \
+    EXPECT_EQ(8U, ::SafeArrayGetElemsize(safearray));                       \
     ASSERT_EQ(1u, SafeArrayGetDim(safearray));                              \
     LONG array_lower_bound;                                                 \
     ASSERT_HRESULT_SUCCEEDED(                                               \
@@ -726,12 +726,12 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_HRESULT_SUCCEEDED(
       text_provider->get_DocumentRange(&text_range_provider));
 
-  CComSafeArray<LONG> rectangles;
+  base::win::ScopedSafearray rectangles;
   EXPECT_HRESULT_SUCCEEDED(
-      text_range_provider->GetBoundingRectangles(rectangles.GetSafeArrayPtr()));
+      text_range_provider->GetBoundingRectangles(rectangles.Receive()));
 
   std::vector<double> expected_values = {100, 150, 200, 200};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles, expected_values);
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
 
   Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
@@ -744,11 +744,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_HRESULT_SUCCEEDED(
       document_provider->get_DocumentRange(&document_textrange));
 
-  CComSafeArray<LONG> body_rectangles;
-  EXPECT_HRESULT_SUCCEEDED(document_textrange->GetBoundingRectangles(
-      body_rectangles.GetSafeArrayPtr()));
+  base::win::ScopedSafearray body_rectangles;
+  EXPECT_HRESULT_SUCCEEDED(
+      document_textrange->GetBoundingRectangles(body_rectangles.Receive()));
   expected_values = {100, 150, 200, 200, 200, 250, 100, 100};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(body_rectangles, expected_values);
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(body_rectangles.Get(), expected_values);
 
   AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_data.tree_id);
   AXNodePosition::SetTreeForTesting(nullptr);
