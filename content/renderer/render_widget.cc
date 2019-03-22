@@ -1027,6 +1027,11 @@ void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
     GetWebWidget()->SetCursorVisibilityState(is_visible);
 }
 
+void RenderWidget::OnFallbackCursorModeToggled(bool is_on) {
+  if (GetWebWidget())
+    GetWebWidget()->OnFallbackCursorModeToggled(is_on);
+}
+
 void RenderWidget::OnMouseCaptureLost() {
   if (GetWebWidget())
     GetWebWidget()->MouseCaptureLost();

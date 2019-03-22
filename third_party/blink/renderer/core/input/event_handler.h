@@ -288,6 +288,8 @@ class CORE_EXPORT EventHandler final
 
   void MarkHoverStateDirty();
 
+  void SetIsFallbackCursorModeOn(bool is_on);
+
  private:
   enum NoCursorChangeType { kNoCursorChange };
 

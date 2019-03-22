@@ -265,6 +265,7 @@ void FallbackCursorEventManager::ComputeLockCursor(
 
 void FallbackCursorEventManager::HandleMouseMoveEvent(const WebMouseEvent& e) {
   DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
+  DCHECK(is_fallback_cursor_mode_on_);
 
   InvalidateCurrentScrollableIfNeeded();
   ScrollableArea* scrollable = CurrentScrollingScrollableArea();
@@ -289,6 +290,7 @@ void FallbackCursorEventManager::HandleMouseMoveEvent(const WebMouseEvent& e) {
 
 void FallbackCursorEventManager::HandleMousePressEvent(const WebMouseEvent& e) {
   DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
+  DCHECK(is_fallback_cursor_mode_on_);
 
   ResetCurrentScrollable();
 

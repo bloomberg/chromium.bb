@@ -5,6 +5,9 @@
 package org.chromium.ui.base;
 
 /**
- * Observer Android cursor visibility.
+ * Observer Android cursor state.
  */
-public interface CursorVisibilityObserver { void onCursorVisibilityChanged(boolean visible); }
+public interface CursorObserver {
+    void onCursorVisibilityChanged(boolean visible);
+    void onFallbackCursorModeToggled(boolean isOn);
+}

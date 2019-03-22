@@ -568,6 +568,7 @@ class CONTENT_EXPORT RenderWidget
   void OnSetFocus(bool enable);
   void OnMouseCaptureLost();
   void OnCursorVisibilityChange(bool is_visible);
+  void OnFallbackCursorModeToggled(bool is_on);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnImeSetComposition(
       const base::string16& text,

@@ -2224,11 +2224,15 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 }
 
 void RenderWidgetHostViewAndroid::OnCursorVisibilityChanged(bool visible) {
-  TRACE_EVENT0("browser",
-               "RenderWidgetHostViewAndroid::OnCursorVisibilityChanged");
   DCHECK(observing_root_window_);
   if (host())
-    host()->SendCursorVisibilityState(visible);
+    host()->OnCursorVisibilityStateChanged(visible);
+}
+
+void RenderWidgetHostViewAndroid::OnFallbackCursorModeToggled(bool is_on) {
+  DCHECK(observing_root_window_);
+  if (host())
+    host()->OnFallbackCursorModeToggled(is_on);
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {

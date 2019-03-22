@@ -453,6 +453,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
+  void OnFallbackCursorModeToggled(bool is_on) override;
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;

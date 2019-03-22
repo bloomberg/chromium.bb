@@ -221,6 +221,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnActivityStopped() override;
   void OnActivityStarted() override;
   void OnCursorVisibilityChanged(bool visible) override;
+  void OnFallbackCursorModeToggled(bool is_on) override;
 
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;

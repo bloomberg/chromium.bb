@@ -180,7 +180,7 @@ EventHandler::EventHandler(LocalFrame& frame)
                              this,
                              &EventHandler::ActiveIntervalTimerFired) {
   if (RuntimeEnabledFeatures::FallbackCursorModeEnabled() &&
-      frame.IsLocalRoot()) {
+      frame.IsMainFrame()) {
     fallback_cursor_event_manager_ =
         MakeGarbageCollected<FallbackCursorEventManager>(frame);
   }
@@ -662,6 +662,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
       mev.InnerNode());
 
   if (RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
+    // TODO(crbug.com/944575) Should support oopif.
+    DCHECK(frame_->LocalFrameRoot().IsMainFrame());
     frame_->LocalFrameRoot()
         .GetEventHandler()
         .fallback_cursor_event_manager_->HandleMousePressEvent(mouse_event);
@@ -820,6 +822,8 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
                                                   hovered_node_result);
 
   if (RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
+    // TODO(crbug.com/944575) Should support oopif.
+    DCHECK(frame_->LocalFrameRoot().IsMainFrame());
     frame_->LocalFrameRoot()
         .GetEventHandler()
         .fallback_cursor_event_manager_->HandleMouseMoveEvent(event);
@@ -2320,6 +2324,13 @@ void EventHandler::ReleaseMouseCaptureFromCurrentFrame() {
     subframe->GetEventHandler().ReleaseMouseCaptureFromCurrentFrame();
   pointer_event_manager_->ReleaseMousePointerCapture();
   capturing_subframe_element_ = nullptr;
+}
+
+void EventHandler::SetIsFallbackCursorModeOn(bool is_on) {
+  DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
+  // TODO(crbug.com/944575) Should support oopif.
+  DCHECK(frame_->IsMainFrame());
+  fallback_cursor_event_manager_->SetIsFallbackCursorModeOn(is_on);
 }
 
 }  // namespace blink

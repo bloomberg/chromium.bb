@@ -183,12 +183,19 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         }
     };
 
-    private final CursorVisibilityObserver mCursorVisibilityObserver =
-            new CursorVisibilityObserver() {
+    private final CursorObserver mCursorObserver =
+            new CursorObserver() {
                 @Override
                 public void onCursorVisibilityChanged(boolean visible) {
                     if (mNativeWindowAndroid != 0) {
                         nativeOnCursorVisibilityChanged(mNativeWindowAndroid, visible);
+                    }
+                }
+
+                @Override
+                public void onFallbackCursorModeToggled(boolean isOn) {
+                    if (mNativeWindowAndroid != 0) {
+                        nativeOnFallbackCursorModeToggled(mNativeWindowAndroid, isOn);
                     }
                 }
             };
@@ -270,7 +277,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             display.updateIsDisplayServerWideColorGamut(isScreenWideColorGamut);
         }
 
-        TouchlessEventHandler.addCursorVisibilityObserver(mCursorVisibilityObserver);
+        TouchlessEventHandler.addCursorObserver(mCursorObserver);
     }
 
     @CalledByNative
@@ -663,7 +670,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
         }
 
-        TouchlessEventHandler.removeCursorVisibilityObserver(mCursorVisibilityObserver);
+        TouchlessEventHandler.removeCursorObserver(mCursorObserver);
     }
 
     /**
@@ -968,6 +975,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private native void nativeOnUpdateRefreshRate(long nativeWindowAndroid, float refreshRate);
     private native void nativeDestroy(long nativeWindowAndroid);
     private native void nativeOnCursorVisibilityChanged(long nativeWindowAndroid, boolean visible);
+    private native void nativeOnFallbackCursorModeToggled(long nativeWindowAndroid, boolean isOn);
     private native void nativeOnSupportedRefreshRatesUpdated(
             long nativeWindowAndroid, float[] supportedRefreshRates);
 }

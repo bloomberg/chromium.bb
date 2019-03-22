@@ -57,6 +57,10 @@ class FallbackCursorEventManagerTest : public RenderingTest {
     return *chrome_client_;
   }
 
+  void TurnOnFallbackCursorMode() {
+    GetDocument().GetFrame()->GetEventHandler().SetIsFallbackCursorModeOn(true);
+  }
+
   void MouseMove(int x, int y) {
     WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(x, y),
                         WebFloatPoint(x, y),
@@ -91,6 +95,7 @@ class FallbackCursorEventManagerTest : public RenderingTest {
 
 TEST_F(FallbackCursorEventManagerTest, RootFrameNotScrollable) {
   SetBodyInnerHTML("A");
+  TurnOnFallbackCursorMode();
 
   // Mouse move to edge.
   MouseMove(0, 0);
@@ -119,6 +124,7 @@ TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnRootFrame) {
     </style>
     <div class='big'></div>
   )HTML");
+  TurnOnFallbackCursorMode();
 
   // Move below the scroll down line.
   MouseMove(100, 500);
@@ -153,6 +159,7 @@ TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnDiv) {
       <div class='big'></div>
     </div>
   )HTML");
+  TurnOnFallbackCursorMode();
 
   // Move below the scroll down line but before mouse down.
   MouseMove(50, 80);
@@ -208,6 +215,7 @@ TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnIFrame) {
     </style>
     <div class='big'></div>
   )HTML");
+  TurnOnFallbackCursorMode();
 
   // Move below the scroll down line but before mouse down.
   MouseMove(50, 80);
@@ -251,6 +259,7 @@ TEST_F(FallbackCursorEventManagerTest, MouseDownOnEditor) {
     <div class='big' contenteditable='true'>
     </div>
   )HTML");
+  TurnOnFallbackCursorMode();
 
   MouseMove(50, 80);
   MouseDown(50, 80);

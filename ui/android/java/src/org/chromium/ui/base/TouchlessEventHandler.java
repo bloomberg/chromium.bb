@@ -31,15 +31,15 @@ public class TouchlessEventHandler {
         return sInstance.onUnconsumedKeyboardEventAckInternal(nativeCode);
     }
 
-    public static void addCursorVisibilityObserver(CursorVisibilityObserver observer) {
+    public static void addCursorObserver(CursorObserver observer) {
         if (sInstance != null) {
-            sInstance.addCursorVisibilityObserverInternal(observer);
+            sInstance.addCursorObserverInternal(observer);
         }
     }
 
-    public static void removeCursorVisibilityObserver(CursorVisibilityObserver observer) {
+    public static void removeCursorObserver(CursorObserver observer) {
         if (sInstance != null) {
-            sInstance.removeCursorVisibilityObserverInternal(observer);
+            sInstance.removeCursorObserverInternal(observer);
         }
     }
 
@@ -70,9 +70,9 @@ public class TouchlessEventHandler {
         return false;
     }
 
-    protected void addCursorVisibilityObserverInternal(CursorVisibilityObserver observer) {}
+    protected void addCursorObserverInternal(CursorObserver observer) {}
 
-    protected void removeCursorVisibilityObserverInternal(CursorVisibilityObserver observer) {}
+    protected void removeCursorObserverInternal(CursorObserver observer) {}
 
     protected void onDidFinishNavigationInternal() {}
 
