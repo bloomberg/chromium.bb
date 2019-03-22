@@ -2098,8 +2098,10 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   if (result.IsEmpty() || !result->IsString())
     return;
   String script_result = ToCoreString(v8::Local<v8::String>::Cast(result));
-  GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
-      script_result, owner_document);
+  if (!GetFrame()->GetNavigationScheduler().LocationChangePending()) {
+    GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
+        script_result, owner_document);
+  }
 }
 
 WebNavigationControl::FallbackContentResult

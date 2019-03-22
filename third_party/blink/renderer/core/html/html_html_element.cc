@@ -54,8 +54,6 @@ void HTMLHtmlElement::InsertedByParser() {
     return;
 
   MaybeSetupApplicationCache();
-  if (!GetDocument().Parser())
-    return;
 
   GetDocument().Parser()->DocumentElementAvailable();
   if (GetDocument().GetFrame()) {
