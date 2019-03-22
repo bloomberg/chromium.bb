@@ -665,6 +665,7 @@ class FakeWebSocketHandshakeStreamCreateHelper
 bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
   switch (entry.type) {
     case NetLogEventType::HTTP_CACHE_GET_BACKEND:
+    case NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY:
     case NetLogEventType::HTTP_CACHE_OPEN_ENTRY:
     case NetLogEventType::HTTP_CACHE_CREATE_ENTRY:
     case NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY:
@@ -787,24 +788,20 @@ TEST_F(HttpCacheTest, SimpleGETNoDiskCache) {
                                  log.bound(), &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  // (We attempted to both Open and Create entries, but both failed).
+  // (We attempted to OpenOrCreate entries, but fail).
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
-  EXPECT_EQ(6u, entries.size());
+  EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
                                     NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
       LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
-                                    NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
-                                    NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
-                                  NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      entries, 2, NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(
+      entries, 3, NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY));
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -965,22 +962,18 @@ TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
-  EXPECT_EQ(8u, entries.size());
+  EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
                                     NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
       LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
-                                    NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      entries, 2, NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(
+      entries, 3, NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY));
   EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
-                                    NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
-                                  NetLogEventType::HTTP_CACHE_CREATE_ENTRY));
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 6,
                                     NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
-  EXPECT_TRUE(LogContainsEndEvent(entries, 7,
+  EXPECT_TRUE(LogContainsEndEvent(entries, 5,
                                   NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
 
   TestLoadTimingNetworkRequest(load_timing_info);
@@ -1003,10 +996,10 @@ TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
                                     NetLogEventType::HTTP_CACHE_GET_BACKEND));
   EXPECT_TRUE(
       LogContainsEndEvent(entries, 1, NetLogEventType::HTTP_CACHE_GET_BACKEND));
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 2,
-                                    NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
-  EXPECT_TRUE(
-      LogContainsEndEvent(entries, 3, NetLogEventType::HTTP_CACHE_OPEN_ENTRY));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      entries, 2, NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY));
+  EXPECT_TRUE(LogContainsEndEvent(
+      entries, 3, NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY));
   EXPECT_TRUE(LogContainsBeginEvent(entries, 4,
                                     NetLogEventType::HTTP_CACHE_ADD_TO_ENTRY));
   EXPECT_TRUE(LogContainsEndEvent(entries, 5,
@@ -1654,6 +1647,41 @@ TEST_F(HttpCacheTest, RangeGET_FullAfterPartialReuse) {
     EXPECT_EQ(2, cache.disk_cache()->open_count());
     EXPECT_EQ(1, cache.disk_cache()->create_count());
   }
+}
+
+// Tests that a range transaction is still usable even if it's unable to access
+// the cache.
+TEST_F(HttpCacheTest, RangeGET_FailedCacheAccess) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  MockHttpRequest request(transaction);
+
+  auto c = std::make_unique<Context>();
+  c->result = cache.CreateTransaction(&c->trans);
+  ASSERT_THAT(c->result, IsOk());
+  EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+  cache.disk_cache()->set_fail_requests(true);
+
+  c->result =
+      c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(cache.IsWriterPresent(kRangeGET_TransactionOK.url));
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(0, cache.disk_cache()->create_count());
+
+  c->result = c->callback.WaitForResult();
+
+  ReadAndVerifyTransaction(c->trans.get(), kRangeGET_TransactionOK);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(0, cache.disk_cache()->create_count());
 }
 
 // Tests that we can have parallel validation on range requests.
@@ -2498,6 +2526,69 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationRestartDoneHeaders) {
 
   EXPECT_EQ(4, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// A transaction that fails to validate an entry, while attempting to write
+// the response, should still get data to its consumer even if the attempt to
+// create a new entry fails.
+TEST_F(HttpCacheTest, SimpleGET_ValidationFailureWithCreateFailure) {
+  MockHttpCache cache;
+  MockHttpRequest request(kSimpleGET_Transaction);
+  request.load_flags |= LOAD_VALIDATE_CACHE;
+  std::vector<std::unique_ptr<Context>> context_list;
+
+  // Create and run the first, successful, transaction to prime the cache.
+  context_list.push_back(std::make_unique<Context>());
+  auto& c1 = context_list.back();
+  c1->result = cache.CreateTransaction(&c1->trans);
+  ASSERT_THAT(c1->result, IsOk());
+  EXPECT_EQ(LOAD_STATE_IDLE, c1->trans->GetLoadState());
+  c1->result =
+      c1->trans->Start(&request, c1->callback.callback(), NetLogWithSource());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_CACHE, c1->trans->GetLoadState());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(cache.IsWriterPresent(kSimpleGET_Transaction.url));
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Create and start the second transaction, which will fail its validation
+  // during the call to RunUntilIdle().
+  context_list.push_back(std::make_unique<Context>());
+  auto& c2 = context_list.back();
+  c2->result = cache.CreateTransaction(&c2->trans);
+  ASSERT_THAT(c2->result, IsOk());
+  EXPECT_EQ(LOAD_STATE_IDLE, c2->trans->GetLoadState());
+  c2->result =
+      c2->trans->Start(&request, c2->callback.callback(), NetLogWithSource());
+  // Expect idle at this point because we should be able to find and use the
+  // Active Entry that c1 created instead of waiting on the cache to open the
+  // entry.
+  EXPECT_EQ(LOAD_STATE_IDLE, c2->trans->GetLoadState());
+
+  cache.disk_cache()->set_fail_requests(true);
+  // The transaction, c2, should now attempt to validate the entry, fail when it
+  // receives a 200 OK response, attempt to create a new entry, fail to create,
+  // and then continue onward without an entry.
+  base::RunLoop().RunUntilIdle();
+
+  // All requests depend on the writer, and the writer is between Start and
+  // Read, i.e. idle.
+  for (auto& context : context_list) {
+    EXPECT_EQ(LOAD_STATE_IDLE, context->trans->GetLoadState());
+  }
+
+  // Confirm that both transactions correctly Read() the data.
+  for (auto& context : context_list) {
+    if (context->result == ERR_IO_PENDING)
+      context->result = context->callback.WaitForResult();
+    ReadAndVerifyTransaction(context->trans.get(), kSimpleGET_Transaction);
+  }
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
