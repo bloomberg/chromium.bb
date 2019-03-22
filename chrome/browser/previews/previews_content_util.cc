@@ -223,6 +223,9 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     return previews_state;
   }
 
+  if (!is_data_saver_user)
+    return previews_state;
+
   // Offline previews state should not be updated during a redirect. The Offline
   // Previews URLLoader will not receive an updated PreviewsState, so the state
   // should stay consistent throughout the navigation.
@@ -238,12 +241,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews_state |= content::OFFLINE_PAGE_ON;
   }
 
-  // Only offline previews can be shown for non-data saver users.
-  if (!is_data_saver_user)
-    return previews_state;
-
   // Check PageHint preview types first.
-
   bool should_load_page_hints = false;
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
