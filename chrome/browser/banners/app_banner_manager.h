@@ -152,9 +152,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // this returns and consumes the animation prompt if it is available.
   bool MaybeConsumeInstallAnimation();
 
-  // Requests an app banner. If |is_debug_mode| is true, any failure in the
-  // pipeline will be reported to the devtools console.
-  virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
+  // Requests an app banner.
+  virtual void RequestAppBanner(const GURL& validated_url);
 
   // Informs the page that it has been installed with appinstalled event and
   // performs logging related to the app installation. Appinstalled event is
@@ -223,13 +222,12 @@ class AppBannerManager : public content::WebContentsObserver,
   // alerting websites that a banner is about to be created.
   virtual std::string GetBannerType();
 
-  // Returns true if |has_sufficient_engagement_| is true or IsDebugMode()
-  // returns true.
+  // Returns true if |has_sufficient_engagement_| is true or
+  // ShouldBypassEngagementChecks() returns true.
   bool HasSufficientEngagement() const;
 
-  // Returns true if |triggered_by_devtools_| is true or the
-  // kBypassAppBannerEngagementChecks flag is set.
-  bool IsDebugMode() const;
+  // Returns true if the kBypassAppBannerEngagementChecks flag is set.
+  bool ShouldBypassEngagementChecks() const;
 
   // Returns true if the webapp at |start_url| has already been installed, or
   // should be considered installed. On Android, we rely on a heuristic that
@@ -386,9 +384,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // triggering the pipeline until the load is complete.
   bool has_sufficient_engagement_;
   bool load_finished_;
-
-  // Whether the current flow was begun via devtools.
-  bool triggered_by_devtools_;
 
   std::unique_ptr<StatusReporter> status_reporter_;
   bool install_animation_pending_;

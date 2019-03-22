@@ -116,13 +116,12 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
       base::BindOnce(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
 }
 
-void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
-                                               bool is_debug_mode) {
+void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!Java_AppBannerManager_isEnabledForTab(env, java_banner_manager_))
     return;
 
-  AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
+  AppBannerManager::RequestAppBanner(validated_url);
 }
 
 void AppBannerManagerAndroid::SendBannerDismissed() {
