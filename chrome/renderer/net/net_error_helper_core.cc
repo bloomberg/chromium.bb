@@ -46,9 +46,6 @@
 
 namespace {
 
-using OfflineContentOnNetErrorFeatureState =
-    error_page::LocalizedError::OfflineContentOnNetErrorFeatureState;
-
 // |NetErrorNavigationCorrectionTypes| enum id for Web search query.
 // Other correction types uses the |kCorrectionResourceTable| array order.
 const int kWebSearchQueryUMAId = 100;
@@ -651,16 +648,11 @@ void NetErrorHelperCore::ErrorPageLoadedWithFinalErrorCode() {
 
 #if defined(OS_ANDROID)
   // The fetch functions shouldn't be triggered multiple times per page load.
-  if (page_info->page_state.offline_content_feature_state ==
-      OfflineContentOnNetErrorFeatureState::kEnabledList) {
+  if (page_info->page_state.offline_content_feature_enabled) {
     available_content_helper_.FetchAvailableContent(base::BindOnce(
         &Delegate::OfflineContentAvailable, base::Unretained(delegate_)));
-  } else if (page_info->page_state.offline_content_feature_state ==
-             OfflineContentOnNetErrorFeatureState::kEnabledSummary) {
-    available_content_helper_.FetchSummary(
-        base::BindOnce(&Delegate::OfflineContentSummaryAvailable,
-                       base::Unretained(delegate_)));
   }
+
   // |TrySchedule()| shouldn't be called more than once per page.
   if (page_info->page_state.auto_fetch_allowed) {
     page_auto_fetcher_helper_->TrySchedule(

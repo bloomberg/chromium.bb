@@ -77,8 +77,6 @@ using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
 using error_page::LocalizedError;
-using OfflineContentOnNetErrorFeatureState =
-    LocalizedError::OfflineContentOnNetErrorFeatureState;
 
 namespace {
 
@@ -99,21 +97,12 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 }
 
 #if defined(OS_ANDROID)
-OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
-  if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI))
-    return OfflineContentOnNetErrorFeatureState::kDisabled;
-  const std::string alternate_ui_name = base::GetFieldTrialParamValueByFeature(
-      features::kNewNetErrorPageUI,
-      features::kNewNetErrorPageUIAlternateParameterName);
-  if (alternate_ui_name ==
-      features::kNewNetErrorPageUIAlternateContentPreview) {
-    return OfflineContentOnNetErrorFeatureState::kEnabledSummary;
-  }
-  return OfflineContentOnNetErrorFeatureState::kEnabledList;
+bool IsOfflineContentOnNetErrorFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kNewNetErrorPageUI);
 }
 #else   // OS_ANDROID
-OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
-  return OfflineContentOnNetErrorFeatureState::kDisabled;
+bool IsOfflineContentOnNetErrorFeatureEnabled() {
+  return false;
 }
 #endif  // OS_ANDROID
 
@@ -121,8 +110,7 @@ OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
 bool IsAutoFetchFeatureEnabled() {
   // This feature is incompatible with OfflineContentOnNetError, so don't allow
   // both.
-  return GetOfflineContentOnNetErrorFeatureState() ==
-             OfflineContentOnNetErrorFeatureState::kDisabled &&
+  return !IsOfflineContentOnNetErrorFeatureEnabled() &&
          base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
 }
 #else   // OS_ANDROID
@@ -400,7 +388,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
       error.reason(), error.domain(), error.url(), is_failed_post,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
-      GetOfflineContentOnNetErrorFeatureState(), IsAutoFetchFeatureEnabled(),
+      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
       RenderThread::Get()->GetLocale(), std::move(params));
   DCHECK(!template_html.empty()) << "unable to load template.";
   // "t" is the id of the template's root node.
@@ -437,7 +425,7 @@ LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
       error.reason(), error.domain(), error.url(), is_failed_post,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
-      GetOfflineContentOnNetErrorFeatureState(), IsAutoFetchFeatureEnabled(),
+      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
       RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>());
 
   std::string json;
@@ -564,17 +552,6 @@ void NetErrorHelper::OfflineContentAvailable(
                       offline_content_json, ");"})));
   }
 #endif
-}
-
-void NetErrorHelper::OfflineContentSummaryAvailable(
-    const std::string& offline_content_summary_json) {
-#if defined(OS_ANDROID)
-  if (!offline_content_summary_json.empty()) {
-    render_frame()->ExecuteJavaScript(
-        base::UTF8ToUTF16(base::StrCat({"offlineContentSummaryAvailable(",
-                                        offline_content_summary_json, ");"})));
-  }
-#endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)

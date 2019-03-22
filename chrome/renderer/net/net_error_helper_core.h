@@ -129,10 +129,6 @@ class NetErrorHelperCore {
         bool list_visible_by_prefs,
         const std::string& offline_content_json) = 0;
 
-    // Signals that offline content summary is available.
-    virtual void OfflineContentSummaryAvailable(
-        const std::string& offline_content_summary_json) = 0;
-
     // Returns the render frame associated with NetErrorHelper.
     virtual content::RenderFrame* GetRenderFrame() = 0;
 

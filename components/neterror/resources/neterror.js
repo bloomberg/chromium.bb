@@ -197,19 +197,6 @@ function launchDownloadsPage() {
   errorPageController.launchDownloadsPage();
 }
 
-// Populates a summary of suggested offline content.
-function offlineContentSummaryAvailable(summary) {
-  // Note: See AvailableContentSummaryToValue in
-  // available_offline_content_helper.cc for the data contained in |summary|.
-  if (!summary || summary.total_items == 0 ||
-      !loadTimeData.valueExists('offlineContentSummary')) {
-    return;
-  }
-  // TODO(https://crbug.com/852872): Customize presented icons based on the
-  // types of available offline content.
-  document.getElementById('offline-content-summary').hidden = false;
-}
-
 function getIconForSuggestedItem(item) {
   // Note: |item.content_type| contains the enum values from
   // chrome::mojom::AvailableContentType.
@@ -328,7 +315,7 @@ function onDocumentLoadOrUpdate() {
   // If offline content suggestions will be visible, the usual buttons will not
   // be presented.
   var offlineContentVisible =
-      loadTimeData.valueExists('suggestedOfflineContentPresentationMode');
+      loadTimeData.valueExists('suggestedOfflineContentPresentation');
   if (offlineContentVisible) {
     document.querySelector('.nav-wrapper').classList.add(HIDDEN_CLASS);
     detailsButton.classList.add(HIDDEN_CLASS);
