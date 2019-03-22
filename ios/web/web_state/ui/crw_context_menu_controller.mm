@@ -15,7 +15,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/unguessable_token.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/web_state/context_menu_constants.h"
 #import "ios/web/web_state/context_menu_params_utils.h"
@@ -95,9 +94,6 @@ struct ContextMenuInfo {
 
 // The |webView|.
 @property(nonatomic, readonly, weak) WKWebView* webView;
-// The delegate that allow execute javascript.
-@property(nonatomic, readonly, weak) id<CRWJSInjectionEvaluator>
-    injectionEvaluator;
 // The scroll view of |webView|.
 @property(nonatomic, readonly, weak) id<CRWContextMenuDelegate> delegate;
 // Returns the x, y offset the content has been scrolled.
@@ -163,19 +159,16 @@ struct ContextMenuInfo {
 }
 
 @synthesize delegate = _delegate;
-@synthesize injectionEvaluator = _injectionEvaluator;
 @synthesize webView = _webView;
 
 - (instancetype)initWithWebView:(WKWebView*)webView
                    browserState:(web::BrowserState*)browserState
-             injectionEvaluator:(id<CRWJSInjectionEvaluator>)injectionEvaluator
                        delegate:(id<CRWContextMenuDelegate>)delegate {
   DCHECK(webView);
   self = [super init];
   if (self) {
     _webView = webView;
     _delegate = delegate;
-    _injectionEvaluator = injectionEvaluator;
     _pendingElementFetchRequests = [[NSMutableDictionary alloc] init];
 
     // The system context menu triggers after 0.55 second. Add a gesture
@@ -258,9 +251,11 @@ struct ContextMenuInfo {
 
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(void (^)(id, NSError*))completionHandler {
-  if (self.injectionEvaluator) {
-    [self.injectionEvaluator executeJavaScript:script
-                             completionHandler:completionHandler];
+  if ([_delegate respondsToSelector:@selector
+                 (webView:executeJavaScript:completionHandler:)]) {
+    [_delegate webView:self.webView
+        executeJavaScript:script
+        completionHandler:completionHandler];
   } else {
     [self.webView evaluateJavaScript:script
                    completionHandler:completionHandler];
