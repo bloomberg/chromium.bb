@@ -84,8 +84,8 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     static void CALLBACK EventHookCallback(HWINEVENTHOOK hWinEventHook,
                                            DWORD event,
                                            HWND hwnd,
-                                           LONG idObject,
-                                           LONG idChild,
+                                           LONG id_object,
+                                           LONG id_child,
                                            DWORD dwEventThread,
                                            DWORD dwmsEventTime);
 
