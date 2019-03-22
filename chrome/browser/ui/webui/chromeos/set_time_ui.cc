@@ -138,10 +138,16 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedString("setTimeTitle", IDS_SET_TIME_TITLE);
   source->AddLocalizedString("prompt", IDS_SET_TIME_PROMPT);
   source->AddLocalizedString("doneButton", IDS_SET_TIME_BUTTON_CLOSE);
-  source->AddLocalizedString("timezone",
-                             IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
-  source->AddLocalizedString("dateLabel", IDS_SET_TIME_DATE_LABEL);
-  source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
+  if (chromeos::features::IsSetTimeDialogMd()) {
+    source->AddLocalizedString("timezoneLabel", IDS_MD_SET_TIME_TIMEZONE_LABEL);
+    source->AddLocalizedString("dateLabel", IDS_MD_SET_TIME_DATE_LABEL);
+    source->AddLocalizedString("timeLabel", IDS_MD_SET_TIME_TIME_LABEL);
+  } else {
+    source->AddLocalizedString("timezone",
+                               IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
+    source->AddLocalizedString("dateLabel", IDS_SET_TIME_DATE_LABEL);
+    source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
+  }
 
   base::DictionaryValue values;
   // List of list of strings: [[ID, name], [ID, name], ...]

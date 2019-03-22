@@ -10,6 +10,7 @@
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="set_time_browser_proxy.html">
@@ -23,9 +24,10 @@
 <body>
   <dom-module id="set-time">
     <template>
-      <style include="cr-shared-style paper-button-style">
+      <style include="cr-shared-style md-select paper-button-style">
         :host {
           @apply --cr-page-host;
+          user-select: none;
         }
 
         cr-dialog {
@@ -36,17 +38,43 @@
           }
         }
 
-        .row {
-          margin: 0.65em 0;
+        cr-dialog [slot=title] {
+          /* The native dialog caption area has enough visual whitespace. */
+          padding-top: 0;
         }
 
+        cr-dialog [slot=button-container] {
+          /* Align right edge of "Done" button with right edge of time input. */
+          padding-inline-end: 20px;
+        }
+
+        .row {
+          display: flex;
+          margin-top: 16px;
+        }
+
+        div.row:first-of-type {
+          margin-top: 0;
+        }
+
+        .column {
+          flex: 1;
+        }
+
+        /* Style to match md-select. */
         input[type='date'],
         input[type='time'] {
+          background-color: var(--google-grey-refresh-100);
+          border: none;
+          border-radius: 4px;
+          box-sizing: border-box;
+          color: var(--google-grey-900);
           font-family: inherit;
-          font-size: 16px;
-          letter-spacing: 1px;
-          margin-bottom: 4px;
-          margin-inline-end: 8px;
+          font-size: inherit;
+          /* Ensure space for focus border. */
+          margin-bottom: 2px;
+          padding: 6px 8px;
+          width: 100%;
         }
 
         input[type='date']::-webkit-clear-button,
@@ -54,13 +82,23 @@
           display: none;
         }
 
-        label {
-          margin-inline-end: 5px;
+        #timeColumn {
+          margin-inline-start: 20px;
+        }
+
+        #timezone {
+          display: block;
+          /* No bottom margin to minimize height of dialog body. */
+          margin-bottom: 0;
         }
 
         #timezoneSelect {
+          cursor: default;
           font-family: inherit;
           font-size: inherit;
+          /* Ensure space for focus border. */
+          margin-bottom: 2px;
+          width: 100%;
         }
       </style>
 
@@ -69,16 +107,26 @@
         <div slot="body" id="dialogBody">
           <div class="row">$i18n{prompt}</div>
 
-          <div>
-            <input id="dateInput" type="date" title="$i18n{dateLabel}"
-                on-blur="onTimeBlur_">
-            <input id="timeInput" type="time" title="$i18n{timeLabel}"
-                on-blur="onTimeBlur_">
+          <div class="row">
+            <div class="column">
+              <div id="label">$i18n{dateLabel}</div>
+              <input id="dateInput" type="date" aria-label="$i18n{dateLabel}"
+                  on-blur="onTimeBlur_">
+            </div>
+            <div class="column" id="timeColumn">
+              <div id="label">$i18n{timeLabel}</div>
+              <input id="timeInput" type="time" aria-label="$i18n{timeLabel}"
+                  on-blur="onTimeBlur_">
+            </div>
           </div>
 
           <div id="timezone" class="row" hidden>
-            <label for="timezoneSelect">$i18n{timezone}</label>
-            <select id="timezoneSelect" on-change="onTimezoneChange_"></select>
+            <div id="label">$i18n{timezoneLabel}</div>
+            <select id="timezoneSelect"
+                class="md-select"
+                aria-label="$i18n{timezoneLabel}"
+                on-change="onTimezoneChange_">
+            </select>
           </div>
         </div>
 
