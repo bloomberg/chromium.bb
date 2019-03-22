@@ -159,8 +159,7 @@ std::string SizeBounds::ToString() const {
 
 // FlexSpecification -----------------------------------------------------------
 
-FlexSpecification::FlexSpecification()
-    : rule_(GetDefaultFlexRule()), order_(1), weight_(0) {}
+FlexSpecification::FlexSpecification() : rule_(GetDefaultFlexRule()) {}
 
 FlexSpecification FlexSpecification::ForCustomRule(const FlexRule& rule) {
   return FlexSpecification(rule, 1, 1);

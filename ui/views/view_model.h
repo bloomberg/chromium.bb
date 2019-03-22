@@ -80,9 +80,9 @@ class VIEWS_EXPORT ViewModelBase {
   friend class ViewModelUtils;
 
   struct Entry {
-    Entry() : view(nullptr) {}
+    Entry() = default;
 
-    View* view;
+    View* view = nullptr;
     gfx::Rect ideal_bounds;
   };
   using Entries = std::vector<Entry>;

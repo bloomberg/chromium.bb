@@ -160,27 +160,7 @@ bool Widget::InitParams::CanActivate() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-Widget::Widget()
-    : native_widget_(nullptr),
-      widget_delegate_(nullptr),
-      non_client_view_(nullptr),
-      dragged_view_(nullptr),
-      ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      is_secondary_widget_(true),
-      frame_type_(FRAME_TYPE_DEFAULT),
-      always_render_as_active_(false),
-      saved_show_state_(ui::SHOW_STATE_DEFAULT),
-      focus_on_creation_(true),
-      is_top_level_(false),
-      native_widget_initialized_(false),
-      native_widget_destroyed_(false),
-      is_mouse_button_pressed_(false),
-      ignore_capture_loss_(false),
-      last_mouse_event_was_move_(false),
-      auto_release_capture_(true),
-      views_with_layers_dirty_(false),
-      movement_disabled_(false),
-      observer_manager_(this) {}
+Widget::Widget() = default;
 
 Widget::~Widget() {
   DestroyRootView();

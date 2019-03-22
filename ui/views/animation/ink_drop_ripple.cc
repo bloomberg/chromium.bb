@@ -15,8 +15,7 @@ namespace views {
 
 const float InkDropRipple::kHiddenOpacity = 0.f;
 
-InkDropRipple::InkDropRipple()
-    : target_ink_drop_state_(InkDropState::HIDDEN), observer_(nullptr) {}
+InkDropRipple::InkDropRipple() = default;
 
 InkDropRipple::~InkDropRipple() = default;
 

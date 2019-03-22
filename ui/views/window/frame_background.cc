@@ -14,22 +14,7 @@
 
 namespace views {
 
-FrameBackground::FrameBackground()
-    : frame_color_(0),
-      use_custom_frame_(true),
-      is_active_(true),
-      incognito_(false),
-      theme_image_y_inset_(0),
-      top_area_height_(0),
-      left_edge_(nullptr),
-      top_edge_(nullptr),
-      right_edge_(nullptr),
-      bottom_edge_(nullptr),
-      top_left_corner_(nullptr),
-      top_right_corner_(nullptr),
-      bottom_left_corner_(nullptr),
-      bottom_right_corner_(nullptr),
-      maximized_top_inset_(0) {}
+FrameBackground::FrameBackground() = default;
 
 FrameBackground::~FrameBackground() = default;
 

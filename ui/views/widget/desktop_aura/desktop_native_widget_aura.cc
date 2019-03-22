@@ -163,13 +163,12 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   }
 
  private:
-  DesktopNativeWidgetTopLevelHandler()
-      : top_level_widget_(nullptr), child_window_(nullptr) {}
+  DesktopNativeWidgetTopLevelHandler() = default;
 
   ~DesktopNativeWidgetTopLevelHandler() override = default;
 
-  Widget* top_level_widget_;
-  aura::Window* child_window_;
+  Widget* top_level_widget_ = nullptr;
+  aura::Window* child_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetTopLevelHandler);
 };

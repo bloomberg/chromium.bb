@@ -169,11 +169,11 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
 
   // Weak. Owns us if not nullptr.
   // Either |parent_view_| or |virtual_parent_view_| should be set but not both.
-  ViewAccessibility* parent_view_;
+  ViewAccessibility* parent_view_ = nullptr;
 
   // Weak. Owns us if not nullptr.
   // Either |parent_view_| or |virtual_parent_view_| should be set but not both.
-  AXVirtualView* virtual_parent_view_;
+  AXVirtualView* virtual_parent_view_ = nullptr;
 
   // We own our children.
   std::vector<std::unique_ptr<AXVirtualView>> children_;

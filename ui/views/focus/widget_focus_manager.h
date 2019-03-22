@@ -57,7 +57,7 @@ class VIEWS_EXPORT WidgetFocusManager {
   base::ObserverList<WidgetFocusChangeListener>::Unchecked
       focus_change_listeners_;
 
-  bool enabled_;
+  bool enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetFocusManager);
 };

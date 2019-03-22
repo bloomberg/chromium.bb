@@ -25,7 +25,7 @@ class VIEWS_EXPORT ViewTracker : public ViewObserver {
   void OnViewIsDeleting(View* observed_view) override;
 
  private:
-  View* view_;
+  View* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTracker);
 };

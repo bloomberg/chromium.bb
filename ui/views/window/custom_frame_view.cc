@@ -84,16 +84,7 @@ void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, public:
 
-CustomFrameView::CustomFrameView()
-    : frame_(nullptr),
-      window_icon_(nullptr),
-      minimize_button_(nullptr),
-      maximize_button_(nullptr),
-      restore_button_(nullptr),
-      close_button_(nullptr),
-      frame_background_(new FrameBackground()),
-      minimum_title_bar_x_(0),
-      maximum_title_bar_x_(-1) {}
+CustomFrameView::CustomFrameView() : frame_background_(new FrameBackground()) {}
 
 CustomFrameView::~CustomFrameView() = default;
 

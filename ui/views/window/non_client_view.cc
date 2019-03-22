@@ -43,9 +43,7 @@ bool NonClientFrameView::GetClientMask(const gfx::Size& size,
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
 
-NonClientView::NonClientView()
-    : client_view_(nullptr),
-      overlay_view_(nullptr) {
+NonClientView::NonClientView() {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
@@ -324,8 +322,7 @@ void NonClientFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
-NonClientFrameView::NonClientFrameView()
-    : active_state_override_(nullptr) {
+NonClientFrameView::NonClientFrameView() {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 

@@ -155,8 +155,8 @@ class VIEWS_EXPORT FlexSpecification {
   FlexSpecification(const FlexRule& rule, int order, int weight);
 
   FlexRule rule_;
-  int order_;
-  int weight_;
+  int order_ = 1;
+  int weight_ = 0;
 };
 
 }  // namespace views
