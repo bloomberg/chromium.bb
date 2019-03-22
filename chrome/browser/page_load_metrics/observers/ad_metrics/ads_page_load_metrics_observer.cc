@@ -638,7 +638,7 @@ void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
 
 // Computes a percentage given the numerator and denominator, bounded to 100%.
 int GetCpuPercentage(base::TimeDelta duration, base::TimeDelta range) {
-  DCHECK(!range.is_zero());
+  DCHECK(range.InMilliseconds() > 0);
   int percentage = 100 * duration.InMilliseconds() / range.InMilliseconds();
   return percentage > 100 ? 100 : percentage;
 }
@@ -656,6 +656,9 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
   }
   base::TimeDelta post_interactive_duration =
       total_duration - pre_interactive_duration_;
+  DCHECK(total_duration >= base::TimeDelta());
+  DCHECK(pre_interactive_duration_ >= base::TimeDelta());
+  DCHECK(post_interactive_duration >= base::TimeDelta());
 
   for (const FrameData& ad_frame_data : ad_frames_data_storage_) {
     if (ad_frame_data.bytes() == 0)
@@ -673,19 +676,19 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
           FrameData::InteractiveStatus::kPreInteractive);
       base::TimeDelta task_duration_post = ad_frame_data.GetInteractiveCpuUsage(
           FrameData::InteractiveStatus::kPostInteractive);
-      if (!total_duration.is_zero()) {
+      if (total_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PercentUsage.Unactivated",
                       UMA_HISTOGRAM_PERCENTAGE, visibility,
                       GetCpuPercentage(task_duration_pre + task_duration_post,
                                        total_duration));
       }
-      if (!pre_interactive_duration_.is_zero()) {
+      if (pre_interactive_duration_.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PreInteractive",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
             GetCpuPercentage(task_duration_pre, pre_interactive_duration_));
       }
-      if (!post_interactive_duration.is_zero()) {
+      if (post_interactive_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
@@ -700,19 +703,19 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
           ad_frame_data.pre_activation_foreground_duration();
       base::TimeDelta post_activation_duration =
           total_duration - pre_activation_duration;
-      if (!total_duration.is_zero()) {
+      if (total_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PercentUsage.Activated",
                       UMA_HISTOGRAM_PERCENTAGE, visibility,
                       GetCpuPercentage(task_duration_pre + task_duration_post,
                                        total_duration));
       }
-      if (!pre_activation_duration.is_zero()) {
+      if (pre_activation_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Activated.PreActivation",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
             GetCpuPercentage(task_duration_pre, pre_activation_duration));
       }
-      if (!post_activation_duration.is_zero()) {
+      if (post_activation_duration.InMilliseconds() > 0) {
         ADS_HISTOGRAM(
             "Cpu.AdFrames.PerFrame.PercentUsage.Activated.PostActivation",
             UMA_HISTOGRAM_PERCENTAGE, visibility,
@@ -737,19 +740,19 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForCpuUsage(
   base::TimeDelta task_duration_post =
       aggregate_frame_data_->GetInteractiveCpuUsage(
           FrameData::InteractiveStatus::kPostInteractive);
-  if (!total_duration.is_zero()) {
+  if (total_duration.InMilliseconds() > 0) {
     ADS_HISTOGRAM("Cpu.FullPage.PercentUsage", UMA_HISTOGRAM_PERCENTAGE,
                   visibility,
                   GetCpuPercentage(task_duration_pre + task_duration_post,
                                    total_duration));
   }
-  if (!pre_interactive_duration_.is_zero()) {
+  if (pre_interactive_duration_.InMilliseconds() > 0) {
     ADS_HISTOGRAM(
         "Cpu.FullPage.PercentUsage.PreInteractive", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
         GetCpuPercentage(task_duration_pre, pre_interactive_duration_));
   }
-  if (!post_interactive_duration.is_zero()) {
+  if (post_interactive_duration.InMilliseconds() > 0) {
     ADS_HISTOGRAM(
         "Cpu.FullPage.PercentUsage.PostInteractive", UMA_HISTOGRAM_PERCENTAGE,
         visibility,
