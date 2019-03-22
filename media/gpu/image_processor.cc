@@ -32,6 +32,8 @@ ImageProcessor::ImageProcessor(const VideoFrameLayout& input_layout,
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
                              LegacyFrameReadyCB cb) {
+  DCHECK_EQ(output_mode(), OutputMode::ALLOCATE);
+
   return ProcessInternal(std::move(frame), BindToCurrentLoop(std::move(cb)));
 }
 #endif
@@ -39,6 +41,8 @@ bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,
                              scoped_refptr<VideoFrame> output_frame,
                              FrameReadyCB cb) {
+  DCHECK_EQ(output_mode(), OutputMode::IMPORT);
+
   return ProcessInternal(std::move(input_frame), std::move(output_frame),
                          BindToCurrentLoop(std::move(cb)));
 }
