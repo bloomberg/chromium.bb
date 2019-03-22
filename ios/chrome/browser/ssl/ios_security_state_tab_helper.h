@@ -23,7 +23,6 @@ class IOSSecurityStateTabHelper
  public:
   ~IOSSecurityStateTabHelper() override;
 
-  void GetSecurityInfo(security_state::SecurityInfo* result) const;
   security_state::SecurityLevel GetSecurityLevel() const;
   std::unique_ptr<security_state::VisibleSecurityState>
   GetVisibleSecurityState() const;

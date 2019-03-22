@@ -25,9 +25,7 @@ class SecurityStateTabHelper
  public:
   ~SecurityStateTabHelper() override;
 
-  // See security_state::GetSecurityInfo.
-  void GetSecurityInfo(
-      security_state::SecurityInfo* result) const;
+  // See security_state::GetSecurityLevel.
   security_state::SecurityLevel GetSecurityLevel() const;
   std::unique_ptr<security_state::VisibleSecurityState>
   GetVisibleSecurityState() const;

@@ -1176,9 +1176,8 @@ blink::WebSecurityStyle Browser::GetSecurityStyle(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_state::GetSecurityStyle(security_info,
+  return security_state::GetSecurityStyle(helper->GetSecurityLevel(),
+                                          *helper->GetVisibleSecurityState(),
                                           security_style_explanations);
 }
 

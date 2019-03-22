@@ -300,7 +300,6 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
             {kBothToLockVariation, kMockNonsecureURL, 0, security_state::NONE,
              false, kEmptyString}};
 
-  security_state::SecurityInfo security_info;
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(tab);
@@ -321,8 +320,7 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
     }
     SetUpInterceptor(c.cert_status);
     ui_test_utils::NavigateToURL(browser(), c.url);
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(c.security_level, security_info.security_level);
+    EXPECT_EQ(c.security_level, helper->GetSecurityLevel());
     EXPECT_EQ(c.should_show_text,
               location_bar_view->location_icon_view()->ShouldShowLabel());
     EXPECT_EQ(c.indicator_text,
