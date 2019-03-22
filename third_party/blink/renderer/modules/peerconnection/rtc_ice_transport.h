@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ICE_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ICE_TRANSPORT_H_
 
+#include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_ice_candidate_pair.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -14,6 +17,10 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_parameters.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/webrtc/api/transport/enums.h"
+
+namespace webrtc {
+class IceTransportInterface;
+}
 
 namespace blink {
 
@@ -49,6 +56,9 @@ class MODULES_EXPORT RTCIceTransport final
   };
 
   static RTCIceTransport* Create(ExecutionContext* context);
+  static RTCIceTransport* Create(
+      ExecutionContext* context,
+      rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport_channel);
   static RTCIceTransport* Create(
       ExecutionContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
