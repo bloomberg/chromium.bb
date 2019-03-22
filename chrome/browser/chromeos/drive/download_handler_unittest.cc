@@ -63,9 +63,6 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
 
 class DownloadHandlerTestDownloadManager : public content::MockDownloadManager {
  public:
-  explicit DownloadHandlerTestDownloadManager(bool incognito)
-      : incognito_(incognito) {}
-
   void GetAllDownloads(
       content::DownloadManager::DownloadVector* downloads) override {
     for (auto* test_download : test_downloads_) {
@@ -73,10 +70,7 @@ class DownloadHandlerTestDownloadManager : public content::MockDownloadManager {
     }
   }
 
-  bool IsIncognito() { return incognito_; }
-
   content::DownloadManager::DownloadVector test_downloads_;
-  bool incognito_;
 };
 
 class DownloadHandlerTestDownloadItem : public download::MockDownloadItem {
@@ -92,37 +86,12 @@ class DownloadHandlerTestDownloadItem : public download::MockDownloadItem {
   int64_t received_bytes_ = 0;
 };
 
-class TestDownloadHandler : public DownloadHandler {
- public:
-  explicit TestDownloadHandler(FileSystemInterface* file_system)
-      : DownloadHandler(file_system) {}
-
-  download::AllDownloadItemNotifier* GetDownloadNotifier(
-      content::DownloadManager* download_manager) override;
-
- private:
-  std::unique_ptr<download::AllDownloadItemNotifier> notifier_;
-  std::unique_ptr<download::AllDownloadItemNotifier> incognito_notifier_;
-};
-
-download::AllDownloadItemNotifier* TestDownloadHandler::GetDownloadNotifier(
-    content::DownloadManager* download_manager) {
-  DownloadHandlerTestDownloadManager* manager =
-      static_cast<DownloadHandlerTestDownloadManager*>(download_manager);
-  auto& notifier = manager->IsIncognito() ? incognito_notifier_ : notifier_;
-  if (!notifier) {
-    notifier.reset(new download::AllDownloadItemNotifier(download_manager));
-  }
-
-  return notifier.get();
-}
-
 }  // namespace
 
 class DownloadHandlerTest : public testing::Test {
  public:
   DownloadHandlerTest()
-      : download_manager_(new DownloadHandlerTestDownloadManager(false)) {}
+      : download_manager_(new DownloadHandlerTestDownloadManager) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -131,8 +100,7 @@ class DownloadHandlerTest : public testing::Test {
     EXPECT_CALL(download_item_, GetState())
         .WillRepeatedly(testing::Return(download::DownloadItem::IN_PROGRESS));
 
-    download_handler_ =
-        std::make_unique<TestDownloadHandler>(&test_file_system_);
+    download_handler_ = std::make_unique<DownloadHandler>(&test_file_system_);
     download_handler_->Initialize(download_manager_.get(), temp_dir_.GetPath());
     download_handler_->SetFreeDiskSpaceDelayForTesting(
         base::TimeDelta::FromMilliseconds(0));
@@ -304,7 +272,7 @@ TEST_F(DownloadHandlerTest, FreeDiskSpace) {
   // Observe incognito download manager and add another download item.
   // FreeDiskSpace should be called with considering both download items.
   incognito_download_manager_ =
-      std::make_unique<DownloadHandlerTestDownloadManager>(true);
+      std::make_unique<DownloadHandlerTestDownloadManager>();
   download_handler_->ObserveIncognitoDownloadManager(
       incognito_download_manager_.get());
 

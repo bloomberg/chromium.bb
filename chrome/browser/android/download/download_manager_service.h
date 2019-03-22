@@ -272,6 +272,9 @@ class DownloadManagerService
   // The Registrar used to register for notifications.
   content::NotificationRegistrar registrar_;
 
+  std::unique_ptr<download::AllDownloadItemNotifier> original_notifier_;
+  std::unique_ptr<download::AllDownloadItemNotifier> off_the_record_notifier_;
+
   // In-progress download manager when download is running as a service. Will
   // pass this object to DownloadManagerImpl once it is created.
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;

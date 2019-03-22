@@ -25,7 +25,6 @@ class WebUI;
 }
 
 namespace download {
-class AllDownloadItemNotifier;
 class DownloadItem;
 }
 
@@ -37,7 +36,7 @@ class DownloadsDOMHandler : public content::WebContentsObserver,
  public:
   DownloadsDOMHandler(downloads::mojom::PageHandlerRequest request,
                       downloads::mojom::PagePtr page,
-                      download::AllDownloadItemNotifier* download_notifier,
+                      content::DownloadManager* download_manager,
                       content::WebUI* web_ui);
   ~DownloadsDOMHandler() override;
 

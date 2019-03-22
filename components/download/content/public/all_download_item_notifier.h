@@ -8,9 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "components/download/public/common/download_item.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/download_manager.h"
 
 // AllDownloadItemNotifier observes ALL the DownloadItems on a given
@@ -38,8 +36,7 @@
 namespace download {
 
 class AllDownloadItemNotifier : public content::DownloadManager::Observer,
-                                public DownloadItem::Observer,
-                                public KeyedService {
+                                public DownloadItem::Observer {
  public:
   // All of the methods take the DownloadManager so that subclasses can observe
   // multiple managers at once and easily distinguish which manager a given item
@@ -64,7 +61,8 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  AllDownloadItemNotifier(content::DownloadManager* manager);
+  AllDownloadItemNotifier(content::DownloadManager* manager,
+                          Observer* observer);
 
   ~AllDownloadItemNotifier() override;
 
@@ -74,13 +72,7 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
-  // Observers implementing the AllDownloadItemNotifier::Observer interface can
-  // register here to get notifications of changes to request state.  This
-  // pointer is not owned, and it is the callers responsibility to remove the
-  // observer before the observer is deleted.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
+ private:
   // DownloadManager::Observer
   void OnManagerInitialized() override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
@@ -93,10 +85,8 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
   void OnDownloadRemoved(DownloadItem* item) override;
   void OnDownloadDestroyed(DownloadItem* item) override;
 
- private:
   content::DownloadManager* manager_;
-  base::ObserverList<Observer>::Unchecked observers_;
-
+  AllDownloadItemNotifier::Observer* observer_;
   std::set<DownloadItem*> observing_;
 
   DISALLOW_COPY_AND_ASSIGN(AllDownloadItemNotifier);

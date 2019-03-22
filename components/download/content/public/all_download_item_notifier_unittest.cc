@@ -58,8 +58,8 @@ class AllDownloadItemNotifierTest : public testing::Test {
 
   void SetNotifier() {
     EXPECT_CALL(*download_manager_, AddObserver(_));
-    notifier_.reset(new AllDownloadItemNotifier(download_manager_.get()));
-    notifier_->AddObserver(&observer_);
+    notifier_.reset(
+        new AllDownloadItemNotifier(download_manager_.get(), &observer_));
   }
 
   void ClearNotifier() { notifier_.reset(); }

@@ -243,21 +243,20 @@ bool DownloadHistory::IsPersisted(const download::DownloadItem* item) {
   return data && (data->state() == DownloadHistoryData::PERSISTED);
 }
 
-DownloadHistory::DownloadHistory(download::AllDownloadItemNotifier* notifier,
+DownloadHistory::DownloadHistory(content::DownloadManager* manager,
                                  std::unique_ptr<HistoryAdapter> history)
-    : notifier_(notifier),
+    : notifier_(manager, this),
       history_(std::move(history)),
       loading_id_(download::DownloadItem::kInvalidId),
       history_size_(0),
       initial_history_query_complete_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  notifier_->AddObserver(this);
   content::DownloadManager::DownloadVector items;
-  notifier_->GetManager()->GetAllDownloads(&items);
+  notifier_.GetManager()->GetAllDownloads(&items);
   for (content::DownloadManager::DownloadVector::const_iterator
        it = items.begin(); it != items.end(); ++it) {
-    OnDownloadCreated(notifier_->GetManager(), *it);
+    OnDownloadCreated(notifier_.GetManager(), *it);
   }
   history_->QueryDownloads(base::Bind(
       &DownloadHistory::QueryCallback, weak_ptr_factory_.GetWeakPtr()));
@@ -265,7 +264,6 @@ DownloadHistory::DownloadHistory(download::AllDownloadItemNotifier* notifier,
 
 DownloadHistory::~DownloadHistory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  notifier_->RemoveObserver(this);
   for (Observer& observer : observers_)
     observer.OnDownloadHistoryDestroyed();
   observers_.Clear();
@@ -287,17 +285,17 @@ void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
 void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // ManagerGoingDown() may have happened before the history loaded.
-  if (!notifier_->GetManager())
+  if (!notifier_.GetManager())
     return;
 
-  notifier_->GetManager()->OnHistoryQueryComplete(
+  notifier_.GetManager()->OnHistoryQueryComplete(
       base::BindOnce(&DownloadHistory::LoadHistoryDownloads,
                      weak_ptr_factory_.GetWeakPtr(), std::move(infos)));
 }
 
 void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(notifier_->GetManager());
+  DCHECK(notifier_.GetManager());
 
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
@@ -306,7 +304,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
         history::ToContentDownloadState(it->state);
     download::DownloadInterruptReason history_reason =
         history::ToContentDownloadInterruptReason(it->interrupt_reason);
-    download::DownloadItem* item = notifier_->GetManager()->CreateDownloadItem(
+    download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
         it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
         it->mime_type, it->original_mime_type, it->start_time, it->end_time,
@@ -332,7 +330,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
     if (item->IsDone() &&
         !download::IsDownloadDone(item->GetURL(), history_download_state,
                                   history_reason)) {
-      OnDownloadUpdated(notifier_->GetManager(), item);
+      OnDownloadUpdated(notifier_.GetManager(), item);
     }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (!it->by_ext_id.empty() && !it->by_ext_name.empty()) {
@@ -347,7 +345,7 @@ void DownloadHistory::LoadHistoryDownloads(std::unique_ptr<InfoVector> infos) {
   }
 
   // Indicate that the history db is initialized.
-  notifier_->GetManager()->PostInitialization(
+  notifier_.GetManager()->PostInitialization(
       content::DownloadManager::DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB);
 
   initial_history_query_complete_ = true;
@@ -393,11 +391,11 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
     return;
   }
 
-  if (!notifier_->GetManager())
+  if (!notifier_.GetManager())
     return;
 
   download::DownloadItem* item =
-      notifier_->GetManager()->GetDownload(download_id);
+      notifier_.GetManager()->GetDownload(download_id);
   if (!item) {
     // This item will have called OnDownloadDestroyed().  If the item should
     // have been removed from history, then it would have also called
@@ -456,7 +454,7 @@ void DownloadHistory::OnDownloadUpdated(content::DownloadManager* manager,
     return;
   }
   if (item->IsTemporary()) {
-    OnDownloadRemoved(notifier_->GetManager(), item);
+    OnDownloadRemoved(notifier_.GetManager(), item);
     return;
   }
   if (!NeedToUpdateDownloadHistory(item))

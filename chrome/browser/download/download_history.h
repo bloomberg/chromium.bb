@@ -85,7 +85,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
   // Neither |manager| nor |history| may be NULL.
   // DownloadService creates DownloadHistory some time after DownloadManager is
   // created and destroys DownloadHistory as DownloadManager is shutting down.
-  DownloadHistory(download::AllDownloadItemNotifier* notifier,
+  DownloadHistory(content::DownloadManager* manager,
                   std::unique_ptr<HistoryAdapter> history);
 
   ~DownloadHistory() override;
@@ -133,7 +133,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
   // Check whether an download item needs be updated or added to history DB.
   bool NeedToUpdateDownloadHistory(download::DownloadItem* item);
 
-  download::AllDownloadItemNotifier* notifier_;
+  download::AllDownloadItemNotifier notifier_;
 
   std::unique_ptr<HistoryAdapter> history_;
 
