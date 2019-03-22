@@ -5076,7 +5076,7 @@ const OriginAccessEntry& Document::AccessEntryFromURL() {
   if (!access_entry_from_url_) {
     access_entry_from_url_ = std::make_unique<OriginAccessEntry>(
         Url().Protocol(), Url().Host(),
-        network::mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains);
+        network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
   }
   return *access_entry_from_url_;
 }
@@ -5451,7 +5451,7 @@ const KURL Document::SiteForCookies() const {
   if (!top_local_frame) {
     remote_entry.emplace(
         top_document_url.Protocol(), top_document_url.Host(),
-        network::mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains);
+        network::mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains);
   }
   const OriginAccessEntry& access_entry =
       remote_entry ? *remote_entry

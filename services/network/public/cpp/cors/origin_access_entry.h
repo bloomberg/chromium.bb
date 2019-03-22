@@ -55,9 +55,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
 
   bool host_is_ip_address() const { return host_is_ip_address_; }
   mojom::CorsOriginAccessMatchPriority priority() const { return priority_; }
-  const std::string& registerable_domain() const {
-    return registerable_domain_;
-  }
+  const std::string& registrable_domain() const { return registrable_domain_; }
 
   // Creates mojom::CorsOriginPattern instance that represents |this|
   // OriginAccessEntry instance.
@@ -71,7 +69,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   const mojom::CorsOriginAccessMatchPriority priority_;
   const bool host_is_ip_address_;
 
-  std::string registerable_domain_;
+  std::string registrable_domain_;
   bool host_is_public_suffix_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginAccessEntry);

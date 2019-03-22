@@ -239,12 +239,12 @@ bool MatchesUrlFilter(mojom::ClearDataFilter_Type filter_type,
                       std::set<std::string> filter_domains,
                       std::set<url::Origin> filter_origins,
                       const GURL& url) {
-  std::string url_registerable_domain =
+  std::string url_registrable_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   bool found_domain =
-      (filter_domains.find(url_registerable_domain != ""
-                               ? url_registerable_domain
+      (filter_domains.find(url_registrable_domain != ""
+                               ? url_registrable_domain
                                : url.host()) != filter_domains.end());
 
   bool found_origin =

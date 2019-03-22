@@ -5,13 +5,13 @@
 module network.mojom;
 
 // An enum to represent a mode if matching functions can accept a partial match
-// for sub-domains, or for registerable domains.
+// for sub-domains, or for registrable domains.
 enum CorsOriginAccessMatchMode {
   // 'www.example.com' matches an OriginAccessEntry for 'example.com'
   kAllowSubdomains,
 
   // 'www.example.com' matches an OriginAccessEntry for 'not-www.example.com'
-  kAllowRegisterableDomains,
+  kAllowRegistrableDomains,
 
   // 'www.example.com' does not match an OriginAccessEntry for 'example.com'
   kDisallowSubdomains,
