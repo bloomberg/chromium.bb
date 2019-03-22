@@ -55,18 +55,6 @@
           'shards': 10,
         },
       },
-      'Win7 FYI Debug (AMD)': {
-        'args': [
-          # TODO(https://crbug.com/943140): Debug, reenable.
-          '--gtest_filter=-TextureFunctionTest.NonConstantOffset',
-        ],
-      },
-      'Win10 Debug (NVIDIA)': {
-        'args': [
-          # TODO(https://crbug.com/943140): Debug, reenable.
-          '--gtest_filter=-TextureFunctionTest.NonConstantOffset',
-        ],
-      },
     },
   },
   'angle_white_box_tests': {
