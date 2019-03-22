@@ -37,6 +37,7 @@
 #include "chrome_elf/third_party_dlls/status_codes.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -118,6 +119,41 @@ void LogChromeElfThirdPartyStatus() {
     UMA_HISTOGRAM_ENUMERATION("ChromeElf.ThirdPartyStatus", status);
 }
 
+// Updates the current value of the kModuleBlacklistCacheMD5Digest pref.
+void UpdateModuleBlacklistCacheMD5Digest(
+    const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Check that the MD5 digest of the old cache matches what was expected. Only
+  // used for reporting a metric.
+  const PrefService::Preference* preference =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kModuleBlacklistCacheMD5Digest);
+  DCHECK(preference);
+
+  // The first time this is executed, the pref doesn't yet hold a valid MD5
+  // digest.
+  if (!preference->IsDefaultValue()) {
+    const std::string old_md5_string =
+        base::MD5DigestToBase16(result.old_md5_digest);
+    const std::string& current_md5_string = preference->GetValue()->GetString();
+    UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.ExpectedMD5Digest",
+                          old_md5_string == current_md5_string);
+  }
+
+  // Set the expected MD5 digest for the next time the cache is updated.
+  g_browser_process->local_state()->Set(
+      prefs::kModuleBlacklistCacheMD5Digest,
+      base::Value(base::MD5DigestToBase16(result.new_md5_digest)));
+}
+
+void ClearModuleBlacklistCacheMD5Digest() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  g_browser_process->local_state()->ClearPref(
+      prefs::kModuleBlacklistCacheMD5Digest);
+}
+
 }  // namespace
 
 ThirdPartyConflictsManager::ThirdPartyConflictsManager(
@@ -176,8 +212,8 @@ void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
 
   // Also clear the MD5 digest since there will no longer be a current module
   // blacklist cache.
-  g_browser_process->local_state()->ClearPref(
-      prefs::kModuleBlacklistCacheMD5Digest);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(&ClearModuleBlacklistCacheMD5Digest));
 }
 
 // static
@@ -416,29 +452,11 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
 
 void ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated(
     const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Check that the MD5 digest of the old cache matches what was expected. Only
-  // used for reporting a metric.
-  const PrefService::Preference* preference =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kModuleBlacklistCacheMD5Digest);
-  DCHECK(preference);
-
-  // The first time this is executed, the pref doesn't yet hold a valid MD5
-  // digest.
-  if (!preference->IsDefaultValue()) {
-    const std::string old_md5_string =
-        base::MD5DigestToBase16(result.old_md5_digest);
-    const std::string& current_md5_string = preference->GetValue()->GetString();
-    UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.ExpectedMD5Digest",
-                          old_md5_string == current_md5_string);
-  }
-
-  // Set the expected MD5 digest for the next time the cache is updated.
-  g_browser_process->local_state()->Set(
-      prefs::kModuleBlacklistCacheMD5Digest,
-      base::Value(base::MD5DigestToBase16(result.new_md5_digest)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&UpdateModuleBlacklistCacheMD5Digest, result));
 }
 
 void ThirdPartyConflictsManager::ForceModuleListComponentUpdate() {
