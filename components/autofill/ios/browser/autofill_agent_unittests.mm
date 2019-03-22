@@ -157,7 +157,7 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTestWithFrameMessaging) {
       "\"value\":\"name_value\"},"
       "\"number\":{\"section\":\"\",\"value\":\"number_value\"}},"
       "\"formName\":\"CC form\"}, \"\");",
-      fake_main_frame_->last_javascript_call());
+      fake_main_frame_->GetLastJavaScriptCall());
 }
 
 // Tests that in the case of conflict in fields' identifiers, the last seen
@@ -203,12 +203,11 @@ TEST_F(AutofillAgentTests,
   [autofill_agent_ fillFormData:form
                         inFrame:web::GetMainWebFrame(&test_web_state_)];
   test_web_state_.WasShown();
-  EXPECT_EQ(
-      "__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
-      "\"\",\"value\":\"value "
-      "2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
-      "\"formName\":\"\"}, \"\");",
-      fake_main_frame_->last_javascript_call());
+  EXPECT_EQ("__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":{\"section\":"
+            "\"\",\"value\":\"value "
+            "2\"},\"region\":{\"section\":\"\",\"value\":\"California\"}},"
+            "\"formName\":\"\"}, \"\");",
+            fake_main_frame_->GetLastJavaScriptCall());
 }
 
 // Tests that when a user initiated form activity is registered the script to
@@ -233,7 +232,7 @@ TEST_F(AutofillAgentTests,
                                     completionHandler:nil];
   test_web_state_.WasShown();
   EXPECT_EQ("__gCrWeb.autofill.extractForms(1, true);",
-            fake_main_frame_->last_javascript_call());
+            fake_main_frame_->GetLastJavaScriptCall());
 }
 
 // Tests that when a non user initiated form activity is registered the
