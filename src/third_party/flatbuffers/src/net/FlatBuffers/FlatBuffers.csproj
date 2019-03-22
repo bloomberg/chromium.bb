@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.1;netstandard1.4;netstandard2.0</TargetFrameworks>
+    <RootNamespace>FlatBuffers</RootNamespace>
+    <AssemblyName>FlatBuffers</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Copyright>Copyright (c) 2015 Google Inc</Copyright>
+    <RepositoryUrl>https://github.com/google/flatbuffers</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/google/flatbuffers/blob/master/LICENSE.txt</PackageLicenseUrl>
+  </PropertyGroup>
+
+</Project>
