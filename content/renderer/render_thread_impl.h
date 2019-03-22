@@ -156,7 +156,6 @@ class StreamTextureFactory;
 class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
-      public blink::scheduler::WebRAILModeObserver,
       public mojom::Renderer,
       public viz::mojom::CompositingModeWatcher,
       public CompositorDependencies {
@@ -245,9 +244,6 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
 
   bool IsThreadedAnimationEnabled();
-
-  // blink::scheduler::WebRAILModeObserver implementation.
-  void OnRAILModeChanged(v8::RAILMode rail_mode) override;
 
   // viz::mojom::CompositingModeWatcher implementation.
   void CompositingModeFallbackToSoftware() override;

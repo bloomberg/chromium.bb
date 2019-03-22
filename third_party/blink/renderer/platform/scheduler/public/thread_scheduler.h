@@ -25,6 +25,8 @@ namespace scheduler {
 class NonMainThreadSchedulerImpl;
 }
 
+class RAILModeObserver;
+
 // This class is used to submit tasks and pass other information from Blink to
 // the platform's scheduler.
 // TODO(skyostil): Replace this class with WebMainThreadScheduler.
@@ -71,8 +73,9 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual void PostNonNestableIdleTask(const base::Location&,
                                        Thread::IdleTask) = 0;
 
-  virtual void AddRAILModeObserver(
-      scheduler::WebRAILModeObserver* observer) = 0;
+  virtual void AddRAILModeObserver(RAILModeObserver* observer) = 0;
+
+  virtual void RemoveRAILModeObserver(RAILModeObserver const* observer) = 0;
 
   // Returns a task runner for kV8 tasks. Can be called from any thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() = 0;

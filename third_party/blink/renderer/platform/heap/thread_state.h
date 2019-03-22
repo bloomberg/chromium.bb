@@ -34,12 +34,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -139,8 +139,7 @@ class PLATFORM_EXPORT BlinkGCObserver {
   ThreadState* thread_state_;
 };
 
-class PLATFORM_EXPORT ThreadState final
-    : private scheduler::WebRAILModeObserver {
+class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   USING_FAST_MALLOC(ThreadState);
 
  public:
@@ -441,8 +440,8 @@ class PLATFORM_EXPORT ThreadState final
 
   MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
-  // Implementation for WebRAILModeObserver
-  void OnRAILModeChanged(v8::RAILMode new_mode) override;
+  // Implementation for RAILModeObserver
+  void OnRAILModeChanged(RAILMode new_mode) override;
 
  private:
   // Stores whether some ThreadState is currently in incremental marking.

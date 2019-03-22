@@ -115,6 +115,7 @@ blink_platform_sources("scheduler") {
     "public/pending_user_input_type.h",
     "public/post_cancellable_task.h",
     "public/post_cross_thread_task.h",
+    "public/rail_mode_observer.h",
     "public/scheduling_lifecycle_state.h",
     "public/scheduling_policy.h",
     "public/thread.h",
