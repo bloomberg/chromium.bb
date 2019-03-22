@@ -132,8 +132,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   // proxy.
   scoped_refptr<HttpProxySocketParams> CreateParams(bool tunnel) {
     return base::MakeRefCounted<HttpProxySocketParams>(
-        CreateHttpProxyParams(), CreateHttpsProxyParams(),
-        quic::QUIC_VERSION_UNSUPPORTED,
+        CreateHttpProxyParams(), CreateHttpsProxyParams(), false /* is_quic */,
         HostPortPair(kEndpointHost, tunnel ? 443 : 80),
         /*is_trusted_proxy=*/false, tunnel, TRAFFIC_ANNOTATION_FOR_TESTS);
   }

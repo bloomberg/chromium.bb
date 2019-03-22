@@ -82,8 +82,6 @@ CreateSocketParamsAndGetGroupId(
     int request_load_flags,
     const ProxyInfo& proxy_info,
     // This argument should be removed.
-    quic::QuicTransportVersion quic_version,
-    // This argument should be removed.
     const SSLConfig& ssl_config_for_origin,
     // This argument should be removed.
     const SSLConfig& ssl_config_for_proxy,
@@ -144,12 +142,8 @@ CreateSocketParamsAndGetGroupId(
         proxy_tcp_params = nullptr;
       }
 
-      if (!proxy_info.is_quic()) {
-        quic_version = quic::QUIC_VERSION_UNSUPPORTED;
-      }
-
       http_proxy_params = new HttpProxySocketParams(
-          proxy_tcp_params, ssl_params, quic_version, endpoint,
+          proxy_tcp_params, ssl_params, proxy_info.is_quic(), endpoint,
           proxy_server.is_trusted_proxy(), force_tunnel || using_ssl,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     } else {
@@ -200,7 +194,6 @@ int InitSocketPoolHelper(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    quic::QuicTransportVersion quic_version,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     bool force_tunnel,
@@ -226,8 +219,8 @@ int InitSocketPoolHelper(
   scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
       CreateSocketParamsAndGetGroupId(
           group_type, origin_host_port, request_load_flags, proxy_info,
-          quic_version, ssl_config_for_origin, ssl_config_for_proxy,
-          force_tunnel, privacy_mode, resolution_callback, &connection_group);
+          ssl_config_for_origin, ssl_config_for_proxy, force_tunnel,
+          privacy_mode, resolution_callback, &connection_group);
 
   TransportClientSocketPool* pool =
       session->GetSocketPool(socket_pool_type, proxy_info.proxy_server());
@@ -329,7 +322,6 @@ int InitSocketHandleForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    quic::QuicTransportVersion quic_version,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
@@ -342,7 +334,7 @@ int InitSocketHandleForHttpRequest(
   DCHECK(socket_handle);
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,
-      proxy_info, quic_version, ssl_config_for_origin, ssl_config_for_proxy,
+      proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
       /*force_tunnel=*/false, privacy_mode, socket_tag, net_log, 0,
       socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
       resolution_callback, std::move(callback), proxy_auth_callback);
@@ -364,10 +356,13 @@ int InitSocketHandleForWebSocketRequest(
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   DCHECK(socket_handle);
+
+  // QUIC proxies are currently not supported through this method.
+  DCHECK(!proxy_info.is_quic());
+
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,
-      proxy_info, quic::QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
-      ssl_config_for_proxy,
+      proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
       /*force_tunnel=*/true, privacy_mode, SocketTag(), net_log, 0,
       socket_handle, HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
       resolution_callback, std::move(callback), proxy_auth_callback);
@@ -387,13 +382,16 @@ int InitSocketHandleForRawConnect(
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   DCHECK(socket_handle);
+
+  // QUIC proxies are currently not supported through this method.
+  DCHECK(!proxy_info.is_quic());
+
   return InitSocketPoolHelper(
       ClientSocketPoolManager::NORMAL_GROUP, host_port_pair, request_load_flags,
-      request_priority, session, proxy_info, quic::QUIC_VERSION_UNSUPPORTED,
-      ssl_config_for_origin, ssl_config_for_proxy, /*force_tunnel=*/true,
-      privacy_mode, SocketTag(), net_log, 0, socket_handle,
-      HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
-      std::move(callback), proxy_auth_callback);
+      request_priority, session, proxy_info, ssl_config_for_origin,
+      ssl_config_for_proxy, /*force_tunnel=*/true, privacy_mode, SocketTag(),
+      net_log, 0, socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
+      OnHostResolutionCallback(), std::move(callback), proxy_auth_callback);
 }
 
 int InitSocketHandleForTlsConnect(
@@ -410,10 +408,14 @@ int InitSocketHandleForTlsConnect(
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   DCHECK(socket_handle);
+
+  // QUIC proxies are currently not supported through this method.
+  DCHECK(!proxy_info.is_quic());
+
   return InitSocketPoolHelper(
       ClientSocketPoolManager::SSL_GROUP, endpoint, request_load_flags,
-      request_priority, session, proxy_info, quic::QUIC_VERSION_UNSUPPORTED,
-      ssl_config_for_origin, ssl_config_for_proxy,
+      request_priority, session, proxy_info, ssl_config_for_origin,
+      ssl_config_for_proxy,
       /*force_tunnel=*/true, privacy_mode, SocketTag(), net_log, 0,
       socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
       OnHostResolutionCallback(), std::move(callback), proxy_auth_callback);
@@ -431,10 +433,12 @@ int PreconnectSocketsForHttpRequest(
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
     int num_preconnect_streams) {
+  // QUIC proxies are currently not supported through this method.
+  DCHECK(!proxy_info.is_quic());
+
   return InitSocketPoolHelper(
       group_type, endpoint, request_load_flags, request_priority, session,
-      proxy_info, quic::QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
-      ssl_config_for_proxy,
+      proxy_info, ssl_config_for_origin, ssl_config_for_proxy,
       /*force_tunnel=*/false, privacy_mode, SocketTag(), net_log,
       num_preconnect_streams, nullptr, HttpNetworkSession::NORMAL_SOCKET_POOL,
       OnHostResolutionCallback(), CompletionOnceCallback(),

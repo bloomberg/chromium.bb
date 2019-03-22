@@ -139,10 +139,12 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
       job_type_(job_type),
       using_ssl_(origin_url_.SchemeIs(url::kHttpsScheme) ||
                  origin_url_.SchemeIs(url::kWssScheme)),
-      using_quic_(
-          alternative_protocol == kProtoQUIC ||
-          (ShouldForceQuic(session, destination, origin_url, proxy_info) &&
-           !(proxy_info.is_quic() && using_ssl_))),
+      using_quic_(alternative_protocol == kProtoQUIC ||
+                  (ShouldForceQuic(session,
+                                   destination,
+                                   origin_url,
+                                   proxy_info,
+                                   using_ssl_))),
       quic_version_(quic_version),
       expect_spdy_(alternative_protocol == kProtoHTTP2 && !using_quic_),
       using_spdy_(false),
@@ -174,7 +176,8 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
   // The Job is forced to use QUIC without a designated version, try the
   // preferred QUIC version that is supported by default.
   if (quic_version_ == quic::QUIC_VERSION_UNSUPPORTED &&
-      ShouldForceQuic(session, destination, origin_url, proxy_info)) {
+      ShouldForceQuic(session, destination, origin_url, proxy_info,
+                      using_ssl_)) {
     quic_version_ = session->params().quic_supported_versions[0];
   }
 
@@ -344,11 +347,15 @@ void HttpStreamFactory::Job::GetSSLInfo(SSLInfo* ssl_info) {
 bool HttpStreamFactory::Job::ShouldForceQuic(HttpNetworkSession* session,
                                              const HostPortPair& destination,
                                              const GURL& origin_url,
-                                             const ProxyInfo& proxy_info) {
+                                             const ProxyInfo& proxy_info,
+                                             bool using_ssl) {
   if (!session->IsQuicEnabled())
     return false;
+  // If this is going through a QUIC proxy, only force QUIC for insecure
+  // requests. If the request is secure, a tunnel will be needed, and those are
+  // handled by the socket pools, using an HttpProxyConnectJob.
   if (proxy_info.is_quic())
-    return true;
+    return !using_ssl;
   return (base::ContainsKey(session->params().origins_to_force_quic_on,
                             HostPortPair()) ||
           base::ContainsKey(session->params().origins_to_force_quic_on,
@@ -933,9 +940,9 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
 
   return InitSocketHandleForHttpRequest(
       GetSocketGroup(), destination_, request_info_.load_flags, priority_,
-      session_, proxy_info_, quic_version_, server_ssl_config_,
-      proxy_ssl_config_, request_info_.privacy_mode, request_info_.socket_tag,
-      net_log_, connection_.get(), resolution_callback, io_callback_,
+      session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
+      request_info_.privacy_mode, request_info_.socket_tag, net_log_,
+      connection_.get(), resolution_callback, io_callback_,
       proxy_auth_callback);
 }
 

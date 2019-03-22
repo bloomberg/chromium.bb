@@ -21,6 +21,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 
 namespace net {
 
@@ -53,6 +54,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
+      const quic::QuicTransportVersionVector* quic_supported_versions,
       QuicStreamFactory* quic_stream_factory,
       ProxyDelegate* proxy_delegate,
       const HttpUserAgentSettings* http_user_agent_settings,
@@ -72,6 +74,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   HttpAuthCache* http_auth_cache;
   HttpAuthHandlerFactory* http_auth_handler_factory;
   SpdySessionPool* spdy_session_pool;
+  const quic::QuicTransportVersionVector* quic_supported_versions;
   QuicStreamFactory* quic_stream_factory;
   ProxyDelegate* proxy_delegate;
   const HttpUserAgentSettings* http_user_agent_settings;
