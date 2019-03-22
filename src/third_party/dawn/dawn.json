@@ -1,0 +1,1158 @@
+{
+    "_comment": [
+        "Copyright 2017 The Dawn Authors",
+        "",
+        "Licensed under the Apache License, Version 2.0 (the \"License\");",
+        "you may not use this file except in compliance with the License.",
+        "You may obtain a copy of the License at",
+        "",
+        "    http://www.apache.org/licenses/LICENSE-2.0",
+        "",
+        "Unless required by applicable law or agreed to in writing, software",
+        "distributed under the License is distributed on an \"AS IS\" BASIS,",
+        "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.",
+        "See the License for the specific language governing permissions and",
+        "limitations under the License."
+    ],
+    "address mode": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name":"repeat"},
+            {"value": 1, "name":"mirrored repeat"},
+            {"value": 2, "name":"clamp to edge"}
+        ]
+    },
+    "bind group": {
+        "category": "object"
+    },
+    "bind group builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "bind group"
+            },
+            {
+                "name": "set layout",
+                "args": [
+                    {"name": "layout", "type": "bind group layout"}
+                ]
+            },
+            {
+                "name": "set buffer views",
+                "args": [
+                    {"name": "start", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "buffer views", "type": "buffer view", "annotation": "const*", "length": "count"}
+                ]
+            },
+            {
+                "name": "set samplers",
+                "args": [
+                    {"name": "start", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "samplers", "type": "sampler", "annotation": "const*", "length": "count"}
+                ]
+            },
+            {
+                "name": "set texture views",
+                "args": [
+                    {"name": "start", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "texture views", "type": "texture view", "annotation": "const*", "length": "count"}
+                ]
+            }
+        ],
+        "TODO": [
+            "When resource are added, add methods for setting the content of the bind group"
+        ]
+    },
+    "bind group layout": {
+        "category": "object"
+    },
+    "bind group binding": {
+        "category": "structure",
+        "extensible": false,
+        "members": [
+            {"name": "binding", "type": "uint32_t"},
+            {"name": "visibility", "type": "shader stage bit"},
+            {"name": "type", "type": "binding type"}
+        ]
+    },
+    "bind group layout descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "num bindings", "type": "uint32_t"},
+            {"name": "bindings", "type": "bind group binding", "annotation": "const*", "length": "num bindings"}
+        ]
+    },
+    "binding type": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "uniform buffer"},
+            {"value": 1, "name": "sampler"},
+            {"value": 2, "name": "sampled texture"},
+            {"value": 3, "name": "storage buffer"}
+        ]
+    },
+    "blend descriptor": {
+        "category": "structure",
+        "extensible": false,
+        "members": [
+            {"name": "operation", "type": "blend operation"},
+            {"name": "src factor", "type": "blend factor"},
+            {"name": "dst factor", "type": "blend factor"}
+        ]
+    },
+    "blend factor": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "zero"},
+            {"value": 1, "name": "one"},
+            {"value": 2, "name": "src color"},
+            {"value": 3, "name": "one minus src color"},
+            {"value": 4, "name": "src alpha"},
+            {"value": 5, "name": "one minus src alpha"},
+            {"value": 6, "name": "dst color"},
+            {"value": 7, "name": "one minus dst color"},
+            {"value": 8, "name": "dst alpha"},
+            {"value": 9, "name": "one minus dst alpha"},
+            {"value": 10, "name": "src alpha saturated"},
+            {"value": 11, "name": "blend color"},
+            {"value": 12, "name": "one minus blend color"}
+        ]
+    },
+    "blend operation": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "add"},
+            {"value": 1, "name": "subtract"},
+            {"value": 2, "name": "reverse subtract"},
+            {"value": 3, "name": "min"},
+            {"value": 4, "name": "max"}
+        ]
+    },
+    "blend state": {
+        "category": "object"
+    },
+    "blend state builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "blend state"
+            },
+            {
+                "name": "set blend enabled",
+                "args": [
+                    {"name": "blend enabled", "type": "bool"}
+                ]
+            },
+            {
+                "name": "set alpha blend",
+                "args": [
+                    {"name": "alpha blend", "type": "blend descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "set color blend",
+                "args": [
+                    {"name": "color blend", "type": "blend descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "set color write mask",
+                "args": [
+                    {"name": "color write mask", "type": "color write mask"}
+                ]
+            }
+        ]
+    },
+    "bool": {
+        "category": "native"
+    },
+    "builder error status": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "success"},
+            {"value": 1, "name": "error", "TODO": "cwallez@chromium.org: recoverable errors like GPU OOM"},
+            {"value": 2, "name": "unknown"},
+            {"value": 3, "name": "context lost"}
+        ]
+    },
+    "builder error callback": {
+        "category": "natively defined"
+    },
+    "buffer": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "create buffer view builder",
+                "returns": "buffer view builder"
+            },
+            {
+                "name": "set sub data",
+                "args": [
+                    {"name": "start", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "data", "type": "uint8_t", "annotation": "const*", "length": "count"}
+                ]
+            },
+            {
+                "_comment": "Contrary to set sub data, this is in char size",
+                "name": "map read async",
+                "args": [
+                    {"name": "start", "type": "uint32_t"},
+                    {"name": "size", "type": "uint32_t"},
+                    {"name": "callback", "type": "buffer map read callback"},
+                    {"name": "userdata", "type": "callback userdata"}
+                ]
+            },
+            {
+                "_comment": "Contrary to set sub data, this is in char size",
+                "name": "map write async",
+                "args": [
+                    {"name": "start", "type": "uint32_t"},
+                    {"name": "size", "type": "uint32_t"},
+                    {"name": "callback", "type": "buffer map write callback"},
+                    {"name": "userdata", "type": "callback userdata"}
+                ]
+            },
+            {
+                "name": "unmap"
+            }
+        ]
+    },
+    "buffer builder": {
+        "_comment": "This builder is kept for testing only",
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "buffer"
+            },
+            {
+                "name": "set size",
+                "args": [
+                    {"name": "size", "type": "uint32_t"}
+                ]
+            }
+        ]
+    },
+    "buffer copy view": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "buffer", "type": "buffer"},
+            {"name": "offset", "type": "uint32_t"},
+            {"name": "row pitch", "type": "uint32_t"},
+            {"name": "image height", "type": "uint32_t"}
+        ]
+    },
+    "buffer descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "usage", "type": "buffer usage bit"},
+            {"name": "size", "type": "uint32_t"}
+        ]
+    },
+    "buffer map read callback": {
+        "category": "natively defined"
+    },
+    "buffer map write callback": {
+        "category": "natively defined"
+    },
+    "buffer map async status": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "success"},
+            {"value": 1, "name": "error"},
+            {"value": 2, "name": "unknown"},
+            {"value": 3, "name": "context lost"}
+        ]
+    },
+    "buffer usage bit": {
+        "category": "bitmask",
+        "values": [
+            {"value": 0, "name": "none"},
+            {"value": 1, "name": "map read"},
+            {"value": 2, "name": "map write"},
+            {"value": 4, "name": "transfer src"},
+            {"value": 8, "name": "transfer dst"},
+            {"value": 16, "name": "index"},
+            {"value": 32, "name": "vertex"},
+            {"value": 64, "name": "uniform"},
+            {"value": 128, "name": "storage"}
+        ]
+    },
+    "buffer view": {
+        "category": "object"
+    },
+    "buffer view builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "buffer view"
+            },
+            {
+                "name": "set extent",
+                "args": [
+                    {"name": "offset", "type": "uint32_t"},
+                    {"name": "size", "type": "uint32_t"}
+                ]
+            }
+        ]
+    },
+    "callback userdata": {
+        "category": "natively defined"
+    },
+    "char": {
+        "category": "native"
+    },
+    "color write mask": {
+        "category": "bitmask",
+        "values": [
+            {"value": 0, "name": "none"},
+            {"value": 1, "name": "red"},
+            {"value": 2, "name": "green"},
+            {"value": 4, "name": "blue"},
+            {"value": 8, "name": "alpha"},
+            {"value": 15, "name": "all"}
+        ]
+    },
+    "command buffer": {
+        "category": "object"
+    },
+    "command buffer builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "command buffer"
+            },
+            {
+                "name": "begin compute pass",
+                "returns": "compute pass encoder"
+            },
+            {
+                "name": "begin render pass",
+                "args": [
+                    {"name": "info", "type": "render pass descriptor"}
+                ],
+                "returns": "render pass encoder"
+            },
+            {
+                "name": "copy buffer to buffer",
+                "args": [
+                    {"name": "source", "type": "buffer"},
+                    {"name": "source offset", "type": "uint32_t"},
+                    {"name": "destination", "type": "buffer"},
+                    {"name": "destination offset", "type": "uint32_t"},
+                    {"name": "size", "type": "uint32_t"}
+                ],
+                "TODO": [
+                    "Restrictions on the alignment of the copy? Cf Metal on OSX"
+                ]
+            },
+            {
+                "name": "copy buffer to texture",
+                "args": [
+                    {"name": "source", "type": "buffer copy view", "annotation": "const*"},
+                    {"name": "destination", "type": "texture copy view", "annotation": "const*"},
+                    {"name": "copy size", "type": "extent 3D", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "copy texture to buffer",
+                "args": [
+                    {"name": "source", "type": "texture copy view", "annotation": "const*"},
+                    {"name": "destination", "type": "buffer copy view", "annotation": "const*"},
+                    {"name": "copy size", "type": "extent 3D", "annotation": "const*"}
+                ]
+            }
+        ]
+    },
+    "compare function": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "never"},
+            {"value": 1, "name": "less"},
+            {"value": 2, "name": "less equal"},
+            {"value": 3, "name": "greater"},
+            {"value": 4, "name": "greater equal"},
+            {"value": 5, "name": "equal"},
+            {"value": 6, "name": "not equal"},
+            {"value": 7, "name": "always"}
+        ]
+    },
+    "compute pass encoder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "set compute pipeline",
+                "TODO": "This is called setPipeline in the WebGPU IDL",
+                "args": [
+                    {"name": "pipeline", "type": "compute pipeline"}
+                ]
+            },
+            {
+                "name": "set push constants",
+                "TODO": [
+                    "data should be void*",
+                    "TODO Vulkan has an additional stage mask"
+                ],
+                "args": [
+                    {"name": "stages", "type": "shader stage bit"},
+                    {"name": "offset", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "data", "type": "uint32_t", "annotation": "const*", "length": "count"}
+                ]
+            },
+            {
+                "name": "set bind group",
+                "args": [
+                    {"name": "group index", "type": "uint32_t"},
+                    {"name": "group", "type": "bind group"}
+                ]
+            },
+            {
+                "name": "dispatch",
+                "args": [
+                    {"name": "x", "type": "uint32_t"},
+                    {"name": "y", "type": "uint32_t"},
+                    {"name": "z", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "end pass",
+                "TODO": "This returns the top-level encoder in the WebGPU IDL"
+            }
+        ]
+    },
+    "compute pipeline": {
+        "category": "object"
+    },
+    "compute pipeline descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "layout", "type": "pipeline layout"},
+            {"name": "module", "type": "shader module"},
+            {"name": "entry point", "type": "char", "annotation": "const*", "length": "strlen"}
+        ]
+    },
+    "device": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "create bind group builder",
+                "returns": "bind group builder"
+            },
+            {
+                "name": "create bind group layout",
+                "returns": "bind group layout",
+                "args": [
+                    {"name": "descriptor", "type": "bind group layout descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create blend state builder",
+                "returns": "blend state builder"
+            },
+            {
+                "name": "create buffer",
+                "returns": "buffer",
+                "args": [
+                    {"name": "descriptor", "type": "buffer descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create buffer builder for testing",
+                "returns": "buffer builder"
+            },
+            {
+                "name": "create command buffer builder",
+                "returns": "command buffer builder"
+            },
+            {
+                "name": "create depth stencil state builder",
+                "returns": "depth stencil state builder"
+            },
+            {
+                "name": "create render pass descriptor builder",
+                "returns": "render pass descriptor builder"
+            },
+            {
+                "name": "create input state builder",
+                "returns": "input state builder"
+            },
+            {
+                "name": "create compute pipeline",
+                "returns": "compute pipeline",
+                "args": [
+                    {"name": "descriptor", "type": "compute pipeline descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create render pipeline builder",
+                "returns": "render pipeline builder"
+            },
+            {
+                "name": "create pipeline layout",
+                "returns": "pipeline layout",
+                "args": [
+                    {"name": "descriptor", "type": "pipeline layout descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create queue",
+                "returns": "queue"
+            },
+            {
+                "name": "create sampler",
+                "returns": "sampler",
+                "args": [
+                    {"name": "descriptor", "type": "sampler descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create shader module",
+                "returns": "shader module",
+                "args": [
+                    {"name": "descriptor", "type": "shader module descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "create swap chain builder",
+                "returns": "swap chain builder"
+            },
+            {
+                "name": "create texture",
+                "returns": "texture",
+                "args": [
+                    {"name": "descriptor", "type": "texture descriptor", "annotation": "const*"}
+                ]
+            },
+            {
+                "name": "tick"
+            },
+            {
+                "name": "set error callback",
+                "args": [
+                    {"name": "callback", "type": "device error callback"},
+                    {"name": "userdata", "type": "callback userdata"}
+                ]
+            }
+        ]
+    },
+    "depth stencil state": {
+        "category": "object"
+    },
+    "depth stencil state builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "depth stencil state"
+            },
+            {
+                "name": "set depth compare function",
+                "args": [
+                    {"name": "depth compare function", "type": "compare function"}
+                ]
+            },
+            {
+                "name": "set depth write enabled",
+                "args" : [
+                    {"name": "enabled", "type": "bool"}
+                ]
+            },
+            {
+                "name": "set stencil function",
+                "args": [
+                    {"name": "face", "type": "face"},
+                    {"name": "stencil compare function", "type": "compare function"},
+                    {"name": "stencil failure operation", "type": "stencil operation"},
+                    {"name": "depth failure operation", "type": "stencil operation"},
+                    {"name": "stencil pass operation", "type": "stencil operation"}
+                ]
+            },
+            {
+                "name": "set stencil mask",
+                "args": [
+                    {"name": "read mask", "type": "uint32_t"},
+                    {"name": "write mask", "type": "uint32_t"}
+                ]
+            }
+        ]
+    },
+    "device error callback": {
+        "category": "natively defined"
+    },
+    "extent 3D": {
+        "category": "structure",
+        "members": [
+            {"name": "width", "type": "uint32_t"},
+            {"name": "height", "type": "uint32_t"},
+            {"name": "depth", "type": "uint32_t"}
+        ]
+    },
+    "face": {
+        "category": "bitmask",
+        "values": [
+            {"value": 0, "name": "none"},
+            {"value": 1, "name": "back"},
+            {"value": 2, "name": "front"},
+            {"value": 3, "name": "both"}
+        ]
+    },
+    "filter mode": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name":"nearest"},
+            {"value": 1, "name":"linear"}
+        ]
+    },
+    "float": {
+        "category": "native"
+    },
+    "index format": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "uint16"},
+            {"value": 1, "name": "uint32"}
+        ]
+    },
+    "input state": {
+        "category": "object"
+    },
+    "input state builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "input state"
+            },
+            {
+                "name": "set attribute",
+                "args": [
+                    {"name": "shader location", "type": "uint32_t"},
+                    {"name": "binding slot", "type": "uint32_t"},
+                    {"name": "format", "type": "vertex format"},
+                    {"name": "offset", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "set input",
+                "args": [
+                    {"name": "binding slot", "type": "uint32_t"},
+                    {"name": "stride", "type": "uint32_t"},
+                    {"name": "step mode", "type": "input step mode"}
+                ]
+            }
+        ]
+    },
+    "input step mode": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "vertex"},
+            {"value": 1, "name": "instance"}
+        ]
+    },
+    "load op": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "clear"},
+            {"value": 1, "name": "load"}
+        ]
+    },
+    "origin 3D": {
+        "category": "structure",
+        "members": [
+            {"name": "x", "type": "uint32_t"},
+            {"name": "y", "type": "uint32_t"},
+            {"name": "z", "type": "uint32_t"}
+        ]
+    },
+    "pipeline layout": {
+        "category": "object"
+    },
+    "pipeline layout descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "num bind group layouts", "type": "uint32_t"},
+            {"name": "bind group layouts", "type": "bind group layout", "annotation": "const*", "length": "num bind group layouts"}
+        ]
+    },
+    "primitive topology": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "point list"},
+            {"value": 1, "name": "line list"},
+            {"value": 2, "name": "line strip"},
+            {"value": 3, "name": "triangle list"},
+            {"value": 4, "name": "triangle strip"}
+        ]
+    },
+    "queue": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "submit",
+                "args": [
+                    {"name": "num commands", "type": "uint32_t"},
+                    {"name": "commands", "type": "command buffer", "annotation": "const*", "length": "num commands"}
+                ]
+            }
+        ]
+    },
+    "render pass descriptor builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "render pass descriptor"
+            },
+            {
+                "name": "set color attachment",
+                "args": [
+                    {"name": "attachment slot", "type": "uint32_t"},
+                    {"name": "texture view", "type": "texture view"},
+                    {"name": "load op", "type": "load op"}
+                ]
+            },
+            {
+                "name": "set color attachment clear color",
+                "TODO": "determine where to put these methods (probably BeginRenderPass?)",
+                "args": [
+                    {"name": "attachment slot", "type": "uint32_t"},
+                    {"name": "clear r", "type": "float"},
+                    {"name": "clear g", "type": "float"},
+                    {"name": "clear b", "type": "float"},
+                    {"name": "clear a", "type": "float"}
+                ]
+            },
+            {
+                "name": "set depth stencil attachment",
+                "args": [
+                    {"name": "texture view", "type": "texture view"},
+                    {"name": "depth load op", "type": "load op"},
+                    {"name": "stencil load op", "type": "load op"}
+                ]
+            },
+            {
+                "name": "set depth stencil attachment clear value",
+                "TODO": "determine where to put these methods (probably BeginRenderPass?)",
+                "args": [
+                    {"name": "clear depth", "type": "float"},
+                    {"name": "clear stencil", "type": "uint32_t"}
+                ]
+            }
+        ]
+    },
+    "render pass descriptor": {
+        "category": "object"
+    },
+    "render pass encoder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "set render pipeline",
+                "TODO": "This is called setPipeline in the WebGPU IDL",
+                "args": [
+                    {"name": "pipeline", "type": "render pipeline"}
+                ]
+            },
+            {
+                "name": "set push constants",
+                "TODO": [
+                    "data should be void*",
+                    "TODO Vulkan has an additional stage mask"
+                ],
+                "args": [
+                    {"name": "stages", "type": "shader stage bit"},
+                    {"name": "offset", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "data", "type": "uint32_t", "annotation": "const*", "length": "count"}
+                ]
+            },
+            {
+                "name": "set bind group",
+                "args": [
+                    {"name": "group index", "type": "uint32_t"},
+                    {"name": "group", "type": "bind group"}
+                ]
+            },
+            {
+                "name": "draw arrays",
+                "args": [
+                    {"name": "vertex count", "type": "uint32_t"},
+                    {"name": "instance count", "type": "uint32_t"},
+                    {"name": "first vertex", "type": "uint32_t"},
+                    {"name": "first instance", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "draw elements",
+                "args": [
+                    {"name": "index count", "type": "uint32_t"},
+                    {"name": "instance count", "type": "uint32_t"},
+                    {"name": "first index", "type": "uint32_t"},
+                    {"name": "first instance", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "set stencil reference",
+                "args": [
+                    {"name": "reference", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "set blend color",
+                "args": [
+                    {"name": "r", "type": "float"},
+                    {"name": "g", "type": "float"},
+                    {"name": "b", "type": "float"},
+                    {"name": "a", "type": "float"}
+                ]
+            },
+            {
+                "name": "set scissor rect",
+                "args": [
+                    {"name": "x", "type": "uint32_t"},
+                    {"name": "y", "type": "uint32_t"},
+                    {"name": "width", "type": "uint32_t"},
+                    {"name": "height", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "set vertex buffers",
+                "args": [
+                    {"name": "start slot", "type": "uint32_t"},
+                    {"name": "count", "type": "uint32_t"},
+                    {"name": "buffers", "type": "buffer", "annotation": "const*", "length": "count"},
+                    {"name": "offsets", "type": "uint32_t", "annotation": "const*", "length": "count"}
+                ]
+            },
+            {
+                "name": "set index buffer",
+                "args": [
+                    {"name": "buffer", "type": "buffer"},
+                    {"name": "offset", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "end pass",
+                "TODO": "This returns the top-level encoder in the WebGPU IDL"
+            }
+        ]
+    },
+    "render pipeline": {
+        "category": "object"
+    },
+    "render pipeline builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "render pipeline"
+            },
+            {
+                "name": "set color attachment format",
+                "TODO": "Also need sample count",
+                "args": [
+                    {"name": "attachment slot", "type": "uint32_t"},
+                    {"name": "format", "type": "texture format"}
+                ]
+            },
+            {
+                "name": "set depth stencil attachment format",
+                "TODO": "Also need sample count",
+                "args": [
+                    {"name": "format", "type": "texture format"}
+                ]
+            },
+            {
+                "name": "set color attachment blend state",
+                "args": [
+                    {"name": "attachment slot", "type": "uint32_t"},
+                    {"name": "blend state", "type": "blend state"}
+                ]
+            },
+            {
+                "name": "set depth stencil state",
+                "args": [
+                    {"name": "depth stencil state", "type": "depth stencil state"}
+                ]
+            },
+            {
+                "name": "set index format",
+                "args": [
+                    {"name": "format", "type": "index format"}
+                ]
+            },
+            {
+                "name": "set input state",
+                "args": [
+                    {"name": "input", "type": "input state"}
+                ]
+            },
+            {
+                "name": "set layout",
+                "args": [
+                    {"name": "layout", "type": "pipeline layout"}
+                ]
+            },
+            {
+                "name": "set primitive topology",
+                "args": [
+                    {"name": "primitive topology", "type": "primitive topology"}
+                ]
+            },
+            {
+                "name": "set stage",
+                "args": [
+                    {"name": "stage", "type": "shader stage"},
+                    {"name": "module", "type": "shader module"},
+                    {"name": "entry point", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
+    },
+    "sampler": {
+        "category": "object"
+    },
+    "sampler descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "mag filter", "type": "filter mode"},
+            {"name": "min filter", "type": "filter mode"},
+            {"name": "mipmap filter", "type": "filter mode"},
+            {"name": "address mode u", "type": "address mode"},
+            {"name": "address mode v", "type": "address mode"},
+            {"name": "address mode w", "type": "address mode"}
+        ]
+    },
+    "shader module": {
+        "category": "object"
+    },
+    "shader module descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "code size", "type": "uint32_t"},
+            {"name": "code", "type": "uint32_t", "annotation": "const*", "length": "code size"}
+        ]
+    },
+    "shader stage": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "vertex"},
+            {"value": 1, "name": "fragment"},
+            {"value": 2, "name": "compute"}
+        ]
+    },
+    "shader stage bit": {
+        "category": "bitmask",
+        "values": [
+            {"value": 0, "name": "none"},
+            {"value": 1, "name": "vertex"},
+            {"value": 2, "name": "fragment"},
+            {"value": 4, "name": "compute"}
+        ]
+    },
+    "stencil operation": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "keep"},
+            {"value": 1, "name": "zero"},
+            {"value": 2, "name": "replace"},
+            {"value": 3, "name": "invert"},
+            {"value": 4, "name": "increment clamp"},
+            {"value": 5, "name": "decrement clamp"},
+            {"value": 6, "name": "increment wrap"},
+            {"value": 7, "name": "decrement wrap"}
+        ]
+    },
+    "swap chain": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "configure",
+                "args": [
+                    {"name": "format", "type": "texture format"},
+                    {"name": "allowed usage", "type": "texture usage bit"},
+                    {"name": "width", "type": "uint32_t"},
+                    {"name": "height", "type": "uint32_t"}
+                ]
+            },
+            {
+                "name": "get next texture",
+                "returns": "texture"
+            },
+            {
+                "name": "present",
+                "args": [
+                    {"name": "texture", "type": "texture"}
+                ]
+            }
+        ]
+    },
+    "swap chain builder": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "get result",
+                "returns": "swap chain"
+            },
+            {
+                "name": "set implementation",
+                "args": [
+                    {"name": "implementation", "type": "uint64_t"}
+                ]
+            }
+        ]
+    },
+    "texture": {
+        "category": "object",
+        "methods": [
+            {
+                "name": "create default texture view",
+                "returns": "texture view"
+            },
+            {
+                "name": "create texture view",
+                "returns": "texture view",
+                "args": [
+                    {"name": "descriptor", "type": "texture view descriptor", "annotation": "const*"}
+                ]
+            }
+        ]
+    },
+    "texture aspect": {
+        "category": "bitmask",
+        "values": [
+            {"value": 1, "name": "color"},
+            {"value": 2, "name": "depth"},
+            {"value": 4, "name": "stencil"}
+        ]
+    },
+    "texture copy view": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "texture", "type": "texture"},
+            {"name": "level", "type": "uint32_t"},
+            {"name": "slice", "type": "uint32_t"},
+            {"name": "origin", "type": "origin 3D"},
+            {"name": "aspect", "type": "texture aspect"}
+        ]
+    },
+    "texture descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "usage", "type": "texture usage bit"},
+            {"name": "dimension", "type": "texture dimension"},
+            {"name": "size", "type": "extent 3D"},
+            {"name": "array layer", "type": "uint32_t"},
+            {"name": "format", "type": "texture format"},
+            {"name": "level count", "type": "uint32_t"}
+        ]
+    },
+    "texture dimension": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "2D"}
+        ]
+    },
+    "texture format": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "r8 g8 b8 a8 unorm"},
+            {"value": 1, "name": "r8 g8 unorm"},
+            {"value": 2, "name": "r8 unorm"},
+            {"value": 3, "name": "r8 g8 b8 a8 uint"},
+            {"value": 4, "name": "r8 g8 uint"},
+            {"value": 5, "name": "r8 uint"},
+            {"value": 6, "name": "b8 g8 r8 a8 unorm"},
+            {"value": 7, "name": "d32 float s8 uint"}
+        ]
+    },
+    "texture usage bit": {
+        "category": "bitmask",
+        "values": [
+            {"value": 0, "name": "none"},
+            {"value": 1, "name": "transfer src"},
+            {"value": 2, "name": "transfer dst"},
+            {"value": 4, "name": "sampled"},
+            {"value": 8, "name": "storage"},
+            {"value": 16, "name": "output attachment"},
+            {"value": 32, "name": "present"}
+        ]
+    },
+    "texture view descriptor": {
+        "category": "structure",
+        "extensible": true,
+        "members": [
+            {"name": "format", "type": "texture format"},
+            {"name": "dimension", "type": "texture view dimension"},
+            {"name": "base mip level", "type": "uint32_t"},
+            {"name": "level count", "type": "uint32_t"},
+            {"name": "base array layer", "type": "uint32_t"},
+            {"name": "layer count", "type": "uint32_t"}
+        ],
+        "TODO": [
+            "jiawei.shao@intel.com: Allow choosing the aspect (depth vs. stencil)"
+        ]
+    },
+    "texture view": {
+        "category": "object"
+    },
+    "texture view dimension": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "2D"},
+            {"value": 1, "name": "2D array"},
+            {"value": 2, "name": "cube"},
+            {"value": 3, "name": "cube array"}
+        ],
+        "TODO": [
+            "jiawei.shao@intel.com: support 1D and 3D texture views"
+        ]
+    },
+    "vertex format": {
+        "category": "enum",
+        "values": [
+            {"value": 0,  "name": "float r32 g32 b32 a32"},
+            {"value": 1,  "name": "float r32 g32 b32"},
+            {"value": 2,  "name": "float r32 g32"},
+            {"value": 3,  "name": "float r32"},
+            {"value": 4,  "name": "int r32 g32 b32 a32"},
+            {"value": 5,  "name": "int r32 g32 b32"},
+            {"value": 6,  "name": "int r32 g32"},
+            {"value": 7,  "name": "int r32"},
+            {"value": 8,  "name": "ushort r16 g16 b16 a16"},
+            {"value": 9,  "name": "ushort r16 g16"},
+            {"value": 10, "name": "unorm r8 g8 b8 a8"},
+            {"value": 11, "name": "unorm r8 g8"}
+        ]
+    },
+    "void": {
+        "category": "native"
+    },
+    "uint32_t": {
+        "category": "native"
+    },
+    "uint64_t": {
+        "category": "native"
+    },
+    "uint8_t": {
+        "category": "native"
+    }
+}
