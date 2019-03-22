@@ -163,8 +163,8 @@ class CORE_EXPORT DisplayLockContext final
   void AddToWhitespaceReattachSet(Element& element);
 
   // LifecycleNotificationObserver overrides.
-  void WillStartLifecycleUpdate() override;
-  void DidFinishLifecycleUpdate() override;
+  void WillStartLifecycleUpdate(const LocalFrameView&) override;
+  void DidFinishLifecycleUpdate(const LocalFrameView&) override;
 
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();

@@ -8,7 +8,9 @@
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform//weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -1170,12 +1172,30 @@ void AccessibleNode::NotifyAttributeChanged(
     const blink::QualifiedName& attribute) {
   // TODO(dmazzoni): Make a cleaner API for this rather than pretending
   // the DOM attribute changed.
-  if (AXObjectCache* cache = GetAXObjectCache()) {
-    if (element_)
-      cache->HandleAttributeChanged(attribute, element_);
-    else
-      cache->HandleAttributeChanged(attribute, this);
+  AXObjectCache* cache = GetAXObjectCache();
+  if (!cache)
+    return;
+
+  if (!element_) {
+    cache->HandleAttributeChanged(attribute, this);
+    return;
   }
+
+  // By definition, any attribute on an AccessibleNode is interesting to
+  // AXObjectCache, so no need to check return value.
+  cache->HandleAttributeChanged(attribute, element_);
+
+  auto* page = GetDocument()->GetPage();
+  auto* view = GetDocument()->View();
+  if (!page || !view)
+    return;
+
+  // TODO(aboxhall): add a lifecycle phase for accessibility updates.
+  if (!view->CanThrottleRendering())
+    page->Animator().ScheduleVisualUpdate(GetDocument()->GetFrame());
+
+  GetDocument()->Lifecycle().EnsureStateAtMost(
+      DocumentLifecycle::kVisualUpdatePending);
 }
 
 AXObjectCache* AccessibleNode::GetAXObjectCache() {

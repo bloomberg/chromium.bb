@@ -21,10 +21,14 @@ async_test_after_layout_and_paint((t) => {
     accessibilityController.accessibleElementById('dummy');
 
     var element = document.getElementById('ariaTextbox');
-    var axElement = accessibilityController.accessibleElementById('ariaTextbox');
     element.focus();
 
+    var axElement = accessibilityController.accessibleElementById('ariaTextbox');
     axElement.addNotificationListener(t.step_func((notification) => {
+        // Focus notification will come asynchronously after layout
+        if (notification == 'Focus')
+            return;
+
         if (notification == 'SelectedTextChanged') {
             axElement.removeNotificationListener();
             t.done();

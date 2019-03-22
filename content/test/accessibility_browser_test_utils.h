@@ -46,6 +46,9 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   // "about:blank".
   void WaitForNotification();
 
+  // Blocks until the notification is received, or the given timeout passes.
+  void WaitForNotificationWithTimeout(base::TimeDelta timeout);
+
   // After WaitForNotification has returned, this will retrieve
   // the tree of accessibility nodes received from the renderer process.
   const ui::AXTree& GetAXTree() const;

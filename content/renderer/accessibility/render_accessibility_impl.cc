@@ -692,7 +692,6 @@ void RenderAccessibilityImpl::OnPerformAction(
       break;
     case ax::mojom::Action::kSetValue:
       target.SetValue(blink::WebString::FromUTF8(data.value));
-      HandleAXEvent(target, ax::mojom::Event::kValueChanged);
       break;
     case ax::mojom::Action::kShowContextMenu:
       target.ShowContextMenu();
@@ -723,6 +722,9 @@ void RenderAccessibilityImpl::OnPerformAction(
       }
       break;
     case ax::mojom::Action::kSignalEndOfTest:
+      // Wait for 100ms to allow pending events to come in
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
       HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
       break;
   }

@@ -61,6 +61,7 @@ TEST_F(AccessibilityObjectModelTest, SetAccessibleNodeRole) {
   button->accessibleNode()->setRole("slider");
   EXPECT_EQ("slider", button->accessibleNode()->role());
 
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
   axButton = cache->GetOrCreate(button);
   EXPECT_EQ(ax::mojom::Role::kSlider, axButton->RoleValue());
 }
@@ -112,6 +113,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   // Assert that the AX object was affected by ARIA attributes.
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
   auto* axButton = cache->GetOrCreate(button);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, axButton->RoleValue());
   ax::mojom::NameFrom name_from;
@@ -123,6 +125,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   button->accessibleNode()->setRole("radio");
   button->accessibleNode()->setLabel("Radio");
   button->accessibleNode()->setDisabled(false, false);
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   // Assert that the AX object was affected by AOM properties.
   axButton = cache->GetOrCreate(button);
@@ -134,6 +137,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   button->accessibleNode()->setRole(g_null_atom);
   button->accessibleNode()->setLabel(g_null_atom);
   button->accessibleNode()->setDisabled(false, true);
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   // The AX Object should now revert to ARIA.
   axButton = cache->GetOrCreate(button);
@@ -156,6 +160,7 @@ TEST_F(AccessibilityObjectModelTest, RangeProperties) {
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
   auto* ax_slider = cache->GetOrCreate(slider);
   float value = 0.0f;
   EXPECT_TRUE(ax_slider->MinValueForRange(&value));
