@@ -97,10 +97,13 @@ public class NoTouchActivityTest {
         MockSafeBrowsingApiHandler.addMockResponse(url, "{\"matches\":[{\"threat_type\":\"5\"}]}");
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mActivity.getActivityTab().loadUrl(new LoadUrlParams(url)));
-
+        // TODO(carlosil): For now, we check the presence of an interstitial through the title since
+        // isShowingInterstitialPage does not work with committed interstitials. Once we fully
+        // migrate to committed interstitials, this should be changed to a more robust check.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> mActivity.getActivityTab().getWebContents().isShowingInterstitialPage(),
+                        -> mActivity.getActivityTab().getWebContents().getTitle().equals(
+                                "Security error"),
                 "Failed to show Safe Browsing Interstitial page", 5000, 50);
 
         MockSafeBrowsingApiHandler.clearMockResponses();

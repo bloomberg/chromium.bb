@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -21,8 +22,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -182,6 +185,25 @@ SafeBrowsingBlockingPage::GetTypeForTesting() const {
   return SafeBrowsingBlockingPage::kTypeForTesting;
 }
 
+void SafeBrowsingBlockingPage::OnInterstitialClosing() {
+  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
+      IsMainPageLoadBlocked(unsafe_resources())) {
+    // With committed interstitials OnProceed and OnDontProceed don't get
+    // called, so call FinishThreatDetails from here.
+    FinishThreatDetails(
+        (proceeded()
+             ? base::TimeDelta::FromMilliseconds(threat_details_proceed_delay())
+             : base::TimeDelta()),
+        proceeded(), controller()->metrics_helper()->NumVisits());
+    if (proceeded()) {
+      HandleSubresourcesAfterProceed();
+    } else {
+      OnDontProceedDone();
+    }
+  }
+  BaseBlockingPage::OnInterstitialClosing();
+}
+
 void SafeBrowsingBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
                                                    bool did_proceed,
                                                    int num_visits) {
@@ -251,6 +273,32 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
         GetThreatTypeStringForInterstitial(unsafe_resource.threat_type),
         /*net_error_code=*/0);
   }
+}
+
+void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
+  if (page_cmd == "\"pageLoadComplete\"") {
+    // content::WaitForRenderFrameReady sends this message when the page
+    // load completes. Ignore it.
+    return;
+  }
+
+  int command = 0;
+  bool retval = base::StringToInt(page_cmd, &command);
+  DCHECK(retval) << page_cmd;
+
+  auto interstitial_command =
+      static_cast<security_interstitials::SecurityInterstitialCommand>(command);
+  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
+      IsMainPageLoadBlocked(unsafe_resources()) &&
+      interstitial_command ==
+          security_interstitials::SecurityInterstitialCommand::CMD_PROCEED) {
+    // With committed interstitials, OnProceed() doesn't get called, so handle
+    // adding to the allow list here.
+    set_proceeded(true);
+    ui_manager()->OnBlockingPageDone(unsafe_resources(), true /* proceed */,
+                                     web_contents(), main_frame_url());
+  }
+  BaseBlockingPage::CommandReceived(page_cmd);
 }
 
 // static

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -561,19 +562,33 @@ void ThreatDetails::StartCollection() {
   }
 
   GURL referrer_url;
-  NavigationEntry* nav_entry = resource_.GetNavigationEntryForResource();
-  if (nav_entry) {
-    GURL page_url = nav_entry->GetURL();
-    if (IsReportableUrl(page_url))
-      report_->set_page_url(page_url.spec());
+  GURL page_url;
 
-    referrer_url = nav_entry->GetReferrer().url;
-    if (IsReportableUrl(referrer_url))
-      report_->set_referrer_url(referrer_url.spec());
-
-    // Add the nodes, starting from the page url.
-    AddUrl(page_url, GURL(), std::string(), nullptr);
+  // With committed interstitials, the information is pre-filled into the
+  // UnsafeResource, since the navigation entry we have at this point is for the
+  // navigation to the interstitial, and the entry with the page details get
+  // destroyed when leaving the interstitial.
+  if (!resource_.navigation_url.is_empty()) {
+    DCHECK(
+        base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials));
+    page_url = resource_.navigation_url;
+    referrer_url = resource_.referrer_url;
+  } else {
+    NavigationEntry* nav_entry = resource_.GetNavigationEntryForResource();
+    if (nav_entry) {
+      page_url = nav_entry->GetURL();
+      referrer_url = nav_entry->GetReferrer().url;
+    }
   }
+
+  if (IsReportableUrl(page_url))
+    report_->set_page_url(page_url.spec());
+
+  if (IsReportableUrl(referrer_url))
+    report_->set_referrer_url(referrer_url.spec());
+
+  // Add the nodes, starting from the page url.
+  AddUrl(page_url, GURL(), std::string(), nullptr);
 
   // Add the resource_url and its original url, if non-empty and different.
   if (!resource_.original_url.is_empty() &&

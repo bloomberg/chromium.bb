@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -204,6 +206,9 @@ class TestSafeBrowsingBlockingQuietPageFactory
 
 }  // namespace
 
+// TODO(crbug.com/940567, carlosil): With committed interstitials, these tests
+// will have to be implemented as browser tests, once that is done they should
+// be deleted from here.
 class SafeBrowsingBlockingPageTestBase
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -387,6 +392,8 @@ class SafeBrowsingBlockingPageIncognitoTest
 
 // Tests showing a blocking page for a malware page and not proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -426,6 +433,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
 
 // Tests showing a blocking page for a malware page and then proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -469,6 +478,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
 // Tests showing a blocking page for a page that contains malware subresources
 // and not proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -511,6 +522,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
 // Tests showing a blocking page for a page that contains malware subresources
 // and proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -555,6 +568,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
 // subresources (which trigger queued interstitial pages) do not break anything.
 TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -603,6 +618,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 // subresources and proceeding through the first interstitial, but not the next.
 TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceProceedThenDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -671,6 +688,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 // Tests showing a blocking page for a page that contains multiple malware
 // subresources and proceeding through the multiple interstitials.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -733,6 +752,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
 // Tests showing a blocking page then navigating back and forth to make sure the
 // controller entries are OK.  http://crbug.com/17627
 TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -786,6 +807,8 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 // Tests that calling "don't proceed" after "proceed" has been called doesn't
 // cause problems. http://crbug.com/30079
 TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -822,6 +845,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 
 // Tests showing a blocking page for a malware page with reports disabled.
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -857,6 +882,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
 
 // Test that toggling the checkbox has the anticipated effects.
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -927,6 +954,8 @@ TEST_F(SafeBrowsingBlockingPageIncognitoTest,
 // kSafeBrowsingExtendedReportingOptInAllowed is disabled.
 TEST_F(SafeBrowsingBlockingPageTest,
        ExtendedReportingNotShownNotAllowExtendedReporting) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -961,6 +990,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 
 // Tests showing a blocking page for billing.
 TEST_F(SafeBrowsingBlockingPageTest, BillingPage) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1114,6 +1145,8 @@ class SafeBrowsingBlockingQuietPageTest
 
 // Tests showing a quiet blocking page for a malware page.
 TEST_F(SafeBrowsingBlockingQuietPageTest, MalwarePage) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1135,6 +1168,8 @@ TEST_F(SafeBrowsingBlockingQuietPageTest, MalwarePage) {
 
 // Tests showing a quiet blocking page for a phishing page.
 TEST_F(SafeBrowsingBlockingQuietPageTest, PhishingPage) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1156,6 +1191,8 @@ TEST_F(SafeBrowsingBlockingQuietPageTest, PhishingPage) {
 
 // Tests showing a quiet blocking page in a giant webview.
 TEST_F(SafeBrowsingBlockingQuietPageTest, GiantWebView) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());

@@ -122,8 +122,8 @@ void SecurityInterstitialTabHelper::OpenHelpCenter() {
 }
 
 void SecurityInterstitialTabHelper::OpenDiagnostic() {
-  // SSL error pages do not implement this.
-  NOTREACHED();
+  HandleCommand(
+      security_interstitials::SecurityInterstitialCommand::CMD_OPEN_DIAGNOSTIC);
 }
 
 void SecurityInterstitialTabHelper::Reload() {
@@ -162,8 +162,8 @@ void SecurityInterstitialTabHelper::OpenWhitepaper() {
 }
 
 void SecurityInterstitialTabHelper::ReportPhishingError() {
-  // SSL error pages do not implement this.
-  NOTREACHED();
+  HandleCommand(security_interstitials::SecurityInterstitialCommand::
+                    CMD_REPORT_PHISHING_ERROR);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SecurityInterstitialTabHelper)
