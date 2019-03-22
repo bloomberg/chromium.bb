@@ -100,6 +100,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   // A static string passed in to the constructor. Should be unique across all
   // services.
   const char* service_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyedServiceBaseFactory);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_BASE_FACTORY_H_

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
@@ -102,6 +103,8 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   void SetEmptyTestingFactory(void* context) final;
   bool HasTestingFactory(void* context) final;
   void CreateServiceNow(void* context) final;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextKeyedBaseFactory);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
