@@ -271,6 +271,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
     ASSERT_TRUE(archive_directory_.CreateUniqueTempDir());
 
     taco_ = std::make_unique<PrefetchServiceTestTaco>(suggestion_source);
+    prefetch_prefs::SetEnabledByServer(taco_->pref_service(), true);
     dispatcher_ = new PrefetchDispatcherImpl(taco_->pref_service());
     network_request_factory_ = new FakePrefetchNetworkRequestFactory(
         shared_url_loader_factory(), taco_->pref_service());
@@ -338,6 +339,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   FakePrefetchNetworkRequestFactory* network_request_factory() {
     return network_request_factory_;
   }
+  PrefService* prefs() { return taco_->pref_service(); }
 
   bool reschedule_called() const { return reschedule_called_; }
   PrefetchBackgroundTaskRescheduleType reschedule_type_result() const {
@@ -464,6 +466,33 @@ TEST_F(PrefetchDispatcherTest, AddCandidatePrefetchURLsTask) {
   RunUntilIdle();
   EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
+}
+
+TEST_F(PrefetchDispatcherTest, DisabledInSettings) {
+  Configure(PrefetchServiceTestTaco::kContentSuggestions);
+  prefetch_prefs::SetPrefetchingEnabledInSettings(prefs(), false);
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace,
+                                                  test_urls_);
+  EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
+}
+
+TEST_F(PrefetchDispatcherTest, DisabledByServer) {
+  Configure(PrefetchServiceTestTaco::kContentSuggestions);
+  prefetch_prefs::SetPrefetchingEnabledInSettings(prefs(), true);
+  prefetch_prefs::SetEnabledByServer(prefs(), false);
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace,
+                                                  test_urls_);
+  EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
+}
+
+TEST_F(PrefetchDispatcherTest, ForbiddenCheckDue) {
+  Configure(PrefetchServiceTestTaco::kContentSuggestions);
+  prefetch_prefs::SetPrefetchingEnabledInSettings(prefs(), true);
+  prefetch_prefs::SetEnabledByServer(prefs(), false);
+  prefetch_prefs::ResetForbiddenStateForTesting(prefs());
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace,
+                                                  test_urls_);
+  EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
 }
 
 TEST_F(PrefetchDispatcherTest, RemovePrefetchURLsByClientId) {

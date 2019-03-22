@@ -86,6 +86,18 @@ void PrefetchRequestTestBase::RespondWithData(const std::string& data) {
       GetPendingRequest(0)->request.url.spec(), data);
 }
 
+void PrefetchRequestTestBase::RespondWithHttpErrorAndData(
+    net::HttpStatusCode http_error,
+    const std::string& data) {
+  int pending_requests_count = test_url_loader_factory_.NumPending();
+  auto resource_response_head = network::CreateResourceResponseHead(http_error);
+  DCHECK(pending_requests_count > 0);
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      GetPendingRequest(0)->request.url,
+      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
+      data);
+}
+
 network::TestURLLoaderFactory::PendingRequest*
 PrefetchRequestTestBase::GetPendingRequest(size_t index) {
   return test_url_loader_factory_.GetPendingRequest(index);

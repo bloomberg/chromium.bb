@@ -47,6 +47,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.test.util.WebServer;
@@ -58,6 +59,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -119,6 +121,20 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         }
     }
 
+    // Helper for checking isPrefetchingEnabledByServer().
+    private boolean isEnabledByServer() {
+        final AtomicBoolean isEnabled = new AtomicBoolean();
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer()); });
+        return isEnabled.get();
+    }
+
+    private void waitForServerEnabledValue(boolean wanted) {
+        CriteriaHelper.pollUiThread(() -> {
+            return PrefetchConfiguration.isPrefetchingEnabledByServer() == wanted;
+        }, "never got wanted value", 5000, 200);
+    }
+
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -177,6 +193,8 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
             PrefetchTestBridge.enableLimitlessPrefetching(true);
             PrefetchTestBridge.skipNTPSuggestionsAPIKeyCheck();
         });
+
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
     }
 
     @After
@@ -357,5 +375,57 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         Assert.assertEquals(URL2, mAddedPages.get(0).getUrl());
         Assert.assertEquals(readyLater.body.length, mAddedPages.get(0).getFileSize());
         Assert.assertNotEquals("", mAddedPages.get(0).getFilePath());
+    }
+
+    /** Request a page and get a Forbidden response. The enabled-by-server state should change. */
+    @Test
+    @MediumTest
+    @Feature({"OfflinePrefetchFeed"})
+    public void testPrefetchForbiddenByServer() throws Throwable {
+        mOPS.setForbidGeneratePageBundle(true);
+
+        Assert.assertTrue(isEnabledByServer());
+
+        forceLoadSnippets();
+        runBackgroundTaskUntilCallCountReached(mOPS.GeneratePageBundleCalled, 0, 1);
+        waitForServerEnabledValue(false);
+
+        Assert.assertFalse(isEnabledByServer());
+    }
+
+    /**
+     * Check that a server-enabled check can enable prefetching.
+     */
+    @Test
+    @MediumTest
+    @Feature({"OfflinePrefetchFeed"})
+    public void testPrefetchBecomesEnabledByServer() throws Throwable {
+        OfflineTestUtil.setPrefetchingEnabledByServer(false);
+
+        Assert.assertFalse(isEnabledByServer());
+
+        forceLoadSnippets();
+        waitForServerEnabledValue(true);
+
+        Assert.assertTrue(isEnabledByServer());
+    }
+
+    /**
+     * Check that prefetching remains disabled by the server after receiving a forbidden
+     * response.
+     */
+    @Test
+    @MediumTest
+    @Feature({"OfflinePrefetchFeed"})
+    public void testPrefetchRemainsDisabledByServer() throws Throwable {
+        OfflineTestUtil.setPrefetchingEnabledByServer(false);
+        mOPS.setForbidGeneratePageBundle(true);
+
+        Assert.assertFalse(isEnabledByServer());
+
+        forceLoadSnippets();
+        waitForServerEnabledValue(false);
+
+        Assert.assertFalse(isEnabledByServer());
     }
 }

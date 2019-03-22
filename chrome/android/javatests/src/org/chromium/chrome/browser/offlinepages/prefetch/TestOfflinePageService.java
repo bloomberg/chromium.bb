@@ -51,6 +51,11 @@ public class TestOfflinePageService {
     private HashMap<String, PageBehavior> mPageBehaviors = new HashMap<String, PageBehavior>();
     private StatusOuterClass.Code mDefaultGenerateStatus = StatusOuterClass.Code.OK;
 
+    private boolean mForbidGeneratePageBundle;
+    public void setForbidGeneratePageBundle(boolean shouldForbid) {
+        mForbidGeneratePageBundle = shouldForbid;
+    }
+
     private static int sNextOperationIndex = 1;
     private static String newOperationName() {
         String name = "operation-" + String.valueOf(sNextOperationIndex);
@@ -103,9 +108,13 @@ public class TestOfflinePageService {
         if (request.getMethod().equals("POST")
                 && request.getURI().startsWith("/v1:GeneratePageBundle")) {
             try {
-                GeneratePageBundleRequest bundleRequest =
-                        GeneratePageBundleRequest.parseFrom(request.getBody());
-                handleGeneratePageBundle(bundleRequest, stream);
+                if (mForbidGeneratePageBundle) {
+                    respondForbidden(stream);
+                } else {
+                    GeneratePageBundleRequest bundleRequest =
+                            GeneratePageBundleRequest.parseFrom(request.getBody());
+                    handleGeneratePageBundle(bundleRequest, stream);
+                }
                 GeneratePageBundleCalled.notifyCalled();
                 return true;
             } catch (InvalidProtocolBufferException e) {
@@ -215,11 +224,20 @@ public class TestOfflinePageService {
     /** Handle a GeneratePageBundle request. */
     private void handleGeneratePageBundle(GeneratePageBundleRequest request, OutputStream output)
             throws IOException {
-        String operationName = newOperationName();
+        String operationName = "operations/empty";
+        if (request.getPagesCount() > 0) {
+            operationName = newOperationName();
+        }
         mOperations.put(operationName, request);
         if (!writeOperationResponse(operationName, request, true, output)) {
             mIncompleteOperations.add(operationName);
         }
+    }
+
+    /** Send a "Forbidden by OPS" response. */
+    private void respondForbidden(OutputStream output) throws IOException {
+        WebServer.writeResponse(
+                output, "403 Forbidden", "... request forbidden by OPS ...".getBytes());
     }
 
     /**

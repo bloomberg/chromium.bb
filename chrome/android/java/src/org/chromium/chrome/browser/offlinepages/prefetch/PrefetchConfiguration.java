@@ -31,6 +31,13 @@ public class PrefetchConfiguration {
     }
 
     /**
+     * Return the value of offline_pages.enabled_by_server pref.
+     */
+    public static boolean isPrefetchingEnabledByServer() {
+        return nativeIsEnabledByServer(Profile.getLastUsedProfile());
+    }
+
+    /**
      * Sets the value of the user controlled setting that controls whether Offline Prefetch is
      * enabled or disabled. If the current browser Profile is null the setting will not be changed.
      */
@@ -39,6 +46,7 @@ public class PrefetchConfiguration {
     }
 
     private static native boolean nativeIsPrefetchingEnabled(Profile profile);
+    private static native boolean nativeIsEnabledByServer(Profile profile);
     private static native void nativeSetPrefetchingEnabledInSettings(
             Profile profile, boolean enabled);
 }

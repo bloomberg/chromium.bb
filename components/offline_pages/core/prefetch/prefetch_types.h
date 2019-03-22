@@ -58,8 +58,12 @@ enum class PrefetchRequestStatus {
   // The request was blocked by a URL blacklist configured by the domain
   // administrator.
   kShouldSuspendBlockedByAdministrator = 5,
+  // The request was answered with a 403 Forbidden response including a message
+  // indicating that the request was forbidden specifically by an OPS request
+  // filtering rule.
+  kShouldSuspendForbiddenByOPS = 6,
   // kMaxValue should always be the last type.
-  kMaxValue = kShouldSuspendBlockedByAdministrator
+  kMaxValue = kShouldSuspendForbiddenByOPS
 };
 
 // Status indicating the page rendering status in the server.

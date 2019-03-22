@@ -16,8 +16,12 @@ namespace {
 const char kEnabled[] = "offline_prefetch.enabled";
 const char kLimitlessPrefetchingEnabledTimePref[] =
     "offline_prefetch.limitless_prefetching_enabled_time";
-const char kSendPrefetchTestingHeaderPref[] =
+const char kPrefetchTestingHeaderPref[] =
     "offline_prefetch.testing_header_value";
+const char kEnabledByServer[] = "offline_prefetch.enabled_by_server";
+const char kNextForbiddenCheckTimePref[] = "offline_prefetch.next_gpb_check";
+const base::TimeDelta kForbiddenCheckDelay = base::TimeDelta::FromDays(7);
+
 }  // namespace
 
 const char kBackoff[] = "offline_prefetch.backoff";
@@ -27,7 +31,9 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kEnabled, true);
   registry->RegisterTimePref(kLimitlessPrefetchingEnabledTimePref,
                              base::Time());
-  registry->RegisterStringPref(kSendPrefetchTestingHeaderPref, std::string());
+  registry->RegisterStringPref(kPrefetchTestingHeaderPref, std::string());
+  registry->RegisterBooleanPref(kEnabledByServer, false);
+  registry->RegisterTimePref(kNextForbiddenCheckTimePref, base::Time());
 }
 
 void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled) {
@@ -35,7 +41,8 @@ void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled) {
 }
 
 bool IsEnabled(PrefService* prefs) {
-  return IsPrefetchingOfflinePagesEnabled() && prefs->GetBoolean(kEnabled);
+  return IsPrefetchingOfflinePagesEnabled() && prefs->GetBoolean(kEnabled) &&
+         IsEnabledByServer(prefs);
 }
 
 void SetLimitlessPrefetchingEnabled(PrefService* prefs, bool enabled) {
@@ -63,12 +70,44 @@ bool IsLimitlessPrefetchingEnabled(PrefService* prefs) {
 
 void SetPrefetchTestingHeader(PrefService* prefs, const std::string& value) {
   DCHECK(prefs);
-  prefs->SetString(kSendPrefetchTestingHeaderPref, value);
+  prefs->SetString(kPrefetchTestingHeaderPref, value);
 }
 
 std::string GetPrefetchTestingHeader(PrefService* prefs) {
   DCHECK(prefs);
-  return prefs->GetString(kSendPrefetchTestingHeaderPref);
+  return prefs->GetString(kPrefetchTestingHeaderPref);
+}
+
+bool IsForbiddenCheckDue(PrefService* prefs) {
+  DCHECK(prefs);
+  base::Time checkTime = prefs->GetTime(kNextForbiddenCheckTimePref);
+  return IsPrefetchingOfflinePagesEnabled() && prefs->GetBoolean(kEnabled) &&
+         !IsEnabledByServer(prefs) &&
+         (checkTime < OfflineTimeNow() ||  // did the delay expire?
+          checkTime >
+              OfflineTimeNow() +
+                  kForbiddenCheckDelay);  // is the next time unreasonably far
+                                          // in the future (e.g. clock change)?
+}
+
+void SetEnabledByServer(PrefService* prefs, bool enabled) {
+  DCHECK(prefs);
+  prefs->SetBoolean(kEnabledByServer, enabled);
+  if (!enabled) {
+    prefs->SetTime(kNextForbiddenCheckTimePref,
+                   OfflineTimeNow() + kForbiddenCheckDelay);
+  }
+}
+
+bool IsEnabledByServer(PrefService* prefs) {
+  DCHECK(prefs);
+  return prefs->GetBoolean(kEnabledByServer);
+}
+
+void ResetForbiddenStateForTesting(PrefService* prefs) {
+  DCHECK(prefs);
+  SetEnabledByServer(prefs, false);
+  prefs->SetTime(kNextForbiddenCheckTimePref, base::Time());
 }
 
 }  // namespace prefetch_prefs

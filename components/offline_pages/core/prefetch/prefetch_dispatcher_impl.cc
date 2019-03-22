@@ -27,6 +27,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/offline_pages/core/prefetch/server_forbidden_check_request.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/offline_pages/core/prefetch/tasks/add_unique_urls_task.h"
@@ -103,8 +104,13 @@ void PrefetchDispatcherImpl::EnsureTaskScheduledWithGCMToken(
 void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
     const std::string& name_space,
     const std::vector<PrefetchURL>& prefetch_urls) {
-  if (!prefetch_prefs::IsEnabled(pref_service_))
+  if (!prefetch_prefs::IsEnabled(pref_service_)) {
+    if (prefetch_prefs::IsForbiddenCheckDue(pref_service_)) {
+      CheckIfEnabledByServer(service_->GetPrefetchNetworkRequestFactory(),
+                             pref_service_);
+    }
     return;
+  }
 
   service_->GetLogger()->RecordActivity("Dispatcher: Received " +
                                         std::to_string(prefetch_urls.size()) +
@@ -136,8 +142,6 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
 
 void PrefetchDispatcherImpl::NewSuggestionsAvailable(
     SuggestionsProvider* suggestions_provider) {
-  if (!prefetch_prefs::IsEnabled(pref_service_))
-    return;
   suggestions_provider->GetCurrentArticleSuggestions(
       base::BindOnce(&PrefetchDispatcherImpl::AddSuggestions, GetWeakPtr()));
 }
@@ -336,6 +340,7 @@ void PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest(
         reschedule_type =
             PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITHOUT_BACKOFF;
         break;
+      case PrefetchRequestStatus::kShouldSuspendForbiddenByOPS:
       case PrefetchRequestStatus::kShouldSuspendForbidden:
       case PrefetchRequestStatus::kShouldSuspendNotImplemented:
       case PrefetchRequestStatus::kShouldSuspendBlockedByAdministrator:

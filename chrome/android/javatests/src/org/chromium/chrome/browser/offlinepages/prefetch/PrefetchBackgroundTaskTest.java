@@ -22,6 +22,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
@@ -200,6 +201,7 @@ public class PrefetchBackgroundTaskTest {
                 BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
             }
         });
+        OfflineTestUtil.setPrefetchingEnabledByServer(true);
     }
 
     private void scheduleTask(int additionalDelaySeconds) {

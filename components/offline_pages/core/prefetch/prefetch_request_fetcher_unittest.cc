@@ -31,6 +31,9 @@ class PrefetchRequestFetcherTest : public PrefetchRequestTestBase {
   PrefetchRequestStatus RunFetcherWithHttpError(net::HttpStatusCode http_error);
   PrefetchRequestStatus RunFetcherWithData(const std::string& response_data,
                                            std::string* data_received);
+  PrefetchRequestStatus RunFetcherWithHttpErrorAndData(
+      net::HttpStatusCode http_error,
+      const std::string& response_data);
 
  private:
   PrefetchRequestStatus RunFetcher(
@@ -66,6 +69,17 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithData(
   return RunFetcher(base::BindOnce(&PrefetchRequestTestBase::RespondWithData,
                                    base::Unretained(this), response_data),
                     data_received);
+}
+
+PrefetchRequestStatus
+PrefetchRequestFetcherTest::RunFetcherWithHttpErrorAndData(
+    net::HttpStatusCode http_error,
+    const std::string& response_data) {
+  std::string data_received;
+  return RunFetcher(
+      base::BindOnce(&PrefetchRequestTestBase::RespondWithHttpErrorAndData,
+                     base::Unretained(this), http_error, response_data),
+      &data_received);
 }
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
@@ -126,6 +140,10 @@ TEST_F(PrefetchRequestFetcherTest, HttpErrors) {
             RunFetcherWithHttpError(net::HTTP_SERVICE_UNAVAILABLE));
   EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,
             RunFetcherWithHttpError(net::HTTP_GATEWAY_TIMEOUT));
+
+  EXPECT_EQ(PrefetchRequestStatus::kShouldSuspendForbiddenByOPS,
+            RunFetcherWithHttpErrorAndData(net::HTTP_FORBIDDEN,
+                                           "request forbidden by OPS"));
 }
 
 TEST_F(PrefetchRequestFetcherTest, EmptyResponse) {
