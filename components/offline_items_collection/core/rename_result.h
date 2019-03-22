@@ -9,11 +9,12 @@
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
 enum class RenameResult {
-  SUCCESS = 0,                   // Rename filename successfully
-  FAILURE_NAME_CONFLICT = 1,     // Filename already exists
-  FAILURE_NAME_TOO_LONG = 2,     // Illegal file name: too long
-  FAILURE_NAME_UNAVIALABLE = 3,  // Name unavailable
-  FAILURE_UNKNOWN = 4,           // Unknown
+  SUCCESS = 0,                // Rename filename successfully
+  FAILURE_NAME_CONFLICT = 1,  // Filename already exists
+  FAILURE_NAME_TOO_LONG = 2,  // Illegal file name: too long
+  FAILURE_NAME_INVALID = 3,   // Name invalid
+  FAILURE_UNAVAILABLE = 4,    // Item unavailable
+  FAILURE_UNKNOWN = 5,        // Unknown
   kMaxValue = FAILURE_UNKNOWN
 };
 

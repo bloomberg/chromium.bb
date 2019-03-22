@@ -64,10 +64,8 @@ ScopedJavaLocalRef<jobject> OfflineItemBridge::CreateOfflineItemList(
     const std::vector<OfflineItem>& items) {
   ScopedJavaLocalRef<jobject> jlist =
       Java_OfflineItemBridge_createArrayList(env);
-
   for (const auto& item : items)
     JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(env, jlist, item);
-
   return jlist;
 }
 

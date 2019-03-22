@@ -261,7 +261,7 @@ void FakeDownloadItem::ShowDownloadInShell() {
   NOTREACHED();
 }
 
-void FakeDownloadItem::Rename(const std::string& name,
+void FakeDownloadItem::Rename(const base::FilePath& name,
                               RenameDownloadCallback callback) {
   NOTREACHED();
 }

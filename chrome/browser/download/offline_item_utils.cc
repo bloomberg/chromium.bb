@@ -290,8 +290,10 @@ RenameResult OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(
       return RenameResult::FAILURE_NAME_CONFLICT;
     case DownloadRenameResult::FAILURE_NAME_TOO_LONG:
       return RenameResult::FAILURE_NAME_TOO_LONG;
-    case DownloadRenameResult::FAILURE_NAME_UNAVIALABLE:
-      return RenameResult::FAILURE_NAME_UNAVIALABLE;
+    case DownloadRenameResult::FAILURE_NAME_INVALID:
+      return RenameResult::FAILURE_NAME_INVALID;
+    case DownloadRenameResult::FAILURE_UNAVAILABLE:
+      return RenameResult::FAILURE_UNAVAILABLE;
     case DownloadRenameResult::FAILURE_UNKNOWN:
       return RenameResult::FAILURE_UNKNOWN;
   }

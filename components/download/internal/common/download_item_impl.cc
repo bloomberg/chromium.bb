@@ -617,7 +617,6 @@ void DownloadItemImpl::Remove() {
 
   InterruptAndDiscardPartialState(DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   UpdateObservers();
-
   NotifyRemoved();
   delegate_->DownloadRemoved(this);
   // We have now been deleted.
@@ -662,21 +661,37 @@ void DownloadItemImpl::ShowDownloadInShell() {
 }
 
 void DownloadItemImpl::RenameDownloadedFileDone(RenameDownloadCallback callback,
+                                                const base::FilePath& new_path,
                                                 DownloadRenameResult result) {
-  if (std::move(result) == DownloadRenameResult::SUCCESS) {
-    NOTIMPLEMENTED();
+  if (result == DownloadRenameResult::SUCCESS) {
+    destination_info_.target_path = new_path;
+    destination_info_.current_path = new_path;
+    UpdateObservers();
   }
   std::move(callback).Run(result);
 }
 
-void DownloadItemImpl::Rename(const std::string& name,
+void DownloadItemImpl::Rename(const base::FilePath& name,
                               DownloadItem::RenameDownloadCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (name.IsAbsolute()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(callback), GetFullPath(),
+                                  DownloadRenameResult::FAILURE_NAME_INVALID));
+    return;
+  }
+
+  auto full_path = base::FilePath(GetFullPath().DirName()).Append(name);
+
   base::PostTaskAndReplyWithResult(
       GetDownloadTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(), name),
+      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(), full_path),
       base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     full_path));
 }
 
 uint32_t DownloadItemImpl::GetId() const {

@@ -26,7 +26,7 @@ public class RenameDialogCustomView extends ScrollView {
         super(context, attrs);
     }
 
-    // ScrollView Implementation
+    // ScrollView implementation.
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -58,8 +58,11 @@ public class RenameDialogCustomView extends ScrollView {
             case RenameResult.FAILURE_NAME_TOO_LONG:
                 mSubtitleView.setText(R.string.rename_failure_name_too_long);
                 break;
-            case RenameResult.FAILURE_UNKNOWN:
-                mSubtitleView.setText(R.string.rename_failure_name_unavailable);
+            case RenameResult.FAILURE_NAME_INVALID:
+                mSubtitleView.setText(R.string.rename_failure_name_invalid);
+                break;
+            case RenameResult.FAILURE_UNAVAILABLE:
+                mSubtitleView.setText(R.string.rename_failure_unavailable);
                 break;
             default:
                 break;
