@@ -41,7 +41,7 @@ static WebURLResponse CreateResponse(const GRFUTestCase& test) {
        base::SplitString(test.headers, "\n", base::KEEP_WHITESPACE,
                          base::SPLIT_WANT_NONEMPTY)) {
     size_t colon = line.find(": ");
-    response.AddHTTPHeaderField(WebString::FromUTF8(line.substr(0, colon)),
+    response.AddHttpHeaderField(WebString::FromUTF8(line.substr(0, colon)),
                                 WebString::FromUTF8(line.substr(colon + 2)));
   }
   return response;

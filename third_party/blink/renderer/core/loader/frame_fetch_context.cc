@@ -322,7 +322,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kNoScriptOn) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         "Intervention",
         "<https://www.chromestatus.com/features/4775088607985664>; "
         "level=\"warning\"");
@@ -330,7 +330,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kResourceLoadingHintsOn) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         "Intervention",
         "<https://www.chromestatus.com/features/4510564810227712>; "
         "level=\"warning\"");
@@ -338,7 +338,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kClientLoFiOn) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         "Intervention",
         "<https://www.chromestatus.com/features/6072546726248448>; "
         "level=\"warning\"");
@@ -721,7 +721,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       result.Append(' ');
       result.Append(version.data());
     }
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUA)],
         result.ToAtomicString());
@@ -743,7 +743,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
                            hints_preferences, enabled_hints)) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         "Device-Memory",
         AtomicString(String::Number(
             ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
@@ -752,14 +752,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   float dpr = GetDevicePixelRatio();
   if (ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
                            enabled_hints)) {
-    request.AddHTTPHeaderField("DPR", AtomicString(String::Number(dpr)));
+    request.AddHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
   }
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
                            hints_preferences, enabled_hints)) {
     if (resource_width.is_set) {
       float physical_width = resource_width.width * dpr;
-      request.AddHTTPHeaderField(
+      request.AddHttpHeaderField(
           "Width", AtomicString(String::Number(ceil(physical_width))));
     }
   }
@@ -767,7 +767,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences, enabled_hints) &&
       !GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
   }
@@ -788,7 +788,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
     uint32_t rtt =
         GetNetworkStateNotifier().RoundRtt(request.Url().Host(), http_rtt);
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kRtt)],
         AtomicString(String::Number(rtt)));
@@ -804,7 +804,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
     double mbps = GetNetworkStateNotifier().RoundMbps(request.Url().Host(),
                                                       throughput_mbps);
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kDownlink)],
         AtomicString(String::Number(mbps)));
@@ -817,7 +817,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     if (!holdback_ect)
       holdback_ect = GetNetworkStateNotifier().EffectiveType();
 
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kEct)],
         AtomicString(NetworkStateNotifier::EffectiveConnectionTypeToString(
@@ -826,7 +826,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kLang, hints_preferences,
                            enabled_hints)) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kLang)],
         GetFrame()
@@ -837,7 +837,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kUAArch,
                            hints_preferences, enabled_hints)) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAArch)],
         AtomicString(ua.architecture.data()));
@@ -845,7 +845,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kUAPlatform,
                            hints_preferences, enabled_hints)) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAPlatform)],
         AtomicString(ua.platform.data()));
@@ -853,7 +853,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kUAModel,
                            hints_preferences, enabled_hints)) {
-    request.AddHTTPHeaderField(
+    request.AddHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAModel)],
         AtomicString(ua.model.data()));
@@ -870,7 +870,7 @@ void FrameFetchContext::PopulateResourceRequest(
 
   const ContentSecurityPolicy* csp = GetContentSecurityPolicy();
   if (csp && csp->ShouldSendCSPHeader(type))
-    request.AddHTTPHeaderField("CSP", "active");
+    request.AddHttpHeaderField("CSP", "active");
 }
 
 void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {

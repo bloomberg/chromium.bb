@@ -244,7 +244,7 @@ void ResourceResponse::SetHttpHeaderField(const AtomicString& name,
   http_header_fields_.Set(name, value);
 }
 
-void ResourceResponse::AddHTTPHeaderField(const AtomicString& name,
+void ResourceResponse::AddHttpHeaderField(const AtomicString& name,
                                           const AtomicString& value) {
   UpdateHeaderParsedState(name);
 

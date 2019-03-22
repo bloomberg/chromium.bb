@@ -716,7 +716,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
     // the headers have a name listed in the forbidden header names.
     DCHECK(!cors::IsForbiddenHeaderName(header.first));
 
-    request.AddHTTPHeaderField(AtomicString(header.first),
+    request.AddHttpHeaderField(AtomicString(header.first),
                                AtomicString(header.second));
   }
 

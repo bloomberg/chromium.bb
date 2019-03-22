@@ -674,7 +674,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
+  resource_response.AddHttpHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
   image_resource->ResponseReceived(resource_response);
@@ -722,7 +722,7 @@ TEST_P(ImageResourceReloadTest,
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHTTPHeaderField("chrome-proxy", "q=low");
+  resource_response.AddHttpHeaderField("chrome-proxy", "q=low");
 
   image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
@@ -816,7 +816,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
   ResourceResponse resource_response(NullURL());
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
+  resource_response.AddHttpHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
   image_resource->Loader()->DidReceiveResponse(
@@ -889,7 +889,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderDuringResponse) {
   ResourceResponse resource_response(test_url);
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-  resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
+  resource_response.AddHttpHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
   image_resource->Loader()->DidReceiveResponse(

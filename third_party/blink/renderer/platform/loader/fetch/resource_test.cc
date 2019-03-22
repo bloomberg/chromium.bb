@@ -345,12 +345,12 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   Resource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  response.AddHTTPHeaderField("keep-alive", "keep-alive value");
-  response.AddHTTPHeaderField("expires", "expires value");
-  response.AddHTTPHeaderField("last-modified", "last-modified value");
-  response.AddHTTPHeaderField("proxy-authenticate", "proxy-authenticate value");
-  response.AddHTTPHeaderField("proxy-connection", "proxy-connection value");
-  response.AddHTTPHeaderField("x-custom", "custom value");
+  response.AddHttpHeaderField("keep-alive", "keep-alive value");
+  response.AddHttpHeaderField("expires", "expires value");
+  response.AddHttpHeaderField("last-modified", "last-modified value");
+  response.AddHttpHeaderField("proxy-authenticate", "proxy-authenticate value");
+  response.AddHttpHeaderField("proxy-connection", "proxy-connection value");
+  response.AddHttpHeaderField("x-custom", "custom value");
   resource->ResponseReceived(response);
   resource->FinishForTest();
   GetMemoryCache()->Add(resource);
@@ -382,13 +382,13 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHttpStatusCode(304);
   // Headers that aren't copied with an 304 code.
-  revalidating_response.AddHTTPHeaderField("keep-alive", "garbage");
-  revalidating_response.AddHTTPHeaderField("expires", "garbage");
-  revalidating_response.AddHTTPHeaderField("last-modified", "garbage");
-  revalidating_response.AddHTTPHeaderField("proxy-authenticate", "garbage");
-  revalidating_response.AddHTTPHeaderField("proxy-connection", "garbage");
+  revalidating_response.AddHttpHeaderField("keep-alive", "garbage");
+  revalidating_response.AddHttpHeaderField("expires", "garbage");
+  revalidating_response.AddHttpHeaderField("last-modified", "garbage");
+  revalidating_response.AddHttpHeaderField("proxy-authenticate", "garbage");
+  revalidating_response.AddHttpHeaderField("proxy-connection", "garbage");
   // Header that is updated with 304 code.
-  revalidating_response.AddHTTPHeaderField("x-custom", "updated");
+  revalidating_response.AddHttpHeaderField("x-custom", "updated");
   resource->ResponseReceived(revalidating_response);
 
   // Validate the original response.

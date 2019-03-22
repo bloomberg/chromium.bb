@@ -287,7 +287,7 @@ void ResourceRequest::SetPriority(ResourceLoadPriority priority,
   intra_priority_value_ = intra_priority_value;
 }
 
-void ResourceRequest::AddHTTPHeaderField(const AtomicString& name,
+void ResourceRequest::AddHttpHeaderField(const AtomicString& name,
                                          const AtomicString& value) {
   HTTPHeaderMap::AddResult result = http_header_fields_.Add(name, value);
   if (!result.is_new_entry)
@@ -298,7 +298,7 @@ void ResourceRequest::AddHTTPHeaderFields(const HTTPHeaderMap& header_fields) {
   HTTPHeaderMap::const_iterator end = header_fields.end();
   for (HTTPHeaderMap::const_iterator it = header_fields.begin(); it != end;
        ++it)
-    AddHTTPHeaderField(it->key, it->value);
+    AddHttpHeaderField(it->key, it->value);
 }
 
 void ResourceRequest::ClearHttpHeaderField(const AtomicString& name) {

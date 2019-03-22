@@ -196,7 +196,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (!headers.empty()) {
     net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n\r");
     while (it.GetNext()) {
-      dest->AddHTTPHeaderField(WebString::FromUTF8(it.name()),
+      dest->AddHttpHeaderField(WebString::FromUTF8(it.name()),
                                WebString::FromUTF8(it.values()));
     }
   }
@@ -233,7 +233,7 @@ bool CreateWebURLRequest(PP_Instance instance,
 
   if (data->has_custom_content_transfer_encoding &&
       !data->custom_content_transfer_encoding.empty()) {
-    dest->AddHTTPHeaderField(
+    dest->AddHttpHeaderField(
         WebString::FromUTF8("Content-Transfer-Encoding"),
         WebString::FromUTF8(data->custom_content_transfer_encoding));
   }

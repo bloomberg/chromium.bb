@@ -58,14 +58,14 @@ void EmitErrorBlocked(const String& url, Document& document) {
 }
 
 void AddWarningHeader(FetchParameters* params) {
-  params->MutableResourceRequest().AddHTTPHeaderField(
+  params->MutableResourceRequest().AddHttpHeaderField(
       "Intervention",
       "<https://www.chromestatus.com/feature/5718547946799104>; "
       "level=\"warning\"");
 }
 
 void AddHeader(FetchParameters* params) {
-  params->MutableResourceRequest().AddHTTPHeaderField(
+  params->MutableResourceRequest().AddHttpHeaderField(
       "Intervention",
       "<https://www.chromestatus.com/feature/5718547946799104>");
 }

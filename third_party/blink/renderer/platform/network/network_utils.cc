@@ -94,7 +94,7 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response.AddHTTPHeaderField(WebString::FromLatin1(name),
+    response.AddHttpHeaderField(WebString::FromLatin1(name),
                                 WebString::FromLatin1(value));
   }
   return std::make_tuple(net::OK, std::move(response), std::move(buffer));
