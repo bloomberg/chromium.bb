@@ -242,7 +242,6 @@ Polymer({
     this.networkProperties_ = {
       GUID: this.guid,
       Type: type,
-      ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
       Name: {Active: name},
     };
     this.didSetFocus_ = false;
@@ -251,8 +250,17 @@ Polymer({
 
   close: function() {
     this.guid = '';
+
     // Delay navigating to allow other subpages to load first.
-    requestAnimationFrame(() => settings.navigateToPreviousRoute());
+    requestAnimationFrame(() => {
+      // Clear network properties before navigating away to ensure that a future
+      // navigation back to the details page does not show a flicker of
+      // incorrect text. See https://crbug.com/905986.
+      this.networkProperties_ = undefined;
+      this.networkPropertiesReceived_ = false;
+
+      settings.navigateToPreviousRoute();
+    });
   },
 
   /** @private */
@@ -585,8 +593,7 @@ Polymer({
   showDisconnect_: function(networkProperties) {
     return !!networkProperties &&
         networkProperties.Type != CrOnc.Type.ETHERNET &&
-        networkProperties.ConnectionState !=
-        CrOnc.ConnectionState.NOT_CONNECTED;
+        CrOnc.isConnectingOrConnected(networkProperties);
   },
 
   /**
@@ -654,8 +661,7 @@ Polymer({
       }
     }
     if ((type == CrOnc.Type.WI_FI || type == CrOnc.Type.WI_MAX) &&
-        networkProperties.ConnectionState !=
-            CrOnc.ConnectionState.NOT_CONNECTED) {
+        CrOnc.isConnectingOrConnected(networkProperties)) {
       return false;
     }
     if (this.isArcVpn_(networkProperties) &&
