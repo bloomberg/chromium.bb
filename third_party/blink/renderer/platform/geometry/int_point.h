@@ -27,12 +27,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_
 
+#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -75,8 +75,8 @@ class PLATFORM_EXPORT IntPoint {
     y_ += dy;
   }
   void SaturatedMove(int dx, int dy) {
-    x_ = ClampAdd(x_, dx);
-    y_ = ClampAdd(y_, dy);
+    x_ = base::ClampAdd(x_, dx);
+    y_ = base::ClampAdd(y_, dy);
   }
 
   void Scale(float sx, float sy) {

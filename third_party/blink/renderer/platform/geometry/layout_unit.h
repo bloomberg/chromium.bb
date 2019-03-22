@@ -33,7 +33,9 @@
 
 #include <iosfwd>
 #include <limits>
+
 #include "base/compiler_specific.h"
+#include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -133,7 +135,7 @@ class LayoutUnit {
   constexpr operator bool() const { return value_; }
 
   LayoutUnit operator++(int) {
-    value_ = ClampAdd(value_, kFixedPointDenominator);
+    value_ = base::ClampAdd(value_, kFixedPointDenominator);
     return *this;
   }
 
@@ -469,7 +471,7 @@ inline LayoutUnit operator/(const IntegerType a, const LayoutUnit& b) {
 
 ALWAYS_INLINE LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
-  return_val.SetRawValue(ClampAdd(a.RawValue(), b.RawValue()).RawValue());
+  return_val.SetRawValue(base::ClampAdd(a.RawValue(), b.RawValue()).RawValue());
   return return_val;
 }
 
@@ -501,7 +503,7 @@ constexpr inline double operator+(const double a, const LayoutUnit& b) {
 
 ALWAYS_INLINE LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
-  return_val.SetRawValue(ClampSub(a.RawValue(), b.RawValue()).RawValue());
+  return_val.SetRawValue(base::ClampSub(a.RawValue(), b.RawValue()).RawValue());
   return return_val;
 }
 
@@ -529,7 +531,7 @@ constexpr float operator-(const float a, const LayoutUnit& b) {
 
 inline LayoutUnit operator-(const LayoutUnit& a) {
   LayoutUnit return_val;
-  return_val.SetRawValue((-MakeClampedNum(a.RawValue())).RawValue());
+  return_val.SetRawValue((-base::MakeClampedNum(a.RawValue())).RawValue());
   return return_val;
 }
 
@@ -559,7 +561,7 @@ inline LayoutUnit LayoutMod(const LayoutUnit& a, IntegerType b) {
 }
 
 inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b) {
-  a.SetRawValue(ClampAdd(a.RawValue(), b.RawValue()).RawValue());
+  a.SetRawValue(base::ClampAdd(a.RawValue(), b.RawValue()).RawValue());
   return a;
 }
 
@@ -586,7 +588,7 @@ inline LayoutUnit& operator-=(LayoutUnit& a, IntegerType b) {
 }
 
 inline LayoutUnit& operator-=(LayoutUnit& a, const LayoutUnit& b) {
-  a.SetRawValue(ClampSub(a.RawValue(), b.RawValue()).RawValue());
+  a.SetRawValue(base::ClampSub(a.RawValue(), b.RawValue()).RawValue());
   return a;
 }
 

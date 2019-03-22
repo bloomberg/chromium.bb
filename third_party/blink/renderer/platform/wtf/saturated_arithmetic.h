@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_H_
 
 #include "base/compiler_specific.h"
-#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 
 #include <stdint.h>
@@ -93,15 +92,6 @@ ALWAYS_INLINE int SaturatedSet(unsigned value) {
 
 #endif  // CPU(ARM) && COMPILER(GCC)
 
-namespace WTF {
-using base::ClampAdd;
-using base::ClampSub;
-using base::MakeClampedNum;
-}  // namespace WTF.
-
-using WTF::ClampAdd;
-using WTF::ClampSub;
-using WTF::MakeClampedNum;
 using WTF::SaturatedSet;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_H_

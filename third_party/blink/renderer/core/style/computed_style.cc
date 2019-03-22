@@ -27,6 +27,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
@@ -70,7 +71,6 @@
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -2072,7 +2072,7 @@ int ComputedStyle::OutlineOutsetExtent() const {
         OutlineOffset(), std::ceil(GetOutlineStrokeWidthForFocusRing()),
         LayoutTheme::GetTheme().IsFocusRingOutset());
   }
-  return ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
+  return base::ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
 }
 
 float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {

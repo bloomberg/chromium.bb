@@ -27,12 +27,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_H_
 
 #include <iosfwd>
+
+#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -221,8 +222,8 @@ inline IntRect UnionRectEvenIfEmpty(const IntRect& a, const IntRect& b) {
 PLATFORM_EXPORT IntRect UnionRectEvenIfEmpty(const Vector<IntRect>&);
 
 constexpr IntRect SaturatedRect(const IntRect& r) {
-  return IntRect(r.X(), r.Y(), ClampAdd(r.X(), r.Width()) - r.X(),
-                 ClampAdd(r.Y(), r.Height()) - r.Y());
+  return IntRect(r.X(), r.Y(), base::ClampAdd(r.X(), r.Width()) - r.X(),
+                 base::ClampAdd(r.Y(), r.Height()) - r.Y());
 }
 
 constexpr bool operator==(const IntRect& a, const IntRect& b) {

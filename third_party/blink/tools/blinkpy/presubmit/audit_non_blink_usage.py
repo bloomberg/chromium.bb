@@ -146,6 +146,11 @@ _CONFIG = [
             'base::CheckOr',
             'base::CheckXor',
 
+            # //base/numerics/clamped_math.h.
+            'base::ClampAdd',
+            'base::ClampSub',
+            'base::MakeClampedNum',
+
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 
