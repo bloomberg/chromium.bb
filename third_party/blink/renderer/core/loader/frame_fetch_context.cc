@@ -318,7 +318,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     request.ClearHttpHeaderField(http_names::kSaveData);
 
   if (save_data_enabled_)
-    request.SetHTTPHeaderField(http_names::kSaveData, "on");
+    request.SetHttpHeaderField(http_names::kSaveData, "on");
 
   if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
       WebURLRequest::kNoScriptOn) {

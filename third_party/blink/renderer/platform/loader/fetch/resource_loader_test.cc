@@ -192,7 +192,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     response.SetType(test.original_response_type);
     response.SetWasFetchedViaServiceWorker(test.from == From::kServiceWorker);
     if (test.allowed_origin) {
-      response.SetHTTPHeaderField("access-control-allow-origin",
+      response.SetHttpHeaderField("access-control-allow-origin",
                                   test.allowed_origin->ToAtomicString());
     }
     response.SetType(test.original_response_type);

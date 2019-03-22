@@ -5166,7 +5166,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
                                               ResourceType resource_type) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
-    request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
+    request.SetHttpHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
 
   WebDocumentLoader* provisional_document_loader =
@@ -5216,7 +5216,7 @@ void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request,
       if (custom_user_agent.IsEmpty())
         request.ClearHttpHeaderField("User-Agent");
       else
-        request.SetHTTPHeaderField("User-Agent", custom_user_agent);
+        request.SetHttpHeaderField("User-Agent", custom_user_agent);
     }
     response_override =
         old_extra_data->TakeNavigationResponseOverrideOwnership();

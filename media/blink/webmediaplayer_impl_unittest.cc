@@ -591,7 +591,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // "Serve" the file to the DataSource. Note: We respond with 200 okay, which
     // will prevent range requests or partial responses from being used.
     blink::WebURLResponse response(kTestURL);
-    response.SetHTTPHeaderField(
+    response.SetHttpHeaderField(
         blink::WebString::FromUTF8("Content-Length"),
         blink::WebString::FromUTF8(base::NumberToString(data->data_size())));
     response.SetExpectedContentLength(data->data_size());

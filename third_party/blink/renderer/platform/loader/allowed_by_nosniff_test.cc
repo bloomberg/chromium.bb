@@ -110,7 +110,7 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
-    response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
+    response.SetHttpHeaderField("Content-Type", testcase.mimetype);
 
     // Nosniff 'legacy' setting: Both worker + non-worker obey the 'allowed'
     // setting. Warnings for any blocked script.
@@ -221,7 +221,7 @@ TEST_F(AllowedByNosniffTest, Counters) {
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
-    response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
+    response.SetHttpHeaderField("Content-Type", testcase.mimetype);
 
     EXPECT_CALL(*context, CountUsage(testcase.expected));
     EXPECT_CALL(*context, CountUsage(::testing::Ne(testcase.expected)))
@@ -269,8 +269,8 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
                                     << "\n  allowed: " << testcase.allowed);
     ResourceResponse response(KURL(testcase.url));
-    response.SetHTTPHeaderField("Content-Type", "invalid");
-    response.SetHTTPHeaderField("X-Content-Type-Options", "nosniff");
+    response.SetHttpHeaderField("Content-Type", "invalid");
+    response.SetHttpHeaderField("X-Content-Type-Options", "nosniff");
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
                                                  MimeTypeCheck::kLax, false));

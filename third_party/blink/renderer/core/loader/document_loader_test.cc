@@ -199,7 +199,7 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutSetIfHeaderReceived) {
       url_test_helpers::ToKURL("https://examplenoupgrade.com/foo.html");
   WebURLResponse response(url);
   response.SetHttpStatusCode(200);
-  response.SetHTTPHeaderField("mixed-content", "noupgrade");
+  response.SetHttpHeaderField("mixed-content", "noupgrade");
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath("foo.html"), response);
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(

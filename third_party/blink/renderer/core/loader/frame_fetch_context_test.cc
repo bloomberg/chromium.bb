@@ -967,7 +967,7 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com/mock");
-  conditional.SetHTTPHeaderField(http_names::kIfModifiedSince, "foo");
+  conditional.SetHttpHeaderField(http_names::kIfModifiedSince, "foo");
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             GetFetchContext()->ResourceRequestCachePolicy(
                 conditional, ResourceType::kMock, FetchParameters::kNoDefer));
@@ -1441,7 +1441,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
   // Verify appended to an existing "Intervention" header value.
   ResourceRequest resource_request2("http://www.example.com/getad.js");
-  resource_request2.SetHTTPHeaderField("Intervention",
+  resource_request2.SetHttpHeaderField("Intervention",
                                        "<https://otherintervention.org>");
   GetFetchContext()->AddAdditionalRequestHeaders(resource_request2);
   EXPECT_EQ(
@@ -1472,7 +1472,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
   // Verify appended to an existing "Intervention" header value.
   ResourceRequest resource_request2("http://www.example.com/getad.js");
-  resource_request2.SetHTTPHeaderField("Intervention",
+  resource_request2.SetHttpHeaderField("Intervention",
                                        "<https://otherintervention.org>");
   GetFetchContext()->AddAdditionalRequestHeaders(resource_request2);
   EXPECT_EQ(

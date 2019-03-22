@@ -237,7 +237,7 @@ void ResourceResponse::SetSecurityDetails(
   security_details_.sct_list = sct_list;
 }
 
-void ResourceResponse::SetHTTPHeaderField(const AtomicString& name,
+void ResourceResponse::SetHttpHeaderField(const AtomicString& name,
                                           const AtomicString& value) {
   UpdateHeaderParsedState(name);
 

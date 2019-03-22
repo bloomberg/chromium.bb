@@ -102,7 +102,7 @@ base::UnguessableToken WorkerShadowPage::GetDevToolsFrameToken() {
 
 void WorkerShadowPage::WillSendRequest(WebURLRequest& request) {
   if (preferences_.enable_do_not_track) {
-    request.SetHTTPHeaderField(WebString::FromUTF8(kDoNotTrackHeader), "1");
+    request.SetHttpHeaderField(WebString::FromUTF8(kDoNotTrackHeader), "1");
   }
   if (!preferences_.enable_referrers) {
     request.SetHTTPReferrer(WebString(),

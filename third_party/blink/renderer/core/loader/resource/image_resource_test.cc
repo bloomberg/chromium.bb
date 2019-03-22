@@ -279,7 +279,7 @@ void TestThatIsPlaceholderRequestAndServeResponse(
   resource_response.SetExpectedContentLength(
       kJpegImageSubrangeWithDimensionsLength);
   resource_response.SetHttpStatusCode(206);
-  resource_response.SetHTTPHeaderField(
+  resource_response.SetHttpHeaderField(
       "content-range", BuildContentRange(kJpegImageSubrangeWithDimensionsLength,
                                          sizeof(kJpegImage)));
   image_resource->Loader()->DidReceiveResponse(
@@ -383,7 +383,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // flagged as multipart.
   ResourceResponse multipart_response(NullURL());
   multipart_response.SetMimeType("multipart/x-mixed-replace");
-  multipart_response.SetHTTPHeaderField(
+  multipart_response.SetHttpHeaderField(
       http_names::kContentType, "multipart/x-mixed-replace; boundary=boundary");
   image_resource->Loader()->DidReceiveResponse(
       WrappedResourceResponse(multipart_response), nullptr);
@@ -464,7 +464,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
 
   ResourceResponse multipart_response(NullURL());
   multipart_response.SetMimeType("multipart/x-mixed-replace");
-  multipart_response.SetHTTPHeaderField(
+  multipart_response.SetHttpHeaderField(
       http_names::kContentType, "multipart/x-mixed-replace; boundary=boundary");
   image_resource->Loader()->DidReceiveResponse(
       WrappedResourceResponse(multipart_response), nullptr);
@@ -1346,7 +1346,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
   ResourceRequest resource_request(test_url);
-  resource_request.SetHTTPHeaderField("range", "bytes=0-2");
+  resource_request.SetHttpHeaderField("range", "bytes=0-2");
   FetchParameters params(resource_request);
   ResourceFetcher* fetcher = CreateFetcher();
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
@@ -1358,7 +1358,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   partial_response.SetExpectedContentLength(
       kJpegImageSubrangeWithoutDimensionsLength);
   partial_response.SetHttpStatusCode(206);
-  partial_response.SetHTTPHeaderField(
+  partial_response.SetHttpHeaderField(
       "content-range",
       BuildContentRange(kJpegImageSubrangeWithoutDimensionsLength,
                         sizeof(kJpegImage)));
@@ -1434,7 +1434,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderExistingRangeHeader) {
   KURL test_url(kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
   ResourceRequest resource_request(test_url);
-  resource_request.SetHTTPHeaderField("range", "bytes=128-255");
+  resource_request.SetHttpHeaderField("range", "bytes=128-255");
   FetchParameters params(resource_request);
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
@@ -1483,7 +1483,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   bad_response.SetMimeType("image/jpeg");
   bad_response.SetExpectedContentLength(sizeof(kBadData));
   bad_response.SetHttpStatusCode(206);
-  bad_response.SetHTTPHeaderField(
+  bad_response.SetHttpHeaderField(
       "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
 
   image_resource->Loader()->DidReceiveResponse(
@@ -1527,7 +1527,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
   bad_response.SetMimeType("image/jpeg");
   bad_response.SetExpectedContentLength(sizeof(kBadData));
   bad_response.SetHttpStatusCode(206);
-  bad_response.SetHTTPHeaderField(
+  bad_response.SetHttpHeaderField(
       "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
 
   image_resource->Loader()->DidReceiveResponse(
@@ -1591,7 +1591,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
     partial_response.SetExpectedContentLength(
         kJpegImageSubrangeWithoutDimensionsLength);
     partial_response.SetHttpStatusCode(206);
-    partial_response.SetHTTPHeaderField(
+    partial_response.SetHttpHeaderField(
         "content-range",
         BuildContentRange(kJpegImageSubrangeWithoutDimensionsLength,
                           sizeof(kJpegImage)));
@@ -1742,7 +1742,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     resource_response.SetExpectedContentLength(sizeof(kJpegImage));
     resource_response.SetHttpStatusCode(test.status_code);
     if (test.content_range != g_null_atom)
-      resource_response.SetHTTPHeaderField("content-range", test.content_range);
+      resource_response.SetHttpHeaderField("content-range", test.content_range);
     image_resource->Loader()->DidReceiveResponse(
         WrappedResourceResponse(resource_response));
     image_resource->Loader()->DidReceiveData(
@@ -1803,7 +1803,7 @@ TEST(ImageResourceTest,
     resource_response.SetExpectedContentLength(test.data_size);
     resource_response.SetHttpStatusCode(test.status_code);
     if (test.content_range != g_null_atom)
-      resource_response.SetHTTPHeaderField("content-range", test.content_range);
+      resource_response.SetHttpHeaderField("content-range", test.content_range);
     image_resource->Loader()->DidReceiveResponse(
         WrappedResourceResponse(resource_response));
     image_resource->Loader()->DidReceiveData(kBadImageData, test.data_size);

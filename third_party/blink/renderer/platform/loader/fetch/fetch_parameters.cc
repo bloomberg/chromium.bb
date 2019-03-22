@@ -148,7 +148,7 @@ void FetchParameters::SetAllowImagePlaceholder() {
   // likely capture the entire image for small images and (b) likely contain
   // the dimensions for larger images.
   // TODO(sclittle): Calculate the optimal value for this number.
-  resource_request_.SetHTTPHeaderField("range", "bytes=0-2047");
+  resource_request_.SetHttpHeaderField("range", "bytes=0-2047");
 
   // TODO(sclittle): Indicate somehow (e.g. through a new request bit) to the
   // embedder that it should return the full resource if the entire resource is

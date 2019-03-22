@@ -152,10 +152,10 @@ WebString WebURLRequest::HttpHeaderField(const WebString& name) const {
   return resource_request_->HttpHeaderField(name);
 }
 
-void WebURLRequest::SetHTTPHeaderField(const WebString& name,
+void WebURLRequest::SetHttpHeaderField(const WebString& name,
                                        const WebString& value) {
   CHECK(!DeprecatedEqualIgnoringCase(name, "referer"));
-  resource_request_->SetHTTPHeaderField(name, value);
+  resource_request_->SetHttpHeaderField(name, value);
 }
 
 void WebURLRequest::SetHTTPReferrer(

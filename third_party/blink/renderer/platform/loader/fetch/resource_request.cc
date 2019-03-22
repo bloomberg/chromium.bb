@@ -212,7 +212,7 @@ const AtomicString& ResourceRequest::HttpHeaderField(
   return http_header_fields_.Get(name);
 }
 
-void ResourceRequest::SetHTTPHeaderField(const AtomicString& name,
+void ResourceRequest::SetHttpHeaderField(const AtomicString& name,
                                          const AtomicString& value) {
   http_header_fields_.Set(name, value);
 }
@@ -221,7 +221,7 @@ void ResourceRequest::SetHTTPReferrer(const Referrer& referrer) {
   if (referrer.referrer.IsEmpty())
     http_header_fields_.Remove(http_names::kReferer);
   else
-    SetHTTPHeaderField(http_names::kReferer, referrer.referrer);
+    SetHttpHeaderField(http_names::kReferer, referrer.referrer);
   referrer_policy_ = referrer.referrer_policy;
   did_set_http_referrer_ = true;
 }
@@ -233,7 +233,7 @@ void ResourceRequest::ClearHTTPReferrer() {
 }
 
 void ResourceRequest::SetHTTPOrigin(const SecurityOrigin* origin) {
-  SetHTTPHeaderField(http_names::kOrigin, origin->ToAtomicString());
+  SetHttpHeaderField(http_names::kOrigin, origin->ToAtomicString());
 }
 
 void ResourceRequest::ClearHTTPOrigin() {

@@ -961,7 +961,7 @@ void Resource::RevalidationSucceeded(
     // care about.
     if (!ShouldUpdateHeaderAfterRevalidation(header.key))
       continue;
-    response_.SetHTTPHeaderField(header.key, header.value);
+    response_.SetHttpHeaderField(header.key, header.value);
   }
 
   is_revalidating_ = false;

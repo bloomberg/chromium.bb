@@ -134,7 +134,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   const HTTPHeaderMap& HttpHeaderFields() const;
   const AtomicString& HttpHeaderField(const AtomicString& name) const;
-  void SetHTTPHeaderField(const AtomicString& name, const AtomicString& value);
+  void SetHttpHeaderField(const AtomicString& name, const AtomicString& value);
   void AddHTTPHeaderField(const AtomicString& name, const AtomicString& value);
   void AddHTTPHeaderFields(const HTTPHeaderMap& header_fields);
   void ClearHttpHeaderField(const AtomicString& name);
@@ -143,7 +143,7 @@ class PLATFORM_EXPORT ResourceRequest final {
     return HttpHeaderField(http_names::kContentType);
   }
   void SetHTTPContentType(const AtomicString& http_content_type) {
-    SetHTTPHeaderField(http_names::kContentType, http_content_type);
+    SetHttpHeaderField(http_names::kContentType, http_content_type);
   }
 
   // TODO(domfarolino): Remove this once we stop storing the generated referrer
@@ -177,12 +177,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetHTTPOriginToMatchReferrerIfNeeded();
 
   void SetHTTPUserAgent(const AtomicString& http_user_agent) {
-    SetHTTPHeaderField(http_names::kUserAgent, http_user_agent);
+    SetHttpHeaderField(http_names::kUserAgent, http_user_agent);
   }
   void ClearHTTPUserAgent();
 
   void SetHTTPAccept(const AtomicString& http_accept) {
-    SetHTTPHeaderField(http_names::kAccept, http_accept);
+    SetHttpHeaderField(http_names::kAccept, http_accept);
   }
 
   EncodedFormData* HttpBody() const;

@@ -831,7 +831,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         DetermineRequestContext(resource_type, kImageNotImageSet));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
-    resource_request.SetHTTPHeaderField(http_names::kPurpose, "prefetch");
+    resource_request.SetHttpHeaderField(http_names::kPurpose, "prefetch");
 
   bool resource_allows_stale_while_revalidate = false;
   bool host_matches_control =
@@ -1134,16 +1134,16 @@ void ResourceFetcher::InitializeRevalidation(
               revalidating_request.GetCacheMode());
     if (revalidating_request.GetCacheMode() ==
         mojom::FetchCacheMode::kValidateCache) {
-      revalidating_request.SetHTTPHeaderField(http_names::kCacheControl,
+      revalidating_request.SetHttpHeaderField(http_names::kCacheControl,
                                               "max-age=0");
     }
   }
   if (!last_modified.IsEmpty()) {
-    revalidating_request.SetHTTPHeaderField(http_names::kIfModifiedSince,
+    revalidating_request.SetHttpHeaderField(http_names::kIfModifiedSince,
                                             last_modified);
   }
   if (!e_tag.IsEmpty())
-    revalidating_request.SetHTTPHeaderField(http_names::kIfNoneMatch, e_tag);
+    revalidating_request.SetHttpHeaderField(http_names::kIfNoneMatch, e_tag);
 
   resource->SetRevalidatingRequest(revalidating_request);
 }
@@ -1787,7 +1787,7 @@ void ResourceFetcher::HandleLoaderFinish(
       response.SetAlpnNegotiatedProtocol(
           WebString::FromUTF8(timing_info.alpn_negotiated_protocol));
       response.SetConnectionInfo(timing_info.connection_info);
-      response.SetHTTPHeaderField(
+      response.SetHttpHeaderField(
           http_names::kTimingAllowOrigin,
           WebString::FromUTF8(timing_info.timing_allow_origin));
       response.SetEncodedDataLength(timing_info.transfer_size);
