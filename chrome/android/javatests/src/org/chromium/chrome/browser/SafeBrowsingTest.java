@@ -49,7 +49,11 @@ public final class SafeBrowsingTest {
         CriteriaHelper.pollUiThread(Criteria.equals(shouldBeShown, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return getWebContents().isShowingInterstitialPage();
+                // TODO(carlosil): For now, we check the presence of an interstitial through the
+                // title since isShowingInterstitialPage does not work with committed interstitials.
+                // Once we fully migrate to committed interstitials, this should be changed to a
+                // more robust check.
+                return getWebContents().getTitle().equals("Security error");
             }
         }));
     }

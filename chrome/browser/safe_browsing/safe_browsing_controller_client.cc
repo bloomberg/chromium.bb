@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_controller_client.h"
 
+#include "base/feature_list.h"
+#include "components/safe_browsing/features.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -41,5 +43,24 @@ void SafeBrowsingControllerClient::Proceed() {
     chrome::OpenInChrome(browser);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!interstitial_page()) {
+    DCHECK(
+        base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials));
+    // In this case, committed interstitials are enabled, the site has already
+    // been added to the whitelist, so reload will proceed.
+    Reload();
+    return;
+  }
   security_interstitials::SecurityInterstitialControllerClient::Proceed();
+}
+
+void SafeBrowsingControllerClient::GoBack() {
+  if (!interstitial_page()) {
+    // In this case, committed interstitials are enabled, so we do a regular
+    // back navigation.
+    SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted();
+    return;
+  }
+
+  SecurityInterstitialControllerClient::GoBack();
 }

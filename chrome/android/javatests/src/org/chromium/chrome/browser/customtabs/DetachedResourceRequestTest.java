@@ -473,8 +473,14 @@ public class DetachedResourceRequestTest {
             mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
             Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-            ThreadUtils.runOnUiThreadBlocking(
-                    () -> Assert.assertTrue(tab.getWebContents().isShowingInterstitialPage()));
+
+            // TODO(carlosil): For now, we check the presence of an interstitial through the title
+            // since isShowingInterstitialPage does not work with committed interstitials. Once we
+            // fully migrate to committed interstitials, this should be changed to a more robust
+            // check.
+            CriteriaHelper.pollUiThread(
+                    () -> tab.getWebContents().getTitle().equals("Security error"));
+
             // 1 read from the detached request, and 0 from the page load, as
             // the response comes from the cache, and SafeBrowsing blocks it.
             Assert.assertEquals(1, readFromSocketCallback.getCallCount());

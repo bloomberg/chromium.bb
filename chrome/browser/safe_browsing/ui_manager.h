@@ -89,20 +89,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* remove);
 
-  // Adds an UnsafeResource |resource| for |url| to unsafe_resources_,
-  // this should be called by the UrlCheckerDelegate whenever a resource load
-  // is blocked due to a SB hit.
-  void AddUnsafeResource(GURL url,
-                         security_interstitials::UnsafeResource resource);
-
-  // Checks if an UnsafeResource |resource| exists for |url|, if so, it is
-  // removed from the vector, assigned to |resource| and the function returns
-  // true. Otherwise the function returns false and nothing gets assigned to
-  // |resource|.
-  bool PopUnsafeResourceForURL(
-      GURL url,
-      security_interstitials::UnsafeResource* resource);
-
   const std::string app_locale() const override;
   history::HistoryService* history_service(
       content::WebContents* web_contents) override;
@@ -119,6 +105,9 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
   void ShowBlockingPageForResource(const UnsafeResource& resource) override;
 
+  // Returns true if SB committed interstitials are enabled.
+  bool SafeBrowsingInterstitialsAreCommittedNavigations() override;
+
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.
   static bool ShouldSendHitReport(const HitReport& hit_report,
@@ -133,12 +122,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;
-
-  // Stores unsafe resources so they can be fetched from a navigation throttle
-  // in the committed interstitials flow. Implemented as a pair vector since
-  // most of the time it will be empty or contain a single element.
-  std::vector<std::pair<GURL, security_interstitials::UnsafeResource>>
-      unsafe_resources_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
