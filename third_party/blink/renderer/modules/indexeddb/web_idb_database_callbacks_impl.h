@@ -39,9 +39,7 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   USING_FAST_MALLOC(WebIDBDatabaseCallbacksImpl);
 
  public:
-  static std::unique_ptr<WebIDBDatabaseCallbacksImpl> Create(
-      IDBDatabaseCallbacks*);
-
+  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
   ~WebIDBDatabaseCallbacksImpl() override;
 
   void OnForcedClose() override;
@@ -54,8 +52,6 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   void Detach() override;
 
  private:
-  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
-
   Persistent<IDBDatabaseCallbacks> callbacks_;
 };
 
