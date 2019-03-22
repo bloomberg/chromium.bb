@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -130,7 +131,8 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
       on_module_database_idle_called_(false),
       initialization_forced_(false),
       module_list_update_needed_(false),
-      component_update_service_observer_(this),
+      module_list_component_updater_(nullptr,
+                                     base::OnTaskRunnerDeleter(nullptr)),
       weak_ptr_factory_(this) {
   LogChromeElfThirdPartyStatus();
 
@@ -145,6 +147,8 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
 }
 
 ThirdPartyConflictsManager::~ThirdPartyConflictsManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!terminal_state_.has_value())
     SetTerminalState(State::kDestroyed);
   module_database_event_source_->RemoveObserver(this);
@@ -186,6 +190,8 @@ void ThirdPartyConflictsManager::ShutdownAndDestroy(
 void ThirdPartyConflictsManager::OnNewModuleFound(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Keep looking for the CertificateInfo of the current executable as long as
   // it wasn't found yet.
   if (exe_certificate_info_)
@@ -204,6 +210,8 @@ void ThirdPartyConflictsManager::OnNewModuleFound(
 }
 
 void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (on_module_database_idle_called_)
     return;
 
@@ -234,18 +242,14 @@ void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
 }
 
 void ThirdPartyConflictsManager::OnModuleListComponentRegistered(
-    base::StringPiece component_id) {
+    base::StringPiece component_id,
+    const base::Version& component_version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DCHECK(module_list_component_id_.empty());
   module_list_component_id_ = component_id.as_string();
 
-  auto components = g_browser_process->component_updater()->GetComponents();
-  auto iter = std::find_if(components.begin(), components.end(),
-                           [this](const auto& component) {
-                             return component.id == module_list_component_id_;
-                           });
-  DCHECK(iter != components.end());
-
-  if (iter->version == base::Version("0.0.0.0")) {
+  if (component_version == base::Version("0.0.0.0")) {
     // The module list component is currently not installed. An update is
     // required to initialize the ModuleListFilter.
     module_list_update_needed_ = true;
@@ -261,10 +265,12 @@ void ThirdPartyConflictsManager::OnModuleListComponentRegistered(
 }
 
 void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (module_list_received_)
     return;
 
-  component_update_service_observer_.RemoveAll();
+  module_list_component_updater_ = nullptr;
 
   module_list_received_ = true;
 
@@ -277,6 +283,8 @@ void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
 
 void ThirdPartyConflictsManager::ForceInitialization(
     OnInitializationCompleteCallback on_initialization_complete_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   on_initialization_complete_callback_ =
       std::move(on_initialization_complete_callback);
 
@@ -301,38 +309,6 @@ void ThirdPartyConflictsManager::ForceInitialization(
     ForceModuleListComponentUpdate();
 }
 
-void ThirdPartyConflictsManager::OnEvent(Events event,
-                                         const std::string& component_id) {
-  DCHECK(!module_list_component_id_.empty());
-
-  // LoadModuleList() was already invoked.
-  if (module_list_received_)
-    return;
-
-  // Only consider events for the module list component.
-  if (component_id != module_list_component_id_)
-    return;
-
-  // There are 2 cases that are important. Either the component is being
-  // updated, or the component is not updated because there is no update
-  // available.
-  //
-  // For the first case, there is nothing to do because LoadModuleList() will
-  // eventually be called when the component is installed.
-  //
-  // For the second case, it means that the server is not offering any update
-  // right now, either because it is too busy, or there is an issue with the
-  // server-side component configuration.
-  //
-  // Note:
-  // The COMPONENT_NOT_UPDATED event can also be broadcasted when the component
-  // is already up-to-date. This is not the case here because this class only
-  // registers to the component updater service as an observer when the
-  // component version is 0.0.0.0 (aka not installed).
-  if (event == Events::COMPONENT_NOT_UPDATED)
-    SetTerminalState(State::kNoModuleListAvailableFailure);
-}
-
 void ThirdPartyConflictsManager::DisableModuleAnalysis() {
   module_analysis_disabled_ = true;
   if (incompatible_applications_updater_)
@@ -343,6 +319,8 @@ void ThirdPartyConflictsManager::DisableModuleAnalysis() {
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
     scoped_refptr<ModuleListFilter> module_list_filter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   module_list_filter_ = std::move(module_list_filter);
 
   // A valid |module_list_filter_| is critical to the blocking of third-party
@@ -364,16 +342,18 @@ void ThirdPartyConflictsManager::OnModuleListFilterCreated(
 
 void ThirdPartyConflictsManager::OnInstalledApplicationsCreated(
     std::unique_ptr<InstalledApplications> installed_applications) {
-  installed_applications_ = std::move(installed_applications);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  installed_applications_ = std::move(installed_applications);
   InitializeIfReady();
 }
 
 void ThirdPartyConflictsManager::OnInitialBlacklistedModulesRead(
     std::unique_ptr<std::vector<third_party_dlls::PackedListModule>>
         initial_blacklisted_modules) {
-  initial_blacklisted_modules_ = std::move(initial_blacklisted_modules);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  initial_blacklisted_modules_ = std::move(initial_blacklisted_modules);
   InitializeIfReady();
 }
 
@@ -462,15 +442,25 @@ void ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated(
 }
 
 void ThirdPartyConflictsManager::ForceModuleListComponentUpdate() {
-  auto* component_update_service = g_browser_process->component_updater();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Observe the component updater service to know the result of the update.
-  DCHECK(!component_update_service_observer_.IsObserving(
-      component_update_service));
-  component_update_service_observer_.Add(component_update_service);
+  DCHECK(!module_list_component_id_.empty());
 
-  component_update_service->MaybeThrottle(module_list_component_id_,
-                                          base::DoNothing());
+  module_list_component_updater_ = ModuleListComponentUpdater::Create(
+      module_list_component_id_,
+      base::BindRepeating(
+          &ThirdPartyConflictsManager::OnModuleListComponentNotUpdated,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ThirdPartyConflictsManager::OnModuleListComponentNotUpdated() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // LoadModuleList() was already invoked.
+  if (module_list_received_)
+    return;
+
+  SetTerminalState(State::kNoModuleListAvailableFailure);
 }
 
 void ThirdPartyConflictsManager::SetTerminalState(State terminal_state) {
