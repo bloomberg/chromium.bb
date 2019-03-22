@@ -12,6 +12,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/viz_service_export.h"
+#include "ui/latency/latency_info.h"
 
 namespace viz {
 
@@ -72,6 +73,12 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // allocation group. The embed token of at least one end of the range must
   // match the embed token of this group.
   Surface* FindLatestActiveSurfaceInRange(const SurfaceRange& range) const;
+
+  // Takes the LatencyInfo of the active frame of |surface|, plus the
+  // LatencyInfo of both pending and active frames of every surface older than
+  // |surface|.
+  void TakeAggregatedLatencyInfoUpTo(Surface* surface,
+                                     std::vector<ui::LatencyInfo>* out);
 
   // Called by the surfaces in this allocation when they activate for the first
   // time.

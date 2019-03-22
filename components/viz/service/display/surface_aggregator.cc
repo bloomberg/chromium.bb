@@ -28,6 +28,7 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_allocation_group.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 
@@ -1266,8 +1267,10 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   for (auto it : previous_contained_surfaces_) {
     Surface* surface = manager_->GetSurfaceForId(it.first);
-    if (surface)
-      surface->TakeLatencyInfo(&frame.metadata.latency_info);
+    if (surface) {
+      surface->allocation_group()->TakeAggregatedLatencyInfoUpTo(
+          surface, &frame.metadata.latency_info);
+    }
     if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                  "SurfaceAggregator::Aggregate")) {
       break;
