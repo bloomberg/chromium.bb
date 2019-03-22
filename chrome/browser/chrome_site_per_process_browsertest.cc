@@ -1092,7 +1092,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckTest) {
 #else
 #define MAYBE_OOPIFDisabledSpellCheckTest OOPIFDisabledSpellCheckTest
 #endif
-IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, MAYBE_OOPIFDisabledSpellCheckTest) {
   TestBrowserClientForSpellCheck browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
