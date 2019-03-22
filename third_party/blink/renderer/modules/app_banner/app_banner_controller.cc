@@ -34,7 +34,8 @@ void AppBannerController::BannerPromptRequest(
     const Vector<String>& platforms,
     bool require_gesture,
     BannerPromptRequestCallback callback) {
-  if (!frame_ || !frame_->GetDocument()) {
+  // TODO(hajimehoshi): Add tests for the case the frame is detached.
+  if (!frame_ || !frame_->GetDocument() || !frame_->IsAttached()) {
     std::move(callback).Run(mojom::blink::AppBannerPromptReply::NONE);
     return;
   }
