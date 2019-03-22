@@ -2063,7 +2063,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
   ComputedStyle* style = MutableComputedStyle();
-  if ((!style || style->Display() == EDisplay::kNone) &&
+  if ((!style || style->IsEnsuredInDisplayNone()) &&
       !ChildNeedsReattachLayoutTree()) {
     Node::AttachLayoutTree(context);
     return;
