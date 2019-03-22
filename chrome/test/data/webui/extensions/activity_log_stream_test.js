@@ -63,9 +63,12 @@ suite('ExtensionsActivityLogStreamTest', function() {
     activityLogStream.remove();
   });
 
+  // Returns a list of visible stream items. The not([hidden]) selector is
+  // needed for iron-list as it reuses components but hides them when not in
+  // use.
   function getStreamItems() {
     return activityLogStream.shadowRoot.querySelectorAll(
-        'activity-log-stream-item');
+        'activity-log-stream-item:not([hidden])');
   }
 
   test('button toggles stream on/off', function() {
@@ -90,8 +93,6 @@ suite('ExtensionsActivityLogStreamTest', function() {
         Polymer.dom.flush();
         // One event coming in. Since the stream is on, we should be able to see
         // it.
-        testVisible('#activity-stream-list', true);
-
         let streamItems = getStreamItems();
         expectEquals(1, streamItems.length);
 

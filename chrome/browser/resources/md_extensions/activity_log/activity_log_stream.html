@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="activity_log_stream_item.html">
 <link rel="import" href="../shared_style.html">
 
@@ -22,10 +23,6 @@
         width: var(--activity-log-call-and-time-width);
       }
 
-      #activity-stream-list {
-        overflow-y: auto;
-      }
-
       #activity-type {
         flex: 0 var(--activity-type-width);
       }
@@ -38,6 +35,10 @@
       #activity-time {
         flex: 0 var(--activity-time-width);
         text-align: end;
+      }
+
+      iron-list {
+        flex: 1;
       }
     </style>
     <div class="activity-subpage-header">
@@ -69,12 +70,11 @@
       <span id="activity-key">$i18n{activityLogNameColumn}</span>
       <span id="activity-time">$i18n{activityLogTimeColumn}</span>
     </div>
-    <div id="activity-stream-list"
-        hidden$="[[isStreamEmpty_(activityStream_.length)]]">
-      <template is="dom-repeat" items="[[activityStream_]]">
+    <iron-list items="[[activityStream_]]">
+      <template>
         <activity-log-stream-item data="[[item]]"></activity-log-stream-item>
       </template>
-    </div>
+    </iron-list>
   </template>
   <script src="activity_log_stream.js"></script>
 </dom-module>
