@@ -764,19 +764,17 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
       "deprecation", document->Url().GetString(), body);
 
   // Send the deprecation report to any ReportingObservers.
-  ReportingContext::From(document)->QueueReport(report);
+  auto* reporting_context = ReportingContext::From(document);
+  reporting_context->QueueReport(report);
 
-  // Send the deprecation report to the Reporting API.
-  mojom::blink::ReportingServiceProxyPtr service;
-  Platform* platform = Platform::Current();
-  platform->GetConnector()->BindInterface(platform->GetBrowserServiceName(),
-                                          &service);
   bool is_null;
   int line_number = body->lineNumber(is_null);
   line_number = is_null ? 0 : line_number;
   int column_number = body->columnNumber(is_null);
   column_number = is_null ? 0 : column_number;
-  service->QueueDeprecationReport(
+
+  // Send the deprecation report to the Reporting API.
+  reporting_context->GetReportingService()->QueueDeprecationReport(
       document->Url(), info.id, WTF::Time::FromDoubleT(removal_date),
       info.message, body->sourceFile(), line_number, column_number);
 }

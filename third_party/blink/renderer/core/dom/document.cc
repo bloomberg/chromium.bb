@@ -7708,6 +7708,8 @@ void Document::ReportFeaturePolicyViolation(
   LocalFrame* frame = GetFrame();
   if (!frame)
     return;
+
+  // Construct the feature policy violation report.
   const String& feature_name = GetNameForFeature(feature);
   FeaturePolicyViolationReportBody* body =
       MakeGarbageCollected<FeaturePolicyViolationReportBody>(
@@ -7717,7 +7719,10 @@ void Document::ReportFeaturePolicyViolation(
                : "enforce"));
   Report* report = MakeGarbageCollected<Report>("feature-policy-violation",
                                                 Url().GetString(), body);
-  ReportingContext::From(this)->QueueReport(report);
+
+  // Send the feature policy violation report to any ReportingObservers.
+  auto* reporting_context = ReportingContext::From(this);
+  reporting_context->QueueReport(report);
 
   bool is_null;
   int line_number = body->lineNumber(is_null);
@@ -7726,12 +7731,13 @@ void Document::ReportFeaturePolicyViolation(
   column_number = is_null ? 0 : column_number;
 
   // Send the feature policy violation report to the Reporting API.
-  frame->GetReportingService()->QueueFeaturePolicyViolationReport(
+  reporting_context->GetReportingService()->QueueFeaturePolicyViolationReport(
       Url(), feature_name,
       (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
                                                                : "enforce"),
       "Feature policy violation", body->sourceFile(), line_number,
       column_number);
+
   // TODO(iclelland): Report something different in report-only mode
   if (disposition == mojom::FeaturePolicyDisposition::kEnforce) {
     frame->Console().AddMessage(ConsoleMessage::Create(
