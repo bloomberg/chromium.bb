@@ -22,7 +22,7 @@ namespace blink {
 NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
                                              const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)),
+    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)),
       border_scrollbar_padding_(
           CalculateBorderScrollbarPadding(ConstraintSpace(), Node())),
       borders_(ComputeBorders(ConstraintSpace(), Node())),
@@ -64,7 +64,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
   const bool is_horizontal_flow = algorithm_->IsHorizontalFlow();
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
-    NGBlockNode child = ToNGBlockNode(generic_child);
+    auto child = To<NGBlockNode>(generic_child);
     if (child.IsOutOfFlowPositioned()) {
       HandleOutOfFlowPositioned(child);
       continue;
@@ -365,7 +365,7 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
 
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
-    NGBlockNode child = ToNGBlockNode(generic_child);
+    auto child = To<NGBlockNode>(generic_child);
     if (child.IsOutOfFlowPositioned())
       continue;
 

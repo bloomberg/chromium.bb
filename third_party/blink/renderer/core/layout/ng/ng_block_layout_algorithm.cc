@@ -523,13 +523,14 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
 
     if (child.IsOutOfFlowPositioned()) {
       DCHECK(!child_break_token);
-      HandleOutOfFlowPositioned(previous_inflow_position, ToNGBlockNode(child));
+      HandleOutOfFlowPositioned(previous_inflow_position,
+                                To<NGBlockNode>(child));
     } else if (child.IsFloating()) {
-      HandleFloat(previous_inflow_position, ToNGBlockNode(child),
-                  ToNGBlockBreakToken(child_break_token));
+      HandleFloat(previous_inflow_position, To<NGBlockNode>(child),
+                  To<NGBlockBreakToken>(child_break_token));
     } else if (child.IsListMarker() && !child.ListMarkerOccupiesWholeLine()) {
       container_builder_.SetUnpositionedListMarker(
-          NGUnpositionedListMarker(ToNGBlockNode(child)));
+          NGUnpositionedListMarker(To<NGBlockNode>(child)));
     } else {
       // We need to propagate the initial break-before value up our container
       // chain, until we reach a container that's not a first child. If we get
@@ -1074,7 +1075,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     // Deal with marker's margin. It happens only when marker needs to occupy
     // the whole line.
     DCHECK(child.ListMarkerOccupiesWholeLine());
-    auto_margins.inline_start = NGUnpositionedListMarker(ToNGBlockNode(child))
+    auto_margins.inline_start = NGUnpositionedListMarker(To<NGBlockNode>(child))
                                     .InlineOffset(fragment.InlineSize());
     auto_margins.inline_end = opportunity.rect.InlineSize() -
                               fragment.InlineSize() - auto_margins.inline_start;
@@ -1132,7 +1133,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   // affected the child. This is what Edge does.
   ResolveInlineMargins(child_style, Style(), child_available_size_.inline_size,
                        fragment.InlineSize(), &child_data.margins);
-  ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data.margins);
+  To<NGBlockNode>(child).StoreMargins(ConstraintSpace(), child_data.margins);
 
   *previous_inflow_position = ComputeInflowPosition(
       *previous_inflow_position, child, child_data,
@@ -1219,7 +1220,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     DCHECK(child_space.ExclusionSpace().IsEmpty());
 
     scoped_refptr<const NGLayoutResult> layout_result =
-        ToNGBlockNode(child).Layout(child_space, child_break_token);
+        To<NGBlockNode>(child).Layout(child_space, child_break_token);
 
     // Since this child establishes a new formatting context, no exclusion space
     // should be returned.
@@ -1509,7 +1510,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   if (child.IsBlock())
     container_builder_.PropagateBreak(*layout_result);
 
-  if (child.IsBlock()) {
+  if (auto* block_child = DynamicTo<NGBlockNode>(child)) {
     // We haven't yet resolved margins wrt. overconstrainedness, unless that was
     // also required to calculate line-left offset (due to block alignment)
     // before layout. Do so now, so that we store the correct values (which is
@@ -1521,7 +1522,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       child_data->margins_fully_resolved = true;
     }
 
-    ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data->margins);
+    block_child->StoreMargins(ConstraintSpace(), child_data->margins);
   }
 
   *previous_inflow_position = ComputeInflowPosition(
@@ -1976,8 +1977,8 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
   const NGBreakToken* token = physical_fragment.BreakToken();
   if (!token || token->IsFinished())
     return NoBreak;
-  if (token && token->IsBlockType() &&
-      ToNGBlockBreakToken(token)->HasLastResortBreak()) {
+  auto* block_break_token = DynamicTo<NGBlockBreakToken>(token);
+  if (block_break_token && block_break_token->HasLastResortBreak()) {
     // We've already found a place to break inside the child, but it wasn't an
     // optimal one, because it would violate some rules for breaking. Consider
     // breaking before this child instead, but only do so if it's at a valid
@@ -2206,8 +2207,7 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
   if (child->IsFloatingOrOutOfFlowPositioned())
     return false;
 
-  if (child->IsBox()) {
-    const NGPhysicalBoxFragment* box = ToNGPhysicalBoxFragment(child);
+  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child)) {
     if (base::Optional<LayoutUnit> baseline = box->Baseline(request)) {
       container_builder_.AddBaseline(request, *baseline + child_offset);
       return true;

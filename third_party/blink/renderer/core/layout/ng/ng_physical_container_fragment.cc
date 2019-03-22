@@ -86,8 +86,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
   if (descendant->IsText() || descendant->IsListMarker())
     return;
 
-  if (const NGPhysicalBoxFragment* descendant_box =
-          ToNGPhysicalBoxFragmentOrNull(descendant.get())) {
+  if (const auto* descendant_box =
+          DynamicTo<NGPhysicalBoxFragment>(descendant.get())) {
     LayoutObject* descendant_layout_object = descendant_box->GetLayoutObject();
     DCHECK(descendant_layout_object);
 

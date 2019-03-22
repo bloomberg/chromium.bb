@@ -1131,8 +1131,8 @@ bool LayoutInline::HitTestCulledInline(
     DCHECK(ContainingNGBlockFlow());
     DCHECK(container_fragment->IsDescendantOfNotSelf(
         *ContainingNGBlockFlow()->PaintFragment()));
-    const NGPhysicalContainerFragment& traversal_root =
-        ToNGPhysicalContainerFragment(container_fragment->PhysicalFragment());
+    const auto& traversal_root =
+        To<NGPhysicalContainerFragment>(container_fragment->PhysicalFragment());
     DCHECK(traversal_root.IsInline() || traversal_root.IsLineBox());
     const LayoutPoint root_offset =
         container_fragment->InlineOffsetToContainerBox().ToLayoutPoint();

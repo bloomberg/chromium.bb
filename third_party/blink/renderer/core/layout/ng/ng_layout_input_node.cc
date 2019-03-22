@@ -34,8 +34,8 @@ void AppendNodeToString(NGLayoutInputNode node,
   for (unsigned i = 0; i < indent; i++)
     indent_builder.Append(" ");
 
-  if (node.IsBlock()) {
-    NGLayoutInputNode first_child = ToNGBlockNode(node).FirstChild();
+  if (auto* block_node = DynamicTo<NGBlockNode>(node)) {
+    NGLayoutInputNode first_child = block_node->FirstChild();
     for (NGLayoutInputNode node_runner = first_child; node_runner;
          node_runner = node_runner.NextSibling()) {
       string_builder->Append(indent_builder.ToString());
@@ -68,7 +68,7 @@ scoped_refptr<const NGLayoutResult> NGLayoutInputNode::Layout(
     NGInlineChildLayoutContext* context) {
   auto* inline_node = DynamicTo<NGInlineNode>(this);
   return inline_node ? inline_node->Layout(space, break_token, context)
-                     : ToNGBlockNode(*this).Layout(space, break_token);
+                     : To<NGBlockNode>(*this).Layout(space, break_token);
 }
 
 MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
@@ -77,7 +77,7 @@ MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
     const NGConstraintSpace* space) {
   if (auto* inline_node = DynamicTo<NGInlineNode>(this))
     return inline_node->ComputeMinMaxSize(writing_mode, input, space);
-  return ToNGBlockNode(*this).ComputeMinMaxSize(writing_mode, input, space);
+  return To<NGBlockNode>(*this).ComputeMinMaxSize(writing_mode, input, space);
 }
 
 void NGLayoutInputNode::IntrinsicSize(
@@ -116,7 +116,7 @@ LayoutUnit NGLayoutInputNode::IntrinsicPaddingBlockEnd() const {
 NGLayoutInputNode NGLayoutInputNode::NextSibling() {
   auto* inline_node = DynamicTo<NGInlineNode>(this);
   return inline_node ? inline_node->NextSibling()
-                     : ToNGBlockNode(*this).NextSibling();
+                     : To<NGBlockNode>(*this).NextSibling();
 }
 
 NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
@@ -133,7 +133,7 @@ const NGPaintFragment* NGLayoutInputNode::PaintFragment() const {
 String NGLayoutInputNode::ToString() const {
   auto* inline_node = DynamicTo<NGInlineNode>(this);
   return inline_node ? inline_node->ToString()
-                     : ToNGBlockNode(*this).ToString();
+                     : To<NGBlockNode>(*this).ToString();
 }
 
 #ifndef NDEBUG

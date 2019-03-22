@@ -384,8 +384,8 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
           .PaintAllPhasesAtomically(paint_info);
       continue;
     }
-    if (const NGPhysicalContainerFragment* child_container =
-            ToNGPhysicalContainerFragmentOrNull(&fragment)) {
+    if (const auto* child_container =
+            DynamicTo<NGPhysicalContainerFragment>(fragment)) {
       if (child_container->HasFloatingDescendants())
         PaintFloatingChildren(child->Children(), paint_info);
     }
@@ -946,7 +946,7 @@ LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
 
 LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
   return BoxStrutToLayoutRectOutsets(
-      ToNGPhysicalBoxFragment(box_fragment_.PhysicalFragment())
+      To<NGPhysicalBoxFragment>(box_fragment_.PhysicalFragment())
           .PixelSnappedPadding());
 }
 

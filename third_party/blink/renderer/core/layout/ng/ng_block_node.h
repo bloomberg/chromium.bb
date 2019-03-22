@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -143,11 +144,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       LayoutUnit percentage_resolution_inline_size);
 };
 
-DEFINE_TYPE_CASTS(NGBlockNode,
-                  NGLayoutInputNode,
-                  node,
-                  node->IsBlock(),
-                  node.IsBlock());
+template <>
+struct DowncastTraits<NGBlockNode> {
+  static bool AllowFrom(const NGLayoutInputNode& node) {
+    return node.IsBlock();
+  }
+};
 
 }  // namespace blink
 

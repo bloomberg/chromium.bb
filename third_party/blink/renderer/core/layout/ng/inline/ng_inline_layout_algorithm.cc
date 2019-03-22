@@ -445,13 +445,13 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
                                                 NGInlineBoxState* box,
                                                 LayoutUnit inline_offset) {
   DCHECK(item_result->layout_result);
-  DCHECK(item_result->layout_result->PhysicalFragment());
   DCHECK(item_result->item);
   const NGInlineItem& item = *item_result->item;
   DCHECK(item.Style());
-  NGBoxFragment fragment(
-      ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction(),
-      ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
+  NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
+                         ConstraintSpace().Direction(),
+                         To<NGPhysicalBoxFragment>(
+                             *item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
       {NGBaselineAlgorithmType::kAtomicInline, baseline_type_},
       ConstraintSpace());
@@ -582,7 +582,7 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     if (IsFlippedLinesWritingMode(ConstraintSpace().GetWritingMode())) {
       NGFragment fragment(
           ConstraintSpace().GetWritingMode(),
-          ToNGPhysicalBoxFragment(*child.layout_result->PhysicalFragment()));
+          To<NGPhysicalBoxFragment>(*child.layout_result->PhysicalFragment()));
 
       block_offset = -fragment.BlockSize() - block_offset;
     }

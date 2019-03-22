@@ -17,12 +17,12 @@ LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
                                     const NGPhysicalFragment& fragment) {
   if (!fragment.IsBox())
     return LayoutUnit();
-  const auto* break_token = ToNGBlockBreakToken(fragment.BreakToken());
+  const auto* break_token = To<NGBlockBreakToken>(fragment.BreakToken());
   if (!break_token)
     return LayoutUnit();
   NGBoxFragment logical_fragment(constraint_space.GetWritingMode(),
                                  constraint_space.Direction(),
-                                 ToNGPhysicalBoxFragment(fragment));
+                                 To<NGPhysicalBoxFragment>(fragment));
   return break_token->UsedBlockSize() - logical_fragment.BlockSize();
 }
 
@@ -90,8 +90,9 @@ bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace& constraint_space,
                                   NGLayoutInputNode child,
                                   const NGBreakToken* child_break_token) {
   // Always ignore margins if we're not at the start of the child.
-  if (child_break_token && child_break_token->IsBlockType() &&
-      !ToNGBlockBreakToken(child_break_token)->IsBreakBefore())
+  auto* child_block_break_token =
+      DynamicTo<NGBlockBreakToken>(child_break_token);
+  if (child_block_break_token && !child_block_break_token->IsBreakBefore())
     return true;
 
   // If we're not fragmented or have been explicitly instructed to honor

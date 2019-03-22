@@ -124,8 +124,7 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   }
 
   bool has_content = false;
-  if (fragment->IsBox() || fragment->IsRenderedLegend()) {
-    const auto* box = ToNGPhysicalBoxFragment(fragment);
+  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(fragment)) {
     if (flags & NGPhysicalFragment::DumpType) {
       if (fragment->IsRenderedLegend())
         builder->Append("RenderedLegend");
@@ -364,7 +363,7 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   switch (Type()) {
     case kFragmentBox:
     case kFragmentRenderedLegend:
-      return ToNGPhysicalBoxFragment(*this).ScrollableOverflow();
+      return To<NGPhysicalBoxFragment>(*this).ScrollableOverflow();
     case kFragmentText:
       return {{}, Size()};
     case kFragmentLineBox:
@@ -418,7 +417,7 @@ UBiDiLevel NGPhysicalFragment::BidiLevel() const {
       return To<NGPhysicalTextFragment>(*this).BidiLevel();
     case kFragmentBox:
     case kFragmentRenderedLegend:
-      return ToNGPhysicalBoxFragment(*this).BidiLevel();
+      return To<NGPhysicalBoxFragment>(*this).BidiLevel();
     case kFragmentLineBox:
       break;
   }

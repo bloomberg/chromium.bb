@@ -61,7 +61,8 @@ const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(
       case kBlockBreakToken:
         // Currently there are no cases where NGInlineBreakToken is stored in
         // non-direct child descendants.
-        DCHECK(!ToNGBlockBreakToken(child)->InlineBreakTokenFor(layout_object));
+        DCHECK(
+            !To<NGBlockBreakToken>(child)->InlineBreakTokenFor(layout_object));
         break;
       case kInlineBreakToken:
         if (child->InputNode().GetLayoutBox() == &layout_object)

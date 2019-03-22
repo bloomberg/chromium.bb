@@ -76,7 +76,7 @@ bool NGUnpositionedListMarker::AddToBox(
     content_metrics = line_box.Metrics();
   } else {
     NGBoxFragment content_fragment(space.GetWritingMode(), space.Direction(),
-                                   ToNGPhysicalBoxFragment(content));
+                                   To<NGPhysicalBoxFragment>(content));
     content_metrics = content_fragment.BaselineMetricsWithoutSynthesize(
         {NGBaselineAlgorithmType::kFirstLine, baseline_type});
 
@@ -92,7 +92,7 @@ bool NGUnpositionedListMarker::AddToBox(
       Layout(space, container_builder->Style(), baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
-      ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());
+      To<NGPhysicalBoxFragment>(*marker_layout_result->PhysicalFragment());
 
   // Compute the inline offset of the marker.
   NGBoxFragment marker_fragment(space.GetWritingMode(), space.Direction(),
@@ -131,7 +131,7 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
       Layout(space, container_builder->Style(), baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
-      ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());
+      To<NGPhysicalBoxFragment>(*marker_layout_result->PhysicalFragment());
 
   // When there are no line boxes, marker is top-aligned to the list item.
   // https://github.com/w3c/csswg-drafts/issues/2417

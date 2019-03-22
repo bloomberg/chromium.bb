@@ -170,8 +170,7 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   EXPECT_EQ(1u, linebox.Children().size());
   EXPECT_EQ(NGPhysicalSize(), linebox.Size());
 
-  const NGPhysicalBoxFragment& oof_container =
-      ToNGPhysicalBoxFragment(*linebox.Children()[0]);
+  const auto& oof_container = To<NGPhysicalBoxFragment>(*linebox.Children()[0]);
   EXPECT_EQ(NGPhysicalSize(), oof_container.Size());
 }
 
@@ -235,7 +234,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<const NGLayoutResult> layout_result = block_node.Layout(space);
 
-  auto* block_box = ToNGPhysicalBoxFragment(layout_result->PhysicalFragment());
+  auto* block_box =
+      To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
   EXPECT_TRUE(layout_result->BfcBlockOffset().has_value());
   EXPECT_EQ(0, *layout_result->BfcBlockOffset());
   EXPECT_EQ(0, layout_result->BfcLineOffset());
@@ -313,9 +313,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   std::tie(html_fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
-      ToNGPhysicalBoxFragment(html_fragment->Children()[0].get());
+      To<NGPhysicalBoxFragment>(html_fragment->Children()[0].get());
   auto* container_fragment =
-      ToNGPhysicalBoxFragment(body_fragment->Children()[0].get());
+      To<NGPhysicalBoxFragment>(body_fragment->Children()[0].get());
   Vector<NGPhysicalOffset> line_offsets;
   for (const auto& child : container_fragment->Children()) {
     if (!child->IsLineBox())
