@@ -23,32 +23,6 @@ class ReportingServiceProxyPtrHolder {
   }
   ~ReportingServiceProxyPtrHolder() = default;
 
-  void QueueInterventionReport(const KURL& url,
-                               const String& message,
-                               const String& source_file,
-                               int line_number,
-                               int column_number) {
-    if (reporting_service_proxy) {
-      reporting_service_proxy->QueueInterventionReport(
-          url, message ? message : "", source_file ? source_file : "",
-          line_number, column_number);
-    }
-  }
-
-  void QueueDeprecationReport(const KURL& url,
-                              const String& id,
-                              WTF::Time anticipatedRemoval,
-                              const String& message,
-                              const String& source_file,
-                              int line_number,
-                              int column_number) {
-    if (reporting_service_proxy) {
-      reporting_service_proxy->QueueDeprecationReport(
-          url, id, anticipatedRemoval, message ? message : "",
-          source_file ? source_file : "", line_number, column_number);
-    }
-  }
-
   void QueueCspViolationReport(
       const KURL& url,
       const String& group,
