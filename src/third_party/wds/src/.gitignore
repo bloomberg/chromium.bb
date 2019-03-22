@@ -1,0 +1,26 @@
+.gitignore
+
+# CMake
+CMakeCache.txt
+CMakeFiles
+CTestTestfile.cmake
+Makefile
+cmake_install.cmake
+install_manifest.txt
+Testing/
+
+# generated rtsp parser sources
+libwds/rtsp/gen
+
+# generated binaries
+libwds/rtsp/tests/test-wds
+libwds/rtsp/tests/wdsfuzzer
+sink/sink-test
+p2p/test-ie
+p2p/register-peer-service
+mirac_network/gst-test
+mirac_network/network-test
+desktop_source/desktop-source-test
+
+*.a
+*.so
