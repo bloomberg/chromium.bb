@@ -1685,13 +1685,6 @@ TEST_F(PrerenderTest, LinkManagerExpireRevealingLaunch) {
 }
 
 TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "GET"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "HEAD"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "OPTIONS"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "POST"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "TRACE"));
-  EXPECT_FALSE(IsValidHttpMethod(FULL_PRERENDER, "WHATEVER"));
-
   EXPECT_TRUE(IsValidHttpMethod(PREFETCH_ONLY, "GET"));
   EXPECT_TRUE(IsValidHttpMethod(PREFETCH_ONLY, "HEAD"));
   EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "OPTIONS"));

@@ -332,7 +332,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
     return false;
   DCHECK(prerender_data->contents());
 
-  if (prerender_data->contents()->prerender_mode() != FULL_PRERENDER)
+  if (prerender_data->contents()->prerender_mode() != DEPRECATED_FULL_PRERENDER)
     return false;
 
   WebContents* new_web_contents = SwapInternal(
@@ -596,7 +596,7 @@ std::vector<WebContents*> PrerenderManager::GetAllPrerenderingContents() const {
   for (const auto& prerender : active_prerenders_) {
     WebContents* contents = prerender->contents()->prerender_contents();
     if (contents &&
-        prerender->contents()->prerender_mode() == FULL_PRERENDER) {
+        prerender->contents()->prerender_mode() == DEPRECATED_FULL_PRERENDER) {
       result.push_back(contents);
     }
   }
