@@ -42,6 +42,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     KEY_SHORTCUTS_CHANGED,
     LABELED_BY_CHANGED,
     LANGUAGE_CHANGED,
+    LAYOUT_INVALIDATED,   // Fired when aria-busy goes false
     LIVE_REGION_CHANGED,  // Fired on the root of a live region.
     LIVE_REGION_CREATED,
     LIVE_REGION_NODE_CHANGED,  // Fired on a node within a live region.

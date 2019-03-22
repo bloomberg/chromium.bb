@@ -212,6 +212,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
     case ui::AXEventGenerator::Event::LABELED_BY_CHANGED:
     case ui::AXEventGenerator::Event::LANGUAGE_CHANGED:
+    case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
     case ui::AXEventGenerator::Event::LOAD_START:

@@ -303,18 +303,27 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
                                               bool new_value) {
   DCHECK_EQ(tree_, tree);
 
-  if (attr == ax::mojom::BoolAttribute::kSelected) {
-    AddEvent(node, Event::SELECTED_CHANGED);
-    ui::AXNode* container = node;
-    while (container &&
-           !ui::IsContainerWithSelectableChildren(container->data().role))
-      container = container->parent();
-    if (container)
-      AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
-    return;
+  switch (attr) {
+    case ax::mojom::BoolAttribute::kBusy:
+      // Fire an 'invalidated' event when aria-busy becomes false
+      if (!new_value)
+        AddEvent(node, Event::LAYOUT_INVALIDATED);
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
+    case ax::mojom::BoolAttribute::kSelected: {
+      AddEvent(node, Event::SELECTED_CHANGED);
+      ui::AXNode* container = node;
+      while (container &&
+             !ui::IsContainerWithSelectableChildren(container->data().role))
+        container = container->parent();
+      if (container)
+        AddEvent(container, Event::SELECTED_CHILDREN_CHANGED);
+      break;
+    }
+    default:
+      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
+      break;
   }
-
-  AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
 }
 
 void AXEventGenerator::OnIntListAttributeChanged(

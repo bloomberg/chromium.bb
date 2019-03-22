@@ -202,6 +202,7 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED:
     case ui::AXEventGenerator::Event::LABELED_BY_CHANGED:
     case ui::AXEventGenerator::Event::LANGUAGE_CHANGED:
+    case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
