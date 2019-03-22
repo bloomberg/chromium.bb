@@ -520,36 +520,6 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
   return true;
 }
 
-bool VisualViewport::MagnifyScaleAroundAnchor(float magnify_delta,
-                                              const FloatPoint& anchor) {
-  const float old_page_scale = Scale();
-  const float new_page_scale =
-      GetPage().GetChromeClient().ClampPageScaleFactorToLimits(magnify_delta *
-                                                               old_page_scale);
-  if (new_page_scale == old_page_scale)
-    return false;
-  if (!MainFrame() || !MainFrame()->View())
-    return false;
-
-  // Keep the center-of-pinch anchor in a stable position over the course
-  // of the magnify.
-  // TODO(bokan): Looks like we call into setScaleAndLocation with infinity for
-  // the location so it seems either old or newPageScale is invalid.
-  // crbug.com/702771.
-  FloatPoint anchor_at_old_scale = anchor.ScaledBy(1.f / old_page_scale);
-  FloatPoint anchor_at_new_scale = anchor.ScaledBy(1.f / new_page_scale);
-  FloatSize anchor_delta = anchor_at_old_scale - anchor_at_new_scale;
-
-  // First try to use the anchor's delta to scroll the LocalFrameView.
-  FloatSize anchor_delta_unused_by_scroll = anchor_delta;
-
-  // Manually bubble any remaining anchor delta up to the visual viewport.
-  FloatPoint new_location(FloatPoint(GetScrollOffset()) +
-                          anchor_delta_unused_by_scroll);
-  SetScaleAndLocation(new_page_scale, new_location);
-  return true;
-}
-
 void VisualViewport::CreateLayerTree() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
