@@ -694,7 +694,7 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedRetryId) {
     // Trying to reload the same extension, again to fail, should result in the
     // same retry id.  This is somewhat an implementation detail, but is
     // important to ensure we don't allocate crazy numbers of ids if the user
-    // just retries continously.
+    // just retries continuously.
     scoped_refptr<UIThreadExtensionFunction> function(
         new api::DeveloperPrivateLoadUnpackedFunction());
     function->SetRenderFrameHost(web_contents->GetMainFrame());
