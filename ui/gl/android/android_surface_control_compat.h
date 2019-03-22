@@ -35,6 +35,10 @@ class GL_EXPORT SurfaceControl {
   // Returns true if overlays with |color_space| are supported by the platform.
   static bool SupportsColorSpace(const gfx::ColorSpace& color_space);
 
+  // Returns the usage flags required for using an AHardwareBuffer with the
+  // SurfaceControl API, if it is supported.
+  static uint64_t RequiredUsage();
+
   class GL_EXPORT Surface : public base::RefCounted<Surface> {
    public:
     Surface();

@@ -44,6 +44,10 @@ enum {
   ADATASPACE_BT2020_PQ = 163971072,
 };
 
+enum {
+  AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY = 1ULL << 11,
+};
+
 // ASurfaceTransaction
 using pASurfaceTransaction_create = ASurfaceTransaction* (*)(void);
 using pASurfaceTransaction_delete = void (*)(ASurfaceTransaction*);
@@ -272,15 +276,19 @@ void OnTransactionCompletedOnAnyThread(void* context,
 
 // static
 bool SurfaceControl::IsSupported() {
-  if (!base::android::BuildInfo::GetInstance()->is_at_least_q()) {
-    LOG(ERROR) << "SurfaceControl requires at least Q";
+  if (!base::android::BuildInfo::GetInstance()->is_at_least_q())
     return false;
-  }
   return SurfaceControlMethods::Get().supported;
 }
 
 bool SurfaceControl::SupportsColorSpace(const gfx::ColorSpace& color_space) {
   return ColorSpaceToADataSpace(color_space) != ADATASPACE_UNKNOWN;
+}
+
+uint64_t SurfaceControl::RequiredUsage() {
+  if (!IsSupported())
+    return 0u;
+  return AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
 }
 
 SurfaceControl::Surface::Surface() = default;

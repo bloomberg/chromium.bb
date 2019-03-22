@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_binders.h"
@@ -100,9 +101,10 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   AImageReader* reader = nullptr;
   // The usage flag below should be used when the buffer will be read from by
   // the GPU as a texture.
-  const uint64_t usage = mode == Mode::kAImageReaderSecure
-                             ? AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT
-                             : AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+  uint64_t usage = mode == Mode::kAImageReaderSecure
+                       ? AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT
+                       : AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+  usage |= gl::SurfaceControl::RequiredUsage();
 
   // Create a new reader for images of the desired size and format.
   media_status_t return_code = loader_.AImageReader_newWithUsage(
