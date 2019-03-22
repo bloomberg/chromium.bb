@@ -11,6 +11,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
+#include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -34,6 +35,7 @@ void InitializeDBus() {
     AuthPolicyClient::Initialize(bus);
     BiodClient::Initialize(bus);  // For device::Fingerprint.
     KerberosClient::Initialize(bus);
+    MachineLearningClient::Initialize(bus);
     PowerManagerClient::Initialize(bus);
     SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
@@ -41,6 +43,7 @@ void InitializeDBus() {
     AuthPolicyClient::InitializeFake();
     BiodClient::InitializeFake();  // For device::Fingerprint.
     KerberosClient::InitializeFake();
+    MachineLearningClient::InitializeFake();
     PowerManagerClient::InitializeFake();
     SystemClockClient::InitializeFake();
     UpstartClient::InitializeFake();
@@ -54,12 +57,13 @@ void InitializeDBus() {
 }
 
 void ShutdownDBus() {
-  AuthPolicyClient::Shutdown();
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   PowerManagerClient::Shutdown();
+  MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
   BiodClient::Shutdown();
+  AuthPolicyClient::Shutdown();
 
   DBusThreadManager::Shutdown();
   SystemSaltGetter::Shutdown();

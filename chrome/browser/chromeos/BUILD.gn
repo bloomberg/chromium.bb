@@ -99,6 +99,7 @@ source_set("chromeos") {
     "//chromeos/dbus/biod",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/kerberos",
+    "//chromeos/dbus/machine_learning",
     "//chromeos/dbus/services:services",
     "//chromeos/dbus/system_clock",
     "//chromeos/disks",

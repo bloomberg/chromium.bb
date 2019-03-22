@@ -44,7 +44,6 @@ class GsmSMSClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
-class MachineLearningClient;
 class MediaAnalyticsClient;
 class ModemMessagingClient;
 class OobeConfigurationClient;
@@ -138,7 +137,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
-  MachineLearningClient* GetMachineLearningClient();
   MediaAnalyticsClient* GetMediaAnalyticsClient();
   ModemMessagingClient* GetModemMessagingClient();
   OobeConfigurationClient* GetOobeConfigurationClient();
