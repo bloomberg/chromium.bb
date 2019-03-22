@@ -127,7 +127,7 @@ struct UserInitiatedInfo {
 };
 
 // Information about how the page rendered during the browsing session.
-// Derived from the mojom::PageRenderData that is sent via UpdateTiming IPC.
+// Derived from the FrameRenderDataUpdate that is sent via UpdateTiming IPC.
 struct PageRenderData {
   PageRenderData() : layout_jank_score(0) {}
 
@@ -428,7 +428,7 @@ class PageLoadMetricsObserver {
   // course of the page load.
   virtual void OnSubFrameRenderDataUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const mojom::PageRenderData& render_data,
+      const mojom::FrameRenderDataUpdate& render_data,
       const PageLoadExtraInfo& extra_info) {}
 
   // Triggered when an updated CpuTiming is available at the page or subframe

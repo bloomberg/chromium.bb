@@ -678,7 +678,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::PageLoadMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::PageRenderDataPtr render_data,
+    mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
@@ -723,7 +723,7 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::PageLoadMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
-    mojom::PageRenderDataPtr render_data,
+    mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_binding_.GetCurrentTargetFrame();

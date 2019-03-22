@@ -436,7 +436,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     mojom::PageLoadMetadataPtr new_metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::PageRenderDataPtr render_data,
+    mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr new_cpu_timing) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
@@ -606,13 +606,13 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
-    mojom::PageRenderDataPtr render_data) {
+    mojom::FrameRenderDataUpdatePtr render_data) {
   main_frame_render_data_.layout_jank_score = render_data->layout_jank_score;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameRenderData(
     content::RenderFrameHost* render_frame_host,
-    mojom::PageRenderDataPtr render_data) {
+    mojom::FrameRenderDataUpdatePtr render_data) {
   client_->OnSubFrameRenderDataChanged(render_frame_host, *render_data);
 }
 

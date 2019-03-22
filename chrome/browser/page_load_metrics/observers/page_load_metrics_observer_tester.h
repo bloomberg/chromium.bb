@@ -60,8 +60,9 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulateResourceDataUseUpdate(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       content::RenderFrameHost* render_frame_host);
-  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data);
-  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data,
+  void SimulateRenderDataUpdate(
+      const mojom::FrameRenderDataUpdate& render_data);
+  void SimulateRenderDataUpdate(const mojom::FrameRenderDataUpdate& render_data,
                                 content::RenderFrameHost* render_frame_host);
 
   // Simulates a loaded resource. Main frame resources must specify a
@@ -94,12 +95,13 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void RegisterObservers(PageLoadTracker* tracker);
 
  private:
-  void SimulatePageLoadTimingUpdate(const mojom::PageLoadTiming& timing,
-                                    const mojom::PageLoadMetadata& metadata,
-                                    const mojom::PageLoadFeatures& new_features,
-                                    const mojom::PageRenderData& render_data,
-                                    const mojom::CpuTiming& cpu_timing,
-                                    content::RenderFrameHost* rfh);
+  void SimulatePageLoadTimingUpdate(
+      const mojom::PageLoadTiming& timing,
+      const mojom::PageLoadMetadata& metadata,
+      const mojom::PageLoadFeatures& new_features,
+      const mojom::FrameRenderDataUpdate& render_data,
+      const mojom::CpuTiming& cpu_timing,
+      content::RenderFrameHost* rfh);
 
   content::WebContents* web_contents() const { return web_contents_; }
 

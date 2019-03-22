@@ -165,7 +165,7 @@ class MetricsWebContentsObserver
       mojom::PageLoadMetadataPtr metadata,
       mojom::PageLoadFeaturesPtr new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-      mojom::PageRenderDataPtr render_data,
+      mojom::FrameRenderDataUpdatePtr render_data,
       mojom::CpuTimingPtr cpu_timing);
 
   // Informs the observers of the currently committed load that the event
@@ -182,7 +182,7 @@ class MetricsWebContentsObserver
                     mojom::PageLoadMetadataPtr metadata,
                     mojom::PageLoadFeaturesPtr new_features,
                     std::vector<mojom::ResourceDataUpdatePtr> resources,
-                    mojom::PageRenderDataPtr render_data,
+                    mojom::FrameRenderDataUpdatePtr render_data,
                     mojom::CpuTimingPtr cpu_timing) override;
 
   void HandleFailedNavigationForTrackedLoad(

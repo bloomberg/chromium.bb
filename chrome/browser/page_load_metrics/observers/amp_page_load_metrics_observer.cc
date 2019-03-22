@@ -326,7 +326,7 @@ void AMPPageLoadMetricsObserver::OnTimingUpdate(
 
 void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageRenderData& render_data,
+    const page_load_metrics::mojom::FrameRenderDataUpdate& render_data,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (subframe_rfh == nullptr)
     return;
