@@ -37,12 +37,6 @@
 
 namespace blink {
 
-// static
-std::unique_ptr<WebIDBDatabaseCallbacksImpl>
-WebIDBDatabaseCallbacksImpl::Create(IDBDatabaseCallbacks* callbacks) {
-  return base::WrapUnique(new WebIDBDatabaseCallbacksImpl(callbacks));
-}
-
 WebIDBDatabaseCallbacksImpl::WebIDBDatabaseCallbacksImpl(
     IDBDatabaseCallbacks* callbacks)
     : callbacks_(callbacks) {}
