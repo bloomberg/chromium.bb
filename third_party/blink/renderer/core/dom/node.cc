@@ -2820,12 +2820,12 @@ StaticNodeList* Node::getDestinationInsertionPoints() {
 }
 
 HTMLSlotElement* Node::AssignedSlot() const {
-  // assignedSlot doesn't need to recalc assignment.
   DCHECK(!IsPseudoElement());
   ShadowRoot* root = V1ShadowRootOfParent();
   if (!root)
     return nullptr;
   if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
+    // Don't recalc assignment in this case.
     return root->AssignedSlotFor(*this);
   }
 
@@ -2845,11 +2845,14 @@ HTMLSlotElement* Node::AssignedSlot() const {
   //
   // If we can remove such code path, we don't need to check
   // IsInSlotAssignmentRecalc() here.
-  if (root->NeedsSlotAssignmentRecalc() ||
-      GetDocument().IsInSlotAssignmentRecalc()) {
+  if (GetDocument().IsInSlotAssignmentRecalc()) {
     // FlatTreeNodeData is not realiable here. Entering slow path.
     return root->AssignedSlotFor(*this);
   }
+
+  // Recalc assignment, if necessary, to make sure the FlatTreeNodeData is not
+  // dirty. RecalcAssignment() is almost no-op if we don't need to recalc.
+  root->GetSlotAssignment().RecalcAssignment();
   if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
     DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot());
     return data->AssignedSlot();
