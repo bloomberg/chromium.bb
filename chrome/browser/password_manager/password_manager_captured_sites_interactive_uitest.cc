@@ -35,8 +35,11 @@ struct TestParams {
 base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
-    return src_dir.Append(
-        FILE_PATH_LITERAL("chrome/test/data/password/captured_sites"));
+    return src_dir.AppendASCII("chrome")
+        .AppendASCII("test")
+        .AppendASCII("data")
+        .AppendASCII("password")
+        .AppendASCII("captured_sites");
   }
 
   ADD_FAILURE() << "Unable to obtain the Chromium src directory!";
