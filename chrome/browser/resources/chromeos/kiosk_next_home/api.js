@@ -53,10 +53,11 @@ kioskNextHome.Bridge = class {
   getApps() {}
 
   /**
-   * Launches an app.
+   * Launches the app with the given appId.
+   *
+   * Note: This is a fire and forget operation, given the  VMs involved and
+   * their IPC interfaces, we can't tell if the operation was successful.
    * @param {string} appId Chrome OS identifier for the app.
-   * @return {!Promise} Resolves when app is launched, or rejects in case of
-   *     failures.
    */
   launchApp(appId) {}
 
@@ -88,9 +89,21 @@ kioskNextHome.Bridge = class {
  * @enum {string}
  */
 kioskNextHome.AppType = {
+  /**
+   * The app type could not be determined or is not relevant to Kiosk Next (e.g.
+   * Linux apps).
+   */
+  UNKNOWN: 'unknown',
   /** The app is an ARC++ app (Android app). */
   ARC: 'arc',
-  /** The content is a Chrome app. */
+  /**
+   * The app is a Chrome OS app.
+   *
+   * Note: This is an artificial grouping of the many different types of apps
+   * that Chrome OS supports. Built-in apps (e.g. Settings), Extensions (e.g.
+   * Files app) and pinned web apps. They mostly behave in the same way from
+   * the point of view of Kiosk Next.
+   */
   CHROME: 'chrome',
 };
 
@@ -100,6 +113,13 @@ kioskNextHome.AppType = {
  * @enum {string}
  */
 kioskNextHome.AppReadiness = {
+  /**
+   * App readiness could not be determined.
+   * This can happen if the current app is unavailable for unknown or
+   * unexpected reasons, like a renderer crash for Extensions or an unsupported
+   * operation (such as blacklisted web apps).
+   */
+  UNKNOWN: 'unknown',
   /** Installed and launchable. */
   READY: 'ready',
   /** App is disabled by policy. */

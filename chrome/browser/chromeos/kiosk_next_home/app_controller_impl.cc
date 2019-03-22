@@ -17,9 +17,17 @@ namespace chromeos {
 namespace kiosk_next_home {
 
 AppControllerImpl::AppControllerImpl(Profile* profile)
-    : app_service_proxy_(apps::AppServiceProxy::Get(profile)) {}
+    : profile_(profile),
+      app_service_proxy_(apps::AppServiceProxy::Get(profile)) {
+  app_service_proxy_->AppRegistryCache().AddObserver(this);
+}
 
-AppControllerImpl::~AppControllerImpl() = default;
+AppControllerImpl::~AppControllerImpl() {
+  // We can outlive the AppServiceProxy during Profile destruction, so we need
+  // to test if the proxy still exists before removing the observer.
+  if (apps::AppServiceProxy::Get(profile_))
+    app_service_proxy_->AppRegistryCache().RemoveObserver(this);
+}
 
 void AppControllerImpl::BindRequest(mojom::AppControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -37,12 +45,28 @@ void AppControllerImpl::GetApps(
   std::move(callback).Run(std::move(app_list));
 }
 
+void AppControllerImpl::SetClient(mojom::AppControllerClientPtr client) {
+  client_ = std::move(client);
+}
+
 void AppControllerImpl::LaunchApp(const std::string& app_id) {
   // TODO(ltenorio): Create a new launch source for Kiosk Next Home and use it
   // here.
   app_service_proxy_->Launch(app_id, ui::EventFlags::EF_NONE,
                              apps::mojom::LaunchSource::kFromAppListGrid,
                              display::kDefaultDisplayId);
+}
+
+void AppControllerImpl::OnAppUpdate(const apps::AppUpdate& update) {
+  // Skip this event if no relevant fields have changed.
+  if (!update.StateIsNull() && !update.NameChanged() &&
+      !update.ReadinessChanged()) {
+    return;
+  }
+
+  if (client_) {
+    client_->OnAppChanged(CreateAppPtr(update));
+  }
 }
 
 chromeos::kiosk_next_home::mojom::AppPtr AppControllerImpl::CreateAppPtr(

@@ -24,6 +24,12 @@ struct App {
   apps.mojom.Readiness readiness;
 };
 
+// Interface used by AppController clients to receive app related events.
+interface AppControllerClient {
+  // Called when any field from the given app changes.
+  OnAppChanged(App app);
+};
+
 // Interface for managing Chrome OS apps from the Kiosk Next Home.
 interface AppController {
   // Returns all the local apps installed on this Chrome OS device.
@@ -34,7 +40,8 @@ interface AppController {
   // observer through the AddObserver method.
   GetApps() => (array<App> apps);
 
-  // TODO(ltenorio): Add a way to attach app observers.
+  // Sets the client that will be notified when an app changes.
+  SetClient(AppControllerClient client);
 
   // Launches the app with the given app_id.
   LaunchApp(string app_id);
