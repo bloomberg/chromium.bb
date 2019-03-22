@@ -44,6 +44,7 @@ extern const char
 extern const char
     kDailyOriginalContentLengthWithDataReductionProxyEnabledUnknown[];
 extern const char kDataReductionProxy[];
+extern const char kDataSaverEnabled[];
 extern const char kDataReductionProxyConfig[];
 extern const char kDataUsageReportingEnabled[];
 extern const char kDataReductionProxyWasEnabledBefore[];

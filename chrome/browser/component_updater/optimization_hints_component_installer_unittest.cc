@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -165,7 +166,8 @@ TEST_F(OptimizationHintsComponentInstallerTest,
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(previews::features::kOptimizationHints);
   TestingPrefServiceSimple* prefs = profile_prefs();
-  prefs->registry()->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
+  prefs->registry()->RegisterBooleanPref(
+      data_reduction_proxy::prefs::kDataSaverEnabled, false);
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(0);
@@ -189,7 +191,8 @@ TEST_F(OptimizationHintsComponentInstallerTest,
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(previews::features::kOptimizationHints);
   TestingPrefServiceSimple* prefs = profile_prefs();
-  prefs->registry()->RegisterBooleanPref(prefs::kDataSaverEnabled, true);
+  prefs->registry()->RegisterBooleanPref(
+      data_reduction_proxy::prefs::kDataSaverEnabled, true);
   std::unique_ptr<OptimizationHintsMockComponentUpdateService> cus(
       new OptimizationHintsMockComponentUpdateService());
   EXPECT_CALL(*cus, RegisterComponent(testing::_))
