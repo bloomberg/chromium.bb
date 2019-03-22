@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_sync_context.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
@@ -54,9 +56,9 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   BackgroundSyncManager* background_sync_manager() const;
 
   // BackgroundSyncContext implementation.
-  void FireBackgroundSyncEventsForStoragePartition(
-      content::StoragePartition* storage_partition,
-      base::OnceClosure done_closure) override;
+  void FireBackgroundSyncEvents(base::OnceClosure done_closure) override;
+  void GetSoonestWakeupDelta(
+      base::OnceCallback<void(base::TimeDelta)> callback) override;
 
  protected:
   friend class base::RefCountedDeleteOnSequence<BackgroundSyncContextImpl>;
@@ -65,10 +67,14 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
 
   void set_background_sync_manager_for_testing(
       std::unique_ptr<BackgroundSyncManager> manager);
+  void set_wakeup_delta_for_testing(base::TimeDelta wakeup_delta);
 
  private:
   friend class BackgroundSyncServiceImplTest;
+  friend class BackgroundSyncLauncherTest;
 
+  void FireBackgroundSyncEventsOnIOThread(base::OnceClosure done_closure);
+  void DidFireBackgroundSyncEventsOnIOThread(base::OnceClosure done_closure);
   virtual void CreateBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
@@ -77,6 +83,11 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
       mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request);
 
   void ShutdownOnIO();
+
+  base::TimeDelta GetSoonestWakeupDeltaOnIOThread();
+  void DidGetSoonestWakeupDelta(
+      base::OnceCallback<void(base::TimeDelta)> callback,
+      base::TimeDelta soonest_wakeup_delta);
 
   // Only accessed on the IO thread.
   std::unique_ptr<BackgroundSyncManager> background_sync_manager_;
@@ -87,6 +98,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   std::map<BackgroundSyncServiceImpl*,
            std::unique_ptr<BackgroundSyncServiceImpl>>
       services_;
+  base::TimeDelta test_wakeup_delta_ = base::TimeDelta::Max();
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncContextImpl);
 };
