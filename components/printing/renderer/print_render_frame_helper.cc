@@ -1919,20 +1919,7 @@ bool PrintRenderFrameHelper::SetOptionsFromPdfDocument(
   options->is_scaling_disabled = PDFShouldDisableScalingBasedOnPreset(
       preset_options, print_pages_params_->params, false);
   options->copies = preset_options.copies;
-
-  // TODO(thestig) This should be a straight pass-through, but print preview
-  // does not currently support short-edge printing.
-  switch (preset_options.duplex_mode) {
-    case blink::kWebSimplex:
-      options->duplex = SIMPLEX;
-      break;
-    case blink::kWebLongEdge:
-      options->duplex = LONG_EDGE;
-      break;
-    default:
-      options->duplex = UNKNOWN_DUPLEX_MODE;
-      break;
-  }
+  options->duplex = static_cast<DuplexMode>(preset_options.duplex_mode);
   return true;
 }
 
