@@ -72,6 +72,7 @@ mojom("mojom_platform") {
     "mime/mime_registry.mojom",
     "net/ip_address_space.mojom",
     "notifications/notification.mojom",
+    "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
     "page/display_cutout.mojom",
     "payments/payment_app.mojom",
