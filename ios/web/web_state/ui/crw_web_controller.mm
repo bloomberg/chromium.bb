@@ -129,13 +129,13 @@ using web::NavigationManagerImpl;
 using web::WebState;
 using web::WebStateImpl;
 
-namespace {
-
 using web::wk_navigation_util::IsPlaceholderUrl;
 using web::wk_navigation_util::CreatePlaceholderUrlForUrl;
 using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
+
+namespace {
 
 // Struct to capture data about a user interaction. Records the time of the
 // interaction and the main document URL at that time.
@@ -160,6 +160,12 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
+
+NSString* const kReferrerHeaderName = @"Referer";  // [sic]
+
+// The duration of the period following a screen touch during which the user is
+// still considered to be interacting with the page.
+const NSTimeInterval kMaximumDelayForUserInteractionInSeconds = 2;
 
 // Values for the histogram that counts slow/fast back/forward navigations.
 enum class BackForwardNavigationType {
@@ -193,6 +199,17 @@ typedef base::MRUCache<web::CertHostPair, CertVerificationError>
 // Cache holds errors only for pending navigations, so the actual number of
 // stored errors is not expected to be high.
 const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
+
+// URLs that are fed into UIWebView as history push/replace get escaped,
+// potentially changing their format. Code that attempts to determine whether a
+// URL hasn't changed can be confused by those differences though, so method
+// will round-trip a URL through the escaping process so that it can be adjusted
+// pre-storing, to allow later comparisons to work as expected.
+GURL URLEscapedForHistory(const GURL& url) {
+  // TODO(stuartmorgan): This is a very large hammer; see if limited unicode
+  // escaping would be sufficient.
+  return net::GURLWithNSURL(net::NSURLWithGURL(url));
+}
 
 }  // namespace
 
@@ -608,26 +625,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 @end
 
-namespace {
-
-NSString* const kReferrerHeaderName = @"Referer";  // [sic]
-
-// The duration of the period following a screen touch during which the user is
-// still considered to be interacting with the page.
-const NSTimeInterval kMaximumDelayForUserInteractionInSeconds = 2;
-
-// URLs that are fed into UIWebView as history push/replace get escaped,
-// potentially changing their format. Code that attempts to determine whether a
-// URL hasn't changed can be confused by those differences though, so method
-// will round-trip a URL through the escaping process so that it can be adjusted
-// pre-storing, to allow later comparisons to work as expected.
-GURL URLEscapedForHistory(const GURL& url) {
-  // TODO(stuartmorgan): This is a very large hammer; see if limited unicode
-  // escaping would be sufficient.
-  return net::GURLWithNSURL(net::NSURLWithGURL(url));
-}
-}  // namespace
-
 @implementation CRWWebController
 
 // Synthesize as it is readonly.
@@ -844,10 +841,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-- (id<CRWNativeContent>)nativeController {
-  return [_containerView nativeController];
-}
-
 - (void)setNativeController:(id<CRWNativeContent>)nativeController {
   // Check for pointer equality.
   if (self.nativeController == nativeController)
@@ -962,7 +955,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   return _touchTrackingRecognizer;
 }
 
-#pragma mark Session Information
+#pragma mark Navigation and Session Information
 
 - (CRWSessionController*)sessionController {
   NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
@@ -1452,6 +1445,10 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
+- (id<CRWNativeContent>)nativeController {
+  return [_containerView nativeController];
+}
+
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture {
@@ -1758,7 +1755,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark - Load helpers
+#pragma mark - Navigation Helpers
 
 // Registers load request with empty referrer and link or client redirect
 // transition based on user interaction state. Returns navigation context for
@@ -1915,7 +1912,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   return context;
 }
 
-// Load the current URL in a web view, first ensuring the web view is visible.
+// Loads the current URL in a web view, first ensuring the web view is visible.
 - (void)loadCurrentURLInWebView {
   web::NavigationItem* item = self.currentNavItem;
   GURL targetURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
@@ -2352,7 +2349,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   self.webStateImpl->OnPageLoaded(currentURL, YES);
 }
 
-#pragma mark - Error helpers
+#pragma mark - Error Helpers
 
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context {
@@ -2714,7 +2711,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   return [self.nativeProvider nativeContentInsetForWebState:self.webState];
 }
 
-#pragma mark - CRWJSInjectionEvaluator helper methods (Private)
+#pragma mark - JavaScript message Helpers (Private)
 
 - (BOOL)respondToMessage:(base::DictionaryValue*)message
        userIsInteracting:(BOOL)userIsInteracting
@@ -3199,7 +3196,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   return YES;
 }
 
-#pragma mark - JavaScript message helpers
+#pragma mark - Navigation Helpers
 
 // Adds a new NavigationItem with the given URL and state object to the history
 // stack. A state object is a serialized generic JavaScript object that contains
@@ -3594,7 +3591,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark - WebDelegate Calls
+#pragma mark - WKNavigationDelegate Helpers
 
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
   if (action.targetFrame) {
@@ -3605,6 +3602,8 @@ GURL URLEscapedForHistory(const GURL& url) {
   // |sourceFrame| is the mainFrame.
   return action.sourceFrame.mainFrame;
 }
+
+#pragma mark - Security Helpers
 
 - (void)updateSSLStatusForCurrentNavigationItem {
   if (_isBeingDestroyed) {
@@ -3739,7 +3738,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   [self loadCancelled];
 }
 
-#pragma mark - WebView helpers
+#pragma mark - WebView Helpers
 
 // Creates a container view if it's not yet created.
 - (void)ensureContainerViewCreated {
@@ -4036,7 +4035,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       previewingViewController);
 }
 
-#pragma mark - WKUIDelegate helper methods
+#pragma mark - WKUIDelegate Helpers
 
 // Helper to respond to |webView:runJavaScript...| delegate methods.
 // |completionHandler| must not be nil.
@@ -5909,7 +5908,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark - KVO helper methods
+#pragma mark - KVO Helpers
 
 // Returns YES if a KVO change to |newURL| could be a 'navigation' within the
 // document (hash change, pushState/replaceState, etc.). This should only be
