@@ -17,12 +17,9 @@
  * @constructor
  * @struct
  */
-function ToolbarController(toolbar,
-                           navigationList,
-                           listContainer,
-                           locationLine,
-                           selectionHandler,
-                           directoryModel) {
+function ToolbarController(
+    toolbar, navigationList, listContainer, locationLine, selectionHandler,
+    directoryModel) {
   /**
    * @private {!HTMLElement}
    * @const
@@ -108,12 +105,14 @@ function ToolbarController(toolbar,
       'relayout', this.onNavigationListRelayout_.bind(this));
 
   // Watch visibility of toolbar buttons to update the width of location line.
-  const observer = new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
+  const observer =
+      new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
   const toolbarButtons =
       this.toolbar_.querySelectorAll('.icon-button, .combobutton');
   for (let i = 0; i < toolbarButtons.length; i++) {
-    observer.observe(toolbarButtons[i],
-                     /** @type MutationObserverInit */({attributes: true}));
+    observer.observe(
+        toolbarButtons[i],
+        /** @type MutationObserverInit */ ({attributes: true}));
   }
 }
 
@@ -197,8 +196,8 @@ ToolbarController.prototype.onDeleteButtonClicked_ = function() {
  */
 ToolbarController.prototype.onNavigationListRelayout_ = function() {
   // Make the width of spacer same as the width of navigation list.
-  const navWidth = parseFloat(
-      window.getComputedStyle(this.navigationList_).width);
+  const navWidth =
+      parseFloat(window.getComputedStyle(this.navigationList_).width);
   this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
 };
 
