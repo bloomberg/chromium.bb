@@ -1089,6 +1089,16 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       q_val = av1_convert_qindex_to_q(active_best_quality, bit_depth);
       active_best_quality +=
           av1_compute_qdelta(rc, q_val, q_val * q_adj_factor, bit_depth);
+
+      // Tweak active_best_quality for AOM_Q mode when superres is on, as this
+      // will be used directly as 'q' later.
+      if (oxcf->rc_mode == AOM_Q && oxcf->superres_mode == SUPERRES_QTHRESH &&
+          cm->superres_scale_denominator != SCALE_NUMERATOR) {
+        active_best_quality =
+            AOMMAX(active_best_quality -
+                       ((cm->superres_scale_denominator - SCALE_NUMERATOR) * 4),
+                   0);
+      }
     }
   } else if (!rc->is_src_frame_alt_ref &&
              (cpi->refresh_golden_frame || is_intrl_arf_boost ||
