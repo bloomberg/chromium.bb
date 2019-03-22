@@ -640,7 +640,9 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, DISABLED_SingleBrowser) {
   tab_strip_model->CloseAllTabs();
 }
 
-TEST_F(AdaptiveScreenBrightnessManagerTest, MultipleBrowsersWithActive) {
+// Test is flaky. See https://crbug.com/944325.
+TEST_F(AdaptiveScreenBrightnessManagerTest,
+       DISABLED_MultipleBrowsersWithActive) {
   // Simulates three browsers:
   //  - browser1 is the last active but minimized, so not visible.
   //  - browser2 and browser3 are both visible but browser2 is the topmost.
