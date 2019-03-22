@@ -9,7 +9,8 @@ manually using the steps below:
 **Requirements:** For Windows, you must convert the forward slashes (/) to
 backslashes (\\) in the commands below and use `set` command instead of `export`
 to set the environment variable (step 4). Note that these commands are intended
-to be used with cmd.exe, not PowerShell.
+to be used with cmd.exe, not PowerShell. Also, you may find [these tips] on how
+to debug an ASAN instrumented binary helpful.
 ***
 
 [TOC]
@@ -109,3 +110,4 @@ you will be able to test the fix locally and/or somehow debug the issue.
 [ClusterFuzz Reproduce Tool]: https://github.com/google/clusterfuzz-tools
 [File a bug]: https://bugs.chromium.org/p/chromium/issues/entry?component=Tools%3EStability%3ElibFuzzer&comment=What%20problem%20are%20you%20seeing
 [here]: getting_started.md#symbolize-stacktrace
+[these tips]: https://github.com/google/sanitizers/wiki/AddressSanitizerWindowsPort#debugging
