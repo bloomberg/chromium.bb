@@ -58,9 +58,6 @@ source_set("main") {
     "//ios/public/provider/chrome/browser",
     "//net",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui:ui_internal",
-  ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -93,7 +90,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",

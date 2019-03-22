@@ -267,7 +267,6 @@ source_set("test_support") {
     "//components/password_manager/core/browser:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/web",
     "//ios/web",
     "//ios/web/public/test",
