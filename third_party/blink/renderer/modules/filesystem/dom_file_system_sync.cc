@@ -49,18 +49,19 @@ namespace blink {
 
 class FileWriterBase;
 
-DOMFileSystemSync* DOMFileSystemSync::Create(DOMFileSystemBase* file_system) {
-  return MakeGarbageCollected<DOMFileSystemSync>(
-      file_system->context_, file_system->name(), file_system->GetType(),
-      file_system->RootURL());
-}
+DOMFileSystemSync::DOMFileSystemSync(DOMFileSystemBase* file_system)
+    : DOMFileSystemSync(file_system->context_,
+                        file_system->name(),
+                        file_system->GetType(),
+                        file_system->RootURL()) {}
 
 DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context,
                                      const String& name,
                                      mojom::blink::FileSystemType type,
                                      const KURL& root_url)
     : DOMFileSystemBase(context, name, type, root_url),
-      root_entry_(DirectoryEntrySync::Create(this, DOMFilePath::kRoot)) {}
+      root_entry_(
+          MakeGarbageCollected<DirectoryEntrySync>(this, DOMFilePath::kRoot)) {}
 
 DOMFileSystemSync::~DOMFileSystemSync() = default;
 
@@ -158,7 +159,7 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
     ExceptionState& exception_state) {
   DCHECK(file_entry);
 
-  FileWriterSync* file_writer = FileWriterSync::Create(context_);
+  auto* file_writer = MakeGarbageCollected<FileWriterSync>(context_);
 
   auto* sync_helper = MakeGarbageCollected<FileWriterCallbacksSyncHelper>();
 

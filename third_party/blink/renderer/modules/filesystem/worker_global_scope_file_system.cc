@@ -122,7 +122,8 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
       &worker, file_system_type, size, std::move(callbacks),
       LocalFileSystem::kSynchronous);
   DOMFileSystem* file_system = sync_helper->GetResultOrThrow(exception_state);
-  return file_system ? DOMFileSystemSync::Create(file_system) : nullptr;
+  return file_system ? MakeGarbageCollected<DOMFileSystemSync>(file_system)
+                     : nullptr;
 }
 
 void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(

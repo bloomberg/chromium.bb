@@ -42,9 +42,12 @@
 namespace blink {
 
 EntrySync* EntrySync::Create(EntryBase* entry) {
-  if (entry->isFile())
-    return FileEntrySync::Create(entry->file_system_, entry->full_path_);
-  return DirectoryEntrySync::Create(entry->file_system_, entry->full_path_);
+  if (entry->isFile()) {
+    return MakeGarbageCollected<FileEntrySync>(entry->file_system_,
+                                               entry->full_path_);
+  }
+  return MakeGarbageCollected<DirectoryEntrySync>(entry->file_system_,
+                                                  entry->full_path_);
 }
 
 Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
@@ -113,7 +116,7 @@ void EntrySync::remove(ExceptionState& exception_state) const {
 EntrySync* EntrySync::getParent() const {
   // Sync verion of getParent doesn't throw exceptions.
   String parent_path = DOMFilePath::GetDirectory(fullPath());
-  return DirectoryEntrySync::Create(file_system_, parent_path);
+  return MakeGarbageCollected<DirectoryEntrySync>(file_system_, parent_path);
 }
 
 EntrySync::EntrySync(DOMFileSystemBase* file_system, const String& full_path)

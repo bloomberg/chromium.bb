@@ -46,10 +46,6 @@ static const double kProgressNotificationIntervalMS = 50;
 static constexpr uint64_t kMaxTruncateLength =
     std::numeric_limits<uint64_t>::max();
 
-FileWriter* FileWriter::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<FileWriter>(context);
-}
-
 FileWriter::FileWriter(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       ready_state_(kInit),

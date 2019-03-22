@@ -46,16 +46,7 @@ class DOMFileSystemSync final : public DOMFileSystemBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMFileSystemSync* Create(ExecutionContext* context,
-                                   const String& name,
-                                   mojom::blink::FileSystemType type,
-                                   const KURL& root_url) {
-    return MakeGarbageCollected<DOMFileSystemSync>(context, name, type,
-                                                   root_url);
-  }
-
-  static DOMFileSystemSync* Create(DOMFileSystemBase*);
-
+  DOMFileSystemSync(DOMFileSystemBase*);
   DOMFileSystemSync(ExecutionContext*,
                     const String& name,
                     mojom::blink::FileSystemType,

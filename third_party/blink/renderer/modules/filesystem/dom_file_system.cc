@@ -62,14 +62,6 @@ void RunCallback(ExecutionContext* execution_context,
 
 }  // namespace
 
-// static
-DOMFileSystem* DOMFileSystem::Create(ExecutionContext* context,
-                                     const String& name,
-                                     mojom::blink::FileSystemType type,
-                                     const KURL& root_url) {
-  return MakeGarbageCollected<DOMFileSystem>(context, name, type, root_url);
-}
-
 DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
     ExecutionContext* context,
     const String& filesystem_id) {
@@ -93,9 +85,9 @@ DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
   root_url.Append(filesystem_id);
   root_url.Append('/');
 
-  return DOMFileSystem::Create(context, filesystem_name.ToString(),
-                               mojom::blink::FileSystemType::kIsolated,
-                               KURL(root_url.ToString()));
+  return MakeGarbageCollected<DOMFileSystem>(
+      context, filesystem_name.ToString(),
+      mojom::blink::FileSystemType::kIsolated, KURL(root_url.ToString()));
 }
 
 DOMFileSystem::DOMFileSystem(ExecutionContext* context,
@@ -105,7 +97,8 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
     : DOMFileSystemBase(context, name, type, root_url),
       ContextClient(context),
       number_of_pending_callbacks_(0),
-      root_entry_(DirectoryEntry::Create(this, DOMFilePath::kRoot)) {}
+      root_entry_(
+          MakeGarbageCollected<DirectoryEntry>(this, DOMFilePath::kRoot)) {}
 
 DirectoryEntry* DOMFileSystem::root() const {
   return root_entry_.Get();
@@ -149,7 +142,7 @@ void DOMFileSystem::CreateWriter(
     FileWriterCallbacks::ErrorCallback error_callback) {
   DCHECK(file_entry);
 
-  FileWriter* file_writer = FileWriter::Create(GetExecutionContext());
+  auto* file_writer = MakeGarbageCollected<FileWriter>(GetExecutionContext());
   auto callbacks = std::make_unique<FileWriterCallbacks>(
       file_writer, std::move(success_callback), std::move(error_callback),
       context_);

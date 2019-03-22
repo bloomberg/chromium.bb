@@ -86,10 +86,11 @@ void EntryCallbacks::DidSucceed() {
   if (!success_callback_)
     return;
 
-  Entry* entry = is_directory_ ? static_cast<Entry*>(DirectoryEntry::Create(
-                                     file_system_, expected_path_))
-                               : static_cast<Entry*>(FileEntry::Create(
-                                     file_system_, expected_path_));
+  Entry* entry = is_directory_
+                     ? static_cast<Entry*>(MakeGarbageCollected<DirectoryEntry>(
+                           file_system_, expected_path_))
+                     : static_cast<Entry*>(MakeGarbageCollected<FileEntry>(
+                           file_system_, expected_path_));
 
   std::move(success_callback_).Run(entry);
 }
@@ -121,10 +122,11 @@ void EntriesCallbacks::DidReadDirectoryEntry(const String& name,
                                              bool is_directory) {
   DOMFileSystemBase* filesystem = directory_reader_->Filesystem();
   const String& path = DOMFilePath::Append(base_path_, name);
-  Entry* entry =
-      is_directory
-          ? static_cast<Entry*>(DirectoryEntry::Create(filesystem, path))
-          : static_cast<Entry*>(FileEntry::Create(filesystem, path));
+  Entry* entry = is_directory
+                     ? static_cast<Entry*>(MakeGarbageCollected<DirectoryEntry>(
+                           filesystem, path))
+                     : static_cast<Entry*>(
+                           MakeGarbageCollected<FileEntry>(filesystem, path));
   entries_->push_back(entry);
 }
 
@@ -166,9 +168,9 @@ void FileSystemCallbacks::DidOpenFileSystem(const String& name,
   if (!success_callback_)
     return;
 
-  std::move(success_callback_)
-      .Run(DOMFileSystem::Create(execution_context_.Get(), name, type_,
-                                 root_url));
+  auto* filesystem = MakeGarbageCollected<DOMFileSystem>(
+      execution_context_.Get(), name, type_, root_url);
+  std::move(success_callback_).Run(filesystem);
 }
 
 void FileSystemCallbacks::DidFail(base::File::Error error) {
@@ -196,8 +198,8 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
                                         mojom::blink::FileSystemType type,
                                         const String& file_path,
                                         bool is_directory) {
-  DOMFileSystem* filesystem =
-      DOMFileSystem::Create(execution_context_.Get(), name, type, root_url);
+  auto* filesystem = MakeGarbageCollected<DOMFileSystem>(
+      execution_context_.Get(), name, type, root_url);
   DirectoryEntry* root = filesystem->root();
 
   String absolute_path;
@@ -207,11 +209,11 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
     return;
   }
 
-  Entry* entry =
-      is_directory
-          ? static_cast<Entry*>(
-                DirectoryEntry::Create(filesystem, absolute_path))
-          : static_cast<Entry*>(FileEntry::Create(filesystem, absolute_path));
+  Entry* entry = is_directory
+                     ? static_cast<Entry*>(MakeGarbageCollected<DirectoryEntry>(
+                           filesystem, absolute_path))
+                     : static_cast<Entry*>(MakeGarbageCollected<FileEntry>(
+                           filesystem, absolute_path));
 
   std::move(success_callback_).Run(entry);
 }
@@ -237,7 +239,7 @@ void MetadataCallbacks::DidReadMetadata(const FileMetadata& metadata) {
   if (!success_callback_)
     return;
 
-  std::move(success_callback_).Run(Metadata::Create(metadata));
+  std::move(success_callback_).Run(MakeGarbageCollected<Metadata>(metadata));
 }
 
 void MetadataCallbacks::DidFail(base::File::Error error) {

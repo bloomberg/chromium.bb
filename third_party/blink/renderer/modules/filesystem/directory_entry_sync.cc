@@ -44,7 +44,7 @@ DirectoryEntrySync::DirectoryEntrySync(DOMFileSystemBase* file_system,
     : EntrySync(file_system, full_path) {}
 
 DirectoryReaderSync* DirectoryEntrySync::createReader() {
-  return DirectoryReaderSync::Create(file_system_, full_path_);
+  return MakeGarbageCollected<DirectoryReaderSync>(file_system_, full_path_);
 }
 
 FileEntrySync* DirectoryEntrySync::getFile(const String& path,

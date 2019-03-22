@@ -55,8 +55,6 @@ class FileWriter final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(FileWriter, Dispose);
 
  public:
-  static FileWriter* Create(ExecutionContext*);
-
   explicit FileWriter(ExecutionContext*);
   ~FileWriter() override;
 

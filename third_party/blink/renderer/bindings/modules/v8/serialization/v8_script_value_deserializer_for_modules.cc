@@ -41,7 +41,7 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
               static_cast<int32_t>(mojom::blink::FileSystemType::kMaxValue) ||
           !ReadUTF8String(&name) || !ReadUTF8String(&root_url))
         return nullptr;
-      return DOMFileSystem::Create(
+      return MakeGarbageCollected<DOMFileSystem>(
           ExecutionContext::From(GetScriptState()), name,
           static_cast<mojom::blink::FileSystemType>(raw_type), KURL(root_url));
     }
