@@ -2751,44 +2751,6 @@ TEST_F(SurfaceSynchronizationTest, SetPreviousFrameSurfaceDoesntCrash) {
 }
 
 // This test verifies that when a surface activates that has the same
-// FrameSinkId of the fallback but its embed token doesn't match, we don't
-// update the references of the parent.
-TEST_F(SurfaceSynchronizationTest,
-       SurfaceReferenceTracking_FallbackEmbedTokenDoesntMatch) {
-  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
-  const SurfaceId child_id1(
-      kChildFrameSink1, LocalSurfaceId(1, base::UnguessableToken::Create()));
-  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink2, 5);
-
-  // The parent embeds (child_id2, child_id3).
-  parent_support().SubmitCompositorFrame(
-      parent_id.local_surface_id(),
-      MakeCompositorFrame(
-          empty_surface_ids(), {SurfaceRange(child_id2, child_id3)},
-          std::vector<TransferableResource>(), MakeDefaultDeadline()));
-
-  // Verify that no references exist.
-  EXPECT_THAT(GetReferencesFrom(parent_id), empty_surface_ids());
-
-  // Activate |child_id1|.
-  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
-
-  // Since |child_id1| has a different embed token than both primary and
-  // fallback, it should not be used as a reference even if it has the same
-  // FrameSinkId as the fallback.
-  EXPECT_THAT(GetReferencesFrom(parent_id), empty_surface_ids());
-
-  // Activate |child_id2|.
-  child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
-
-  // Verify that a reference is acquired.
-  EXPECT_THAT(GetReferencesFrom(parent_id), UnorderedElementsAre(child_id2));
-}
-
-// This test verifies that when a surface activates that has the same
 // FrameSinkId of the primary but its embed token doesn't match, we don't
 // update the references of the parent.
 TEST_F(SurfaceSynchronizationTest,
