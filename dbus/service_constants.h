@@ -1077,4 +1077,13 @@ constexpr char kBootstrapMojoConnectionChannelToken[] =
     "cups-proxy-service-bootstrap";
 }  // namespace printing
 
+namespace arc_camera {
+constexpr char kArcCameraServiceName[] = "org.chromium.ArcCamera";
+constexpr char kArcCameraServicePath[] = "/org/chromium/ArcCamera";
+constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
+
+// Method names.
+constexpr char kStartServiceMethod[] = "StartService";
+}  // namespace arc_camera
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
