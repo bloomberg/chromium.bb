@@ -31,11 +31,12 @@ BUILDTESTDIR=${builddir-"$MyPWD"}
 FONTDIR="$MyPWD"/fonts
 CACHEDIR="$MyPWD"/cache.dir
 EXPECTED=${EXPECTED-"out.expected"}
+LOG_COMPILER=${LOG_COMPILER-"$TESTDIR/wrapper-script.sh"}
 
 ECHO=true
 
-FCLIST=../fc-list/fc-list$EXEEXT
-FCCACHE=../fc-cache/fc-cache$EXEEXT
+FCLIST="$LOG_COMPILER ../fc-list/fc-list$EXEEXT"
+FCCACHE="$LOG_COMPILER ../fc-cache/fc-cache$EXEEXT"
 
 which bwrap > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -122,6 +123,7 @@ mkdir $FONTDIR/a
 cp $FONT2 $FONTDIR/a
 check
 
+if [ "x$EXEEXT" = "x" ]; then
 dotest "Re-creating .uuid"
 prep
 cp $FONT1 $FONTDIR
@@ -163,6 +165,7 @@ if [ $n != 1 ]; then
   echo "Unexpected cache was created"
   ls $CACHEDIR
   exit 1
+fi
 fi
 
 dotest "Keep mtime of the font directory"
@@ -214,6 +217,7 @@ fi
 rm -rf $TESTTMPDIR out1 out2 xxx flist1 flist2 bind-fonts.conf
 fi
 
+if [ "x$EXEEXT" = "x" ]; then
 dotest "sysroot option"
 prep
 mkdir -p $MyPWD/sysroot/$FONTDIR
@@ -238,6 +242,8 @@ if [ $? != 0 ]; then
 fi
 
 rm -rf $MyPWD/sysroot
+
+fi
 
 # dotest "deleting .uuid file on empty dir"
 # prep
