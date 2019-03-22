@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="../omnibox/resources/omnibox_pedal_concepts.json" type="BINDATA" compress="gzip" />
+</grit-part>

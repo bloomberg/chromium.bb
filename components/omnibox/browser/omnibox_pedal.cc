@@ -9,11 +9,58 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #endif
+
+namespace {
+// Erases one or more instances of whole words from |text|. Removable words are
+// provided in |words| and must match in |text| either at a string boundary or
+// next to whitespace in order to be removed.  If |erase_once| is true, then at
+// most a single erasure will take place (the rightmost occurrence of first word
+// found).  Returns true if erasure occurred; false if |text| remained
+// unchanged. Note that a 'word' may actually be a phrase with inner whitespace,
+// but there should be no whitespace at either end of any word.
+bool EraseWords(base::string16& text,
+                const std::vector<base::string16>& words,
+                bool erase_once) {
+  std::string text_utf8 = base::UTF16ToUTF8(text);
+  if (text_utf8.find("\\E") != std::string::npos) {
+    // Do not process strings containing regex quote end.
+    return false;
+  }
+  bool changed = false;
+  for (const auto& word : words) {
+    std::string search_expression("(^|\\s)\\Q");
+    search_expression += base::UTF16ToUTF8(word);
+    search_expression += "\\E($|\\s)";
+    RE2 regex(search_expression);
+    // GlobalReplace doesn't work here because it only handles nonoverlapping
+    // occurrences, but the spaces may cause overlaps; so we Replace in a loop.
+    for (;;) {
+      // The replacement includes two spaces because the match has max two, so
+      // using just one could bring initially-separated words together.
+      const bool replaced = RE2::Replace(&text_utf8, regex, "  ");
+      changed |= replaced;
+      if (!replaced || erase_once) {
+        break;
+      }
+    }
+    if (changed && erase_once) {
+      break;
+    }
+  }
+  if (changed) {
+    text = base::UTF8ToUTF16(text_utf8);
+  }
+  return changed;
+}
+
+}  // namespace
 
 OmniboxPedal::LabelStrings::LabelStrings(int id_hint,
                                          int id_hint_short,
@@ -24,57 +71,37 @@ OmniboxPedal::LabelStrings::LabelStrings(int id_hint,
 
 // =============================================================================
 
-OmniboxPedal::SynonymGroup::SynonymGroup(
-    bool required,
-    std::initializer_list<const char*> synonyms)
-    : required_(required) {
-  // The DCHECK logic below is quickly ensuring that the synonyms are provided
-  // in descending order of string length.
-#if DCHECK_IS_ON()
-  size_t min_size = std::numeric_limits<std::size_t>::max();
-#endif
-  synonyms_.reserve(synonyms.size());
-  for (const char* synonym : synonyms) {
-    synonyms_.push_back(base::ASCIIToUTF16(synonym));
-#if DCHECK_IS_ON()
-    size_t size = synonyms_.back().size();
-    DCHECK_LE(size, min_size);
-    min_size = size;
-#endif
-  }
-}
+OmniboxPedal::SynonymGroup::SynonymGroup(bool required, bool match_once)
+    : required_(required), match_once_(match_once) {}
 
 OmniboxPedal::SynonymGroup::SynonymGroup(const SynonymGroup& other) = default;
 
 OmniboxPedal::SynonymGroup::~SynonymGroup() = default;
 
-bool OmniboxPedal::SynonymGroup::EraseFirstMatchIn(
+bool OmniboxPedal::SynonymGroup::EraseMatchesIn(
     base::string16& remaining) const {
-  for (const auto& synonym : synonyms_) {
-    const size_t pos = remaining.find(synonym);
-    if (pos != base::string16::npos) {
-      remaining.erase(pos, synonym.size());
-      return true;
-    }
+  const bool changed = EraseWords(remaining, synonyms_, match_once_);
+  return changed || !required_;
+}
+
+void OmniboxPedal::SynonymGroup::AddSynonym(const base::string16& synonym) {
+#if DCHECK_IS_ON()
+  if (synonyms_.size() > size_t{0}) {
+    DCHECK_GE(synonyms_.back().length(), synonym.length());
   }
-  return !required_;
+#endif
+  synonyms_.push_back(synonym);
 }
 
 // =============================================================================
 
-OmniboxPedal::OmniboxPedal(
-    LabelStrings strings,
-    GURL url,
-    std::initializer_list<const char*> triggers,
-    std::initializer_list<const SynonymGroup> synonym_groups)
+OmniboxPedal::OmniboxPedal(LabelStrings strings,
+                           GURL url,
+                           std::initializer_list<const char*> triggers)
     : strings_(strings), url_(url) {
   triggers_.reserve(triggers.size());
   for (const char* trigger : triggers) {
     triggers_.insert(base::ASCIIToUTF16(trigger));
-  }
-  synonym_groups_.reserve(synonym_groups.size());
-  for (const SynonymGroup& group : synonym_groups) {
-    synonym_groups_.push_back(group);
   }
 }
 
@@ -113,10 +140,14 @@ bool OmniboxPedal::IsTriggerMatch(const base::string16& match_text) const {
          IsConceptMatch(match_text);
 }
 
+void OmniboxPedal::AddSynonymGroup(const SynonymGroup& group) {
+  synonym_groups_.push_back(group);
+}
+
 bool OmniboxPedal::IsConceptMatch(const base::string16& match_text) const {
   base::string16 remaining = match_text;
   for (const auto& group : synonym_groups_) {
-    if (!group.EraseFirstMatchIn(remaining))
+    if (!group.EraseMatchesIn(remaining))
       return false;
   }
   // If any non-space is remaining, it means there is something in match_text
