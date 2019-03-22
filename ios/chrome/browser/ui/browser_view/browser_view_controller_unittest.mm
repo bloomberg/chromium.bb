@@ -44,7 +44,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
-#import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -309,21 +308,6 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
   EXPECT_EQ([tab_.webState->GetView() superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
-}
-
-TEST_F(BrowserViewControllerTest, TestNativeContentController) {
-  id<CRWNativeContent> controller =
-      [bvc_ controllerForURL:GURL(kChromeUINewTabURL)
-                    webState:webStateImpl_.get()];
-  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
-    EXPECT_TRUE(controller != nil);
-    EXPECT_TRUE([controller isMemberOfClass:[NewTabPageController class]]);
-  }
-
-  controller = [bvc_ controllerForURL:GURL(kChromeUISettingsURL)
-                             webState:webStateImpl_.get()];
-  EXPECT_TRUE(controller != nil);
-  EXPECT_TRUE([controller isMemberOfClass:[PageNotAvailableController class]]);
 }
 
 // TODO(altse): Needs a testing |Profile| that implements AutocompleteClassifier

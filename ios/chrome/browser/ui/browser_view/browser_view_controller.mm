@@ -121,7 +121,6 @@
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
-#import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
@@ -3681,13 +3680,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else if (url_host == kChromeUICrashHost) {
     // There is no native controller for kChromeUICrashHost, it is instead
     // handled as any other renderer crash by the SadTabTabHelper.
-    // nativeController must be set to nil to prevent defaulting to a
-    // PageNotAvailableController.
     nativeController = nil;
   } else {
-    DCHECK(![self hasControllerForURL:url]);
-    // In any other case the PageNotAvailableController is returned.
-    nativeController = [[PageNotAvailableController alloc] initWithUrl:url];
+    NOTREACHED();
   }
   // If a native controller is vended before its tab is added to the tab model,
   // use the temporary key and add it under the new tab's tabId in the
