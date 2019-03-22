@@ -127,7 +127,6 @@ source_set("eg_tests") {
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:web_internal",
