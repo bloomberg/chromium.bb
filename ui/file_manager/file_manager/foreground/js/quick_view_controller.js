@@ -319,7 +319,7 @@ QuickViewController.prototype.updateQuickView_ = function() {
   this.quickViewUma_.onEntryChanged(entry);
   return Promise
       .all([
-        this.metadataModel_.get([entry], ['thumbnailUrl']),
+        this.metadataModel_.get([entry], ['thumbnailUrl', 'mediaMimeType']),
         this.getAvailableTasks_(entry)
       ])
       .then(values => {
@@ -379,7 +379,7 @@ let QuickViewParams;
 QuickViewController.prototype.getQuickViewParameters_ = function(
     entry, items, tasks) {
   const item = items[0];
-  const typeInfo = FileType.getType(entry);
+  const typeInfo = FileType.getType(entry, item.mediaMimeType);
   const type = typeInfo.type;
 
   /** @type {!QuickViewParams} */
@@ -456,6 +456,14 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
           case 'document':
             if (typeInfo.subtype === 'HTML') {
               params.contentUrl = URL.createObjectURL(file);
+              return params;
+            } else {
+              break;
+            }
+          case 'text':
+            if (typeInfo.subtype === 'TXT') {
+              params.contentUrl = URL.createObjectURL(file);
+              params.browsable = true;
               return params;
             } else {
               break;

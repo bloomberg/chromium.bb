@@ -498,6 +498,17 @@ var ENTRIES = {
     typeText: 'OGG video'
   }),
 
+  webm: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'world.webm',
+    targetPath: 'world.webm',
+    mimeType: 'video/webm',
+    lastModifiedTime: 'Jul 4, 2012, 10:35 AM',
+    nameText: 'world.webm',
+    sizeText: '17 KB',
+    typeText: 'WebM video'
+  }),
+
   video: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'video_long.ogv',
@@ -638,6 +649,16 @@ var ENTRIES = {
     lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
     nameText: 'tall.txt',
     sizeText: '546 bytes',
+    typeText: 'Plain text',
+  }),
+
+  plainText: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'plaintext',
+    targetPath: 'plaintext',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'plaintext',
+    sizeText: '32 bytes',
     typeText: 'Plain text',
   }),
 

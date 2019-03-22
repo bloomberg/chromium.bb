@@ -526,6 +526,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 #endif
         TestCase("openQuickViewKeyboardUpDownChangesView"),
         TestCase("openQuickViewKeyboardLeftRightChangesView"),
+        TestCase("openQuickViewSniffedText"),
         TestCase("openQuickViewScrollText"),
         TestCase("openQuickViewScrollHtml"),
         TestCase("openQuickViewBackgroundColorText"),

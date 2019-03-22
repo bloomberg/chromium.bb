@@ -310,6 +310,43 @@ testcase.openQuickViewDocumentsProvider = async () => {
 };
 
 /**
+ * Tests opening Quick View with a document identified as text from file
+ * sniffing because it has no filename extension.
+ */
+testcase.openQuickViewSniffedText = async () => {
+  const caller = getCaller();
+
+  /**
+   * The text <webview> resides in the #quick-view shadow DOM, as a child of
+   * the #dialog element.
+   */
+  const webView = ['#quick-view', '#dialog[open] webview.text-content'];
+
+  // Open Files app on Downloads containing ENTRIES.plainText.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.plainText], []);
+
+  // Open the file in Quick View.
+  await openQuickView(appId, ENTRIES.plainText.nameText);
+
+  // Wait for the Quick View <webview> to load and display its content.
+  function checkWebViewTextLoaded(elements) {
+    let haveElements = Array.isArray(elements) && elements.length === 1;
+    if (haveElements) {
+      haveElements = elements[0].styles.display.includes('block');
+    }
+    if (!haveElements || !elements[0].attributes.src) {
+      return pending(caller, 'Waiting for <webview> to load.');
+    }
+    return;
+  }
+  await repeatUntil(async () => {
+    return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
+        'deepQueryAllElements', appId, [webView, ['display']]));
+  });
+};
+
+/**
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * text document.
  */
@@ -685,12 +722,12 @@ testcase.openQuickViewVideo = async () => {
    */
   const webView = ['#quick-view', 'files-safe-media[type="video"]', 'webview'];
 
-  // Open Files app on Downloads containing ENTRIES.world video.
+  // Open Files app on Downloads containing ENTRIES.webm video.
   const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.world], []);
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.webm], []);
 
   // Open the file in Quick View.
-  await openQuickView(appId, ENTRIES.world.nameText);
+  await openQuickView(appId, ENTRIES.webm.nameText);
 
   // Wait for the Quick View <webview> to load and display its content.
   function checkWebViewVideoLoaded(elements) {
