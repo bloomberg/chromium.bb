@@ -1179,7 +1179,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
       continue;
 
     child->SetOverrideLogicalHeight(new_height);
-    child->ForceChildLayout();
+    child->ForceLayout();
 
     // FIXME: For now don't support RTL.
     if (StyleRef().Direction() != TextDirection::kLtr)

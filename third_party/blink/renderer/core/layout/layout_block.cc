@@ -944,14 +944,14 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
     // item after layout.
     // TODO(cbiesinger): We could probably avoid a layout here and just
     // reposition?
-    positioned_object->ForceChildLayout();
+    positioned_object->ForceLayout();
     layout_changed = true;
   }
 
   // Lay out again if our estimate was wrong.
   if (!layout_changed && needs_block_direction_location_set_before_layout &&
       logical_top_estimate != LogicalTopForChild(*positioned_object))
-    positioned_object->ForceChildLayout();
+    positioned_object->ForceLayout();
 
   if (is_paginated)
     UpdateFragmentationInfoForChild(*positioned_object);

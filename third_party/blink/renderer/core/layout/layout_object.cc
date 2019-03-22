@@ -3529,16 +3529,6 @@ void LayoutObject::ScheduleRelayout() {
 void LayoutObject::ForceLayout() {
   SetSelfNeedsLayoutForAvailableSpace(true);
   MarkContainerNeedsCollectInlines();
-  SetShouldDoFullPaintInvalidation();
-  UpdateLayout();
-}
-
-// FIXME: Does this do anything different than forceLayout given that we don't
-// walk the containing block chain. If not, we should change all callers to use
-// forceLayout.
-void LayoutObject::ForceChildLayout() {
-  SetNormalChildNeedsLayout(true);
-  MarkContainerNeedsCollectInlines();
   UpdateLayout();
 }
 

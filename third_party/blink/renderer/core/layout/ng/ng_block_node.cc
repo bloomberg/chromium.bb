@@ -892,12 +892,12 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunOldLayout(
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,
-    // compared to |LayoutObject::ForceChildLayout|.
+    // compared to |LayoutObject::ForceLayout|.
     DCHECK(!box_->IsLayoutNGMixin());
     if (box_->NeedsLayout() && !needs_force_relayout)
       box_->LayoutIfNeeded();
     else
-      box_->ForceChildLayout();
+      box_->ForceLayout();
 
     // Synthesize a new layout result.
     NGLogicalSize box_size(box_->LogicalWidth(), box_->LogicalHeight());
