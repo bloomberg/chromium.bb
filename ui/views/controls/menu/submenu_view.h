@@ -183,6 +183,11 @@ class VIEWS_EXPORT SubmenuView : public View,
  private:
   friend class test::MenuControllerTest;
 
+  using MenuItems = std::vector<MenuItemView*>;
+
+  // Returns the children which are menu items.
+  MenuItems GetMenuItems() const;
+
   void SchedulePaintForDropIndicator(MenuItemView* item,
                                      MenuDelegate::DropPosition position);
 

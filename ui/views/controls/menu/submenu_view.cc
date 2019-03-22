@@ -78,23 +78,14 @@ bool SubmenuView::HasVisibleChildren() {
 }
 
 int SubmenuView::GetMenuItemCount() const {
-  int count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (child_at(i)->id() == MenuItemView::kMenuItemViewID)
-      count++;
-  }
-  return count;
+  return static_cast<int>(GetMenuItems().size());
 }
 
 MenuItemView* SubmenuView::GetMenuItemAt(int index) {
-  for (int i = 0, count = 0; i < child_count(); ++i) {
-    if (child_at(i)->id() == MenuItemView::kMenuItemViewID &&
-        count++ == index) {
-      return static_cast<MenuItemView*>(child_at(i));
-    }
-  }
-  NOTREACHED();
-  return nullptr;
+  const MenuItems menu_items = GetMenuItems();
+  DCHECK_GE(index, 0);
+  DCHECK_LT(static_cast<size_t>(index), menu_items.size());
+  return menu_items[index];
 }
 
 PrefixSelector* SubmenuView::GetPrefixSelector() {
@@ -361,15 +352,10 @@ int SubmenuView::GetRowCount() {
 }
 
 int SubmenuView::GetSelectedRow() {
-  int row = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (child_at(i)->id() != MenuItemView::kMenuItemViewID)
-      continue;
-
-    if (static_cast<MenuItemView*>(child_at(i))->IsSelected())
-      return row;
-
-    row++;
+  const auto menu_items = GetMenuItems();
+  for (size_t i = 0; i < menu_items.size(); ++i) {
+    if (menu_items[i]->IsSelected())
+      return static_cast<int>(i);
   }
 
   return -1;
@@ -479,11 +465,8 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
 }
 
 MenuItemView* SubmenuView::GetLastItem() {
-  for (int i = child_count() - 1; i >= 0; i--) {
-    if (child_at(i)->id() == MenuItemView::kMenuItemViewID)
-      return static_cast<MenuItemView*>(child_at(i));
-  }
-  return nullptr;
+  const auto menu_items = GetMenuItems();
+  return menu_items.empty() ? nullptr : menu_items.back();
 }
 
 void SubmenuView::MenuHostDestroyed() {
@@ -499,6 +482,15 @@ const char* SubmenuView::GetClassName() const {
 
 void SubmenuView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SchedulePaint();
+}
+
+SubmenuView::MenuItems SubmenuView::GetMenuItems() const {
+  MenuItems menu_items;
+  for (View* child : children()) {
+    if (child->id() == MenuItemView::kMenuItemViewID)
+      menu_items.push_back(static_cast<MenuItemView*>(child));
+  }
+  return menu_items;
 }
 
 void SubmenuView::SchedulePaintForDropIndicator(
