@@ -70,62 +70,41 @@ RemoteDeviceImpl::~RemoteDeviceImpl() = default;
 
 void RemoteDeviceImpl::Connect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Connect, BindToCurrentSequence(std::move(cb)));
-  connect_cb_ = std::move(cb);
-
-  if (!ConnectSync()) {
-    // Error logged.
-    EXEC_CB_AND_RET(connect_cb_, false);
-  }
-}
-
-bool RemoteDeviceImpl::ConnectSync() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Connect(" << util::AddrLastByteString(addr_) << ")";
 
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
+
   if (connect_pending_) {
     LOG(ERROR) << __func__ << " failed: Connection pending";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
 
   gatt_client_manager_->NotifyConnect(addr_);
-
   connect_pending_ = true;
+  connect_cb_ = std::move(cb);
   gatt_client_manager_->EnqueueConnectRequest(addr_, true);
-
-  return true;
 }
 
 void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentSequence(std::move(cb)));
-  disconnect_cb_ = std::move(cb);
-
-  if (!DisconnectSync()) {
-    // Error logged.
-    EXEC_CB_AND_RET(disconnect_cb_, false);
-  }
-}
-
-bool RemoteDeviceImpl::DisconnectSync() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Disconnect(" << util::AddrLastByteString(addr_) << ")";
+
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
 
   if (!connected_) {
     LOG(ERROR) << "Not connected";
-    return false;
+    EXEC_CB_AND_RET(cb, false);
   }
 
   disconnect_pending_ = true;
+  disconnect_cb_ = std::move(cb);
   gatt_client_manager_->EnqueueConnectRequest(addr_, false);
-
-  return true;
 }
 
 void RemoteDeviceImpl::CreateBond(StatusCallback cb) {
