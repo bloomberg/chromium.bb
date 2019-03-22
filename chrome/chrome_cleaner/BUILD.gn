@@ -49,6 +49,7 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/components:unittest_sources",
     "//chrome/chrome_cleaner/engines/broker:unittest_sources",
     "//chrome/chrome_cleaner/engines/common:unittest_sources",
+    "//chrome/chrome_cleaner/engines/target:unittest_sources",
     "//chrome/chrome_cleaner/http:unittest_sources",
     "//chrome/chrome_cleaner/interfaces/typemaps:unittest_sources",
     "//chrome/chrome_cleaner/ipc:unittest_sources",
