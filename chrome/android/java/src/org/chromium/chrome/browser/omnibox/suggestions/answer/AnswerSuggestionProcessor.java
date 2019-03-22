@@ -198,6 +198,11 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT, details[0].mText);
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT, details[1].mText);
 
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_ACCESSIBILITY_DESCRIPTION,
+                details[0].mAccessibilityDescription);
+        model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION,
+                details[1].mAccessibilityDescription);
+
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
 
