@@ -60,11 +60,12 @@ TEST(OriginUtilTest, IsOriginSecure) {
   // that https + data = mixed content).
   EXPECT_TRUE(IsOriginSecure(GURL("data:test/plain;blah")));
 
-  // TODO(lukasza): trustworthiness of blob: URLs should depend on their inner
-  // origin (just as it does for filesystem: URLs).  Changing this behavior of
-  // content::IsOriginSecure breaks some tests, so fixing this is postponed to a
-  // follow-up CL.
   EXPECT_FALSE(
+      IsOriginSecure(GURL("blob:http://www.example.com/guid-goes-here")));
+  EXPECT_FALSE(
+      IsOriginSecure(GURL("blob:ftp://www.example.com/guid-goes-here")));
+  EXPECT_TRUE(IsOriginSecure(GURL("blob:ftp://127.0.0.1/guid-goes-here")));
+  EXPECT_TRUE(
       IsOriginSecure(GURL("blob:https://www.example.com/guid-goes-here")));
 }
 

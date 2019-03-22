@@ -26,13 +26,6 @@ bool IsOriginSecure(const GURL& url) {
   if (url.SchemeIs(url::kDataScheme))
     return true;
 
-  // TODO(lukasza): trustworthiness of blob: URLs should depend on their inner
-  // origin (just as it does for filesystem: URLs).  Changing this behavior of
-  // content::IsOriginSecure breaks some tests, so fixing this is postponed to a
-  // follow-up CL.  WIP CL @ https://crrev.com/c/1506941.
-  if (url.SchemeIs(url::kBlobScheme))
-    return false;
-
   return network::IsUrlPotentiallyTrustworthy(url);
 }
 
