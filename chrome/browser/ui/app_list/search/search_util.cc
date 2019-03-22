@@ -8,7 +8,7 @@
 
 namespace {
 const char kAppListSearchResultOpenTypeHistogram[] =
-    "Apps.AppListSearchResultOpenType";
+    "Apps.AppListSearchResultOpenTypeV2";
 }
 
 namespace app_list {
