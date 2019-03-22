@@ -1073,4 +1073,8 @@ std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
   return ids;
 }
 
+bool RenderViewHostImpl::IsTestRenderViewHost() const {
+  return false;
+}
+
 }  // namespace content
