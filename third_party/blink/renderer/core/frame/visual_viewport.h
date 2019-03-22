@@ -153,11 +153,6 @@ class CORE_EXPORT VisualViewport final
   void SetScale(float);
   float Scale() const { return scale_; }
 
-  // Update scale factor, magnifying or minifying by magnifyDelta, centered
-  // around the point specified by anchor in window coordinates. Returns false
-  // if page scale factor is left unchanged.
-  bool MagnifyScaleAroundAnchor(float magnify_delta, const FloatPoint& anchor);
-
   // Convert the given rect in the main LocalFrameView's coordinates into a rect
   // in the viewport. The given and returned rects are in CSS pixels, meaning
   // scale isn't applied.

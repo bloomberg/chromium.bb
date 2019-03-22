@@ -392,8 +392,6 @@ class Internals final : public ScriptWrappable {
                                 float max_scale_factor,
                                 ExceptionState&);
 
-  bool magnifyScaleAroundAnchor(float factor, float x, float y);
-
   void setIsCursorVisible(Document*, bool, ExceptionState&);
 
   String effectivePreload(HTMLMediaElement*);

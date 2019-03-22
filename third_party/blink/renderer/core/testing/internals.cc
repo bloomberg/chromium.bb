@@ -2475,14 +2475,6 @@ void Internals::setPageScaleFactorLimits(float min_scale_factor,
   page->SetDefaultPageScaleLimits(min_scale_factor, max_scale_factor);
 }
 
-bool Internals::magnifyScaleAroundAnchor(float scale_factor, float x, float y) {
-  if (!GetFrame())
-    return false;
-
-  return GetFrame()->GetPage()->GetVisualViewport().MagnifyScaleAroundAnchor(
-      scale_factor, FloatPoint(x, y));
-}
-
 void Internals::setIsCursorVisible(Document* document,
                                    bool is_visible,
                                    ExceptionState& exception_state) {

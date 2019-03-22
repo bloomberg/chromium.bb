@@ -341,8 +341,6 @@
 
     void setVisualViewportOffset(long x, long y);
 
-    boolean magnifyScaleAroundAnchor(float offset, float x, float y);
-
     boolean isUseCounted(Document document, unsigned long feature);
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
     boolean isAnimatedCSSPropertyUseCounted(Document document, DOMString propertyName);
