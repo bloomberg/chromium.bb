@@ -74,11 +74,10 @@ class FakeGbmDevice : public GbmDevice {
       const std::vector<uint64_t>& modifiers) override {
     return nullptr;
   }
-  std::unique_ptr<GbmBuffer> CreateBufferFromFds(
+  std::unique_ptr<GbmBuffer> CreateBufferFromHandle(
       uint32_t format,
       const gfx::Size& size,
-      std::vector<base::ScopedFD> fds,
-      const std::vector<gfx::NativePixmapPlane>& planes) override {
+      gfx::NativePixmapHandle handle) override {
     return nullptr;
   }
 

@@ -48,13 +48,12 @@ class DrmThreadProxy {
                     std::unique_ptr<GbmBuffer>* buffer,
                     scoped_refptr<DrmFramebuffer>* framebuffer);
 
-  void CreateBufferFromFds(gfx::AcceleratedWidget widget,
-                           const gfx::Size& size,
-                           gfx::BufferFormat format,
-                           std::vector<base::ScopedFD> fds,
-                           const std::vector<gfx::NativePixmapPlane>& planes,
-                           std::unique_ptr<GbmBuffer>* buffer,
-                           scoped_refptr<DrmFramebuffer>* framebuffer);
+  void CreateBufferFromHandle(gfx::AcceleratedWidget widget,
+                              const gfx::Size& size,
+                              gfx::BufferFormat format,
+                              gfx::NativePixmapHandle handle,
+                              std::unique_ptr<GbmBuffer>* buffer,
+                              scoped_refptr<DrmFramebuffer>* framebuffer);
 
   // Checks if overlay |candidates| can be displayed asynchronously and then
   // runs |callback|. Testing the overlay configuration requires posting a task

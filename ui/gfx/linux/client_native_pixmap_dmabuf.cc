@@ -66,10 +66,7 @@ void PrimeSyncEnd(int dmabuf_fd) {
 ClientNativePixmapDmaBuf::PlaneInfo::PlaneInfo() {}
 
 ClientNativePixmapDmaBuf::PlaneInfo::PlaneInfo(PlaneInfo&& info)
-    : fd(std::move(info.fd)),
-      data(info.data),
-      offset(info.offset),
-      size(info.size) {
+    : data(info.data), offset(info.offset), size(info.size) {
   // Set nullptr to info.data in order not to call munmap in |info| dtor.
   info.data = nullptr;
 }
@@ -156,21 +153,12 @@ bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
 
 // static
 std::unique_ptr<gfx::ClientNativePixmap>
-ClientNativePixmapDmaBuf::ImportFromDmabuf(
-    const gfx::NativePixmapHandle& handle,
-    const gfx::Size& size) {
+ClientNativePixmapDmaBuf::ImportFromDmabuf(gfx::NativePixmapHandle handle,
+                                           const gfx::Size& size) {
   std::array<PlaneInfo, kMaxPlanes> plane_info;
-  for (size_t i = 0; i < handle.fds.size(); ++i) {
-    const auto& fd = handle.fds[i];
-    DCHECK(fd.auto_close);
-    plane_info[i].fd.reset(fd.fd);
-    DCHECK(plane_info[i].fd.is_valid());
-  }
-
-  DCHECK_EQ(handle.planes.size(), handle.fds.size());
 
   const size_t page_size = base::GetPageSize();
-  for (size_t i = 0; i < handle.fds.size(); ++i) {
+  for (size_t i = 0; i < handle.planes.size(); ++i) {
     // mmap() fails if the offset argument is not page-aligned.
     // Since handle.planes[i].offset is possibly not page-aligned, we
     // have to map with an additional offset to be aligned to the page.
@@ -182,7 +170,7 @@ ClientNativePixmapDmaBuf::ImportFromDmabuf(
 
     void* data =
         mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
-             plane_info[i].fd.get(), handle.planes[i].offset - extra_offset);
+             handle.planes[i].fd.get(), handle.planes[i].offset - extra_offset);
     if (data == MAP_FAILED) {
       logging::SystemErrorCode mmap_error = logging::GetLastSystemErrorCode();
       if (mmap_error == ENOMEM)
@@ -194,15 +182,17 @@ ClientNativePixmapDmaBuf::ImportFromDmabuf(
     plane_info[i].data = data;
   }
 
-  return base::WrapUnique(
-      new ClientNativePixmapDmaBuf(handle, size, std::move(plane_info)));
+  return base::WrapUnique(new ClientNativePixmapDmaBuf(std::move(handle), size,
+                                                       std::move(plane_info)));
 }
 
 ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
-    const gfx::NativePixmapHandle& handle,
+    gfx::NativePixmapHandle handle,
     const gfx::Size& size,
     std::array<PlaneInfo, kMaxPlanes> plane_info)
-    : pixmap_handle_(handle), size_(size), plane_info_(std::move(plane_info)) {
+    : pixmap_handle_(std::move(handle)),
+      size_(size),
+      plane_info_(std::move(plane_info)) {
   TRACE_EVENT0("drm", "ClientNativePixmapDmaBuf");
 }
 
@@ -213,14 +203,14 @@ ClientNativePixmapDmaBuf::~ClientNativePixmapDmaBuf() {
 bool ClientNativePixmapDmaBuf::Map() {
   TRACE_EVENT0("drm", "DmaBuf:Map");
   for (size_t i = 0; i < pixmap_handle_.planes.size(); ++i)
-    PrimeSyncStart(plane_info_[i].fd.get());
+    PrimeSyncStart(pixmap_handle_.planes[i].fd.get());
   return true;
 }
 
 void ClientNativePixmapDmaBuf::Unmap() {
   TRACE_EVENT0("drm", "DmaBuf:Unmap");
   for (size_t i = 0; i < pixmap_handle_.planes.size(); ++i)
-    PrimeSyncEnd(plane_info_[i].fd.get());
+    PrimeSyncEnd(pixmap_handle_.planes[i].fd.get());
 }
 
 void* ClientNativePixmapDmaBuf::GetMemoryAddress(size_t plane) const {

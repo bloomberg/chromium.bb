@@ -110,7 +110,7 @@ bool VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
 
 bool VaapiPictureNativePixmapOzone::ImportGpuMemoryBufferHandle(
     gfx::BufferFormat format,
-    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
@@ -118,7 +118,7 @@ bool VaapiPictureNativePixmapOzone::ImportGpuMemoryBufferHandle(
   // CreateNativePixmapFromHandle() will take ownership of the handle.
   pixmap_ = factory->CreateNativePixmapFromHandle(
       gfx::kNullAcceleratedWidget, size_, format,
-      gpu_memory_buffer_handle.native_pixmap_handle);
+      std::move(gpu_memory_buffer_handle.native_pixmap_handle));
 
   if (!pixmap_) {
     LOG(ERROR) << "Failed creating a pixmap from a native handle";

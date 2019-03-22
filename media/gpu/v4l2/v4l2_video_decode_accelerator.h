@@ -116,7 +116,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
       VideoPixelFormat pixel_format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handles) override;
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handles) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -245,11 +245,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
   // Check |planes| and |dmabuf_fds| are valid in import mode, besides
   // ImportBufferForPicture.
-  void ImportBufferForPictureForImportTask(
-      int32_t picture_buffer_id,
-      VideoPixelFormat pixel_format,
-      std::vector<base::ScopedFD> dmabuf_fds,
-      std::vector<gfx::NativePixmapPlane> planes);
+  void ImportBufferForPictureForImportTask(int32_t picture_buffer_id,
+                                           VideoPixelFormat pixel_format,
+                                           gfx::NativePixmapHandle handle);
 
   // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
   // for |picture_buffer_id|, backed by dmabuf file descriptors in

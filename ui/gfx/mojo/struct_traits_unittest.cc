@@ -178,7 +178,7 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   handle2.offset = kOffset;
   handle2.stride = kStride;
   handle2.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
-                                                   kModifier);
+                                                   base::ScopedFD(), kModifier);
   proxy->EchoGpuMemoryBufferHandle(std::move(handle2), &output);
   EXPECT_EQ(gfx::NATIVE_PIXMAP, output.type);
   EXPECT_EQ(kId, output.id);

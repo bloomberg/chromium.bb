@@ -47,7 +47,7 @@ bool VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 void VideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     VideoPixelFormat pixel_format,
-    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
   NOTREACHED() << "Buffer import not supported.";
 }
 

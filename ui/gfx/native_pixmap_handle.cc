@@ -4,6 +4,8 @@
 
 #include "ui/gfx/native_pixmap_handle.h"
 
+#include <utility>
+
 #if defined(OS_LINUX)
 #include <drm_fourcc.h>
 #include "base/posix/eintr_wrapper.h"
@@ -23,34 +25,49 @@ NativePixmapPlane::NativePixmapPlane()
 NativePixmapPlane::NativePixmapPlane(int stride,
                                      int offset,
                                      uint64_t size,
+#if defined(OS_LINUX)
+                                     base::ScopedFD fd,
+#endif
                                      uint64_t modifier)
-    : stride(stride), offset(offset), size(size), modifier(modifier) {}
+    : stride(stride),
+      offset(offset),
+      size(size),
+      modifier(modifier)
+#if defined(OS_LINUX)
+      ,
+      fd(std::move(fd))
+#endif
+{
+}
 
-NativePixmapPlane::NativePixmapPlane(const NativePixmapPlane& other) = default;
+NativePixmapPlane::NativePixmapPlane(NativePixmapPlane&& other) = default;
 
-NativePixmapPlane::~NativePixmapPlane() {}
+NativePixmapPlane::~NativePixmapPlane() = default;
 
-NativePixmapHandle::NativePixmapHandle() {}
-NativePixmapHandle::NativePixmapHandle(const NativePixmapHandle& other) =
+NativePixmapPlane& NativePixmapPlane::operator=(NativePixmapPlane&& other) =
     default;
 
-NativePixmapHandle::~NativePixmapHandle() {}
+NativePixmapHandle::NativePixmapHandle() = default;
+NativePixmapHandle::NativePixmapHandle(NativePixmapHandle&& other) = default;
+
+NativePixmapHandle::~NativePixmapHandle() = default;
+
+NativePixmapHandle& NativePixmapHandle::operator=(NativePixmapHandle&& other) =
+    default;
 
 #if defined(OS_LINUX)
 NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
   NativePixmapHandle clone;
-  std::vector<base::ScopedFD> scoped_fds;
-  for (auto& fd : handle.fds) {
-    base::ScopedFD scoped_fd(HANDLE_EINTR(dup(fd.fd)));
-    if (!scoped_fd.is_valid()) {
+  for (auto& plane : handle.planes) {
+    DCHECK(plane.fd.is_valid());
+    base::ScopedFD fd_dup(HANDLE_EINTR(dup(plane.fd.get())));
+    if (!fd_dup.is_valid()) {
       PLOG(ERROR) << "dup";
       return NativePixmapHandle();
     }
-    scoped_fds.emplace_back(std::move(scoped_fd));
+    clone.planes.emplace_back(plane.stride, plane.offset, plane.size,
+                              std::move(fd_dup), plane.modifier);
   }
-  for (auto& scoped_fd : scoped_fds)
-    clone.fds.emplace_back(scoped_fd.release(), true /* auto_close */);
-  clone.planes = handle.planes;
   return clone;
 }
 #endif  // defined(OS_LINUX)

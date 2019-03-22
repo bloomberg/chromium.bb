@@ -88,24 +88,18 @@ std::unique_ptr<SharedMemory> Display::CreateSharedMemory(
 std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
-    const std::vector<gfx::NativePixmapPlane>& planes,
-    bool y_invert,
-    std::vector<base::ScopedFD>&& fds) {
+    gfx::NativePixmapHandle handle,
+    bool y_invert) {
   TRACE_EVENT1("exo", "Display::CreateLinuxDMABufBuffer", "size",
                size.ToString());
 
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::NATIVE_PIXMAP;
-  for (auto& fd : fds)
-    handle.native_pixmap_handle.fds.emplace_back(std::move(fd));
-
-  for (auto& plane : planes)
-    handle.native_pixmap_handle.planes.push_back(plane);
-
+  gfx::GpuMemoryBufferHandle gmb_handle;
+  gmb_handle.type = gfx::NATIVE_PIXMAP;
+  gmb_handle.native_pixmap_handle = std::move(handle);
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
-          client_native_pixmap_factory_.get(), handle, size, format,
-          gfx::BufferUsage::GPU_READ,
+          client_native_pixmap_factory_.get(), std::move(gmb_handle), size,
+          format, gfx::BufferUsage::GPU_READ,
           gpu::GpuMemoryBufferImpl::DestructionCallback());
   if (!gpu_memory_buffer) {
     LOG(ERROR) << "Failed to create GpuMemoryBuffer from handle";

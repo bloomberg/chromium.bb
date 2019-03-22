@@ -26,7 +26,7 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
                                                   gfx::BufferUsage usage);
 
   static std::unique_ptr<gfx::ClientNativePixmap> ImportFromDmabuf(
-      const gfx::NativePixmapHandle& handle,
+      gfx::NativePixmapHandle handle,
       const gfx::Size& size);
 
   ~ClientNativePixmapDmaBuf() override;
@@ -46,12 +46,11 @@ class ClientNativePixmapDmaBuf : public gfx::ClientNativePixmap {
     PlaneInfo(PlaneInfo&& plane_info);
     ~PlaneInfo();
 
-    base::ScopedFD fd;
     void* data = nullptr;
     size_t offset = 0;
     size_t size = 0;
   };
-  ClientNativePixmapDmaBuf(const gfx::NativePixmapHandle& handle,
+  ClientNativePixmapDmaBuf(gfx::NativePixmapHandle handle,
                            const gfx::Size& size,
                            std::array<PlaneInfo, kMaxPlanes> plane_info);
 

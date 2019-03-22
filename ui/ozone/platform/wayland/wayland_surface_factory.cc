@@ -194,7 +194,7 @@ WaylandSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    const gfx::NativePixmapHandle& handle) {
+    gfx::NativePixmapHandle handle) {
   NOTIMPLEMENTED();
   return nullptr;
 }

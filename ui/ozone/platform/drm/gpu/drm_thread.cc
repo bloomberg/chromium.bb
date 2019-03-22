@@ -182,20 +182,18 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   }
 }
 
-void DrmThread::CreateBufferFromFds(
+void DrmThread::CreateBufferFromHandle(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    std::vector<base::ScopedFD> fds,
-    const std::vector<gfx::NativePixmapPlane>& planes,
+    gfx::NativePixmapHandle handle,
     std::unique_ptr<GbmBuffer>* out_buffer,
     scoped_refptr<DrmFramebuffer>* out_framebuffer) {
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
   DCHECK(drm);
 
-  std::unique_ptr<GbmBuffer> buffer = drm->gbm_device()->CreateBufferFromFds(
-      ui::GetFourCCFormatFromBufferFormat(format), size, std::move(fds),
-      planes);
+  std::unique_ptr<GbmBuffer> buffer = drm->gbm_device()->CreateBufferFromHandle(
+      ui::GetFourCCFormatFromBufferFormat(format), size, std::move(handle));
   if (!buffer)
     return;
 

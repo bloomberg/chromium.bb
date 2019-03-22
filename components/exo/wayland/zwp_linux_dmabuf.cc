@@ -155,22 +155,21 @@ void linux_buffer_params_create(wl_client* client,
   size_t num_planes =
       gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
 
-  std::vector<gfx::NativePixmapPlane> planes;
-  std::vector<base::ScopedFD> fds;
+  gfx::NativePixmapHandle handle;
 
   for (uint32_t i = 0; i < num_planes; ++i) {
     auto plane_it = linux_buffer_params->planes.find(i);
     LinuxBufferParams::Plane& plane = plane_it->second;
-    planes.emplace_back(plane.stride, plane.offset, 0);
-    fds.push_back(std::move(plane.fd));
+    handle.planes.emplace_back(plane.stride, plane.offset, 0,
+                               std::move(plane.fd));
   }
 
   bool y_invert = (flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT) != 0;
 
   std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
-          gfx::Size(width, height), supported_format->buffer_format, planes,
-          y_invert, std::move(fds));
+          gfx::Size(width, height), supported_format->buffer_format,
+          std::move(handle), y_invert);
   if (!buffer) {
     zwp_linux_buffer_params_v1_send_failed(resource);
     return;
@@ -216,22 +215,21 @@ void linux_buffer_params_create_immed(wl_client* client,
   size_t num_planes =
       gfx::NumberOfPlanesForBufferFormat(supported_format->buffer_format);
 
-  std::vector<gfx::NativePixmapPlane> planes;
-  std::vector<base::ScopedFD> fds;
+  gfx::NativePixmapHandle handle;
 
   for (uint32_t i = 0; i < num_planes; ++i) {
     auto plane_it = linux_buffer_params->planes.find(i);
     LinuxBufferParams::Plane& plane = plane_it->second;
-    planes.emplace_back(plane.stride, plane.offset, 0);
-    fds.push_back(std::move(plane.fd));
+    handle.planes.emplace_back(plane.stride, plane.offset, 0,
+                               std::move(plane.fd));
   }
 
   bool y_invert = flags & ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
 
   std::unique_ptr<Buffer> buffer =
       linux_buffer_params->display->CreateLinuxDMABufBuffer(
-          gfx::Size(width, height), supported_format->buffer_format, planes,
-          y_invert, std::move(fds));
+          gfx::Size(width, height), supported_format->buffer_format,
+          std::move(handle), y_invert);
   if (!buffer) {
     // On import failure in case of a create_immed request, the protocol
     // allows us to raise a fatal error from zwp_linux_dmabuf_v1 version 2+.

@@ -88,11 +88,8 @@ TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
       gfx::NumberOfPlanesForBufferFormat(this->delegate_.GetBufferFormat());
   EXPECT_EQ(num_planes, native_pixmap_handle.planes.size());
 
-  std::vector<base::ScopedFD> scoped_fds;
-  for (auto& fd : native_pixmap_handle.fds) {
-    EXPECT_TRUE(fd.auto_close);
-    scoped_fds.emplace_back(fd.fd);
-    EXPECT_TRUE(scoped_fds.back().is_valid());
+  for (auto& plane : native_pixmap_handle.planes) {
+    EXPECT_TRUE(plane.fd.is_valid());
   }
 }
 

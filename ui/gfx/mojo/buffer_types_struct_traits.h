@@ -5,6 +5,8 @@
 #ifndef UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 #define UI_GFX_MOJO_BUFFER_TYPES_STRUCT_TRAITS_H_
 
+#include <vector>
+
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/mojo/buffer_types.mojom.h"
@@ -205,24 +207,16 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
   static uint64_t modifier(const gfx::NativePixmapPlane& plane) {
     return plane.modifier;
   }
+  static mojo::ScopedHandle fd(gfx::NativePixmapPlane& plane);
   static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
-                   gfx::NativePixmapPlane* out) {
-    out->stride = data.stride();
-    out->offset = data.offset();
-    out->size = data.size();
-    out->modifier = data.modifier();
-    return true;
-  }
+                   gfx::NativePixmapPlane* out);
 };
 
 template <>
 struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
                     gfx::NativePixmapHandle> {
-  static std::vector<mojo::ScopedHandle> fds(
-      const gfx::NativePixmapHandle& pixmap_handle);
-
-  static const std::vector<gfx::NativePixmapPlane>& planes(
-      const gfx::NativePixmapHandle& pixmap_handle) {
+  static std::vector<gfx::NativePixmapPlane>& planes(
+      gfx::NativePixmapHandle& pixmap_handle) {
     return pixmap_handle.planes;
   }
 

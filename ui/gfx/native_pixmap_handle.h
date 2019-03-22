@@ -14,7 +14,7 @@
 #include "ui/gfx/gfx_export.h"
 
 #if defined(OS_LINUX)
-#include "base/file_descriptor_posix.h"
+#include "base/files/scoped_file.h"
 #endif
 
 namespace gfx {
@@ -31,9 +31,14 @@ struct GFX_EXPORT NativePixmapPlane {
   NativePixmapPlane(int stride,
                     int offset,
                     uint64_t size,
+#if defined(OS_LINUX)
+                    base::ScopedFD fd,
+#endif
                     uint64_t modifier = kNoModifier);
-  NativePixmapPlane(const NativePixmapPlane& other);
+  NativePixmapPlane(NativePixmapPlane&& other);
   ~NativePixmapPlane();
+
+  NativePixmapPlane& operator=(NativePixmapPlane&& other);
 
   // The strides and offsets in bytes to be used when accessing the buffers via
   // a memory mapping. One per plane per entry.
@@ -46,18 +51,20 @@ struct GFX_EXPORT NativePixmapPlane {
   // Generally it's platform specific, and we don't need to modify it in
   // Chromium code. Also one per plane per entry.
   uint64_t modifier;
+#if defined(OS_LINUX)
+  // File descriptor for the underlying memory object (usually dmabuf).
+  base::ScopedFD fd;
+#endif
 };
 
 struct GFX_EXPORT NativePixmapHandle {
   NativePixmapHandle();
-  NativePixmapHandle(const NativePixmapHandle& other);
+  NativePixmapHandle(NativePixmapHandle&& other);
 
   ~NativePixmapHandle();
 
-#if defined(OS_LINUX)
-  // File descriptors for the underlying memory objects (usually dmabufs).
-  std::vector<base::FileDescriptor> fds;
-#endif
+  NativePixmapHandle& operator=(NativePixmapHandle&& other);
+
   std::vector<NativePixmapPlane> planes;
 };
 

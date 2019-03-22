@@ -67,16 +67,10 @@ cros::mojom::CameraBufferHandlePtr RequestBuilder::CreateCameraBufferHandle(
       buffer_info.gpu_memory_buffer->CloneHandle().native_pixmap_handle;
 
   size_t num_planes = native_pixmap_handle.planes.size();
-  DCHECK_EQ(num_planes, native_pixmap_handle.fds.size());
-  // Take ownership of fds.
-  std::vector<base::ScopedFD> fds(num_planes);
-  for (size_t i = 0; i < num_planes; ++i)
-    fds[i] = base::ScopedFD(native_pixmap_handle.fds[i].fd);
-
   std::vector<StreamCaptureInterface::Plane> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
-    mojo::ScopedHandle mojo_fd =
-        mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fds[i])));
+    mojo::ScopedHandle mojo_fd = mojo::WrapPlatformHandle(
+        mojo::PlatformHandle(std::move(native_pixmap_handle.planes[i].fd)));
     if (!mojo_fd.is_valid()) {
       device_context_->SetErrorState(
           media::VideoCaptureError::

@@ -576,6 +576,52 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
     l->append(base::StringPrintf("FD(%d)", p.fd));
   }
 }
+
+void ParamTraits<base::ScopedFD>::Write(base::Pickle* m, const param_type& p) {
+  // This serialization must be kept in sync with
+  // nacl_message_scanner.cc:WriteHandle().
+  const bool valid = p.is_valid();
+  WriteParam(m, valid);
+
+  if (!valid)
+    return;
+
+  if (!m->WriteAttachment(new internal::PlatformFileAttachment(
+          std::move(const_cast<param_type&>(p))))) {
+    NOTREACHED();
+  }
+}
+
+bool ParamTraits<base::ScopedFD>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* r) {
+  r->reset();
+
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+
+  if (!valid)
+    return true;
+
+  scoped_refptr<base::Pickle::Attachment> attachment;
+  if (!m->ReadAttachment(iter, &attachment))
+    return false;
+
+  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
+      MessageAttachment::Type::PLATFORM_FILE) {
+    return false;
+  }
+
+  *r = base::ScopedFD(
+      static_cast<internal::PlatformFileAttachment*>(attachment.get())
+          ->TakePlatformFile());
+  return true;
+}
+
+void ParamTraits<base::ScopedFD>::Log(const param_type& p, std::string* l) {
+  l->append(base::StringPrintf("ScopedFD(%d)", p.get()));
+}
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
