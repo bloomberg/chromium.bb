@@ -4109,6 +4109,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(views::features::kEnableMDRoundedCornersOnDialogs)},
 #endif  // defined(TOOLKIT_VIEWS)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS)
+    {"mime-handler-view-in-cross-process-frame",
+     flag_descriptions::kMimeHandlerViewInCrossProcessFrameName,
+     flag_descriptions::kMimeHandlerViewInCrossProcessFrameDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMimeHandlerViewInCrossProcessFrame)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

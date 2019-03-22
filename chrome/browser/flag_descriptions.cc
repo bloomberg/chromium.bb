@@ -1243,6 +1243,12 @@ const char kMessageCenterNewStyleNotificationName[] = "New style notification";
 const char kMessageCenterNewStyleNotificationDescription[] =
     "Enables the experiment style of material-design notification";
 
+const char kMimeHandlerViewInCrossProcessFrameName[] =
+    "MimeHandlerView in cross-process frame";
+const char kMimeHandlerViewInCrossProcessFrameDescription[] =
+    "Loads the MimeHandlerView (the extension viewer for certain MIME types "
+    "such as PDF) in a cross-process frame as opposed to a BrowserPlugin.";
+
 const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";

@@ -752,6 +752,9 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 extern const char kMessageCenterNewStyleNotificationName[];
 extern const char kMessageCenterNewStyleNotificationDescription[];
 
+extern const char kMimeHandlerViewInCrossProcessFrameName[];
+extern const char kMimeHandlerViewInCrossProcessFrameDescription[];
+
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
