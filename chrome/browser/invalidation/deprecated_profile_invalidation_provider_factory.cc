@@ -24,8 +24,6 @@
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
-#include "components/invalidation/impl/ticl_profile_settings_provider.h"
-#include "components/invalidation/impl/ticl_settings_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -165,7 +163,6 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<TiclInvalidationService> service =
       std::make_unique<TiclInvalidationService>(
           GetUserAgent(), identity_provider.get(),
-          std::make_unique<TiclProfileSettingsProvider>(profile->GetPrefs()),
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
           base::CreateSingleThreadTaskRunnerWithTraits(
