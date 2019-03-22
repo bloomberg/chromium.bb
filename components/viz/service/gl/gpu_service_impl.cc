@@ -415,7 +415,7 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
 #endif  // defined(OS_CHROMEOS)
 
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
-    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::MojoJpegDecodeAcceleratorService::Create(std::move(jda_request));
 }

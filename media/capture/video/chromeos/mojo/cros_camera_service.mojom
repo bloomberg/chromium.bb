@@ -29,7 +29,7 @@ interface CameraHalDispatcher {
 
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(
-    media.mojom.JpegDecodeAccelerator& jda_request);
+    media.mojom.MjpegDecodeAccelerator& jda_request);
 
   // Get JpegEncodeAccelerator from dispatcher.
   [MinVersion=2] GetJpegEncodeAccelerator@3(

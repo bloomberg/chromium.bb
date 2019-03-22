@@ -10,7 +10,7 @@ import "services/video_capture/public/mojom/video_source_provider.mojom";
 
 interface AcceleratorFactory {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.JpegDecodeAccelerator& jda);
+  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
 };
 
 // Entry point to the Video Capture Service API.

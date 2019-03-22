@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,14 +26,14 @@ namespace media {
 // of communication to the JpegDecodeAccelerator without requiring an actual
 // hardware decoder.
 class MEDIA_GPU_EXPORT FakeJpegDecodeAccelerator
-    : public JpegDecodeAccelerator {
+    : public MjpegDecodeAccelerator {
  public:
   FakeJpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~FakeJpegDecodeAccelerator() override;
 
   // JpegDecodeAccelerator implementation.
-  bool Initialize(JpegDecodeAccelerator::Client* client) override;
+  bool Initialize(MjpegDecodeAccelerator::Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;

@@ -24,7 +24,7 @@
 namespace media {
 
 // Implementation of media::VideoCaptureJpegDecoder that delegates to a
-// media::mojom::JpegDecodeAccelerator. When a frame is received in
+// media::mojom::MjpegDecodeAccelerator. When a frame is received in
 // DecodeCapturedData(), it is copied to |in_shared_memory| for IPC transport
 // to |decoder_|. When the decoder is finished with the frame, |decode_done_cb_|
 // is invoked. Until |decode_done_cb_| is invoked, subsequent calls to
@@ -34,7 +34,7 @@ namespace media {
 // media::VideoCaptureJpegDecoder methods may be called from any thread.
 class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
     : public VideoCaptureJpegDecoder,
-      public JpegDecodeAccelerator::Client {
+      public MjpegDecodeAccelerator::Client {
  public:
   VideoCaptureJpegDecoderImpl(
       MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
@@ -54,11 +54,11 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
       base::TimeDelta timestamp,
       media::VideoCaptureDevice::Client::Buffer out_buffer) override;
 
-  // JpegDecodeAccelerator::Client implementation.
+  // MjpegDecodeAccelerator::Client implementation.
   // These will be called on |decoder_task_runner|.
   void VideoFrameReady(int32_t buffer_id) override;
   void NotifyError(int32_t buffer_id,
-                   media::JpegDecodeAccelerator::Error error) override;
+                   media::MjpegDecodeAccelerator::Error error) override;
 
  private:
   void FinishInitialization();
@@ -76,7 +76,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
   scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // The underlying JPEG decode accelerator.
-  std::unique_ptr<media::JpegDecodeAccelerator> decoder_;
+  std::unique_ptr<media::MjpegDecodeAccelerator> decoder_;
 
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;

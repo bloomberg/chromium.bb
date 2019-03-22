@@ -15,24 +15,24 @@
 #include "media/gpu/gpu_jpeg_decode_accelerator_factory.h"
 #include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace media {
 
-// Implementation of a mojom::JpegDecodeAccelerator which runs in the GPU
+// Implementation of a mojom::MjpegDecodeAccelerator which runs in the GPU
 // process, and wraps a JpegDecodeAccelerator.
 class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
-    : public mojom::JpegDecodeAccelerator,
-      public JpegDecodeAccelerator::Client {
+    : public mojom::MjpegDecodeAccelerator,
+      public MjpegDecodeAccelerator::Client {
  public:
-  static void Create(mojom::JpegDecodeAcceleratorRequest request);
+  static void Create(mojom::MjpegDecodeAcceleratorRequest request);
 
   ~MojoJpegDecodeAcceleratorService() override;
 
-  // JpegDecodeAccelerator::Client implementation.
+  // MjpegDecodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t buffer_id) override;
   void NotifyError(int32_t buffer_id,
-                   ::media::JpegDecodeAccelerator::Error error) override;
+                   ::media::MjpegDecodeAccelerator::Error error) override;
 
  private:
   using DecodeCallbackMap = std::unordered_map<int32_t, DecodeCallback>;
@@ -42,7 +42,7 @@ class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
   // fill |accelerator_factory_functions_|.
   MojoJpegDecodeAcceleratorService();
 
-  // mojom::JpegDecodeAccelerator implementation.
+  // mojom::MjpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
   void Decode(const BitstreamBuffer& input_buffer,
               const gfx::Size& coded_size,
@@ -60,7 +60,7 @@ class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
   void Uninitialize() override;
 
   void NotifyDecodeStatus(int32_t bitstream_buffer_id,
-                          ::media::JpegDecodeAccelerator::Error error);
+                          ::media::MjpegDecodeAccelerator::Error error);
 
   const std::vector<GpuJpegDecodeAcceleratorFactory::CreateAcceleratorCB>
       accelerator_factory_functions_;
@@ -68,7 +68,7 @@ class MEDIA_MOJO_EXPORT MojoJpegDecodeAcceleratorService
   // A map from bitstream_buffer_id to DecodeCallback.
   DecodeCallbackMap decode_cb_map_;
 
-  std::unique_ptr<::media::JpegDecodeAccelerator> accelerator_;
+  std::unique_ptr<::media::MjpegDecodeAccelerator> accelerator_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -23,7 +23,7 @@ FakeJpegDecodeAccelerator::~FakeJpegDecodeAccelerator() {
 }
 
 bool FakeJpegDecodeAccelerator::Initialize(
-    JpegDecodeAccelerator::Client* client) {
+    MjpegDecodeAccelerator::Client* client) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   client_ = client;
 
@@ -47,7 +47,8 @@ void FakeJpegDecodeAccelerator::Decode(
                                    bitstream_buffer.offset()));
   if (!src_shm->IsValid()) {
     DLOG(ERROR) << "Unable to map shared memory in FakeJpegDecodeAccelerator";
-    NotifyError(bitstream_buffer.id(), JpegDecodeAccelerator::UNREADABLE_INPUT);
+    NotifyError(bitstream_buffer.id(),
+                MjpegDecodeAccelerator::UNREADABLE_INPUT);
     return;
   }
 

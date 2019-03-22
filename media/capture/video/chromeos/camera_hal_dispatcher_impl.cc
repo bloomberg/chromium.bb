@@ -197,7 +197,7 @@ void CameraHalDispatcherImpl::RegisterClient(
 }
 
 void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
-    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   jda_factory_.Run(std::move(jda_request));
 }
 

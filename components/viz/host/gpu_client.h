@@ -55,7 +55,7 @@ class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
       ws::mojom::GpuMemoryBufferFactoryRequest request) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
   void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
+      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override;
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
       override;

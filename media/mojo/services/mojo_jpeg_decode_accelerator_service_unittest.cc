@@ -37,7 +37,7 @@ class MojoJpegDecodeAcceleratorServiceTest : public ::testing::Test {
 
   void OnDecodeAck(const base::Closure& continuation,
                    int32_t bitstream_buffer_id,
-                   JpegDecodeAccelerator::Error error) {
+                   MjpegDecodeAccelerator::Error error) {
     EXPECT_EQ(kArbitraryBitstreamBufferId, bitstream_buffer_id);
     continuation.Run();
   }
@@ -49,7 +49,7 @@ class MojoJpegDecodeAcceleratorServiceTest : public ::testing::Test {
 };
 
 TEST_F(MojoJpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
-  mojom::JpegDecodeAcceleratorPtr jpeg_decoder;
+  mojom::MjpegDecodeAcceleratorPtr jpeg_decoder;
   MojoJpegDecodeAcceleratorService::Create(mojo::MakeRequest(&jpeg_decoder));
 
   base::RunLoop run_loop;

@@ -31,9 +31,9 @@ struct BitstreamBuffer {
   array<SubsampleEntry> subsamples;
 };
 
-// GPU process interface exposed to the browser for decoding JPEG images.
-interface JpegDecodeAccelerator {
-  // Initializes the JPEG decoder. Should be called once per decoder
+// GPU process interface exposed to the browser for decoding MJPEG streams.
+interface MjpegDecodeAccelerator {
+  // Initializes the MJPEG decoder. Should be called once per decoder
   // construction and before using Decode(). This call returns true if
   // initialization is successful.
   Initialize() => (bool success);

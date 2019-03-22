@@ -61,7 +61,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void RegisterServer(cros::mojom::CameraHalServerPtr server) final;
   void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
   void GetJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) final;
+      media::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
   void GetJpegEncodeAccelerator(
       media::mojom::JpegEncodeAcceleratorRequest jea_request) final;
 

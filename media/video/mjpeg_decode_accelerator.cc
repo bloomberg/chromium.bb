@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace media {
 
-JpegDecodeAccelerator::~JpegDecodeAccelerator() = default;
+MjpegDecodeAccelerator::~MjpegDecodeAccelerator() = default;
 
 }  // namespace media

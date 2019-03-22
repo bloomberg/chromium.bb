@@ -60,7 +60,7 @@ namespace media {
 
 // static
 void MojoJpegDecodeAcceleratorService::Create(
-    mojom::JpegDecodeAcceleratorRequest request) {
+    mojom::MjpegDecodeAcceleratorRequest request) {
   auto* jpeg_decoder = new MojoJpegDecodeAcceleratorService();
   mojo::MakeStrongBinding(base::WrapUnique(jpeg_decoder), std::move(request));
 }
@@ -77,12 +77,12 @@ void MojoJpegDecodeAcceleratorService::VideoFrameReady(
     int32_t bitstream_buffer_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyDecodeStatus(bitstream_buffer_id,
-                     ::media::JpegDecodeAccelerator::Error::NO_ERRORS);
+                     ::media::MjpegDecodeAccelerator::Error::NO_ERRORS);
 }
 
 void MojoJpegDecodeAcceleratorService::NotifyError(
     int32_t bitstream_buffer_id,
-    ::media::JpegDecodeAccelerator::Error error) {
+    ::media::MjpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NotifyDecodeStatus(bitstream_buffer_id, error);
 }
@@ -93,9 +93,9 @@ void MojoJpegDecodeAcceleratorService::Initialize(InitializeCallback callback) {
   // When adding non-chromeos platforms, VideoCaptureGpuJpegDecoder::Initialize
   // needs to be updated.
 
-  std::unique_ptr<::media::JpegDecodeAccelerator> accelerator;
+  std::unique_ptr<::media::MjpegDecodeAccelerator> accelerator;
   for (const auto& create_jda_function : accelerator_factory_functions_) {
-    std::unique_ptr<::media::JpegDecodeAccelerator> tmp_accelerator =
+    std::unique_ptr<::media::MjpegDecodeAccelerator> tmp_accelerator =
         create_jda_function.Run(base::ThreadTaskRunnerHandle::Get());
     if (tmp_accelerator && tmp_accelerator->Initialize(this)) {
       accelerator = std::move(tmp_accelerator);
@@ -126,8 +126,9 @@ void MojoJpegDecodeAcceleratorService::Decode(
   decode_cb_map_[input_buffer.id()] = std::move(callback);
 
   if (!VerifyDecodeParams(coded_size, &output_handle, output_buffer_size)) {
-    NotifyDecodeStatus(input_buffer.id(),
-                       ::media::JpegDecodeAccelerator::Error::INVALID_ARGUMENT);
+    NotifyDecodeStatus(
+        input_buffer.id(),
+        ::media::MjpegDecodeAccelerator::Error::INVALID_ARGUMENT);
     return;
   }
 
@@ -141,8 +142,9 @@ void MojoJpegDecodeAcceleratorService::Decode(
   if (!output_shm->Map(output_buffer_size)) {
     LOG(ERROR) << "Could not map output shared memory for input buffer id "
                << input_buffer.id();
-    NotifyDecodeStatus(input_buffer.id(),
-                       ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+    NotifyDecodeStatus(
+        input_buffer.id(),
+        ::media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
 
@@ -160,8 +162,9 @@ void MojoJpegDecodeAcceleratorService::Decode(
   if (!frame.get()) {
     LOG(ERROR) << "Could not create VideoFrame for input buffer id "
                << input_buffer.id();
-    NotifyDecodeStatus(input_buffer.id(),
-                       ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+    NotifyDecodeStatus(
+        input_buffer.id(),
+        ::media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
   frame->AddDestructionObserver(
@@ -189,14 +192,14 @@ void MojoJpegDecodeAcceleratorService::DecodeWithFD(
   result = mojo::UnwrapPlatformFile(std::move(input_handle), &input_fd);
   if (result != MOJO_RESULT_OK) {
     std::move(callback).Run(
-        buffer_id, ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+        buffer_id, ::media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
 
   result = mojo::UnwrapPlatformFile(std::move(output_handle), &output_fd);
   if (result != MOJO_RESULT_OK) {
     std::move(callback).Run(
-        buffer_id, ::media::JpegDecodeAccelerator::Error::PLATFORM_FAILURE);
+        buffer_id, ::media::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
 
@@ -229,7 +232,7 @@ void MojoJpegDecodeAcceleratorService::Uninitialize() {
 
 void MojoJpegDecodeAcceleratorService::NotifyDecodeStatus(
     int32_t bitstream_buffer_id,
-    ::media::JpegDecodeAccelerator::Error error) {
+    ::media::MjpegDecodeAccelerator::Error error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto iter = decode_cb_map_.find(bitstream_buffer_id);

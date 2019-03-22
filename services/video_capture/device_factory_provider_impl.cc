@@ -57,7 +57,7 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
   }
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest request) {
+      media::mojom::MjpegDecodeAcceleratorRequest request) {
     DCHECK(gpu_io_task_runner_->RunsTasksInCurrentSequence());
     if (!accelerator_factory_)
       return;

@@ -15,7 +15,7 @@
 #include "base/threading/thread.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -37,14 +37,14 @@ class VideoFrame;
 // stopped during |this->Destroy()|, so any tasks posted to the decoder thread
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
-    : public JpegDecodeAccelerator {
+    : public MjpegDecodeAccelerator {
  public:
   VaapiJpegDecodeAccelerator(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~VaapiJpegDecodeAccelerator() override;
 
   // JpegDecodeAccelerator implementation.
-  bool Initialize(JpegDecodeAccelerator::Client* client) override;
+  bool Initialize(MjpegDecodeAccelerator::Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;

@@ -268,7 +268,7 @@ class VideoCaptureDeviceTest
     if (!CameraHalDispatcherImpl::GetInstance()->IsStarted()) {
       CameraHalDispatcherImpl::GetInstance()->Start(
           base::DoNothing::Repeatedly<
-              media::mojom::JpegDecodeAcceleratorRequest>(),
+              media::mojom::MjpegDecodeAcceleratorRequest>(),
           base::DoNothing::Repeatedly<
               media::mojom::JpegEncodeAcceleratorRequest>());
     }

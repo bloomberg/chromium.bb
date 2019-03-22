@@ -22,12 +22,12 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace media {
 
 class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
-    : public JpegDecodeAccelerator {
+    : public MjpegDecodeAccelerator {
  public:
   V4L2JpegDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,

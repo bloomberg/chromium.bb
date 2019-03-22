@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
-#include "media/video/jpeg_decode_accelerator.h"
+#include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -19,17 +19,17 @@ class SequencedTaskRunner;
 
 namespace media {
 
-// A JpegDecodeAccelerator, for use in the browser process, that proxies to a
-// mojom::JpegDecodeAccelerator. Created on the owner's thread, otherwise
+// A MjpegDecodeAccelerator, for use in the browser process, that proxies to a
+// mojom::MjpegDecodeAccelerator. Created on the owner's thread, otherwise
 // operating and deleted on |io_task_runner|.
-class MojoJpegDecodeAccelerator : public JpegDecodeAccelerator {
+class MojoJpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
   MojoJpegDecodeAccelerator(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder);
+      mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
   ~MojoJpegDecodeAccelerator() override;
 
-  // JpegDecodeAccelerator implementation.
+  // MjpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
   // MojoJpegDecodeAccelerator is destroyed.
   bool Initialize(Client* client) override;
@@ -40,22 +40,22 @@ class MojoJpegDecodeAccelerator : public JpegDecodeAccelerator {
 
  private:
   void OnInitializeDone(InitCB init_cb,
-                        JpegDecodeAccelerator::Client* client,
+                        MjpegDecodeAccelerator::Client* client,
                         bool success);
   void OnDecodeAck(int32_t bitstream_buffer_id,
-                   ::media::JpegDecodeAccelerator::Error error);
+                   ::media::MjpegDecodeAccelerator::Error error);
   void OnLostConnectionToJpegDecoder();
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   Client* client_ = nullptr;
 
-  // Used to safely pass the mojom::JpegDecodeAcceleratorPtr from one thread to
+  // Used to safely pass the mojom::MjpegDecodeAcceleratorPtr from one thread to
   // another. It is set in the constructor and consumed in InitializeAsync().
   // TODO(mcasas): s/jpeg_decoder_/jda_/ https://crbug.com/699255.
-  mojom::JpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
+  mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
 
-  mojom::JpegDecodeAcceleratorPtr jpeg_decoder_;
+  mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoJpegDecodeAccelerator);
 };

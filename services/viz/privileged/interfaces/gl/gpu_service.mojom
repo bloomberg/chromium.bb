@@ -53,8 +53,8 @@ interface GpuService {
   [EnableIf=is_chromeos]
   CreateArcProtectedBufferManager(arc.mojom.ProtectedBufferManager& pbm);
 
-  // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.JpegDecodeAccelerator& jda);
+  // Creates a new MjpegDecodeAccelerator and binds it to |jda|.
+  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
 
   // Creates a new JpegEncodeAccelerator and binds it to |jea|.
   CreateJpegEncodeAccelerator(media.mojom.JpegEncodeAccelerator& jea);
