@@ -20,15 +20,15 @@ IconLoader::Releaser::~Releaser() {
 
 IconLoader::Key::Key(apps::mojom::AppType app_type,
                      const std::string& app_id,
-                     const apps::mojom::IconKey& icon_key,
+                     const apps::mojom::IconKeyPtr& icon_key,
                      apps::mojom::IconCompression icon_compression,
                      int32_t size_hint_in_dip,
                      bool allow_placeholder_icon)
     : app_type_(app_type),
       app_id_(app_id),
-      timeline_(icon_key.timeline),
-      resource_id_(icon_key.resource_id),
-      icon_effects_(icon_key.icon_effects),
+      timeline_(icon_key ? icon_key->timeline : 0),
+      resource_id_(icon_key ? icon_key->resource_id : 0),
+      icon_effects_(icon_key ? icon_key->icon_effects : 0),
       icon_compression_(icon_compression),
       size_hint_in_dip_(size_hint_in_dip),
       allow_placeholder_icon_(allow_placeholder_icon) {}
