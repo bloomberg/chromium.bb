@@ -2108,6 +2108,14 @@ void EventHandler::DefaultKeyboardEventHandler(KeyboardEvent* event) {
       event, mouse_event_manager_->MousePressNode());
 }
 
+bool EventHandler::HandleFallbackCursorModeBackEvent() {
+  DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
+  // TODO(crbug.com/944575) Should support oopif.
+  DCHECK(frame_->LocalFrameRoot().IsMainFrame());
+
+  return fallback_cursor_event_manager_->HandleKeyBackEvent();
+}
+
 void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
                                      DragOperation operation) {
   // Asides from routing the event to the correct frame, the hit test is also an

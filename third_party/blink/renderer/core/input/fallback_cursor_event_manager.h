@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class Element;
 class Node;
 class IntPoint;
 class IntSize;
@@ -33,12 +34,15 @@ class CORE_EXPORT FallbackCursorEventManager
 
   void HandleMouseMoveEvent(const WebMouseEvent&);
   void HandleMousePressEvent(const WebMouseEvent&);
+  bool HandleKeyBackEvent();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
                            MouseMoveCursorLockOnDiv);
   FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
                            MouseMoveCursorLockOnIFrame);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, KeyBackAndMouseMove);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, MouseDownOnEditor);
 
   enum class Direction {
     kLeft,
@@ -60,6 +64,8 @@ class CORE_EXPORT FallbackCursorEventManager
   void ComputeLockCursor(const IntPoint& location_in_root_frame);
   void LockCursor(bool left, bool right, bool up, bool down);
   void SetCursorVisibility(bool visible);
+
+  Element* GetFocusedElement() const;
 
   const Member<LocalFrame> root_frame_;
   Member<Node> current_node_;

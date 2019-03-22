@@ -80,6 +80,13 @@ class FallbackCursorEventManagerTest : public RenderingTest {
     GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
   }
 
+  bool KeyBack() {
+    return GetDocument()
+        .GetFrame()
+        ->GetEventHandler()
+        .HandleFallbackCursorModeBackEvent();
+  }
+
   void ExpectLock(bool l, bool r, bool u, bool d) {
     EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[0], l);
     EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[1], r);
@@ -187,6 +194,20 @@ TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnDiv) {
                    .GetFrame()
                    ->GetEventHandler()
                    .fallback_cursor_event_manager_->current_node_);
+
+  // key back.
+  MouseMove(50, 80);
+  MouseDown(50, 80);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .fallback_cursor_event_manager_->current_node_.Get(),
+            d1);
+  EXPECT_TRUE(KeyBack());
+  EXPECT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->GetEventHandler()
+                   .fallback_cursor_event_manager_->current_node_);
 }
 
 TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnIFrame) {
@@ -243,10 +264,42 @@ TEST_F(FallbackCursorEventManagerTest, MouseMoveCursorLockOnIFrame) {
                    .GetFrame()
                    ->GetEventHandler()
                    .fallback_cursor_event_manager_->current_node_);
+
+  // key back.
+  MouseMove(50, 80);
+  MouseDown(50, 80);
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .fallback_cursor_event_manager_->current_node_.Get(),
+            child_frame_doc);
+  EXPECT_TRUE(KeyBack());
+  EXPECT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->GetEventHandler()
+                   .fallback_cursor_event_manager_->current_node_);
 }
 
-TEST_F(FallbackCursorEventManagerTest, MouseDownOnEditor) {
+TEST_F(FallbackCursorEventManagerTest, KeyBackAndMouseMove) {
   SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0px;
+    }
+    #ifr {
+      height: 100px;
+      width: 100px;
+    }
+    div {
+      height: 10000px;
+      width: 10000px;
+    }
+    </style>
+    <iframe id='ifr'></iframe>
+    <div></div>
+  )HTML");
+
+  SetChildFrameHTML(R"HTML(
     <style>
     html, body {
       margin: 0px;
@@ -256,7 +309,53 @@ TEST_F(FallbackCursorEventManagerTest, MouseDownOnEditor) {
       width: 10000px;
     }
     </style>
-    <div class='big' contenteditable='true'>
+    <div class='big'></div>
+  )HTML");
+  TurnOnFallbackCursorMode();
+
+  // Move below the scroll down line but before mouse down.
+  MouseMove(50, 80);
+  ExpectLock(false, false, false, false);
+  EXPECT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->GetEventHandler()
+                   .fallback_cursor_event_manager_->current_node_);
+
+  // Mouse down and move lock on down.
+  MouseDown(50, 80);
+  MouseMove(50, 80);
+  ExpectLock(false, false, false, true);
+  Node* child_frame_doc = ChildFrame().GetDocument();
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .fallback_cursor_event_manager_->current_node_.Get(),
+            child_frame_doc);
+
+  // key back.
+  EXPECT_TRUE(KeyBack());
+  EXPECT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->GetEventHandler()
+                   .fallback_cursor_event_manager_->current_node_);
+
+  // Move below the scroll down line of page.
+  MouseMove(100, 500);
+  ExpectLock(false, false, false, true);
+}
+
+TEST_F(FallbackCursorEventManagerTest, MouseDownOnEditor) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0px;
+    }
+    #editor {
+      height: 100px;
+      width: 100px;
+    }
+    </style>
+    <div id='editor' contenteditable='true'>
     </div>
   )HTML");
   TurnOnFallbackCursorMode();
@@ -265,6 +364,19 @@ TEST_F(FallbackCursorEventManagerTest, MouseDownOnEditor) {
   MouseDown(50, 80);
 
   EXPECT_EQ(GetFallbackCursorChromeClient().cursor_visible_, false);
+
+  Element* editor = GetDocument().getElementById("editor");
+  EXPECT_EQ(GetDocument().FocusedElement(), editor);
+
+  EXPECT_TRUE(KeyBack());
+
+  EXPECT_EQ(GetFallbackCursorChromeClient().cursor_visible_, true);
+  EXPECT_FALSE(GetDocument().FocusedElement());
+}
+
+TEST_F(FallbackCursorEventManagerTest, NotInCursorMode) {
+  GetPage().SetIsCursorVisible(false);
+  EXPECT_FALSE(KeyBack());
 }
 
 }  // namespace blink

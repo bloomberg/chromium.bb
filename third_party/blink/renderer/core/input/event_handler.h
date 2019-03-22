@@ -233,6 +233,7 @@ class CORE_EXPORT EventHandler final
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);
   void DefaultKeyboardEventHandler(KeyboardEvent*);
+  bool HandleFallbackCursorModeBackEvent();
 
   bool HandleTextInputEvent(const String& text,
                             Event* underlying_event = nullptr,
@@ -505,6 +506,8 @@ class CORE_EXPORT EventHandler final
                            MouseMoveCursorLockOnDiv);
   FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest,
                            MouseMoveCursorLockOnIFrame);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, KeyBackAndMouseMove);
+  FRIEND_TEST_ALL_PREFIXES(FallbackCursorEventManagerTest, MouseDownOnEditor);
 
   DISALLOW_COPY_AND_ASSIGN(EventHandler);
 };

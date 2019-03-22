@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/input/fallback_cursor_event_manager.h"
 
-#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
@@ -334,6 +334,31 @@ void FallbackCursorEventManager::HandleMousePressEvent(const WebMouseEvent& e) {
   }
 
   current_node_ = node;
+}
+
+Element* FallbackCursorEventManager::GetFocusedElement() const {
+  LocalFrame* frame =
+      root_frame_->View()->GetPage()->GetFocusController().FocusedFrame();
+  if (!frame || !frame->GetDocument())
+    return nullptr;
+
+  return frame->GetDocument()->FocusedElement();
+}
+
+bool FallbackCursorEventManager::HandleKeyBackEvent() {
+  DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
+
+  if (!is_fallback_cursor_mode_on_)
+    return false;
+
+  SetCursorVisibility(true);
+  if (Element* focused_element = GetFocusedElement()) {
+    focused_element->blur();
+    return true;
+  }
+
+  ResetCurrentScrollable();
+  return true;
 }
 
 }  // namespace blink
