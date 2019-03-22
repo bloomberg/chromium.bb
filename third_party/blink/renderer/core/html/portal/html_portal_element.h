@@ -30,7 +30,10 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
  public:
   static HTMLElement* Create(Document&);
 
-  explicit HTMLPortalElement(Document&);
+  explicit HTMLPortalElement(
+      Document& document,
+      const base::UnguessableToken& portal_token = base::UnguessableToken(),
+      mojom::blink::PortalAssociatedPtr portal_ptr = nullptr);
   ~HTMLPortalElement() override;
 
   // ScriptWrappable overrides.
@@ -55,6 +58,11 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
  private:
   // Navigates the portal to |url_|.
   void Navigate();
+
+  // Consumes the portal interface. When a Portal is activated, or if the
+  // renderer receives a connection error, this function will gracefully
+  // terminate the portal interface.
+  void ConsumePortal();
 
   // Node overrides
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;

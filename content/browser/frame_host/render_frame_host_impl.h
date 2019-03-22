@@ -871,8 +871,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void NavigationRequestCancelled(NavigationRequest* navigation_request);
 
   // Called on the main frame of a page embedded in a Portal when it is
-  // activated.
-  void OnPortalActivated(blink::TransferableMessage data);
+  // activated. The frame has the option to adopt the previous page as a portal
+  // identified by |portal_token| with the interface |portal|. The activation
+  // can optionally include a message |data| dispatched with the
+  // PortalActivateEvent.
+  void OnPortalActivated(const base::UnguessableToken& portal_token,
+                         blink::mojom::PortalAssociatedPtrInfo portal,
+                         blink::TransferableMessage data);
+
   // Called on the main frame of a page embedded in a Portal to forward a
   // message to the PortalHost object in the frame.
   void ForwardMessageToPortalHost(
@@ -1150,6 +1156,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                        CreateNewWindowCallback callback) override;
   void CreatePortal(blink::mojom::PortalAssociatedRequest request,
                     CreatePortalCallback callback) override;
+  void AdoptPortal(const base::UnguessableToken& portal_token,
+                   AdoptPortalCallback callback) override;
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override;
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

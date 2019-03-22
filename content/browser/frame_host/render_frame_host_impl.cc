@@ -1049,8 +1049,12 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     child->current_frame_host()->LeaveBackForwardCache();
 }
 
-void RenderFrameHostImpl::OnPortalActivated(blink::TransferableMessage data) {
-  frame_->OnPortalActivated(std::move(data));
+void RenderFrameHostImpl::OnPortalActivated(
+    const base::UnguessableToken& portal_token,
+    blink::mojom::PortalAssociatedPtrInfo portal,
+    blink::TransferableMessage data) {
+  GetNavigationControl()->OnPortalActivated(portal_token, std::move(portal),
+                                            std::move(data));
 }
 
 void RenderFrameHostImpl::ForwardMessageToPortalHost(
@@ -3825,6 +3829,22 @@ void RenderFrameHostImpl::CreatePortal(
   Portal* portal = Portal::Create(this, std::move(request));
   RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
   std::move(callback).Run(proxy_host->GetRoutingID(), portal->portal_token());
+}
+
+void RenderFrameHostImpl::AdoptPortal(
+    const base::UnguessableToken& portal_token,
+    AdoptPortalCallback callback) {
+  Portal* portal = Portal::FromToken(portal_token);
+  if (!portal) {
+    mojo::ReportBadMessage("Unknown portal_token when adopting portal.");
+    return;
+  }
+  if (portal->owner_render_frame_host() != this) {
+    mojo::ReportBadMessage("AdoptPortal called from wrong frame.");
+    return;
+  }
+  RenderFrameProxyHost* proxy_host = portal->CreateProxyAndAttachPortal();
+  std::move(callback).Run(proxy_host->GetRoutingID());
 }
 
 void RenderFrameHostImpl::IssueKeepAliveHandle(

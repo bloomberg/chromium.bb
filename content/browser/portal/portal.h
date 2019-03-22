@@ -37,6 +37,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   static bool IsEnabled();
 
+  static Portal* FromToken(const base::UnguessableToken& portal_token);
+
   // Creates a Portal and binds it to the pipe specified in the |request|. This
   // function creates a strong binding, so the ownership of the Portal is
   // delegated to the binding.
@@ -70,6 +72,10 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // Returns the Portal's WebContents.
   WebContentsImpl* GetPortalContents();
+
+  RenderFrameHostImpl* owner_render_frame_host() {
+    return owner_render_frame_host_;
+  }
 
   // Gets/sets the mojo binding. Only used in tests.
   mojo::StrongAssociatedBindingPtr<blink::mojom::Portal>

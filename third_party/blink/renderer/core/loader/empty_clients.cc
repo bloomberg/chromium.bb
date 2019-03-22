@@ -159,6 +159,10 @@ EmptyLocalFrameClient::CreatePortal(HTMLPortalElement*,
       nullptr, base::UnguessableToken());
 }
 
+RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {
+  return nullptr;
+}
+
 WebPluginContainerImpl* EmptyLocalFrameClient::CreatePlugin(
     HTMLPlugInElement&,
     const KURL&,

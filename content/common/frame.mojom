@@ -59,10 +59,6 @@ interface Frame {
   // Cancels blocked requests. BlockRequests must have been called before.
   CancelBlockedRequests();
 
-  // Called on the main frame of a page embedded in a Portal when it is
-  // activated.
-  OnPortalActivated(blink.mojom.TransferableMessage data);
-
   // Forwards message to the portal's main frame.
   ForwardMessageToPortalHost(string message,
                              url.mojom.Origin source_origin,
@@ -224,6 +220,15 @@ interface FrameNavigationControl {
                    mojo_base.mojom.String16 source_origin,
                    mojo_base.mojom.String16 target_origin,
                    blink.mojom.TransferableMessage message);
+
+  // Called on the main frame of a page embedded in a Portal when it is
+  // activated. The frame has the option to adopt the previous page as a portal
+  // identified by |portal_token| with the interface |portal|. The activation
+  // can optionally include a message |data| dispatched with the
+  // PortalActivateEvent.
+  OnPortalActivated(mojo_base.mojom.UnguessableToken portal_token,
+                    associated blink.mojom.Portal portal,
+                    blink.mojom.TransferableMessage data);
 };
 
 // Implemented by the frame (e.g. renderer processes).
@@ -332,12 +337,18 @@ interface FrameHost {
       => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
 
   // Sent by the renderer process to request the creation of a new portal.
-  // |pipe| is the pipe to be used for the Portal object. Returns
+  // |portal| is the interface to be used for the Portal object. Returns
   // |proxy_routing_id|, which is the routing id of the RenderFrameProxy and
   // |portal_token|, which is the unique identifier for the portal.
   [Sync] CreatePortal(associated blink.mojom.Portal& portal)
       => (int32 proxy_routing_id,
           mojo_base.mojom.UnguessableToken portal_token);
+
+  // Requests that this frame adopts the portal identified by |portal_token|.
+  // Returns |proxy_routing_id|, which is the routing id of the portal's
+  // RenderFrameProxy.
+  [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
+      => (int32 proxy_routing_id);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);

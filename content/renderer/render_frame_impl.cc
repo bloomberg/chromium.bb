@@ -2607,8 +2607,11 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
       routing_id_, callback_id, response));
 }
 
-void RenderFrameImpl::OnPortalActivated(blink::TransferableMessage data) {
-  frame_->OnPortalActivated(std::move(data));
+void RenderFrameImpl::OnPortalActivated(
+    const base::UnguessableToken& portal_token,
+    blink::mojom::PortalAssociatedPtrInfo portal,
+    blink::TransferableMessage data) {
+  frame_->OnPortalActivated(portal_token, portal.PassHandle(), std::move(data));
 }
 
 void RenderFrameImpl::ForwardMessageToPortalHost(
@@ -4239,6 +4242,15 @@ RenderFrameImpl::CreatePortal(mojo::ScopedInterfaceEndpointHandle pipe) {
   RenderFrameProxy* proxy =
       RenderFrameProxy::CreateProxyForPortal(this, proxy_routing_id);
   return std::make_pair(proxy->web_frame(), portal_token);
+}
+
+blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
+    const base::UnguessableToken& portal_token) {
+  int proxy_routing_id = MSG_ROUTING_NONE;
+  GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id);
+  RenderFrameProxy* proxy =
+      RenderFrameProxy::CreateProxyForPortal(this, proxy_routing_id);
+  return proxy->web_frame();
 }
 
 blink::WebFrame* RenderFrameImpl::FindFrame(const blink::WebString& name) {

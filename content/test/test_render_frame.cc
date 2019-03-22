@@ -105,6 +105,11 @@ class MockFrameHost : public mojom::FrameHost {
     std::move(callback).Run(MSG_ROUTING_NONE, base::UnguessableToken());
   }
 
+  void AdoptPortal(const base::UnguessableToken&,
+                   AdoptPortalCallback callback) override {
+    std::move(callback).Run(MSG_ROUTING_NONE);
+  }
+
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
 
   void DidCommitSameDocumentNavigation(

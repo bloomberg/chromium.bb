@@ -6,7 +6,10 @@
 
 #include <utility>
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -14,18 +17,30 @@
 namespace blink {
 
 PortalActivateEvent* PortalActivateEvent::Create(
+    LocalFrame* frame,
+    const base::UnguessableToken& predecessor_portal_token,
+    mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
     scoped_refptr<SerializedScriptValue> data,
     MessagePortArray* ports) {
   return MakeGarbageCollected<PortalActivateEvent>(
+      frame->GetDocument(), predecessor_portal_token,
+      std::move(predecessor_portal_ptr),
       SerializedScriptValue::Unpack(std::move(data)), ports);
 }
 
-PortalActivateEvent::PortalActivateEvent(UnpackedSerializedScriptValue* data,
-                                         MessagePortArray* ports)
+PortalActivateEvent::PortalActivateEvent(
+    Document* document,
+    const base::UnguessableToken& predecessor_portal_token,
+    mojom::blink::PortalAssociatedPtr predecessor_portal_ptr,
+    UnpackedSerializedScriptValue* data,
+    MessagePortArray* ports)
     : Event(event_type_names::kPortalactivate,
             Bubbles::kNo,
             Cancelable::kNo,
             CurrentTimeTicks()),
+      document_(document),
+      predecessor_portal_token_(predecessor_portal_token),
+      predecessor_portal_ptr_(std::move(predecessor_portal_ptr)),
       data_(data),
       ports_(ports) {}
 
@@ -54,6 +69,7 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
 
 void PortalActivateEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
+  visitor->Trace(document_);
   visitor->Trace(data_);
   visitor->Trace(v8_data_);
   visitor->Trace(ports_);
@@ -61,6 +77,13 @@ void PortalActivateEvent::Trace(blink::Visitor* visitor) {
 
 const AtomicString& PortalActivateEvent::InterfaceName() const {
   return event_type_names::kPortalactivate;
+}
+
+HTMLPortalElement* PortalActivateEvent::adoptPredecessor() {
+  HTMLPortalElement* portal = MakeGarbageCollected<HTMLPortalElement>(
+      *document_, predecessor_portal_token_,
+      std::move(predecessor_portal_ptr_));
+  return portal;
 }
 
 }  // namespace blink
