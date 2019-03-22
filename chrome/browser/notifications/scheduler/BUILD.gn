@@ -61,8 +61,6 @@ source_set("lib") {
     "notification_scheduler_context.h",
     "proto_conversion.cc",
     "proto_conversion.h",
-    "proto_db_collection_store.cc",
-    "proto_db_collection_store.h",
     "scheduler_model.h",
     "scheduler_model_impl.cc",
     "scheduler_model_impl.h",
@@ -83,13 +81,14 @@ source_set("lib") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "icon_store_unittest.cc",
     "proto_conversion_unittest.cc",
-    "proto_db_collection_store_unittest.cc",
   ]
 
   deps = [
     ":lib",
     ":public",
+    "//chrome/browser/notifications/proto",
     "//components/leveldb_proto:test_support",
     "//testing/gmock",
     "//testing/gtest",

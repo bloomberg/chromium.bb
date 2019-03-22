@@ -24,7 +24,6 @@ class CollectionStore {
   using InitCallback = base::OnceCallback<void(bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
 
- protected:
   // Initializes the database.
   virtual void Init(InitCallback callback) = 0;
 

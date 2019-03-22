@@ -17,20 +17,14 @@ namespace notifications {
 // The icon can be a large chunk of memory so should be used in caution. The
 // format of the data is the same as the format in the protobuffer, and may need
 // to be converted to bitmap when used by the UI.
-class IconEntry {
- public:
+struct IconEntry {
   using IconData = std::string;
-  IconEntry(const std::string& uuid, IconData data);
 
-  const std::string& uuid() const { return uuid_; }
-  const IconData& data() const { return data_; }
-  IconData release_data() { return std::move(data_); }
+  // Unique identifier for the icon database entry.
+  std::string uuid;
 
- private:
-  const std::string uuid_;
-  IconData data_;
-
-  DISALLOW_COPY_AND_ASSIGN(IconEntry);
+  // Raw data of the icon.
+  IconData data;
 };
 
 }  // namespace notifications

@@ -19,27 +19,26 @@ TEST(ProtoConversionTest, IconProtoToEntry) {
   IconProto proto;
   proto.set_uuid(kUuid);
   proto.set_icon(kData);
-  auto entry = IconProtoToEntry(proto);
+  IconEntry entry;
+
+  IconProtoToEntry(proto, &entry);
 
   // Verify entry data.
-  DCHECK(entry);
-  EXPECT_EQ(entry->uuid(), kUuid);
-  EXPECT_EQ(entry->data(), kData);
-
-  // The data in proto should be moved to entry.
-  EXPECT_TRUE(proto.icon().empty());
+  EXPECT_EQ(entry.uuid, kUuid);
+  EXPECT_EQ(entry.data, kData);
 }
 
 TEST(ProtoConversionTest, IconEntryToProto) {
-  IconEntry entry(kUuid, kData);
-  auto proto = IconEntryToProto(entry);
+  IconEntry entry;
+  entry.data = kData;
+  entry.uuid = kUuid;
+  IconProto proto;
+
+  IconEntryToProto(entry, &proto);
 
   // Verify proto data.
   EXPECT_EQ(proto.icon(), kData);
   EXPECT_EQ(proto.uuid(), kUuid);
-
-  // Icon data in entry is copied to the protobuffer.
-  EXPECT_EQ(entry.data(), kData);
 }
 
 }  // namespace
