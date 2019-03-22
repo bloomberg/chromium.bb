@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include <math.h>
 
+#include <math.h>
 #include <algorithm>
 #include <limits>
 #include <set>
@@ -35,6 +35,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
+#include "content/browser/indexed_db/transaction_impl.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -269,6 +270,11 @@ class IndexedDBDatabase::OpenRequest
         std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()),
         blink::mojom::IDBTransactionMode::VersionChange,
         new IndexedDBBackingStore::Transaction(db_->backing_store()));
+
+    // Create transaction binding.
+    std::move(pending_->create_transaction_callback)
+        .Run(transaction->AsWeakPtr());
+
     transaction->ScheduleTask(
         base::BindOnce(&IndexedDBDatabase::VersionChangeOperation, db_,
                        pending_->version, pending_->callbacks));

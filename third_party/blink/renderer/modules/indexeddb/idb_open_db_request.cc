@@ -41,23 +41,28 @@ namespace blink {
 IDBOpenDBRequest* IDBOpenDBRequest::Create(
     ScriptState* script_state,
     IDBDatabaseCallbacks* callbacks,
+    std::unique_ptr<WebIDBTransaction> transaction_backend,
     int64_t transaction_id,
     int64_t version,
     IDBRequest::AsyncTraceState metrics) {
   return MakeGarbageCollected<IDBOpenDBRequest>(
-      script_state, callbacks, transaction_id, version, std::move(metrics));
+      script_state, callbacks, std::move(transaction_backend), transaction_id,
+      version, std::move(metrics));
 }
 
-IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* script_state,
-                                   IDBDatabaseCallbacks* callbacks,
-                                   int64_t transaction_id,
-                                   int64_t version,
-                                   IDBRequest::AsyncTraceState metrics)
+IDBOpenDBRequest::IDBOpenDBRequest(
+    ScriptState* script_state,
+    IDBDatabaseCallbacks* callbacks,
+    std::unique_ptr<WebIDBTransaction> transaction_backend,
+    int64_t transaction_id,
+    int64_t version,
+    IDBRequest::AsyncTraceState metrics)
     : IDBRequest(script_state,
                  IDBRequest::Source(),
                  nullptr,
                  std::move(metrics)),
       database_callbacks_(callbacks),
+      transaction_backend_(std::move(transaction_backend)),
       transaction_id_(transaction_id),
       version_(version) {
   DCHECK(!ResultAsAny());
@@ -119,8 +124,8 @@ void IDBOpenDBRequest::EnqueueUpgradeNeeded(
       metadata.name, metadata.id, old_version, metadata.max_object_store_id);
 
   transaction_ = IDBTransaction::CreateVersionChange(
-      GetExecutionContext(), transaction_id_, idb_database, this,
-      old_database_metadata);
+      GetExecutionContext(), std::move(transaction_backend_), transaction_id_,
+      idb_database, this, old_database_metadata);
   SetResult(IDBAny::Create(idb_database));
 
   if (version_ == IDBDatabaseMetadata::kNoVersion)

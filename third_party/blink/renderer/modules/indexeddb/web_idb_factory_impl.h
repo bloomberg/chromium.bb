@@ -31,6 +31,7 @@ class WebIDBFactoryImpl : public WebIDBFactory {
   void Open(
       const WTF::String& name,
       int64_t version,
+      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
       int64_t transaction_id,
       std::unique_ptr<WebIDBCallbacks> callbacks,
       std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) override;

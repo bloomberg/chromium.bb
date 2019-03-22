@@ -287,18 +287,21 @@ interface IDBCursor {
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
-interface IDBDatabase {
-  CreateObjectStore(int64 transaction_id,
-                    int64 object_store_id,
+interface IDBTransaction {
+  CreateObjectStore(int64 object_store_id,
                     mojo_base.mojom.String16 name,
                     IDBKeyPath key_path,
                     bool auto_increment);
+};
+
+interface IDBDatabase {
   DeleteObjectStore(int64 transaction_id,
                     int64 object_store_id);
   RenameObjectStore(int64 transaction_id,
                     int64 object_store_id,
                     mojo_base.mojom.String16 new_name);
-  CreateTransaction(int64 transaction_id,
+  CreateTransaction(associated IDBTransaction& transaction_request,
+                    int64 transaction_id,
                     array<int64> object_store_ids,
                     IDBTransactionMode mode);
   Close();
@@ -389,6 +392,7 @@ interface IDBFactory {
        associated IDBDatabaseCallbacks database_callbacks,
        mojo_base.mojom.String16 name,
        int64 version,
+       associated IDBTransaction& version_change_transaction_request,
        int64 transaction_id);
   DeleteDatabase(associated IDBCallbacks callbacks,
                  mojo_base.mojom.String16 name, bool force_close);

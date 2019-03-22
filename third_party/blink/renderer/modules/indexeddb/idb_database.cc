@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -299,8 +300,8 @@ IDBObjectStore* IDBDatabase::createObjectStore(
 
   int64_t object_store_id = metadata_.max_object_store_id + 1;
   DCHECK_NE(object_store_id, IDBObjectStoreMetadata::kInvalidId);
-  backend_->CreateObjectStore(version_change_transaction_->Id(),
-                              object_store_id, name, key_path, auto_increment);
+  version_change_transaction_->transaction_backend()->CreateObjectStore(
+      object_store_id, name, key_path, auto_increment);
 
   scoped_refptr<IDBObjectStoreMetadata> store_metadata =
       base::AdoptRef(new IDBObjectStoreMetadata(
@@ -414,11 +415,17 @@ IDBTransaction* IDBDatabase::transaction(
     return nullptr;
   }
 
+  // TODO(cmp): Delete |transaction_id| once all users are removed.
   int64_t transaction_id = NextTransactionId();
-  backend_->CreateTransaction(transaction_id, object_store_ids, mode);
+  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kDatabaseAccess));
+  backend_->CreateTransaction(transaction_backend->CreateRequest(),
+                              transaction_id, object_store_ids, mode);
 
-  return IDBTransaction::CreateNonVersionChange(script_state, transaction_id,
-                                                scope, mode, this);
+  return IDBTransaction::CreateNonVersionChange(
+      script_state, std::move(transaction_backend), transaction_id, scope, mode,
+      this);
 }
 
 void IDBDatabase::ForceClose() {

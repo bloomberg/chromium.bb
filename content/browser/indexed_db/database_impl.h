@@ -38,19 +38,16 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
   ~DatabaseImpl() override;
 
   // blink::mojom::IDBDatabase implementation
-  void CreateObjectStore(int64_t transaction_id,
-                         int64_t object_store_id,
-                         const base::string16& name,
-                         const blink::IndexedDBKeyPath& key_path,
-                         bool auto_increment) override;
   void DeleteObjectStore(int64_t transaction_id,
                          int64_t object_store_id) override;
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const base::string16& new_name) override;
-  void CreateTransaction(int64_t transaction_id,
-                         const std::vector<int64_t>& object_store_ids,
-                         blink::mojom::IDBTransactionMode mode) override;
+  void CreateTransaction(
+      blink::mojom::IDBTransactionAssociatedRequest transaction_request,
+      int64_t transaction_id,
+      const std::vector<int64_t>& object_store_ids,
+      blink::mojom::IDBTransactionMode mode) override;
   void Close() override;
   void VersionChangeIgnored() override;
   void AddObserver(int64_t transaction_id,

@@ -19,6 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/transaction_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -108,6 +109,13 @@ void IndexedDBDispatcherHost::RemoveCursorBinding(mojo::BindingId binding_id) {
   cursor_bindings_.RemoveBinding(binding_id);
 }
 
+void IndexedDBDispatcherHost::AddTransactionBinding(
+    std::unique_ptr<blink::mojom::IDBTransaction> transaction,
+    blink::mojom::IDBTransactionAssociatedRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  transaction_bindings_.AddBinding(std::move(transaction), std::move(request));
+}
+
 void IndexedDBDispatcherHost::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
@@ -153,6 +161,7 @@ void IndexedDBDispatcherHost::Open(
     blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo database_callbacks_info,
     const base::string16& name,
     int64_t version,
+    blink::mojom::IDBTransactionAssociatedRequest transaction_request,
     int64_t transaction_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -166,12 +175,15 @@ void IndexedDBDispatcherHost::Open(
                                      IDBTaskRunner()));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
-  // created) if this origin is already over quota.
+  auto create_transaction_callback = base::BindOnce(
+      &IndexedDBDispatcherHost::CreateAndBindTransactionImpl, AsWeakPtr(),
+      std::move(transaction_request), context.origin);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       std::make_unique<IndexedDBPendingConnection>(
           std::move(callbacks), std::move(database_callbacks), ipc_process_id_,
-          transaction_id, version);
+          transaction_id, version, std::move(create_transaction_callback));
+  // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
+  // created) if this origin is already over quota.
   indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),
                                              context.origin, indexed_db_path);
 }
@@ -213,11 +225,23 @@ void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
       std::move(callback_on_io), context.origin);
 }
 
+void IndexedDBDispatcherHost::CreateAndBindTransactionImpl(
+    blink::mojom::IDBTransactionAssociatedRequest transaction_request,
+    const url::Origin& origin,
+    base::WeakPtr<IndexedDBTransaction> transaction) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto transaction_impl = std::make_unique<TransactionImpl>(
+      transaction, origin, this->AsWeakPtr(), IDBTaskRunner());
+  AddTransactionBinding(std::move(transaction_impl),
+                        std::move(transaction_request));
+}
+
 void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_factory_.InvalidateWeakPtrs();
   cursor_bindings_.CloseAllBindings();
   database_bindings_.CloseAllBindings();
+  transaction_bindings_.CloseAllBindings();
 }
 
 base::SequencedTaskRunner* IndexedDBDispatcherHost::IDBTaskRunner() const {

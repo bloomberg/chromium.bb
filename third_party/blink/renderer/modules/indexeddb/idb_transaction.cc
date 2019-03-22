@@ -48,6 +48,7 @@ namespace blink {
 
 IDBTransaction* IDBTransaction::CreateNonVersionChange(
     ScriptState* script_state,
+    std::unique_ptr<WebIDBTransaction> transaction_backend,
     int64_t id,
     const HashSet<String>& scope,
     mojom::IDBTransactionMode mode,
@@ -55,26 +56,31 @@ IDBTransaction* IDBTransaction::CreateNonVersionChange(
   DCHECK_NE(mode, mojom::IDBTransactionMode::VersionChange);
   DCHECK(!scope.IsEmpty()) << "Non-version transactions should operate on a "
                               "well-defined set of stores";
-  return MakeGarbageCollected<IDBTransaction>(script_state, id, scope, mode,
-                                              db);
+  return MakeGarbageCollected<IDBTransaction>(
+      script_state, std::move(transaction_backend), id, scope, mode, db);
 }
 
 IDBTransaction* IDBTransaction::CreateVersionChange(
     ExecutionContext* execution_context,
+    std::unique_ptr<WebIDBTransaction> transaction_backend,
     int64_t id,
     IDBDatabase* db,
     IDBOpenDBRequest* open_db_request,
     const IDBDatabaseMetadata& old_metadata) {
-  return MakeGarbageCollected<IDBTransaction>(execution_context, id, db,
-                                              open_db_request, old_metadata);
+  return MakeGarbageCollected<IDBTransaction>(
+      execution_context, std::move(transaction_backend), id, db,
+      open_db_request, old_metadata);
 }
 
-IDBTransaction::IDBTransaction(ScriptState* script_state,
-                               int64_t id,
-                               const HashSet<String>& scope,
-                               mojom::IDBTransactionMode mode,
-                               IDBDatabase* db)
+IDBTransaction::IDBTransaction(
+    ScriptState* script_state,
+    std::unique_ptr<WebIDBTransaction> transaction_backend,
+    int64_t id,
+    const HashSet<String>& scope,
+    mojom::IDBTransactionMode mode,
+    IDBDatabase* db)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+      transaction_backend_(std::move(transaction_backend)),
       id_(id),
       database_(db),
       mode_(mode),
@@ -96,12 +102,15 @@ IDBTransaction::IDBTransaction(ScriptState* script_state,
   database_->TransactionCreated(this);
 }
 
-IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
-                               int64_t id,
-                               IDBDatabase* db,
-                               IDBOpenDBRequest* open_db_request,
-                               const IDBDatabaseMetadata& old_metadata)
+IDBTransaction::IDBTransaction(
+    ExecutionContext* execution_context,
+    std::unique_ptr<WebIDBTransaction> transaction_backend,
+    int64_t id,
+    IDBDatabase* db,
+    IDBOpenDBRequest* open_db_request,
+    const IDBDatabaseMetadata& old_metadata)
     : ContextLifecycleObserver(execution_context),
+      transaction_backend_(std::move(transaction_backend)),
       id_(id),
       database_(db),
       open_db_request_(open_db_request),

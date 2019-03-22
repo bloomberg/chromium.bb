@@ -26,19 +26,16 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   ~WebIDBDatabaseImpl() override;
 
   // WebIDBDatabase
-  void CreateObjectStore(int64_t transaction_id,
-                         int64_t objectstore_id,
-                         const String& name,
-                         const IDBKeyPath&,
-                         bool auto_increment) override;
   void DeleteObjectStore(int64_t transaction_id,
                          int64_t object_store_id) override;
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const String& new_name) override;
-  void CreateTransaction(int64_t transaction_id,
-                         const Vector<int64_t>& scope,
-                         mojom::IDBTransactionMode mode) override;
+  void CreateTransaction(
+      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      int64_t transaction_id,
+      const Vector<int64_t>& scope,
+      mojom::IDBTransactionMode mode) override;
 
   void Close() override;
   void VersionChangeIgnored() override;

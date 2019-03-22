@@ -24,15 +24,6 @@ WebIDBDatabaseImpl::WebIDBDatabaseImpl(
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
 
-void WebIDBDatabaseImpl::CreateObjectStore(int64_t transaction_id,
-                                           int64_t object_store_id,
-                                           const String& name,
-                                           const IDBKeyPath& key_path,
-                                           bool auto_increment) {
-  database_->CreateObjectStore(transaction_id, object_store_id, name, key_path,
-                               auto_increment);
-}
-
 void WebIDBDatabaseImpl::DeleteObjectStore(int64_t transaction_id,
                                            int64_t object_store_id) {
   database_->DeleteObjectStore(transaction_id, object_store_id);
@@ -45,10 +36,12 @@ void WebIDBDatabaseImpl::RenameObjectStore(int64_t transaction_id,
 }
 
 void WebIDBDatabaseImpl::CreateTransaction(
+    mojom::blink::IDBTransactionAssociatedRequest transaction_request,
     int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode) {
-  database_->CreateTransaction(transaction_id, object_store_ids, mode);
+  database_->CreateTransaction(std::move(transaction_request), transaction_id,
+                               object_store_ids, mode);
 }
 
 void WebIDBDatabaseImpl::Close() {

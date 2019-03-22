@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -317,9 +318,15 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   IDBDatabaseCallbacks* database_callbacks = IDBDatabaseCallbacks::Create();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
-  IDBOpenDBRequest* request =
-      IDBOpenDBRequest::Create(script_state, database_callbacks, transaction_id,
-                               version, std::move(metrics));
+
+  auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kDatabaseAccess));
+  mojom::blink::IDBTransactionAssociatedRequest transaction_request =
+      transaction_backend->CreateRequest();
+  IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
+      script_state, database_callbacks, std::move(transaction_backend),
+      transaction_id, version, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state))) {
@@ -334,7 +341,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->Open(name, version, transaction_id, request->CreateWebCallbacks(),
+  factory->Open(name, version, std::move(transaction_request), transaction_id,
+                request->CreateWebCallbacks(),
                 database_callbacks->CreateWebCallbacks());
   return request;
 }
@@ -385,8 +393,8 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
   }
 
   IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-      script_state, nullptr, 0, IDBDatabaseMetadata::kDefaultVersion,
-      std::move(metrics));
+      script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
+      IDBDatabaseMetadata::kDefaultVersion, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state))) {
