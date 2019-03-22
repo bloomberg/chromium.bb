@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
 
@@ -16,8 +17,8 @@ namespace viz {
 
 class SkiaOutputDevice {
  public:
-  SkiaOutputDevice() = default;
-  virtual ~SkiaOutputDevice() = default;
+  SkiaOutputDevice();
+  virtual ~SkiaOutputDevice();
 
   // SkSurface that can be drawn to.
   virtual sk_sp<SkSurface> DrawSurface() = 0;
@@ -27,6 +28,10 @@ class SkiaOutputDevice {
 
   // Presents DrawSurface.
   virtual gfx::SwapResult SwapBuffers() = 0;
+
+  virtual bool SupportPostSubBuffer();
+
+  virtual gfx::SwapResult PostSubBuffer(const gfx::Rect& rect);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDevice);

@@ -32,22 +32,36 @@ SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
 
 void SkiaOutputDeviceX11::Reshape(const gfx::Size& size) {
   SkiaOutputDeviceOffscreen::Reshape(size);
-  sk_bitmap_.allocN32Pixels(size.width(), size.height());
+  auto ii =
+      SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
+  pixels_.reserve(ii.computeMinByteSize());
 }
 
 gfx::SwapResult SkiaOutputDeviceX11::SwapBuffers() {
-  gfx::Rect rect(0, 0, draw_surface_->width(), draw_surface_->height());
+  return PostSubBuffer(
+      gfx::Rect(0, 0, draw_surface_->width(), draw_surface_->height()));
+}
 
-  bool result = draw_surface_->readPixels(sk_bitmap_, 0, 0);
+bool SkiaOutputDeviceX11::SupportPostSubBuffer() {
+  return true;
+}
+
+gfx::SwapResult SkiaOutputDeviceX11::PostSubBuffer(const gfx::Rect& rect) {
+  auto ii =
+      SkImageInfo::MakeN32(rect.width(), rect.height(), kOpaque_SkAlphaType);
+  DCHECK_GE(pixels_.capacity(), ii.computeMinByteSize());
+  SkPixmap sk_pixmap(ii, pixels_.data(), ii.minRowBytes());
+  bool result = draw_surface_->readPixels(sk_pixmap, rect.x(), rect.y());
   LOG_IF(FATAL, !result) << "Failed to read pixels from offscreen SkSurface.";
 
   if (bpp_ == 32 || bpp_ == 16) {
     // gfx::PutARGBImage() only supports 16 and 32 bpp.
     // TODO(penghuang): Switch to XShmPutImage.
     gfx::PutARGBImage(display_, attributes_.visual, attributes_.depth, widget_,
-                      gc_, static_cast<const uint8_t*>(sk_bitmap_.getPixels()),
-                      rect.width(), rect.height(), rect.x(), rect.y(), rect.x(),
-                      rect.y(), rect.width(), rect.height());
+                      gc_, static_cast<const uint8_t*>(sk_pixmap.addr()),
+                      rect.width(), rect.height(), 0 /* src_x */, 0 /* src_y */,
+                      rect.x() /* dst_x */, rect.y() /* dst_y */, rect.width(),
+                      rect.height());
   } else if (support_rendr_) {
     Pixmap pixmap =
         XCreatePixmap(display_, widget_, rect.width(), rect.height(), 32);
@@ -62,15 +76,14 @@ gfx::SwapResult SkiaOutputDeviceX11::SwapBuffers() {
     image.byte_order = LSBFirst;
     image.bitmap_unit = 8;
     image.bitmap_bit_order = LSBFirst;
-    image.bytes_per_line = sk_bitmap_.rowBytes();
-    image.red_mask = 0xff;
-    image.green_mask = 0xff00;
-    image.blue_mask = 0xff0000;
-    image.data =
-        const_cast<char*>(static_cast<const char*>(sk_bitmap_.getPixels()));
-    XPutImage(display_, pixmap, gc, &image, rect.x(),
-              rect.y() /* source x, y */, 0, 0 /* dest x, y */, rect.width(),
-              rect.height());
+    image.bytes_per_line = sk_pixmap.rowBytes();
+
+    image.red_mask = 0xff << SK_R32_SHIFT;
+    image.green_mask = 0xff << SK_G32_SHIFT;
+    image.blue_mask = 0xff << SK_B32_SHIFT;
+    image.data = const_cast<char*>(static_cast<const char*>(sk_pixmap.addr()));
+    XPutImage(display_, pixmap, gc, &image, 0 /* src_x */, 0 /* src_y */,
+              0 /* dest_x */, 0 /* dest_y */, rect.width(), rect.height());
     XFreeGC(display_, gc);
 
     Picture picture = XRenderCreatePicture(

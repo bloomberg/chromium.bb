@@ -5,22 +5,25 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_X11_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_X11_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace viz {
 
-class SkiaOutputDeviceX11 : public SkiaOutputDeviceOffscreen {
+class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
  public:
   SkiaOutputDeviceX11(GrContext* gr_context, gfx::AcceleratedWidget widget);
   ~SkiaOutputDeviceX11() override;
 
   void Reshape(const gfx::Size& size) override;
   gfx::SwapResult SwapBuffers() override;
+  bool SupportPostSubBuffer() override;
+  gfx::SwapResult PostSubBuffer(const gfx::Rect& rect) override;
 
  private:
   XDisplay* const display_;
@@ -29,7 +32,7 @@ class SkiaOutputDeviceX11 : public SkiaOutputDeviceOffscreen {
   XWindowAttributes attributes_;
   int bpp_;
   bool support_rendr_;
-  SkBitmap sk_bitmap_;
+  std::vector<char> pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceX11);
 };

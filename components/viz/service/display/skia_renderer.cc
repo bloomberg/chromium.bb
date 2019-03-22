@@ -241,6 +241,9 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 SkiaRenderer::~SkiaRenderer() = default;
 
 bool SkiaRenderer::CanPartialSwap() {
+  if (draw_mode_ == DrawMode::DDL)
+    return output_surface_->capabilities().supports_post_sub_buffer;
+
   if (draw_mode_ != DrawMode::SKPRECORD)
     return false;
 

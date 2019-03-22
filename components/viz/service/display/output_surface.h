@@ -48,6 +48,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // Note: HasExternalStencilTest() must return false when an output surface
     // has been configured for stencil usage.
     bool supports_stencil = false;
+    // Whether this OutputSurface suppotrs post sub buffer or not.
+    bool supports_post_sub_buffer = false;
   };
 
   // Constructor for skia-based compositing.

@@ -65,7 +65,6 @@ gfx::SwapResult SkiaOutputDeviceVulkan::SwapBuffers() {
 }
 
 void SkiaOutputDeviceVulkan::CreateVulkanSurface() {
-  LOG(ERROR) << "CreateVulkanSurface";
   gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
 #if defined(OS_ANDROID)
   accelerated_widget =
