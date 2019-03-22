@@ -783,24 +783,14 @@ void DownloadManagerService::RenameDownload(
     const JavaParamRef<jobject>& j_callback,
     bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(id);
-  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
-  if (!manager) {
+  download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
+  if (!item) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &RenameItemCallback,
             base::android::ScopedJavaGlobalRef<jobject>(env, j_callback),
-            download::DownloadItem::DownloadRenameResult::FAILURE_UNKNOWN));
-    return;
-  }
-  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
-  if (!item) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&RenameItemCallback,
-                                  base::android::ScopedJavaGlobalRef<jobject>(
-                                      env, j_callback),
-                                  download::DownloadItem::DownloadRenameResult::
-                                      FAILURE_NAME_UNAVIALABLE));
+            download::DownloadItem::DownloadRenameResult::FAILURE_UNAVAILABLE));
 
     return;
   }
@@ -809,7 +799,7 @@ void DownloadManagerService::RenameDownload(
       callback = base::BindOnce(
           &RenameItemCallback,
           base::android::ScopedJavaGlobalRef<jobject>(env, j_callback));
-  item->Rename(target_name, std::move(callback));
+  item->Rename(base::FilePath(target_name), std::move(callback));
 }
 
 void DownloadManagerService::CreateInterruptedDownloadForTest(

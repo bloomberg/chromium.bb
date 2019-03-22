@@ -59,7 +59,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadCollectionBridge {
   // Renames a content URI download to |new_display_name|. Returns true on
   // success, and false otherwise.
   // Called on non UI thread.
-  static bool renameDownloadUri(const base::FilePath& download_uri,
+  static bool RenameDownloadUri(const base::FilePath& download_uri,
                                 const base::FilePath& new_display_name);
 
   // Whether download display names needs to be retrieved.

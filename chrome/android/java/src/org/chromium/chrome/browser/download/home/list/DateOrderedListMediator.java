@@ -340,7 +340,7 @@ class DateOrderedListMediator {
     }
 
     private void onRenameItem(OfflineItem item) {
-        // TODO(hesen): Add sanity check canRename for item, and add uma stats.
+        // TODO(hesen): Add uma stats.
         mRenameController.rename(item.title, (newName, renameCallback) -> {
             mProvider.renameItem(item, newName, renameCallback);
         });

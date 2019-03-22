@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/image_thumbnail_request.h"
@@ -123,7 +124,6 @@ void DownloadOfflineContentProvider::GetAllItems(
   for (auto* item : all_items) {
     if (!ShouldShowDownloadItem(item))
       continue;
-
     items.push_back(OfflineItemUtils::CreateOfflineItem(name_space_, item));
   }
 
@@ -173,8 +173,8 @@ void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
   DownloadItem* item = GetDownload(id.id);
   if (!item) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  RenameResult::FAILURE_NAME_UNAVIALABLE));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), RenameResult::FAILURE_UNAVAILABLE));
     return;
   }
   download::DownloadItem::RenameDownloadCallback download_callback =
@@ -186,7 +186,13 @@ void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
                     result));
           },
           std::move(callback));
-  item->Rename(name, std::move(download_callback));
+  base::FilePath::StringType filename;
+#if defined(OS_WIN)
+  filename = base::UTF8ToWide(name);
+#else
+  filename = name;
+#endif
+  item->Rename(base::FilePath(filename), std::move(download_callback));
 }
 
 void DownloadOfflineContentProvider::AddObserver(

@@ -91,8 +91,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
     SUCCESS = 0,
     FAILURE_NAME_CONFLICT = 1,
     FAILURE_NAME_TOO_LONG = 2,
-    FAILURE_NAME_UNAVIALABLE = 3,
-    FAILURE_UNKNOWN = 4,
+    FAILURE_NAME_INVALID = 3,
+    FAILURE_UNAVAILABLE = 4,
+    FAILURE_UNKNOWN = 5,
     RESULT_MAX = FAILURE_UNKNOWN
   };
 
@@ -192,9 +193,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Show the download via the OS shell.
   virtual void ShowDownloadInShell() = 0;
 
-  // Rename a downloaded item to |name|, implementer should post and reply the
-  // result.
-  virtual void Rename(const std::string& name,
+  // Rename a downloaded item to |new_name|, implementer should post and reply
+  // the result. Do not pass the full file path, just pass the file name portion
+  // instead.
+  virtual void Rename(const base::FilePath& new_name,
                       RenameDownloadCallback callback) = 0;
 
   // State accessors -----------------------------------------------------------
