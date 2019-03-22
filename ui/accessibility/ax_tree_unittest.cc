@@ -1395,6 +1395,50 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
   EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
 }
 
+TEST(AXTreeTest, TestRecursionUnignoredChildCount) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[1].child_ids = {4};
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].child_ids = {5};
+  tree_update.nodes[3].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[4].id = 5;
+  AXTree tree(tree_update);
+
+  AXNode* root = tree.root();
+  EXPECT_EQ(2, root->child_count());
+  EXPECT_EQ(1, root->GetUnignoredChildCount());
+  EXPECT_EQ(5, root->GetUnignoredChildAtIndex(0)->id());
+  AXNode* unignored = tree.GetFromId(5);
+  EXPECT_EQ(0, unignored->GetUnignoredChildCount());
+}
+
+TEST(AXTreeTest, NullUnignoredChildren) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].AddState(ax::mojom::State::kIgnored);
+  AXTree tree(tree_update);
+
+  AXNode* root = tree.root();
+  EXPECT_EQ(2, root->child_count());
+  EXPECT_EQ(0, root->GetUnignoredChildCount());
+  EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(0));
+  EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(1));
+}
+
 TEST(AXTreeTest, ChildTreeIds) {
   ui::AXTreeID tree_id_1 = ui::AXTreeID::CreateNewAXTreeID();
   ui::AXTreeID tree_id_2 = ui::AXTreeID::CreateNewAXTreeID();
