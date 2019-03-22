@@ -128,9 +128,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
     if (base::WriteFile(mojo_channel_mac_signal_file, &data, 1) != 1) {
       LOG(ERROR) << "Failed to write MojoChannelMac signal file.";
     }
-
-    // Also create the UNIX domain socket acceptor, so that app shims that for
-    // some reason fail to pick up the signal file still work.
+    return;
   } else {
     base::DeleteFile(mojo_channel_mac_signal_file, false);
   }
