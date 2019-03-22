@@ -77,15 +77,10 @@ class CrosUsbNotificationDelegate
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override {
     disposition_ = CrosUsbNotificationClosed::kUnknown;
-    if (button_index) {
-      switch (button_index.value()) {
-        case 0:
-          HandleConnectToVm();
-          break;
-        case 1:
-          HandleShowSettings();
-          break;
-      }
+    if (button_index && button_index.value() == 0) {
+      HandleConnectToVm();
+    } else {
+      HandleShowSettings();
     }
   }
 
@@ -159,9 +154,6 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
   rich_notification_data.buttons.emplace_back(
       message_center::ButtonInfo(l10n_util::GetStringUTF16(
           IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_LINUX)));
-  rich_notification_data.buttons.emplace_back(
-      message_center::ButtonInfo(l10n_util::GetStringUTF16(
-          IDS_CROSUSB_NOTIFICATION_BUTTON_VIEW_SETTINGS)));
 
   std::string notification_id =
       CrosUsbDetector::MakeNotificationId(device_info->guid);

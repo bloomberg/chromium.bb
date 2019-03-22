@@ -8869,16 +8869,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <if expr="chromeos">
       <!-- CrOSUsb Notification -->
       <message name="IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION" desc="Content for notification shown to the user when a USB device gets plugged in.">
-        Connect <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> to Linux
+        Open Settings to connect <ph name="USB_DEVICE_NAME">$1<ex>Nexus 5</ex></ph> to Linux
       </message>
       <message name="IDS_CROSUSB_DEVICE_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a USB device gets plugged in.">
         USB device detected
       </message>
       <message name="IDS_CROSUSB_NOTIFICATION_BUTTON_CONNECT_TO_LINUX" desc="Label for notification button shown to the user when a USB device gets plugged in to allowed Linux to use the device">
         Connect
-      </message>
-      <message name="IDS_CROSUSB_NOTIFICATION_BUTTON_VIEW_SETTINGS" desc="Label for notification button shown to the user when a USB device gets plugged in to view settings in the Settings app">
-        View Settings
       </message>
       <message name="IDS_CROSUSB_UNKNOWN_DEVICE_FROM_MANUFACTURER" desc="String describing an unknown device in notification shown when a USB device gets plugged in.">
         USB device from <ph name="MANUFACTURER_NAME">$1<ex>Google</ex></ph>
