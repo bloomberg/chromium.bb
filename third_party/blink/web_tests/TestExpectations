@@ -238,8 +238,6 @@ Bug(none) virtual/composite-after-paint/paint/filters/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
-crbug.com/945034 virtual/layout_ng_experimental/printing/composited-thead-tfoot-repeat.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
@@ -1458,6 +1456,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/unbreakable-tall-f
 crbug.com/591099 virtual/layout_ng_experimental/printing/absolute-positioned.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/absolute-position-headers-and-footers.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/allowed-page-breaks.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/printing/composited-thead-tfoot-repeat.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/css2.1/page-break-after-000.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/css2.1/page-break-after-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/css2.1/page-break-after-003.html [ Failure ]
