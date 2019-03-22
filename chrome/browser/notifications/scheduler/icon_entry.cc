@@ -8,7 +8,4 @@
 
 namespace notifications {
 
-IconEntry::IconEntry(const std::string& uuid, IconData data)
-    : uuid_(uuid), data_(std::move(data)) {}
-
 }  // namespace notifications

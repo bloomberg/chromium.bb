@@ -14,10 +14,12 @@
 namespace notifications {
 
 // Converts an icon entry to icon proto.
-proto::Icon IconEntryToProto(const IconEntry& entry);
+void IconEntryToProto(const IconEntry& entry,
+                      notifications::proto::Icon* proto);
 
 // Converts an icon proto to icon entry.
-std::unique_ptr<IconEntry> IconProtoToEntry(proto::Icon& proto);
+void IconProtoToEntry(const proto::Icon& proto,
+                      notifications::IconEntry* entry);
 
 }  // namespace notifications
 
