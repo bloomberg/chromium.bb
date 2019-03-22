@@ -8,6 +8,11 @@ mojom("mojo") {
   sources = [
     "ime_types.mojom",
   ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//ui/gfx/range/mojo",
+  ]
 }
 
 mojom("test_interfaces") {

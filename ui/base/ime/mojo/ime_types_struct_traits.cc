@@ -4,6 +4,9 @@
 
 #include "ui/base/ime/mojo/ime_types_struct_traits.h"
 
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "ui/gfx/range/mojo/range_struct_traits.h"
+
 namespace mojo {
 
 #define UI_TO_MOJO_TYPE_CASE(name) \
@@ -132,6 +135,156 @@ bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
       *out = ui::TEXT_INPUT_MODE_SEARCH;
       return true;
   }
+  return false;
+}
+
+// static
+bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
+    ui::mojom::ImeTextSpanDataView data,
+    ui::ImeTextSpan* out) {
+  if (data.is_null())
+    return false;
+  if (!data.ReadType(&out->type))
+    return false;
+  out->start_offset = data.start_offset();
+  out->end_offset = data.end_offset();
+  out->underline_color = data.underline_color();
+  if (!data.ReadThickness(&out->thickness))
+    return false;
+  out->background_color = data.background_color();
+  out->suggestion_highlight_color = data.suggestion_highlight_color();
+  out->remove_on_finish_composing = data.remove_on_finish_composing();
+  if (!data.ReadSuggestions(&out->suggestions))
+    return false;
+  return true;
+}
+
+// static
+bool StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText>::
+    Read(ui::mojom::CompositionTextDataView data, ui::CompositionText* out) {
+  return !data.is_null() && data.ReadText(&out->text) &&
+         data.ReadImeTextSpans(&out->ime_text_spans) &&
+         data.ReadSelection(&out->selection);
+}
+
+// static
+ui::mojom::FocusReason
+EnumTraits<ui::mojom::FocusReason, ui::TextInputClient::FocusReason>::ToMojom(
+    ui::TextInputClient::FocusReason input) {
+  switch (input) {
+    case ui::TextInputClient::FOCUS_REASON_NONE:
+      return ui::mojom::FocusReason::kNone;
+    case ui::TextInputClient::FOCUS_REASON_MOUSE:
+      return ui::mojom::FocusReason::kMouse;
+    case ui::TextInputClient::FOCUS_REASON_TOUCH:
+      return ui::mojom::FocusReason::kTouch;
+    case ui::TextInputClient::FOCUS_REASON_PEN:
+      return ui::mojom::FocusReason::kPen;
+    case ui::TextInputClient::FOCUS_REASON_OTHER:
+      return ui::mojom::FocusReason::kOther;
+  }
+
+  NOTREACHED();
+  return ui::mojom::FocusReason::kNone;
+}
+
+// static
+bool EnumTraits<ui::mojom::FocusReason, ui::TextInputClient::FocusReason>::
+    FromMojom(ui::mojom::FocusReason input,
+              ui::TextInputClient::FocusReason* out) {
+  switch (input) {
+    case ui::mojom::FocusReason::kNone:
+      *out = ui::TextInputClient::FOCUS_REASON_NONE;
+      return true;
+    case ui::mojom::FocusReason::kMouse:
+      *out = ui::TextInputClient::FOCUS_REASON_MOUSE;
+      return true;
+    case ui::mojom::FocusReason::kTouch:
+      *out = ui::TextInputClient::FOCUS_REASON_TOUCH;
+      return true;
+    case ui::mojom::FocusReason::kPen:
+      *out = ui::TextInputClient::FOCUS_REASON_PEN;
+      return true;
+    case ui::mojom::FocusReason::kOther:
+      *out = ui::TextInputClient::FOCUS_REASON_OTHER;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+ui::mojom::ImeTextSpanType
+EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
+    ui::ImeTextSpan::Type ime_text_span_type) {
+  switch (ime_text_span_type) {
+    case ui::ImeTextSpan::Type::kComposition:
+      return ui::mojom::ImeTextSpanType::kComposition;
+    case ui::ImeTextSpan::Type::kSuggestion:
+      return ui::mojom::ImeTextSpanType::kSuggestion;
+    case ui::ImeTextSpan::Type::kMisspellingSuggestion:
+      return ui::mojom::ImeTextSpanType::kMisspellingSuggestion;
+  }
+
+  NOTREACHED();
+  return ui::mojom::ImeTextSpanType::kComposition;
+}
+
+// static
+bool EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
+    ui::mojom::ImeTextSpanType type,
+    ui::ImeTextSpan::Type* out) {
+  switch (type) {
+    case ui::mojom::ImeTextSpanType::kComposition:
+      *out = ui::ImeTextSpan::Type::kComposition;
+      return true;
+    case ui::mojom::ImeTextSpanType::kSuggestion:
+      *out = ui::ImeTextSpan::Type::kSuggestion;
+      return true;
+    case ui::mojom::ImeTextSpanType::kMisspellingSuggestion:
+      *out = ui::ImeTextSpan::Type::kMisspellingSuggestion;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+ui::mojom::ImeTextSpanThickness EnumTraits<
+    ui::mojom::ImeTextSpanThickness,
+    ui::ImeTextSpan::Thickness>::ToMojom(ui::ImeTextSpan::Thickness thickness) {
+  switch (thickness) {
+    case ui::ImeTextSpan::Thickness::kNone:
+      return ui::mojom::ImeTextSpanThickness::kNone;
+    case ui::ImeTextSpan::Thickness::kThin:
+      return ui::mojom::ImeTextSpanThickness::kThin;
+    case ui::ImeTextSpan::Thickness::kThick:
+      return ui::mojom::ImeTextSpanThickness::kThick;
+  }
+
+  NOTREACHED();
+  return ui::mojom::ImeTextSpanThickness::kThin;
+}
+
+// static
+bool EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness>::
+    FromMojom(ui::mojom::ImeTextSpanThickness input,
+              ui::ImeTextSpan::Thickness* out) {
+  switch (input) {
+    case ui::mojom::ImeTextSpanThickness::kNone:
+      *out = ui::ImeTextSpan::Thickness::kNone;
+      return true;
+    case ui::mojom::ImeTextSpanThickness::kThin:
+      *out = ui::ImeTextSpan::Thickness::kThin;
+      return true;
+    case ui::mojom::ImeTextSpanThickness::kThick:
+      *out = ui::ImeTextSpan::Thickness::kThick;
+      return true;
+  }
+
+  NOTREACHED();
   return false;
 }
 
