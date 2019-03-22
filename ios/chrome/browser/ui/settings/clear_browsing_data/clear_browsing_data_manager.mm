@@ -64,11 +64,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 
 }  // namespace
 
-@interface ClearBrowsingDataManager ()
+@interface ClearBrowsingDataManager () {
+  // Access to the kDeleteTimePeriod preference.
+  IntegerPrefMember _timeRangePref;
+}
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-// Time Period to clear data.
-@property(nonatomic, assign) browsing_data::TimePeriod timePeriod;
 // Whether to show alert about other forms of browsing history.
 @property(nonatomic, assign)
     BOOL shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
@@ -79,13 +80,15 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 // CollectionsViewController.
 @property(nonatomic, assign) ClearBrowsingDataListType listType;
 
+@property(nonatomic, strong)
+    LegacySettingsDetailItem* collectionViewTimeRangeItem;
+
 @end
 
 @implementation ClearBrowsingDataManager
 @synthesize browserState = _browserState;
 @synthesize consumer = _consumer;
 @synthesize linkDelegate = _linkDelegate;
-@synthesize timePeriod = _timePeriod;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 @synthesize shouldPopupDialogAboutOtherFormsOfBrowsingHistory =
@@ -99,17 +102,8 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     _browserState = browserState;
     _listType = listType;
 
-    _timePeriod = browsing_data::TimePeriod::ALL_TIME;
-    if (IsNewClearBrowsingDataUIEnabled()) {
-      constexpr int maxValue =
-          static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST);
-      const int prefValue = browserState->GetPrefs()->GetInteger(
-          browsing_data::prefs::kDeleteTimePeriod);
-
-      if (0 <= prefValue && prefValue <= maxValue) {
-        _timePeriod = static_cast<browsing_data::TimePeriod>(prefValue);
-      }
-    }
+    _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod,
+                        _browserState->GetPrefs());
   }
   return self;
 }
@@ -122,8 +116,13 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
   if (IsNewClearBrowsingDataUIEnabled() &&
       self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
     [model addSectionWithIdentifier:SectionIdentifierTimeRange];
-    [model addItem:[self timeRangeItem]
+    ListItem* timeRangeItem = [self timeRangeItem];
+    [model addItem:timeRangeItem
         toSectionWithIdentifier:SectionIdentifierTimeRange];
+    if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+      self.collectionViewTimeRangeItem =
+          base::mac::ObjCCastStrict<LegacySettingsDetailItem>(timeRangeItem);
+    }
   }
 
   [self addClearBrowsingDataItemsToModel:model];
@@ -208,7 +207,9 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                              (~NSByteCountFormatterUseKB);
     formatter.countStyle = NSByteCountFormatterCountStyleMemory;
     NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
-    return (self.timePeriod == browsing_data::TimePeriod::ALL_TIME)
+    return (!IsNewClearBrowsingDataUIEnabled() ||
+            _timeRangePref.GetValue() ==
+                static_cast<int>(browsing_data::TimePeriod::ALL_TIME))
                ? formattedSize
                : l10n_util::GetNSStringF(
                      IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
@@ -542,8 +543,12 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (void)clearDataForDataTypes:(BrowsingDataRemoveMask)mask {
   DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
 
+  browsing_data::TimePeriod timePeriod =
+      IsNewClearBrowsingDataUIEnabled()
+          ? static_cast<browsing_data::TimePeriod>(_timeRangePref.GetValue())
+          : browsing_data::TimePeriod::ALL_TIME;
   [self.consumer removeBrowsingDataForBrowserState:_browserState
-                                        timePeriod:self.timePeriod
+                                        timePeriod:timePeriod
                                         removeMask:mask
                                    completionBlock:nil];
 
@@ -675,7 +680,10 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (void)timeRangeSelectorViewController:
             (TimeRangeSelectorCollectionViewController*)collectionViewController
                     didSelectTimePeriod:(browsing_data::TimePeriod)timePeriod {
-  self.timePeriod = timePeriod;
+  NSString* detailText = [TimeRangeSelectorCollectionViewController
+      timePeriodLabelForPrefs:self.browserState->GetPrefs()];
+  self.collectionViewTimeRangeItem.detailText = detailText;
+  [self.consumer updateCellsForItem:self.collectionViewTimeRangeItem];
 }
 
 @end
