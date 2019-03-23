@@ -2589,24 +2589,6 @@
             ]
         }
     ],
-    "LocalScreenCasting": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows",
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LocalScreenCasting"
-                    ]
-                }
-            ]
-        }
-    ],
     "LookalikeUrlNavigationSuggestionsUI": [
         {
             "platforms": [
