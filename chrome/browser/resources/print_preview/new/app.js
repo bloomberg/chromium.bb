@@ -273,29 +273,31 @@ Polymer({
    * @private
    */
   onInitialSettingsSet_: function(settings) {
-    this.$.documentInfo.init(
-        settings.previewModifiable, settings.documentTitle,
-        settings.documentHasSelection);
-    this.$.model.setStickySettings(settings.serializedAppStateStr);
-    this.$.model.setPolicySettings(
-        settings.headerFooter, settings.isHeaderFooterManaged);
-    this.measurementSystem_ = new print_preview.MeasurementSystem(
-        settings.thousandsDelimeter, settings.decimalDelimeter,
-        settings.unitType);
-    this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
-    this.isInAppKioskMode_ = settings.isInAppKioskMode;
-    this.$.destinationSettings.initDestinationStore(
-        settings.printerName,
-        settings.serializedDefaultDestinationSelectionRulesStr);
-    this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
+    print_preview.Model.whenReady().then(() => {
+      this.$.documentInfo.init(
+          settings.previewModifiable, settings.documentTitle,
+          settings.documentHasSelection);
+      this.$.model.setStickySettings(settings.serializedAppStateStr);
+      this.$.model.setPolicySettings(
+          settings.headerFooter, settings.isHeaderFooterManaged);
+      this.measurementSystem_ = new print_preview.MeasurementSystem(
+          settings.thousandsDelimeter, settings.decimalDelimeter,
+          settings.unitType);
+      this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
+      this.isInAppKioskMode_ = settings.isInAppKioskMode;
+      this.$.destinationSettings.initDestinationStore(
+          settings.printerName,
+          settings.serializedDefaultDestinationSelectionRulesStr);
+      this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
 
-    // This is only visible in the task manager.
-    let title = document.head.querySelector('title');
-    if (!title) {
-      title = document.createElement('title');
-      document.head.appendChild(title);
-    }
-    title.textContent = settings.documentTitle;
+      // This is only visible in the task manager.
+      let title = document.head.querySelector('title');
+      if (!title) {
+        title = document.createElement('title');
+        document.head.appendChild(title);
+      }
+      title.textContent = settings.documentTitle;
+    });
   },
 
   /**
@@ -308,19 +310,21 @@ Polymer({
    * @private
    */
   onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
-    assert(!this.cloudPrintInterface_);
-    this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
-        cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
-    this.tracker_.add(
-        assert(this.cloudPrintInterface_).getEventTarget(),
-        cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
-        this.close_.bind(this));
-    this.tracker_.add(
-        assert(this.cloudPrintInterface_).getEventTarget(),
-        cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
-        this.onCloudPrintError_.bind(this));
-    this.$.destinationSettings.setCloudPrintInterface(
-        this.cloudPrintInterface_);
+    print_preview.Model.whenReady().then(() => {
+      assert(!this.cloudPrintInterface_);
+      this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
+          cloudPrintUrl, assert(this.nativeLayer_), appKioskMode);
+      this.tracker_.add(
+          assert(this.cloudPrintInterface_).getEventTarget(),
+          cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
+          this.close_.bind(this));
+      this.tracker_.add(
+          assert(this.cloudPrintInterface_).getEventTarget(),
+          cloudprint.CloudPrintInterfaceEventType.SUBMIT_FAILED,
+          this.onCloudPrintError_.bind(this));
+      this.$.destinationSettings.setCloudPrintInterface(
+          this.cloudPrintInterface_);
+    });
   },
 
   /** @private */

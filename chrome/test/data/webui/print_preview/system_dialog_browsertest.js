@@ -47,6 +47,7 @@ cr.define('system_dialog_browsertest', function() {
       linkContainer = page.$$('print-preview-link-container');
       return Promise
           .all([
+            print_preview.Model.whenReady(),
             nativeLayer.whenCalled('getInitialSettings'),
             nativeLayer.whenCalled('getPrinterCapabilities'),
           ])
