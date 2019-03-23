@@ -46,8 +46,7 @@ void DtlsTransportProxy::StartOnHostThread() {
   DCHECK(host_thread_->BelongsToCurrentThread());
   dtls_transport_->RegisterObserver(this);
   PostCrossThreadTask(*proxy_thread_, FROM_HERE,
-                      CrossThreadBind(&Delegate::OnStartCompleted,
-                                      CrossThreadUnretained(delegate_),
+                      CrossThreadBind(&Delegate::OnStartCompleted, delegate_,
                                       dtls_transport_->Information()));
 }
 
@@ -59,9 +58,12 @@ void DtlsTransportProxy::OnStateChange(webrtc::DtlsTransportInformation info) {
   if (info.state() == webrtc::DtlsTransportState::kClosed) {
     dtls_transport_->UnregisterObserver();
   }
-  PostCrossThreadTask(*proxy_thread_, FROM_HERE,
-                      CrossThreadBind(&Delegate::OnStateChange,
-                                      CrossThreadUnretained(delegate_), info));
+  PostCrossThreadTask(
+      *proxy_thread_, FROM_HERE,
+      CrossThreadBind(&Delegate::OnStateChange, delegate_, info));
+  if (info.state() == webrtc::DtlsTransportState::kClosed) {
+    delegate_ = nullptr;
+  }
 }
 
 void DtlsTransportProxy::OnError(webrtc::RTCError error) {
