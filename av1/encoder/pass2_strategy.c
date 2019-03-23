@@ -1466,7 +1466,6 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Save the bits to spend on the key frame.
   gf_group->bit_allocation[0] = kf_bits;
   gf_group->update_type[0] = KF_UPDATE;
-  gf_group->rf_level[0] = KF_STD;
 
   // Note the total error score of the kf group minus the key frame itself.
   twopass->kf_group_error_left = (int)(kf_group_err - kf_mod_err);
@@ -1647,15 +1646,6 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   subtract_stats(&twopass->total_left_stats, &this_frame);
 }
 
-static void setup_rf_level_maxq(AV1_COMP *cpi) {
-  int i;
-  RATE_CONTROL *const rc = &cpi->rc;
-  for (i = INTER_NORMAL; i < RATE_FACTOR_LEVELS; ++i) {
-    int qdelta = av1_frame_type_qdelta(cpi, i, rc->worst_quality);
-    rc->rf_level_maxq[i] = AOMMAX(rc->worst_quality + qdelta, rc->best_quality);
-  }
-}
-
 void av1_init_second_pass(AV1_COMP *cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
@@ -1712,10 +1702,6 @@ void av1_init_second_pass(AV1_COMP *cpi) {
   // Static sequence monitor variables.
   twopass->kf_zeromotion_pct = 100;
   twopass->last_kfgroup_zeromotion_pct = 100;
-
-  if (oxcf->resize_mode != RESIZE_NONE) {
-    setup_rf_level_maxq(cpi);
-  }
 }
 
 #define MINQ_ADJ_LIMIT 48

@@ -45,20 +45,19 @@ extern "C" {
 #define MAX_GF_INTERVAL 16
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
 
-static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
-  1.00,  // INTER_NORMAL
-  0.80,  // INTER_LOW
-  1.50,  // INTER_HIGH
-  1.25,  // GF_ARF_LOW
-  2.00,  // GF_ARF_STD
-  2.00,  // KF_STD
-};
-
 typedef struct {
   int resize_width;
   int resize_height;
   uint8_t superres_denom;
 } size_params_type;
+
+enum {
+  INTER_NORMAL,
+  GF_ARF_LOW,
+  GF_ARF_STD,
+  KF_STD,
+  RATE_FACTOR_LEVELS
+} UENUM1BYTE(RATE_FACTOR_LEVEL);
 
 typedef struct {
   // Rate targetting variables
@@ -140,8 +139,6 @@ typedef struct {
   int q_1_frame;
   int q_2_frame;
 
-  // Auto frame-scaling variables.
-  int rf_level_maxq[RATE_FACTOR_LEVELS];
   float_t arf_boost_factor;
   // Q index used for ALT frame
   int arf_q;
@@ -255,7 +252,7 @@ int av1_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
                                int qindex, double rate_target_ratio,
                                aom_bit_depth_t bit_depth);
 
-int av1_frame_type_qdelta(const struct AV1_COMP *cpi, int rf_level, int q);
+int av1_frame_type_qdelta(const struct AV1_COMP *cpi, int q);
 
 void av1_rc_update_framerate(struct AV1_COMP *cpi, int width, int height);
 

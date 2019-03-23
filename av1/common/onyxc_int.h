@@ -109,18 +109,6 @@ typedef struct {
   MV_REFERENCE_FRAME ref_frame;
 } MV_REF;
 
-// FIXME(jack.haughton@argondesign.com): This enum was originally in
-// encoder/ratectrl.h, and is encoder specific. When we move to C++, this
-// should go back there and BufferPool should be templatized.
-enum {
-  INTER_NORMAL = 0,
-  INTER_LOW = 1,
-  INTER_HIGH = 2,
-  GF_ARF_LOW = 3,
-  GF_ARF_STD = 4,
-  KF_STD = 5,
-  RATE_FACTOR_LEVELS = 6
-} UENUM1BYTE(RATE_FACTOR_LEVEL);
 
 typedef struct RefCntBuffer {
   // For a RefCntBuffer, the following are reference-holding variables:

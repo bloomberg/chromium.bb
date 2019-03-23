@@ -4555,13 +4555,12 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
   printf(
       "\nFrame=%5d, encode_update_type[%5d]=%1d, frame_offset=%d, "
       "show_frame=%d, show_existing_frame=%d, source_alt_ref_active=%d, "
-      "refresh_alt_ref_frame=%d, rf_level=%d, "
+      "refresh_alt_ref_frame=%d, "
       "y_stride=%4d, uv_stride=%4d, cm->width=%4d, cm->height=%4d\n\n",
       current_frame->frame_number, cpi->twopass.gf_group.index,
       cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index],
       current_frame->order_hint, cm->show_frame, cm->show_existing_frame,
       cpi->rc.source_alt_ref_active, cpi->refresh_alt_ref_frame,
-      cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index],
       recon_buf->y_stride, recon_buf->uv_stride, cm->width, cm->height);
 #if 0
   int ref_frame;

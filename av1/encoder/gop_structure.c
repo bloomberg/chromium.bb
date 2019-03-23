@@ -166,20 +166,6 @@ static int get_pyramid_height(const AV1_COMP *const cpi) {
                 cpi->oxcf.gf_max_pyr_height);
 }
 
-// Derive rf_level from update_type
-static int update_type_2_rf_level(FRAME_UPDATE_TYPE update_type) {
-  switch (update_type) {
-    case LF_UPDATE: return INTER_NORMAL;
-    case ARF_UPDATE: return GF_ARF_STD;
-    case OVERLAY_UPDATE: return INTER_NORMAL;
-    case INTNL_ARF_UPDATE: return GF_ARF_LOW;
-    case INTNL_OVERLAY_UPDATE: return INTER_NORMAL;
-    default:
-      assert(0);  // Function not called for other update types.
-      return INTER_NORMAL;
-  }
-}
-
 void av1_gop_setup_structure(AV1_COMP *cpi,
                              const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -193,32 +179,19 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
       gf_group, rc->baseline_gf_interval, get_pyramid_height(cpi),
       first_frame_update_type);
 
-  // Set rate factor level for 1st frame.
-  if (!key_frame) {  // For a key-frame, rate factor is already assigned.
-    assert(first_frame_update_type == OVERLAY_UPDATE ||
-           first_frame_update_type == GF_UPDATE);
-    gf_group->rf_level[0] =
-        (first_frame_update_type == OVERLAY_UPDATE) ? INTER_NORMAL : GF_ARF_STD;
-  }
-
-  // Set rate factor levels for rest of the frames, and also count extra arfs.
+  // Count extra arfs.
   cpi->num_extra_arfs = 0;
-  for (int frame_index = 1; frame_index < gf_update_frames; ++frame_index) {
-    const int this_update_type = gf_group->update_type[frame_index];
-    gf_group->rf_level[frame_index] = update_type_2_rf_level(this_update_type);
-    if (this_update_type == INTNL_ARF_UPDATE) ++cpi->num_extra_arfs;
+  for (int frame_index = 0; frame_index < gf_update_frames; ++frame_index) {
+    if (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE) {
+      ++cpi->num_extra_arfs;
+    }
   }
 
   // We need to configure the frame at the end of the sequence + 1 that
   // will be the start frame for the next group. Otherwise prior to the
   // call to av1_get_second_pass_params(), the data will be undefined.
-  if (rc->source_alt_ref_pending) {
-    gf_group->update_type[gf_update_frames] = OVERLAY_UPDATE;
-    gf_group->rf_level[gf_update_frames] = INTER_NORMAL;
-  } else {
-    gf_group->update_type[gf_update_frames] = GF_UPDATE;
-    gf_group->rf_level[gf_update_frames] = GF_ARF_STD;
-  }
+  gf_group->update_type[gf_update_frames] =
+      (rc->source_alt_ref_pending) ? OVERLAY_UPDATE : GF_UPDATE;
   gf_group->arf_update_idx[gf_update_frames] = 0;
   gf_group->arf_pos_in_gf[gf_update_frames] = 0;
 

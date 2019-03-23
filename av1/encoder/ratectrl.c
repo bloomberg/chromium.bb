@@ -347,6 +347,22 @@ int av1_rc_drop_frame(AV1_COMP *cpi) {
   }
 }
 
+static const RATE_FACTOR_LEVEL rate_factor_levels[FRAME_UPDATE_TYPES] = {
+  KF_STD,        // KF_UPDATE
+  INTER_NORMAL,  // LF_UPDATE
+  GF_ARF_STD,    // GF_UPDATE
+  GF_ARF_STD,    // ARF_UPDATE
+  INTER_NORMAL,  // OVERLAY_UPDATE
+  INTER_NORMAL,  // INTNL_OVERLAY_UPDATE
+  GF_ARF_LOW,    // INTNL_ARF_UPDATE
+};
+
+static RATE_FACTOR_LEVEL get_rate_factor_level(const GF_GROUP *const gf_group) {
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
+  assert(update_type < FRAME_UPDATE_TYPES);
+  return rate_factor_levels[update_type];
+}
+
 static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
                                          int height) {
   const RATE_CONTROL *const rc = &cpi->rc;
@@ -355,8 +371,8 @@ static double get_rate_correction_factor(const AV1_COMP *cpi, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rcf = rc->rate_correction_factors[KF_STD];
   } else if (cpi->oxcf.pass == 2) {
-    RATE_FACTOR_LEVEL rf_lvl =
-        cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
+    const RATE_FACTOR_LEVEL rf_lvl =
+        get_rate_factor_level(&cpi->twopass.gf_group);
     rcf = rc->rate_correction_factors[rf_lvl];
   } else {
     if ((cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame) &&
@@ -382,8 +398,8 @@ static void set_rate_correction_factor(AV1_COMP *cpi, double factor, int width,
   if (cpi->common.current_frame.frame_type == KEY_FRAME) {
     rc->rate_correction_factors[KF_STD] = factor;
   } else if (cpi->oxcf.pass == 2) {
-    RATE_FACTOR_LEVEL rf_lvl =
-        cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
+    const RATE_FACTOR_LEVEL rf_lvl =
+        get_rate_factor_level(&cpi->twopass.gf_group);
     rc->rate_correction_factors[rf_lvl] = factor;
   } else {
     if ((cpi->refresh_alt_ref_frame || cpi->refresh_golden_frame) &&
@@ -969,15 +985,20 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
   return q;
 }
 
-int av1_frame_type_qdelta(const AV1_COMP *cpi, int rf_level, int q) {
-  static const FRAME_TYPE frame_type[RATE_FACTOR_LEVELS] = {
-    INTER_FRAME, INTER_FRAME, INTER_FRAME, INTER_FRAME, INTER_FRAME, KEY_FRAME
-  };
-  const AV1_COMMON *const cm = &cpi->common;
-  int qdelta = av1_compute_qdelta_by_rate(&cpi->rc, frame_type[rf_level], q,
-                                          rate_factor_deltas[rf_level],
-                                          cm->seq_params.bit_depth);
-  return qdelta;
+static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
+  1.00,  // INTER_NORMAL
+  1.25,  // GF_ARF_LOW
+  2.00,  // GF_ARF_STD
+  2.00,  // KF_STD
+};
+
+int av1_frame_type_qdelta(const AV1_COMP *cpi, int q) {
+  const RATE_FACTOR_LEVEL rf_lvl =
+      get_rate_factor_level(&cpi->twopass.gf_group);
+  const FRAME_TYPE frame_type = (rf_lvl == KF_STD) ? KEY_FRAME : INTER_FRAME;
+  return av1_compute_qdelta_by_rate(&cpi->rc, frame_type, q,
+                                    rate_factor_deltas[rf_lvl],
+                                    cpi->common.seq_params.bit_depth);
 }
 
 #define STATIC_MOTION_THRESH 95
@@ -1118,19 +1139,13 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           *arf_q = active_best_quality;
         } else {
           assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
+          assert(is_intrl_arf_boost);
           active_best_quality = rc->arf_q;
-        }
-        if (is_intrl_arf_boost) {
           int this_height = gf_group_pyramid_level(cpi);
           while (this_height < gf_group->pyramid_height) {
             active_best_quality = (active_best_quality + cq_level + 1) / 2;
             ++this_height;
           }
-        } else {
-          // Modify best quality for second level arfs. For mode AOM_Q this
-          // becomes the baseline frame q.
-          if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW)
-            active_best_quality = (active_best_quality + cq_level + 1) / 2;
         }
       }
     } else {
@@ -1183,8 +1198,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   // Static forced key frames Q restrictions dealt with elsewhere.
   if (!(frame_is_intra_only(cm)) || !rc->this_key_frame_forced ||
       (cpi->twopass.last_kfgroup_zeromotion_pct < STATIC_MOTION_THRESH)) {
-    int qdelta = av1_frame_type_qdelta(cpi, gf_group->rf_level[gf_group->index],
-                                       active_worst_quality);
+    const int qdelta = av1_frame_type_qdelta(cpi, active_worst_quality);
     active_worst_quality =
         AOMMAX(active_worst_quality + qdelta, active_best_quality);
   }
