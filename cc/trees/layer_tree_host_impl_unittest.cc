@@ -10190,19 +10190,20 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  // The CopyOutputResult has a ref on the viz::ContextProvider and a texture
-  // in a texture mailbox.
+  auto* sii = context_provider->SharedImageInterface();
+  // The CopyOutputResult has a ref on the viz::ContextProvider and a shared
+  // image allocated.
   ASSERT_TRUE(helper.unprocessed_result);
   EXPECT_FALSE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, context_provider->TestContextGL()->NumTextures());
+  EXPECT_EQ(1u, sii->shared_image_count());
 
   host_impl_->ReleaseLayerTreeFrameSink();
   host_impl_ = nullptr;
 
   // The texture release callback that was given to the CopyOutputResult has
-  // been canceled, and the texture deleted.
+  // been canceled, and the shared image deleted.
   EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(0u, context_provider->TestContextGL()->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 
   // When resetting the CopyOutputResult, it will run its texture release
   // callback. This should not cause a crash, etc.
