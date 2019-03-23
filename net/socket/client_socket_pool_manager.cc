@@ -78,8 +78,6 @@ scoped_refptr<TransportClientSocketPool::SocketParams>
 CreateSocketParamsAndGetGroupId(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
-    // This argument should be removed.
-    int request_load_flags,
     const ProxyInfo& proxy_info,
     // This argument should be removed.
     const SSLConfig& ssl_config_for_origin,
@@ -95,10 +93,6 @@ CreateSocketParamsAndGetGroupId(
   scoped_refptr<SOCKSSocketParams> socks_params;
 
   const bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
-
-  // LOAD_BYPASS_CACHE should bypass the host cache as well as the HTTP cache.
-  // Other cache-related load flags should not have this effect.
-  bool disable_resolver_cache = request_load_flags & LOAD_BYPASS_CACHE;
 
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
@@ -125,30 +119,27 @@ CreateSocketParamsAndGetGroupId(
 
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
-    scoped_refptr<TransportSocketParams> proxy_tcp_params(
-        new TransportSocketParams(proxy_server.host_port_pair(),
-                                  disable_resolver_cache, resolution_callback));
+    scoped_refptr<TransportSocketParams> proxy_tcp_params =
+        base::MakeRefCounted<TransportSocketParams>(
+            proxy_server.host_port_pair(), resolution_callback);
 
     if (proxy_info.is_http() || proxy_info.is_https() || proxy_info.is_quic()) {
       scoped_refptr<SSLSocketParams> ssl_params;
       if (!proxy_info.is_http()) {
-        proxy_tcp_params = new TransportSocketParams(
-            proxy_server.host_port_pair(), disable_resolver_cache,
-            resolution_callback);
         // Set ssl_params, and unset proxy_tcp_params
-        ssl_params = new SSLSocketParams(
+        ssl_params = base::MakeRefCounted<SSLSocketParams>(
             proxy_tcp_params, nullptr, nullptr, proxy_server.host_port_pair(),
             ssl_config_for_proxy, PRIVACY_MODE_DISABLED);
         proxy_tcp_params = nullptr;
       }
 
-      http_proxy_params = new HttpProxySocketParams(
+      http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
           proxy_tcp_params, ssl_params, proxy_info.is_quic(), endpoint,
           proxy_server.is_trusted_proxy(), force_tunnel || using_ssl,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     } else {
       DCHECK(proxy_info.is_socks());
-      socks_params = new SOCKSSocketParams(
+      socks_params = base::MakeRefCounted<SOCKSSocketParams>(
           proxy_tcp_params, proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5,
           endpoint,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
@@ -160,7 +151,7 @@ CreateSocketParamsAndGetGroupId(
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_info.is_direct()) {
       ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
-          endpoint, disable_resolver_cache, resolution_callback);
+          endpoint, resolution_callback);
     }
     scoped_refptr<SSLSocketParams> ssl_params =
         base::MakeRefCounted<SSLSocketParams>(
@@ -181,8 +172,9 @@ CreateSocketParamsAndGetGroupId(
   }
 
   DCHECK(proxy_info.is_direct());
-  scoped_refptr<TransportSocketParams> tcp_params = new TransportSocketParams(
-      endpoint, disable_resolver_cache, resolution_callback);
+  scoped_refptr<TransportSocketParams> tcp_params =
+      base::MakeRefCounted<TransportSocketParams>(endpoint,
+                                                  resolution_callback);
   return TransportClientSocketPool::SocketParams::
       CreateFromTransportSocketParams(std::move(tcp_params));
 }
@@ -218,9 +210,9 @@ int InitSocketPoolHelper(
   ClientSocketPool::GroupId connection_group;
   scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
       CreateSocketParamsAndGetGroupId(
-          group_type, origin_host_port, request_load_flags, proxy_info,
-          ssl_config_for_origin, ssl_config_for_proxy, force_tunnel,
-          privacy_mode, resolution_callback, &connection_group);
+          group_type, origin_host_port, proxy_info, ssl_config_for_origin,
+          ssl_config_for_proxy, force_tunnel, privacy_mode, resolution_callback,
+          &connection_group);
 
   TransportClientSocketPool* pool =
       session->GetSocketPool(socket_pool_type, proxy_info.proxy_server());

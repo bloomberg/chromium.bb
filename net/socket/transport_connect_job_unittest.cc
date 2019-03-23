@@ -54,7 +54,7 @@ class TransportConnectJobTest : public TestWithScopedTaskEnvironment {
 
   static scoped_refptr<TransportSocketParams> DefaultParams() {
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHostName, 80), false, OnHostResolutionCallback());
+        HostPortPair(kHostName, 80), OnHostResolutionCallback());
   }
 
  protected:

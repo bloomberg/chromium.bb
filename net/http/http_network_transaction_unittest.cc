@@ -11479,49 +11479,6 @@ TEST_F(HttpNetworkTransactionTest, ReconsiderProxyAfterFailedConnection) {
   EXPECT_THAT(rv, IsError(ERR_PROXY_CONNECTION_FAILED));
 }
 
-// LOAD_BYPASS_CACHE should trigger the host cache bypass.
-TEST_F(HttpNetworkTransactionTest, BypassHostCacheOnRefresh) {
-  // Issue a request, asking to bypass the cache(s).
-  HttpRequestInfo request_info;
-  request_info.method = "GET";
-  request_info.load_flags = LOAD_BYPASS_CACHE;
-  request_info.url = GURL("http://www.example.org/");
-  request_info.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  // Select a host resolver that does caching.
-  session_deps_.host_resolver = std::make_unique<MockCachingHostResolver>();
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
-
-  // Warm up the host cache so it has an entry for "www.example.org".
-  int rv = session_deps_.host_resolver->LoadIntoCache(
-      HostPortPair("www.example.org", 80), base::nullopt);
-  EXPECT_THAT(rv, IsOk());
-
-  // Inject a failure the next time that "www.example.org" is resolved. This way
-  // we can tell if the next lookup hit the cache, or the "network".
-  // (cache --> success, "network" --> failure).
-  session_deps_.host_resolver->rules()->AddSimulatedFailure("www.example.org");
-
-  // Connect up a mock socket which will fail with ERR_UNEXPECTED during the
-  // first read -- this won't be reached as the host resolution will fail first.
-  MockRead data_reads[] = { MockRead(SYNCHRONOUS, ERR_UNEXPECTED) };
-  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  // Run the request.
-  TestCompletionCallback callback;
-  rv = trans.Start(&request_info, callback.callback(), NetLogWithSource());
-  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = callback.WaitForResult();
-
-  // If we bypassed the cache, we would have gotten a failure while resolving
-  // "www.example.org".
-  EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
-}
-
 // Make sure we can handle an error when writing the request.
 TEST_F(HttpNetworkTransactionTest, RequestWriteError) {
   HttpRequestInfo request;

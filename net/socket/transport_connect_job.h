@@ -36,11 +36,9 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   // connection will be aborted with that value.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
-      bool disable_resolver_cache,
       const OnHostResolutionCallback& host_resolution_callback);
 
   const HostPortPair& destination() const { return destination_; }
-  bool disable_resolver_cache() const { return disable_resolver_cache_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
   }
@@ -50,7 +48,6 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   ~TransportSocketParams();
 
   const HostPortPair destination_;
-  const bool disable_resolver_cache_;
   const OnHostResolutionCallback host_resolution_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);

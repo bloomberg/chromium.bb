@@ -96,7 +96,6 @@ class WebSocketClientSocketHandleAdapterTest
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         transport_params_(base::MakeRefCounted<TransportSocketParams>(
             host_port_pair_,
-            false,
             OnHostResolutionCallback())),
         ssl_params_(
             base::MakeRefCounted<SSLSocketParams>(transport_params_,

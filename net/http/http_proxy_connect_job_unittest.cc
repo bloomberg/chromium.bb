@@ -114,7 +114,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     if (GetParam() != HTTP)
       return nullptr;
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHttpProxyHost, 80), false, OnHostResolutionCallback());
+        HostPortPair(kHttpProxyHost, 80), OnHostResolutionCallback());
   }
 
   scoped_refptr<SSLSocketParams> CreateHttpsProxyParams() const {
@@ -122,8 +122,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
       return nullptr;
     return base::MakeRefCounted<SSLSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kHttpsProxyHost, 443), false,
-            OnHostResolutionCallback()),
+            HostPortPair(kHttpsProxyHost, 443), OnHostResolutionCallback()),
         nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
         PRIVACY_MODE_DISABLED);
   }

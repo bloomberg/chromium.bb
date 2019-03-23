@@ -93,8 +93,7 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
       NetLogWithSource()));
 
   auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key.host_port_pair(), false /* disable_resolver_cache */,
-      OnHostResolutionCallback());
+      key.host_port_pair(), OnHostResolutionCallback());
 
   SSLConfig ssl_config;
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(

@@ -77,7 +77,7 @@ class SOCKSConnectJobTest : public testing::Test,
       SOCKSVersion socks_version) {
     return base::MakeRefCounted<SOCKSSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kProxyHostName, kProxyPort), true /* respect_limits */,
+            HostPortPair(kProxyHostName, kProxyPort),
             OnHostResolutionCallback()),
         socks_version == SOCKSVersion::V5,
         socks_version == SOCKSVersion::V4

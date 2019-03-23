@@ -46,10 +46,8 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
 
 TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
-    bool disable_resolver_cache,
     const OnHostResolutionCallback& host_resolution_callback)
     : destination_(host_port_pair),
-      disable_resolver_cache_(disable_resolver_cache),
       host_resolution_callback_(host_resolution_callback) {}
 
 TransportSocketParams::~TransportSocketParams() = default;
@@ -260,10 +258,6 @@ int TransportConnectJob::DoResolveHost() {
 
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
-  parameters.cache_usage =
-      params_->disable_resolver_cache()
-          ? HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED
-          : HostResolver::ResolveHostParameters::CacheUsage::ALLOWED;
   request_ = host_resolver()->CreateRequest(params_->destination(), net_log(),
                                             parameters);
 

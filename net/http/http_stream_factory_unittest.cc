@@ -1996,8 +1996,7 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
   std::vector<std::unique_ptr<ClientSocketHandle>> handles;
   for (size_t i = 0; i < kNumIdleSockets; i++) {
     scoped_refptr<TransportSocketParams> transport_params(
-        new TransportSocketParams(host_port_pair, false,
-                                  OnHostResolutionCallback()));
+        new TransportSocketParams(host_port_pair, OnHostResolutionCallback()));
 
     auto connection = std::make_unique<ClientSocketHandle>();
     TestCompletionCallback callback;

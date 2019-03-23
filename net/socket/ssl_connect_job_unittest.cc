@@ -91,11 +91,9 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                    nullptr /* ssl_client_session_cache */),
         direct_transport_socket_params_(
             new TransportSocketParams(HostPortPair("host", 443),
-                                      false,
                                       OnHostResolutionCallback())),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
-                                      false,
                                       OnHostResolutionCallback())),
         socks_socket_params_(
             new SOCKSSocketParams(proxy_transport_socket_params_,
