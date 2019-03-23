@@ -114,6 +114,8 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   std::unique_ptr<media::VideoDecoder> video_decoder_;
   int32_t outstanding_decode_requests_ = 0;
 
+  // Decoding thread members.
+  bool key_frame_required_ = true;
   // Shared members.
   base::Lock lock_;
   int32_t consecutive_error_count_ = 0;
