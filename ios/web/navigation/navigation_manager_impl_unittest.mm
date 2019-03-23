@@ -340,6 +340,7 @@ TEST_P(NavigationManagerTest, GetPendingItemWithIndexedPendingEntry) {
       url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.test"];
   navigation_manager()->CommitPendingItem();
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     [session_controller() setPendingItemIndex:0];
