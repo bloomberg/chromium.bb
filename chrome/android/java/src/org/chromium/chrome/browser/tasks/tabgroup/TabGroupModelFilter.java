@@ -6,8 +6,10 @@ package org.chromium.chrome.browser.tasks.tabgroup;
 
 import android.support.annotation.NonNull;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -99,9 +101,25 @@ public class TabGroupModelFilter extends TabModelFilter {
     private Map<Integer, Integer> mGroupIdToGroupIndexMap = new HashMap<>();
     private Map<Integer, TabGroup> mGroupIdToGroupMap = new HashMap<>();
     private int mCurrentGroupIndex = TabList.INVALID_TAB_INDEX;
+    // The number of groups with at least 2 tabs.
+    private int mActualGroupCount;
 
     public TabGroupModelFilter(TabModel tabModel) {
         super(tabModel);
+
+        // Record the group count after all tabs are being restored. This only happen once per life
+        // cycle, therefore remove the observer after recording.
+        addObserver(new EmptyTabModelObserver() {
+            @Override
+            public void restoreCompleted() {
+                RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", mActualGroupCount);
+                removeObserver(this);
+            }
+        });
+    }
+
+    public int getTabGroupCount() {
+        return mActualGroupCount;
     }
 
     // TabModelFilter implementation.
@@ -134,9 +152,11 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         int groupId = tab.getRootId();
         if (mGroupIdToGroupMap.containsKey(groupId)) {
-            if (tab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND
-                    && mGroupIdToGroupMap.get(groupId).size() == 1) {
-                RecordUserAction.record("TabGroup.Created.OpenInNewTab");
+            if (mGroupIdToGroupMap.get(groupId).size() == 1) {
+                mActualGroupCount++;
+                if (tab.getLaunchType() == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
+                    RecordUserAction.record("TabGroup.Created.OpenInNewTab");
+                }
             }
             mGroupIdToGroupMap.get(groupId).addTab(tab.getId());
         } else {
@@ -157,6 +177,7 @@ public class TabGroupModelFilter extends TabModelFilter {
 
         TabGroup group = mGroupIdToGroupMap.get(groupId);
         group.removeTab(tab.getId());
+        if (group.size() == 1) mActualGroupCount--;
         if (group.size() == 0) {
             updateGroupIdToGroupIndexMapAfterGroupClosed(groupId);
             mGroupIdToGroupIndexMap.remove(groupId);
