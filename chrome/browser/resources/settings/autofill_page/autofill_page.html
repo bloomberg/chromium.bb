@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="autofill_section.html">
 <link rel="import" href="passwords_section.html">
@@ -20,7 +21,7 @@
         --cr-icon-button-margin-start: 20px;
       }
       cr-link-row:not([hidden]) + cr-link-row {
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
       }
     </style>
     <settings-animated-pages id="pages" section="autofill"
