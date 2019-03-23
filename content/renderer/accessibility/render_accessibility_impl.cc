@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/debug/crash_logging.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -54,6 +55,22 @@ namespace {
 // The next token to use to distinguish between ack events sent to this
 // RenderAccessibilityImpl and a previous instance.
 static int g_next_ack_token = 1;
+
+void SetAccessibilityCrashKey(ui::AXMode mode) {
+  // Add a crash key with the ax_mode, to enable searching for top crashes that
+  // occur when accessibility is turned on. This adds it for each renderer,
+  // process, and elsewhere the same key is added for the browser process.
+  // Note: in theory multiple renderers in the same process might not have the
+  // same mode. As an example, kLabelImages could be enabled for just one
+  // renderer. The presence if a mode flag means in a crash report means at
+  // least one renderer in the same process had that flag.
+  // Examples of when multiple renderers could share the same process:
+  // 1) Android, 2) When many tabs are open.
+  static auto* ax_mode_crash_key = base::debug::AllocateCrashKeyString(
+      "ax_mode", base::debug::CrashKeySize::Size64);
+  if (ax_mode_crash_key)
+    base::debug::SetCrashKeyString(ax_mode_crash_key, mode.ToString());
+}
 }
 
 namespace content {
@@ -118,6 +135,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
 
+  SetAccessibilityCrashKey(mode);
 #if defined(OS_ANDROID)
   // Password values are only passed through on Android.
   settings->SetAccessibilityPasswordValuesEnabled(true);
@@ -172,6 +190,8 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
   if (old_mode == new_mode)
     return;
   tree_source_.SetAccessibilityMode(new_mode);
+
+  SetAccessibilityCrashKey(new_mode);
 
 #if !defined(OS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
