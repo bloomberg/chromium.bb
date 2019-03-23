@@ -375,12 +375,6 @@ const base::Feature kIntentPicker {
 const base::Feature kKidsManagementUrlClassification{
     "KidsManagementUrlClassification", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if !defined(OS_ANDROID)
-// Enables Casting a Presentation API-enabled website to a secondary display.
-const base::Feature kLocalScreenCasting{"LocalScreenCasting",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
 // system-level geolocation permission prompt.
 const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",

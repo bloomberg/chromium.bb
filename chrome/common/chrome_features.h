@@ -241,11 +241,6 @@ extern const base::Feature kIntentPicker;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kKidsManagementUrlClassification;
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kLocalScreenCasting;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLookalikeUrlNavigationSuggestionsUI;
 
