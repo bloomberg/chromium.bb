@@ -84,7 +84,7 @@ base::CommandLine GetElevatedCommandLine() {
       PreFetchedPaths::GetInstance()->GetExecutablePath());
   elevated_cmd.AppendSwitchASCII(
       kExecutionModeSwitch,
-      base::IntToString(static_cast<int>(ExecutionMode::kCleanup)));
+      base::NumberToString(static_cast<int>(ExecutionMode::kCleanup)));
   elevated_cmd.AppendSwitch(kElevatedSwitch);
 
   Settings* settings = Settings::GetInstance();

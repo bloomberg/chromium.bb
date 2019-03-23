@@ -41,7 +41,7 @@ std::string GenerateApplicationNameFromAppId(const AppId& app_id) {
 // TODO(crbug.com/943194): Move this method to Focus Mode specific file.
 // TODO(crbug.com/943653): Use site's manifest scope as window grouping key.
 std::string GenerateApplicationNameForFocusMode() {
-  return kFocusModePrefix + base::Int64ToString(focus_mode_counter++);
+  return kFocusModePrefix + base::NumberToString(focus_mode_counter++);
 }
 
 AppId GetAppIdFromApplicationName(const std::string& app_name) {

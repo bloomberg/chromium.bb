@@ -488,9 +488,9 @@ class PreviewsLitePageServerBrowserTest
   GURL HttpLitePageURL(PreviewsServerAction action,
                        std::string* headers = nullptr,
                        int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(action);
+    std::string query = "resp=" + base::NumberToString(action);
     if (delay_ms != 0)
-      query += "&delay_ms=" + base::IntToString(delay_ms);
+      query += "&delay_ms=" + base::NumberToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;

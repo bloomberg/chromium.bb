@@ -39,7 +39,7 @@
 // }
 //
 // If specified, "expirable_token" is stored as a string representing the
-// int64_t (base::Int64ToString()) form of the number of microseconds since
+// int64_t (base::NumberToString()) form of the number of microseconds since
 // Windows epoch (1601-01-01 00:00:00 UTC). It is the latest time that this
 // code should attempt to pre-provision more origins on some devices.
 
