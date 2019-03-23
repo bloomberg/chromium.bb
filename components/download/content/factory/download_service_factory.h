@@ -20,6 +20,7 @@ class BrowserContext;
 
 namespace network {
 class NetworkConnectionTracker;
+class SharedURLLoaderFactory;
 }
 
 namespace download {
@@ -53,7 +54,8 @@ DownloadService* BuildInMemoryDownloadService(
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     BlobTaskProxy::BlobContextGetter blob_context_getter,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 }  // namespace download
 
