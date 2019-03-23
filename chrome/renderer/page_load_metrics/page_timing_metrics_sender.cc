@@ -95,7 +95,7 @@ void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
 
 void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction) {
   DCHECK(jank_fraction > 0);
-  render_data_.layout_jank_score += jank_fraction;
+  render_data_.layout_jank_delta += jank_fraction;
   EnsureSendTimer();
 }
 
@@ -221,6 +221,7 @@ void PageTimingMetricsSender::SendNow() {
   new_features_ = mojom::PageLoadFeatures::New();
   last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
+  render_data_.layout_jank_delta = 0;
 }
 
 }  // namespace page_load_metrics

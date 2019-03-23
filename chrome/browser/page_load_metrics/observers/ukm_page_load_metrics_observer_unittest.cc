@@ -976,7 +976,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
   // Simulate hiding the tab (the report should include jank after hide).
   web_contents()->WasHidden();
 
-  render_data.layout_jank_score = 2.5;
+  render_data.layout_jank_delta = 1.5;
   SimulateRenderDataUpdate(render_data);
 
   // Simulate closing the tab.

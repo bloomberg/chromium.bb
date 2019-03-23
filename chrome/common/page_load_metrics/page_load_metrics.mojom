@@ -220,9 +220,9 @@ struct ResourceDataUpdate {
 
 // Metrics about how a RenderFrame rendered since the last UpdateTiming call.
 struct FrameRenderDataUpdate {
-  // How much visible elements in the frame shifted (bit.ly/lsm-explainer).
-  // TODO(skobes): Send delta instead of cumulative score.
-  float layout_jank_score;
+  // How much visible elements in the frame shifted (bit.ly/lsm-explainer) since
+  // the last timing update.
+  float layout_jank_delta;
 };
 
 // Metrics about the time spent in tasks (cpu time) by a frame.
