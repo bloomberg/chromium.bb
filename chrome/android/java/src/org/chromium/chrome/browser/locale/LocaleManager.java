@@ -499,4 +499,11 @@ public class LocaleManager {
      */
     public void recordLocaleBasedSearchMetrics(
             boolean isFromSearchWidget, String url, @PageTransition int transition) {}
+
+    /**
+     * @return Whether the user requires special handling.
+     */
+    public boolean isSpecialUser() {
+        return false;
+    }
 }

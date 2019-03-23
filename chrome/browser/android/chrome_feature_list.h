@@ -95,6 +95,7 @@ extern const base::Feature kServiceManagerForDownload;
 extern const base::Feature kSoleIntegration;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleWrapper;
+extern const base::Feature kSpecialUserDecision;
 extern const base::Feature kTabGroupsAndroid;
 extern const base::Feature kTabGridLayoutAndroid;
 extern const base::Feature kTabReparenting;
