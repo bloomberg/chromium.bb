@@ -23,3 +23,5 @@ Bug(none) http/tests/misc/redirect-to-about-blank.html [ Pass ]
 # The below is only supported with network service.
 Bug(none) virtual/omt-worker-fetch [ Skip ]
 Bug(none) virtual/outofblink-cors [ Skip ]
+Bug(none) http/tests/inspector-protocol/fetch [ Skip ]
+Bug(none) virtual/binary-for-inspector-protocol/http/tests/inspector-protocol/fetch [ Skip ]
