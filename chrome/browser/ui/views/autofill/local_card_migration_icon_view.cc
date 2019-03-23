@@ -129,12 +129,6 @@ base::string16 LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD);
 }
 
-// Override the function to remove the extra trailing space in icon after
-// animation finishes.
-bool LocalCardMigrationIconView::ShouldShowSeparator() const {
-  return false;
-}
-
 ManageMigrationUiController* LocalCardMigrationIconView::GetController() const {
   if (!browser_)
     return nullptr;

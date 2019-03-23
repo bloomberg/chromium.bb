@@ -18,7 +18,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_observer.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -27,16 +27,19 @@ class FontList;
 class ImageSkia;
 }
 
+namespace ui {
+struct AXNodeData;
+}
+
 namespace views {
 class ImageView;
-class InkDropContainerView;
 }
 
 // View used to draw a bubble, containing an icon and a label. We use this as a
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropObserver,
-                            public views::Button,
+                            public views::LabelButton,
                             public ui::MaterialDesignControllerObserver {
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
@@ -79,8 +82,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void SetImage(const gfx::ImageSkia& image);
   void SetFontList(const gfx::FontList& font_list);
 
-  const views::ImageView* GetImageView() const { return image_; }
-  views::ImageView* GetImageView() { return image_; }
+  const views::ImageView* GetImageView() const { return image(); }
+  views::ImageView* GetImageView() { return image(); }
 
   // Returns the color of the IconLabelBubbleView's surrounding context.
   SkColor GetParentBackgroundColor() const;
@@ -97,14 +100,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
  protected:
   static constexpr int kOpenTimeMS = 150;
-
-  views::ImageView* image() { return image_; }
-  const views::ImageView* image() const { return image_; }
-  views::Label* label() { return label_; }
-  const views::Label* label() const { return label_; }
-  const views::InkDropContainerView* ink_drop_container() const {
-    return ink_drop_container_;
-  }
 
   // Gets the color for displaying text.
   virtual SkColor GetTextColor() const = 0;
@@ -130,19 +125,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Sets the border padding around this view.
   virtual void UpdateBorder();
 
-  // views::Button:
+  // views::LabelButton:
   gfx::Size CalculatePreferredSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override = 0;
   bool IsTriggerableEvent(const ui::Event& event) override;
   bool ShouldUpdateInkDropOnClickCanceled() const override;
@@ -152,11 +140,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
-  const gfx::FontList& font_list() const { return label_->font_list(); }
+  const gfx::FontList& font_list() const { return label()->font_list(); }
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
@@ -228,12 +217,11 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // called directly, use AnimateOut() instead, which handles label visibility.
   void HideAnimation();
 
-  gfx::Rect CalculateInkDropContainerBounds() const;
+  // Updates the highlight path for ink drops and focus rings using the current
+  // bounds and the separator visibility.
+  void UpdateHighlightPath();
 
   // The contents of the bubble.
-  views::ImageView* image_;
-  views::Label* label_;
-  views::InkDropContainerView* ink_drop_container_;
   SeparatorView* separator_view_;
 
   // The padding of the element that will be displayed after |this|. This value

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
+#include <utility>
+
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
@@ -149,50 +151,12 @@ void PageActionIconView::OnThemeChanged() {
   UpdateIconImage();
 }
 
-void PageActionIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  image()->SetPaintToLayer();
-  image()->layer()->SetFillsBoundsOpaquely(false);
-  IconLabelBubbleView::AddInkDropLayer(ink_drop_layer);
-}
-
-void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  IconLabelBubbleView::RemoveInkDropLayer(ink_drop_layer);
-  image()->DestroyLayer();
-}
-
-std::unique_ptr<views::InkDrop> PageActionIconView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(!focus_ring());
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropRipple> PageActionIconView::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-PageActionIconView::CreateInkDropHighlight() const {
-  std::unique_ptr<views::InkDropHighlight> highlight =
-      CreateDefaultInkDropHighlight(
-          gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
-          size());
-  highlight->set_visible_opacity(
-      GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
-  return highlight;
-}
-
-std::unique_ptr<views::InkDropMask> PageActionIconView::CreateInkDropMask()
-    const {
-  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
-                                                       height() / 2.f);
-}
-
 SkColor PageActionIconView::GetInkDropBaseColor() const {
   return delegate_->GetPageActionInkDropColor();
+}
+
+bool PageActionIconView::ShouldShowSeparator() const {
+  return false;
 }
 
 void PageActionIconView::OnGestureEvent(ui::GestureEvent* event) {
