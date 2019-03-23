@@ -340,6 +340,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   base::RepeatingCallback<std::string()> random_salt_generator_;
 
+  // Determines whether Nigori migration was triggered. Used for UMA metric
+  // only.
+  bool migration_attempted_;
+
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
