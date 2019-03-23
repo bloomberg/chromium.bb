@@ -25,10 +25,10 @@ def LoadJSONStripComments(file):
 class PackagesInfo(object):
   """A packages file is a JSON file describing package targets and packages."""
   def __init__(self, packages_file):
-    if isinstance(packages_file, basestring):
+    if isinstance(packages_file, str):
       with open(packages_file, 'rt') as f:
         packages_json = LoadJSONStripComments(f)
-    elif isinstance(packages_file, file):
+    elif hasattr(packages_file, 'read'):
       packages_json = LoadJSONStripComments(packages_file)
     else:
       raise error.Error('Invalid packages file type (%s): %s' %
@@ -82,10 +82,10 @@ class PackagesInfo(object):
     Returns:
       List of host platforms which use the toolchain component.
     """
-    return [package_target
-            for package_target, packages
-            in self._packages.iteritems()
-            if package in packages]
+    return [
+        package_target for package_target, packages in self._packages.items()
+        if package in packages
+    ]
 
   def GetPackageModes(self):
     """Returns a list of modes specified within the packages description.

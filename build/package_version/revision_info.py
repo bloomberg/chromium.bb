@@ -66,10 +66,10 @@ class RevisionInfo(object):
 
       hash_string += str(package_target)
       for archive in archive_list:
-        for field, member in archive.GetArchiveData()._asdict().iteritems():
+        for field, member in archive.GetArchiveData()._asdict().items():
           hash_string += '[%s:%s]' % (field, member)
 
-    return hashlib.sha1(hash_string).hexdigest()
+    return hashlib.sha1(hash_string.encode('ascii')).hexdigest()
 
   def _ValidateRevisionComplete(self):
     """Validate packages to make sure it matches the packages description."""
@@ -115,7 +115,7 @@ class RevisionInfo(object):
       self._package_targets = {}
 
       package_targets = revision_json[FIELD_PACKAGE_TARGETS]
-      for package_target, archive_list in package_targets.iteritems():
+      for package_target, archive_list in package_targets.items():
         self._package_targets[package_target] = package_info.PackageInfo(
             archive_list
         )

@@ -51,8 +51,9 @@ def ConstructArchiveInfo(default_archive_info=None, **archive_args):
   if default_archive_info is None:
     default_archive_info = DEFAULT_ARCHIVE_INFO
 
-  archive_info_values = [(key, value) for key, value in archive_args.iteritems()
-                          if key in ArchiveInfoTuple._fields]
+  archive_info_values = [(key, value)
+                         for key, value in archive_args.items()
+                         if key in ArchiveInfoTuple._fields]
 
   archive_info = default_archive_info._asdict()
   archive_info.update(archive_info_values)
@@ -97,7 +98,8 @@ class ArchiveInfo(object):
     archive_json = None
     if isinstance(archive_info_file, dict):
       archive_json = archive_info_file
-    elif isinstance(archive_info_file, basestring):
+    elif isinstance(archive_info_file, str) or isinstance(
+        archive_info_file, unicode):
       with open(archive_info_file, 'rt') as f:
         archive_json = json.load(f)
     else:

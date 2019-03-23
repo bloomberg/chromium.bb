@@ -33,7 +33,7 @@ OS_MAP = {
 }
 
 OS_DICT = dict([(platform, os_name)
-                for os_name, platforms in OS_MAP.iteritems()
+                for os_name, platforms in OS_MAP.items()
                 for platform in platforms])
 
 def GetOS(platform=None):
@@ -55,10 +55,10 @@ def IsCygWin(platform=None):
 # Define a list of supported architectures here. Our architecture definition
 # comes in 2 flavors, ones that care about 32/64 bit differences, and ones that
 # do not (a flattened list). The architecture is based on the
-# "lib.platform.machine()" variable which can return many variations even on
-# the same architecture (see variations of x86-32). The list and variable names
-# needs to be kept in sync, it is written so there will be a syntax error if
-# an item was added to 1 list but not the other, although there is no check
+# lib.platform.machine() variable which can return many variations even
+# on the same architecture (see variations of x86-32). The list and variable
+# names needs to be kept in sync, it is written so there will be a syntax error
+# if an item was added to 1 list but not the other, although there is no check
 # in place to be sure the order is kept.
 ARCH3264_LIST = [
     'x86-32',
@@ -91,7 +91,7 @@ ARCH3264_MAP = {
 }
 
 ARCH3264_DICT = dict([(machine, arch_name)
-                      for arch_name, machinelist in ARCH3264_MAP.iteritems()
+                      for arch_name, machinelist in ARCH3264_MAP.items()
                       for machine in machinelist])
 
 ARCH_LIST = [
@@ -115,7 +115,7 @@ ARCH_MAP = {
 }
 
 ARCH_DICT = dict([(arch3264_name, arch_name)
-                  for arch_name, arch3264_list in ARCH_MAP.iteritems()
+                  for arch_name, arch3264_list in ARCH_MAP.items()
                   for arch3264_name in arch3264_list])
 
 def GetArch3264(machine=None):
@@ -126,7 +126,7 @@ def GetArch3264(machine=None):
     # Distinguish between different userland bitness by querying
     # the python binary.
     if (ARCH3264_DICT.get(machine) == ARCH3264_X86_64 and
-            lib.platform.architecture()[0] == '32bit'):
+        lib.platform.architecture()[0] == '32bit'):
       machine = 'ia32'
 
   machine = machine.lower()

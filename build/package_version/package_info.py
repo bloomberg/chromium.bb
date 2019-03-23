@@ -205,7 +205,7 @@ class PackageInfo(object):
             archive = archive_info.ArchiveInfo(archive_info_file=archive_json)
             self._archive_list.append(archive)
 
-    elif isinstance(package_file, basestring):
+    elif isinstance(package_file, str) or isinstance(package_file, unicode):
       package_data = ReadPackageFile(package_file)
       self._package_version = package_data[PACKAGE_KEY_VERSION]
       archive_names = package_data[PACKAGE_KEY_ARCHIVES]
