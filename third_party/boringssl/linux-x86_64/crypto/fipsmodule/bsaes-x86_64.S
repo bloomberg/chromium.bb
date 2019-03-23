@@ -13,11 +13,6 @@
 #endif
 .text	
 
-.extern	aes_nohw_encrypt
-.hidden aes_nohw_encrypt
-.extern	aes_nohw_decrypt
-.hidden aes_nohw_decrypt
-
 .type	_bsaes_encrypt8,@function
 .align	64
 _bsaes_encrypt8:
@@ -1083,18 +1078,14 @@ _bsaes_key_convert:
 	.byte	0xf3,0xc3
 .cfi_endproc	
 .size	_bsaes_key_convert,.-_bsaes_key_convert
-.extern	aes_nohw_cbc_encrypt
-.hidden aes_nohw_cbc_encrypt
 .globl	bsaes_cbc_encrypt
 .hidden bsaes_cbc_encrypt
 .type	bsaes_cbc_encrypt,@function
 .align	16
 bsaes_cbc_encrypt:
 .cfi_startproc	
-	cmpl	$0,%r9d
-	jne	aes_nohw_cbc_encrypt
-	cmpq	$128,%rdx
-	jb	aes_nohw_cbc_encrypt
+
+
 
 	movq	%rsp,%rax
 .Lcbc_dec_prologue:
@@ -1143,6 +1134,8 @@ bsaes_cbc_encrypt:
 
 	movdqu	(%rbx),%xmm14
 	subq	$8,%r14
+	jc	.Lcbc_dec_loop_done
+
 .Lcbc_dec_loop:
 	movdqu	0(%r12),%xmm15
 	movdqu	16(%r12),%xmm0
@@ -1187,6 +1180,7 @@ bsaes_cbc_encrypt:
 	subq	$8,%r14
 	jnc	.Lcbc_dec_loop
 
+.Lcbc_dec_loop_done:
 	addq	$8,%r14
 	jz	.Lcbc_dec_done
 
@@ -1319,13 +1313,12 @@ bsaes_cbc_encrypt:
 	jmp	.Lcbc_dec_done
 .align	16
 .Lcbc_dec_one:
-	leaq	(%r12),%rdi
-	leaq	32(%rbp),%rsi
-	leaq	(%r15),%rdx
-	call	aes_nohw_decrypt
-	pxor	32(%rbp),%xmm14
-	movdqu	%xmm14,(%r13)
-	movdqa	%xmm15,%xmm14
+	movdqa	%xmm14,32(%rbp)
+	call	_bsaes_decrypt8
+	pxor	32(%rbp),%xmm15
+	movdqu	0(%r12),%xmm14
+	movdqu	%xmm15,0(%r13)
+	jmp	.Lcbc_dec_done
 
 .Lcbc_dec_done:
 	movdqu	%xmm14,(%rbx)
@@ -1403,8 +1396,8 @@ bsaes_ctr32_encrypt_blocks:
 	movq	%rdx,%r14
 	movq	%rcx,%r15
 	movdqa	%xmm0,32(%rbp)
-	cmpq	$8,%rdx
-	jb	.Lctr_enc_short
+
+
 
 	movl	%eax,%ebx
 	shlq	$7,%rax
@@ -1538,26 +1531,8 @@ bsaes_ctr32_encrypt_blocks:
 	movdqu	96(%r12),%xmm13
 	pxor	%xmm13,%xmm1
 	movdqu	%xmm1,96(%r13)
-	jmp	.Lctr_enc_done
 
-.align	16
-.Lctr_enc_short:
-	leaq	32(%rbp),%rdi
-	leaq	48(%rbp),%rsi
-	leaq	(%r15),%rdx
-	call	aes_nohw_encrypt
-	movdqu	(%r12),%xmm0
-	leaq	16(%r12),%r12
-	movl	44(%rbp),%eax
-	bswapl	%eax
-	pxor	48(%rbp),%xmm0
-	incl	%eax
-	movdqu	%xmm0,(%r13)
-	bswapl	%eax
-	leaq	16(%r13),%r13
-	movl	%eax,44(%rsp)
-	decq	%r14
-	jnz	.Lctr_enc_short
+
 
 .Lctr_enc_done:
 	leaq	(%rsp),%rax
