@@ -17,11 +17,9 @@ ParseInfo::ParseInfo(const ParseInfo&) = default;
 ParseInfo& ParseInfo::operator=(const ParseInfo&) = default;
 
 std::string ParseInfo::GetErrorDescription() const {
-  // Every error except ERROR_PERSISTING_RULESET and ERROR_LIST_NOT_PASSED
-  // requires |rule_id_|.
+  // Every error except ERROR_PERSISTING_RULESET requires |rule_id_|.
   DCHECK_EQ(!rule_id_.has_value(),
-            result_ == ParseResult::ERROR_PERSISTING_RULESET ||
-                result_ == ParseResult::ERROR_LIST_NOT_PASSED);
+            result_ == ParseResult::ERROR_PERSISTING_RULESET);
 
   std::string error;
   switch (result_) {
@@ -78,9 +76,6 @@ std::string ParseInfo::GetErrorDescription() const {
       break;
     case ParseResult::ERROR_PERSISTING_RULESET:
       error = kErrorPersisting;
-      break;
-    case ParseResult::ERROR_LIST_NOT_PASSED:
-      error = kErrorListNotPassed;
       break;
     case ParseResult::ERROR_NON_ASCII_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
