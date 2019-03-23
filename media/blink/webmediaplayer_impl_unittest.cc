@@ -36,6 +36,7 @@
 #include "media/blink/mock_resource_fetch_context.h"
 #include "media/blink/mock_webassociatedurlloader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
+#include "media/blink/video_decode_stats_reporter.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/services/media_metrics_provider.h"
@@ -463,6 +464,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnVideoNaturalSizeChange(size);
   }
 
+  void OnVideoConfigChange(const VideoDecoderConfig& config) {
+    wmpi_->OnVideoConfigChange(config);
+  }
+
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
@@ -559,6 +564,15 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   gfx::Size GetNaturalSize() const {
     return wmpi_->pipeline_metadata_.natural_size;
+  }
+
+  VideoDecodeStatsReporter* GetVideoStatsReporter() const {
+    return wmpi_->video_decode_stats_reporter_.get();
+  }
+
+  VideoCodecProfile GetVideoStatsReporterCodecProfile() const {
+    DCHECK(GetVideoStatsReporter());
+    return GetVideoStatsReporter()->codec_profile_;
   }
 
   void Load(std::string data_file) {
@@ -1319,11 +1333,66 @@ TEST_F(WebMediaPlayerImplTest, Waiting_NoDecryptionKey) {
   OnWaiting(WaitingReason::kNoDecryptionKey);
 }
 
+TEST_F(WebMediaPlayerImplTest, VideoConfigChange) {
+  InitializeWebMediaPlayerImpl();
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  metadata.video_decoder_config =
+      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
+  metadata.natural_size = gfx::Size(320, 240);
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+  } else {
+    EXPECT_CALL(client_, SetCcLayer(NotNull()));
+  }
+
+  // Arrival of metadata should trigger creation of reporter with video config
+  // with profile matching test config.
+  OnMetadata(metadata);
+  VideoDecodeStatsReporter* last_reporter = GetVideoStatsReporter();
+  ASSERT_NE(nullptr, last_reporter);
+  ASSERT_EQ(VP9PROFILE_PROFILE0, GetVideoStatsReporterCodecProfile());
+
+  // Changing the codec profile should trigger recreation of the reporter.
+  auto new_profile_config =
+      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE1);
+  OnVideoConfigChange(new_profile_config);
+  ASSERT_EQ(VP9PROFILE_PROFILE1, GetVideoStatsReporterCodecProfile());
+  ASSERT_NE(last_reporter, GetVideoStatsReporter());
+  last_reporter = GetVideoStatsReporter();
+
+  // Changing the codec (implies changing profile) should similarly trigger
+  // recreation of the reporter.
+  auto new_codec_config = TestVideoConfig::NormalCodecProfile(kCodecVP8);
+  OnVideoConfigChange(new_codec_config);
+  ASSERT_EQ(VP8PROFILE_MIN, GetVideoStatsReporterCodecProfile());
+  ASSERT_NE(last_reporter, GetVideoStatsReporter());
+  last_reporter = GetVideoStatsReporter();
+
+  // Changing other aspects of the config (like colorspace) should not trigger
+  // recreation of the reporter
+  VideoDecoderConfig new_color_config = TestVideoConfig::NormalWithColorSpace(
+      kCodecVP8, VideoColorSpace::REC709());
+  ASSERT_EQ(VP8PROFILE_MIN, new_color_config.profile());
+  OnVideoConfigChange(new_color_config);
+  ASSERT_EQ(last_reporter, GetVideoStatsReporter());
+  ASSERT_EQ(VP8PROFILE_MIN, GetVideoStatsReporterCodecProfile());
+}
+
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
   metadata.has_video = true;
-  metadata.video_decoder_config = TestVideoConfig::Normal();
+  metadata.video_decoder_config =
+      TestVideoConfig::NormalCodecProfile(kCodecVP8, VP8PROFILE_MIN);
   metadata.natural_size = gfx::Size(320, 240);
 
   if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
@@ -1342,9 +1411,20 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
+  // Arrival of metadata should trigger creation of reporter with original size.
+  VideoDecodeStatsReporter* orig_stats_reporter = GetVideoStatsReporter();
+  ASSERT_NE(nullptr, orig_stats_reporter);
+  ASSERT_TRUE(
+      orig_stats_reporter->MatchesBucketedNaturalSize(gfx::Size(320, 240)));
+
   EXPECT_CALL(client_, SizeChanged());
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
   ASSERT_EQ(blink::WebSize(1920, 1080), wmpi_->NaturalSize());
+
+  // New natural size triggers new reporter to be created.
+  ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
+  ASSERT_TRUE(GetVideoStatsReporter()->MatchesBucketedNaturalSize(
+      gfx::Size(1920, 1080)));
 }
 
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
@@ -1371,10 +1451,21 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
+  // Arrival of metadata should trigger creation of reporter with original size.
+  VideoDecodeStatsReporter* orig_stats_reporter = GetVideoStatsReporter();
+  ASSERT_NE(nullptr, orig_stats_reporter);
+  ASSERT_TRUE(
+      orig_stats_reporter->MatchesBucketedNaturalSize(gfx::Size(320, 240)));
+
   EXPECT_CALL(client_, SizeChanged());
   // For 90/270deg rotations, the natural size should be transposed.
   OnVideoNaturalSizeChange(gfx::Size(1920, 1080));
   ASSERT_EQ(blink::WebSize(1080, 1920), wmpi_->NaturalSize());
+
+  // New natural size triggers new reporter to be created.
+  ASSERT_NE(orig_stats_reporter, GetVideoStatsReporter());
+  ASSERT_TRUE(GetVideoStatsReporter()->MatchesBucketedNaturalSize(
+      gfx::Size(1080, 1920)));
 }
 
 TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
