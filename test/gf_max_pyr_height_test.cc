@@ -21,10 +21,10 @@ static const struct GFMaxPyrHeightTestParam {
   int gf_max_pyr_height;
   double psnr_thresh;
 } kTestParams[] = {
-  { 1, 35.0 },
-  { 2, 35.75 },
-  { 3, 35.85 },
-  { 4, 36.0 },
+  { 1, 34.75 },
+  { 2, 35.25 },
+  { 3, 35.50 },
+  { 4, 35.50 },
 };
 
 // Compiler may decide to add some padding to the struct above for alignment,
