@@ -41,6 +41,8 @@ source_set("cast_runner_core") {
     "cast/cast_runner.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
+    "cast/not_implemented_api_bindings.cc",
+    "cast/not_implemented_api_bindings.h",
     "cast/queryable_data_bindings.cc",
     "cast/queryable_data_bindings.h",
   ]
@@ -48,6 +50,7 @@ source_set("cast_runner_core") {
     "cast/cast_channel_bindings.js",
     "cast/named_message_port_connector.js",
     "cast/queryable_data_bindings.js",
+    "cast/not_implemented_api_bindings.js",
   ]
   deps = [
     "//base",
@@ -140,6 +143,7 @@ test("cast_runner_browsertests") {
   sources = [
     "cast/cast_channel_bindings_browsertest.cc",
     "cast/named_message_port_connector_browsertest.cc",
+    "cast/not_implemented_api_bindings_browsertest.cc",
     "cast/queryable_data_bindings_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -155,6 +159,7 @@ test("cast_runner_browsertests") {
     "//fuchsia/base:test_support",
     "//fuchsia/engine:browsertest_core",
     "//fuchsia/engine:test_support",
+    "//fuchsia/engine:web_engine_core",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/ozone",

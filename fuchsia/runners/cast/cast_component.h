@@ -32,6 +32,8 @@ class CastComponent : public WebComponent,
   ~CastComponent() override;
 
  private:
+  void InitializeCastPlatformBindings();
+
   // WebComponent overrides.
   void DestroyComponent(int termination_exit_code,
                         fuchsia::sys::TerminationReason reason) override;
@@ -47,7 +49,7 @@ class CastComponent : public WebComponent,
   bool constructor_active_ = false;
   NamedMessagePortConnector connector_;
   std::unique_ptr<CastChannelBindings> cast_channel_;
-  QueryableDataBindings queryable_data_;
+  std::unique_ptr<QueryableDataBindings> queryable_data_;
 
   fuchsia::sys::ServiceProviderPtr agent_services_;
   fuchsia::modular::AgentControllerPtr agent_controller_;

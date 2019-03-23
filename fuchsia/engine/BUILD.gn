@@ -157,7 +157,10 @@ component("web_engine_core") {
     "web_engine_main_delegate.cc",
     "web_engine_main_delegate.h",
   ]
-  visibility = [ ":*" ]
+  visibility = [
+    ":*",
+    "//fuchsia/runners:cast_runner_browsertests__exec",
+  ]
 }
 
 executable("web_engine_exe") {
