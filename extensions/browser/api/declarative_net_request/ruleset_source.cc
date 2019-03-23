@@ -52,8 +52,8 @@ std::string GetFilename(const base::FilePath& file_path) {
   return file_path.BaseName().AsUTF8Unsafe();
 }
 
-std::string GetJSONParseError(const std::string& json_ruleset_filename,
-                              const std::string& json_parse_error) {
+std::string GetErrorWithFilename(const std::string& json_ruleset_filename,
+                                 const std::string& json_parse_error) {
   return base::StrCat({json_ruleset_filename, ": ", json_parse_error});
 }
 
@@ -179,7 +179,8 @@ void OnSafeJSONParserSuccess(
     return;
   }
 
-  std::string error = info.GetErrorDescription(GetFilename(source.json_path()));
+  std::string error = GetErrorWithFilename(GetFilename(source.json_path()),
+                                           info.GetErrorDescription());
   std::move(callback).Run(
       IndexAndPersistRulesResult::CreateErrorResult(std::move(error)));
 }
@@ -188,7 +189,7 @@ void OnSafeJSONParserError(RulesetSource::IndexAndPersistRulesCallback callback,
                            const std::string& json_ruleset_filename,
                            const std::string& json_parse_error) {
   std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
-      GetJSONParseError(json_ruleset_filename, json_parse_error)));
+      GetErrorWithFilename(json_ruleset_filename, json_parse_error)));
 }
 
 }  // namespace
@@ -261,7 +262,7 @@ IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {
       nullptr /*error_code*/, &error /*error_message*/);
   if (!root) {
     return IndexAndPersistRulesResult::CreateErrorResult(
-        GetJSONParseError(GetFilename(json_path_), error));
+        GetErrorWithFilename(GetFilename(json_path_), error));
   }
 
   std::vector<InstallWarning> warnings;
@@ -275,7 +276,8 @@ IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {
         ruleset_checksum, std::move(warnings), rules_count, timer.Elapsed());
   }
 
-  error = info.GetErrorDescription(GetFilename(json_path_));
+  error =
+      GetErrorWithFilename(GetFilename(json_path_), info.GetErrorDescription());
   return IndexAndPersistRulesResult::CreateErrorResult(std::move(error));
 }
 
