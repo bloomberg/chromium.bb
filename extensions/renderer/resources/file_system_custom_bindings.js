@@ -4,9 +4,6 @@
 
 // Custom binding for the fileSystem API.
 
-var sendRequest = bindingUtil ?
-    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
-    require('sendRequest').sendRequest;
 var getFileBindingsForApi =
     require('fileEntryBindingUtil').getFileBindingsForApi;
 var fileBindings = getFileBindingsForApi('fileSystem');
@@ -42,9 +39,9 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     var fileSystemName = fileEntry.filesystem.name;
     var relativePath = $String.slice(fileEntry.fullPath, 1);
 
-    sendRequest('fileSystem.retainEntry', [id, fileSystemName, relativePath],
-                bindingUtil ? undefined : this.definition.parameters,
-                undefined);
+    bindingUtil.sendRequest(
+        'fileSystem.retainEntry', [id, fileSystemName, relativePath],
+        undefined, undefined);
     return id;
   });
 
@@ -54,9 +51,8 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     if (savedEntry) {
       safeCallbackApply('fileSystem.isRestorable', {}, callback, [true]);
     } else {
-      sendRequest('fileSystem.isRestorable', [id, callback],
-                  bindingUtil ? undefined : this.definition.parameters,
-                  undefined);
+      bindingUtil.sendRequest('fileSystem.isRestorable', [id, callback],
+                              undefined, undefined);
     }
   });
 

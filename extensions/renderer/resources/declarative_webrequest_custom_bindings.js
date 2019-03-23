@@ -4,18 +4,6 @@
 
 // Custom binding for the declarativeWebRequest API.
 
-var utils = bindingUtil ? undefined : require('utils');
-var validate = bindingUtil ? undefined : require('schemaUtils').validate;
-
-function validateType(schemaTypes, typeName, value) {
-  if (bindingUtil) {
-    bindingUtil.validateType(typeName, value);
-  } else {
-    var schema = utils.lookup(schemaTypes, 'id', typeName);
-    validate([value], [schema]);
-  }
-}
-
 apiBridge.registerCustomHook(function(api) {
   var declarativeWebRequest = api.compiledApi;
 
@@ -33,8 +21,7 @@ apiBridge.registerCustomHook(function(api) {
 
     var qualifiedType = 'declarativeWebRequest.' + typeId;
     instance.instanceType = qualifiedType;
-    validateType(bindingUtil ? undefined : api.schema.types, qualifiedType,
-                 instance);
+    bindingUtil.validateType(qualifiedType, instance);
   }
 
   // Setup all data types for the declarative webRequest API.
