@@ -7,13 +7,17 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.view.ViewGroup;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -25,7 +29,7 @@ import java.util.List;
  * {@link TabStripToolbarCoordinator}, as well as the life-cycle of shared component objects.
  */
 public class TabGroupUiCoordinator
-        implements Destroyable, TabGroupUiMediator.ResetHandler, TabGroupUi {
+        implements TabGroupUiMediator.ResetHandler, TabGroupUi, PauseResumeWithNativeObserver {
     public final static String COMPONENT_NAME = "TabStrip";
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
@@ -34,6 +38,8 @@ public class TabGroupUiCoordinator
     private TabListCoordinator mTabStripCoordinator;
     private TabGroupUiMediator mMediator;
     private TabStripToolbarCoordinator mTabStripToolbarCoordinator;
+    private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+    private ChromeActivity mActivity;
 
     /**
      * Creates a new {@link TabGroupUiCoordinator}
@@ -54,7 +60,7 @@ public class TabGroupUiCoordinator
     public void initializeWithNative(ChromeActivity activity,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController) {
         assert activity instanceof ChromeTabbedActivity;
-
+        mActivity = activity;
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TabContentManager tabContentManager = activity.getTabContentManager();
 
@@ -69,6 +75,8 @@ public class TabGroupUiCoordinator
         mMediator = new TabGroupUiMediator(visibilityController, this, mTabStripToolbarModel,
                 tabModelSelector, activity,
                 ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider);
+        mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();
+        mActivityLifecycleDispatcher.register(this);
     }
 
     /**
@@ -101,5 +109,25 @@ public class TabGroupUiCoordinator
         mTabStripCoordinator.destroy();
         mTabGridSheetCoordinator.destroy();
         mMediator.destroy();
+        mActivityLifecycleDispatcher.unregister(this);
     }
+
+    // PauseResumeWithNativeObserver implementation.
+    @Override
+    public void onResumeWithNative() {
+        // Since we use AsyncTask for restoring tabs, this method can be called before or after
+        // restoring all tabs. Therefore, we skip recording the count here during cold start and
+        // record that elsewhere when TabModel emits the restoreCompleted signal.
+        if (!mActivity.isWarmOnResume()) return;
+
+        TabModelFilterProvider provider =
+                mActivity.getTabModelSelector().getTabModelFilterProvider();
+        int groupCount =
+                ((TabGroupModelFilter) provider.getTabModelFilter(true)).getTabGroupCount();
+        groupCount += ((TabGroupModelFilter) provider.getTabModelFilter(false)).getTabGroupCount();
+        RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", groupCount);
+    }
+
+    @Override
+    public void onPauseWithNative() {}
 }

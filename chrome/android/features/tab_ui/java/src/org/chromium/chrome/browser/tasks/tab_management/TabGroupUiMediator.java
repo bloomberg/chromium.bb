@@ -4,18 +4,19 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -27,7 +28,7 @@ import java.util.List;
  * A mediator for the TabGroupUi. Responsible for managing the
  * internal state of the component.
  */
-public class TabGroupUiMediator implements Destroyable {
+public class TabGroupUiMediator {
     /**
      * Defines an interface for a {@link TabGroupUiMediator} reset event
      * handler.
@@ -112,6 +113,21 @@ public class TabGroupUiMediator implements Destroyable {
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
         };
+
+        new TabModelSelectorTabObserver(mTabModelSelector) {
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                List<Tab> listOfTabs = mTabModelSelector.getTabModelFilterProvider()
+                                               .getCurrentTabModelFilter()
+                                               .getRelatedTabList(tab.getId());
+                int numTabs = listOfTabs.size();
+                // This is set to zero because the UI is hidden.
+                if (numTabs < 2) numTabs = 0;
+
+                RecordHistogram.recordCountHistogram("TabStrip.TabCountOnPageLoad", numTabs);
+            }
+        };
+
         mThemeColorObserver = (color, shouldAnimate)
                 -> mToolbarPropertyModel.set(TabStripToolbarViewProperties.PRIMARY_COLOR, color);
         mTintObserver = (tint,
@@ -157,8 +173,7 @@ public class TabGroupUiMediator implements Destroyable {
         List<Tab> listOfTabs = mTabModelSelector.getTabModelFilterProvider()
                                        .getCurrentTabModelFilter()
                                        .getRelatedTabList(id);
-
-        if (listOfTabs == null || listOfTabs.size() < 2) {
+        if (listOfTabs.size() < 2) {
             mResetHandler.resetStripWithListOfTabs(null);
             mVisibilityController.setBottomControlsVisible(false);
         } else {
@@ -173,7 +188,6 @@ public class TabGroupUiMediator implements Destroyable {
                 .getRelatedTabList(id);
     }
 
-    @Override
     public void destroy() {
         if (mTabModelObserver != null && mTabModelSelector != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
