@@ -58,6 +58,12 @@ Polymer({
 
   /** @private */
   onSubpageTap_: function(event) {
+    // We do not open the subpage if the click was on a link.
+    if (event.target && event.target.tagName == 'A') {
+      event.stopPropagation();
+      return;
+    }
+
     if (this.getPref('crostini.enabled.value')) {
       settings.navigateTo(settings.routes.CROSTINI_DETAILS);
     }
