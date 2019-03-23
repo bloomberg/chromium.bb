@@ -7938,7 +7938,8 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
+          "--recover-devices",
+          "--shard-timeout=300"
         ],
         "merge": {
           "args": [
