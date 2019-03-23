@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
 
@@ -21,30 +23,57 @@ class SimpleDownloadManager;
 // instances so that callers don't need to know about the swap.
 class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator {
  public:
+  class Observer {
+   public:
+    Observer() = default;
+    virtual ~Observer() = default;
+
+    virtual void OnDownloadsInitialized(bool active_downloads_only) {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   SimpleDownloadManagerCoordinator();
   ~SimpleDownloadManagerCoordinator();
 
-  void SetSimpleDownloadManager(SimpleDownloadManager* simple_download_manager);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  void SetSimpleDownloadManager(SimpleDownloadManager* simple_download_manager,
+                                bool has_all_history_downloads);
 
   // See download::DownloadUrlParameters for details about controlling the
   // download.
   void DownloadUrl(std::unique_ptr<DownloadUrlParameters> parameters);
 
-  // Whether downloads are initialized. If |active_downloads_only| is true, this
-  // call only checks for all the active downloads. Otherwise, it will check all
-  // downloads.
-  bool AreDownloadsInitialized(bool active_downloads_only);
-
-  // Gets all the downloads. Caller needs to call AreDownloadsInitialized() to
+  // Gets all the downloads. Caller needs to call has_all_history_downloads() to
   // check if all downloads are initialized. If only active downloads are
   // initialized, this method will only return all active downloads.
-  std::vector<DownloadItem*> GetAllDownloads();
+  void GetAllDownloads(std::vector<DownloadItem*>* downloads);
 
   // Get the download item for |guid|.
-  download::DownloadItem* GetDownloadByGuid(const std::string& guid);
+  DownloadItem* GetDownloadByGuid(const std::string& guid);
+
+  bool has_all_history_downloads() const { return has_all_history_downloads_; }
 
  private:
+  // Called when |simple_download_manager_| is initialized.
+  void OnManagerInitialized(bool has_all_history_downloads);
+
   SimpleDownloadManager* simple_download_manager_;
+
+  // Whether all the history downloads are ready.
+  bool has_all_history_downloads_;
+
+  // Whether this object is initialized and active downloads are ready to be
+  // retrieved.
+  bool initialized_;
+
+  // Observers that want to be notified of changes to the set of downloads.
+  base::ObserverList<Observer>::Unchecked observers_;
+
+  base::WeakPtrFactory<SimpleDownloadManagerCoordinator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDownloadManagerCoordinator);
 };

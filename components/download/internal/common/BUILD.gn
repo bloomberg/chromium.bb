@@ -53,6 +53,7 @@ source_set("internal") {
     "resource_downloader.h",
     "save_package_download_job.cc",
     "save_package_download_job.h",
+    "simple_download_manager.cc",
     "simple_download_manager_coordinator.cc",
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",

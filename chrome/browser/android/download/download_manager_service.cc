@@ -678,7 +678,7 @@ download::DownloadItem* DownloadManagerService::GetDownload(
     bool is_off_the_record) {
   if (in_progress_manager_) {
     DCHECK(!is_off_the_record);
-    return in_progress_manager_->GetInProgressDownload(download_guid);
+    return in_progress_manager_->GetDownloadByGuid(download_guid);
   }
 
   content::DownloadManager* manager = GetDownloadManager(is_off_the_record);

@@ -36,21 +36,35 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // See DownloadUrlParameters for details about controlling the download.
-  virtual void DownloadUrl(
-      std::unique_ptr<download::DownloadUrlParameters> parameters) = 0;
+  SimpleDownloadManager();
+  virtual ~SimpleDownloadManager();
 
-  // Whether downloads are initialized. If |active_downloads_only| is true, this
-  // call only checks for all the active downloads. Otherwise, it will check all
-  // downloads.
-  virtual bool AreDownloadsInitialized(bool active_downloads_only) = 0;
+  // Calls the callback if this object becomes initialized.
+  void NotifyWhenInitialized(base::OnceClosure callback);
 
-  // Gets all downloads.
-  virtual std::vector<DownloadItem*> GetAllDownloads() = 0;
+  // Download a URL given by the |params|. Returns true if the download could
+  // take place, or false otherwise.
+  virtual bool DownloadUrl(
+      std::unique_ptr<DownloadUrlParameters> parameters) = 0;
+
+  using DownloadVector = std::vector<DownloadItem*>;
+  // Add all download items to |downloads|, no matter the type or state, without
+  // clearing |downloads| first.
+  virtual void GetAllDownloads(DownloadVector* downloads) = 0;
 
   // Get the download item for |guid|.
-  virtual download::DownloadItem* GetDownloadByGuid(
-      const std::string& guid) = 0;
+  virtual DownloadItem* GetDownloadByGuid(const std::string& guid) = 0;
+
+ protected:
+  // Called when the manager is initailized.
+  void OnInitialized();
+
+  // Whether this object is initialized.
+  bool initialized_ = false;
+
+ private:
+  // Callbacks to call once this object is initialized.
+  std::vector<base::OnceClosure> on_initialized_callbacks_;
 };
 
 }  // namespace download

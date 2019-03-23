@@ -11,19 +11,41 @@
 
 namespace download {
 
-SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator() = default;
+SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator()
+    : simple_download_manager_(nullptr),
+      has_all_history_downloads_(false),
+      initialized_(false),
+      weak_factory_(this) {}
 
 SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() = default;
 
 void SimpleDownloadManagerCoordinator::SetSimpleDownloadManager(
-    SimpleDownloadManager* simple_download_manager) {
+    SimpleDownloadManager* simple_download_manager,
+    bool manages_all_history_downloads) {
+  DCHECK(simple_download_manager_);
   simple_download_manager_ = simple_download_manager;
+  simple_download_manager_->NotifyWhenInitialized(base::BindOnce(
+      &SimpleDownloadManagerCoordinator::OnManagerInitialized,
+      weak_factory_.GetWeakPtr(), manages_all_history_downloads));
+}
+
+void SimpleDownloadManagerCoordinator::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SimpleDownloadManagerCoordinator::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void SimpleDownloadManagerCoordinator::DownloadUrl(
-    std::unique_ptr<download::DownloadUrlParameters> parameters) {
+    std::unique_ptr<DownloadUrlParameters> parameters) {
   if (simple_download_manager_)
     simple_download_manager_->DownloadUrl(std::move(parameters));
+}
+
+void SimpleDownloadManagerCoordinator::GetAllDownloads(
+    std::vector<DownloadItem*>* downloads) {
+  simple_download_manager_->GetAllDownloads(downloads);
 }
 
 DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
@@ -33,14 +55,12 @@ DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
   return nullptr;
 }
 
-bool SimpleDownloadManagerCoordinator::AreDownloadsInitialized(
-    bool active_downloads_only) {
-  return simple_download_manager_->AreDownloadsInitialized(
-      active_downloads_only);
-}
-
-std::vector<DownloadItem*> SimpleDownloadManagerCoordinator::GetAllDownloads() {
-  return simple_download_manager_->GetAllDownloads();
+void SimpleDownloadManagerCoordinator::OnManagerInitialized(
+    bool has_all_history_downloads) {
+  initialized_ = true;
+  has_all_history_downloads_ = has_all_history_downloads;
+  for (auto& observer : observers_)
+    observer.OnDownloadsInitialized(!has_all_history_downloads);
 }
 
 }  // namespace download

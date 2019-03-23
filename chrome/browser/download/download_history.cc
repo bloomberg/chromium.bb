@@ -252,12 +252,10 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
       initial_history_query_complete_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::DownloadManager::DownloadVector items;
+  download::SimpleDownloadManager::DownloadVector items;
   notifier_.GetManager()->GetAllDownloads(&items);
-  for (content::DownloadManager::DownloadVector::const_iterator
-       it = items.begin(); it != items.end(); ++it) {
-    OnDownloadCreated(notifier_.GetManager(), *it);
-  }
+  for (auto* item : items)
+    OnDownloadCreated(notifier_.GetManager(), item);
   history_->QueryDownloads(base::Bind(
       &DownloadHistory::QueryCallback, weak_ptr_factory_.GetWeakPtr()));
 }
