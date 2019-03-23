@@ -55,6 +55,40 @@ device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
   return session_options;
 }
 
+XRSession::SessionMode stringToSessionMode(const String& mode_string) {
+  if (mode_string == "inline") {
+    return XRSession::kModeInline;
+  }
+  if (mode_string == "legacy-inline-ar") {
+    return XRSession::kModeInlineAR;
+  }
+  if (mode_string == "immersive-vr") {
+    return XRSession::kModeImmersiveVR;
+  }
+  if (mode_string == "immersive-ar") {
+    return XRSession::kModeImmersiveAR;
+  }
+
+  NOTREACHED();  // Only strings in the enum are allowed by IDL.
+  return XRSession::kModeInline;
+}
+
+String sessionModeToString(XRSession::SessionMode mode) {
+  switch (mode) {
+    case XRSession::kModeInline:
+      return "inline";
+    case XRSession::kModeInlineAR:
+      return "legacy-inline-ar";
+    case XRSession::kModeImmersiveVR:
+      return "immersive-vr";
+    case XRSession::kModeImmersiveAR:
+      return "immersive-ar";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 XR::PendingSessionQuery::PendingSessionQuery(
@@ -121,7 +155,7 @@ void XR::AddEnvironmentProviderErrorHandler(
 ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
                                       const String& mode) {
   LocalFrame* frame = GetFrame();
-  if (!frame) {
+  if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -141,13 +175,14 @@ ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (mode == "inline") {
+  XRSession::SessionMode session_mode = stringToSessionMode(mode);
+  if (session_mode == XRSession::kModeInline) {
     // `inline` sessions are always supported if not blocked by feature policy.
     resolver->Resolve();
   } else {
     // For all other modes we need to check with the service.
-    PendingSessionQuery* query = MakeGarbageCollected<PendingSessionQuery>(
-        resolver, XRSession::stringToSessionMode(mode));
+    PendingSessionQuery* query =
+        MakeGarbageCollected<PendingSessionQuery>(resolver, session_mode);
 
     if (!device_) {
       pending_mode_queries_.push_back(query);
@@ -183,7 +218,7 @@ void XR::DispatchSupportsSessionMode(PendingSessionQuery* query) {
 ScriptPromise XR::requestSession(ScriptState* script_state,
                                  const XRSessionCreationOptions* options) {
   LocalFrame* frame = GetFrame();
-  if (!frame) {
+  if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -191,9 +226,11 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   }
 
   Document* doc = frame->GetDocument();
-  bool immersive =
-      (options->mode() == "immersive-vr" || options->mode() == "immersive-ar");
-  if (immersive && !did_log_request_immersive_session_ && doc) {
+  XRSession::SessionMode mode = stringToSessionMode(options->mode());
+  bool is_immersive = mode == XRSession::kModeImmersiveVR ||
+                      mode == XRSession::kModeImmersiveAR;
+
+  if (is_immersive && !did_log_request_immersive_session_) {
     ukm::builders::XR_WebXR(GetSourceId())
         .SetDidRequestPresentation(1)
         .Record(doc->UkmRecorder());
@@ -216,35 +253,23 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                            kNoDevicesMessage));
   }
 
-  // TODO(ijamardo): Should we just exit if there is not document?
-  bool has_user_activation =
-      LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr);
-
-  // Check if the current page state prevents the requested session from being
-  // created.
-  if (options->mode() == "immersive-vr" || options->mode() == "immersive-ar") {
-    if (frameProvider()->immersive_session()) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                               kActiveImmersiveSession));
-    }
-
-    if (!has_user_activation) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                             kRequestRequiresUserActivation));
-    }
+  // Only one immersive session can be active at a time.
+  if (is_immersive && frameProvider()->immersive_session()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kActiveImmersiveSession));
   }
 
-  // All AR sessions require a user gesture.
-  if (options->mode() == "legacy-inline-ar") {
-    if (!has_user_activation) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                             kRequestRequiresUserActivation));
-    }
+  // All immersive and AR sessions require a user gesture.
+  bool has_user_activation = LocalFrame::HasTransientUserActivation(frame);
+  if ((is_immersive || mode == XRSession::kModeInlineAR) &&
+      !has_user_activation) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kRequestRequiresUserActivation));
+  }
 
+  if (mode == XRSession::kModeInlineAR) {
     doc->AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Inline AR is deprecated and will be removed soon."));
@@ -253,8 +278,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  PendingSessionQuery* query = MakeGarbageCollected<PendingSessionQuery>(
-      resolver, XRSession::stringToSessionMode(options->mode()));
+  PendingSessionQuery* query =
+      MakeGarbageCollected<PendingSessionQuery>(resolver, mode);
   query->has_user_activation = has_user_activation;
 
   if (!device_) {
@@ -475,7 +500,7 @@ XRSession* XR::CreateSession(
     device::mojom::blink::VRDisplayInfoPtr display_info) {
   XRSession* session = MakeGarbageCollected<XRSession>(
       this, client_request ? std::move(client_request) : nullptr, mode,
-      blend_mode);
+      sessionModeToString(mode), blend_mode);
   if (display_info)
     session->SetXRDisplayInfo(std::move(display_info));
   sessions_.insert(session);

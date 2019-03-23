@@ -48,25 +48,24 @@ class XRSession final : public EventTargetWithInlineData,
 
  public:
   enum SessionMode {
-    kModeUnknown = 0,
-    kModeInline = 1,
-    kModeImmersiveVR = 2,
-    kModeImmersiveAR = 3,
-    kModeInlineAR = 4
+    kModeInline = 0,
+    kModeImmersiveVR,
+    kModeImmersiveAR,
+    kModeInlineAR
   };
-
-  static SessionMode stringToSessionMode(const String&);
-  static String sessionModeToString(SessionMode);
 
   enum EnvironmentBlendMode {
-    kBlendModeOpaque = 1,
-    kBlendModeAdditive = 2,
-    kBlendModeAlphaBlend = 3
+    kBlendModeOpaque = 0,
+    kBlendModeAdditive,
+    kBlendModeAlphaBlend
   };
 
+  // TODO(ddorwin): If https://github.com/immersive-web/webxr/issues/513 is
+  // resolved in favor of removing `mode`, remove |mode_string|.
   XRSession(XR*,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
+            const String& mode_string,
             EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 

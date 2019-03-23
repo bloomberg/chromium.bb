@@ -107,49 +107,15 @@ class XRSession::XRSessionResizeObserverDelegate final
   Member<XRSession> session_;
 };
 
-XRSession::SessionMode XRSession::stringToSessionMode(
-    const String& mode_string) {
-  if (mode_string == "inline") {
-    return kModeInline;
-  }
-  if (mode_string == "legacy-inline-ar") {
-    return kModeInlineAR;
-  }
-  if (mode_string == "immersive-vr") {
-    return kModeImmersiveVR;
-  }
-  if (mode_string == "immersive-ar") {
-    return kModeImmersiveAR;
-  }
-
-  return kModeUnknown;
-}
-
-String XRSession::sessionModeToString(XRSession::SessionMode mode) {
-  if (mode == kModeInline) {
-    return "inline";
-  }
-  if (mode == kModeInlineAR) {
-    return "legacy-inline-ar";
-  }
-  if (mode == kModeImmersiveVR) {
-    return "immersive-vr";
-  }
-  if (mode == kModeImmersiveAR) {
-    return "immersive-ar";
-  }
-
-  return "";
-}
-
 XRSession::XRSession(
     XR* xr,
     device::mojom::blink::XRSessionClientRequest client_request,
     XRSession::SessionMode mode,
+    const String& mode_string,
     EnvironmentBlendMode environment_blend_mode)
     : xr_(xr),
       mode_(mode),
-      mode_string_(sessionModeToString(mode)),
+      mode_string_(mode_string),
       environment_integration_(mode == kModeInlineAR ||
                                mode == kModeImmersiveAR),
       client_binding_(this, std::move(client_request)),
