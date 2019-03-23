@@ -40,7 +40,9 @@ kioskNextHome.Bridge = class {
   getAccessToken(scopes) {}
 
   /**
-   * Returns the Android ID for the ARC++ container.
+   * Returns the Android ID for the ARC++ container. This call might fail if the
+   * ARC provisioning is not complete (i.e. user has not finished the ARC setup
+   * flow).
    * @return {!Promise<string>} Promise for the Android ID.
    */
   getAndroidId() {}

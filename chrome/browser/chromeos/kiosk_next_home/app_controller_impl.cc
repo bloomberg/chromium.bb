@@ -7,10 +7,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
@@ -57,6 +61,18 @@ void AppControllerImpl::LaunchApp(const std::string& app_id) {
   app_service_proxy_->Launch(app_id, ui::EventFlags::EF_NONE,
                              apps::mojom::LaunchSource::kFromAppListGrid,
                              display::kDefaultDisplayId);
+}
+
+void AppControllerImpl::GetArcAndroidId(
+    mojom::AppController::GetArcAndroidIdCallback callback) {
+  arc::GetAndroidId(base::BindOnce(
+      [](mojom::AppController::GetArcAndroidIdCallback callback, bool success,
+         int64_t android_id) {
+        // We need the string version of the Android ID since the int64_t
+        // is too big for Javascript.
+        std::move(callback).Run(success, base::NumberToString(android_id));
+      },
+      std::move(callback)));
 }
 
 void AppControllerImpl::OnAppUpdate(const apps::AppUpdate& update) {

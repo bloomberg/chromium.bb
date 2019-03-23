@@ -135,8 +135,12 @@ class KioskNextHomeBridge {
 
   /** @override */
   getAndroidId() {
-    // TODO(brunoad): Implement this method.
-    return Promise.reject('Not implemented.');
+    return this.appControllerProxy_.getArcAndroidId().then(response => {
+      if (response.success) {
+        return response.androidId;
+      }
+      throw 'Unable to get Android id.';
+    });
   }
 
   /** @override */
