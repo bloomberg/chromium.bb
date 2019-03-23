@@ -154,7 +154,7 @@
 
       /* A thin separator line under a list item. */
       .list-item.underbar {
-        border-bottom: var(--settings-separator-line);
+        border-bottom: var(--cr-separator-line);
       }
 
       .list-item.selected {
@@ -310,14 +310,14 @@
 
       /* Helper for a list frame to automatically avoid the separator line. */
       .vertical-list > *:not(:first-of-type) {
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
       }
 
       /* The separator a vertical line like a horizontal rule <hr> tag, but goes
        * the other way. An example is near the |sign out| button on the People
        * settings. */
       .separator {
-        border-inline-start: var(--settings-separator-line);
+        border-inline-start: var(--cr-separator-line);
         flex-shrink: 0;
         /* Match paper-button's default height. */
         height: 32px;
