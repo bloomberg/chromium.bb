@@ -1845,6 +1845,11 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (!pipeline_metadata_.video_decoder_config.IsValidConfig())
     return;
 
+  if (pipeline_metadata_.video_decoder_config.profile() ==
+      VIDEO_CODEC_PROFILE_UNKNOWN) {
+    return;
+  }
+
   // For now MediaCapabilities only handles clear content.
   // TODO(chcunningham): Report encrypted stats.
   if (is_encrypted_)
@@ -1859,7 +1864,8 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       std::move(recorder),
       base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
                  base::Unretained(this)),
-      pipeline_metadata_.video_decoder_config,
+      pipeline_metadata_.video_decoder_config.profile(),
+      pipeline_metadata_.natural_size,
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   if (delegate_->IsFrameHidden())
@@ -2069,8 +2075,11 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   pipeline_metadata_.natural_size = rotated_size;
   UpdateSecondaryProperties();
 
-  if (video_decode_stats_reporter_)
-    video_decode_stats_reporter_->OnNaturalSizeChanged(rotated_size);
+  if (video_decode_stats_reporter_ &&
+      !video_decode_stats_reporter_->MatchesBucketedNaturalSize(
+          pipeline_metadata_.natural_size)) {
+    CreateVideoDecodeStatsReporter();
+  }
 
   client_->SizeChanged();
 
@@ -2112,19 +2121,19 @@ void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
 
   const bool codec_change =
       pipeline_metadata_.video_decoder_config.codec() != config.codec();
+  const bool codec_profile_change =
+      pipeline_metadata_.video_decoder_config.profile() != config.profile();
 
-  // TODO(chcunningham): Observe changes to video codec profile to signal
-  // beginning of a new Media Capabilities playback report.
   pipeline_metadata_.video_decoder_config = config;
 
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
 
-  if (video_decode_stats_reporter_)
-    video_decode_stats_reporter_->OnVideoConfigChanged(config);
-
   if (codec_change)
     UpdateSecondaryProperties();
+
+  if (video_decode_stats_reporter_ && codec_profile_change)
+    CreateVideoDecodeStatsReporter();
 }
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
