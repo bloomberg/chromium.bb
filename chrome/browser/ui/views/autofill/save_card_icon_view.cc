@@ -85,10 +85,6 @@ SaveCardBubbleControllerImpl* SaveCardIconView::GetController() const {
   return autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
 }
 
-bool SaveCardIconView::ShouldShowSeparator() const {
-  return false;
-}
-
 void SaveCardIconView::AnimationEnded(const gfx::Animation* animation) {
   IconLabelBubbleView::AnimationEnded(animation);
 

@@ -59,10 +59,6 @@ views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {
   return nullptr;
 }
 
-bool PwaInstallView::ShouldShowSeparator() const {
-  return false;
-}
-
 const gfx::VectorIcon& PwaInstallView::GetVectorIcon() const {
   return omnibox::kPlusIcon;
 }

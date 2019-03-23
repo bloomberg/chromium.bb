@@ -442,6 +442,8 @@ class LocationBarView : public LocationBar,
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;
 
+  bool is_initialized_ = false;
+
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>
       md_observer_{this};

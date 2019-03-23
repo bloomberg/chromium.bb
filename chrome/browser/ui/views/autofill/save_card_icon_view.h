@@ -30,7 +30,6 @@ class SaveCardIconView : public PageActionIconView {
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
-  bool ShouldShowSeparator() const override;
 
  protected:
   // PageActionIconView:

@@ -280,10 +280,12 @@ void LocationBarView::Init() {
   Update(nullptr);
 
   hover_animation_.SetSlideDuration(200);
+
+  is_initialized_ = true;
 }
 
 bool LocationBarView::IsInitialized() const {
-  return omnibox_view_ != nullptr;
+  return is_initialized_;
 }
 
 SkColor LocationBarView::GetColor(OmniboxPart part) const {

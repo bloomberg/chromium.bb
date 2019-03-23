@@ -30,9 +30,6 @@ class LocalCardMigrationIconView : public PageActionIconView {
   bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
-  // IconLabelBubbleView:
-  bool ShouldShowSeparator() const override;
-
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
