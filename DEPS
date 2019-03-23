@@ -166,6 +166,10 @@ vars = {
   # and whatever else without interference from each other.
   'google_toolbox_for_mac_revision': 'aa1a3d2d447905999f119efbb70b3786c5eafa13',
   # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling googletest
+  # and whatever else without interference from each other.
+  'googletest_revision': '8b6d3f9c4a774bef3081195d422993323b6bb2e0',
+  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
   'lighttpd_revision': '9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
@@ -914,7 +918,7 @@ deps = {
   },
 
   'src/third_party/googletest/src':
-    Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '8b6d3f9c4a774bef3081195d422993323b6bb2e0',
+    Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + Var('googletest_revision'),
 
   # GNU binutils assembler for x86-32.
   'src/third_party/gnu_binutils': {
