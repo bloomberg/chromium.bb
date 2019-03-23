@@ -7,12 +7,13 @@
 
 
 import os
-import platform
 import shutil
 import stat
 import sys
 import tempfile
 import time
+
+import pynacl.platform
 
 
 def AtomicWriteFile(data, filename):
@@ -230,7 +231,7 @@ def Retry(op, *args, **kwargs):
   # immediately, etc.
   # Virus checkers can also accidently prevent files from being deleted, but
   # that shouldn't be a problem on the bots.
-  if platform.IsWindows():
+  if pynacl.platform.IsWindows():
     count = 0
     while True:
       try:

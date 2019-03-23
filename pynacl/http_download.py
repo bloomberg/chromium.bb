@@ -18,7 +18,7 @@ try:
 except ImportError:  # For Py3 compatibility
   import urllib.request as urllib
 
-import download_utils
+import pynacl.download_utils
 
 
 def _CreateDirectory(path):
@@ -69,7 +69,7 @@ def HttpDownload(url, target, username=None, password=None, verbose=True,
       # 30 second timeout to ensure we fail and retry on stalled connections.
       src = urllib.urlopen(url, timeout=30)
       try:
-        download_utils.WriteDataFromStream(
+        pynacl.download_utils.WriteDataFromStream(
             target, src, chunk_size=2**20, verbose=verbose)
         content_len = src.headers.get('Content-Length')
         if content_len:

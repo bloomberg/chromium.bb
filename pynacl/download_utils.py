@@ -21,7 +21,7 @@ try:
 except ImportError:  # For Py3 compatibility
   import urllib.request as urllib
 
-import http_download
+import pynacl.http_download
 
 SOURCE_STAMP = 'SOURCE_URL'
 HASH_STAMP = 'SOURCE_SHA1'
@@ -243,7 +243,7 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
   if verbose:
     print('Updating %s\n\tfrom %s.' % (filename, url))
   EnsureFileCanBeWritten(filename)
-  http_download.HttpDownload(url, filename)
+  pynacl.http_download.HttpDownload(url, filename)
 
   if hash_val:
     tar_hash = HashFile(filename)
