@@ -47,7 +47,7 @@ group.testf("memcpy", GPUTest, async (t) => {
     computeStage: { module, entryPoint: "main" },
   });
 
-  const encoder = t.device.createCommandEncoder({})
+  const encoder = t.device.createCommandEncoder({});
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bg);
