@@ -1185,7 +1185,8 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandSendTabToSelf: {
-      base::RecordAction(UserMetricsAction("TabContextMenu_SendToMyDevices"));
+      base::RecordAction(
+          UserMetricsAction("TabContextMenu_SendTabToSelf_Clicked"));
       send_tab_to_self::CreateNewEntry(GetActiveWebContents(), profile_);
       break;
     }

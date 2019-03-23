@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
@@ -16,6 +17,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using base::UserMetricsAction;
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                            TabStripModel* tab_strip,
@@ -82,6 +85,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(tab_strip->GetWebContentsAt(index));
   if (send_tab_to_self::ShouldOfferFeature(browser)) {
+    base::RecordAction(UserMetricsAction("TabContextMenu_SendTabToSelf_Shown"));
     AddItemWithStringId(TabStripModel::CommandSendTabToSelf,
                         IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
   }
