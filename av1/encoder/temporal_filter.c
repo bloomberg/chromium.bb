@@ -1253,9 +1253,8 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   // Apply context specific adjustments to the arnr filter parameters.
   if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
     // TODO(weitinglin): Currently, we enforce the filtering strength on
-    //                   extra ARFs' to be zeros. We should investigate in which
-    //                   case it is more beneficial to use non-zero strength
-    //                   filtering.
+    // internal ARFs to be zeros. We should investigate in which case it is more
+    // beneficial to use non-zero strength filtering.
     strength = 0;
     frames_to_blur = 1;
   } else {

@@ -576,18 +576,23 @@ static void allocate_gf_group_bits(
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &twopass->gf_group;
-  int i;
-  int frame_index = 0;
-  const int key_frame = frame_params->frame_type == KEY_FRAME;
+  const int key_frame = (frame_params->frame_type == KEY_FRAME);
   const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
   int64_t total_group_bits = gf_group_bits;
-  int ext_arf_boost[MAX_EXT_ARFS];
 
-  av1_zero_array(ext_arf_boost, MAX_EXT_ARFS);
+  // Check if GF group has any internal arfs.
+  int has_internal_arfs = 0;
+  for (int i = 0; i < gf_group->size; ++i) {
+    if (gf_group->update_type[i] == INTNL_ARF_UPDATE) {
+      has_internal_arfs = 1;
+      break;
+    }
+  }
 
   // For key frames the frame target rate is already set and it
   // is also the golden frame.
   // === [frame_index == 0] ===
+  int frame_index = 0;
   if (!key_frame) {
     if (rc->source_alt_ref_active)
       gf_group->bit_allocation[frame_index] = 0;
@@ -612,11 +617,12 @@ static void allocate_gf_group_bits(
 
     ++frame_index;
 
-    // Skip all the extra-ARF's right after ARF at the starting segment of
+    // Skip all the internal ARFs right after ARF at the starting segment of
     // the current GF group.
-    if (cpi->num_extra_arfs) {
-      while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE)
+    if (has_internal_arfs) {
+      while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE) {
         ++frame_index;
+      }
     }
   }
 
@@ -628,7 +634,7 @@ static void allocate_gf_group_bits(
   // overlay frame or golden frame.
   const int normal_frames = rc->baseline_gf_interval - 1;
 
-  for (i = 0; i < normal_frames; ++i) {
+  for (int i = 0; i < normal_frames; ++i) {
     FIRSTPASS_STATS frame_stats;
     if (EOF == input_stats(twopass, &frame_stats)) break;
 
@@ -653,7 +659,7 @@ static void allocate_gf_group_bits(
     } else {
       assert(gf_group->update_type[frame_index] == LF_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
-      if (cpi->num_extra_arfs > 0) {
+      if (has_internal_arfs) {
         const int this_budget_reduction =
             (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
         gf_group->bit_allocation[frame_index] -= this_budget_reduction;
@@ -663,20 +669,20 @@ static void allocate_gf_group_bits(
 
     ++frame_index;
 
-    // Skip all the extra-ARF's.
-    if (cpi->num_extra_arfs) {
+    // Skip all the internal ARFs.
+    if (has_internal_arfs) {
       while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE)
         ++frame_index;
     }
   }
 
   if (budget_reduced_from_leaf_level > 0) {
-    assert(cpi->num_extra_arfs > 0);
+    assert(has_internal_arfs);
     // Restore.
     frame_index = tmp_frame_index;
 
     // Re-distribute this extra budget to overlay frames in the group.
-    for (i = 0; i < normal_frames; ++i) {
+    for (int i = 0; i < normal_frames; ++i) {
       if (gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
         assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
                "non-valid height for a pyramid structure");
@@ -692,10 +698,11 @@ static void allocate_gf_group_bits(
       }
       ++frame_index;
 
-      // Skip all the extra-ARF's.
-      if (cpi->num_extra_arfs) {
-        while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE)
+      // Skip all the internal ARFs.
+      if (has_internal_arfs) {
+        while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE) {
           ++frame_index;
+        }
       }
     }
   }
@@ -766,7 +773,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                             frame_params->frame_type == INTRA_ONLY_FRAME;
   const int arf_active_or_kf = is_intra_only || rc->source_alt_ref_active;
 
-  cpi->extra_arf_allowed = (oxcf->gf_max_pyr_height > 1);
+  cpi->internal_altref_allowed = (oxcf->gf_max_pyr_height > 1);
 
   // Reset the GF group data structures unless this is a key
   // frame in which case it will already have been done.
@@ -893,17 +900,16 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   if (non_zero_stdev_count) avg_raw_err_stdev /= non_zero_stdev_count;
 
-  // Disable extra altrefs and backward refs for "still" gf group:
+  // Disable internal ARFs for "still" gf groups.
   //   zero_motion_accumulator: minimum percentage of (0,0) motion;
   //   avg_sr_coded_error:      average of the SSE per pixel of each frame;
   //   avg_raw_err_stdev:       average of the standard deviation of (0,0)
   //                            motion error per block of each frame.
-  const int disable_bwd_extarf =
-      (zero_motion_accumulator > MIN_ZERO_MOTION &&
-       avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
-       avg_raw_err_stdev < MAX_RAW_ERR_VAR);
-
-  if (disable_bwd_extarf) cpi->extra_arf_allowed = 0;
+  if (zero_motion_accumulator > MIN_ZERO_MOTION &&
+      avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
+      avg_raw_err_stdev < MAX_RAW_ERR_VAR) {
+    cpi->internal_altref_allowed = 0;
+  }
 
   const int use_alt_ref =
       !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct) &&
@@ -919,7 +925,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // work well for certain other cases.
   const int allow_gf_length_reduction =
       ((cpi->oxcf.rc_mode == AOM_Q && cpi->oxcf.cq_level <= 128) ||
-       cpi->extra_arf_allowed == 0) &&
+       !cpi->internal_altref_allowed) &&
       !is_lossless_requested(&cpi->oxcf);
 
   if (allow_gf_length_reduction && use_alt_ref) {
@@ -995,23 +1001,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     if (rc->frames_to_key - i == REDUCE_GF_LENGTH_BY ||
         rc->frames_to_key - i == 0) {
       rc->arf_boost_factor = LAST_ALR_BOOST_FACTOR;
-    }
-  }
-
-  if (!cpi->extra_arf_allowed) {
-    cpi->num_extra_arfs = 0;
-  } else {
-    // Calculate 'num_extra_arfs' (internal alt-refs) that we are allowed.
-    // Note: When new pyramid structure is used through
-    // 'define_pyramid_gf_group_structure()' function, this value is
-    // overridden.
-    if (rc->baseline_gf_interval == MIN_GF_INTERVAL &&
-        rc->source_alt_ref_pending) {
-      cpi->num_extra_arfs = 1;
-    } else {
-      cpi->num_extra_arfs = get_number_of_extra_arfs(rc->baseline_gf_interval,
-                                                     rc->source_alt_ref_pending,
-                                                     oxcf->gf_max_pyr_height);
     }
   }
 

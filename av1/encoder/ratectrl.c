@@ -1340,7 +1340,7 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
   //                   updated and cpi->refresh_golden_frame will still be zero.
   if (cpi->refresh_golden_frame || rc->is_src_frame_alt_ref) {
     // We will not use internal overlay frames to replace the golden frame
-    if (!rc->is_src_frame_ext_arf) {
+    if (!rc->is_src_frame_internal_arf) {
       // this frame refreshes means next frames don't unless specified by user
       rc->frames_since_golden = 0;
     }

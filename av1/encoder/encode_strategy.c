@@ -40,7 +40,7 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
   cpi->rc.is_src_frame_alt_ref = 0;
-  cpi->rc.is_src_frame_ext_arf = 0;
+  cpi->rc.is_src_frame_internal_arf = 0;
 
   switch (type) {
     case KF_UPDATE:
@@ -96,7 +96,7 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       frame_params->refresh_alt_ref_frame = 0;
 
       cpi->rc.is_src_frame_alt_ref = 1;
-      cpi->rc.is_src_frame_ext_arf = 1;
+      cpi->rc.is_src_frame_internal_arf = 1;
       break;
 
     case INTNL_ARF_UPDATE:
@@ -328,7 +328,7 @@ static int get_current_frame_ref_type(
       cpi->ext_use_primary_ref_none)
     return REGULAR_FRAME;
   else if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE)
-    return EXT_ARF_FRAME;
+    return INTERNAL_ARF_FRAME;
   else if (frame_params->refresh_alt_ref_frame)
     return ARF_FRAME;
   else if (cpi->rc.is_src_frame_alt_ref)
@@ -456,37 +456,35 @@ static void adjust_frame_rate(AV1_COMP *cpi,
   cpi->last_end_time_stamp_seen = source->ts_end;
 }
 
-// Returns 0 if this is not an alt ref else the offset of the source frame
-// used as the arf midpoint.
+// If this is an alt-ref, returns the offset of the source frame used
+// as the arf midpoint. Otherwise, returns 0.
 static int get_arf_src_index(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   int arf_src_index = 0;
-  if (is_altref_enabled(cpi)) {
-    if (cpi->oxcf.pass == 2) {
-      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-      if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
-        arf_src_index = gf_group->arf_src_offset[gf_group->index];
-      }
-    } else if (rc->source_alt_ref_pending) {
-      arf_src_index = rc->frames_till_gf_update_due;
+  if (cpi->oxcf.pass == 2) {
+    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+      assert(is_altref_enabled(cpi));
+      arf_src_index = gf_group->arf_src_offset[gf_group->index];
     }
+  } else if (rc->source_alt_ref_pending) {
+    arf_src_index = rc->frames_till_gf_update_due;
   }
   return arf_src_index;
 }
 
-// Returns 0 if this is not an alt ref else the offset of the source frame
-// used as the arf midpoint.
-static int get_arf2_src_index(AV1_COMP *cpi) {
-  int arf2_src_index = 0;
-  if (is_altref_enabled(cpi) && cpi->num_extra_arfs) {
-    if (cpi->oxcf.pass == 2) {
-      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-      if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
-        arf2_src_index = gf_group->arf_src_offset[gf_group->index];
-      }
+// If this is an internal alt-ref, returns the offset of the source frame used
+// as the internal arf midpoint. Otherwise, returns 0.
+static int get_internal_arf_src_index(AV1_COMP *cpi) {
+  int internal_arf_src_index = 0;
+  if (cpi->oxcf.pass == 2) {
+    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
+      assert(is_altref_enabled(cpi) && cpi->internal_altref_allowed);
+      internal_arf_src_index = gf_group->arf_src_offset[gf_group->index];
     }
   }
-  return arf2_src_index;
+  return internal_arf_src_index;
 }
 
 // Called if this frame is an ARF or ARF2. Also handles forward-keyframes
@@ -549,7 +547,7 @@ static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
   return 0;  // Never reached
 }
 
-// Check if we should encode an ARF, ARF2 or BRF.  If not, try a LAST
+// Check if we should encode an ARF or internal ARF.  If not, try a LAST
 // Do some setup associated with the chosen source
 // temporal_filtered, flush, and frame_update_type are outputs.
 // Return the frame source, or NULL if we couldn't find one
@@ -575,8 +573,8 @@ struct lookahead_entry *choose_frame_source(
     *frame_update_type = ARF_UPDATE;
   }
 
-  // Should we encode an arf2 frame (mutually exclusive to ARF)
-  arf_src_index = get_arf2_src_index(cpi);
+  // Should we encode an internal Alt-ref frame (mutually exclusive to ARF)
+  arf_src_index = get_internal_arf_src_index(cpi);
   if (arf_src_index &&
       is_forced_keyframe_pending(cpi->lookahead, arf_src_index)) {
     arf_src_index = 0;
@@ -753,7 +751,7 @@ static void update_ref_frame_map(AV1_COMP *cpi,
     return;
   }
 
-  // Initialise the new reference map as a copy of the old one.
+  // Initialize the new reference map as a copy of the old one.
   int new_map[REF_FRAMES];
   memcpy(new_map, cm->remapped_ref_idx, sizeof(new_map));
 
@@ -770,30 +768,18 @@ static void update_ref_frame_map(AV1_COMP *cpi,
   //   then point the LAST_FRAME reference at it.  The old LAST_FRAME becomes
   //   LAST2_FRAME and the old LAST2_FRAME becomes LAST3_FRAME.  The old
   //   LAST3_FRAME is re-used somewhere else.
-  // * With the old, flat, GOP structure (cpi->new_bwdref_update_rule == 0):
-  //   * When we code an internal-ARF or BRF it just refreshes the ALTREF2 or
-  //     BWDREF buffer respectively and we don't reassign anything.
-  //   * When we code an INTNL_OVERLAY we refresh the ALTREF2 buffer which then
-  //     gets pushed into the last-frame FIFO.  LAST3 gets pushed out of the
-  //     last-frame FIFO and becomes the new ALTREF2 for later use.
-  //   * Every LAST_BIPRED is followed by a show_existing_frame of the following
-  //     BWDREF.  The show_existing doesn't update the ref-map so the
-  //     LAST_BIPRED updates the ref-map for both the LAST_BIPRED (which just
-  //     acts like a LAST_FRAME) and for the BWDREF (which pushes the BWDREF
-  //     into the last-frame FIFO).
-  // * With the new, pyramid, GOP structure (cpi->new_bwdref_update_rule == 1):
-  //   * BWDREF, ALTREF2, and EXTREF act like a stack structure, so we can
-  //     "push" and "pop" internal alt-ref frames through the three references.
-  //   * When we code a BRF or internal-ARF (they work the same in this
-  //     structure) we push it onto the bwdref stack.  Because we have a finite
-  //     number of buffers, we actually refresh EXTREF, the bottom of the stack,
-  //     and rotate the three references to make EXTREF the top.
-  //   * When we code an INTNL_OVERLAY we refresh BWDREF, then pop it off of the
-  //     bwdref stack and push it into the last-frame FIFO.  The old LAST3
-  //     buffer gets pushed out of the last-frame FIFO and becomes the new
-  //     EXTREF, bottom of the bwdref stack.
-  //   * LAST_BIPRED just acts like a LAST_FRAME.  The BWDREF will have an
-  //     INTNL_OVERLAY and so can do its own ref map update.
+  // * BWDREF, ALTREF2, and EXTREF act like a stack structure, so we can
+  //   "push" and "pop" internal alt-ref frames through the three references.
+  // * When we code a BRF or internal-ARF (they work the same in this
+  //   structure) we push it onto the bwdref stack.  Because we have a finite
+  //   number of buffers, we actually refresh EXTREF, the bottom of the stack,
+  //   and rotate the three references to make EXTREF the top.
+  // * When we code an INTNL_OVERLAY we refresh BWDREF, then pop it off of the
+  //   bwdref stack and push it into the last-frame FIFO.  The old LAST3
+  //   buffer gets pushed out of the last-frame FIFO and becomes the new
+  //   EXTREF, bottom of the bwdref stack.
+  // * LAST_BIPRED just acts like a LAST_FRAME.  The BWDREF will have an
+  //   INTNL_OVERLAY and so can do its own ref map update.
   //
   // Note that this function runs *after* a frame has been coded, so it does not
   // affect reference assignment of the current frame, it only affects future

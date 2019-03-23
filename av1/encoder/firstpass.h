@@ -23,15 +23,6 @@ extern "C" {
 
 #define DOUBLE_DIVIDE_CHECK(x) ((x) < 0 ? (x)-0.000001 : (x) + 0.000001)
 
-// Length of the bi-predictive frame group (BFG)
-// NOTE: Currently each BFG contains one backward ref (BWF) frame plus a certain
-//       number of bi-predictive frames.
-#define BFG_INTERVAL 2
-// The maximum number of extra ALTREF's except ALTREF_FRAME
-#define MAX_EXT_ARFS (REF_FRAMES - BWDREF_FRAME - 1)
-
-#define MIN_EXT_ARF_INTERVAL 4
-
 #define MIN_ZERO_MOTION 0.95
 #define MAX_SR_CODED_ERROR 40
 #define MAX_RAW_ERR_VAR 2000
@@ -95,6 +86,7 @@ typedef struct {
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];
+  int size;
 } GF_GROUP;
 
 typedef struct {
@@ -148,25 +140,6 @@ void av1_first_pass(struct AV1_COMP *cpi, const int64_t ts_duration);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_twopass_zero_stats(FIRSTPASS_STATS *section);
-
-static INLINE int get_number_of_extra_arfs(int interval, int arf_pending,
-                                           int max_pyr_height) {
-  // Max extra (internal) alt-refs allowed based on interval.
-  int extra_arfs_from_interval = 0;
-  if (arf_pending && MAX_EXT_ARFS > 0) {
-    extra_arfs_from_interval =
-        (interval >= MIN_EXT_ARF_INTERVAL * (MAX_EXT_ARFS + 1))
-            ? MAX_EXT_ARFS
-            : (interval >= MIN_EXT_ARF_INTERVAL * MAX_EXT_ARFS)
-                  ? MAX_EXT_ARFS - 1
-                  : 0;
-  }
-  // Max extra (internal) alt-refs allowed based on max pyramid height.
-  const int ext_arfs_from_max_height = AOMMAX(max_pyr_height - 1, 0);
-
-  // Finally, min of the two above is our actual max allowance.
-  return AOMMIN(extra_arfs_from_interval, ext_arfs_from_max_height);
-}
 
 #ifdef __cplusplus
 }  // extern "C"

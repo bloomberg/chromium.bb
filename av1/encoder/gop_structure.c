@@ -116,8 +116,7 @@ static int construct_multi_layer_gf_structure(
 
 #define CHECK_GF_PARAMETER 0
 #if CHECK_GF_PARAMETER
-void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
-                        int frame_nums) {
+void check_frame_params(GF_GROUP *const gf_group, int gf_interval) {
   static const char *update_type_strings[FRAME_UPDATE_TYPES] = {
     "KF_UPDATE",       "LF_UPDATE",      "GF_UPDATE",
     "ARF_UPDATE",      "OVERLAY_UPDATE", "INTNL_OVERLAY_UPDATE",
@@ -126,7 +125,7 @@ void check_frame_params(GF_GROUP *const gf_group, int gf_interval,
   FILE *fid = fopen("GF_PARAMS.txt", "a");
 
   fprintf(fid, "\ngf_interval = {%d}\n", gf_interval);
-  for (int i = 0; i <= frame_nums; ++i) {
+  for (int i = 0; i <= gf_group->size; ++i) {
     fprintf(fid, "#%2d : %s %d %d %d %d\n", i,
             update_type_strings[gf_group->update_type[i]],
             gf_group->arf_src_offset[i], gf_group->arf_pos_in_gf[i],
@@ -158,7 +157,7 @@ static int get_pyramid_height(const AV1_COMP *const cpi) {
     return MIN_PYRAMID_LVL;
   }
   assert(cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
-  if (!cpi->extra_arf_allowed) {
+  if (!cpi->internal_altref_allowed) {
     assert(MIN_PYRAMID_LVL + 1 <= cpi->oxcf.gf_max_pyr_height);
     return MIN_PYRAMID_LVL + 1;
   }
@@ -175,27 +174,19 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
   const FRAME_UPDATE_TYPE first_frame_update_type =
       key_frame ? KF_UPDATE
                 : rc->source_alt_ref_active ? OVERLAY_UPDATE : GF_UPDATE;
-  const int gf_update_frames = construct_multi_layer_gf_structure(
+  gf_group->size = construct_multi_layer_gf_structure(
       gf_group, rc->baseline_gf_interval, get_pyramid_height(cpi),
       first_frame_update_type);
-
-  // Count extra arfs.
-  cpi->num_extra_arfs = 0;
-  for (int frame_index = 0; frame_index < gf_update_frames; ++frame_index) {
-    if (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE) {
-      ++cpi->num_extra_arfs;
-    }
-  }
 
   // We need to configure the frame at the end of the sequence + 1 that
   // will be the start frame for the next group. Otherwise prior to the
   // call to av1_get_second_pass_params(), the data will be undefined.
-  gf_group->update_type[gf_update_frames] =
+  gf_group->update_type[gf_group->size] =
       (rc->source_alt_ref_pending) ? OVERLAY_UPDATE : GF_UPDATE;
-  gf_group->arf_update_idx[gf_update_frames] = 0;
-  gf_group->arf_pos_in_gf[gf_update_frames] = 0;
+  gf_group->arf_update_idx[gf_group->size] = 0;
+  gf_group->arf_pos_in_gf[gf_group->size] = 0;
 
 #if CHECK_GF_PARAMETER
-  check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
+  check_frame_params(gf_group, rc->baseline_gf_interval);
 #endif
 }

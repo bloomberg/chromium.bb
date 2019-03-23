@@ -65,18 +65,12 @@ typedef struct {
 } CODING_CONTEXT;
 
 enum {
-  // regular inter frame
-  REGULAR_FRAME = 0,
-  // alternate reference frame
-  ARF_FRAME = 1,
-  // overlay frame
-  OVERLAY_FRAME = 2,
-  // golden frame
-  GLD_FRAME = 3,
-  // backward reference frame
-  BRF_FRAME = 4,
-  // extra alternate reference frame
-  EXT_ARF_FRAME = 5,
+  REGULAR_FRAME,       // regular inter frame
+  ARF_FRAME,           // alternate reference frame
+  OVERLAY_FRAME,       // overlay frame
+  GLD_FRAME,           // golden frame
+  BRF_FRAME,           // backward reference frame
+  INTERNAL_ARF_FRAME,  // internal alternate reference frame
   FRAME_CONTEXT_INDEXES
 } UENUM1BYTE(FRAME_CONTEXT_INDEX);
 
@@ -714,6 +708,9 @@ static INLINE char const *get_component_name(int index) {
 }
 #endif
 
+// The maximum number of internal ARFs except ALTREF_FRAME
+#define MAX_INTERNAL_ARFS (REF_FRAMES - BWDREF_FRAME - 1)
+
 typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
@@ -940,12 +937,9 @@ typedef struct AV1_COMP {
   AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
   int existing_fb_idx_to_show;
-  int is_arf_filter_off[MAX_EXT_ARFS + 1];
-  int num_extra_arfs;
-  int arf_pos_in_gf[MAX_EXT_ARFS + 1];
-  int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
+  int is_arf_filter_off[MAX_INTERNAL_ARFS + 1];
   int global_motion_search_done;
-  int extra_arf_allowed;
+  int internal_altref_allowed;
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;
   int dv_cost[2][MV_VALS];

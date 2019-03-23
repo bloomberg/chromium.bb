@@ -89,7 +89,7 @@ typedef struct {
   int source_alt_ref_pending;
   int source_alt_ref_active;
   int is_src_frame_alt_ref;
-  int is_src_frame_ext_arf;
+  int is_src_frame_internal_arf;
   int sframe_due;
 
   int avg_frame_bandwidth;  // Average frame size target for clip
