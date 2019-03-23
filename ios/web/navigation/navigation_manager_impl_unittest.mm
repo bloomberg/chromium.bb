@@ -180,8 +180,8 @@ class NavigationManagerTest
     if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
       session_controller_delegate_.pendingItem = item;
     } else {
-      EXPECT_CALL(navigation_manager_delegate(), GetPendingItem())
-          .WillOnce(testing::Return(item));
+      ON_CALL(navigation_manager_delegate(), GetPendingItem())
+          .WillByDefault(testing::Return(item));
     }
   }
 
