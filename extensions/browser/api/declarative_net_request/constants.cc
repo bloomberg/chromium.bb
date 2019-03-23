@@ -27,11 +27,12 @@ const char kErrorDuplicateIDs[] = "Rule with id * does not have a unique ID.";
 // Don't surface the actual error to the user, since it's an implementation
 // detail.
 const char kErrorPersisting[] = "Internal error while parsing rules.";
-const char kErrorListNotPassed[] = "Rules file must contain a list.";
 const char kErrorNonAscii[] =
     "Rule with id * cannot have non-ascii characters as part of \"*\" key.";
 const char kErrorInvalidUrlFilter[] =
     "Rule with id * has an invalid value for \"*\" key.";
+
+const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =
     "Declarative Net Request: Rule count exceeded. Some rules were ignored.";

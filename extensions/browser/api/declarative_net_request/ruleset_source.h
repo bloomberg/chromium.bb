@@ -24,7 +24,14 @@ namespace extensions {
 class Extension;
 struct InstallWarning;
 
+namespace api {
 namespace declarative_net_request {
+struct Rule;
+}  // namespace declarative_net_request
+}  // namespace api
+
+namespace declarative_net_request {
+class ParseInfo;
 
 struct IndexAndPersistRulesResult {
  public:
@@ -63,6 +70,38 @@ struct IndexAndPersistRulesResult {
   DISALLOW_COPY_AND_ASSIGN(IndexAndPersistRulesResult);
 };
 
+struct ReadJSONRulesResult {
+  enum class ReadJSONRulesStatus {
+    kSuccess,
+    kFileDoesNotExist,
+    kFileReadError,
+    kJSONParseError,
+    kJSONIsNotList,
+  };
+
+  static ReadJSONRulesResult CreateErrorResult(ReadJSONRulesStatus status,
+                                               std::string error);
+
+  ReadJSONRulesResult();
+  ~ReadJSONRulesResult();
+  ReadJSONRulesResult(ReadJSONRulesResult&&);
+  ReadJSONRulesResult& operator=(ReadJSONRulesResult&&);
+
+  ReadJSONRulesStatus status = ReadJSONRulesStatus::kSuccess;
+
+  // Empty in case of an error.
+  std::vector<api::declarative_net_request::Rule> rules;
+
+  // Warnings while parsing rules.
+  std::vector<InstallWarning> rule_parse_warnings;
+
+  // Populated on error.
+  std::string error;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ReadJSONRulesResult);
+};
+
 // Holds paths for an extension ruleset.
 class RulesetSource {
  public:
@@ -97,6 +136,7 @@ class RulesetSource {
   // Indexes and persists the JSON ruleset. This is potentially unsafe since the
   // JSON rules file is parsed in-process. Note: This must be called on a
   // sequence where file IO is allowed.
+  // TODO(karandeepb): Rename to IndexAndPersistJSONRulesetUnsafe.
   IndexAndPersistRulesResult IndexAndPersistRulesUnsafe() const;
 
   using IndexAndPersistRulesCallback =
@@ -108,9 +148,21 @@ class RulesetSource {
   // which is used internally to parse JSON.
   //
   // NOTE: This must be called on a sequence where file IO is allowed.
+  // TODO(karandeepb): Rename to IndexAndPersistJSONRuleset.
   void IndexAndPersistRules(service_manager::Connector* connector,
                             const base::Optional<base::Token>& decoder_batch_id,
                             IndexAndPersistRulesCallback callback) const;
+
+  // Indexes the given |rules| in indexed/flatbuffer format. Populates
+  // |ruleset_checksum| on success. The number of |rules| must be less than the
+  // rule count limit.
+  ParseInfo IndexAndPersistRules(
+      std::vector<api::declarative_net_request::Rule> rules,
+      int* ruleset_checksum) const;
+
+  // Reads JSON rules synchronously. Callers should only use this if the JSON is
+  // trusted. Must be called on a sequence which supports file IO.
+  ReadJSONRulesResult ReadJSONRulesUnsafe() const;
 
  private:
   base::FilePath json_path_;

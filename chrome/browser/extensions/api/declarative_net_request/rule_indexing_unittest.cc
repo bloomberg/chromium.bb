@@ -280,8 +280,7 @@ TEST_P(RuleIndexingTest, InvalidRedirectURL) {
 
 TEST_P(RuleIndexingTest, ListNotPassed) {
   SetRules(std::make_unique<base::DictionaryValue>());
-  LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED).GetErrorDescription());
+  LoadAndExpectError(kErrorListNotPassed);
 }
 
 TEST_P(RuleIndexingTest, DuplicateIDS) {
