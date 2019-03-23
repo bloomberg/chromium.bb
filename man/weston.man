@@ -1,4 +1,4 @@
-.TH WESTON 1 "2012-11-27" "Weston @version@"
+.TH WESTON 1 "2019-03-23" "Weston @version@"
 .SH NAME
 weston \- the reference Wayland server
 .SH SYNOPSIS
@@ -358,7 +358,7 @@ weston
 .
 .\" ***************************************************************
 .SH "SEE ALSO"
-.BR weston-drm (7)
-.BR weston-rdp (7)
-.\".BR weston-launch (1),
-.\".BR weston.ini (5)
+.BR weston-debug (1),
+.BR weston-drm (7),
+.BR weston-rdp (7),
+.BR weston.ini (5)
