@@ -62,7 +62,6 @@
 #include "extensions/renderer/dispatcher_delegate.h"
 #include "extensions/renderer/display_source_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
-#include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
@@ -746,12 +745,6 @@ void Dispatcher::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "v8_context",
       std::unique_ptr<NativeHandler>(new V8ContextNativeHandler(context)));
-  module_system->RegisterNativeHandler(
-      "event_natives",
-      std::make_unique<EventBindings>(
-          context,
-          // Note: |bindings_system| can be null in unit tests.
-          bindings_system ? bindings_system->GetIPCMessageSender() : nullptr));
   module_system->RegisterNativeHandler(
       "messaging_natives", std::make_unique<MessagingBindings>(context));
   module_system->RegisterNativeHandler(
