@@ -1061,7 +1061,7 @@ enum aome_enc_control_id {
   AV1E_SET_QUANT_B_ADAPT,
 
   /*!\brief Control to select maximum height for the GF group pyramid structure
-   * (valid values: 1 - 4) */
+   * (valid values: 0 - 4) */
   AV1E_SET_GF_MAX_PYRAMID_HEIGHT,
 
   /*!\brief Control to select maximum reference frames allowed per frame

@@ -342,7 +342,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     RANGE_CHECK(extra_cfg, max_gf_interval, MAX(2, extra_cfg->min_gf_interval),
                 (MAX_LAG_BUFFERS - 1));
   }
-  RANGE_CHECK(extra_cfg, gf_max_pyr_height, 1, 4);
+  RANGE_CHECK_HI(extra_cfg, gf_max_pyr_height, 4);
 
   RANGE_CHECK_HI(cfg, rc_resize_mode, RESIZE_MODES - 1);
   RANGE_CHECK(cfg, rc_resize_denominator, SCALE_NUMERATOR,
