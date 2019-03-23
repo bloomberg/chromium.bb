@@ -88,11 +88,12 @@ void AXPlatformNode::NotifyAddAXModeFlags(AXMode mode_flags) {
     observer.OnAXModeAdded(mode_flags);
 
   // Add a crash key with the ax_mode, to enable searching for top crashes that
-  // occur when accessibility is turned on.
+  // occur when accessibility is turned on. This adds it for the browser
+  // process, and elsewhere the same key is added to renderer processes.
   static auto* ax_mode_crash_key = base::debug::AllocateCrashKeyString(
       "ax_mode", base::debug::CrashKeySize::Size64);
   if (ax_mode_crash_key)
-    base::debug::SetCrashKeyString(ax_mode_crash_key, mode_flags.ToString());
+    base::debug::SetCrashKeyString(ax_mode_crash_key, new_ax_mode.ToString());
 }
 
 // static
