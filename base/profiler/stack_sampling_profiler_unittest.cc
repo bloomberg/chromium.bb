@@ -19,7 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/profiler/native_stack_sampler.h"
+#include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
@@ -63,7 +63,7 @@ namespace base {
 #endif
 
 using SamplingParams = StackSamplingProfiler::SamplingParams;
-using Frame = StackSamplingProfiler::Frame;
+using Frame = ProfileBuilder::Frame;
 using Frames = std::vector<Frame>;
 using FrameSets = std::vector<std::vector<Frame>>;
 
@@ -316,14 +316,14 @@ Profile::Profile(const FrameSets& frame_sets,
 using ProfileCompletedCallback = Callback<void(Profile)>;
 
 // TestProfileBuilder collects frames produced by the profiler.
-class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
+class TestProfileBuilder : public ProfileBuilder {
  public:
   TestProfileBuilder(ModuleCache* module_cache,
                      const ProfileCompletedCallback& callback);
 
   ~TestProfileBuilder() override;
 
-  // StackSamplingProfiler::ProfileBuilder:
+  // ProfileBuilder:
   ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
   void OnSampleCompleted(Frames frames) override;
@@ -443,7 +443,7 @@ struct TestProfilerInfo {
   TestProfilerInfo(PlatformThreadId thread_id,
                    const SamplingParams& params,
                    ModuleCache* module_cache,
-                   NativeStackSamplerTestDelegate* delegate = nullptr)
+                   StackSamplerTestDelegate* delegate = nullptr)
       : completed(WaitableEvent::ResetPolicy::MANUAL,
                   WaitableEvent::InitialState::NOT_SIGNALED),
         profiler(thread_id,
@@ -580,7 +580,7 @@ TimeDelta AVeryLongTimeDelta() {
 void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
   // Test delegate that supports intervening between the copying of the stack
   // and the walking of the stack.
-  class StackCopiedSignaler : public NativeStackSamplerTestDelegate {
+  class StackCopiedSignaler : public StackSamplerTestDelegate {
    public:
     StackCopiedSignaler(WaitableEvent* stack_copied,
                         WaitableEvent* start_stack_walk,
@@ -878,7 +878,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopWithoutStarting) {
 // sampling thread continues to run.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
   // Test delegate that counts samples.
-  class SampleRecordedCounter : public NativeStackSamplerTestDelegate {
+  class SampleRecordedCounter : public StackSamplerTestDelegate {
    public:
     SampleRecordedCounter() = default;
 
@@ -965,7 +965,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInitialDelay) {
 // captured.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
   // Test delegate that counts samples.
-  class SampleRecordedEvent : public NativeStackSamplerTestDelegate {
+  class SampleRecordedEvent : public StackSamplerTestDelegate {
    public:
     SampleRecordedEvent()
         : sample_recorded_(WaitableEvent::ResetPolicy::MANUAL,

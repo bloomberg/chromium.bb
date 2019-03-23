@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
-#define BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
+#ifndef BASE_PROFILER_STACK_SAMPLER_H_
+#define BASE_PROFILER_STACK_SAMPLER_H_
 
 #include <memory>
 
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/profiler/stack_sampling_profiler.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
 
 class ModuleCache;
-class NativeStackSamplerTestDelegate;
+class ProfileBuilder;
+class StackSamplerTestDelegate;
 
-// NativeStackSampler is an implementation detail of StackSamplingProfiler. It
+// StackSampler is an implementation detail of StackSamplingProfiler. It
 // abstracts the native implementation required to record a set of stack frames
 // for a given thread.
-class NativeStackSampler {
+class StackSampler {
  public:
   // This class contains a buffer for stack copies that can be shared across
-  // multiple instances of NativeStackSampler.
+  // multiple instances of StackSampler.
   class StackBuffer {
    public:
     StackBuffer(size_t buffer_size);
@@ -42,54 +42,53 @@ class NativeStackSampler {
     DISALLOW_COPY_AND_ASSIGN(StackBuffer);
   };
 
-  virtual ~NativeStackSampler();
+  virtual ~StackSampler();
 
   // Creates a stack sampler that records samples for thread with |thread_id|.
   // Returns null if this platform does not support stack sampling.
-  static std::unique_ptr<NativeStackSampler> Create(
+  static std::unique_ptr<StackSampler> Create(
       PlatformThreadId thread_id,
       ModuleCache* module_cache,
-      NativeStackSamplerTestDelegate* test_delegate);
+      StackSamplerTestDelegate* test_delegate);
 
   // Gets the required size of the stack buffer.
   static size_t GetStackBufferSize();
 
   // Creates an instance of the a stack buffer that can be used for calls to
-  // any NativeStackSampler object.
+  // any StackSampler object.
   static std::unique_ptr<StackBuffer> CreateStackBuffer();
 
   // The following functions are all called on the SamplingThread (not the
   // thread being sampled).
 
   // Records a set of frames and returns them.
-  virtual void RecordStackFrames(
-      StackBuffer* stackbuffer,
-      StackSamplingProfiler::ProfileBuilder* profile_builder) = 0;
+  virtual void RecordStackFrames(StackBuffer* stackbuffer,
+                                 ProfileBuilder* profile_builder) = 0;
 
  protected:
-  NativeStackSampler();
+  StackSampler();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NativeStackSampler);
+  DISALLOW_COPY_AND_ASSIGN(StackSampler);
 };
 
-// NativeStackSamplerTestDelegate provides seams for test code to execute during
-// stack collection.
-class BASE_EXPORT NativeStackSamplerTestDelegate {
+// StackSamplerTestDelegate provides seams for test code to execute during stack
+// collection.
+class BASE_EXPORT StackSamplerTestDelegate {
  public:
-  virtual ~NativeStackSamplerTestDelegate();
+  virtual ~StackSamplerTestDelegate();
 
   // Called after copying the stack and resuming the target thread, but prior to
   // walking the stack. Invoked on the SamplingThread.
   virtual void OnPreStackWalk() = 0;
 
  protected:
-  NativeStackSamplerTestDelegate();
+  StackSamplerTestDelegate();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerTestDelegate);
+  DISALLOW_COPY_AND_ASSIGN(StackSamplerTestDelegate);
 };
 
 }  // namespace base
 
-#endif  // BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
+#endif  // BASE_PROFILER_STACK_SAMPLER_H_

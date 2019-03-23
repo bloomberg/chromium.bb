@@ -35,8 +35,8 @@ component("tracing") {
 
   if (is_android && can_unwind_with_cfi_table && is_official_build) {
     sources += [
-      "common/native_stack_sampler_android.cc",
-      "common/native_stack_sampler_android.h",
+      "common/stack_sampler_android.cc",
+      "common/stack_sampler_android.h",
       "common/stack_unwinder_android.cc",
       "common/stack_unwinder_android.h",
     ]
