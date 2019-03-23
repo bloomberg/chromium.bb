@@ -141,6 +141,7 @@
   X("webaudio")                                                          \
   X("WebCore")                                                           \
   X("webrtc")                                                            \
+  X("xr")                                                                \
   X(TRACE_DISABLED_BY_DEFAULT("animation-worklet"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("audio-worklet"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug"))                            \

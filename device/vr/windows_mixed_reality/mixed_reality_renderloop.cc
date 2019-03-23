@@ -244,13 +244,21 @@ bool MixedRealityRenderLoop::PreComposite() {
 
     texture_helper_.OverrideViewports(override_viewport, override_viewport);
     texture_helper_.SetDefaultSize(gfx::Size(desc.Width, desc.Height));
+
+    TRACE_EVENT_INSTANT0("xr", "PreCompositorWMR", TRACE_EVENT_SCOPE_THREAD);
   }
   return true;
 }
 
 bool MixedRealityRenderLoop::SubmitCompositedFrame() {
-  ABI::Windows::Graphics::Holographic::HolographicFramePresentResult result;
-  if (FAILED(holographic_frame_->PresentUsingCurrentPrediction(&result)))
+  ABI::Windows::Graphics::Holographic::HolographicFramePresentResult result =
+      HolographicFramePresentResult_Success;
+  HRESULT hr = holographic_frame_->PresentUsingCurrentPrediction(&result);
+
+  TRACE_EVENT_INSTANT2("xr", "SubmitWMR", TRACE_EVENT_SCOPE_THREAD, "hr", hr,
+                       "result", result);
+
+  if (FAILED(hr))
     return false;
   texture_helper_.DiscardView();
   return true;
@@ -346,6 +354,7 @@ void MixedRealityRenderLoop::StopRuntime() {
 }
 
 void MixedRealityRenderLoop::InitializeOrigin() {
+  TRACE_EVENT0("xr", "InitializeOrigin");
   // Try to use a SpatialStageFrameOfReference.
   ComPtr<ISpatialStageFrameOfReferenceStatics> spatial_stage_statics;
   base::win::ScopedHString spatial_stage_string =
@@ -354,15 +363,18 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   HRESULT hr = base::win::RoGetActivationFactory(
       spatial_stage_string.get(), IID_PPV_ARGS(&spatial_stage_statics));
   if (SUCCEEDED(hr)) {
+    TRACE_EVENT0("xr", "StageOrigin");
     ComPtr<ISpatialStageFrameOfReference> spatial_stage;
     hr = spatial_stage_statics->get_Current(&spatial_stage);
     if (SUCCEEDED(hr) && spatial_stage) {
       hr = spatial_stage->get_CoordinateSystem(&origin_);
-      if (SUCCEEDED(hr))
+      if (SUCCEEDED(hr)) {
         return;
+      }
     }
   }
 
+  TRACE_EVENT0("xr", "StationaryOrigin");
   // Failed to get a Stage frame of reference - try to get a stationary frame.
   ComPtr<ISpatialLocatorStatics> spatial_locator_statics;
   base::win::ScopedHString spatial_locator_string =
@@ -540,7 +552,8 @@ mojom::XRFrameDataPtr CreateDefaultFrameData(
   mojom::XRFrameDataPtr ret = mojom::XRFrameData::New();
 
   ABI::Windows::Foundation::DateTime date_time;
-  timestamp->get_TargetTime(&date_time);
+  HRESULT hr = timestamp->get_TargetTime(&date_time);
+  DCHECK(SUCCEEDED(hr));
 
   ABI::Windows::Foundation::TimeSpan relative_time;
   if (SUCCEEDED(timestamp->get_PredictionAmount(&relative_time))) {
@@ -699,14 +712,18 @@ bool MixedRealityRenderLoop::UpdateDisplayInfo() {
 
 mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   UpdateWMRDataForNextFrame();
-  if (!timestamp_)
+  if (!timestamp_) {
+    TRACE_EVENT_INSTANT0("xr", "No Timestamp", TRACE_EVENT_SCOPE_THREAD);
     return nullptr;
+  }
 
   // Once we have a prediction, we can generate a frame data.
   mojom::XRFrameDataPtr ret =
       CreateDefaultFrameData(timestamp_, next_frame_id_);
 
   if (!origin_ || !pose_) {
+    TRACE_EVENT_INSTANT0("xr", "No origin or no pose",
+                         TRACE_EVENT_SCOPE_THREAD);
     // If we don't have an origin or pose for this frame, we can still give out
     // a timestamp and frame to render head-locked content.
     return ret;
@@ -721,17 +738,23 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
     // next frame.
     // TODO(billorr): Try to keep the origin working over multiple frames, doing
     // some transform work.
+    TRACE_EVENT_INSTANT0("xr", "Failed to locate origin",
+                         TRACE_EVENT_SCOPE_THREAD);
     origin_ = nullptr;
     return ret;
   }
 
   ABI::Windows::Graphics::Holographic::HolographicStereoTransform view;
-  if (FAILED(view_ref->get_Value(&view)))
+  if (FAILED(view_ref->get_Value(&view))) {
+    TRACE_EVENT_INSTANT0("xr", "No view transform", TRACE_EVENT_SCOPE_THREAD);
     return ret;
+  }
 
   bool send_new_display_info = UpdateDisplayInfo();
-  if (!current_display_info_)
+  if (!current_display_info_) {
+    TRACE_EVENT_INSTANT0("xr", "No display info", TRACE_EVENT_SCOPE_THREAD);
     return ret;
+  }
 
   if (current_display_info_->rightEye) {
     // If we have a right eye, we are stereo.
