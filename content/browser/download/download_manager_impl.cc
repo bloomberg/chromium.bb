@@ -317,7 +317,6 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
 DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
       shutdown_needed_(true),
-      initialized_(false),
       history_db_initialized_(false),
       in_progress_cache_initialized_(false),
       browser_context_(browser_context),
@@ -923,10 +922,11 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
   return count;
 }
 
-void DownloadManagerImpl::DownloadUrl(
+bool DownloadManagerImpl::DownloadUrl(
     std::unique_ptr<download::DownloadUrlParameters> params) {
   DownloadUrl(std::move(params), nullptr /* blob_data_handle */,
               nullptr /* blob_url_loader_factory */);
+  return true;
 }
 
 void DownloadManagerImpl::DownloadUrl(
@@ -1066,9 +1066,7 @@ void DownloadManagerImpl::PostInitialization(
 
   // Download manager is only initialized if both history db and in progress
   // cache are initialized.
-  initialized_ = history_db_initialized_ && in_progress_cache_initialized_;
-
-  if (!initialized_)
+  if (!history_db_initialized_ || !in_progress_cache_initialized_)
     return;
 
 #if defined(OS_ANDROID)
@@ -1115,6 +1113,7 @@ void DownloadManagerImpl::ImportInProgressDownloads(uint32_t id) {
 }
 
 void DownloadManagerImpl::OnDownloadManagerInitialized() {
+  OnInitialized();
   in_progress_manager_->OnAllInprogressDownloadsLoaded();
   for (auto& observer : observers_)
     observer.OnManagerInitialized();
@@ -1184,7 +1183,8 @@ void DownloadManagerImpl::OnUrlDownloadStopped(
   }
 }
 
-void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
+void DownloadManagerImpl::GetAllDownloads(
+    download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : downloads_) {
     downloads->push_back(it.second.get());
   }

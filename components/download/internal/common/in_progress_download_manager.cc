@@ -148,8 +148,7 @@ InProgressDownloadManager::InProgressDownloadManager(
     const base::FilePath& in_progress_db_dir,
     const IsOriginSecureCallback& is_origin_secure_cb,
     const URLSecurityPolicy& url_security_policy)
-    : is_initialized_(false),
-      delegate_(delegate),
+    : delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
@@ -206,6 +205,21 @@ bool InProgressDownloadManager::DownloadUrl(
                 true /* is_new_download */, GURL() /* site_url */,
                 GURL() /* tab_url */, GURL() /* tab_referral_url */);
   return true;
+}
+
+void InProgressDownloadManager::GetAllDownloads(
+    SimpleDownloadManager::DownloadVector* downloads) {
+  for (auto& item : in_progress_downloads_)
+    downloads->push_back(item.get());
+}
+
+DownloadItem* InProgressDownloadManager::GetDownloadByGuid(
+    const std::string& guid) {
+  for (auto& item : in_progress_downloads_) {
+    if (item->GetGuid() == guid)
+      return item.get();
+  }
+  return nullptr;
 }
 
 void InProgressDownloadManager::BeginDownload(
@@ -363,9 +377,10 @@ void InProgressDownloadManager::StartDownload(
       in_progress_downloads_.push_back(std::make_unique<DownloadItemImpl>(
           this, DownloadItem::kInvalidId, *info));
     }
-    StartDownloadWithItem(std::move(stream),
-                          std::move(url_loader_factory_getter), std::move(info),
-                          GetInProgressDownload(guid), false);
+    StartDownloadWithItem(
+        std::move(stream), std::move(url_loader_factory_getter),
+        std::move(info),
+        static_cast<DownloadItemImpl*>(GetDownloadByGuid(guid)), false);
   }
 }
 
@@ -486,36 +501,7 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
     RecordDuplicateInProgressDownloadIdCount(num_duplicates);
   if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads))
     OnAllInprogressDownloadsLoaded();
-  is_initialized_ = true;
-  for (auto& callback : on_initialized_callbacks_)
-    std::move(*callback).Run();
-  on_initialized_callbacks_.clear();
-}
-
-void InProgressDownloadManager::GetAllDownloads(
-    std::vector<download::DownloadItem*>* downloads) const {
-  for (auto& item : in_progress_downloads_)
-    downloads->push_back(item.get());
-}
-
-DownloadItemImpl* InProgressDownloadManager::GetInProgressDownload(
-    const std::string& guid) {
-  for (auto& item : in_progress_downloads_) {
-    if (item->GetGuid() == guid)
-      return item.get();
-  }
-  return nullptr;
-}
-
-void InProgressDownloadManager::NotifyWhenInitialized(
-    base::OnceClosure on_initialized_cb) {
-  if (is_initialized_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(on_initialized_cb));
-    return;
-  }
-  on_initialized_callbacks_.emplace_back(
-      std::make_unique<base::OnceClosure>(std::move(on_initialized_cb)));
+  OnInitialized();
 }
 
 std::vector<std::unique_ptr<download::DownloadItemImpl>>
