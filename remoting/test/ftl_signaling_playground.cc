@@ -22,6 +22,7 @@
 #include "base/task/post_task.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/test/test_oauth_token_factory.h"
 #include "remoting/test/test_token_storage.h"
@@ -32,10 +33,6 @@ constexpr char kSwitchNameHelp[] = "help";
 constexpr char kSwitchNameAuthCode[] = "code";
 constexpr char kSwitchNameUsername[] = "username";
 constexpr char kSwitchNameStoragePath[] = "storage-path";
-
-constexpr remoting::ftl::FtlCapability::Feature kFtlCapabilities[] = {
-    remoting::ftl::FtlCapability_Feature_RECEIVE_CALLS_FROM_GAIA,
-    remoting::ftl::FtlCapability_Feature_GAIA_REACHABLE};
 
 // Reads a newline-terminated string from stdin.
 std::string ReadString() {
@@ -185,13 +182,15 @@ void FtlSignalingPlayground::StartLoop() {
 void FtlSignalingPlayground::ResetServices() {
   ftl_context_ = std::make_unique<FtlGrpcContext>(token_getter_.get());
   peer_to_peer_stub_ = PeerToPeer::NewStub(ftl_context_->channel());
-  registration_stub_ = Registration::NewStub(ftl_context_->channel());
 
   message_subscription_.reset();
   messaging_client_ = std::make_unique<FtlMessagingClient>(ftl_context_.get());
   message_subscription_ = messaging_client_->RegisterMessageCallback(
       base::BindRepeating(&FtlSignalingPlayground::OnMessageReceived,
                           weak_factory_.GetWeakPtr()));
+  registration_manager_ = std::make_unique<FtlRegistrationManager>(
+      ftl_context_.get(),
+      std::make_unique<FtlDeviceIdProvider>(storage_.get()));
 }
 
 void FtlSignalingPlayground::AuthenticateAndResetServices() {
@@ -277,61 +276,21 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
 }
 
 void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
-  DCHECK(registration_stub_);
+  DCHECK(registration_manager_);
   VLOG(0) << "Running SignInGaia...";
-  // TODO(yuweih): Logic should be cleaned up and moved out of the playground.
-  std::string device_id = storage_->FetchDeviceId();
-  if (device_id.empty()) {
-    device_id = "crd-web-" + base::GenerateGUID();
-    VLOG(0) << "Generated new device_id: " << device_id;
-    storage_->StoreDeviceId(device_id);
-  } else {
-    VLOG(0) << "Read device_id: " << device_id;
-  }
-  VLOG(0) << "Using sign_in_gaia_mode: DEFAULT_CREATE_ACCOUNT";
-
-  ftl::SignInGaiaRequest request;
-  request.set_app(FtlGrpcContext::GetChromotingAppIdentifier());
-  request.set_mode(ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT);
-
-  request.mutable_register_data()->mutable_device_id()->set_id(device_id);
-
-  // TODO(yuweih): Consider using different device ID type.
-  request.mutable_register_data()->mutable_device_id()->set_type(
-      ftl::DeviceIdType_Type_WEB_UUID);
-
-  size_t ftl_capability_count =
-      sizeof(kFtlCapabilities) / sizeof(ftl::FtlCapability::Feature);
-  for (size_t i = 0; i < ftl_capability_count; i++) {
-    request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
-  }
-
-  ftl_context_->ExecuteRpc(
-      base::BindOnce(&Registration::Stub::AsyncSignInGaia,
-                     base::Unretained(registration_stub_.get())),
-      request,
+  registration_manager_->SignInGaia(
       base::BindOnce(&FtlSignalingPlayground::OnSignInGaiaResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
-void FtlSignalingPlayground::OnSignInGaiaResponse(
-    base::OnceClosure on_done,
-    const grpc::Status& status,
-    const ftl::SignInGaiaResponse& response) {
+void FtlSignalingPlayground::OnSignInGaiaResponse(base::OnceClosure on_done,
+                                                  const grpc::Status& status) {
   if (status.ok()) {
-    // TODO(yuweih): Allow loading auth token directly from command line.
     std::string registration_id_base64;
-    std::string auth_token_base64;
-    base::Base64Encode(response.registration_id(), &registration_id_base64);
-    base::Base64Encode(response.auth_token().payload(), &auth_token_base64);
-    printf(
-        "registration_id(base64)=%s\n"
-        "auth_token.payload(base64)=%s\n"
-        "auth_token.expires_in=%" PRId64 "\n",
-        registration_id_base64.c_str(), auth_token_base64.c_str(),
-        response.auth_token().expires_in());
-    ftl_context_->SetAuthToken(response.auth_token().payload());
-    VLOG(0) << "Auth token set on FtlClient";
+    base::Base64Encode(registration_manager_->registration_id(),
+                       &registration_id_base64);
+    printf("Service signed in. registration_id(base64)=%s\n",
+           registration_id_base64.c_str());
   } else {
     if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
       VLOG(0) << "Grpc request failed to authenticate. "

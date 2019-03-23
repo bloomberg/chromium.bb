@@ -14,6 +14,7 @@
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/ftl_messaging_client.h"
+#include "remoting/signaling/ftl_registration_manager.h"
 
 namespace remoting {
 
@@ -53,8 +54,7 @@ class FtlSignalingPlayground {
 
   void SignInGaia(base::OnceClosure on_done);
   void OnSignInGaiaResponse(base::OnceClosure on_done,
-                            const grpc::Status& status,
-                            const ftl::SignInGaiaResponse& response);
+                            const grpc::Status& status);
 
   void PullMessages(base::OnceClosure on_done);
   void OnPullMessagesResponse(base::OnceClosure on_done,
@@ -83,8 +83,9 @@ class FtlSignalingPlayground {
   std::unique_ptr<FtlMessagingClient::MessageCallbackSubscription>
       message_subscription_;
 
+  std::unique_ptr<FtlRegistrationManager> registration_manager_;
+
   std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
-  std::unique_ptr<Registration::Stub> registration_stub_;
 
   base::WeakPtrFactory<FtlSignalingPlayground> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlSignalingPlayground);

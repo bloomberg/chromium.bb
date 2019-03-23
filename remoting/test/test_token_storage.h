@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "remoting/signaling/ftl_device_id_provider.h"
+
 namespace base {
 class FilePath;
 }
@@ -17,19 +19,16 @@ namespace test {
 
 // Used to store and retrieve tokens for test.  This interface is provided to
 // allow for stubbing out the storage mechanism for testing.
-class TestTokenStorage {
+class TestTokenStorage : public FtlDeviceIdProvider::TokenStorage {
  public:
-  TestTokenStorage() {}
-  virtual ~TestTokenStorage() {}
+  TestTokenStorage() = default;
+  ~TestTokenStorage() override = default;
 
   virtual std::string FetchRefreshToken() = 0;
   virtual bool StoreRefreshToken(const std::string& refresh_token) = 0;
 
   virtual std::string FetchAccessToken() = 0;
   virtual bool StoreAccessToken(const std::string& access_token) = 0;
-
-  virtual std::string FetchDeviceId() = 0;
-  virtual bool StoreDeviceId(const std::string& device_id) = 0;
 
   // Returns a TestTokenStorage which reads/writes to a user specific token
   // file on the local disk.
