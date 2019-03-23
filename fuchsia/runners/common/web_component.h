@@ -18,6 +18,7 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
+#include "fuchsia/base/lifecycle_impl.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "url/gurl.h"
 
@@ -77,7 +78,9 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   chromium::web::FramePtr frame_;
 
+  // Bindings used to manage the lifetime of this component instance.
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
+  std::unique_ptr<cr_fuchsia::LifecycleImpl> lifecycle_;
 
   // Incoming services provided at component creation.
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient> additional_services_;
