@@ -18,7 +18,6 @@
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
-#include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -99,7 +98,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         main_script_loader_factory,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> factory_bundle,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factory_bundle_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
     blink::mojom::SharedWorkerRequest request,
@@ -111,7 +111,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       renderer_preferences_(renderer_preferences),
       preference_watcher_request_(std::move(preference_watcher_request)),
       appcache_host_id_(appcache_host_id) {
-  DCHECK(factory_bundle);
+  DCHECK(subresource_loader_factory_bundle_info);
   // The ID of the precreated AppCacheHost can be valid only when the
   // NetworkService is enabled.
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
@@ -144,21 +144,21 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // stuck with a worker with a broken loader. Self-destruction is effectively
   // the same as the worker's process crashing.
   if (IsOutOfProcessNetworkService()) {
-    default_factory_connection_error_handler_holder_.Bind(
-        std::move(factory_bundle->default_factory_info()));
-    default_factory_connection_error_handler_holder_->Clone(
-        mojo::MakeRequest(&factory_bundle->default_factory_info()));
+    default_factory_connection_error_handler_holder_.Bind(std::move(
+        subresource_loader_factory_bundle_info->default_factory_info()));
+    default_factory_connection_error_handler_holder_->Clone(mojo::MakeRequest(
+        &subresource_loader_factory_bundle_info->default_factory_info()));
     default_factory_connection_error_handler_holder_
         .set_connection_error_handler(base::BindOnce(
             &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
   }
 
-  subresource_loader_factories_ =
-      base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
-          impl_->GetTaskRunner(blink::TaskType::kInternalLoading));
-  subresource_loader_factories_->Update(
-      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-          std::move(factory_bundle)));
+  // Initialize the loader factory bundle passed by the browser process.
+  DCHECK(!subresource_loader_factory_bundle_);
+  subresource_loader_factory_bundle_ =
+      base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
+          std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+              std::move(subresource_loader_factory_bundle_info)));
 
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
@@ -167,7 +167,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       devtools_worker_token,
       blink::PrivacyPreferences(renderer_preferences_.enable_do_not_track,
                                 renderer_preferences_.enable_referrers),
-      subresource_loader_factories_,
+      subresource_loader_factory_bundle_,
       content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle());
 
@@ -245,7 +245,7 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
     return ServiceWorkerNetworkProviderForWorker::Create(
         std::move(service_worker_provider_info_),
         std::move(main_script_loader_factory_), std::move(controller_info_),
-        subresource_loader_factories_, IsOriginSecure(url_),
+        subresource_loader_factory_bundle_, IsOriginSecure(url_),
         nullptr /* response_override */);
   }
 
@@ -266,7 +266,7 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   return ServiceWorkerNetworkProviderForWorker::Create(
       std::move(service_worker_provider_info_),
       std::move(main_script_loader_factory_), std::move(controller_info_),
-      subresource_loader_factories_, IsOriginSecure(url_),
+      subresource_loader_factory_bundle_, IsOriginSecure(url_),
       std::move(response_override_));
 }
 
@@ -289,13 +289,14 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
-      subresource_loader_factories_->CloneWithoutAppCacheFactory();
+      subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory();
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
           network_provider->context(), std::move(renderer_preferences_),
           std::move(preference_watcher_request_),
-          subresource_loader_factories_->Clone(), std::move(fallback_factory));
+          subresource_loader_factory_bundle_->Clone(),
+          std::move(fallback_factory));
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
