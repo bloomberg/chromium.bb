@@ -391,6 +391,7 @@ js_library("model") {
     "../data:document_info",
     "../data:margins",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:promise_resolver",
   ]
 }
 

@@ -74,8 +74,17 @@ cr.define('print_preview.Model', () => {
     /** @private {?PrintPreviewModelElement} */
     instance_: null,
 
+    /** @private {!PromiseResolver} */
+    whenReady_: new PromiseResolver(),
+
     /** @return {!PrintPreviewModelElement} */
     getInstance: () => assert(print_preview.Model.instance_),
+
+    /** @return {!Promise} */
+    whenReady:
+        () => {
+          return print_preview.Model.whenReady_.promise;
+        },
   };
 });
 
@@ -419,12 +428,19 @@ Polymer({
   attached: function() {
     assert(!print_preview.Model.instance_);
     print_preview.Model.instance_ = this;
+    // Initialize settings after setting the instance. Setting settings earlier
+    // will cause observers to fire before setting the instance above in Polymer
+    // 1. These observers often access this object via getSettingValue(), which
+    // calls print_preview.Model.getInstance(). Some simplification may be
+    // possible after Polymer 1 is removed, see https://crbug.com/944281.
     this.initializeSettings_();
+    print_preview.Model.whenReady_.resolve();
   },
 
   /** @override */
   detached: function() {
     print_preview.Model.instance_ = null;
+    print_preview.Model.whenReady_ = new PromiseResolver();
   },
 
   /**

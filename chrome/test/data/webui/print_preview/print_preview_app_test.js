@@ -43,6 +43,7 @@ cr.define('print_preview_app_test', function() {
     /** @override */
     setup(function() {
       // Stub out the native layer, the cloud print interface, and the plugin.
+      PolymerTest.clearBody();
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
       nativeLayer.setInitialSettings(initialSettings);
@@ -53,19 +54,13 @@ cr.define('print_preview_app_test', function() {
       pluginProxy = new print_preview.PDFPluginStub();
       print_preview_new.PluginProxy.setInstance(pluginProxy);
 
-      PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
       const previewArea = page.$.previewArea;
       pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
-      cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
-      return nativeLayer.whenCalled('getInitialSettings').then(() => {
-        page.destination_ = new print_preview.Destination(
-            'FooDevice', print_preview.DestinationType.LOCAL,
-            print_preview.DestinationOrigin.LOCAL, 'FooName',
-            print_preview.DestinationConnectionStatus.ONLINE);
-        page.destination_.capabilities =
-            print_preview_test_utils.getCddTemplate('FooDevice').capabilities;
+      return print_preview.Model.whenReady().then(() => {
+        cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
+        return nativeLayer.whenCalled('getPrinterCapabilities');
       });
     });
 

@@ -155,7 +155,11 @@ cr.define('invalid_settings_browsertest', function() {
       const printButton = header.$$('.action-button');
       const destinationSettings = page.$$('print-preview-destination-settings');
 
-      return nativeLayer.whenCalled('getInitialSettings')
+      return Promise
+          .all([
+            print_preview.Model.whenReady(),
+            nativeLayer.whenCalled('getInitialSettings'),
+          ])
           .then(function() {
             destinationSettings.destinationStore_.startLoadAllDestinations();
             // Wait for the preview request.
@@ -253,7 +257,11 @@ cr.define('invalid_settings_browsertest', function() {
                                   .$$('print-preview-number-settings-section');
       const layoutSettings = page.$$('print-preview-layout-settings');
 
-      return nativeLayer.whenCalled('getInitialSettings')
+      return Promise
+          .all([
+            print_preview.Model.whenReady(),
+            nativeLayer.whenCalled('getInitialSettings'),
+          ])
           .then(function() {
             // Set this to enable the scaling input.
             page.setSetting('customScaling', true);
@@ -332,7 +340,11 @@ cr.define('invalid_settings_browsertest', function() {
           const destinationSettings =
               page.$$('print-preview-destination-settings');
 
-          return nativeLayer.whenCalled('getInitialSettings')
+          return Promise
+              .all([
+                print_preview.Model.whenReady(),
+                nativeLayer.whenCalled('getInitialSettings'),
+              ])
               .then(function() {
                 // Start loading cloud destinations so that the printer
                 // capabilities arrive.
