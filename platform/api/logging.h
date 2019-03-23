@@ -107,12 +107,16 @@ class Voidify {
   OSP_LAZY_STREAM(OSP_LOG_FATAL, !(condition)) \
       << "OSP_CHECK(" << #condition << ") failed: "
 
-#define OSP_CHECK_EQ(a, b) OSP_CHECK((a) == (b)) << a << " vs. " << b << ": "
-#define OSP_CHECK_NE(a, b) OSP_CHECK((a) != (b)) << a << " vs. " << b << ": "
-#define OSP_CHECK_LT(a, b) OSP_CHECK((a) < (b)) << a << " vs. " << b << ": "
-#define OSP_CHECK_LE(a, b) OSP_CHECK((a) <= (b)) << a << " vs. " << b << ": "
-#define OSP_CHECK_GT(a, b) OSP_CHECK((a) > (b)) << a << " vs. " << b << ": "
-#define OSP_CHECK_GE(a, b) OSP_CHECK((a) >= (b)) << a << " vs. " << b << ": "
+#define OSP_CHECK_EQ(a, b) \
+  OSP_CHECK((a) == (b)) << (a) << " vs. " << (b) << ": "
+#define OSP_CHECK_NE(a, b) \
+  OSP_CHECK((a) != (b)) << (a) << " vs. " << (b) << ": "
+#define OSP_CHECK_LT(a, b) OSP_CHECK((a) < (b)) << (a) << " vs. " << (b) << ": "
+#define OSP_CHECK_LE(a, b) \
+  OSP_CHECK((a) <= (b)) << (a) << " vs. " << (b) << ": "
+#define OSP_CHECK_GT(a, b) OSP_CHECK((a) > (b)) << (a) << " vs. " << (b) << ": "
+#define OSP_CHECK_GE(a, b) \
+  OSP_CHECK((a) >= (b)) << (a) << " vs. " << (b) << ": "
 
 #if defined(_DEBUG) || defined(DCHECK_ALWAYS_ON)
 #define OSP_DCHECK_IS_ON() 1
