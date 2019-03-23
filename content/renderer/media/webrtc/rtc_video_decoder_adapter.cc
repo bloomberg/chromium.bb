@@ -249,6 +249,18 @@ int32_t RTCVideoDecoderAdapter::Decode(
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
 
+  if (key_frame_required_) {
+    // We discarded previous frame because we have too many pending buffers (see
+    // logic) below. Now we need to wait for the key frame and discard
+    // everything else.
+    if (input_image._frameType != webrtc::VideoFrameType::kVideoFrameKey) {
+      DVLOG(2) << "Discard non-key frame";
+      return WEBRTC_VIDEO_CODEC_ERROR;
+    }
+    DVLOG(2) << "Key frame received, resume decoding";
+    // ok, we got key frame and can continue decoding
+    key_frame_required_ = false;
+  }
   // Convert to media::DecoderBuffer.
   // TODO(sandersd): What is |render_time_ms|?
   scoped_refptr<media::DecoderBuffer> buffer =
@@ -275,6 +287,9 @@ int32_t RTCVideoDecoderAdapter::Decode(
       // catch up as quickly as possible.
       DVLOG(2) << "Pending buffers overflow";
       pending_buffers_.clear();
+      // Actually we just discarded a frame. We must wait for the key frame and
+      // drop any other non-key frame.
+      key_frame_required_ = true;
       if (++consecutive_error_count_ > kMaxConsecutiveErrors) {
         decode_timestamps_.clear();
         return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;

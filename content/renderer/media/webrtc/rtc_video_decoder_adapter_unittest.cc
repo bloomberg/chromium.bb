@@ -168,6 +168,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   int32_t Decode(uint32_t timestamp) {
     uint8_t buf[] = {0};
     webrtc::EncodedImage input_image(&buf[0], 1, 1);
+    input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image._completeFrame = true;
     input_image.SetTimestamp(timestamp);
     return rtc_video_decoder_adapter_->Decode(input_image, false, nullptr, 0);
