@@ -1458,6 +1458,11 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'ios-simulator-code-coverage': {
+        'test_suites': {
+          'gtest_tests': 'ios_code_coverage_gtests',
+        }
+      },
       'linux-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',

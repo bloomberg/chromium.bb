@@ -158,7 +158,7 @@
       'ToTWinCFI64': 'clang_tot_win_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWinLibcxx64': 'clang_tot_official_optimize_minimal_symbols_static_release_libcxx',
       'ToTWinThinLTO64': 'clang_tot_win_official_full_symbols_thin_lto_static',
-      'ToTiOS': 'ios',
+      'ToTiOS': 'ios_error',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
 
@@ -253,10 +253,11 @@
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
 
-      'ios-device-goma-canary-clobber': 'ios',
-      'ios-device-goma-latest-clobber': 'ios',
+      'ios-device-goma-canary-clobber': 'ios_error',
+      'ios-device-goma-latest-clobber': 'ios_error',
 
-      'ios-simulator': 'ios',
+      'ios-simulator-code-coverage': 'clang_code_coverage_ios',
+      'ios-simulator': 'ios_error',
       'Jumbo Linux x64': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'Jumbo Mac': 'jumbo_release_bot_minimal_symbols',
       'Jumbo Win x64': 'jumbo_release_bot_minimal_symbols',
@@ -437,12 +438,12 @@
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'mac-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
-      'ios-device': 'ios',
-      'ios-device-xcode-clang': 'ios',
-      'ios-simulator': 'ios',
-      'ios-simulator-cronet': 'ios',
-      'ios-simulator-full-configs': 'ios',
-      'ios-simulator-xcode-clang': 'ios',
+      'ios-device': 'ios_error',
+      'ios-device-xcode-clang': 'ios_error',
+      'ios-simulator': 'ios_error',
+      'ios-simulator-cronet': 'ios_error',
+      'ios-simulator-full-configs': 'ios_error',
+      'ios-simulator-xcode-clang': 'ios_error',
       'WebKit Mac10.13 (retina)': 'release_bot',
     },
 
@@ -751,12 +752,12 @@
     },
 
     'tryserver.chromium.mac': {
-      'ios-device': 'ios',
-      'ios-device-xcode-clang': 'ios',
-      'ios-simulator': 'ios',
-      'ios-simulator-full-configs': 'ios',
-      'ios-simulator-cronet': 'ios',
-      'ios-simulator-xcode-clang': 'ios',
+      'ios-device': 'ios_error',
+      'ios-device-xcode-clang': 'ios_error',
+      'ios-simulator': 'ios_error',
+      'ios-simulator-full-configs': 'ios_error',
+      'ios-simulator-cronet': 'ios_error',
+      'ios-simulator-xcode-clang': 'ios_error',
       'mac-jumbo-rel': 'jumbo_large_chunks_release_bot_minimal_symbols',
       'mac_chromium_10.10': 'gpu_tests_release_trybot',
       'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot',
@@ -1200,6 +1201,10 @@
       'release_bot', 'clang', 'use_clang_coverage', 'no_symbols', 'libfuzzer',
     ],
 
+    'clang_code_coverage_ios': [
+      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios'
+    ],
+
     'clang_code_coverage_trybot': [
       'gpu_tests', 'use_dummy_lastchange', 'release_trybot', 'clang', 'use_clang_coverage', 'no_symbols',
       'libfuzzer', 'partial_clang_instrumentation'
@@ -1554,12 +1559,12 @@
       'gn_linux_upload', 'official', 'goma',
     ],
 
-    # The 'ios' config is just used for auditing. iOS bots
+    # The 'ios_error' config is just used for auditing. iOS bots
     # actually use the ios recipes, not the chromium recipe, and look
     # up their GN arguments via files checked in under //ios/build/bots.
     # It is an error to actually use one of these configs to generate the
     # build files.
-    'ios': [ 'error'],
+    'ios_error': [ 'error'],
 
     'jumbo_release_bot_minimal_symbols': [
       'jumbo', 'release_bot', 'compile_only',
@@ -2143,6 +2148,10 @@
 
     'internal_gles_conform_tests': {
       'gn_args': 'internal_gles2_conform_tests=true build_angle_gles1_conform_tests=true',
+    },
+
+    'ios': {
+      'gn_args': 'target_os="ios"',
     },
 
     'java_coverage': {
