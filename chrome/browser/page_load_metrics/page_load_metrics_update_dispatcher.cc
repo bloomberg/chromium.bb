@@ -602,7 +602,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
     mojom::FrameRenderDataUpdatePtr render_data) {
-  main_frame_render_data_.layout_jank_score = render_data->layout_jank_score;
+  main_frame_render_data_.layout_jank_score += render_data->layout_jank_delta;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameRenderData(

@@ -335,7 +335,7 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
   if (it == amp_subframe_info_.end())
     return;
 
-  it->second.render_data.layout_jank_score = render_data.layout_jank_score;
+  it->second.render_data.layout_jank_score += render_data.layout_jank_delta;
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(

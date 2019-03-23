@@ -113,8 +113,8 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedCssProperties()
 
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedRenderData()
     const {
-  EXPECT_FLOAT_EQ(expected_render_data_.layout_jank_score,
-                  actual_render_data_.layout_jank_score);
+  EXPECT_FLOAT_EQ(expected_render_data_.layout_jank_delta,
+                  actual_render_data_.layout_jank_delta);
 }
 
 void FakePageTimingSender::PageTimingValidator::UpdateTiming(
@@ -140,7 +140,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
         << "has been sent more than once";
     actual_css_properties_.insert(css_property_id);
   }
-  actual_render_data_.layout_jank_score = render_data.layout_jank_score;
+  actual_render_data_.layout_jank_delta = render_data.layout_jank_delta;
   VerifyExpectedTimings();
   VerifyExpectedCpuTimings();
   VerifyExpectedFeatures();
