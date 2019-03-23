@@ -4,10 +4,6 @@
 
 // Custom binding for the Permissions API.
 
-var registerArgumentMassager = bindingUtil ?
-    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
-    require('event_bindings').registerArgumentMassager;
-
 function maybeConvertToObject(str) {
   var parts = $String.split(str, '|');
   if (parts.length != 2)
@@ -25,8 +21,8 @@ function massager(args, dispatch) {
   dispatch(args);
 }
 
-registerArgumentMassager('permissions.onAdded', massager);
-registerArgumentMassager('permissions.onRemoved', massager);
+bindingUtil.registerEventArgumentMassager('permissions.onAdded', massager);
+bindingUtil.registerEventArgumentMassager('permissions.onRemoved', massager);
 
 // These custom binding are only necessary because it is not currently
 // possible to have a union of types as the type of the items in an array.

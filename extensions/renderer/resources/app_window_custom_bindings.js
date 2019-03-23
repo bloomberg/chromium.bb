@@ -16,20 +16,6 @@ var currentWindowInternal = null;
 var kSetBoundsFunction = 'setBounds';
 var kSetSizeConstraintsFunction = 'setSizeConstraints';
 
-var jsEvent;
-function createAnonymousEvent() {
-  if (bindingUtil) {
-    var supportsFilters = false;
-    var supportsLazyListeners = false;
-    // Native custom events ignore schema.
-    return bindingUtil.createCustomEvent(undefined, undefined, supportsFilters,
-                                         supportsLazyListeners);
-  }
-  if (!jsEvent)
-    jsEvent = require('event_bindings').Event;
-  return new jsEvent();
-}
-
 // Bounds class definition.
 var Bounds = function(boundsKey) {
   privates(this).boundsKey_ = boundsKey;
@@ -231,7 +217,12 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     AppWindow.prototype.moveTo = $Function.bind(window.moveTo, window);
     AppWindow.prototype.resizeTo = $Function.bind(window.resizeTo, window);
     AppWindow.prototype.contentWindow = window;
-    AppWindow.prototype.onClosed = createAnonymousEvent();
+    var supportsFilters = false;
+    var supportsLazyListeners = false;
+    AppWindow.prototype.onClosed =
+        bindingUtil.createCustomEvent(undefined /* name */,
+                                      undefined /* schema */, supportsFilters,
+                                      supportsLazyListeners);
     AppWindow.prototype.close = function() {
       this.contentWindow.close();
     };
