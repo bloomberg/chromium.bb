@@ -5840,7 +5840,7 @@ interface RTCRtpTransceiver
     getter stopped
     method constructor
     setter direction
-interface RTCSctpTransport
+interface RTCSctpTransport : EventTarget
     attribute @@toStringTag
     getter maxChannels
     getter maxMessageSize

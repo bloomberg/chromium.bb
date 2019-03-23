@@ -14,7 +14,7 @@ enum RTCSctpTransportState {
 [
     Exposed=Window,
     RuntimeEnabled=RTCSctpTransport
-] interface RTCSctpTransport {
+] interface RTCSctpTransport : EventTarget {
     readonly        attribute RTCDtlsTransport transport;
     readonly        attribute RTCSctpTransportState state;
     readonly        attribute unrestricted double maxMessageSize;
