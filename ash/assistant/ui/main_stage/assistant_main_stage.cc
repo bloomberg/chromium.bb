@@ -429,6 +429,9 @@ void AssistantMainStage::OnActivateQuery() {
   using assistant::util::CreateOpacityElement;
   using assistant::util::CreateTransformElement;
 
+  if (!committed_query_view_)
+    return;
+
   // Clear the previously active query.
   OnActiveQueryCleared();
 

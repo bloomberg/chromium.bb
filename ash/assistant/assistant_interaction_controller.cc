@@ -532,6 +532,11 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
     // earliest indication that the mic has closed.
     model_.SetMicState(MicState::kClosed);
 
+    // It is possible that an error Tts could be sent in addition to server Tts.
+    // In that case, the pending_response may have already been finalized.
+    if (!model_.pending_response())
+      model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+
     // Add an error message to the response.
     model_.pending_response()->AddUiElement(
         std::make_unique<AssistantTextElement>(
@@ -542,6 +547,8 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
   // We have an agreement with the server that TTS will always be the last part
   // of an interaction to be processed. To be timely in updating UI, we use
   // this as an opportunity to begin processing the Assistant response.
+  // TODO(xiaohuic): sometimes we actually do receive additional TTS responses,
+  // need to properly handle those cases.
   OnProcessPendingResponse();
 }
 
