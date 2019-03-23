@@ -54,12 +54,10 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 // "record-until-full" mode will be used.
 const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 
-// Enables the perfetto tracing backend. We need a separate command line
+// Disables the perfetto tracing backend. We need a separate command line
 // argument from the kTracingPerfettoBackend feature, because feature flags are
 // parsed too late during startup for early startup tracing support.
-// TODO(eseckler): When perfetto becomes the default, replace this with
-// --disable-perfetto for legacy startup tracing support.
-const char kEnablePerfetto[] = "enable-perfetto";
+const char kDisablePerfetto[] = "disable-perfetto";
 
 // Repeat internable data for each TraceEvent in the perfetto proto format.
 const char kPerfettoDisableInterning[] = "perfetto-disable-interning";
