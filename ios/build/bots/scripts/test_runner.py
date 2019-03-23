@@ -172,8 +172,8 @@ def terminate_process(proc):
         if not xcodebuild_processes:
           LOGGER.debug('There are no running xcodebuild processes.')
           break
-        LOGGER.debug('List of running xcodebuild processes:',
-                     xcodebuild_processes)
+        LOGGER.debug('List of running xcodebuild processes: %s'
+                     % xcodebuild_processes)
         # Killing xcodebuild processes
         for p in xcodebuild_processes:
           p.send_signal(signal.SIGKILL)
