@@ -89,6 +89,10 @@ class RuleIndexingTest : public DNRTestBase {
   }
 
   void LoadAndExpectError(const std::string& expected_error) {
+    // The error should be prepended with the JSON filename.
+    std::string error_with_filename = base::StringPrintf(
+        "%s: %s", kJSONRulesFilename, expected_error.c_str());
+
     base::HistogramTester tester;
     WriteExtensionData();
 
@@ -106,8 +110,8 @@ class RuleIndexingTest : public DNRTestBase {
     const std::vector<base::string16>* errors = error_reporter()->GetErrors();
     ASSERT_EQ(1u, errors->size());
     EXPECT_NE(base::string16::npos,
-              errors->at(0).find(base::UTF8ToUTF16(expected_error)))
-        << "expected: " << expected_error << " actual: " << errors->at(0);
+              errors->at(0).find(base::UTF8ToUTF16(error_with_filename)))
+        << "expected: " << error_with_filename << " actual: " << errors->at(0);
 
     tester.ExpectTotalCount(kIndexAndPersistRulesTimeHistogram, 0u);
     tester.ExpectTotalCount(kManifestRulesCountHistogram, 0u);
@@ -180,7 +184,7 @@ TEST_P(RuleIndexingTest, DuplicateResourceTypes) {
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED, *rule.id)
-          .GetErrorDescription(kJSONRulesFilename));
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
@@ -190,7 +194,7 @@ TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, *rule.id)
-          .GetErrorDescription(kJSONRulesFilename));
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
@@ -204,7 +208,7 @@ TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
   AddRule(rule);
 
   LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_URL, *rule.id)
-                         .GetErrorDescription(kJSONRulesFilename));
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, InvalidRuleID) {
@@ -212,7 +216,7 @@ TEST_P(RuleIndexingTest, InvalidRuleID) {
   rule.id = kMinValidID - 1;
   AddRule(rule);
   LoadAndExpectError(ParseInfo(ParseResult::ERROR_INVALID_RULE_ID, *rule.id)
-                         .GetErrorDescription(kJSONRulesFilename));
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
@@ -223,7 +227,7 @@ TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, *rule.id)
-          .GetErrorDescription(kJSONRulesFilename));
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
@@ -235,7 +239,7 @@ TEST_P(RuleIndexingTest, NoApplicableResourceTypes) {
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES, *rule.id)
-          .GetErrorDescription(kJSONRulesFilename));
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyDomainsList) {
@@ -243,7 +247,7 @@ TEST_P(RuleIndexingTest, EmptyDomainsList) {
   rule.condition->domains = std::vector<std::string>();
   AddRule(rule);
   LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_DOMAINS_LIST, *rule.id)
-                         .GetErrorDescription(kJSONRulesFilename));
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyResourceTypeList) {
@@ -252,7 +256,7 @@ TEST_P(RuleIndexingTest, EmptyResourceTypeList) {
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST, *rule.id)
-          .GetErrorDescription(kJSONRulesFilename));
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyURLFilter) {
@@ -260,7 +264,7 @@ TEST_P(RuleIndexingTest, EmptyURLFilter) {
   rule.condition->url_filter = std::string();
   AddRule(rule);
   LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_URL_FILTER, *rule.id)
-                         .GetErrorDescription(kJSONRulesFilename));
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, InvalidRedirectURL) {
@@ -271,13 +275,13 @@ TEST_P(RuleIndexingTest, InvalidRedirectURL) {
   AddRule(rule);
   LoadAndExpectError(
       ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_URL, *rule.id)
-          .GetErrorDescription(kJSONRulesFilename));
+          .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, ListNotPassed) {
   SetRules(std::make_unique<base::DictionaryValue>());
-  LoadAndExpectError(ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED)
-                         .GetErrorDescription(kJSONRulesFilename));
+  LoadAndExpectError(
+      ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED).GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, DuplicateIDS) {
@@ -285,7 +289,7 @@ TEST_P(RuleIndexingTest, DuplicateIDS) {
   AddRule(rule);
   AddRule(rule);
   LoadAndExpectError(ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, *rule.id)
-                         .GetErrorDescription(kJSONRulesFilename));
+                         .GetErrorDescription());
 }
 
 // Ensure that we limit the number of parse failure warnings shown.
@@ -492,9 +496,9 @@ TEST_P(RuleIndexingTest, RuleCountLimitExceeded) {
 
 TEST_P(RuleIndexingTest, InvalidJSONFile) {
   set_persist_invalid_json_file();
-  // The error is returned by the JSON parser we use. Hence just test that it's
-  // prepended with |kJSONRulesFilename|.
-  LoadAndExpectError(base::StringPrintf("%s: ", kJSONRulesFilename));
+  // The error is returned by the JSON parser we use. Hence just test an error
+  // is raised.
+  LoadAndExpectError("");
 }
 
 TEST_P(RuleIndexingTest, EmptyRuleset) {
