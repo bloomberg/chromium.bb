@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "ui/gfx/geometry/size.h"
@@ -244,14 +245,17 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
       base::test::ScopedFeatureList download_service_configuration;
       download_service_configuration.InitAndEnableFeatureWithParameters(
           download::kDownloadServiceFeature, {{"start_up_delay_ms", "0"}});
-
+      auto* url_loader_factory =
+          BrowserContext::GetDefaultStoragePartition(browser_context_)
+              ->GetURLLoaderFactoryForBrowserProcess()
+              .get();
       download_service_ =
           base::WrapUnique(download::BuildInMemoryDownloadService(
               browser_context_, std::move(clients),
               GetNetworkConnectionTracker(), base::FilePath(),
               BrowserContext::GetBlobStorageContext(browser_context_),
-              base::CreateSingleThreadTaskRunnerWithTraits(
-                  {BrowserThread::IO})));
+              base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+              url_loader_factory));
     }
   }
 }
