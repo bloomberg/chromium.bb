@@ -40,6 +40,8 @@ class AppControllerImpl : public mojom::AppController,
   void GetApps(mojom::AppController::GetAppsCallback callback) override;
   void SetClient(mojom::AppControllerClientPtr client) override;
   void LaunchApp(const std::string& app_id) override;
+  void GetArcAndroidId(
+      mojom::AppController::GetArcAndroidIdCallback callback) override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
