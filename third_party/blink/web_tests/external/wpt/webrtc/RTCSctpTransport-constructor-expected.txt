@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL setRemoteDescription() with answer not containing data media should not initialize pc.sctp promise_test: Unhandled rejection with value: object "ReferenceError: generateOffer is not defined"
+FAIL setLocalDescription() with answer not containing data media should not initialize pc.sctp promise_test: Unhandled rejection with value: object "ReferenceError: generateOffer is not defined"
+PASS setRemoteDescription() with answer containing data media should initialize pc.sctp
+PASS setLocalDescription() with answer containing data media should initialize pc.sctp
+Harness: the test ran to completion.
+
