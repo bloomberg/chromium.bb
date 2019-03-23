@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/profile_builder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
@@ -55,8 +55,7 @@ class MetadataRecorder {
 //
 // This uses the new StackSample encoding rather than the legacy Sample
 // encoding.
-class CallStackProfileBuilder
-    : public base::StackSamplingProfiler::ProfileBuilder {
+class CallStackProfileBuilder : public base::ProfileBuilder {
  public:
   // |completed_callback| is made when sampling a profile completes. Other
   // threads, including the UI thread, may block on callback completion so this
@@ -73,11 +72,11 @@ class CallStackProfileBuilder
 
   ~CallStackProfileBuilder() override;
 
-  // base::StackSamplingProfiler::ProfileBuilder:
+  // base::ProfileBuilder:
   base::ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
   void OnSampleCompleted(
-      std::vector<base::StackSamplingProfiler::Frame> frames) override;
+      std::vector<base::ProfileBuilder::Frame> frames) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
                           base::TimeDelta sampling_period) override;
 

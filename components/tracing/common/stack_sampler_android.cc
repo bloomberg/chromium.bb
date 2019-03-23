@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/native_stack_sampler_android.h"
+#include "components/tracing/common/stack_sampler_android.h"
 
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/profile_builder.h"
 #include "base/trace_event/trace_event.h"
 
 namespace tracing {
@@ -12,14 +12,14 @@ namespace {
 constexpr size_t kMaxFrameDepth = 48;
 }  // namespace
 
-NativeStackSamplerAndroid::NativeStackSamplerAndroid(base::PlatformThreadId tid)
+StackSamplerAndroid::StackSamplerAndroid(base::PlatformThreadId tid)
     : tid_(tid) {}
 
-NativeStackSamplerAndroid::~NativeStackSamplerAndroid() = default;
+StackSamplerAndroid::~StackSamplerAndroid() = default;
 
-void NativeStackSamplerAndroid::RecordStackFrames(
+void StackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,
-    base::StackSamplingProfiler::ProfileBuilder* profile_builder) {
+    base::ProfileBuilder* profile_builder) {
   if (!unwinder_.is_initialized()) {
     // May block on disk access. This function is executed on the profiler
     // thread, so this will only block profiling execution.
@@ -29,7 +29,7 @@ void NativeStackSamplerAndroid::RecordStackFrames(
   }
   const void* pcs[kMaxFrameDepth];
   size_t depth = unwinder_.TraceStack(tid_, stack_buffer, pcs, kMaxFrameDepth);
-  std::vector<base::StackSamplingProfiler::Frame> frames;
+  std::vector<base::ProfileBuilder::Frame> frames;
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {
     // TODO(ssid): Add support for obtaining modules here.
