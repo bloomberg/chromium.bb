@@ -13,9 +13,11 @@
 
 namespace vr {
 
-BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
+BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRDeviceId id,
+                                   device::mojom::XRRuntimePtr runtime,
                                    device::mojom::VRDisplayInfoPtr display_info)
-    : runtime_(std::move(runtime)),
+    : id_(id),
+      runtime_(std::move(runtime)),
       display_info_(std::move(display_info)),
       binding_(this),
       weak_ptr_factory_(this) {

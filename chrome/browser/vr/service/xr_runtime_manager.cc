@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/common/chrome_features.h"
@@ -377,8 +378,10 @@ void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(runtimes_.find(id) == runtimes_.end());
 
-  runtimes_[id] =
-      std::make_unique<BrowserXRRuntime>(std::move(runtime), std::move(info));
+  TRACE_EVENT_INSTANT1("xr", "AddRuntime", TRACE_EVENT_SCOPE_THREAD, "id", id);
+
+  runtimes_[id] = std::make_unique<BrowserXRRuntime>(id, std::move(runtime),
+                                                     std::move(info));
 
   for (XRRuntimeManagerObserver& obs : g_xr_runtime_manager_observers.Get())
     obs.OnRuntimeAdded(runtimes_[id].get());
@@ -389,6 +392,9 @@ void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
 }
 
 void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
+  TRACE_EVENT_INSTANT1("xr", "RemoveRuntime", TRACE_EVENT_SCOPE_THREAD, "id",
+                       id);
+
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = runtimes_.find(id);
   DCHECK(it != runtimes_.end());

@@ -69,6 +69,7 @@ void XRCompositorCommon::ClearPendingFrame() {
 
 void XRCompositorCommon::SubmitFrameMissing(int16_t frame_index,
                                             const gpu::SyncToken& sync_token) {
+  TRACE_EVENT_INSTANT0("xr", "SubmitFrameMissing", TRACE_EVENT_SCOPE_THREAD);
   if (pending_frame_) {
     // WebXR for this frame is hidden.
     pending_frame_->waiting_for_webxr_ = false;
@@ -94,14 +95,14 @@ void XRCompositorCommon::SubmitFrameDrawnIntoTexture(
 void XRCompositorCommon::SubmitFrameWithTextureHandle(
     int16_t frame_index,
     mojo::ScopedHandle texture_handle) {
-  TRACE_EVENT1("gpu", "SubmitFrameWithTextureHandle", "frameIndex",
-               frame_index);
+  TRACE_EVENT1("xr", "SubmitFrameWithTextureHandle", "frameIndex", frame_index);
   if (!pending_frame_ || pending_frame_->frame_data_->frame_id != frame_index) {
     // We weren't expecting a submitted frame.  This can happen if WebXR was
     // hidden by an overlay for some time.
     if (submit_client_) {
       submit_client_->OnSubmitFrameTransferred(false);
       submit_client_->OnSubmitFrameRendered();
+      TRACE_EVENT1("xr", "SubmitFrameTransferred", "success", false);
     }
     return;
   }
@@ -175,6 +176,8 @@ void XRCompositorCommon::RequestSession(
   frame_data_binding_.Close();
 
   if (!StartRuntime()) {
+    TRACE_EVENT_INSTANT0("xr", "Failed to start runtime",
+                         TRACE_EVENT_SCOPE_THREAD);
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
@@ -218,6 +221,7 @@ void XRCompositorCommon::RequestSession(
 }
 
 void XRCompositorCommon::ExitPresent() {
+  TRACE_EVENT_INSTANT0("xr", "ExitPresent", TRACE_EVENT_SCOPE_THREAD);
   is_presenting_ = false;
   presentation_binding_.Close();
   frame_data_binding_.Close();
@@ -284,6 +288,7 @@ void XRCompositorCommon::StartPendingFrame() {
 
 void XRCompositorCommon::GetFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
+  TRACE_EVENT0("xr", "GetFrameData");
   if (!is_presenting_) {
     return;
   }
@@ -324,6 +329,7 @@ void XRCompositorCommon::GetFrameData(
 void XRCompositorCommon::GetControllerDataAndSendFrameData(
     XRFrameDataProvider::GetFrameDataCallback callback,
     mojom::XRFrameDataPtr frame_data) {
+  TRACE_EVENT0("xr", "GetControllerDataAndSendFrameData");
   // Update gamepad controllers.
   UpdateControllerState();
 
@@ -340,6 +346,7 @@ void XRCompositorCommon::SubmitOverlayTexture(
     const gfx::RectF& left_bounds,
     const gfx::RectF& right_bounds,
     SubmitOverlayTextureCallback overlay_submit_callback) {
+  TRACE_EVENT_INSTANT0("xr", "SubmitOverlay", TRACE_EVENT_SCOPE_THREAD);
   DCHECK(overlay_visible_);
   overlay_submit_callback_ = std::move(overlay_submit_callback);
   if (!pending_frame_) {
@@ -377,6 +384,7 @@ void XRCompositorCommon::RequestNextOverlayPose(
     RequestNextOverlayPoseCallback callback) {
   // We will only request poses while the overlay is visible.
   DCHECK(overlay_visible_);
+  TRACE_EVENT_INSTANT0("xr", "RequestOverlayPose", TRACE_EVENT_SCOPE_THREAD);
 
   // If we've already given out a pose for the current frame delay giving out a
   // pose until the next frame we are visible.
@@ -396,6 +404,9 @@ void XRCompositorCommon::RequestNextOverlayPose(
 
 void XRCompositorCommon::SetOverlayAndWebXRVisibility(bool overlay_visible,
                                                       bool webxr_visible) {
+  TRACE_EVENT_INSTANT2("xr", "SetOverlayAndWebXRVisibility",
+                       TRACE_EVENT_SCOPE_THREAD, "overlay", overlay_visible,
+                       "webxr", webxr_visible);
   // Update state.
   webxr_visible_ = webxr_visible;
   overlay_visible_ = overlay_visible;
@@ -474,6 +485,7 @@ void XRCompositorCommon::MaybeCompositeAndSubmit() {
     // Tell WebVR that we are done with the texture (if we got a texture)
     submit_client_->OnSubmitFrameTransferred(copy_successful);
     submit_client_->OnSubmitFrameRendered();
+    TRACE_EVENT1("xr", "SubmitFrameTransferred", "success", copy_successful);
   }
 
   if (pending_frame_->overlay_submitted_ && overlay_submit_callback_) {
