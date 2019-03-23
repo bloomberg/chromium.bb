@@ -314,6 +314,7 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
       encrypt_everything_(false),
       nigori_overwrite_count_(0),
       random_salt_generator_(random_salt_generator),
+      migration_attempted_(false),
       weak_ptr_factory_(this) {
   // Restore the cryptographer's previous keys. Note that we don't add the
   // keystore keys into the cryptographer here, in case a migration was pending.
@@ -405,6 +406,11 @@ void SyncEncryptionHandlerImpl::Init() {
     UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
                               NOT_MIGRATED_UNKNOWN_REASON,
                               MIGRATION_STATE_SIZE);
+  }
+
+  if (!IsNigoriMigratedToKeystore(node.GetNigoriSpecifics())) {
+    UMA_HISTOGRAM_BOOLEAN("Sync.NigoriMigrationAttemptedBeforeNotMigrated",
+                          migration_attempted_);
   }
 
   // Always trigger an encrypted types and cryptographer state change event at
@@ -1606,6 +1612,8 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   if (!ShouldTriggerMigration(old_nigori, *cryptographer, *passphrase_type))
     return false;
 
+  migration_attempted_ = true;
+
   DVLOG(1) << "Starting nigori migration to keystore support.";
   sync_pb::NigoriSpecifics migrated_nigori(old_nigori);
 
@@ -1779,6 +1787,11 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
       NOTREACHED();
       break;
   }
+  UMA_HISTOGRAM_BOOLEAN("Sync.IsNigoriMigratedAfterMigration",
+                        IsNigoriMigratedToKeystore(migrated_nigori));
+  UMA_HISTOGRAM_BOOLEAN("Sync.ShouldTriggerMigrationAfterMigration",
+                        ShouldTriggerMigration(migrated_nigori, *cryptographer,
+                                               *passphrase_type));
   return true;
 }
 
