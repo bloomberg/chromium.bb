@@ -407,7 +407,7 @@ void* TestVRClientCore::GetGenericInterface(const char* name_and_version,
   if (strcmp(name_and_version, IVRCompositor_Version) == 0)
     return static_cast<IVRCompositor*>(&g_compositor);
   if (strcmp(name_and_version, device::kChromeOpenVRTestHookAPI) == 0)
-    return static_cast<device::TestHookRegistration*>(&g_test_helper);
+    return static_cast<device::ServiceTestHook*>(&g_test_helper);
 
   *error = VRInitError_Init_InvalidInterface;
   return nullptr;

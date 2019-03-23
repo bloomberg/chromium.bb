@@ -44,8 +44,10 @@ class IsolatedVRDeviceProvider
   void OnDeviceRemoved(device::mojom::XRDeviceId id) override;
   void OnDevicesEnumerated() override;
   void OnServerError();
+  void SetupDeviceProvider();
 
   bool initialized_ = false;
+  int retry_count_ = 0;
   device::mojom::IsolatedXRRuntimeProviderPtr device_provider_;
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId,

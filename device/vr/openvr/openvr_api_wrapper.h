@@ -15,7 +15,7 @@ class SingleThreadTaskRunner;
 
 namespace device {
 class VRTestHook;
-class TestHookRegistration;
+class ServiceTestHook;
 
 class OpenVRWrapper {
  public:
@@ -40,7 +40,7 @@ class OpenVRWrapper {
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
   bool initialized_ = false;
 
-  static TestHookRegistration* test_hook_registration_;
+  static ServiceTestHook* service_test_hook_;
   static VRTestHook* test_hook_;
   static bool any_initialized_;
 };
