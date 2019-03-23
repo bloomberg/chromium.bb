@@ -64,7 +64,7 @@ mingw-build:
     - mkdir "$BUILDDIR"
     - cd "$BUILDDIR"
     - eval `rpm --eval %{mingw64_env}`
-    - ../autogen.sh --prefix="$PREFIX" --disable-shared --enable-static
+    - ../autogen.sh --prefix="$PREFIX" --host=x86_64-mingw32 --disable-shared --enable-static
     - make
     - make check
   artifacts:
