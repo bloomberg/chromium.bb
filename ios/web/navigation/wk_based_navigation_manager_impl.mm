@@ -394,7 +394,18 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
       return pending_item;
     }
   }
-  return GetLastCommittedItem();
+  NavigationItem* last_committed_item = GetLastCommittedItem();
+  if (last_committed_item)
+    return last_committed_item;
+
+  // While an -IsRestoreSessionUrl URL can not be a committed page, it is
+  // OK to display it as a visible URL.  This prevents seeing about:blank while
+  // navigating to a restore URL.
+  NavigationItem* result = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (result && wk_navigation_util::IsRestoreSessionUrl(result->GetURL())) {
+    return result;
+  }
+  return nullptr;
 }
 
 void WKBasedNavigationManagerImpl::DiscardNonCommittedItems() {
