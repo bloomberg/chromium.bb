@@ -21,6 +21,7 @@ source_set("common") {
   deps = [
     "//base",
     "//fuchsia/base",
+    "//fuchsia/base:modular",
     "//third_party/fuchsia-sdk/sdk:ui_app",
     "//url",
   ]
@@ -201,6 +202,7 @@ test("web_runner_integration_tests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//fuchsia/base:modular",
     "//fuchsia/engine:test_support",
     "//net:test_support",
     "//testing/gtest",

@@ -14,26 +14,6 @@
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_content_runner.h"
 
-WebComponent::~WebComponent() {
-  // Send process termination details to the client.
-  controller_binding_.events().OnTerminated(termination_exit_code_,
-                                            termination_reason_);
-}
-
-void WebComponent::LoadUrl(const GURL& url) {
-  DCHECK(url.is_valid());
-  chromium::web::NavigationControllerPtr navigation_controller;
-  frame()->GetNavigationController(navigation_controller.NewRequest());
-
-  // Set the page activation flag on the initial load, so that features like
-  // autoplay work as expected when a WebComponent first loads the specified
-  // content.
-  chromium::web::LoadUrlParams params;
-  params.set_was_user_activated(true);
-
-  navigation_controller->LoadUrl(url.spec(), std::move(params));
-}
-
 WebComponent::WebComponent(
     WebContentRunner* runner,
     std::unique_ptr<base::fuchsia::StartupContext> context,
@@ -61,13 +41,36 @@ WebComponent::WebComponent(
   runner_->context()->CreateFrame(frame_.NewRequest());
 
   if (startup_context()->public_services()) {
-    // Publish ViewProvider before returning control to the message-loop, to
-    // ensure that it is available before the ServiceDirectory starts processing
+    // Publish services before returning control to the message-loop, to ensure
+    // that it is available before the ServiceDirectory starts processing
     // requests.
     view_provider_binding_ = std::make_unique<
         base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>(
         startup_context()->public_services(), this);
+    lifecycle_ = std::make_unique<cr_fuchsia::LifecycleImpl>(
+        startup_context_->public_services(),
+        base::BindOnce(&WebComponent::Kill, base::Unretained(this)));
   }
+}
+
+WebComponent::~WebComponent() {
+  // Send process termination details to the client.
+  controller_binding_.events().OnTerminated(termination_exit_code_,
+                                            termination_reason_);
+}
+
+void WebComponent::LoadUrl(const GURL& url) {
+  DCHECK(url.is_valid());
+  chromium::web::NavigationControllerPtr navigation_controller;
+  frame()->GetNavigationController(navigation_controller.NewRequest());
+
+  // Set the page activation flag on the initial load, so that features like
+  // autoplay work as expected when a WebComponent first loads the specified
+  // content.
+  chromium::web::LoadUrlParams params;
+  params.set_was_user_activated(true);
+
+  navigation_controller->LoadUrl(url.spec(), std::move(params));
 }
 
 void WebComponent::Kill() {
