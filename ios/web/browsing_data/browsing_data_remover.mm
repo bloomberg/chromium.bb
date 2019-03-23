@@ -85,8 +85,10 @@ void BrowsingDataRemover::ClearBrowsingData(ClearBrowsingDataMask types,
 
   base::WeakPtr<BrowsingDataRemover> weak_ptr = weak_ptr_factory_.GetWeakPtr();
   ProceduralBlock completion_block = ^{
-    if (BrowsingDataRemover* strong_ptr = weak_ptr.get())
+    if (BrowsingDataRemover* strong_ptr = weak_ptr.get()) {
+      [strong_ptr->dummy_web_view_ removeFromSuperview];
       strong_ptr->dummy_web_view_ = nil;
+    }
     std::move(block_closure).Run();
   };
 
@@ -116,8 +118,18 @@ void BrowsingDataRemover::ClearBrowsingData(ClearBrowsingDataMask types,
   // https://bugs.webkit.org/show_bug.cgi?id=149078. Remove this
   // workaround when it's not needed anymore.
   if (IsRemoveDataMaskSet(types, ClearBrowsingDataMask::kRemoveCookies)) {
-    if (!dummy_web_view_)
+    if (!dummy_web_view_) {
       dummy_web_view_ = [[WKWebView alloc] initWithFrame:CGRectZero];
+      dummy_web_view_.hidden = YES;
+      // It seems that the WKWebView needs to be part of the view hierarchy to
+      // prevent its out-of-process process from being suspended. If it is not
+      // added to the view hierarchy, tests are failing when trying to
+      // remove/check the cookies which indicates that we might have the same
+      // issue with cookies. Adding the web view to the view hierarchy as a safe
+      // guard.
+      [[UIApplication sharedApplication].keyWindow insertSubview:dummy_web_view_
+                                                         atIndex:0];
+    }
   }
 
   NSDate* delete_begin_date =

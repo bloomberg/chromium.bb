@@ -115,13 +115,7 @@ TEST_F(BrowsingDataRemoverTest, DifferentRemoverForDifferentBrowserState) {
 }
 
 // Tests that removing the cookies remove them from the cookie store.
-// TODO(crbug.com/940880):Fix this test on iOS 11 device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_RemoveCookie RemoveCookie
-#else
-#define MAYBE_RemoveCookie DISABLED_RemoveCookie
-#endif
-TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveCookie) {
+TEST_F(BrowsingDataRemoverTest, RemoveCookie) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
@@ -133,13 +127,7 @@ TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveCookie) {
 }
 
 // Tests that removing the anything but cookies leave the cookies in the store.
-// TODO(crbug.com/940880):Fix this test on iOS 11 device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_RemoveNothing RemoveNothing
-#else
-#define MAYBE_RemoveNothing DISABLED_RemoveNothing
-#endif
-TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveNothing) {
+TEST_F(BrowsingDataRemoverTest, RemoveNothing) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
@@ -152,13 +140,7 @@ TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveNothing) {
 }
 
 // Tests that removing nothing still call the closure.
-// TODO(crbug.com/940880):Fix this test on iOS 11 device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_KeepCookie KeepCookie
-#else
-#define MAYBE_KeepCookie DISABLED_KeepCookie
-#endif
-TEST_F(BrowsingDataRemoverTest, MAYBE_KeepCookie) {
+TEST_F(BrowsingDataRemoverTest, KeepCookie) {
   ASSERT_TRUE(AddCookie());
 
   // Don't remove anything but check that the closure is still called.
