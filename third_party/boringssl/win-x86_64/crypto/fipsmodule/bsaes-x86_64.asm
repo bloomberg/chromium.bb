@@ -12,9 +12,6 @@ default	rel
 section	.text code align=64
 
 
-EXTERN	aes_nohw_encrypt
-EXTERN	aes_nohw_decrypt
-
 
 ALIGN	64
 _bsaes_encrypt8:
@@ -1080,17 +1077,13 @@ DB	102,15,56,0,244
 	DB	0F3h,0C3h		;repret
 
 
-EXTERN	aes_nohw_cbc_encrypt
 global	bsaes_cbc_encrypt
 
 ALIGN	16
 bsaes_cbc_encrypt:
 
-	mov	r11d,DWORD[48+rsp]
-	cmp	r11d,0
-	jne	NEAR aes_nohw_cbc_encrypt
-	cmp	r8,128
-	jb	NEAR aes_nohw_cbc_encrypt
+
+
 
 	mov	rax,rsp
 $L$cbc_dec_prologue:
@@ -1146,6 +1139,8 @@ $L$cbc_dec_body:
 
 	movdqu	xmm14,XMMWORD[rbx]
 	sub	r14,8
+	jc	NEAR $L$cbc_dec_loop_done
+
 $L$cbc_dec_loop:
 	movdqu	xmm15,XMMWORD[r12]
 	movdqu	xmm0,XMMWORD[16+r12]
@@ -1190,6 +1185,7 @@ $L$cbc_dec_loop:
 	sub	r14,8
 	jnc	NEAR $L$cbc_dec_loop
 
+$L$cbc_dec_loop_done:
 	add	r14,8
 	jz	NEAR $L$cbc_dec_done
 
@@ -1322,13 +1318,12 @@ $L$cbc_dec_two:
 	jmp	NEAR $L$cbc_dec_done
 ALIGN	16
 $L$cbc_dec_one:
-	lea	rcx,[r12]
-	lea	rdx,[32+rbp]
-	lea	r8,[r15]
-	call	aes_nohw_decrypt
-	pxor	xmm14,XMMWORD[32+rbp]
-	movdqu	XMMWORD[r13],xmm14
-	movdqa	xmm14,xmm15
+	movdqa	XMMWORD[32+rbp],xmm14
+	call	_bsaes_decrypt8
+	pxor	xmm15,XMMWORD[32+rbp]
+	movdqu	xmm14,XMMWORD[r12]
+	movdqu	XMMWORD[r13],xmm15
+	jmp	NEAR $L$cbc_dec_done
 
 $L$cbc_dec_done:
 	movdqu	XMMWORD[rbx],xmm14
@@ -1423,8 +1418,8 @@ $L$ctr_enc_body:
 	mov	r14,r8
 	mov	r15,r9
 	movdqa	XMMWORD[32+rbp],xmm0
-	cmp	r8,8
-	jb	NEAR $L$ctr_enc_short
+
+
 
 	mov	ebx,eax
 	shl	rax,7
@@ -1558,26 +1553,8 @@ $L$ctr_enc_loop_done:
 	movdqu	xmm13,XMMWORD[96+r12]
 	pxor	xmm1,xmm13
 	movdqu	XMMWORD[96+r13],xmm1
-	jmp	NEAR $L$ctr_enc_done
 
-ALIGN	16
-$L$ctr_enc_short:
-	lea	rcx,[32+rbp]
-	lea	rdx,[48+rbp]
-	lea	r8,[r15]
-	call	aes_nohw_encrypt
-	movdqu	xmm0,XMMWORD[r12]
-	lea	r12,[16+r12]
-	mov	eax,DWORD[44+rbp]
-	bswap	eax
-	pxor	xmm0,XMMWORD[48+rbp]
-	inc	eax
-	movdqu	XMMWORD[r13],xmm0
-	bswap	eax
-	lea	r13,[16+r13]
-	mov	DWORD[44+rsp],eax
-	dec	r14
-	jnz	NEAR $L$ctr_enc_short
+
 
 $L$ctr_enc_done:
 	lea	rax,[rsp]
