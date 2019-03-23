@@ -1226,7 +1226,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
     base::DictionaryValue permission_dict;
     for (const auto& permission : package.permissions.value()) {
       permission_dict.SetBoolean(
-          base::Int64ToString(static_cast<int64_t>(permission.first)),
+          base::NumberToString(static_cast<int64_t>(permission.first)),
           permission.second);
     }
     package_dict->SetKey(kPermissions, std::move(permission_dict));

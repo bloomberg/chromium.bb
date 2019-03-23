@@ -28,7 +28,7 @@ ScopedTempRegistryKey::ScopedTempRegistryKey() {
   const base::TimeDelta timestamp =
       base::Time::Now().ToDeltaSinceWindowsEpoch();
   key_path_ = base::StrCat(
-      {kTempTestKeyPath, base::Int64ToString16(timestamp.InMicroseconds()),
+      {kTempTestKeyPath, base::NumberToString16(timestamp.InMicroseconds()),
        kTimestampDelimiter, base::ASCIIToUTF16(base::GenerateGUID())});
 
   CHECK(ERROR_SUCCESS ==
