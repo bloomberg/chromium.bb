@@ -573,30 +573,33 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
     return false;
   }
 
-  std::string message_formatted =
+  std::string formatted_message =
       base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
                          line_no, base::UTF16ToUTF8(message).data());
   switch (level) {
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::DEBUG):
-      LOG(INFO) << "debug:" << message_formatted;
+      LOG(INFO) << "debug:" << formatted_message;
       break;
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::INFO):
-      LOG(INFO) << "info:" << message_formatted;
+      LOG(INFO) << "info:" << formatted_message;
       break;
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::WARN):
-      LOG(WARNING) << "warn:" << message_formatted;
+      LOG(WARNING) << "warn:" << formatted_message;
       break;
     case static_cast<std::underlying_type<chromium::web::LogLevel>::type>(
         chromium::web::LogLevel::ERROR):
-      LOG(ERROR) << "error:" << message_formatted;
+      LOG(ERROR) << "error:" << formatted_message;
       break;
     default:
       DLOG(WARNING) << "Unknown log level: " << level;
       return false;
   }
+
+  if (console_log_message_hook_)
+    console_log_message_hook_.Run(formatted_message);
 
   return true;
 }

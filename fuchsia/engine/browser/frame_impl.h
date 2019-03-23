@@ -48,9 +48,6 @@ class FrameImpl : public chromium::web::Frame,
 
   zx::unowned_channel GetBindingChannelForTest() const;
 
-  content::WebContents* web_contents_for_test() { return web_contents_.get(); }
-  bool has_view_for_test() { return window_tree_host_ != nullptr; }
-
   // chromium::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
   void CreateView2(
@@ -73,6 +70,17 @@ class FrameImpl : public chromium::web::Frame,
                    std::string target_origin,
                    PostMessageCallback callback) override;
   void SetEnableInput(bool enable_input) override;
+
+  // Registers a callback for processing JavaScript console logging messages.
+  void set_javascript_console_message_hook_for_test(
+      base::RepeatingCallback<void(base::StringPiece)>
+          console_log_message_hook) {
+    console_log_message_hook_ = console_log_message_hook;
+  }
+
+  content::WebContents* web_contents_for_test() { return web_contents_.get(); }
+
+  bool has_view_for_test() { return window_tree_host_ != nullptr; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);
@@ -150,10 +158,13 @@ class FrameImpl : public chromium::web::Frame,
   bool pending_navigation_event_is_dirty_;
   chromium::web::LogLevel log_level_ = chromium::web::LogLevel::NONE;
   std::list<OriginScopedScript> before_load_scripts_;
-
   ContextImpl* context_ = nullptr;
+
   fidl::Binding<chromium::web::Frame> binding_;
   fidl::BindingSet<chromium::web::NavigationController> controller_bindings_;
+
+  // Used for testing.
+  base::RepeatingCallback<void(base::StringPiece)> console_log_message_hook_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameImpl);
 };

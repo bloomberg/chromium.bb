@@ -9,13 +9,22 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/path_service.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
+#include "fuchsia/runners/cast/not_implemented_api_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
 
 namespace {
+
 constexpr int kBindingsFailureExitCode = 129;
+
+constexpr char kStubBindingsPath[] =
+    FILE_PATH_LITERAL("fuchsia/runners/cast/not_implemented_api_bindings.js");
+
 }  // namespace
 
 CastComponent::CastComponent(
@@ -26,21 +35,10 @@ CastComponent::CastComponent(
     std::unique_ptr<cr_fuchsia::AgentManager> agent_manager)
     : WebComponent(runner, std::move(context), std::move(controller_request)),
       agent_manager_(std::move(agent_manager)),
-      queryable_data_(
-          frame(),
-          agent_manager_->ConnectToAgentService<chromium::cast::QueryableData>(
-              CastRunner::kAgentComponentUrl)),
       navigation_observer_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
-  // Bind to the CastChannel service provided by the Agent.
-  cast_channel_ = std::make_unique<CastChannelBindings>(
-      frame(), &connector_,
-      agent_manager_->ConnectToAgentService<chromium::cast::CastChannel>(
-          CastRunner::kAgentComponentUrl),
-      base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
-                     kBindingsFailureExitCode,
-                     fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+  InitializeCastPlatformBindings();
 
   frame()->SetNavigationEventObserver(
       navigation_observer_binding_.NewBinding());
@@ -61,4 +59,30 @@ void CastComponent::OnNavigationStateChanged(
   if (change.url)
     connector_.NotifyPageLoad(frame());
   callback();
+}
+
+void CastComponent::InitializeCastPlatformBindings() {
+  base::FilePath stub_path;
+  CHECK(base::PathService::Get(base::DIR_ASSETS, &stub_path));
+  stub_path = stub_path.AppendASCII(kStubBindingsPath);
+  DCHECK(base::PathExists(stub_path));
+  fuchsia::mem::Buffer stub_buf = cr_fuchsia::MemBufferFromFile(
+      base::File(stub_path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  CHECK(stub_buf.vmo);
+  frame()->ExecuteJavaScript(
+      {"*"}, std::move(stub_buf), chromium::web::ExecuteMode::ON_PAGE_LOAD,
+      [](bool result) { CHECK(result) << "Couldn't inject stub bindings."; });
+
+  cast_channel_ = std::make_unique<CastChannelBindings>(
+      frame(), &connector_,
+      agent_manager_->ConnectToAgentService<chromium::cast::CastChannel>(
+          CastRunner::kAgentComponentUrl),
+      base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
+                     kBindingsFailureExitCode,
+                     fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+
+  queryable_data_ = std::make_unique<QueryableDataBindings>(
+      frame(),
+      agent_manager_->ConnectToAgentService<chromium::cast::QueryableData>(
+          CastRunner::kAgentComponentUrl));
 }
