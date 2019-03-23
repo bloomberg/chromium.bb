@@ -121,6 +121,11 @@ interface XRTestHook {
 // Interface exposed by IsolatedXRService to allow browser tests to hook VR APIs
 // It is always hosted in the XRDevice process, but only has effects while
 // running in browser tests with mock implementations of runtimes.
-interface XRTestHookRegistration {
+interface XRServiceTestHook {
   [Sync] SetTestHook(XRTestHook? hook) => ();
+
+  // Called by tests to trigger a termination of the Device Service Process
+  // To test that the product can properly handle the service either crashing
+  // or (more expectedly) being terminated by some other running process.
+  [Sync] TerminateDeviceServiceProcessForTesting() => ();
 };

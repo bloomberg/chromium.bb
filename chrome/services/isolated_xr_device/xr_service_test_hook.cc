@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/isolated_xr_device/xr_test_hook_registration.h"
+#include "chrome/services/isolated_xr_device/xr_service_test_hook.h"
 #include "base/bind.h"
+#include "base/process/process.h"
 #include "chrome/services/isolated_xr_device/xr_test_hook_wrapper.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 
 namespace device {
 
-void XRTestHookRegistration::SetTestHook(
+void XRServiceTestHook::SetTestHook(
     device_test::mojom::XRTestHookPtr hook,
-    device_test::mojom::XRTestHookRegistration::SetTestHookCallback callback) {
+    device_test::mojom::XRServiceTestHook::SetTestHookCallback callback) {
   // Create a new wrapper (or use null)
   std::unique_ptr<XRTestHookWrapper> wrapper =
       hook ? std::make_unique<XRTestHookWrapper>(hook.PassInterface())
@@ -26,7 +27,12 @@ void XRTestHookRegistration::SetTestHook(
   std::move(callback).Run();
 }
 
-XRTestHookRegistration::~XRTestHookRegistration() {
+void XRServiceTestHook::TerminateDeviceServiceProcessForTesting(
+    DeviceCrashCallback callback) {
+  base::Process::TerminateCurrentProcessImmediately(1);
+}
+
+XRServiceTestHook::~XRServiceTestHook() {
   // If we have an existing wrapper, and it is bound to a thread, post a message
   // to destroy it on that thread.
   if (wrapper_) {
@@ -44,7 +50,7 @@ XRTestHookRegistration::~XRTestHookRegistration() {
   }
 }
 
-XRTestHookRegistration::XRTestHookRegistration(
+XRServiceTestHook::XRServiceTestHook(
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
 

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/services/isolated_xr_device/xr_runtime_provider.h"
-#include "chrome/services/isolated_xr_device/xr_test_hook_registration.h"
+#include "chrome/services/isolated_xr_device/xr_service_test_hook.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
@@ -19,9 +19,9 @@ void XrDeviceService::OnDeviceProviderRequest(
 }
 
 void XrDeviceService::OnTestHookRequest(
-    device_test::mojom::XRTestHookRegistrationRequest request) {
+    device_test::mojom::XRServiceTestHookRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<XRTestHookRegistration>(service_keepalive_.CreateRef()),
+      std::make_unique<XRServiceTestHook>(service_keepalive_.CreateRef()),
       std::move(request));
 }
 
