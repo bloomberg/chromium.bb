@@ -488,8 +488,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       /* is_websocket = */ false, NetLogWithSource()));
 
   auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key.host_port_pair(), /* disable_resolver_cache = */ false,
-      OnHostResolutionCallback());
+      key.host_port_pair(), OnHostResolutionCallback());
 
   auto connection = std::make_unique<ClientSocketHandle>();
   TestCompletionCallback callback;

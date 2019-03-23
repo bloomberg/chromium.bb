@@ -70,7 +70,6 @@ class WebSocketTransportClientSocketPoolTest
                     CreateFromTransportSocketParams(
                         base::MakeRefCounted<TransportSocketParams>(
                             HostPortPair("www.google.com", 80),
-                            false,
                             OnHostResolutionCallback()))),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
@@ -191,7 +190,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
   scoped_refptr<TransportClientSocketPool::SocketParams> dest(
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
-              host_port_pair, false, OnHostResolutionCallback())));
+              host_port_pair, OnHostResolutionCallback())));
   EXPECT_EQ(
       ERR_IO_PENDING,
       handle.Init(group_id_, dest, kDefaultPriority, SocketTag(),
@@ -422,8 +421,7 @@ void RequestSocketOnComplete(const ClientSocketPool::GroupId& group_id,
   scoped_refptr<TransportClientSocketPool::SocketParams> dest(
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("www.google.com", 80), false,
-              OnHostResolutionCallback())));
+              HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   int rv = handle->Init(
       group_id, dest, LOWEST, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, nested_callback->callback(),
@@ -441,8 +439,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
   scoped_refptr<TransportClientSocketPool::SocketParams> dest(
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("www.google.com", 80), false,
-              OnHostResolutionCallback())));
+              HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   TestCompletionCallback second_result_callback;
   int rv = handle.Init(group_id_, dest, LOWEST, SocketTag(),
                        ClientSocketPool::RespectLimits::ENABLED,

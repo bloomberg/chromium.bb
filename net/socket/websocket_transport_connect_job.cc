@@ -108,10 +108,6 @@ int WebSocketTransportConnectJob::DoResolveHost() {
 
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
-  parameters.cache_usage =
-      params_->disable_resolver_cache()
-          ? HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED
-          : HostResolver::ResolveHostParameters::CacheUsage::ALLOWED;
   request_ = host_resolver()->CreateRequest(params_->destination(), net_log(),
                                             parameters);
 

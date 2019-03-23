@@ -6,6 +6,7 @@
 // inside a macro to generate values. The following line silences a
 // presubmit warning that would otherwise be triggered by this:
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 // This is the list of load flags and their values. For the enum values,
 // include the file "net/base/load_flags.h".
@@ -16,13 +17,12 @@
 
 LOAD_FLAG(NORMAL, 0)
 
-// This is "normal reload", meaning an if-none-match/if-modified-since query. It
-// has no effect on the host cache.
+// This is "normal reload", meaning an if-none-match/if-modified-since query.
+// All other caches are used as normal.
 LOAD_FLAG(VALIDATE_CACHE, 1 << 0)
 
-// This is "shift-reload", meaning a "pragma: no-cache" end-to-end fetch. It
-// also disables use of the host cache for resolutions that go through the
-// socket pools.
+// This is "shift-reload", meaning a "pragma: no-cache" end-to-end fetch. All
+// other caches are used as normal.
 LOAD_FLAG(BYPASS_CACHE, 1 << 1)
 
 // This is a back/forward style navigation where the cached content should
@@ -33,8 +33,8 @@ LOAD_FLAG(SKIP_CACHE_VALIDATION, 1 << 2)
 // resource from the cache (or some equivalent local store).
 LOAD_FLAG(ONLY_FROM_CACHE, 1 << 3)
 
-// This is a navigation that will not use the cache at all.  It does not
-// impact the HTTP request headers or use of the host cache.
+// This is a navigation that will not use the cache at all. It does not
+// impact the HTTP request headers. All other caches are used as normal.
 LOAD_FLAG(DISABLE_CACHE, 1 << 4)
 
 // If present, causes dependent network fetches (AIA, CRLs, OCSP) to be

@@ -112,7 +112,6 @@ class TransportClientSocketPoolTest : public ::testing::Test,
                     CreateFromTransportSocketParams(
                         base::MakeRefCounted<TransportSocketParams>(
                             HostPortPair("www.google.com", 80),
-                            false,
                             OnHostResolutionCallback()))),
         client_socket_factory_(&net_log_) {
     std::unique_ptr<MockCertVerifier> cert_verifier =
@@ -165,8 +164,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
         TransportClientSocketPool::SocketParams::
             CreateFromTransportSocketParams(
                 base::MakeRefCounted<TransportSocketParams>(
-                    group_id.destination(), false,
-                    OnHostResolutionCallback())));
+                    group_id.destination(), OnHostResolutionCallback())));
     return test_base_.StartRequestUsingPool(
         pool_.get(), group_id, priority,
         ClientSocketPool::RespectLimits::ENABLED, params);
@@ -876,8 +874,7 @@ TEST_F(TransportClientSocketPoolTest, RequestTwice) {
   scoped_refptr<TransportClientSocketPool::SocketParams> dest(
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("www.google.com", 80), false,
-              OnHostResolutionCallback())));
+              HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   int rv = handle.Init(
       group_id_, params_, LOWEST, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
@@ -1012,9 +1009,8 @@ TEST_F(TransportClientSocketPoolTest, SSLCertError) {
   const HostPortPair kHostPortPair("ssl.server.test", 443);
 
   scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          kHostPortPair, false /* disable_resolver_cache */,
-          OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(kHostPortPair,
+                                                  OnHostResolutionCallback());
   scoped_refptr<SSLSocketParams> params(
       new SSLSocketParams(tcp_params, nullptr, nullptr, kHostPortPair,
                           GetSSLConfig(), PRIVACY_MODE_DISABLED));
@@ -1278,8 +1274,8 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
   const HostPortPair kDesination("host", 80);
   for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
     scoped_refptr<TransportSocketParams> tcp_params =
-        base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair("proxy", 80), false, OnHostResolutionCallback());
+        base::MakeRefCounted<TransportSocketParams>(HostPortPair("proxy", 80),
+                                                    OnHostResolutionCallback());
     scoped_refptr<TransportClientSocketPool::SocketParams> socks_params(
         TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
             base::MakeRefCounted<SOCKSSocketParams>(
@@ -1354,9 +1350,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
 
   scoped_refptr<TransportSocketParams> transport_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          kProxy, false /* disable_resolver_cache */,
-          OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(kProxy,
+                                                  OnHostResolutionCallback());
 
   scoped_refptr<SSLSocketParams> proxy_ssl_params =
       base::MakeRefCounted<SSLSocketParams>(
@@ -1472,9 +1467,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
 
   scoped_refptr<TransportSocketParams> transport_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          kProxy, false /* disable_resolver_cache */,
-          OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(kProxy,
+                                                  OnHostResolutionCallback());
 
   scoped_refptr<SSLSocketParams> proxy_ssl_params =
       base::MakeRefCounted<SSLSocketParams>(
@@ -1578,8 +1572,7 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
 
       scoped_refptr<TransportSocketParams> transport_params =
           base::MakeRefCounted<TransportSocketParams>(
-              kProxy, false /* disable_resolver_cache */,
-              OnHostResolutionCallback());
+              kProxy, OnHostResolutionCallback());
 
       scoped_refptr<SSLSocketParams> proxy_ssl_params =
           base::MakeRefCounted<SSLSocketParams>(
@@ -1677,7 +1670,7 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   scoped_refptr<TransportClientSocketPool::SocketParams> params =
       TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
           base::MakeRefCounted<TransportSocketParams>(
-              test_server.host_port_pair(), false, OnHostResolutionCallback()));
+              test_server.host_port_pair(), OnHostResolutionCallback()));
   TestCompletionCallback callback;
   int rv = handle.Init(
       kGroupId, params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
@@ -1795,8 +1788,8 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
                                            ClientSocketPool::SocketType::kHttp,
                                            false /* privacy_mode */);
   scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          HostPortPair("proxy", 80), false, OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(HostPortPair("proxy", 80),
+                                                  OnHostResolutionCallback());
   scoped_refptr<TransportClientSocketPool::SocketParams> socks_params(
       TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
           base::MakeRefCounted<SOCKSSocketParams>(
@@ -1901,8 +1894,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
                                            ClientSocketPool::SocketType::kSsl,
                                            false /* privacy_mode */);
   scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          test_server.host_port_pair(), false, OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
+                                                  OnHostResolutionCallback());
   scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
       tcp_params, nullptr, nullptr, test_server.host_port_pair(), ssl_config,
       PRIVACY_MODE_DISABLED));
@@ -1976,8 +1969,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
                                            ClientSocketPool::SocketType::kSsl,
                                            false /* privacy_mode */);
   scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          test_server.host_port_pair(), false, OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
+                                                  OnHostResolutionCallback());
   scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
       tcp_params, nullptr, nullptr, test_server.host_port_pair(),
       GetSSLConfig(), PRIVACY_MODE_DISABLED));
@@ -2045,8 +2038,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
                                            ClientSocketPool::SocketType::kSsl,
                                            false /* privacy_mode */);
   scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(
-          test_server.host_port_pair(), false, OnHostResolutionCallback());
+      base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
+                                                  OnHostResolutionCallback());
   scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
       tcp_params, nullptr, nullptr, test_server.host_port_pair(),
       GetSSLConfig(), PRIVACY_MODE_DISABLED));
@@ -2129,7 +2122,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
       TransportClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
           base::MakeRefCounted<HttpProxySocketParams>(
               base::MakeRefCounted<TransportSocketParams>(
-                  HostPortPair("http.proxy.host", 80), false,
+                  HostPortPair("http.proxy.host", 80),
                   OnHostResolutionCallback()),
               nullptr /* ssl_params */, false /* is_quic */, kDestination,
               false /* is_trusted_proxy */, false /* tunnel */,
@@ -2198,7 +2191,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
       TransportClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
           base::MakeRefCounted<HttpProxySocketParams>(
               base::MakeRefCounted<TransportSocketParams>(
-                  HostPortPair("http.proxy.host", 80), false,
+                  HostPortPair("http.proxy.host", 80),
                   OnHostResolutionCallback()),
               nullptr /* ssl_params */, quic::QUIC_VERSION_UNSUPPORTED,
               kDestination, false /* is_trusted_proxy */, true /* tunnel */,
@@ -2314,7 +2307,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
       // Create 1 socket.
       scoped_refptr<TransportSocketParams> transport_params(
           base::MakeRefCounted<TransportSocketParams>(
-              kHostPortPair1, false, OnHostResolutionCallback()));
+              kHostPortPair1, OnHostResolutionCallback()));
       session_deps.socket_factory->AddSocketDataProvider(&provider_socket_1);
       ClientSocketHandle connection;
       TestCompletionCallback callback;
@@ -2358,7 +2351,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
       // Request a new socket to trigger cleanup of idle timedout sockets.
       scoped_refptr<TransportSocketParams> transport_params(
           base::MakeRefCounted<TransportSocketParams>(
-              kHostPortPair2, false, OnHostResolutionCallback()));
+              kHostPortPair2, OnHostResolutionCallback()));
       SequencedSocketData provider_socket_2(MockConnect(ASYNC, OK),
                                             base::span<MockRead>(),
                                             base::span<MockWrite>());
