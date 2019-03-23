@@ -181,7 +181,7 @@ if cmp out1 out2 > /dev/null ; then : ; else
     exit 1
 fi
 
-if [ x"$BWRAP" != "x" ]; then
+if [ x"$BWRAP" != "x" -a "x$EXEEXT" = "x" ]; then
 dotest "Basic functionality with the bind-mounted cache dir"
 prep
 cp $FONT1 $FONT2 $FONTDIR
