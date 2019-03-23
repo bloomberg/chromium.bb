@@ -356,17 +356,20 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                   _GET_STATISTICS_EVENT_NAME)
       presentation_mode_history.append(detected_presentation_mode)
     valid_entry_found = False
-    for mode in presentation_mode_history:
+    for index in range(len(presentation_mode_history)):
+      mode = presentation_mode_history[index]
       if (mode == _SWAP_CHAIN_PRESENTATION_MODE_NONE or
           mode == _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED):
         # Be more tolerant to avoid test flakiness
         continue
       if mode != expected_presentation_mode:
-        self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
-            (TraceIntegrationTest._SwapChainPresentationModeToStr(
-                 expected_presentation_mode),
-             TraceIntegrationTest._SwapChainPresentationModeListToStr(
-                 presentation_mode_history)))
+        if index >= len(presentation_mode_history) // 2:
+          # Be more tolerant for the first half frames in non-overlay mode.
+          self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
+              (TraceIntegrationTest._SwapChainPresentationModeToStr(
+                   expected_presentation_mode),
+               TraceIntegrationTest._SwapChainPresentationModeListToStr(
+                   presentation_mode_history)))
       valid_entry_found = True
     if not valid_entry_found:
       self.fail('No valid frame statistics being collected: %s',
