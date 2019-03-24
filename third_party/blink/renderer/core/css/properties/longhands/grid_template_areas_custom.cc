@@ -22,7 +22,7 @@ const CSSValue* GridTemplateAreas::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   NamedGridAreaMap grid_area_map;
@@ -52,7 +52,7 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (!style.NamedGridAreaRowCount()) {
     DCHECK(!style.NamedGridAreaColumnCount());
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 
   return cssvalue::CSSGridTemplateAreasValue::Create(
@@ -81,7 +81,7 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     // FIXME: Shouldn't we clear the grid-area values
-    DCHECK_EQ(identifier_value->GetValueID(), CSSValueNone);
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
     return;
   }
 

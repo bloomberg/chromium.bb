@@ -18,7 +18,7 @@ const CSSValue* OutlineColor::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   // Allow the special focus color even in HTML Standard parsing mode.
-  if (range.Peek().Id() == CSSValueWebkitFocusRingColor)
+  if (range.Peek().Id() == CSSValueID::kWebkitFocusRingColor)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }

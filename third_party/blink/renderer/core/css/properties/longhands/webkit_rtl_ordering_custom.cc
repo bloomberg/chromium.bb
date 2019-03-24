@@ -14,8 +14,8 @@ const CSSValue* WebkitRtlOrdering::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.RtlOrdering() == EOrder::kVisual
-                                        ? CSSValueVisual
-                                        : CSSValueLogical);
+                                        ? CSSValueID::kVisual
+                                        : CSSValueID::kLogical);
 }
 
 }  // namespace css_longhand

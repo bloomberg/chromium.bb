@@ -24,7 +24,7 @@ const CSSValue* D::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (const StylePath* style_path = svg_style.D())
     return style_path->ComputedCSSValue();
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 }  // namespace css_longhand

@@ -20,17 +20,19 @@ const CSSValue* JustifyItems::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSParserTokenRange range_copy = range;
   // justify-items property does not allow the 'auto' value.
-  if (css_property_parser_helpers::IdentMatches<CSSValueAuto>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueID::kAuto>(
           range.Peek().Id()))
     return nullptr;
   CSSIdentifierValue* legacy =
-      css_property_parser_helpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kLegacy>(
+          range_copy);
   CSSIdentifierValue* position_keyword =
-      css_property_parser_helpers::ConsumeIdent<CSSValueCenter, CSSValueLeft,
-                                                CSSValueRight>(range_copy);
+      css_property_parser_helpers::ConsumeIdent<
+          CSSValueID::kCenter, CSSValueID::kLeft, CSSValueID::kRight>(
+          range_copy);
   if (!legacy) {
-    legacy =
-        css_property_parser_helpers::ConsumeIdent<CSSValueLegacy>(range_copy);
+    legacy = css_property_parser_helpers::ConsumeIdent<CSSValueID::kLegacy>(
+        range_copy);
   }
   if (legacy) {
     range = range_copy;

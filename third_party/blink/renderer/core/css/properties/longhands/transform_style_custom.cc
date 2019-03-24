@@ -15,8 +15,8 @@ const CSSValue* TransformStyle::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(
       (style.TransformStyle3D() == ETransformStyle3D::kPreserve3d)
-          ? CSSValuePreserve3d
-          : CSSValueFlat);
+          ? CSSValueID::kPreserve3d
+          : CSSValueID::kFlat);
 }
 
 }  // namespace css_longhand

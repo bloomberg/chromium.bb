@@ -18,7 +18,7 @@ namespace css_longhand {
 const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
                                            const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   if (cssvalue::CSSURIValue* url =
           css_property_parser_helpers::ConsumeUrl(range, &context))
@@ -42,7 +42,7 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
           To<ReferenceClipPathOperation>(operation)->Url());
     }
   }
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 }  // namespace css_longhand

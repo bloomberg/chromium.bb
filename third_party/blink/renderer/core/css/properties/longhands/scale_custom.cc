@@ -18,7 +18,7 @@ const CSSValue* Scale::ParseSingleValue(CSSParserTokenRange& range,
   DCHECK(RuntimeEnabledFeatures::CSSIndependentTransformPropertiesEnabled());
 
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueNone)
+  if (id == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValue* scale =
@@ -45,7 +45,7 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (!style.Scale())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSPrimitiveValue::Create(
       style.Scale()->X(), CSSPrimitiveValue::UnitType::kNumber));

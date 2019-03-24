@@ -29,12 +29,12 @@ const CSSValue* BorderImageSource::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.BorderImageSource())
     return style.BorderImageSource()->ComputedCSSValue();
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 const CSSValue* BorderImageSource::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueNone)));
+                      (CSSIdentifierValue::Create(CSSValueID::kNone)));
   return value;
 }
 

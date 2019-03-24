@@ -18,7 +18,8 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
   const CSSParserToken& token = range.Peek();
   CSSValue* zoom = nullptr;
   if (token.GetType() == kIdentToken) {
-    zoom = css_property_parser_helpers::ConsumeIdent<CSSValueNormal>(range);
+    zoom =
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kNormal>(range);
   } else {
     zoom = css_property_parser_helpers::ConsumePercent(range,
                                                        kValueRangeNonNegative);
@@ -28,7 +29,7 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
     }
   }
   if (zoom) {
-    if (!(token.Id() == CSSValueNormal ||
+    if (!(token.Id() == CSSValueID::kNormal ||
           (token.GetType() == kNumberToken &&
            To<CSSPrimitiveValue>(zoom)->GetDoubleValue() == 1) ||
           (token.GetType() == kPercentageToken &&
@@ -60,7 +61,7 @@ void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
 
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    if (identifier_value->GetValueID() == CSSValueNormal) {
+    if (identifier_value->GetValueID() == CSSValueID::kNormal) {
       state.SetZoom(ComputedStyleInitialValues::InitialZoom());
     }
   } else if (const auto* primitive_value =

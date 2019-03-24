@@ -18,7 +18,7 @@ const CSSValue* WillChange::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueAuto)
+  if (range.Peek().Id() == CSSValueID::kAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* values = CSSValueList::CreateCommaSeparated();
@@ -44,15 +44,15 @@ const CSSValue* WillChange::ParseSingleValue(
       range.ConsumeIncludingWhitespace();
     } else {
       switch (range.Peek().Id()) {
-        case CSSValueNone:
-        case CSSValueAll:
-        case CSSValueAuto:
-        case CSSValueDefault:
-        case CSSValueInitial:
-        case CSSValueInherit:
+        case CSSValueID::kNone:
+        case CSSValueID::kAll:
+        case CSSValueID::kAuto:
+        case CSSValueID::kDefault:
+        case CSSValueID::kInitial:
+        case CSSValueID::kInherit:
           return nullptr;
-        case CSSValueContents:
-        case CSSValueScrollPosition:
+        case CSSValueID::kContents:
+        case CSSValueID::kScrollPosition:
           values->Append(*css_property_parser_helpers::ConsumeIdent(range));
           break;
         default:
@@ -107,17 +107,17 @@ void WillChange::ApplyValue(StyleResolverState& state,
   Vector<CSSPropertyID> will_change_properties;
 
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    DCHECK_EQ(identifier_value->GetValueID(), CSSValueAuto);
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kAuto);
   } else {
     for (auto& will_change_value : To<CSSValueList>(value)) {
       if (auto* ident_value =
               DynamicTo<CSSCustomIdentValue>(will_change_value.Get())) {
         will_change_properties.push_back(ident_value->ValueAsPropertyID());
       } else if (To<CSSIdentifierValue>(*will_change_value).GetValueID() ==
-                 CSSValueContents) {
+                 CSSValueID::kContents) {
         will_change_contents = true;
       } else if (To<CSSIdentifierValue>(*will_change_value).GetValueID() ==
-                 CSSValueScrollPosition) {
+                 CSSValueID::kScrollPosition) {
         will_change_scroll_position = true;
       } else {
         NOTREACHED();

@@ -21,7 +21,7 @@ const CSSValue* OffsetAnchor::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueAuto)
+  if (id == CSSValueID::kAuto)
     return ConsumeIdent(range);
   return ConsumePosition(range, context, UnitlessQuirk::kForbid,
                          base::Optional<WebFeature>());

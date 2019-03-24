@@ -15,7 +15,7 @@ const CSSValue* WebkitLocale::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueAuto)
+  if (range.Peek().Id() == CSSValueID::kAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeString(range);
 }
@@ -27,14 +27,14 @@ const CSSValue* WebkitLocale::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.Locale().IsNull())
-    return CSSIdentifierValue::Create(CSSValueAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return CSSStringValue::Create(style.Locale());
 }
 
 void WebkitLocale::ApplyValue(StyleResolverState& state,
                               const CSSValue& value) const {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    DCHECK_EQ(identifier_value->GetValueID(), CSSValueAuto);
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kAuto);
     state.GetFontBuilder().SetLocale(nullptr);
   } else {
     state.GetFontBuilder().SetLocale(

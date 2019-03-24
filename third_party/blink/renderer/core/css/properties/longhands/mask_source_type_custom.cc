@@ -21,9 +21,9 @@ const CSSValue* MaskSourceType::ParseSingleValue(
 static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
   switch (type) {
     case EMaskSourceType::kAlpha:
-      return CSSIdentifierValue::Create(CSSValueAlpha);
+      return CSSIdentifierValue::Create(CSSValueID::kAlpha);
     case EMaskSourceType::kLuminance:
-      return CSSIdentifierValue::Create(CSSValueLuminance);
+      return CSSIdentifierValue::Create(CSSValueID::kLuminance);
   }
   NOTREACHED();
   return nullptr;

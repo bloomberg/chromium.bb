@@ -15,8 +15,8 @@ const CSSValue* BackfaceVisibility::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(
       (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
-          ? CSSValueHidden
-          : CSSValueVisible);
+          ? CSSValueID::kHidden
+          : CSSValueID::kVisible);
 }
 
 }  // namespace css_longhand

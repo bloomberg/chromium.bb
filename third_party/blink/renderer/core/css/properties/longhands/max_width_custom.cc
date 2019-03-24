@@ -26,7 +26,7 @@ const CSSValue* MaxWidth::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   const Length& max_width = style.MaxWidth();
   if (max_width.IsMaxSizeNone())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_width, style);
 }
 

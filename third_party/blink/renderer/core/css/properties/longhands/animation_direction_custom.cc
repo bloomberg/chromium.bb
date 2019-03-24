@@ -18,8 +18,8 @@ const CSSValue* AnimationDirection::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeCommaSeparatedList(
       css_property_parser_helpers::ConsumeIdent<
-          CSSValueNormal, CSSValueAlternate, CSSValueReverse,
-          CSSValueAlternateReverse>,
+          CSSValueID::kNormal, CSSValueID::kAlternate, CSSValueID::kReverse,
+          CSSValueID::kAlternateReverse>,
       range);
 }
 
@@ -44,7 +44,7 @@ const CSSValue* AnimationDirection::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationDirection::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueNormal)));
+                      (CSSIdentifierValue::Create(CSSValueID::kNormal)));
   return value;
 }
 

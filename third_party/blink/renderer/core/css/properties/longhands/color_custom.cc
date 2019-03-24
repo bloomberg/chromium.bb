@@ -61,7 +61,7 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
-      identifier_value->GetValueID() == CSSValueCurrentcolor) {
+      identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
     return;
   }

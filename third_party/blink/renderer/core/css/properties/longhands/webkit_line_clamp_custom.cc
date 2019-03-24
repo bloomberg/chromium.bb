@@ -25,7 +25,7 @@ const CSSValue* WebkitLineClamp::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (!style.HasLineClamp())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   return CSSPrimitiveValue::Create(style.LineClamp(),
                                    CSSPrimitiveValue::UnitType::kNumber);
 }

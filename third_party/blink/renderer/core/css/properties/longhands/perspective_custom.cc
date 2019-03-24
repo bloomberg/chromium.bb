@@ -18,7 +18,7 @@ const CSSValue* Perspective::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& localContext) const {
-  if (range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   CSSPrimitiveValue* parsed_value = css_property_parser_helpers::ConsumeLength(
       range, context.Mode(), kValueRangeAll);
@@ -44,7 +44,7 @@ const CSSValue* Perspective::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (!style.HasPerspective())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   return ZoomAdjustedPixelValue(style.Perspective(), style);
 }
 

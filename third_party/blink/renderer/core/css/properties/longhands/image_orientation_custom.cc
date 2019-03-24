@@ -18,7 +18,7 @@ const CSSValue* ImageOrientation::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::ImageOrientationEnabled());
-  if (range.Peek().Id() == CSSValueFromImage)
+  if (range.Peek().Id() == CSSValueID::kFromImage)
     return css_property_parser_helpers::ConsumeIdent(range);
   if (range.Peek().GetType() != kNumberToken) {
     CSSPrimitiveValue* angle = css_property_parser_helpers::ConsumeAngle(
@@ -36,7 +36,7 @@ const CSSValue* ImageOrientation::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.RespectImageOrientation() == kRespectImageOrientation)
-    return CSSIdentifierValue::Create(CSSValueFromImage);
+    return CSSIdentifierValue::Create(CSSValueID::kFromImage);
   return CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees);
 }
 

@@ -17,16 +17,17 @@ const CSSValue* ScrollSnapType::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueID axis_id = range.Peek().Id();
-  if (axis_id != CSSValueNone && axis_id != CSSValueX && axis_id != CSSValueY &&
-      axis_id != CSSValueBlock && axis_id != CSSValueInline &&
-      axis_id != CSSValueBoth)
+  if (axis_id != CSSValueID::kNone && axis_id != CSSValueID::kX &&
+      axis_id != CSSValueID::kY && axis_id != CSSValueID::kBlock &&
+      axis_id != CSSValueID::kInline && axis_id != CSSValueID::kBoth)
     return nullptr;
   CSSValue* axis_value = css_property_parser_helpers::ConsumeIdent(range);
-  if (range.AtEnd() || axis_id == CSSValueNone)
+  if (range.AtEnd() || axis_id == CSSValueID::kNone)
     return axis_value;
 
   CSSValueID strictness_id = range.Peek().Id();
-  if (strictness_id != CSSValueProximity && strictness_id != CSSValueMandatory)
+  if (strictness_id != CSSValueID::kProximity &&
+      strictness_id != CSSValueID::kMandatory)
     return axis_value;
   CSSValue* strictness_value = css_property_parser_helpers::ConsumeIdent(range);
   CSSValuePair* pair = CSSValuePair::Create(axis_value, strictness_value,

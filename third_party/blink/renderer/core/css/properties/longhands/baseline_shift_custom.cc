@@ -18,7 +18,8 @@ const CSSValue* BaselineShift::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
+  if (id == CSSValueID::kBaseline || id == CSSValueID::kSub ||
+      id == CSSValueID::kSuper)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, kSVGAttributeMode, kValueRangeAll);
@@ -32,9 +33,9 @@ const CSSValue* BaselineShift::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   switch (svg_style.BaselineShift()) {
     case BS_SUPER:
-      return CSSIdentifierValue::Create(CSSValueSuper);
+      return CSSIdentifierValue::Create(CSSValueID::kSuper);
     case BS_SUB:
-      return CSSIdentifierValue::Create(CSSValueSub);
+      return CSSIdentifierValue::Create(CSSValueID::kSub);
     case BS_LENGTH:
       return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
           svg_style.BaselineShiftValue(), style);
@@ -63,14 +64,14 @@ void BaselineShift::ApplyValue(StyleResolverState& state,
     return;
   }
   switch (identifier_value->GetValueID()) {
-    case CSSValueBaseline:
+    case CSSValueID::kBaseline:
       svg_style.SetBaselineShift(BS_LENGTH);
       svg_style.SetBaselineShiftValue(Length::Fixed());
       return;
-    case CSSValueSub:
+    case CSSValueID::kSub:
       svg_style.SetBaselineShift(BS_SUB);
       return;
-    case CSSValueSuper:
+    case CSSValueID::kSuper:
       svg_style.SetBaselineShift(BS_SUPER);
       return;
     default:

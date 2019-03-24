@@ -16,8 +16,8 @@ const CSSValue* WebkitBoxDecorationBreak::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.BoxDecorationBreak() == EBoxDecorationBreak::kSlice)
-    return CSSIdentifierValue::Create(CSSValueSlice);
-  return CSSIdentifierValue::Create(CSSValueClone);
+    return CSSIdentifierValue::Create(CSSValueID::kSlice);
+  return CSSIdentifierValue::Create(CSSValueID::kClone);
 }
 
 }  // namespace css_longhand

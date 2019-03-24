@@ -25,7 +25,7 @@ const CSSValue* LetterSpacing::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (!style.LetterSpacing())
-    return CSSIdentifierValue::Create(CSSValueNormal);
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
   return ZoomAdjustedPixelValue(style.LetterSpacing(), style);
 }
 

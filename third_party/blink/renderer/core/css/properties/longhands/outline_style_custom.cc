@@ -17,7 +17,7 @@ const CSSValue* OutlineStyle::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.OutlineStyleIsAuto())
-    return CSSIdentifierValue::Create(CSSValueAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return CSSIdentifierValue::Create(style.OutlineStyle());
 }
 

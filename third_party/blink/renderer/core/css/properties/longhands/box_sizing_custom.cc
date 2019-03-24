@@ -16,8 +16,8 @@ const CSSValue* BoxSizing::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.BoxSizing() == EBoxSizing::kContentBox)
-    return CSSIdentifierValue::Create(CSSValueContentBox);
-  return CSSIdentifierValue::Create(CSSValueBorderBox);
+    return CSSIdentifierValue::Create(CSSValueID::kContentBox);
+  return CSSIdentifierValue::Create(CSSValueID::kBorderBox);
 }
 
 }  // namespace css_longhand

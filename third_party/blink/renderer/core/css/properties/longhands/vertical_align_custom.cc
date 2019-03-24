@@ -17,7 +17,7 @@ const CSSValue* VerticalAlign::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValue* parsed_value = css_property_parser_helpers::ConsumeIdentRange(
-      range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
+      range, CSSValueID::kBaseline, CSSValueID::kWebkitBaselineMiddle);
   if (!parsed_value) {
     parsed_value = css_property_parser_helpers::ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll,
@@ -34,23 +34,23 @@ const CSSValue* VerticalAlign::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   switch (style.VerticalAlign()) {
     case EVerticalAlign::kBaseline:
-      return CSSIdentifierValue::Create(CSSValueBaseline);
+      return CSSIdentifierValue::Create(CSSValueID::kBaseline);
     case EVerticalAlign::kMiddle:
-      return CSSIdentifierValue::Create(CSSValueMiddle);
+      return CSSIdentifierValue::Create(CSSValueID::kMiddle);
     case EVerticalAlign::kSub:
-      return CSSIdentifierValue::Create(CSSValueSub);
+      return CSSIdentifierValue::Create(CSSValueID::kSub);
     case EVerticalAlign::kSuper:
-      return CSSIdentifierValue::Create(CSSValueSuper);
+      return CSSIdentifierValue::Create(CSSValueID::kSuper);
     case EVerticalAlign::kTextTop:
-      return CSSIdentifierValue::Create(CSSValueTextTop);
+      return CSSIdentifierValue::Create(CSSValueID::kTextTop);
     case EVerticalAlign::kTextBottom:
-      return CSSIdentifierValue::Create(CSSValueTextBottom);
+      return CSSIdentifierValue::Create(CSSValueID::kTextBottom);
     case EVerticalAlign::kTop:
-      return CSSIdentifierValue::Create(CSSValueTop);
+      return CSSIdentifierValue::Create(CSSValueID::kTop);
     case EVerticalAlign::kBottom:
-      return CSSIdentifierValue::Create(CSSValueBottom);
+      return CSSIdentifierValue::Create(CSSValueID::kBottom);
     case EVerticalAlign::kBaselineMiddle:
-      return CSSIdentifierValue::Create(CSSValueWebkitBaselineMiddle);
+      return CSSIdentifierValue::Create(CSSValueID::kWebkitBaselineMiddle);
     case EVerticalAlign::kLength:
       return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
           style.GetVerticalAlignLength(), style);

@@ -46,23 +46,23 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSValueID id = range.Peek().Id();
   if (!range.AtEnd()) {
-    if (id == CSSValueWebkitZoomIn)
+    if (id == CSSValueID::kWebkitZoomIn)
       context.Count(WebFeature::kPrefixedCursorZoomIn);
-    else if (id == CSSValueWebkitZoomOut)
+    else if (id == CSSValueID::kWebkitZoomOut)
       context.Count(WebFeature::kPrefixedCursorZoomOut);
-    else if (id == CSSValueWebkitGrab)
+    else if (id == CSSValueID::kWebkitGrab)
       context.Count(WebFeature::kPrefixedCursorGrab);
-    else if (id == CSSValueWebkitGrabbing)
+    else if (id == CSSValueID::kWebkitGrabbing)
       context.Count(WebFeature::kPrefixedCursorGrabbing);
   }
   CSSValue* cursor_type = nullptr;
-  if (id == CSSValueHand) {
+  if (id == CSSValueID::kHand) {
     if (!in_quirks_mode)  // Non-standard behavior
       return nullptr;
-    cursor_type = CSSIdentifierValue::Create(CSSValuePointer);
+    cursor_type = CSSIdentifierValue::Create(CSSValueID::kPointer);
     range.ConsumeIncludingWhitespace();
-  } else if ((id >= CSSValueAuto && id <= CSSValueWebkitZoomOut) ||
-             id == CSSValueCopy || id == CSSValueNone) {
+  } else if ((id >= CSSValueID::kAuto && id <= CSSValueID::kWebkitZoomOut) ||
+             id == CSSValueID::kCopy || id == CSSValueID::kNone) {
     cursor_type = css_property_parser_helpers::ConsumeIdent(range);
   } else {
     return nullptr;

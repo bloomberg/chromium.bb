@@ -30,7 +30,7 @@ CSSValue* ConsumeAttr(CSSParserTokenRange args,
   if (context.IsHTMLDocument())
     attr_name = attr_name.LowerASCII();
 
-  CSSFunctionValue* attr_value = CSSFunctionValue::Create(CSSValueAttr);
+  CSSFunctionValue* attr_value = CSSFunctionValue::Create(CSSValueID::kAttr);
   attr_value->Append(*CSSCustomIdentValue::Create(attr_name));
   return attr_value;
 }
@@ -57,12 +57,12 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args,
   CSSIdentifierValue* list_style = nullptr;
   if (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args)) {
     CSSValueID id = args.Peek().Id();
-    if ((id != CSSValueNone &&
-         (id < CSSValueDisc || id > CSSValueKatakanaIroha)))
+    if ((id != CSSValueID::kNone &&
+         (id < CSSValueID::kDisc || id > CSSValueID::kKatakanaIroha)))
       return nullptr;
     list_style = css_property_parser_helpers::ConsumeIdent(args);
   } else {
-    list_style = CSSIdentifierValue::Create(CSSValueDecimal);
+    list_style = CSSIdentifierValue::Create(CSSValueID::kDecimal);
   }
 
   if (!args.AtEnd())
@@ -76,7 +76,8 @@ namespace css_longhand {
 const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
-  if (css_property_parser_helpers::IdentMatches<CSSValueNone, CSSValueNormal>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueID::kNone,
+                                                CSSValueID::kNormal>(
           range.Peek().Id()))
     return css_property_parser_helpers::ConsumeIdent(range);
 
@@ -87,20 +88,20 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
         css_property_parser_helpers::ConsumeImage(range, &context);
     if (!parsed_value) {
       parsed_value = css_property_parser_helpers::ConsumeIdent<
-          CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote,
-          CSSValueNoCloseQuote>(range);
+          CSSValueID::kOpenQuote, CSSValueID::kCloseQuote,
+          CSSValueID::kNoOpenQuote, CSSValueID::kNoCloseQuote>(range);
     }
     if (!parsed_value)
       parsed_value = css_property_parser_helpers::ConsumeString(range);
     if (!parsed_value) {
-      if (range.Peek().FunctionId() == CSSValueAttr) {
+      if (range.Peek().FunctionId() == CSSValueID::kAttr) {
         parsed_value = ConsumeAttr(
             css_property_parser_helpers::ConsumeFunction(range), context);
-      } else if (range.Peek().FunctionId() == CSSValueCounter) {
+      } else if (range.Peek().FunctionId() == CSSValueID::kCounter) {
         parsed_value = ConsumeCounterContent(
             css_property_parser_helpers::ConsumeFunction(range), context,
             false);
-      } else if (range.Peek().FunctionId() == CSSValueCounters) {
+      } else if (range.Peek().FunctionId() == CSSValueID::kCounters) {
         parsed_value = ConsumeCounterContent(
             css_property_parser_helpers::ConsumeFunction(range), context, true);
       }
@@ -134,8 +135,8 @@ void Content::ApplyInherit(StyleResolverState& state) const {
 void Content::ApplyValue(StyleResolverState& state,
                          const CSSValue& value) const {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    DCHECK(identifier_value->GetValueID() == CSSValueNormal ||
-           identifier_value->GetValueID() == CSSValueNone);
+    DCHECK(identifier_value->GetValueID() == CSSValueID::kNormal ||
+           identifier_value->GetValueID() == CSSValueID::kNone);
     state.Style()->SetContent(nullptr);
     return;
   }
@@ -164,16 +165,16 @@ void Content::ApplyValue(StyleResolverState& state,
         default:
           NOTREACHED();
           FALLTHROUGH;
-        case CSSValueOpenQuote:
+        case CSSValueID::kOpenQuote:
           quote_type = QuoteType::kOpen;
           break;
-        case CSSValueCloseQuote:
+        case CSSValueID::kCloseQuote:
           quote_type = QuoteType::kClose;
           break;
-        case CSSValueNoOpenQuote:
+        case CSSValueID::kNoOpenQuote:
           quote_type = QuoteType::kNoOpen;
           break;
-        case CSSValueNoCloseQuote:
+        case CSSValueID::kNoCloseQuote:
           quote_type = QuoteType::kNoClose;
           break;
       }
@@ -182,7 +183,7 @@ void Content::ApplyValue(StyleResolverState& state,
       String string;
       if (const auto* function_value =
               DynamicTo<CSSFunctionValue>(item.Get())) {
-        DCHECK_EQ(function_value->FunctionType(), CSSValueAttr);
+        DCHECK_EQ(function_value->FunctionType(), CSSValueID::kAttr);
         state.Style()->SetHasAttrContent();
         // TODO: Can a namespace be specified for an attr(foo)?
         QualifiedName attr(

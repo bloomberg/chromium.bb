@@ -18,7 +18,8 @@ const CSSValue* AnimationFillMode::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeCommaSeparatedList(
       css_property_parser_helpers::ConsumeIdent<
-          CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>,
+          CSSValueID::kNone, CSSValueID::kForwards, CSSValueID::kBackwards,
+          CSSValueID::kBoth>,
       range);
 }
 
@@ -43,7 +44,7 @@ const CSSValue* AnimationFillMode::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationFillMode::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueNone)));
+                      (CSSIdentifierValue::Create(CSSValueID::kNone)));
   return value;
 }
 
