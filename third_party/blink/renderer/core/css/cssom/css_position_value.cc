@@ -23,15 +23,15 @@ bool IsValidPositionCoord(CSSNumericValue* v) {
 CSSNumericValue* FromSingleValue(const CSSValue& value) {
   if (const auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
     switch (ident->GetValueID()) {
-      case CSSValueLeft:
-      case CSSValueTop:
+      case CSSValueID::kLeft:
+      case CSSValueID::kTop:
         return CSSUnitValue::Create(0,
                                     CSSPrimitiveValue::UnitType::kPercentage);
-      case CSSValueCenter:
+      case CSSValueID::kCenter:
         return CSSUnitValue::Create(50,
                                     CSSPrimitiveValue::UnitType::kPercentage);
-      case CSSValueRight:
-      case CSSValueBottom:
+      case CSSValueID::kRight:
+      case CSSValueID::kBottom:
         return CSSUnitValue::Create(100,
                                     CSSPrimitiveValue::UnitType::kPercentage);
       default:
@@ -52,11 +52,11 @@ CSSNumericValue* FromSingleValue(const CSSValue& value) {
   DCHECK(offset);
 
   switch (To<CSSIdentifierValue>(pair.First()).GetValueID()) {
-    case CSSValueLeft:
-    case CSSValueTop:
+    case CSSValueID::kLeft:
+    case CSSValueID::kTop:
       return offset;
-    case CSSValueRight:
-    case CSSValueBottom: {
+    case CSSValueID::kRight:
+    case CSSValueID::kBottom: {
       CSSNumericValueVector args;
       args.push_back(
           CSSUnitValue::Create(100, CSSPrimitiveValue::UnitType::kPercentage));

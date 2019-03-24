@@ -42,7 +42,7 @@ void CSSSkewX::setAx(CSSNumericValue* value, ExceptionState& exception_state) {
 
 CSSSkewX* CSSSkewX::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_GT(value.length(), 0U);
-  DCHECK_EQ(value.FunctionType(), CSSValueSkewX);
+  DCHECK_EQ(value.FunctionType(), CSSValueID::kSkewX);
   if (value.length() == 1U) {
     return CSSSkewX::Create(
         CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0))));
@@ -64,7 +64,7 @@ const CSSFunctionValue* CSSSkewX::ToCSSValue() const {
   if (!ax)
     return nullptr;
 
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkewX);
+  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkewX);
   result->Append(*ax);
   return result;
 }

@@ -39,7 +39,7 @@ void CSSPerspective::setLength(CSSNumericValue* length,
 }
 
 CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
-  DCHECK_EQ(value.FunctionType(), CSSValuePerspective);
+  DCHECK_EQ(value.FunctionType(), CSSValueID::kPerspective);
   DCHECK_EQ(value.length(), 1U);
   CSSNumericValue* length =
       CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
@@ -75,7 +75,7 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
   }
 
   DCHECK(length);
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kPerspective);
   result->Append(*length);
   return result;
 }

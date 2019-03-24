@@ -227,9 +227,9 @@ void ViewportStyleResolver::Resolve() {
 float ViewportStyleResolver::ViewportArgumentValue(CSSPropertyID id) const {
   float default_value = ViewportDescription::kValueAuto;
 
-  // UserZoom default value is CSSValueZoom, which maps to true, meaning that
-  // yes, it is user scalable. When the value is set to CSSValueFixed, we
-  // return false.
+  // UserZoom default value is CSSValueID::kZoom, which maps to true, meaning
+  // that yes, it is user scalable. When the value is set to CSSValueID::kFixed,
+  // we return false.
   if (id == CSSPropertyID::kUserZoom)
     default_value = 1;
 
@@ -240,17 +240,17 @@ float ViewportStyleResolver::ViewportArgumentValue(CSSPropertyID id) const {
 
   if (identifier_value) {
     switch (identifier_value->GetValueID()) {
-      case CSSValueAuto:
+      case CSSValueID::kAuto:
         return default_value;
-      case CSSValueLandscape:
+      case CSSValueID::kLandscape:
         return ViewportDescription::kValueLandscape;
-      case CSSValuePortrait:
+      case CSSValueID::kPortrait:
         return ViewportDescription::kValuePortrait;
-      case CSSValueZoom:
+      case CSSValueID::kZoom:
         return default_value;
-      case CSSValueInternalExtendToZoom:
+      case CSSValueID::kInternalExtendToZoom:
         return ViewportDescription::kValueExtendToZoom;
-      case CSSValueFixed:
+      case CSSValueID::kFixed:
         return 0;
       default:
         return default_value;
@@ -294,9 +294,9 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
 
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     CSSValueID value_id = identifier_value->GetValueID();
-    if (value_id == CSSValueInternalExtendToZoom)
+    if (value_id == CSSValueID::kInternalExtendToZoom)
       return Length::ExtendToZoom();
-    if (value_id == CSSValueAuto)
+    if (value_id == CSSValueID::kAuto)
       return Length::Auto();
   }
 
@@ -327,11 +327,11 @@ mojom::ViewportFit ViewportStyleResolver::ViewportFitValue() const {
       property_set_->GetPropertyCSSValue(CSSPropertyID::kViewportFit);
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     switch (identifier_value->GetValueID()) {
-      case CSSValueCover:
+      case CSSValueID::kCover:
         return mojom::ViewportFit::kCover;
-      case CSSValueContain:
+      case CSSValueID::kContain:
         return mojom::ViewportFit::kContain;
-      case CSSValueAuto:
+      case CSSValueID::kAuto:
       default:
         return mojom::ViewportFit::kAuto;
     }

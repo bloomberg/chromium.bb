@@ -34,7 +34,8 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kScale3D: {
       const auto& scale = ToScaleTransformOperation(operation);
       CSSFunctionValue* result = CSSFunctionValue::Create(
-          operation.Is3DOperation() ? CSSValueScale3d : CSSValueScale);
+          operation.Is3DOperation() ? CSSValueID::kScale3d
+                                    : CSSValueID::kScale);
       result->Append(*CSSPrimitiveValue::Create(
           scale.X(), CSSPrimitiveValue::UnitType::kNumber));
       result->Append(*CSSPrimitiveValue::Create(
@@ -52,7 +53,8 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kTranslate3D: {
       const auto& translate = ToTranslateTransformOperation(operation);
       CSSFunctionValue* result = CSSFunctionValue::Create(
-          operation.Is3DOperation() ? CSSValueTranslate3d : CSSValueTranslate);
+          operation.Is3DOperation() ? CSSValueID::kTranslate3d
+                                    : CSSValueID::kTranslate);
       result->Append(*CSSPrimitiveValue::Create(translate.X(), zoom));
       result->Append(*CSSPrimitiveValue::Create(translate.Y(), zoom));
       if (operation.Is3DOperation()) {
@@ -65,7 +67,8 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kRotateY:
     case TransformOperation::kRotate3D: {
       const auto& rotate = ToRotateTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueRotate3d);
+      CSSFunctionValue* result =
+          CSSFunctionValue::Create(CSSValueID::kRotate3d);
       result->Append(*CSSPrimitiveValue::Create(
           rotate.X(), CSSPrimitiveValue::UnitType::kNumber));
       result->Append(*CSSPrimitiveValue::Create(
@@ -78,28 +81,28 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kRotate: {
       const auto& rotate = ToRotateTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueRotate);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kRotate);
       result->Append(*CSSPrimitiveValue::Create(
           rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkewX: {
       const auto& skew = ToSkewTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkewX);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkewX);
       result->Append(*CSSPrimitiveValue::Create(
           skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkewY: {
       const auto& skew = ToSkewTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkewY);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkewY);
       result->Append(*CSSPrimitiveValue::Create(
           skew.AngleY(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
     case TransformOperation::kSkew: {
       const auto& skew = ToSkewTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkew);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkew);
       result->Append(*CSSPrimitiveValue::Create(
           skew.AngleX(), CSSPrimitiveValue::UnitType::kDegrees));
       result->Append(*CSSPrimitiveValue::Create(
@@ -108,14 +111,15 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kPerspective: {
       const auto& perspective = ToPerspectiveTransformOperation(operation);
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
+      CSSFunctionValue* result =
+          CSSFunctionValue::Create(CSSValueID::kPerspective);
       result->Append(*CSSPrimitiveValue::Create(
           perspective.Perspective(), CSSPrimitiveValue::UnitType::kPixels));
       return result;
     }
     case TransformOperation::kMatrix: {
       const auto& matrix = ToMatrixTransformOperation(operation).Matrix();
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueMatrix);
+      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kMatrix);
       double values[6] = {matrix.A(), matrix.B(), matrix.C(),
                           matrix.D(), matrix.E(), matrix.F()};
       for (double value : values) {
@@ -126,7 +130,8 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     }
     case TransformOperation::kMatrix3D: {
       const auto& matrix = ToMatrix3DTransformOperation(operation).Matrix();
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueMatrix3d);
+      CSSFunctionValue* result =
+          CSSFunctionValue::Create(CSSValueID::kMatrix3d);
       double values[16] = {
           matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
           matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),
@@ -141,17 +146,17 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
     case TransformOperation::kInterpolated:
       // TODO(816803): The computed value in this case is not fully spec'd
       // See https://github.com/w3c/css-houdini-drafts/issues/425
-      return CSSIdentifierValue::Create(CSSValueNone);
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
     default:
       // The remaining operations are unsupported.
       NOTREACHED();
-      return CSSIdentifierValue::Create(CSSValueNone);
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 }
 
 const CSSValue* ComputedTransform(const ComputedStyle& style) {
   if (style.Transform().Operations().size() == 0)
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* components = CSSValueList::CreateSpaceSeparated();
   for (const auto& operation : style.Transform().Operations()) {

@@ -361,22 +361,22 @@ bool FontFace::SetFamilyValue(const CSSValue& value) {
     // @font-face is a way of actually defining what font to use for those
     // types.
     switch (identifier_value->GetValueID()) {
-      case CSSValueSerif:
+      case CSSValueID::kSerif:
         family = font_family_names::kWebkitSerif;
         break;
-      case CSSValueSansSerif:
+      case CSSValueID::kSansSerif:
         family = font_family_names::kWebkitSansSerif;
         break;
-      case CSSValueCursive:
+      case CSSValueID::kCursive:
         family = font_family_names::kWebkitCursive;
         break;
-      case CSSValueFantasy:
+      case CSSValueID::kFantasy:
         family = font_family_names::kWebkitFantasy;
         break;
-      case CSSValueMonospace:
+      case CSSValueID::kMonospace:
         family = font_family_names::kWebkitMonospace;
         break;
-      case CSSValueWebkitPictograph:
+      case CSSValueID::kWebkitPictograph:
         family = font_family_names::kWebkitPictograph;
         break;
       default:
@@ -501,33 +501,33 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
     if (auto* stretch_identifier_value =
             DynamicTo<CSSIdentifierValue>(stretch_.Get())) {
       switch (stretch_identifier_value->GetValueID()) {
-        case CSSValueUltraCondensed:
+        case CSSValueID::kUltraCondensed:
           capabilities.width = {UltraCondensedWidthValue(),
                                 UltraCondensedWidthValue()};
           break;
-        case CSSValueExtraCondensed:
+        case CSSValueID::kExtraCondensed:
           capabilities.width = {ExtraCondensedWidthValue(),
                                 ExtraCondensedWidthValue()};
           break;
-        case CSSValueCondensed:
+        case CSSValueID::kCondensed:
           capabilities.width = {CondensedWidthValue(), CondensedWidthValue()};
           break;
-        case CSSValueSemiCondensed:
+        case CSSValueID::kSemiCondensed:
           capabilities.width = {SemiCondensedWidthValue(),
                                 SemiCondensedWidthValue()};
           break;
-        case CSSValueSemiExpanded:
+        case CSSValueID::kSemiExpanded:
           capabilities.width = {SemiExpandedWidthValue(),
                                 SemiExpandedWidthValue()};
           break;
-        case CSSValueExpanded:
+        case CSSValueID::kExpanded:
           capabilities.width = {ExpandedWidthValue(), ExpandedWidthValue()};
           break;
-        case CSSValueExtraExpanded:
+        case CSSValueID::kExtraExpanded:
           capabilities.width = {ExtraExpandedWidthValue(),
                                 ExtraExpandedWidthValue()};
           break;
-        case CSSValueUltraExpanded:
+        case CSSValueID::kUltraExpanded:
           capabilities.width = {UltraExpandedWidthValue(),
                                 UltraExpandedWidthValue()};
           break;
@@ -566,13 +566,13 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
   if (style_) {
     if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(style_.Get())) {
       switch (identifier_value->GetValueID()) {
-        case CSSValueNormal:
+        case CSSValueID::kNormal:
           capabilities.slope = {NormalSlopeValue(), NormalSlopeValue()};
           break;
-        case CSSValueOblique:
+        case CSSValueID::kOblique:
           capabilities.slope = {ItalicSlopeValue(), ItalicSlopeValue()};
           break;
-        case CSSValueItalic:
+        case CSSValueID::kItalic:
           capabilities.slope = {ItalicSlopeValue(), ItalicSlopeValue()};
           break;
         default:
@@ -584,13 +584,13 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
         CSSValueID font_style_id =
             range_value->GetFontStyleValue()->GetValueID();
         if (!range_value->GetObliqueValues()) {
-          if (font_style_id == CSSValueNormal)
+          if (font_style_id == CSSValueID::kNormal)
             capabilities.slope = {NormalSlopeValue(), NormalSlopeValue()};
-          DCHECK(font_style_id == CSSValueItalic ||
-                 font_style_id == CSSValueOblique);
+          DCHECK(font_style_id == CSSValueID::kItalic ||
+                 font_style_id == CSSValueID::kOblique);
           capabilities.slope = {ItalicSlopeValue(), ItalicSlopeValue()};
         } else {
-          DCHECK(font_style_id == CSSValueOblique);
+          DCHECK(font_style_id == CSSValueID::kOblique);
           size_t oblique_values_size =
               range_value->GetObliqueValues()->length();
           if (oblique_values_size == 1) {
@@ -623,13 +623,13 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
         // font-weights, they are invalid inside font-face rules so they are
         // ignored. Reference:
         // http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
-        case CSSValueLighter:
-        case CSSValueBolder:
+        case CSSValueID::kLighter:
+        case CSSValueID::kBolder:
           break;
-        case CSSValueNormal:
+        case CSSValueID::kNormal:
           capabilities.weight = {NormalWeightValue(), NormalWeightValue()};
           break;
-        case CSSValueBold:
+        case CSSValueID::kBold:
           capabilities.weight = {BoldWeightValue(), BoldWeightValue()};
           break;
         default:

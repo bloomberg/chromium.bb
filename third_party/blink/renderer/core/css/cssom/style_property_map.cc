@@ -177,8 +177,8 @@ const CSSValue* StyleValueToCSSValue(
       if (const auto* value =
               DynamicTo<CSSIdentifierValue>(style_value.ToCSSValue())) {
         // 'none' and 'normal' are stored as a single value
-        if (value->GetValueID() == CSSValueNone ||
-            value->GetValueID() == CSSValueNormal) {
+        if (value->GetValueID() == CSSValueID::kNone ||
+            value->GetValueID() == CSSValueID::kNormal) {
           break;
         }
 
@@ -218,7 +218,7 @@ const CSSValue* StyleValueToCSSValue(
       // wrapped in a list.
       auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
       if (identifier_value && !value->IsCSSWideKeyword() &&
-          identifier_value->GetValueID() != CSSValueNormal) {
+          identifier_value->GetValueID() != CSSValueID::kNormal) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*style_value.ToCSSValue());
         return list;
@@ -232,7 +232,7 @@ const CSSValue* StyleValueToCSSValue(
       // wrapped in a list.
       auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
       if (identifier_value && !value->IsCSSWideKeyword() &&
-          identifier_value->GetValueID() != CSSValueNone) {
+          identifier_value->GetValueID() != CSSValueID::kNone) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*style_value.ToCSSValue());
         return list;

@@ -69,7 +69,7 @@ void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
   while (token < end) {
     if (token->GetType() == kUrlToken) {
       *token = ResolveUrl(*token, backing_strings, base_url, charset);
-    } else if (token->FunctionId() == CSSValueUrl) {
+    } else if (token->FunctionId() == CSSValueID::kUrl) {
       if (token + 1 < end && token[1].GetType() == kStringToken)
         token[1] = ResolveUrl(token[1], backing_strings, base_url, charset);
     }
@@ -427,11 +427,11 @@ bool CSSVariableResolver::ResolveTokenRange(CSSParserTokenRange range,
   bool success = true;
   while (!range.AtEnd()) {
     const CSSParserToken& token = range.Peek();
-    if (token.FunctionId() == CSSValueVar ||
-        token.FunctionId() == CSSValueEnv) {
-      success &=
-          ResolveVariableReference(range.ConsumeBlock(), options,
-                                   token.FunctionId() == CSSValueEnv, result);
+    if (token.FunctionId() == CSSValueID::kVar ||
+        token.FunctionId() == CSSValueID::kEnv) {
+      success &= ResolveVariableReference(
+          range.ConsumeBlock(), options, token.FunctionId() == CSSValueID::kEnv,
+          result);
     } else {
       result.tokens.push_back(range.Consume());
     }

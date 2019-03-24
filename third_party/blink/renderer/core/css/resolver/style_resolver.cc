@@ -122,8 +122,10 @@ static CSSPropertyValueSet* LeftToRightDeclaration() {
   DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
                       left_to_right_decl,
                       (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
-  if (left_to_right_decl->IsEmpty())
-    left_to_right_decl->SetProperty(CSSPropertyID::kDirection, CSSValueLtr);
+  if (left_to_right_decl->IsEmpty()) {
+    left_to_right_decl->SetProperty(CSSPropertyID::kDirection,
+                                    CSSValueID::kLtr);
+  }
   return left_to_right_decl;
 }
 
@@ -131,8 +133,10 @@ static CSSPropertyValueSet* RightToLeftDeclaration() {
   DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
                       right_to_left_decl,
                       (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
-  if (right_to_left_decl->IsEmpty())
-    right_to_left_decl->SetProperty(CSSPropertyID::kDirection, CSSValueRtl);
+  if (right_to_left_decl->IsEmpty()) {
+    right_to_left_decl->SetProperty(CSSPropertyID::kDirection,
+                                    CSSValueID::kRtl);
+  }
   return right_to_left_decl;
 }
 
@@ -779,7 +783,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
             matched.properties->GetPropertyCSSValue(CSSPropertyID::kDisplay);
         auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
         if (identifier_value &&
-            identifier_value->GetValueID() == CSSValueBlock) {
+            identifier_value->GetValueID() == CSSValueID::kBlock) {
           UseCounter::Count(
               element->GetDocument(),
               WebFeature::kSummaryElementWithDisplayBlockAuthorRule);

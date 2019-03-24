@@ -56,47 +56,47 @@ static TransformOperation::OperationType GetTransformOperationType(
     default:
       NOTREACHED();
       FALLTHROUGH;
-    case CSSValueScale:
+    case CSSValueID::kScale:
       return TransformOperation::kScale;
-    case CSSValueScaleX:
+    case CSSValueID::kScaleX:
       return TransformOperation::kScaleX;
-    case CSSValueScaleY:
+    case CSSValueID::kScaleY:
       return TransformOperation::kScaleY;
-    case CSSValueScaleZ:
+    case CSSValueID::kScaleZ:
       return TransformOperation::kScaleZ;
-    case CSSValueScale3d:
+    case CSSValueID::kScale3d:
       return TransformOperation::kScale3D;
-    case CSSValueTranslate:
+    case CSSValueID::kTranslate:
       return TransformOperation::kTranslate;
-    case CSSValueTranslateX:
+    case CSSValueID::kTranslateX:
       return TransformOperation::kTranslateX;
-    case CSSValueTranslateY:
+    case CSSValueID::kTranslateY:
       return TransformOperation::kTranslateY;
-    case CSSValueTranslateZ:
+    case CSSValueID::kTranslateZ:
       return TransformOperation::kTranslateZ;
-    case CSSValueTranslate3d:
+    case CSSValueID::kTranslate3d:
       return TransformOperation::kTranslate3D;
-    case CSSValueRotate:
+    case CSSValueID::kRotate:
       return TransformOperation::kRotate;
-    case CSSValueRotateX:
+    case CSSValueID::kRotateX:
       return TransformOperation::kRotateX;
-    case CSSValueRotateY:
+    case CSSValueID::kRotateY:
       return TransformOperation::kRotateY;
-    case CSSValueRotateZ:
+    case CSSValueID::kRotateZ:
       return TransformOperation::kRotateZ;
-    case CSSValueRotate3d:
+    case CSSValueID::kRotate3d:
       return TransformOperation::kRotate3D;
-    case CSSValueSkew:
+    case CSSValueID::kSkew:
       return TransformOperation::kSkew;
-    case CSSValueSkewX:
+    case CSSValueID::kSkewX:
       return TransformOperation::kSkewX;
-    case CSSValueSkewY:
+    case CSSValueID::kSkewY:
       return TransformOperation::kSkewY;
-    case CSSValueMatrix:
+    case CSSValueID::kMatrix:
       return TransformOperation::kMatrix;
-    case CSSValueMatrix3d:
+    case CSSValueID::kMatrix3d:
       return TransformOperation::kMatrix3D;
-    case CSSValuePerspective:
+    case CSSValueID::kPerspective:
       return TransformOperation::kPerspective;
   }
 }
@@ -133,7 +133,7 @@ TransformOperations TransformBuilder::CreateTransformOperations(
   TransformOperations operations;
   auto* in_value_list = DynamicTo<CSSValueList>(in_value);
   if (!in_value_list) {
-    DCHECK_EQ(To<CSSIdentifierValue>(in_value).GetValueID(), CSSValueNone);
+    DCHECK_EQ(To<CSSIdentifierValue>(in_value).GetValueID(), CSSValueID::kNone);
     return operations;
   }
 

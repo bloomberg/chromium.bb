@@ -34,7 +34,7 @@ class CSSGridAutoRepeatValue : public CSSValueList {
   CSSGridAutoRepeatValue(CSSValueID id)
       : CSSValueList(kGridAutoRepeatClass, kSpaceSeparator),
         auto_repeat_id_(id) {
-    DCHECK(id == CSSValueAutoFill || id == CSSValueAutoFit);
+    DCHECK(id == CSSValueID::kAutoFill || id == CSSValueID::kAutoFit);
   }
 
   String CustomCSSText() const;

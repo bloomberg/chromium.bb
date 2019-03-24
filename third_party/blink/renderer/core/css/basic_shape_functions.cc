@@ -43,15 +43,15 @@ namespace blink {
 
 static StyleRay::RaySize KeywordToRaySize(CSSValueID id) {
   switch (id) {
-    case CSSValueClosestSide:
+    case CSSValueID::kClosestSide:
       return StyleRay::RaySize::kClosestSide;
-    case CSSValueClosestCorner:
+    case CSSValueID::kClosestCorner:
       return StyleRay::RaySize::kClosestCorner;
-    case CSSValueFarthestSide:
+    case CSSValueID::kFarthestSide:
       return StyleRay::RaySize::kFarthestSide;
-    case CSSValueFarthestCorner:
+    case CSSValueID::kFarthestCorner:
       return StyleRay::RaySize::kFarthestCorner;
-    case CSSValueSides:
+    case CSSValueID::kSides:
       return StyleRay::RaySize::kSides;
     default:
       NOTREACHED();
@@ -62,18 +62,18 @@ static StyleRay::RaySize KeywordToRaySize(CSSValueID id) {
 static CSSValueID RaySizeToKeyword(StyleRay::RaySize size) {
   switch (size) {
     case StyleRay::RaySize::kClosestSide:
-      return CSSValueClosestSide;
+      return CSSValueID::kClosestSide;
     case StyleRay::RaySize::kClosestCorner:
-      return CSSValueClosestCorner;
+      return CSSValueID::kClosestCorner;
     case StyleRay::RaySize::kFarthestSide:
-      return CSSValueFarthestSide;
+      return CSSValueID::kFarthestSide;
     case StyleRay::RaySize::kFarthestCorner:
-      return CSSValueFarthestCorner;
+      return CSSValueID::kFarthestCorner;
     case StyleRay::RaySize::kSides:
-      return CSSValueSides;
+      return CSSValueID::kSides;
   }
   NOTREACHED();
-  return CSSValueInvalid;
+  return CSSValueID::kInvalid;
 }
 
 static CSSValue* ValueForCenterCoordinate(
@@ -83,8 +83,9 @@ static CSSValue* ValueForCenterCoordinate(
   if (center.GetDirection() == BasicShapeCenterCoordinate::kTopLeft)
     return CSSValue::Create(center.length(), style.EffectiveZoom());
 
-  CSSValueID keyword =
-      orientation == EBoxOrient::kHorizontal ? CSSValueRight : CSSValueBottom;
+  CSSValueID keyword = orientation == EBoxOrient::kHorizontal
+                           ? CSSValueID::kRight
+                           : CSSValueID::kBottom;
 
   return CSSValuePair::Create(
       CSSIdentifierValue::Create(keyword),
@@ -106,9 +107,9 @@ static CSSValue* BasicShapeRadiusToCSSValue(const ComputedStyle& style,
     case BasicShapeRadius::kValue:
       return CSSValue::Create(radius.Value(), style.EffectiveZoom());
     case BasicShapeRadius::kClosestSide:
-      return CSSIdentifierValue::Create(CSSValueClosestSide);
+      return CSSIdentifierValue::Create(CSSValueID::kClosestSide);
     case BasicShapeRadius::kFarthestSide:
-      return CSSIdentifierValue::Create(CSSValueFarthestSide);
+      return CSSIdentifierValue::Create(CSSValueID::kFarthestSide);
   }
 
   NOTREACHED();
@@ -124,7 +125,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
           *CSSPrimitiveValue::Create(ray.Angle(),
                                      CSSPrimitiveValue::UnitType::kDegrees),
           *CSSIdentifierValue::Create(RaySizeToKeyword(ray.Size())),
-          (ray.Contain() ? CSSIdentifierValue::Create(CSSValueContain)
+          (ray.Contain() ? CSSIdentifierValue::Create(CSSValueID::kContain)
                          : nullptr));
     }
 
@@ -226,9 +227,9 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
   BasicShapeCenterCoordinate::Direction direction;
   Length offset = Length::Fixed(0);
 
-  CSSValueID keyword = CSSValueTop;
+  CSSValueID keyword = CSSValueID::kTop;
   if (!value) {
-    keyword = CSSValueCenter;
+    keyword = CSSValueID::kCenter;
   } else if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     keyword = identifier_value->GetValueID();
   } else if (auto* value_pair = DynamicTo<CSSValuePair>(value)) {
@@ -240,15 +241,15 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
   }
 
   switch (keyword) {
-    case CSSValueTop:
-    case CSSValueLeft:
+    case CSSValueID::kTop:
+    case CSSValueID::kLeft:
       direction = BasicShapeCenterCoordinate::kTopLeft;
       break;
-    case CSSValueRight:
-    case CSSValueBottom:
+    case CSSValueID::kRight:
+    case CSSValueID::kBottom:
       direction = BasicShapeCenterCoordinate::kBottomRight;
       break;
-    case CSSValueCenter:
+    case CSSValueID::kCenter:
       direction = BasicShapeCenterCoordinate::kTopLeft;
       offset = Length::Percent(50);
       break;
@@ -269,9 +270,9 @@ static BasicShapeRadius CssValueToBasicShapeRadius(
 
   if (auto* radius_identifier_value = DynamicTo<CSSIdentifierValue>(radius)) {
     switch (radius_identifier_value->GetValueID()) {
-      case CSSValueClosestSide:
+      case CSSValueID::kClosestSide:
         return BasicShapeRadius(BasicShapeRadius::kClosestSide);
-      case CSSValueFarthestSide:
+      case CSSValueID::kFarthestSide:
         return BasicShapeRadius(BasicShapeRadius::kFarthestSide);
       default:
         NOTREACHED();

@@ -32,8 +32,8 @@ class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
         name_(name),
         value_(nullptr),
         value_id_(id) {
-    DCHECK(id == CSSValueInherit || id == CSSValueInitial ||
-           id == CSSValueUnset);
+    DCHECK(id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
+           id == CSSValueID::kUnset);
   }
 
   CSSCustomPropertyDeclaration(const AtomicString& name,
@@ -41,18 +41,18 @@ class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
       : CSSValue(kCustomPropertyDeclarationClass),
         name_(name),
         value_(std::move(value)),
-        value_id_(CSSValueInvalid) {}
+        value_id_(CSSValueID::kInvalid) {}
 
   const AtomicString& GetName() const { return name_; }
   CSSVariableData* Value() const { return value_.get(); }
 
   bool IsInherit(bool is_inherited_property) const {
-    return value_id_ == CSSValueInherit ||
-           (is_inherited_property && value_id_ == CSSValueUnset);
+    return value_id_ == CSSValueID::kInherit ||
+           (is_inherited_property && value_id_ == CSSValueID::kUnset);
   }
   bool IsInitial(bool is_inherited_property) const {
-    return value_id_ == CSSValueInitial ||
-           (!is_inherited_property && value_id_ == CSSValueUnset);
+    return value_id_ == CSSValueID::kInitial ||
+           (!is_inherited_property && value_id_ == CSSValueID::kUnset);
   }
 
   String CustomCSSText() const;
