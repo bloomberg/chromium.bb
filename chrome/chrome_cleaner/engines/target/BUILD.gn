@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
-
 source_set("common") {
   sources = [
     "cleaner_engine_requests_proxy.cc",
@@ -58,18 +56,6 @@ source_set("dummy_engine_delegate_factory") {
     ":common",
     ":test_engine_delegate",
   ]
-}
-
-source_set("engine_delegate_factory") {
-  if (is_official_chrome_cleaner_build) {
-    deps = [
-      "//chrome_cleaner_internal:engine_delegate_factory",
-    ]
-  } else {
-    deps = [
-      ":dummy_engine_delegate_factory",
-    ]
-  }
 }
 
 source_set("test_engine_delegate") {
