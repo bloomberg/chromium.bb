@@ -73,7 +73,7 @@ TEST_F(CustomPropertyTest, StaticVariableInstance) {
 
 TEST_F(CustomPropertyTest, PropertyID) {
   CustomProperty property("--x", GetDocument());
-  EXPECT_EQ(CSSPropertyVariable, property.PropertyID());
+  EXPECT_EQ(CSSPropertyID::kVariable, property.PropertyID());
 }
 
 TEST_F(CustomPropertyTest, GetPropertyNameAtomicString) {

@@ -133,8 +133,8 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
               cached_contents_->SingleOwnerDocument());
     UseCounter& use_counter1 =
         dummy_holder->GetDocument().Loader()->GetUseCounter();
-    EXPECT_TRUE(use_counter1.IsCounted(CSSPropertyBackgroundColor));
-    EXPECT_FALSE(use_counter1.IsCounted(CSSPropertyColor));
+    EXPECT_TRUE(use_counter1.IsCounted(CSSPropertyID::kBackgroundColor));
+    EXPECT_FALSE(use_counter1.IsCounted(CSSPropertyID::kColor));
 
     // Change owner document.
     cached_contents_->UnregisterClient(sheet);
@@ -160,8 +160,8 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   UseCounter& use_counter2 =
       dummy_holder2->GetDocument().Loader()->GetUseCounter();
   EXPECT_TRUE(sheet2);
-  EXPECT_TRUE(use_counter2.IsCounted(CSSPropertyColor));
-  EXPECT_FALSE(use_counter2.IsCounted(CSSPropertyBackgroundColor));
+  EXPECT_TRUE(use_counter2.IsCounted(CSSPropertyID::kColor));
+  EXPECT_FALSE(use_counter2.IsCounted(CSSPropertyID::kBackgroundColor));
 }
 
 }  // namespace blink

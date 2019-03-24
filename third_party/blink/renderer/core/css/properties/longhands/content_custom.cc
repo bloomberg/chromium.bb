@@ -146,8 +146,8 @@ void Content::ApplyValue(StyleResolverState& state,
     ContentData* next_content = nullptr;
     if (item->IsImageGeneratorValue() || item->IsImageSetValue() ||
         item->IsImageValue()) {
-      next_content =
-          ContentData::Create(state.GetStyleImage(CSSPropertyContent, *item));
+      next_content = ContentData::Create(
+          state.GetStyleImage(CSSPropertyID::kContent, *item));
     } else if (const auto* counter_value =
                    DynamicTo<cssvalue::CSSCounterValue>(item.Get())) {
       const auto list_style_type =

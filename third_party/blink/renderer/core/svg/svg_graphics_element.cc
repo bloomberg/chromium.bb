@@ -38,7 +38,7 @@ SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tag_name,
       SVGTests(this),
       transform_(SVGAnimatedTransformList::Create(this,
                                                   svg_names::kTransformAttr,
-                                                  CSSPropertyTransform)) {
+                                                  CSSPropertyID::kTransform)) {
   AddToPropertyMap(transform_);
 }
 
@@ -105,7 +105,8 @@ void SVGGraphicsElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == svg_names::kTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform, *transform_->CurrentValue()->CssValue());
+        style, CSSPropertyID::kTransform,
+        *transform_->CurrentValue()->CssValue());
     return;
   }
   SVGElement::CollectStyleForPresentationAttribute(name, value, style);

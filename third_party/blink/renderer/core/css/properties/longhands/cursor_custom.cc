@@ -119,8 +119,9 @@ void Cursor::ApplyValue(StyleResolverState& state,
       if (const auto* cursor =
               DynamicTo<cssvalue::CSSCursorImageValue>(*item)) {
         const CSSValue& image = cursor->ImageValue();
-        state.Style()->AddCursor(state.GetStyleImage(CSSPropertyCursor, image),
-                                 cursor->HotSpotSpecified(), cursor->HotSpot());
+        state.Style()->AddCursor(
+            state.GetStyleImage(CSSPropertyID::kCursor, image),
+            cursor->HotSpotSpecified(), cursor->HotSpot());
       } else {
         state.Style()->SetCursor(
             To<CSSIdentifierValue>(*item).ConvertTo<ECursor>());

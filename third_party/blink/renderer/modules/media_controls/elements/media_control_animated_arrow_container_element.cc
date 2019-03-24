@@ -19,7 +19,7 @@ MediaControlAnimatedArrowContainerElement::AnimatedArrow::AnimatedArrow(
 
 void MediaControlAnimatedArrowContainerElement::AnimatedArrow::HideInternal() {
   DCHECK(!hidden_);
-  svg_container_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  svg_container_->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
   hidden_ = true;
 }
 
@@ -28,7 +28,7 @@ void MediaControlAnimatedArrowContainerElement::AnimatedArrow::ShowInternal() {
   hidden_ = false;
 
   if (svg_container_) {
-    svg_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
+    svg_container_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
     return;
   }
 

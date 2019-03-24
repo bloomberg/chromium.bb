@@ -30,14 +30,14 @@ bool BackgroundRepeat::ParseShorthand(
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBackgroundRepeatX, CSSPropertyBackgroundRepeat, *result_x,
-      important,
+      CSSPropertyID::kBackgroundRepeatX, CSSPropertyID::kBackgroundRepeat,
+      *result_x, important,
       implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
                : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBackgroundRepeatY, CSSPropertyBackgroundRepeat, *result_y,
-      important,
+      CSSPropertyID::kBackgroundRepeatY, CSSPropertyID::kBackgroundRepeat,
+      *result_y, important,
       implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
                : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

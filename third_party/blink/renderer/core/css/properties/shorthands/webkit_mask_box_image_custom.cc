@@ -33,27 +33,32 @@ bool WebkitMaskBoxImage::ParseShorthand(
   }
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskBoxImageSource, CSSPropertyWebkitMaskBoxImage,
+      CSSPropertyID::kWebkitMaskBoxImageSource,
+      CSSPropertyID::kWebkitMaskBoxImage,
       source ? *source : *CSSInitialValue::Create(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskBoxImageSlice, CSSPropertyWebkitMaskBoxImage,
+      CSSPropertyID::kWebkitMaskBoxImageSlice,
+      CSSPropertyID::kWebkitMaskBoxImage,
       slice ? *slice : *CSSInitialValue::Create(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskBoxImageWidth, CSSPropertyWebkitMaskBoxImage,
+      CSSPropertyID::kWebkitMaskBoxImageWidth,
+      CSSPropertyID::kWebkitMaskBoxImage,
       width ? *width : *CSSInitialValue::Create(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskBoxImageOutset, CSSPropertyWebkitMaskBoxImage,
+      CSSPropertyID::kWebkitMaskBoxImageOutset,
+      CSSPropertyID::kWebkitMaskBoxImage,
       outset ? *outset : *CSSInitialValue::Create(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskBoxImageRepeat, CSSPropertyWebkitMaskBoxImage,
+      CSSPropertyID::kWebkitMaskBoxImageRepeat,
+      CSSPropertyID::kWebkitMaskBoxImage,
       repeat ? *repeat : *CSSInitialValue::Create(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

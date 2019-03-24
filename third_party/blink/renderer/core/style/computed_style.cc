@@ -926,30 +926,30 @@ static bool HasPropertyThatCreatesStackingContext(
     const Vector<CSSPropertyID>& properties) {
   for (CSSPropertyID property : properties) {
     switch (property) {
-      case CSSPropertyOpacity:
-      case CSSPropertyTransform:
-      case CSSPropertyAliasWebkitTransform:
-      case CSSPropertyTransformStyle:
-      case CSSPropertyAliasWebkitTransformStyle:
-      case CSSPropertyPerspective:
-      case CSSPropertyAliasWebkitPerspective:
-      case CSSPropertyTranslate:
-      case CSSPropertyRotate:
-      case CSSPropertyScale:
-      case CSSPropertyOffsetPath:
-      case CSSPropertyOffsetPosition:
-      case CSSPropertyWebkitMask:
-      case CSSPropertyWebkitMaskBoxImage:
-      case CSSPropertyClipPath:
-      case CSSPropertyAliasWebkitClipPath:
-      case CSSPropertyWebkitBoxReflect:
-      case CSSPropertyFilter:
-      case CSSPropertyAliasWebkitFilter:
-      case CSSPropertyBackdropFilter:
-      case CSSPropertyZIndex:
-      case CSSPropertyPosition:
-      case CSSPropertyMixBlendMode:
-      case CSSPropertyIsolation:
+      case CSSPropertyID::kOpacity:
+      case CSSPropertyID::kTransform:
+      case CSSPropertyID::kAliasWebkitTransform:
+      case CSSPropertyID::kTransformStyle:
+      case CSSPropertyID::kAliasWebkitTransformStyle:
+      case CSSPropertyID::kPerspective:
+      case CSSPropertyID::kAliasWebkitPerspective:
+      case CSSPropertyID::kTranslate:
+      case CSSPropertyID::kRotate:
+      case CSSPropertyID::kScale:
+      case CSSPropertyID::kOffsetPath:
+      case CSSPropertyID::kOffsetPosition:
+      case CSSPropertyID::kWebkitMask:
+      case CSSPropertyID::kWebkitMaskBoxImage:
+      case CSSPropertyID::kClipPath:
+      case CSSPropertyID::kAliasWebkitClipPath:
+      case CSSPropertyID::kWebkitBoxReflect:
+      case CSSPropertyID::kFilter:
+      case CSSPropertyID::kAliasWebkitFilter:
+      case CSSPropertyID::kBackdropFilter:
+      case CSSPropertyID::kZIndex:
+      case CSSPropertyID::kPosition:
+      case CSSPropertyID::kMixBlendMode:
+      case CSSPropertyID::kIsolation:
         return true;
       default:
         break;
@@ -1002,16 +1002,16 @@ void ComputedStyle::SetContent(ContentData* content_data) {
 bool ComputedStyle::HasWillChangeCompositingHint() const {
   for (const auto& property : WillChangeProperties()) {
     switch (property) {
-      case CSSPropertyOpacity:
-      case CSSPropertyTransform:
-      case CSSPropertyAliasWebkitTransform:
-      case CSSPropertyTranslate:
-      case CSSPropertyScale:
-      case CSSPropertyRotate:
-      case CSSPropertyTop:
-      case CSSPropertyLeft:
-      case CSSPropertyBottom:
-      case CSSPropertyRight:
+      case CSSPropertyID::kOpacity:
+      case CSSPropertyID::kTransform:
+      case CSSPropertyID::kAliasWebkitTransform:
+      case CSSPropertyID::kTranslate:
+      case CSSPropertyID::kScale:
+      case CSSPropertyID::kRotate:
+      case CSSPropertyID::kTop:
+      case CSSPropertyID::kLeft:
+      case CSSPropertyID::kBottom:
+      case CSSPropertyID::kRight:
         return true;
       default:
         break;
@@ -1023,14 +1023,14 @@ bool ComputedStyle::HasWillChangeCompositingHint() const {
 bool ComputedStyle::HasWillChangeTransformHint() const {
   for (const auto& property : WillChangeProperties()) {
     switch (property) {
-      case CSSPropertyTransform:
-      case CSSPropertyAliasWebkitTransform:
-      case CSSPropertyPerspective:
-      case CSSPropertyTranslate:
-      case CSSPropertyScale:
-      case CSSPropertyRotate:
-      case CSSPropertyOffsetPath:
-      case CSSPropertyOffsetPosition:
+      case CSSPropertyID::kTransform:
+      case CSSPropertyID::kAliasWebkitTransform:
+      case CSSPropertyID::kPerspective:
+      case CSSPropertyID::kTranslate:
+      case CSSPropertyID::kScale:
+      case CSSPropertyID::kRotate:
+      case CSSPropertyID::kOffsetPath:
+      case CSSPropertyID::kOffsetPosition:
         return true;
       default:
         break;

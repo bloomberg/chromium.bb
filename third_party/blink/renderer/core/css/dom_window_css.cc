@@ -43,9 +43,9 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
                             const String& property,
                             const String& value) {
   CSSPropertyID unresolved_property = unresolvedCSSPropertyID(property);
-  if (unresolved_property == CSSPropertyInvalid)
+  if (unresolved_property == CSSPropertyID::kInvalid)
     return false;
-  if (unresolved_property == CSSPropertyVariable) {
+  if (unresolved_property == CSSPropertyID::kVariable) {
     MutableCSSPropertyValueSet* dummy_style =
         MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
     bool is_animation_tainted = false;

@@ -26,17 +26,17 @@ CSSStyleValueVector ParseCSSStyleValue(
     ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
 
-  if (property_id == CSSPropertyInvalid) {
+  if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid property name");
     return CSSStyleValueVector();
   }
 
-  AtomicString custom_property_name = property_id == CSSPropertyVariable
+  AtomicString custom_property_name = property_id == CSSPropertyID::kVariable
                                           ? AtomicString(property_name)
                                           : g_null_atom;
 
   const PropertyRegistration* registration =
-      (property_id == CSSPropertyVariable)
+      (property_id == CSSPropertyID::kVariable)
           ? PropertyRegistration::From(execution_context, custom_property_name)
           : nullptr;
 

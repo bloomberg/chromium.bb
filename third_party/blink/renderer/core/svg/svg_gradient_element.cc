@@ -50,7 +50,7 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tag_name,
       gradient_transform_(
           SVGAnimatedTransformList::Create(this,
                                            svg_names::kGradientTransformAttr,
-                                           CSSPropertyTransform)),
+                                           CSSPropertyID::kTransform)),
       spread_method_(SVGAnimatedEnumeration<SVGSpreadMethodType>::Create(
           this,
           svg_names::kSpreadMethodAttr,
@@ -95,7 +95,7 @@ void SVGGradientElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == svg_names::kGradientTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform,
+        style, CSSPropertyID::kTransform,
         *gradient_transform_->CurrentValue()->CssValue());
     return;
   }

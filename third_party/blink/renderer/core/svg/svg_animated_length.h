@@ -48,7 +48,7 @@ class SVGAnimatedLength : public ScriptWrappable,
       const QualifiedName& attribute_name,
       SVGLengthMode mode,
       SVGLength::Initial initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return MakeGarbageCollected<SVGAnimatedLength>(
         context_element, attribute_name, mode, initial_value, css_property_id);
   }
@@ -57,7 +57,7 @@ class SVGAnimatedLength : public ScriptWrappable,
                     const QualifiedName& attribute_name,
                     SVGLengthMode mode,
                     SVGLength::Initial initial_value,
-                    CSSPropertyID css_property_id = CSSPropertyInvalid)
+                    CSSPropertyID css_property_id = CSSPropertyID::kInvalid)
       : SVGAnimatedProperty<SVGLength>(context_element,
                                        attribute_name,
                                        SVGLength::Create(initial_value, mode),

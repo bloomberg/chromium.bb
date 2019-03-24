@@ -29,13 +29,15 @@ bool WebkitMaskPosition::ParseShorthand(
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskPositionX, CSSPropertyWebkitMaskPosition, *result_x,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kWebkitMaskPositionX, CSSPropertyID::kWebkitMaskPosition,
+      *result_x, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskPositionY, CSSPropertyWebkitMaskPosition, *result_y,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kWebkitMaskPositionY, CSSPropertyID::kWebkitMaskPosition,
+      *result_y, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

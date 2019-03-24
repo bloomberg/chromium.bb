@@ -65,8 +65,8 @@ class CSSProperties(object):
         # CSSPropertyValueMetadata assumes that there are at most 1024
         # properties + aliases.
         self._alias_offset = 512
-        # 0: CSSPropertyInvalid
-        # 1: CSSPropertyVariable
+        # 0: CSSPropertyID::kInvalid
+        # 1: CSSPropertyID::kVariable
         self._first_enum_value = 2
         self._last_used_enum_value = self._first_enum_value
 

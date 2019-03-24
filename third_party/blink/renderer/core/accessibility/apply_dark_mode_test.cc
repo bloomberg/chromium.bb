@@ -15,7 +15,7 @@ namespace {
 using ApplyDarkModeCheckTest = RenderingTest;
 
 TEST_F(ApplyDarkModeCheckTest, LightSolidBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
                                                CSSValueWhite);
   UpdateAllLifecyclePhasesForTest();
 
@@ -26,7 +26,7 @@ TEST_F(ApplyDarkModeCheckTest, LightSolidBackgroundAlwaysFiltered) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, DarkSolidBackgroundFilteredIfPolicyIsFilterAll) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
                                                CSSValueBlack);
   // TODO(https://crbug.com/925949): Set opacity the same way as the other CSS
   // properties.
@@ -40,7 +40,7 @@ TEST_F(ApplyDarkModeCheckTest, DarkSolidBackgroundFilteredIfPolicyIsFilterAll) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, DarkLowOpacityBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
                                                CSSValueBlack);
   // TODO(https://crbug.com/925949): Set opacity the same way as the other CSS
   // properties.
@@ -54,7 +54,7 @@ TEST_F(ApplyDarkModeCheckTest, DarkLowOpacityBackgroundAlwaysFiltered) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, DarkTransparentBackgroundAlwaysFiltered) {
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyBackgroundColor,
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor,
                                                CSSValueTransparent);
   UpdateAllLifecyclePhasesForTest();
 
@@ -65,7 +65,8 @@ TEST_F(ApplyDarkModeCheckTest, DarkTransparentBackgroundAlwaysFiltered) {
 }
 
 TEST_F(ApplyDarkModeCheckTest, BackgroundColorNotDefinedAlwaysFiltered) {
-  GetDocument().body()->RemoveInlineStyleProperty(CSSPropertyBackgroundColor);
+  GetDocument().body()->RemoveInlineStyleProperty(
+      CSSPropertyID::kBackgroundColor);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(ShouldApplyDarkModeFilterToPage(

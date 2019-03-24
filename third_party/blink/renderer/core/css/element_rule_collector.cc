@@ -349,7 +349,7 @@ void ElementRuleCollector::DidMatchRule(
       return;
     if ((dynamic_pseudo == kPseudoIdBefore ||
          dynamic_pseudo == kPseudoIdAfter) &&
-        !rule_data->Rule()->Properties().HasProperty(CSSPropertyContent))
+        !rule_data->Rule()->Properties().HasProperty(CSSPropertyID::kContent))
       return;
     style_->SetHasPseudoStyle(dynamic_pseudo);
   } else {

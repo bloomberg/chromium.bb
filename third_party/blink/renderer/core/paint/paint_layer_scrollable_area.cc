@@ -1994,10 +1994,12 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
       // Make implicit margins from the theme explicit (see
       // <http://bugs.webkit.org/show_bug.cgi?id=9547>).
       element->SetInlineStyleProperty(
-          CSSPropertyMarginLeft, GetLayoutBox()->MarginLeft() / zoom_factor,
+          CSSPropertyID::kMarginLeft,
+          GetLayoutBox()->MarginLeft() / zoom_factor,
           CSSPrimitiveValue::UnitType::kPixels);
       element->SetInlineStyleProperty(
-          CSSPropertyMarginRight, GetLayoutBox()->MarginRight() / zoom_factor,
+          CSSPropertyID::kMarginRight,
+          GetLayoutBox()->MarginRight() / zoom_factor,
           CSSPrimitiveValue::UnitType::kPixels);
     }
     LayoutUnit base_width =
@@ -2005,7 +2007,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
         (is_box_sizing_border ? LayoutUnit()
                               : GetLayoutBox()->BorderAndPaddingWidth());
     base_width = LayoutUnit(base_width / zoom_factor);
-    element->SetInlineStyleProperty(CSSPropertyWidth,
+    element->SetInlineStyleProperty(CSSPropertyID::kWidth,
                                     RoundToInt(base_width + difference.Width()),
                                     CSSPrimitiveValue::UnitType::kPixels);
   }
@@ -2014,11 +2016,12 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
     if (element->IsFormControlElement()) {
       // Make implicit margins from the theme explicit (see
       // <http://bugs.webkit.org/show_bug.cgi?id=9547>).
-      element->SetInlineStyleProperty(CSSPropertyMarginTop,
+      element->SetInlineStyleProperty(CSSPropertyID::kMarginTop,
                                       GetLayoutBox()->MarginTop() / zoom_factor,
                                       CSSPrimitiveValue::UnitType::kPixels);
       element->SetInlineStyleProperty(
-          CSSPropertyMarginBottom, GetLayoutBox()->MarginBottom() / zoom_factor,
+          CSSPropertyID::kMarginBottom,
+          GetLayoutBox()->MarginBottom() / zoom_factor,
           CSSPrimitiveValue::UnitType::kPixels);
     }
     LayoutUnit base_height =
@@ -2027,7 +2030,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
                               : GetLayoutBox()->BorderAndPaddingHeight());
     base_height = LayoutUnit(base_height / zoom_factor);
     element->SetInlineStyleProperty(
-        CSSPropertyHeight, RoundToInt(base_height + difference.Height()),
+        CSSPropertyID::kHeight, RoundToInt(base_height + difference.Height()),
         CSSPrimitiveValue::UnitType::kPixels);
   }
 

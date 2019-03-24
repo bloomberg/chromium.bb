@@ -20,11 +20,11 @@ namespace {
 const StyleImage* GetStyleImage(const CSSProperty& property,
                                 const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyBorderImageSource:
+    case CSSPropertyID::kBorderImageSource:
       return style.BorderImageSource();
-    case CSSPropertyListStyleImage:
+    case CSSPropertyID::kListStyleImage:
       return style.ListStyleImage();
-    case CSSPropertyWebkitMaskBoxImageSource:
+    case CSSPropertyID::kWebkitMaskBoxImageSource:
       return style.MaskBoxImageSource();
     default:
       NOTREACHED();
@@ -261,13 +261,13 @@ void CSSImageInterpolationType::ApplyStandardPropertyValue(
   StyleImage* image = ResolveStyleImage(CssProperty(), interpolable_value,
                                         non_interpolable_value, state);
   switch (CssProperty().PropertyID()) {
-    case CSSPropertyBorderImageSource:
+    case CSSPropertyID::kBorderImageSource:
       state.Style()->SetBorderImageSource(image);
       break;
-    case CSSPropertyListStyleImage:
+    case CSSPropertyID::kListStyleImage:
       state.Style()->SetListStyleImage(image);
       break;
-    case CSSPropertyWebkitMaskBoxImageSource:
+    case CSSPropertyID::kWebkitMaskBoxImageSource:
       state.Style()->SetMaskBoxImageSource(image);
       break;
     default:

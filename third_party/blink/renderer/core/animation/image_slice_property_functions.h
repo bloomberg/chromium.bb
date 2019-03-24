@@ -34,10 +34,10 @@ class ImageSlicePropertyFunctions {
       default:
         NOTREACHED();
         FALLTHROUGH;
-      case CSSPropertyBorderImageSlice:
+      case CSSPropertyID::kBorderImageSlice:
         return ImageSlice(style.BorderImageSlices(),
                           style.BorderImageSlicesFill());
-      case CSSPropertyWebkitMaskBoxImageSlice:
+      case CSSPropertyID::kWebkitMaskBoxImageSlice:
         return ImageSlice(style.MaskBoxImageSlices(),
                           style.MaskBoxImageSlicesFill());
     }
@@ -47,11 +47,11 @@ class ImageSlicePropertyFunctions {
                             ComputedStyle& style,
                             const ImageSlice& slice) {
     switch (property.PropertyID()) {
-      case CSSPropertyBorderImageSlice:
+      case CSSPropertyID::kBorderImageSlice:
         style.SetBorderImageSlices(slice.slices);
         style.SetBorderImageSlicesFill(slice.fill);
         break;
-      case CSSPropertyWebkitMaskBoxImageSlice:
+      case CSSPropertyID::kWebkitMaskBoxImageSlice:
         style.SetMaskBoxImageSlices(slice.slices);
         style.SetMaskBoxImageSlicesFill(slice.fill);
         break;

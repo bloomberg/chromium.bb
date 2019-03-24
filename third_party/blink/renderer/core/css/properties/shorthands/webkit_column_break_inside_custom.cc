@@ -24,7 +24,7 @@ bool WebkitColumnBreakInside::ParseShorthand(
   }
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBreakInside, CSSPropertyWebkitColumnBreakInside,
+      CSSPropertyID::kBreakInside, CSSPropertyID::kWebkitColumnBreakInside,
       *CSSIdentifierValue::Create(value), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

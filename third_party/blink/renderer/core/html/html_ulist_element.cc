@@ -46,18 +46,19 @@ void HTMLUListElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kTypeAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "disc"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueDisc);
-    else if (DeprecatedEqualIgnoringCase(value, "circle"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueCircle);
-    else if (DeprecatedEqualIgnoringCase(value, "square"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueSquare);
-    else if (DeprecatedEqualIgnoringCase(value, "none"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueNone);
+    if (DeprecatedEqualIgnoringCase(value, "disc")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueDisc);
+    } else if (DeprecatedEqualIgnoringCase(value, "circle")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueCircle);
+    } else if (DeprecatedEqualIgnoringCase(value, "square")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueSquare);
+    } else if (DeprecatedEqualIgnoringCase(value, "none")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueNone);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

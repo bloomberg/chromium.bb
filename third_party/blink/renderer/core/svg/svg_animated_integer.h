@@ -67,7 +67,7 @@ class SVGAnimatedInteger : public ScriptWrappable,
       : SVGAnimatedProperty<SVGInteger>(context_element,
                                         attribute_name,
                                         initial_value,
-                                        CSSPropertyInvalid,
+                                        CSSPropertyID::kInvalid,
                                         initial_value->Value()),
         parent_integer_optional_integer_(nullptr) {}
 

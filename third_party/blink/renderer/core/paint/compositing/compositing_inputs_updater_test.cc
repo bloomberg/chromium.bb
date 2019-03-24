@@ -63,9 +63,9 @@ TEST_F(CompositingInputsUpdaterTest,
   // Now make the outer scroller non-scrollable (i.e. overflow: visible), and
   // the inner scroller into an actual scroller.
   ToElement(outer_scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyOverflow, "visible");
+      ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "visible");
   ToElement(inner_scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyOverflow, "scroll");
+      ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "scroll");
 
   // Before we update compositing inputs, validate that the current ancestor
   // overflow no longer has a scrollable area.

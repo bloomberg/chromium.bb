@@ -116,11 +116,11 @@ class AnimationAnimationTest : public RenderingTest {
     timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
 
     Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
-    start_keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1.0",
+    start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
                                         SecureContextMode::kInsecureContext,
                                         nullptr);
     Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
-    end_keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0.0",
+    end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
 
@@ -953,11 +953,13 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
   // Now change the keyframes; this should mark the animation as compositor
   // pending as we need to sync the compositor side.
   Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
-  start_keyframe->SetCSSPropertyValue(
-      CSSPropertyOpacity, "0.0", SecureContextMode::kInsecureContext, nullptr);
+  start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
+                                      SecureContextMode::kInsecureContext,
+                                      nullptr);
   Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
-  end_keyframe->SetCSSPropertyValue(
-      CSSPropertyOpacity, "1.0", SecureContextMode::kInsecureContext, nullptr);
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
 
   StringKeyframeVector keyframes;
   keyframes.push_back(start_keyframe);

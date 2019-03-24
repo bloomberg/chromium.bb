@@ -93,9 +93,11 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     if (DeprecatedEqualIgnoringCase(value, "yes") ||
         DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWidth, 0, CSSPrimitiveValue::UnitType::kPixels);
+          style, CSSPropertyID::kWidth, 0,
+          CSSPrimitiveValue::UnitType::kPixels);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyHeight, 0, CSSPrimitiveValue::UnitType::kPixels);
+          style, CSSPropertyID::kHeight, 0,
+          CSSPrimitiveValue::UnitType::kPixels);
     }
   } else {
     HTMLPlugInElement::CollectStyleForPresentationAttribute(name, value, style);

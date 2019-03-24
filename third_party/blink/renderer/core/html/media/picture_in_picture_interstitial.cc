@@ -92,7 +92,7 @@ void PictureInPictureInterstitial::Show() {
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = true;
-  RemoveInlineStyleProperty(CSSPropertyDisplay);
+  RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
   interstitial_timer_.StartOneShot(
       kPictureInPictureStyleChangeTransitionDuration, FROM_HERE);
 
@@ -107,7 +107,7 @@ void PictureInPictureInterstitial::Hide() {
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = false;
-  SetInlineStyleProperty(CSSPropertyOpacity, 0,
+  SetInlineStyleProperty(CSSPropertyID::kOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
@@ -147,11 +147,11 @@ void PictureInPictureInterstitial::NotifyElementSizeChanged(
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
   interstitial_timer_.Stop();
   if (should_be_visible_) {
-    SetInlineStyleProperty(CSSPropertyBackgroundColor, CSSValueBlack);
-    SetInlineStyleProperty(CSSPropertyOpacity, 1,
+    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueBlack);
+    SetInlineStyleProperty(CSSPropertyID::kOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
   } else {
-    SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
   }
 }
 

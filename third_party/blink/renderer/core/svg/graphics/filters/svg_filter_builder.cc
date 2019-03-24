@@ -147,8 +147,8 @@ static EColorInterpolation ColorInterpolationForElement(
   // "manually" (used by external SVG files.)
   if (const CSSPropertyValueSet* property_set =
           element.PresentationAttributeStyle()) {
-    const CSSValue* css_value =
-        property_set->GetPropertyCSSValue(CSSPropertyColorInterpolationFilters);
+    const CSSValue* css_value = property_set->GetPropertyCSSValue(
+        CSSPropertyID::kColorInterpolationFilters);
     if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(css_value)) {
       return identifier_value->ConvertTo<EColorInterpolation>();
     }

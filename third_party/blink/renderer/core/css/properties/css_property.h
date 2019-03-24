@@ -34,7 +34,7 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   // to using property classes yet.
   virtual CSSPropertyID PropertyID() const {
     NOTREACHED();
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   }
   virtual CSSPropertyName GetCSSPropertyName() const {
     return CSSPropertyName(PropertyID());

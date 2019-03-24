@@ -153,8 +153,9 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 };
 
 TEST_F(PaintWorkletStylePropertyMapTest, NativePropertyAccessors) {
-  Vector<CSSPropertyID> native_properties(
-      {CSSPropertyColor, CSSPropertyAlignItems, CSSPropertyBackground});
+  Vector<CSSPropertyID> native_properties({CSSPropertyID::kColor,
+                                           CSSPropertyID::kAlignItems,
+                                           CSSPropertyID::kBackground});
   Vector<AtomicString> empty_custom_properties;
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "color", "rgb(0, 255, 0)", "", ASSERT_NO_EXCEPTION);
@@ -212,8 +213,9 @@ TEST_F(PaintWorkletStylePropertyMapTest, CustomPropertyAccessors) {
 // This test ensures that Blink::PaintWorkletInput can be safely passed cross
 // threads and no information is lost.
 TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
-  Vector<CSSPropertyID> native_properties(
-      {CSSPropertyColor, CSSPropertyAlignItems, CSSPropertyDisplay});
+  Vector<CSSPropertyID> native_properties({CSSPropertyID::kColor,
+                                           CSSPropertyID::kAlignItems,
+                                           CSSPropertyID::kDisplay});
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "color", "rgb(0, 255, 0)", "", ASSERT_NO_EXCEPTION);
   GetDocument().documentElement()->style()->setProperty(

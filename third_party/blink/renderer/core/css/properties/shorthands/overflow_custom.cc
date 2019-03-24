@@ -28,11 +28,11 @@ bool Overflow::ParseShorthand(
     x_id = y_id;
     y_id = range.ConsumeIncludingWhitespace().Id();
     if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-            CSSPropertyOverflowX, x_id, context.Mode()))
+            CSSPropertyID::kOverflowX, x_id, context.Mode()))
       return false;
   }
-  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(CSSPropertyOverflowY,
-                                                          y_id, context.Mode()))
+  if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
+          CSSPropertyID::kOverflowY, y_id, context.Mode()))
     return false;
   if (!range.AtEnd())
     return false;
@@ -52,12 +52,12 @@ bool Overflow::ParseShorthand(
   else
     overflow_x_value = overflow_y_value;
   css_property_parser_helpers::AddProperty(
-      CSSPropertyOverflowX, CSSPropertyOverflow, *overflow_x_value, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kOverflowX, CSSPropertyID::kOverflow, *overflow_x_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyOverflowY, CSSPropertyOverflow, *overflow_y_value, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kOverflowY, CSSPropertyID::kOverflow, *overflow_y_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

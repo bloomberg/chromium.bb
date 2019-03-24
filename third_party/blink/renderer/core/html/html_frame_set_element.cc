@@ -66,7 +66,7 @@ void HTMLFrameSetElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kBordercolorAttr)
-    AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
   else
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
 }

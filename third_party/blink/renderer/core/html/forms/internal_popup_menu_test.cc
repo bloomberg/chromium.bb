@@ -38,7 +38,7 @@ TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
   InternalPopupMenu* menu =
       InternalPopupMenu::Create(EmptyChromeClient::Create(), *select);
 
-  document.body()->SetInlineStyleProperty(CSSPropertyColor, "blue");
+  document.body()->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
 
   scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create();
 

@@ -161,13 +161,13 @@ void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
 
   Element& container = GetElementById("container");
   if (WebTestSupport::IsRunningWebTest()) {
-    container.SetInlineStyleProperty(CSSPropertyTransition, "none");
-    GetElementById("icon").SetInlineStyleProperty(CSSPropertyTransition,
+    container.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
+    GetElementById("icon").SetInlineStyleProperty(CSSPropertyID::kTransition,
                                                   "none");
     GetElementById("main-message")
-        .SetInlineStyleProperty(CSSPropertyTransition, "none");
+        .SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
     GetElementById("sub-message")
-        .SetInlineStyleProperty(CSSPropertyTransition, "none");
+        .SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
   }
   // Get the size to decide position later.
   // TODO(schenney): This says get size, so we only need to update to layout.
@@ -177,7 +177,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
   // Add one because the content sometimes exceeds the exact width due to
   // rounding errors.
   bubble_size_.Expand(1, 0);
-  container.SetInlineStyleProperty(CSSPropertyMinWidth,
+  container.SetInlineStyleProperty(CSSPropertyID::kMinWidth,
                                    bubble_size_.Width() / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.setAttribute(html_names::kClassAttr, "shown-initially");
@@ -249,9 +249,9 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     bubble_x = view_rect.MaxX() - bubble_size_.Width();
 
   Element& container = GetElementById("container");
-  container.SetInlineStyleProperty(CSSPropertyLeft, bubble_x / zoom_factor,
+  container.SetInlineStyleProperty(CSSPropertyID::kLeft, bubble_x / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  container.SetInlineStyleProperty(CSSPropertyTop, bubble_y / zoom_factor,
+  container.SetInlineStyleProperty(CSSPropertyID::kTop, bubble_y / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
 
   // Should match to --arrow-size in validation_bubble.css.
@@ -292,25 +292,25 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
   double arrow_anchor_percent = arrow_anchor_x * 100 / bubble_size_.Width();
   if (show_bottom_arrow) {
     GetElementById("outer-arrow-bottom")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     GetElementById("inner-arrow-bottom")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     container.setAttribute(html_names::kClassAttr, "shown-fully bottom-arrow");
     container.SetInlineStyleProperty(
-        CSSPropertyTransformOrigin,
+        CSSPropertyID::kTransformOrigin,
         String::Format("%.2f%% bottom", arrow_anchor_percent));
   } else {
     GetElementById("outer-arrow-top")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     GetElementById("inner-arrow-top")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     container.setAttribute(html_names::kClassAttr, "shown-fully");
     container.SetInlineStyleProperty(
-        CSSPropertyTransformOrigin,
+        CSSPropertyID::kTransformOrigin,
         String::Format("%.2f%% top", arrow_anchor_percent));
   }
 }

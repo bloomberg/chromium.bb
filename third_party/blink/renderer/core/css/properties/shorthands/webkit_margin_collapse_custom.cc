@@ -20,20 +20,20 @@ bool WebkitMarginCollapse::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID id = range.ConsumeIncludingWhitespace().Id();
   if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyWebkitMarginBeforeCollapse, id, context.Mode()))
+          CSSPropertyID::kWebkitMarginBeforeCollapse, id, context.Mode()))
     return false;
 
   CSSValue* before_collapse = CSSIdentifierValue::Create(id);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMarginBeforeCollapse, CSSPropertyWebkitMarginCollapse,
-      *before_collapse, important,
+      CSSPropertyID::kWebkitMarginBeforeCollapse,
+      CSSPropertyID::kWebkitMarginCollapse, *before_collapse, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   if (range.AtEnd()) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyWebkitMarginAfterCollapse, CSSPropertyWebkitMarginCollapse,
-        *before_collapse, important,
+        CSSPropertyID::kWebkitMarginAfterCollapse,
+        CSSPropertyID::kWebkitMarginCollapse, *before_collapse, important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     return true;
@@ -41,12 +41,12 @@ bool WebkitMarginCollapse::ParseShorthand(
 
   id = range.ConsumeIncludingWhitespace().Id();
   if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-          CSSPropertyWebkitMarginAfterCollapse, id, context.Mode()))
+          CSSPropertyID::kWebkitMarginAfterCollapse, id, context.Mode()))
     return false;
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMarginAfterCollapse, CSSPropertyWebkitMarginCollapse,
-      *CSSIdentifierValue::Create(id), important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kWebkitMarginAfterCollapse,
+      CSSPropertyID::kWebkitMarginCollapse, *CSSIdentifierValue::Create(id),
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

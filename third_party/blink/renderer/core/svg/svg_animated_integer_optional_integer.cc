@@ -41,7 +41,7 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(
           attribute_name,
           SVGIntegerOptionalInteger::Create(SVGInteger::Create(initial_value),
                                             SVGInteger::Create(initial_value)),
-          CSSPropertyInvalid,
+          CSSPropertyID::kInvalid,
           initial_value),
       first_integer_(SVGAnimatedInteger::Create(context_element,
                                                 attribute_name,

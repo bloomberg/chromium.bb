@@ -707,20 +707,20 @@ void HTMLInputElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
   } else if (name == kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
   } else if (name == kAlignAttr) {
     if (input_type_->ShouldRespectAlignAttribute())
       ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kWidthAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
-      AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+      AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else if (name == kHeightAttr) {
     if (input_type_->ShouldRespectHeightAndWidthAttributes())
-      AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+      AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == kBorderAttr &&
              type() == input_type_names::kImage) {  // FIXME: Remove type check.
     ApplyBorderAttributeToStyle(value, style);

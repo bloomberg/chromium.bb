@@ -188,8 +188,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
   // <div></div>
   //
   // We call styleImage() for both a.png and b.png adding the
-  // CSSPropertyBackgroundImage property to the pending_image_properties_ set,
-  // then we null out the background image because of the "none".
+  // CSSPropertyID::kBackgroundImage property to the pending_image_properties_
+  // set, then we null out the background image because of the "none".
   //
   // If we eagerly loaded the images we'd fetch a.png, even though it's not
   // used. If we didn't null check below we'd crash since the none actually
@@ -197,7 +197,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
 
   for (CSSPropertyID property : pending_image_properties_) {
     switch (property) {
-      case CSSPropertyBackgroundImage: {
+      case CSSPropertyID::kBackgroundImage: {
         for (FillLayer* background_layer = &style->AccessBackgroundLayers();
              background_layer; background_layer = background_layer->Next()) {
           StyleImage* background_image = background_layer->GetImage();
@@ -225,7 +225,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyContent: {
+      case CSSPropertyID::kContent: {
         for (ContentData* content_data =
                  const_cast<ContentData*>(style->GetContentData());
              content_data; content_data = content_data->Next()) {
@@ -241,7 +241,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyCursor: {
+      case CSSPropertyID::kCursor: {
         if (CursorList* cursor_list = style->Cursors()) {
           for (wtf_size_t i = 0; i < cursor_list->size(); ++i) {
             CursorData& current_cursor = cursor_list->at(i);
@@ -257,7 +257,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyListStyleImage: {
+      case CSSPropertyID::kListStyleImage: {
         if (style->ListStyleImage() &&
             style->ListStyleImage()->IsPendingImage()) {
           // List style images shouldn't be replaced with placeholders
@@ -267,7 +267,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyBorderImageSource: {
+      case CSSPropertyID::kBorderImageSource: {
         if (style->BorderImageSource() &&
             style->BorderImageSource()->IsPendingImage()) {
           // Border images shouldn't be replaced with placeholders
@@ -277,7 +277,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyWebkitBoxReflect: {
+      case CSSPropertyID::kWebkitBoxReflect: {
         if (StyleReflection* reflection = style->BoxReflect()) {
           const NinePieceImage& mask_image = reflection->Mask();
           if (mask_image.GetImage() &&
@@ -293,7 +293,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyWebkitMaskBoxImageSource: {
+      case CSSPropertyID::kWebkitMaskBoxImageSource: {
         if (style->MaskBoxImageSource() &&
             style->MaskBoxImageSource()->IsPendingImage()) {
           style->SetMaskBoxImageSource(LoadPendingImage(
@@ -302,7 +302,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyWebkitMaskImage: {
+      case CSSPropertyID::kWebkitMaskImage: {
         for (FillLayer* mask_layer = &style->AccessMaskLayers(); mask_layer;
              mask_layer = mask_layer->Next()) {
           if (mask_layer->GetImage() &&
@@ -314,7 +314,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyShapeOutside:
+      case CSSPropertyID::kShapeOutside:
         if (style->ShapeOutside() && style->ShapeOutside()->GetImage() &&
             style->ShapeOutside()->GetImage()->IsPendingImage()) {
           style->ShapeOutside()->SetImage(LoadPendingImage(

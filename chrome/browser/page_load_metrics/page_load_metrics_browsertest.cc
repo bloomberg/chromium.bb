@@ -1157,10 +1157,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyFontFamily
+  // CSSPropertyID::kFontFamily
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
                                       1);
-  // CSSPropertyFontSize
+  // CSSPropertyID::kFontSize
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
                                       1);
   histogram_tester_.ExpectBucketCount(
@@ -1180,10 +1180,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyWidth
+  // CSSPropertyID::kWidth
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 161, 1);
-  // CSSPropertyMarginLeft
+  // CSSPropertyID::kMarginLeft
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
@@ -1245,10 +1245,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyFontFamily
+  // CSSPropertyID::kFontFamily
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
                                       1);
-  // CSSPropertyFontSize
+  // CSSPropertyID::kFontSize
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
                                       1);
   histogram_tester_.ExpectBucketCount(
@@ -1276,10 +1276,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyWidth
+  // CSSPropertyID::kWidth
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 161, 1);
-  // CSSPropertyMarginLeft
+  // CSSPropertyID::kMarginLeft
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
@@ -1518,10 +1518,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyFontFamily
+  // CSSPropertyID::kFontFamily
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
                                       1);
-  // CSSPropertyFontSize
+  // CSSPropertyID::kFontSize
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
                                       1);
   histogram_tester_.ExpectBucketCount(
@@ -1544,10 +1544,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyFontFamily
+  // CSSPropertyID::kFontFamily
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
                                       1);
-  // CSSPropertyFontSize
+  // CSSPropertyID::kFontSize
   histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
                                       1);
   histogram_tester_.ExpectBucketCount(
@@ -1569,10 +1569,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyWidth
+  // CSSPropertyID::kWidth
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 161, 1);
-  // CSSPropertyMarginLeft
+  // CSSPropertyID::kMarginLeft
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(
@@ -1595,10 +1595,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   waiter->Wait();
   NavigateToUntrackedUrl();
 
-  // CSSPropertyWidth
+  // CSSPropertyID::kWidth
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 161, 1);
-  // CSSPropertyMarginLeft
+  // CSSPropertyID::kMarginLeft
   histogram_tester_.ExpectBucketCount(
       internal::kAnimatedCssPropertiesHistogramName, 91, 1);
   histogram_tester_.ExpectBucketCount(

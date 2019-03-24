@@ -73,7 +73,7 @@ TEST_F(CompositedLayerMappingTest, SubpixelAccumulationChange) {
       "position: relative; left: 0.4px; width: 100px; height: 100px'>");
 
   Element* target = GetDocument().getElementById("target");
-  target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
+  target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
@@ -95,7 +95,7 @@ TEST_F(CompositedLayerMappingTest,
       "position: relative; left: 0.4px; width: 100px; height: 100px'>");
 
   Element* target = GetDocument().getElementById("target");
-  target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
+  target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
@@ -121,7 +121,7 @@ TEST_F(CompositedLayerMappingTest,
       "</div>");
 
   Element* target = GetDocument().getElementById("target");
-  target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
+  target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 

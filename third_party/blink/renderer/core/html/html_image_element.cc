@@ -188,22 +188,22 @@ void HTMLImageElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else if (name == kHeightAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == kBorderAttr) {
     ApplyBorderAttributeToStyle(value, style);
   } else if (name == kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
   } else if (name == kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
   } else if (name == kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kValignAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
-                                            value);
+    AddPropertyToPresentationAttributeStyle(
+        style, CSSPropertyID::kVerticalAlign, value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }
@@ -887,8 +887,10 @@ bool HTMLImageElement::IsInlineStyleDimensionsSmall(
     const CSSPropertyValueSet* property_set) {
   if (!property_set)
     return false;
-  const CSSValue* height = property_set->GetPropertyCSSValue(CSSPropertyHeight);
-  const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
+  const CSSValue* height =
+      property_set->GetPropertyCSSValue(CSSPropertyID::kHeight);
+  const CSSValue* width =
+      property_set->GetPropertyCSSValue(CSSPropertyID::kWidth);
   const auto* width_prim = DynamicTo<CSSPrimitiveValue>(width);
   const auto* height_prim = DynamicTo<CSSPrimitiveValue>(height);
   if (!width_prim || !height_prim)

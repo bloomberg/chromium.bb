@@ -650,7 +650,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(
-      CSSPropertyDirection,
+      CSSPropertyID::kDirection,
       direction == WritingDirection::kLeftToRight
           ? "ltr"
           : direction == WritingDirection::kRightToLeft ? "rtl" : "inherit",

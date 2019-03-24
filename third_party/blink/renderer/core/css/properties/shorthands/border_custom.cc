@@ -30,13 +30,13 @@ bool Border::ParseShorthand(
   };
 
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderWidth, *width, important, properties);
+      CSSPropertyID::kBorderWidth, *width, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderStyle, *style, important, properties);
+      CSSPropertyID::kBorderStyle, *style, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderColor, *color, important, properties);
+      CSSPropertyID::kBorderColor, *color, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderImage, *CSSInitialValue::Create(), important,
+      CSSPropertyID::kBorderImage, *CSSInitialValue::Create(), important,
       properties);
 
   return range.AtEnd();

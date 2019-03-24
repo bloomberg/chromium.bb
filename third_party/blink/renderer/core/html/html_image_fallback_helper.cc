@@ -62,7 +62,7 @@ void HTMLImageFallbackHelper::CreateAltTextShadowTree(Element& element) {
   broken_image->setAttribute(kWidthAttr, AtomicString("16"));
   broken_image->setAttribute(kHeightAttr, AtomicString("16"));
   broken_image->setAttribute(kAlignAttr, AtomicString("left"));
-  broken_image->SetInlineStyleProperty(CSSPropertyMargin, 0,
+  broken_image->SetInlineStyleProperty(CSSPropertyID::kMargin, 0,
                                        CSSPrimitiveValue::UnitType::kPixels);
 
   HTMLSpanElement* alt_text = HTMLSpanElement::Create(element.GetDocument());
@@ -103,7 +103,7 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
       new_style->SetWidth(new_style->Height());
     if (new_style->Width().IsSpecifiedOrIntrinsic() &&
         new_style->Height().IsSpecifiedOrIntrinsic()) {
-      place_holder->SetInlineStyleProperty(CSSPropertyVerticalAlign,
+      place_holder->SetInlineStyleProperty(CSSPropertyID::kVerticalAlign,
                                            CSSValueBaseline);
     }
   }
@@ -124,39 +124,42 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
     // attribute, or the Document is in quirks mode The user agent is expected
     // to treat the element as a replaced element whose content is the text that
     // the element represents, if any."
-    place_holder->SetInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
-    place_holder->SetInlineStyleProperty(CSSPropertyDisplay,
+    place_holder->SetInlineStyleProperty(CSSPropertyID::kOverflow,
+                                         CSSValueHidden);
+    place_holder->SetInlineStyleProperty(CSSPropertyID::kDisplay,
                                          CSSValueInlineBlock);
-    place_holder->SetInlineStyleProperty(CSSPropertyPointerEvents,
+    place_holder->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
                                          CSSValueNone);
     place_holder->SetInlineStyleProperty(
-        CSSPropertyHeight,
+        CSSPropertyID::kHeight,
         *CSSValue::Create(new_style->Height(), new_style->EffectiveZoom()));
     place_holder->SetInlineStyleProperty(
-        CSSPropertyWidth,
+        CSSPropertyID::kWidth,
         *CSSValue::Create(new_style->Width(), new_style->EffectiveZoom()));
 
     // 16px for the image and 2px for its top/left border/padding offset.
     int pixels_for_alt_image = 18;
     if (ImageSmallerThanAltImage(pixels_for_alt_image, new_style->Width(),
                                  new_style->Height())) {
-      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+      broken_image->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                           CSSValueNone);
     } else {
       place_holder->SetInlineStyleProperty(
-          CSSPropertyBorderWidth, 1, CSSPrimitiveValue::UnitType::kPixels);
-      place_holder->SetInlineStyleProperty(CSSPropertyBorderStyle,
+          CSSPropertyID::kBorderWidth, 1, CSSPrimitiveValue::UnitType::kPixels);
+      place_holder->SetInlineStyleProperty(CSSPropertyID::kBorderStyle,
                                            CSSValueSolid);
-      place_holder->SetInlineStyleProperty(CSSPropertyBorderColor,
+      place_holder->SetInlineStyleProperty(CSSPropertyID::kBorderColor,
                                            CSSValueSilver);
       place_holder->SetInlineStyleProperty(
-          CSSPropertyPadding, 1, CSSPrimitiveValue::UnitType::kPixels);
-      place_holder->SetInlineStyleProperty(CSSPropertyBoxSizing,
+          CSSPropertyID::kPadding, 1, CSSPrimitiveValue::UnitType::kPixels);
+      place_holder->SetInlineStyleProperty(CSSPropertyID::kBoxSizing,
                                            CSSValueBorderBox);
-      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueInline);
+      broken_image->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                           CSSValueInline);
       // Make sure the broken image icon appears on the appropriate side of the
       // image for the element's writing direction.
       broken_image->SetInlineStyleProperty(
-          CSSPropertyFloat,
+          CSSPropertyID::kFloat,
           AtomicString(new_style->Direction() == TextDirection::kLtr
                            ? "left"
                            : "right"));
@@ -172,7 +175,8 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
       // treat the element as an empty inline element."
       //  - We achieve this by hiding the broken image so that the span is
       //  empty.
-      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+      broken_image->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                           CSSValueNone);
     } else {
       // "If the element is an img element that represents some text and the
       // user agent does not expect this to change the user agent is expected to
@@ -180,11 +184,12 @@ scoped_refptr<ComputedStyle> HTMLImageFallbackHelper::CustomStyleForAltText(
       // the text, optionally with an icon indicating that an image is missing,
       // so that the user can request the image be displayed or investigate why
       // it is not rendering."
-      broken_image->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueInline);
+      broken_image->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                           CSSValueInline);
       // Make sure the broken image icon appears on the appropriate side of
       // the image for the element's writing direction.
       broken_image->SetInlineStyleProperty(
-          CSSPropertyFloat,
+          CSSPropertyID::kFloat,
           AtomicString(new_style->Direction() == TextDirection::kLtr
                            ? "left"
                            : "right"));

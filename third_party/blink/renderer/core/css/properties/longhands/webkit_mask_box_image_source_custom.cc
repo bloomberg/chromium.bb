@@ -34,7 +34,7 @@ const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
 void WebkitMaskBoxImageSource::ApplyValue(StyleResolverState& state,
                                           const CSSValue& value) const {
   state.Style()->SetMaskBoxImageSource(
-      state.GetStyleImage(CSSPropertyWebkitMaskBoxImageSource, value));
+      state.GetStyleImage(CSSPropertyID::kWebkitMaskBoxImageSource, value));
 }
 
 }  // namespace css_longhand

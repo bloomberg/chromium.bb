@@ -34,17 +34,19 @@ bool GridTemplate::ParseShorthand(
   DCHECK(template_areas);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridTemplateRows, CSSPropertyGridTemplate, *template_rows,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kGridTemplateRows, CSSPropertyID::kGridTemplate,
+      *template_rows, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridTemplateColumns, CSSPropertyGridTemplate,
+      CSSPropertyID::kGridTemplateColumns, CSSPropertyID::kGridTemplate,
       *template_columns, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridTemplateAreas, CSSPropertyGridTemplate, *template_areas,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kGridTemplateAreas, CSSPropertyID::kGridTemplate,
+      *template_areas, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;

@@ -416,12 +416,14 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     }
   }
 
-  if (EditingStyle::SelectionHasStyle(*selected_frame, CSSPropertyDirection,
+  if (EditingStyle::SelectionHasStyle(*selected_frame,
+                                      CSSPropertyID::kDirection,
                                       "ltr") != EditingTriState::kFalse) {
     data.writing_direction_left_to_right |=
         WebContextMenuData::kCheckableMenuItemChecked;
   }
-  if (EditingStyle::SelectionHasStyle(*selected_frame, CSSPropertyDirection,
+  if (EditingStyle::SelectionHasStyle(*selected_frame,
+                                      CSSPropertyID::kDirection,
                                       "rtl") != EditingTriState::kFalse) {
     data.writing_direction_right_to_left |=
         WebContextMenuData::kCheckableMenuItemChecked;

@@ -189,7 +189,7 @@ void TextControlElement::UpdatePlaceholderVisibility() {
   SetPlaceholderVisibility(PlaceholderShouldBeVisible());
 
   placeholder->SetInlineStyleProperty(
-      CSSPropertyDisplay,
+      CSSPropertyID::kDisplay,
       IsPlaceholderVisible() || !SuggestedValue().IsEmpty() ? CSSValueBlock
                                                             : CSSValueNone,
       true);

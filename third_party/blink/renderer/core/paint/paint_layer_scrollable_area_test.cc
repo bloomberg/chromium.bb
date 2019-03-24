@@ -1046,7 +1046,7 @@ TEST_P(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
     PaintLayerScrollableArea::DelayScrollOffsetClampScope scope;
     PaintLayerScrollableArea::DelayScrollOffsetClampScope::SetNeedsClamp(
         scroller->GetLayoutBox()->GetScrollableArea());
-    scroller->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    scroller->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
     UpdateAllLifecyclePhasesForTest();
   }
 }
@@ -1149,7 +1149,7 @@ TEST_P(PaintLayerScrollableAreaTest, RtlScrollOriginSnapping) {
   EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
 
   Element* first_child = GetElementById("first-child");
-  first_child->RemoveInlineStyleProperty(CSSPropertyDisplay);
+  first_child->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scrollable_area->MaximumScrollOffsetInt(), IntSize(0, 100));
 }

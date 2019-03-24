@@ -22,28 +22,28 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
                                 const CSSParserContext& context,
                                 bool use_legacy_parsing) {
   switch (property) {
-    case CSSPropertyAnimationDelay:
+    case CSSPropertyID::kAnimationDelay:
       return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
-    case CSSPropertyAnimationDirection:
+    case CSSPropertyID::kAnimationDirection:
       return css_property_parser_helpers::ConsumeIdent<
           CSSValueNormal, CSSValueAlternate, CSSValueReverse,
           CSSValueAlternateReverse>(range);
-    case CSSPropertyAnimationDuration:
+    case CSSPropertyID::kAnimationDuration:
       return css_property_parser_helpers::ConsumeTime(range,
                                                       kValueRangeNonNegative);
-    case CSSPropertyAnimationFillMode:
+    case CSSPropertyID::kAnimationFillMode:
       return css_property_parser_helpers::ConsumeIdent<
           CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>(
           range);
-    case CSSPropertyAnimationIterationCount:
+    case CSSPropertyID::kAnimationIterationCount:
       return css_parsing_utils::ConsumeAnimationIterationCount(range);
-    case CSSPropertyAnimationName:
+    case CSSPropertyID::kAnimationName:
       return css_parsing_utils::ConsumeAnimationName(range, context,
                                                      use_legacy_parsing);
-    case CSSPropertyAnimationPlayState:
+    case CSSPropertyID::kAnimationPlayState:
       return css_property_parser_helpers::ConsumeIdent<CSSValueRunning,
                                                        CSSValuePaused>(range);
-    case CSSPropertyAnimationTimingFunction:
+    case CSSPropertyID::kAnimationTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:
       NOTREACHED();

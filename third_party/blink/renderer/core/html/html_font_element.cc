@@ -126,7 +126,7 @@ static const CSSValueList* CreateFontFaceValueWithPool(
       CssValuePool().GetFontFaceCacheEntry(string);
   if (!entry.stored_value->value) {
     const CSSValue* parsed_value = CSSParser::ParseSingleValue(
-        CSSPropertyFontFamily, string,
+        CSSPropertyID::kFontFamily, string,
         StrictCSSParserContext(secure_context_mode));
     if (auto* parsed_value_list = DynamicTo<CSSValueList>(parsed_value))
       entry.stored_value->value = parsed_value_list;
@@ -181,10 +181,12 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kSizeAttr) {
     CSSValueID size = CSSValueInvalid;
-    if (CssValueFromFontSizeNumber(value, size))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyFontSize, size);
+    if (CssValueFromFontSizeNumber(value, size)) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFontSize,
+                                              size);
+    }
   } else if (name == kColorAttr) {
-    AddHTMLColorToStyle(style, CSSPropertyColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kColor, value);
   } else if (name == kFaceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value = CreateFontFaceValueWithPool(
             value, GetDocument().GetSecureContextMode())) {

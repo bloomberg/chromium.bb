@@ -21,10 +21,6 @@ enum class CSSPropertyID {
 {{property_enums}}
 };
 
-constexpr CSSPropertyID CSSPropertyInvalid = CSSPropertyID::kInvalid;
-constexpr CSSPropertyID CSSPropertyVariable = CSSPropertyID::kVariable;
-{{property_enums_compat}}
-
 const CSSPropertyID kCSSPropertyAliasList[] = {
 {{property_aliases}}
 };
@@ -51,7 +47,7 @@ inline bool isCSSPropertyIDWithName(CSSPropertyID id)
 
 inline bool isValidCSSPropertyID(CSSPropertyID id)
 {
-    return id != CSSPropertyInvalid;
+    return id != CSSPropertyID::kInvalid;
 }
 
 inline CSSPropertyID convertToCSSPropertyID(int value)

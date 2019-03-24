@@ -203,7 +203,7 @@ void HTMLMeterElement::UpdateValueAppearance(double percentage) {
   DEFINE_STATIC_LOCAL(AtomicString, even_less_good_pseudo_id,
                       ("-webkit-meter-even-less-good-value"));
 
-  value_->SetInlineStyleProperty(CSSPropertyWidth, percentage,
+  value_->SetInlineStyleProperty(CSSPropertyID::kWidth, percentage,
                                  CSSPrimitiveValue::UnitType::kPercentage);
   switch (GetGaugeRegion()) {
     case kGaugeRegionOptimum:

@@ -143,8 +143,8 @@ void CSSToStyleMap::MapFillImage(StyleResolverState& state,
   }
 
   CSSPropertyID property = layer->GetType() == EFillLayerType::kBackground
-                               ? CSSPropertyBackgroundImage
-                               : CSSPropertyWebkitMaskImage;
+                               ? CSSPropertyID::kBackgroundImage
+                               : CSSPropertyID::kWebkitMaskImage;
   layer->SetImage(state.GetStyleImage(property, value));
 }
 
@@ -479,10 +479,10 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
 
   // Set the image (this kicks off the load).
   CSSPropertyID image_property;
-  if (property == CSSPropertyWebkitBorderImage)
-    image_property = CSSPropertyBorderImageSource;
-  else if (property == CSSPropertyWebkitMaskBoxImage)
-    image_property = CSSPropertyWebkitMaskBoxImageSource;
+  if (property == CSSPropertyID::kWebkitBorderImage)
+    image_property = CSSPropertyID::kBorderImageSource;
+  else if (property == CSSPropertyID::kWebkitMaskBoxImage)
+    image_property = CSSPropertyID::kWebkitMaskBoxImageSource;
   else
     image_property = property;
 
@@ -515,7 +515,7 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
     }
   }
 
-  if (property == CSSPropertyWebkitBorderImage) {
+  if (property == CSSPropertyID::kWebkitBorderImage) {
     // We have to preserve the legacy behavior of -webkit-border-image and make
     // the border slices also set the border widths. We don't need to worry
     // about percentages, since we don't even support those on real borders yet.

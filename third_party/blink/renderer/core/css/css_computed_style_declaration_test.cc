@@ -30,7 +30,7 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanAncestorsNoRecalc) {
       CSSComputedStyleDeclaration::Create(target);
 
   EXPECT_STREQ("rgb(0, 128, 0)",
-               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
+               computed->GetPropertyValue(CSSPropertyID::kColor).Utf8().data());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
@@ -59,7 +59,7 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanShadowAncestorsNoRecalc) {
       CSSComputedStyleDeclaration::Create(target);
 
   EXPECT_STREQ("rgb(0, 128, 0)",
-               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
+               computed->GetPropertyValue(CSSPropertyID::kColor).Utf8().data());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
@@ -96,7 +96,7 @@ TEST_F(CSSComputedStyleDeclarationTest, NeedsAdjacentStyleRecalc) {
       CSSComputedStyleDeclaration::Create(c_span);
 
   EXPECT_STREQ("rgb(0, 128, 0)",
-               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
+               computed->GetPropertyValue(CSSPropertyID::kColor).Utf8().data());
 
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*d_span));

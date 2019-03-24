@@ -1079,7 +1079,7 @@ WebString WebAXObject::ComputedStyleDisplay() const {
   if (!computed_style)
     return WebString();
 
-  return WebString(CSSProperty::Get(CSSPropertyDisplay)
+  return WebString(CSSProperty::Get(CSSPropertyID::kDisplay)
                        .CSSValueFromComputedStyle(
                            *computed_style, /* layout_object */ nullptr, node,
                            /* allow_visited_style */ false)

@@ -12003,7 +12003,7 @@ TEST_F(WebFrameSimTest, ChangeBackgroundColor) {
 
   // Setting the background of the body to red will cause the background
   // color of the WebView to switch to red.
-  body->SetInlineStyleProperty(CSSPropertyBackgroundColor, "red");
+  body->SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, "red");
   Compositor().BeginFrame();
   EXPECT_EQ(SK_ColorRED, Compositor().background_color());
 }
@@ -12081,13 +12081,13 @@ TEST_F(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
 
   // Changing the display from 'none' -> 'block' should cause layout objects to
   // appear.
-  element->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueBlock);
+  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueBlock);
   Compositor().BeginFrame();
   EXPECT_TRUE(iframe_doc->documentElement()->GetLayoutObject());
 
   // Changing the display from 'block' -> 'none' should cause layout objects to
   // disappear.
-  element->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
 
   Compositor().BeginFrame();
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
@@ -12141,7 +12141,7 @@ TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
 
   // Changing the display from 'block' -> 'none' should cause layout objects to
   // disappear.
-  element->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  element->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
   Compositor().BeginFrame();
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
 }

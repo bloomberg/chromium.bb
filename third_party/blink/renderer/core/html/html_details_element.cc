@@ -93,7 +93,7 @@ void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   content->SetIdAttribute(shadow_element_names::DetailsContent());
   content->AppendChild(
       HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
-  content->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  content->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
   root.AppendChild(content);
 }
 
@@ -127,9 +127,9 @@ void HTMLDetailsElement::ParseAttribute(
         shadow_element_names::DetailsContent());
     DCHECK(content);
     if (is_open_)
-      content->RemoveInlineStyleProperty(CSSPropertyDisplay);
+      content->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
     else
-      content->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+      content->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
 
     // Invalidate the LayoutDetailsMarker in order to turn the arrow signifying
     // if the details element is open or closed.

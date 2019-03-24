@@ -1459,7 +1459,7 @@ void MediaControlsImpl::UpdateOverflowMenuItemCSSClass() const {
 
     // We don't care if the hidden element still have animated-* CSS class
     if (inline_style &&
-        inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
+        inline_style->GetPropertyValue(CSSPropertyID::kDisplay) == "none")
       continue;
 
     AtomicString css_class =
@@ -1825,11 +1825,11 @@ void MediaControlsImpl::ResetHideMediaControlsTimer() {
 }
 
 void MediaControlsImpl::HideCursor() {
-  SetInlineStyleProperty(CSSPropertyCursor, "none", false);
+  SetInlineStyleProperty(CSSPropertyID::kCursor, "none", false);
 }
 
 void MediaControlsImpl::ShowCursor() {
-  RemoveInlineStyleProperty(CSSPropertyCursor);
+  RemoveInlineStyleProperty(CSSPropertyID::kCursor);
 }
 
 bool MediaControlsImpl::ContainsRelatedTarget(Event* event) {

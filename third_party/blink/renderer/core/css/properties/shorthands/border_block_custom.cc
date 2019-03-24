@@ -26,11 +26,11 @@ bool BorderBlock::ParseShorthand(
   };
 
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderBlockWidth, *width, important, properties);
+      CSSPropertyID::kBorderBlockWidth, *width, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderBlockStyle, *style, important, properties);
+      CSSPropertyID::kBorderBlockStyle, *style, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderBlockColor, *color, important, properties);
+      CSSPropertyID::kBorderBlockColor, *color, important, properties);
 
   return range.AtEnd();
 }

@@ -57,7 +57,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
       pattern_transform_(
           SVGAnimatedTransformList::Create(this,
                                            svg_names::kPatternTransformAttr,
-                                           CSSPropertyTransform)),
+                                           CSSPropertyID::kTransform)),
       pattern_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
           svg_names::kPatternUnitsAttr,
@@ -123,7 +123,7 @@ void SVGPatternElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == svg_names::kPatternTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
-        style, CSSPropertyTransform,
+        style, CSSPropertyID::kTransform,
         *pattern_transform_->CurrentValue()->CssValue());
     return;
   }

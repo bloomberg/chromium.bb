@@ -31,22 +31,22 @@ inline SVGEllipseElement::SVGEllipseElement(Document& document)
                                     svg_names::kCxAttr,
                                     SVGLengthMode::kWidth,
                                     SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyCx)),
+                                    CSSPropertyID::kCx)),
       cy_(SVGAnimatedLength::Create(this,
                                     svg_names::kCyAttr,
                                     SVGLengthMode::kHeight,
                                     SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyCy)),
+                                    CSSPropertyID::kCy)),
       rx_(SVGAnimatedLength::Create(this,
                                     svg_names::kRxAttr,
                                     SVGLengthMode::kWidth,
                                     SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyRx)),
+                                    CSSPropertyID::kRx)),
       ry_(SVGAnimatedLength::Create(this,
                                     svg_names::kRyAttr,
                                     SVGLengthMode::kHeight,
                                     SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyRy)) {
+                                    CSSPropertyID::kRy)) {
   AddToPropertyMap(cx_);
   AddToPropertyMap(cy_);
   AddToPropertyMap(rx_);

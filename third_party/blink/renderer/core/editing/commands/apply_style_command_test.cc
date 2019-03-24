@@ -43,7 +43,7 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
 
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  style->SetProperty(CSSPropertyTextAlign, "center", /* important */ false,
+  style->SetProperty(CSSPropertyID::kTextAlign, "center", /* important */ false,
                      SecureContextMode::kInsecureContext);
   ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
                             InputEvent::InputType::kFormatJustifyCenter,
@@ -72,7 +72,7 @@ TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
 
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  style->SetProperty(CSSPropertyTextAlign, "right", /* important */ false,
+  style->SetProperty(CSSPropertyID::kTextAlign, "right", /* important */ false,
                      SecureContextMode::kInsecureContext);
   ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
                             InputEvent::InputType::kFormatJustifyCenter,
@@ -90,7 +90,8 @@ TEST_F(ApplyStyleCommandTest, FontSizeDeltaWithSpanElement) {
 
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  style->SetProperty(CSSPropertyWebkitFontSizeDelta, "3", /* important */ false,
+  style->SetProperty(CSSPropertyID::kWebkitFontSizeDelta, "3",
+                     /* important */ false,
                      GetDocument().GetSecureContextMode());
   ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
                             InputEvent::InputType::kNone)

@@ -471,7 +471,7 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
     string = identity_matrix2d;
 
   const CSSValue* value = CSSParser::ParseSingleValue(
-      CSSPropertyTransform, string,
+      CSSPropertyID::kTransform, string,
       StrictCSSParserContext(execution_context->GetSecureContextMode()));
 
   if (!value || value->IsCSSWideKeyword()) {

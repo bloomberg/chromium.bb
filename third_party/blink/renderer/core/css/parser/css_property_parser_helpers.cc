@@ -1073,7 +1073,8 @@ bool ConsumeBorderShorthand(CSSParserTokenRange& range,
     }
     if (!result_style) {
       result_style = css_property_parser_helpers::ParseLonghand(
-          CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range);
+          CSSPropertyID::kBorderLeftStyle, CSSPropertyID::kBorder, context,
+          range);
       if (result_style)
         continue;
     }
@@ -1796,7 +1797,7 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   if (!context.IsUseCounterRecordingEnabled())
     return;
   switch (property) {
-    case CSSPropertyWebkitAppearance: {
+    case CSSPropertyID::kWebkitAppearance: {
       WebFeature feature;
       if (value_id == CSSValueNone) {
         feature = WebFeature::kCSSValueAppearanceNone;
@@ -1839,7 +1840,7 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
       break;
     }
 
-    case CSSPropertyWebkitUserModify: {
+    case CSSPropertyID::kWebkitUserModify: {
       switch (value_id) {
         case CSSValueReadOnly:
           context.Count(WebFeature::kCSSValueUserModifyReadOnly);
@@ -1855,7 +1856,7 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
       }
       break;
     }
-    case CSSPropertyDisplay:
+    case CSSPropertyID::kDisplay:
       if (value_id == CSSValueContents)
         context.Count(WebFeature::kCSSValueDisplayContents);
       break;

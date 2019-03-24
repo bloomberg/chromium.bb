@@ -50,9 +50,9 @@ MediaControlElementBase::MediaControlElementBase(
 
 void MediaControlElementBase::UpdateShownState() {
   if (is_wanted_ && does_fit_)
-    element_->RemoveInlineStyleProperty(CSSPropertyDisplay);
+    element_->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
   else
-    element_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    element_->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueNone);
 }
 
 MediaControlsImpl& MediaControlElementBase::GetMediaControls() const {

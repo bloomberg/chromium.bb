@@ -111,7 +111,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
       const CSSProperty& property = properties.PropertyAt(j).Property();
       specified_properties_for_use_counter.insert(&property);
-      if (property.PropertyID() == CSSPropertyAnimationTimingFunction) {
+      if (property.PropertyID() == CSSPropertyID::kAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
         scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
@@ -860,7 +860,7 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
 
   CSSPropertyID resolved_id =
       resolveCSSPropertyID(transition_property.unresolved_property);
-  bool animate_all = resolved_id == CSSPropertyAll;
+  bool animate_all = resolved_id == CSSPropertyID::kAll;
   const StylePropertyShorthand& property_list =
       animate_all ? PropertiesForTransitionAll()
                   : shorthandForProperty(resolved_id);
@@ -920,7 +920,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
          ++transition_index) {
       const CSSTransitionData::TransitionProperty& transition_property =
           transition_data->PropertyList()[transition_index];
-      if (transition_property.unresolved_property == CSSPropertyAll) {
+      if (transition_property.unresolved_property == CSSPropertyID::kAll) {
         any_transition_had_transition_all = true;
       }
       if (property_pass == PropertyPass::kCustom) {
@@ -1277,18 +1277,18 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
       CSSPropertyID id = convertToCSSPropertyID(i);
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.
-      if (id == CSSPropertyWebkitPerspectiveOriginX ||
-          id == CSSPropertyWebkitPerspectiveOriginY ||
-          id == CSSPropertyWebkitTransformOriginX ||
-          id == CSSPropertyWebkitTransformOriginY ||
-          id == CSSPropertyWebkitTransformOriginZ)
+      if (id == CSSPropertyID::kWebkitPerspectiveOriginX ||
+          id == CSSPropertyID::kWebkitPerspectiveOriginY ||
+          id == CSSPropertyID::kWebkitTransformOriginX ||
+          id == CSSPropertyID::kWebkitTransformOriginY ||
+          id == CSSPropertyID::kWebkitTransformOriginZ)
         continue;
       const CSSProperty& property = CSSProperty::Get(id);
       if (property.IsInterpolable())
         properties.push_back(&property);
     }
     property_shorthand = StylePropertyShorthand(
-        CSSPropertyInvalid, properties.begin(), properties.size());
+        CSSPropertyID::kInvalid, properties.begin(), properties.size());
   }
   return property_shorthand;
 }
@@ -1297,27 +1297,27 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
 // animations. https://drafts.csswg.org/web-animations/#not-animatable-section
 bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
   switch (property.PropertyID()) {
-    case CSSPropertyAnimation:
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyAnimationName:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyContain:
-    case CSSPropertyDirection:
-    case CSSPropertyDisplay:
-    case CSSPropertyTextOrientation:
-    case CSSPropertyTransition:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyUnicodeBidi:
-    case CSSPropertyWillChange:
-    case CSSPropertyWritingMode:
+    case CSSPropertyID::kAnimation:
+    case CSSPropertyID::kAnimationDelay:
+    case CSSPropertyID::kAnimationDirection:
+    case CSSPropertyID::kAnimationDuration:
+    case CSSPropertyID::kAnimationFillMode:
+    case CSSPropertyID::kAnimationIterationCount:
+    case CSSPropertyID::kAnimationName:
+    case CSSPropertyID::kAnimationPlayState:
+    case CSSPropertyID::kAnimationTimingFunction:
+    case CSSPropertyID::kContain:
+    case CSSPropertyID::kDirection:
+    case CSSPropertyID::kDisplay:
+    case CSSPropertyID::kTextOrientation:
+    case CSSPropertyID::kTransition:
+    case CSSPropertyID::kTransitionDelay:
+    case CSSPropertyID::kTransitionDuration:
+    case CSSPropertyID::kTransitionProperty:
+    case CSSPropertyID::kTransitionTimingFunction:
+    case CSSPropertyID::kUnicodeBidi:
+    case CSSPropertyID::kWillChange:
+    case CSSPropertyID::kWritingMode:
       return true;
     default:
       return false;

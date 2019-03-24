@@ -21,7 +21,7 @@ bool GridRow::ParseShorthand(
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   const StylePropertyShorthand& shorthand =
-      shorthandForProperty(CSSPropertyGridRow);
+      shorthandForProperty(CSSPropertyID::kGridRow);
   DCHECK_EQ(shorthand.length(), 2u);
 
   CSSValue* start_value = nullptr;
@@ -32,12 +32,14 @@ bool GridRow::ParseShorthand(
   }
 
   css_property_parser_helpers::AddProperty(
-      shorthand.properties()[0]->PropertyID(), CSSPropertyGridRow, *start_value,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      shorthand.properties()[0]->PropertyID(), CSSPropertyID::kGridRow,
+      *start_value, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      shorthand.properties()[1]->PropertyID(), CSSPropertyGridRow, *end_value,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      shorthand.properties()[1]->PropertyID(), CSSPropertyID::kGridRow,
+      *end_value, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;

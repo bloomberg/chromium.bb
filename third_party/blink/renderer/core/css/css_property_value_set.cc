@@ -60,7 +60,7 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
 }
 
 CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
-  if (Id() != CSSPropertyVariable)
+  if (Id() != CSSPropertyID::kVariable)
     return CSSPropertyName(Id());
   return CSSPropertyName(To<CSSCustomPropertyDeclaration>(Value()).GetName());
 }
@@ -115,7 +115,7 @@ static uint16_t GetConvertedCSSPropertyID(CSSPropertyID property_id) {
 }
 
 static uint16_t GetConvertedCSSPropertyID(const AtomicString&) {
-  return static_cast<uint16_t>(CSSPropertyVariable);
+  return static_cast<uint16_t>(CSSPropertyID::kVariable);
 }
 
 static uint16_t GetConvertedCSSPropertyID(AtRuleDescriptorID descriptor_id) {
@@ -344,7 +344,7 @@ CSSPropertyID CSSPropertyValueSet::GetPropertyShorthand(
     CSSPropertyID property_id) const {
   int found_property_index = FindPropertyIndex(property_id);
   if (found_property_index == -1)
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   return PropertyAt(found_property_index).ShorthandID();
 }
 

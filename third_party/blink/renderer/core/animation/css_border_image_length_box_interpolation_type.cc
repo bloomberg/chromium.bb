@@ -80,18 +80,18 @@ const BorderImageLengthBox& GetBorderImageLengthBox(
     const CSSProperty& property,
     const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyBorderImageOutset:
+    case CSSPropertyID::kBorderImageOutset:
       return style.BorderImageOutset();
-    case CSSPropertyBorderImageWidth:
+    case CSSPropertyID::kBorderImageWidth:
       return style.BorderImageWidth();
-    case CSSPropertyWebkitMaskBoxImageOutset:
+    case CSSPropertyID::kWebkitMaskBoxImageOutset:
       return style.MaskBoxImageOutset();
-    case CSSPropertyWebkitMaskBoxImageWidth:
+    case CSSPropertyID::kWebkitMaskBoxImageWidth:
       return style.MaskBoxImageWidth();
     default:
       NOTREACHED();
       return GetBorderImageLengthBox(
-          CSSProperty::Get(CSSPropertyBorderImageOutset),
+          CSSProperty::Get(CSSPropertyID::kBorderImageOutset),
           ComputedStyle::InitialStyle());
   }
 }
@@ -100,16 +100,16 @@ void SetBorderImageLengthBox(const CSSProperty& property,
                              ComputedStyle& style,
                              const BorderImageLengthBox& box) {
   switch (property.PropertyID()) {
-    case CSSPropertyBorderImageOutset:
+    case CSSPropertyID::kBorderImageOutset:
       style.SetBorderImageOutset(box);
       break;
-    case CSSPropertyWebkitMaskBoxImageOutset:
+    case CSSPropertyID::kWebkitMaskBoxImageOutset:
       style.SetMaskBoxImageOutset(box);
       break;
-    case CSSPropertyBorderImageWidth:
+    case CSSPropertyID::kBorderImageWidth:
       style.SetBorderImageWidth(box);
       break;
-    case CSSPropertyWebkitMaskBoxImageWidth:
+    case CSSPropertyID::kWebkitMaskBoxImageWidth:
       style.SetMaskBoxImageWidth(box);
       break;
     default:

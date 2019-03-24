@@ -25,7 +25,7 @@ bool PageBreakAfter::ParseShorthand(
 
   DCHECK_NE(value, CSSValueInvalid);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBreakAfter, CSSPropertyPageBreakAfter,
+      CSSPropertyID::kBreakAfter, CSSPropertyID::kPageBreakAfter,
       *CSSIdentifierValue::Create(value), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

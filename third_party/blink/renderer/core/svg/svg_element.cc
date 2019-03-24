@@ -436,7 +436,7 @@ void SVGElement::ChildrenChanged(const ChildrenChange& change) {
 CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
     const QualifiedName& attr_name) {
   if (!attr_name.NamespaceURI().IsNull())
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   static HashMap<StringImpl*, CSSPropertyID>* property_name_to_id_map = nullptr;
   if (!property_name_to_id_map) {

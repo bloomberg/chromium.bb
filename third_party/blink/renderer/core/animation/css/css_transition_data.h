@@ -27,16 +27,16 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
     DISALLOW_NEW();
     TransitionProperty(CSSPropertyID id)
         : property_type(kTransitionKnownProperty), unresolved_property(id) {
-      DCHECK_NE(id, CSSPropertyInvalid);
+      DCHECK_NE(id, CSSPropertyID::kInvalid);
     }
 
     TransitionProperty(const AtomicString& string)
         : property_type(kTransitionUnknownProperty),
-          unresolved_property(CSSPropertyInvalid),
+          unresolved_property(CSSPropertyID::kInvalid),
           property_string(string) {}
 
     TransitionProperty(TransitionPropertyType type)
-        : property_type(type), unresolved_property(CSSPropertyInvalid) {
+        : property_type(type), unresolved_property(CSSPropertyID::kInvalid) {
       DCHECK_EQ(type, kTransitionNone);
     }
 
@@ -71,7 +71,7 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
   Vector<TransitionProperty>& PropertyList() { return property_list_; }
 
   static TransitionProperty InitialProperty() {
-    return TransitionProperty(CSSPropertyAll);
+    return TransitionProperty(CSSPropertyID::kAll);
   }
 
  private:

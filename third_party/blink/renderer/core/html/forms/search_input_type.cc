@@ -155,12 +155,12 @@ void SearchInputType::UpdateCancelButtonVisibility() {
   if (!button)
     return;
   if (GetElement().value().IsEmpty()) {
-    button->SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
+    button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
                                    CSSPrimitiveValue::UnitType::kNumber);
-    button->SetInlineStyleProperty(CSSPropertyPointerEvents, CSSValueNone);
+    button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents, CSSValueNone);
   } else {
-    button->RemoveInlineStyleProperty(CSSPropertyOpacity);
-    button->RemoveInlineStyleProperty(CSSPropertyPointerEvents);
+    button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
+    button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
   }
 }
 
