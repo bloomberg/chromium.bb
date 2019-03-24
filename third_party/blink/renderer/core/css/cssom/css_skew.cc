@@ -52,7 +52,7 @@ void CSSSkew::setAy(CSSNumericValue* value, ExceptionState& exception_state) {
 CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_GT(value.length(), 0U);
   const auto& x_value = To<CSSPrimitiveValue>(value.Item(0));
-  DCHECK_EQ(value.FunctionType(), CSSValueSkew);
+  DCHECK_EQ(value.FunctionType(), CSSValueID::kSkew);
   if (value.length() == 1U) {
     return CSSSkew::Create(
         CSSNumericValue::FromCSSValue(x_value),
@@ -83,7 +83,7 @@ const CSSFunctionValue* CSSSkew::ToCSSValue() const {
   if (!ax || !ay)
     return nullptr;
 
-  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkew);
+  CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueID::kSkew);
   result->Append(*ax);
   if (!ay_->IsUnitValue() || To<CSSUnitValue>(ay_.Get())->value() != 0)
     result->Append(*ay);

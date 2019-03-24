@@ -63,8 +63,8 @@ void CSSVariableData::ConsumeAndUpdateTokens(const CSSParserTokenRange& range) {
     CSSParserToken token = local_range.Consume();
     if (token.HasStringBacking())
       string_builder.Append(token.Value());
-    needs_url_resolution_ |=
-        (token.GetType() == kUrlToken || token.FunctionId() == CSSValueUrl);
+    needs_url_resolution_ |= (token.GetType() == kUrlToken ||
+                              token.FunctionId() == CSSValueID::kUrl);
     has_font_units_ |= IsFontUnitToken(token);
     has_root_font_units_ |= IsRootFontUnitToken(token);
   }

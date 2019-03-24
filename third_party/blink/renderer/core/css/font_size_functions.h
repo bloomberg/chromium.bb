@@ -56,10 +56,11 @@ class FontSizeFunctions {
   }
 
   static bool IsValidValueID(CSSValueID value_id) {
-    return value_id >= CSSValueXxSmall && value_id <= CSSValueWebkitXxxLarge;
+    return value_id >= CSSValueID::kXxSmall &&
+           value_id <= CSSValueID::kWebkitXxxLarge;
   }
 
-  static CSSValueID InitialValueID() { return CSSValueMedium; }
+  static CSSValueID InitialValueID() { return CSSValueID::kMedium; }
   static unsigned InitialKeywordSize() { return KeywordSize(InitialValueID()); }
 
   // Given a keyword size in the range (1 to 8), this function will return

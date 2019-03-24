@@ -285,7 +285,7 @@ T StyleBuilderConverter::ConvertFlags(StyleResolverState& state,
                                       const CSSValue& value) {
   T flags = static_cast<T>(0);
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
     return flags;
   for (auto& flag_value : To<CSSValueList>(value))
     flags |= To<CSSIdentifierValue>(*flag_value).ConvertTo<T>();
@@ -297,11 +297,11 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
                                           const CSSValue& value) {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     CSSValueID value_id = identifier_value->GetValueID();
-    if (value_id == CSSValueThin)
+    if (value_id == CSSValueID::kThin)
       return 1;
-    if (value_id == CSSValueMedium)
+    if (value_id == CSSValueID::kMedium)
       return 3;
-    if (value_id == CSSValueThick)
+    if (value_id == CSSValueID::kThick)
       return 5;
     NOTREACHED();
     return 0;
@@ -339,7 +339,7 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
         return Length::Percent(0);
       case cssValueFor100:
         return Length::Percent(100);
-      case CSSValueCenter:
+      case CSSValueID::kCenter:
         return Length::Percent(50);
       default:
         NOTREACHED();

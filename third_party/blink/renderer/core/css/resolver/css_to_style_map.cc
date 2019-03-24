@@ -60,13 +60,13 @@ void CSSToStyleMap::MapFillAttachment(StyleResolverState&,
     return;
 
   switch (identifier_value->GetValueID()) {
-    case CSSValueFixed:
+    case CSSValueID::kFixed:
       layer->SetAttachment(EFillAttachment::kFixed);
       break;
-    case CSSValueScroll:
+    case CSSValueID::kScroll:
       layer->SetAttachment(EFillAttachment::kScroll);
       break;
-    case CSSValueLocal:
+    case CSSValueID::kLocal:
       layer->SetAttachment(EFillAttachment::kLocal);
       break;
     default:
@@ -191,17 +191,20 @@ void CSSToStyleMap::MapFillSize(StyleResolverState& state,
   if (!identifier_value && !value.IsPrimitiveValue() && !value.IsValuePair())
     return;
 
-  if (identifier_value && identifier_value->GetValueID() == CSSValueContain)
+  if (identifier_value &&
+      identifier_value->GetValueID() == CSSValueID::kContain)
     layer->SetSizeType(EFillSizeType::kContain);
-  else if (identifier_value && identifier_value->GetValueID() == CSSValueCover)
+  else if (identifier_value &&
+           identifier_value->GetValueID() == CSSValueID::kCover)
     layer->SetSizeType(EFillSizeType::kCover);
   else
     layer->SetSizeType(EFillSizeType::kSizeLength);
 
   LengthSize b = FillLayer::InitialFillSizeLength(layer->GetType());
 
-  if (identifier_value && (identifier_value->GetValueID() == CSSValueContain ||
-                           identifier_value->GetValueID() == CSSValueCover)) {
+  if (identifier_value &&
+      (identifier_value->GetValueID() == CSSValueID::kContain ||
+       identifier_value->GetValueID() == CSSValueID::kCover)) {
     layer->SetSizeLength(b);
     return;
   }
@@ -243,9 +246,9 @@ void CSSToStyleMap::MapFillPositionX(StyleResolverState& state,
     length = To<CSSPrimitiveValue>(pair->Second())
                  .ConvertToLength(state.CssToLengthConversionData());
   else
-    length = StyleBuilderConverter::ConvertPositionLength<CSSValueLeft,
-                                                          CSSValueRight>(state,
-                                                                         value);
+    length = StyleBuilderConverter::ConvertPositionLength<CSSValueID::kLeft,
+                                                          CSSValueID::kRight>(
+        state, value);
 
   layer->SetPositionX(length);
   if (pair) {
@@ -272,8 +275,8 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
     length = To<CSSPrimitiveValue>(pair->Second())
                  .ConvertToLength(state.CssToLengthConversionData());
   else
-    length = StyleBuilderConverter::ConvertPositionLength<CSSValueTop,
-                                                          CSSValueBottom>(
+    length = StyleBuilderConverter::ConvertPositionLength<CSSValueID::kTop,
+                                                          CSSValueID::kBottom>(
         state, value);
 
   layer->SetPositionY(length);
@@ -297,13 +300,13 @@ void CSSToStyleMap::MapFillMaskSourceType(StyleResolverState&,
     return;
 
   switch (identifier_value->GetValueID()) {
-    case CSSValueAlpha:
+    case CSSValueID::kAlpha:
       type = EMaskSourceType::kAlpha;
       break;
-    case CSSValueLuminance:
+    case CSSValueID::kLuminance:
       type = EMaskSourceType::kLuminance;
       break;
-    case CSSValueAuto:
+    case CSSValueID::kAuto:
       break;
     default:
       NOTREACHED();
@@ -324,13 +327,13 @@ Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
     return CSSAnimationData::InitialDirection();
 
   switch (To<CSSIdentifierValue>(value).GetValueID()) {
-    case CSSValueNormal:
+    case CSSValueID::kNormal:
       return Timing::PlaybackDirection::NORMAL;
-    case CSSValueAlternate:
+    case CSSValueID::kAlternate:
       return Timing::PlaybackDirection::ALTERNATE_NORMAL;
-    case CSSValueReverse:
+    case CSSValueID::kReverse:
       return Timing::PlaybackDirection::REVERSE;
-    case CSSValueAlternateReverse:
+    case CSSValueID::kAlternateReverse:
       return Timing::PlaybackDirection::ALTERNATE_REVERSE;
     default:
       NOTREACHED();
@@ -349,13 +352,13 @@ Timing::FillMode CSSToStyleMap::MapAnimationFillMode(const CSSValue& value) {
     return CSSAnimationData::InitialFillMode();
 
   switch (To<CSSIdentifierValue>(value).GetValueID()) {
-    case CSSValueNone:
+    case CSSValueID::kNone:
       return Timing::FillMode::NONE;
-    case CSSValueForwards:
+    case CSSValueID::kForwards:
       return Timing::FillMode::FORWARDS;
-    case CSSValueBackwards:
+    case CSSValueID::kBackwards:
       return Timing::FillMode::BACKWARDS;
-    case CSSValueBoth:
+    case CSSValueID::kBoth:
       return Timing::FillMode::BOTH;
     default:
       NOTREACHED();
@@ -367,7 +370,8 @@ double CSSToStyleMap::MapAnimationIterationCount(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialIterationCount();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueInfinite)
+  if (identifier_value &&
+      identifier_value->GetValueID() == CSSValueID::kInfinite)
     return std::numeric_limits<double>::infinity();
   return To<CSSPrimitiveValue>(value).GetFloatValue();
 }
@@ -377,16 +381,16 @@ AtomicString CSSToStyleMap::MapAnimationName(const CSSValue& value) {
     return CSSAnimationData::InitialName();
   if (auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value))
     return AtomicString(custom_ident_value->Value());
-  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
   return CSSAnimationData::InitialName();
 }
 
 EAnimPlayState CSSToStyleMap::MapAnimationPlayState(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialPlayState();
-  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValuePaused)
+  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kPaused)
     return EAnimPlayState::kPaused;
-  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueRunning);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kRunning);
   return EAnimPlayState::kPlaying;
 }
 
@@ -401,9 +405,9 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
     }
     return CSSTransitionData::TransitionProperty(custom_ident_value->Value());
   }
-  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValueAll)
+  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kAll)
     return CSSTransitionData::InitialProperty();
-  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
   return CSSTransitionData::TransitionProperty(
       CSSTransitionData::kTransitionNone);
 }
@@ -417,24 +421,24 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
 
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     switch (identifier_value->GetValueID()) {
-      case CSSValueLinear:
+      case CSSValueID::kLinear:
         return LinearTimingFunction::Shared();
-      case CSSValueEase:
+      case CSSValueID::kEase:
         return CubicBezierTimingFunction::Preset(
             CubicBezierTimingFunction::EaseType::EASE);
-      case CSSValueEaseIn:
+      case CSSValueID::kEaseIn:
         return CubicBezierTimingFunction::Preset(
             CubicBezierTimingFunction::EaseType::EASE_IN);
-      case CSSValueEaseOut:
+      case CSSValueID::kEaseOut:
         return CubicBezierTimingFunction::Preset(
             CubicBezierTimingFunction::EaseType::EASE_OUT);
-      case CSSValueEaseInOut:
+      case CSSValueID::kEaseInOut:
         return CubicBezierTimingFunction::Preset(
             CubicBezierTimingFunction::EaseType::EASE_IN_OUT);
-      case CSSValueStepStart:
+      case CSSValueID::kStepStart:
         return StepsTimingFunction::Preset(
             StepsTimingFunction::StepPosition::START);
-      case CSSValueStepEnd:
+      case CSSValueID::kStepEnd:
         return StepsTimingFunction::Preset(
             StepsTimingFunction::StepPosition::END);
       default:
@@ -607,16 +611,16 @@ void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,
 
   ENinePieceImageRule horizontal_rule;
   switch (first_identifier) {
-    case CSSValueStretch:
+    case CSSValueID::kStretch:
       horizontal_rule = kStretchImageRule;
       break;
-    case CSSValueRound:
+    case CSSValueID::kRound:
       horizontal_rule = kRoundImageRule;
       break;
-    case CSSValueSpace:
+    case CSSValueID::kSpace:
       horizontal_rule = kSpaceImageRule;
       break;
-    default:  // CSSValueRepeat
+    default:  // CSSValueID::kRepeat
       horizontal_rule = kRepeatImageRule;
       break;
   }
@@ -624,16 +628,16 @@ void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,
 
   ENinePieceImageRule vertical_rule;
   switch (second_identifier) {
-    case CSSValueStretch:
+    case CSSValueID::kStretch:
       vertical_rule = kStretchImageRule;
       break;
-    case CSSValueRound:
+    case CSSValueID::kRound:
       vertical_rule = kRoundImageRule;
       break;
-    case CSSValueSpace:
+    case CSSValueID::kSpace:
       vertical_rule = kSpaceImageRule;
       break;
-    default:  // CSSValueRepeat
+    default:  // CSSValueID::kRepeat
       vertical_rule = kRepeatImageRule;
       break;
   }

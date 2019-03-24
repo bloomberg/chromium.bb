@@ -27,12 +27,13 @@ String CSSContentDistributionValue::CustomCSSText() const {
   if (IsValidCSSValueID(distribution_))
     list->Append(*CSSIdentifierValue::Create(distribution_));
   if (IsValidCSSValueID(position_)) {
-    if (position_ == CSSValueFirstBaseline ||
-        position_ == CSSValueLastBaseline) {
-      CSSValueID preference =
-          position_ == CSSValueFirstBaseline ? CSSValueFirst : CSSValueLast;
+    if (position_ == CSSValueID::kFirstBaseline ||
+        position_ == CSSValueID::kLastBaseline) {
+      CSSValueID preference = position_ == CSSValueID::kFirstBaseline
+                                  ? CSSValueID::kFirst
+                                  : CSSValueID::kLast;
       list->Append(*CSSIdentifierValue::Create(preference));
-      list->Append(*CSSIdentifierValue::Create(CSSValueBaseline));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kBaseline));
     } else {
       if (IsValidCSSValueID(overflow_))
         list->Append(*CSSIdentifierValue::Create(overflow_));

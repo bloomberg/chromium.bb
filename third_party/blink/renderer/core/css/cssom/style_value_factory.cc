@@ -80,7 +80,8 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyID::kCaretColor: {
       // caret-color also supports 'auto'
       auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-      if (identifier_value && identifier_value->GetValueID() == CSSValueAuto)
+      if (identifier_value &&
+          identifier_value->GetValueID() == CSSValueID::kAuto)
         return CSSKeywordValue::Create("auto");
       FALLTHROUGH;
     }
@@ -100,7 +101,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       // Only 'currentcolor' is supported.
       auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
       if (identifier_value &&
-          identifier_value->GetValueID() == CSSValueCurrentcolor)
+          identifier_value->GetValueID() == CSSValueID::kCurrentcolor)
         return CSSKeywordValue::Create("currentcolor");
       return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
                                               value);
@@ -199,7 +200,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       const auto& value_list = To<CSSValueList>(value);
       if (value_list.length() == 1U) {
         const auto* ident = DynamicTo<CSSIdentifierValue>(value_list.Item(0));
-        if (ident && ident->GetValueID() == CSSValueAuto)
+        if (ident && ident->GetValueID() == CSSValueID::kAuto)
           return CreateStyleValue(value_list.Item(0));
       }
       return nullptr;

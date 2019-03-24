@@ -580,23 +580,23 @@ const CSSValue* GetFontStretchKeyword(const CSSValue* font_stretch_value) {
           DynamicTo<CSSPrimitiveValue>(font_stretch_value)) {
     double value = primitive_value->GetDoubleValue();
     if (value == 50)
-      return CSSIdentifierValue::Create(CSSValueUltraCondensed);
+      return CSSIdentifierValue::Create(CSSValueID::kUltraCondensed);
     if (value == 62.5)
-      return CSSIdentifierValue::Create(CSSValueExtraCondensed);
+      return CSSIdentifierValue::Create(CSSValueID::kExtraCondensed);
     if (value == 75)
-      return CSSIdentifierValue::Create(CSSValueCondensed);
+      return CSSIdentifierValue::Create(CSSValueID::kCondensed);
     if (value == 87.5)
-      return CSSIdentifierValue::Create(CSSValueSemiCondensed);
+      return CSSIdentifierValue::Create(CSSValueID::kSemiCondensed);
     if (value == 100)
-      return CSSIdentifierValue::Create(CSSValueNormal);
+      return CSSIdentifierValue::Create(CSSValueID::kNormal);
     if (value == 112.5)
-      return CSSIdentifierValue::Create(CSSValueSemiExpanded);
+      return CSSIdentifierValue::Create(CSSValueID::kSemiExpanded);
     if (value == 125)
-      return CSSIdentifierValue::Create(CSSValueExpanded);
+      return CSSIdentifierValue::Create(CSSValueID::kExpanded);
     if (value == 150)
-      return CSSIdentifierValue::Create(CSSValueExtraExpanded);
+      return CSSIdentifierValue::Create(CSSValueID::kExtraExpanded);
     if (value == 200)
-      return CSSIdentifierValue::Create(CSSValueUltraExpanded);
+      return CSSIdentifierValue::Create(CSSValueID::kUltraExpanded);
   }
   return nullptr;
 }
@@ -616,7 +616,7 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
     val = keyword;
   }
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(val);
-  if (identifier_value && identifier_value->GetValueID() == CSSValueNormal)
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNormal)
     return true;
 
   char prefix = '\0';
@@ -646,7 +646,7 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   // In the font-variant shorthand a "none" ligatures value needs to be
   // expanded.
   if (property.IDEquals(CSSPropertyID::kFontVariantLigatures) &&
-      identifier_value && identifier_value->GetValueID() == CSSValueNone) {
+      identifier_value && identifier_value->GetValueID() == CSSValueID::kNone) {
     value =
         "no-common-ligatures no-discretionary-ligatures "
         "no-historical-ligatures no-contextual";
@@ -700,20 +700,20 @@ String StylePropertySerializer::FontValue() const {
   auto* ligatures_identifier_value =
       DynamicTo<CSSIdentifierValue>(ligatures_value);
   if ((ligatures_identifier_value &&
-       ligatures_identifier_value->GetValueID() != CSSValueNormal) ||
+       ligatures_identifier_value->GetValueID() != CSSValueID::kNormal) ||
       ligatures_value->IsValueList())
     return g_empty_string;
 
   auto* numeric_identifier_value = DynamicTo<CSSIdentifierValue>(numeric_value);
   if ((numeric_identifier_value &&
-       numeric_identifier_value->GetValueID() != CSSValueNormal) ||
+       numeric_identifier_value->GetValueID() != CSSValueID::kNormal) ||
       numeric_value->IsValueList())
     return g_empty_string;
 
   auto* east_asian_identifier_value =
       DynamicTo<CSSIdentifierValue>(east_asian_value);
   if ((east_asian_identifier_value &&
-       east_asian_identifier_value->GetValueID() != CSSValueNormal) ||
+       east_asian_identifier_value->GetValueID() != CSSValueID::kNormal) ||
       east_asian_value->IsValueList())
     return g_empty_string;
 
@@ -723,8 +723,8 @@ String StylePropertySerializer::FontValue() const {
   const CSSValue* val = font_variant_caps_property.Value();
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(val);
   if (identifier_value &&
-      (identifier_value->GetValueID() != CSSValueSmallCaps &&
-       identifier_value->GetValueID() != CSSValueNormal))
+      (identifier_value->GetValueID() != CSSValueID::kSmallCaps &&
+       identifier_value->GetValueID() != CSSValueID::kNormal))
     return g_empty_string;
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
 
@@ -955,10 +955,12 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         if (x_id == y_id) {
           use_single_word_shorthand = true;
           property = shorthand.properties()[++property_index];
-        } else if (x_id == CSSValueRepeat && y_id == CSSValueNoRepeat) {
+        } else if (x_id == CSSValueID::kRepeat &&
+                   y_id == CSSValueID::kNoRepeat) {
           use_repeat_x_shorthand = true;
           property = shorthand.properties()[++property_index];
-        } else if (x_id == CSSValueNoRepeat && y_id == CSSValueRepeat) {
+        } else if (x_id == CSSValueID::kNoRepeat &&
+                   y_id == CSSValueID::kRepeat) {
           use_repeat_y_shorthand = true;
           property = shorthand.properties()[++property_index];
         }
@@ -979,10 +981,10 @@ String StylePropertySerializer::GetLayeredShorthandValue(
 
         if (use_repeat_x_shorthand) {
           use_repeat_x_shorthand = false;
-          layer_result.Append(getValueName(CSSValueRepeatX));
+          layer_result.Append(getValueName(CSSValueID::kRepeatX));
         } else if (use_repeat_y_shorthand) {
           use_repeat_y_shorthand = false;
-          layer_result.Append(getValueName(CSSValueRepeatY));
+          layer_result.Append(getValueName(CSSValueID::kRepeatY));
         } else {
           if (use_single_word_shorthand)
             use_single_word_shorthand = false;
@@ -1085,7 +1087,7 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
                                         const CSSValue& repeat_ycss_value) {
   // FIXME: Ensure initial values do not appear in CSS_VALUE_LISTS.
   DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, initial_repeat_value,
-                      (CSSIdentifierValue::Create(CSSValueRepeat)));
+                      (CSSIdentifierValue::Create(CSSValueID::kRepeat)));
   const CSSIdentifierValue& repeat_x =
       repeat_xcss_value.IsInitialValue()
           ? *initial_repeat_value
@@ -1098,11 +1100,11 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
   CSSValueID repeat_y_value_id = repeat_y.GetValueID();
   if (repeat_x_value_id == repeat_y_value_id) {
     builder.Append(repeat_x.CssText());
-  } else if (repeat_x_value_id == CSSValueNoRepeat &&
-             repeat_y_value_id == CSSValueRepeat) {
+  } else if (repeat_x_value_id == CSSValueID::kNoRepeat &&
+             repeat_y_value_id == CSSValueID::kRepeat) {
     builder.Append("repeat-y");
-  } else if (repeat_x_value_id == CSSValueRepeat &&
-             repeat_y_value_id == CSSValueNoRepeat) {
+  } else if (repeat_x_value_id == CSSValueID::kRepeat &&
+             repeat_y_value_id == CSSValueID::kNoRepeat) {
     builder.Append("repeat-x");
   } else {
     builder.Append(repeat_x.CssText());
@@ -1155,10 +1157,10 @@ String StylePropertySerializer::PageBreakPropertyValue(
       property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
   CSSValueID value_id = To<CSSIdentifierValue>(value)->GetValueID();
   // https://drafts.csswg.org/css-break/#page-break-properties
-  if (value_id == CSSValuePage)
+  if (value_id == CSSValueID::kPage)
     return "always";
-  if (value_id == CSSValueAuto || value_id == CSSValueLeft ||
-      value_id == CSSValueRight || value_id == CSSValueAvoid)
+  if (value_id == CSSValueID::kAuto || value_id == CSSValueID::kLeft ||
+      value_id == CSSValueID::kRight || value_id == CSSValueID::kAvoid)
     return value->CssText();
   return String();
 }

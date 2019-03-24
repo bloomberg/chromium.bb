@@ -3594,7 +3594,7 @@
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
       type_name: "AtomicString",
-      converter: "ConvertString<CSSValueNone>",
+      converter: "ConvertString<CSSValueID::kNone>",
     },
     {
       name: "-webkit-hyphenate-character",
@@ -3606,7 +3606,7 @@
       default_value: "AtomicString()",
       name_for_methods: "HyphenationString",
       type_name: "AtomicString",
-      converter: "ConvertString<CSSValueAuto>",
+      converter: "ConvertString<CSSValueID::kAuto>",
     },
     {
       name: "-webkit-line-break",

@@ -63,10 +63,13 @@ static String BuildCircleString(const String& radius,
 
 static String SerializePositionOffset(const CSSValuePair& offset,
                                       const CSSValuePair& other) {
-  if ((To<CSSIdentifierValue>(offset.First()).GetValueID() == CSSValueLeft &&
-       To<CSSIdentifierValue>(other.First()).GetValueID() == CSSValueTop) ||
-      (To<CSSIdentifierValue>(offset.First()).GetValueID() == CSSValueTop &&
-       To<CSSIdentifierValue>(other.First()).GetValueID() == CSSValueLeft))
+  if ((To<CSSIdentifierValue>(offset.First()).GetValueID() ==
+           CSSValueID::kLeft &&
+       To<CSSIdentifierValue>(other.First()).GetValueID() ==
+           CSSValueID::kTop) ||
+      (To<CSSIdentifierValue>(offset.First()).GetValueID() ==
+           CSSValueID::kTop &&
+       To<CSSIdentifierValue>(other.First()).GetValueID() == CSSValueID::kLeft))
     return offset.Second().CssText();
   return offset.CssText();
 }
@@ -77,14 +80,14 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
   const CSSPrimitiveValue* amount = nullptr;
 
   if (!offset) {
-    side = CSSValueCenter;
+    side = CSSValueID::kCenter;
   } else if (auto* offset_identifier_value =
                  DynamicTo<CSSIdentifierValue>(offset)) {
     side = offset_identifier_value->GetValueID();
   } else if (auto* offset_value_pair = DynamicTo<CSSValuePair>(offset)) {
     side = To<CSSIdentifierValue>(offset_value_pair->First()).GetValueID();
     amount = &To<CSSPrimitiveValue>(offset_value_pair->Second());
-    if ((side == CSSValueRight || side == CSSValueBottom) &&
+    if ((side == CSSValueID::kRight || side == CSSValueID::kBottom) &&
         amount->IsPercentage()) {
       side = default_side;
       amount =
@@ -95,12 +98,12 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
     amount = To<CSSPrimitiveValue>(offset);
   }
 
-  if (side == CSSValueCenter) {
+  if (side == CSSValueID::kCenter) {
     side = default_side;
     amount =
         CSSPrimitiveValue::Create(50, CSSPrimitiveValue::UnitType::kPercentage);
   } else if (!amount || (amount->IsLength() && !amount->GetFloatValue())) {
-    if (side == CSSValueRight || side == CSSValueBottom)
+    if (side == CSSValueID::kRight || side == CSSValueID::kBottom)
       amount = CSSPrimitiveValue::Create(
           100, CSSPrimitiveValue::UnitType::kPercentage);
     else
@@ -115,15 +118,15 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
 
 String CSSBasicShapeCircleValue::CustomCSSText() const {
   CSSValuePair* normalized_cx =
-      BuildSerializablePositionOffset(center_x_, CSSValueLeft);
+      BuildSerializablePositionOffset(center_x_, CSSValueID::kLeft);
   CSSValuePair* normalized_cy =
-      BuildSerializablePositionOffset(center_y_, CSSValueTop);
+      BuildSerializablePositionOffset(center_y_, CSSValueID::kTop);
 
   String radius;
   auto* radius_identifier_value = DynamicTo<CSSIdentifierValue>(radius_.Get());
   if (radius_ &&
       !(radius_identifier_value &&
-        radius_identifier_value->GetValueID() == CSSValueClosestSide))
+        radius_identifier_value->GetValueID() == CSSValueID::kClosestSide))
     radius = radius_->CssText();
 
   return BuildCircleString(
@@ -180,9 +183,9 @@ static String BuildEllipseString(const String& radius_x,
 
 String CSSBasicShapeEllipseValue::CustomCSSText() const {
   CSSValuePair* normalized_cx =
-      BuildSerializablePositionOffset(center_x_, CSSValueLeft);
+      BuildSerializablePositionOffset(center_x_, CSSValueID::kLeft);
   CSSValuePair* normalized_cy =
-      BuildSerializablePositionOffset(center_y_, CSSValueTop);
+      BuildSerializablePositionOffset(center_y_, CSSValueID::kTop);
 
   String radius_x;
   String radius_y;
@@ -191,15 +194,15 @@ String CSSBasicShapeEllipseValue::CustomCSSText() const {
         DynamicTo<CSSIdentifierValue>(radius_x_.Get());
     bool should_serialize_radius_x_value =
         !(radius_x_identifier_value &&
-          radius_x_identifier_value->GetValueID() == CSSValueClosestSide);
+          radius_x_identifier_value->GetValueID() == CSSValueID::kClosestSide);
     bool should_serialize_radius_y_value = false;
 
     if (radius_y_) {
       auto* radius_y_identifier_value =
           DynamicTo<CSSIdentifierValue>(radius_y_.Get());
-      should_serialize_radius_y_value =
-          !(radius_y_identifier_value &&
-            radius_y_identifier_value->GetValueID() == CSSValueClosestSide);
+      should_serialize_radius_y_value = !(
+          radius_y_identifier_value &&
+          radius_y_identifier_value->GetValueID() == CSSValueID::kClosestSide);
       if (should_serialize_radius_y_value)
         radius_y = radius_y_->CssText();
     }
