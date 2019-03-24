@@ -83,7 +83,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void FlushProtocolNotifications();
 
   bool HasOverlays() const { return !overlay_agents_.IsEmpty(); }
-  void UpdateOverlaysPrePaint();
+  void UpdateOverlays();
   void PaintOverlays(GraphicsContext&);  // For CompositeAfterPaint.
 
   WebInputEventResult HandleInputEvent(const WebInputEvent&);

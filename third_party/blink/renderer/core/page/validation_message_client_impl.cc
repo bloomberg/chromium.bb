@@ -193,13 +193,17 @@ void ValidationMessageClientImpl::WillOpenPopup() {
 }
 
 void ValidationMessageClientImpl::LayoutOverlay() {
+  if (!overlay_)
+    return;
+  CheckAnchorStatus(nullptr);
   if (overlay_)
-    CheckAnchorStatus(nullptr);
+    overlay_->Update();
 }
 
-void ValidationMessageClientImpl::UpdatePrePaint() {
-  if (overlay_)
-    overlay_->UpdatePrePaint();
+void ValidationMessageClientImpl::PaintOverlay() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (overlay_ && overlay_->GetGraphicsLayer())
+    overlay_->GetGraphicsLayer()->Paint();
 }
 
 void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {

@@ -16,8 +16,9 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -27,14 +28,19 @@ namespace blink {
 class ValidationMessageChromeClient : public EmptyChromeClient {
  public:
   explicit ValidationMessageChromeClient(ChromeClient& main_chrome_client,
-                                         LocalFrameView* anchor_view)
-      : main_chrome_client_(main_chrome_client), anchor_view_(anchor_view) {}
+                                         LocalFrameView* anchor_view,
+                                         FrameOverlay& overlay)
+      : main_chrome_client_(main_chrome_client),
+        anchor_view_(anchor_view),
+        overlay_(overlay) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(main_chrome_client_);
     visitor->Trace(anchor_view_);
     EmptyChromeClient::Trace(visitor);
   }
+
+  void InvalidateRect(const IntRect&) override { overlay_.Update(); }
 
   void ScheduleAnimation(const LocalFrameView*) override {
     // Need to pass LocalFrameView for the anchor element because the Frame for
@@ -50,6 +56,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
  private:
   Member<ChromeClient> main_chrome_client_;
   Member<LocalFrameView> anchor_view_;
+  FrameOverlay& overlay_;
 };
 
 ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
@@ -83,26 +90,23 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
     const IntSize& view_size) const {
   if (IsHiding() && !page_)
     return;
-
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, overlay,
-                                                  DisplayItem::kFrameOverlay))
-    return;
-  DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay);
-
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    context.DrawRecord(FrameView().GetPaintRecord());
-  } else {
-    // The overlay frame is has a standalone paint property tree. Paint it in
-    // its root space into a paint record, then draw the record into the proper
-    // target space in the overlaid frame.
-    PaintRecordBuilder paint_record_builder(nullptr, &context);
-    FrameView().PaintOutsideOfLifecycle(paint_record_builder.Context(),
-                                        kGlobalPaintNormalPhase);
-    context.DrawRecord(paint_record_builder.EndRecording());
+    ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                          PropertyTreeState::Root(), overlay,
+                                          DisplayItem::kFrameOverlay);
+    if (DrawingRecorder::UseCachedDrawingIfPossible(context, overlay,
+                                                    DisplayItem::kFrameOverlay))
+      return;
+    DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay);
+    context.Canvas()->drawPicture(FrameView().GetPaintRecord());
+    return;
   }
+
+  DisplayItemCacheSkipper cache_skipper(context);
+  FrameView().PaintOutsideOfLifecycle(context, kGlobalPaintNormalPhase);
 }
 
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(
@@ -134,7 +138,8 @@ void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
-      main_page_->GetChromeClient(), anchor_->GetDocument().View());
+      main_page_->GetChromeClient(), anchor_->GetDocument().View(),
+      const_cast<FrameOverlay&>(overlay));
   page_clients.chrome_client = chrome_client_;
   Settings& main_settings = main_page_->GetSettings();
   page_ = Page::CreateNonOrdinary(page_clients);
