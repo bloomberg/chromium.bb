@@ -34,22 +34,22 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
                                    svg_names::kXAttr,
                                    SVGLengthMode::kWidth,
                                    SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyX)),
+                                   CSSPropertyID::kX)),
       y_(SVGAnimatedLength::Create(this,
                                    svg_names::kYAttr,
                                    SVGLengthMode::kHeight,
                                    SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyY)),
+                                   CSSPropertyID::kY)),
       width_(SVGAnimatedLength::Create(this,
                                        svg_names::kWidthAttr,
                                        SVGLengthMode::kWidth,
                                        SVGLength::Initial::kUnitlessZero,
-                                       CSSPropertyWidth)),
+                                       CSSPropertyID::kWidth)),
       height_(SVGAnimatedLength::Create(this,
                                         svg_names::kHeightAttr,
                                         SVGLengthMode::kHeight,
                                         SVGLength::Initial::kUnitlessZero,
-                                        CSSPropertyHeight)) {
+                                        CSSPropertyID::kHeight)) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);

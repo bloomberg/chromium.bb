@@ -54,55 +54,58 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
   if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyMarginLeft, 0,
+          style, CSSPropertyID::kMarginLeft, 0,
           CSSPrimitiveValue::UnitType::kPixels);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight,
-                                              CSSValueAuto);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kMarginRight, CSSValueAuto);
     } else if (DeprecatedEqualIgnoringCase(value, "right")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
                                               CSSValueAuto);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyMarginRight, 0,
+          style, CSSPropertyID::kMarginRight, 0,
           CSSPrimitiveValue::UnitType::kPixels);
     } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginLeft,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kMarginLeft,
                                               CSSValueAuto);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyMarginRight,
-                                              CSSValueAuto);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kMarginRight, CSSValueAuto);
     }
   } else if (name == kWidthAttr) {
     bool ok;
     int v = value.ToInt(&ok);
-    if (ok && !v)
+    if (ok && !v) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWidth, 1, CSSPrimitiveValue::UnitType::kPixels);
-    else
-      AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+          style, CSSPropertyID::kWidth, 1,
+          CSSPrimitiveValue::UnitType::kPixels);
+    } else {
+      AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+    }
   } else if (name == kColorAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
                                             CSSValueSolid);
-    AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
-    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kBorderColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
   } else if (name == kNoshadeAttr) {
     if (!hasAttribute(kColorAttr)) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
-                                              CSSValueSolid);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kBorderStyle, CSSValueSolid);
 
       const CSSColorValue& dark_gray_value =
           *CSSColorValue::Create(Color::kDarkGray);
-      style->SetProperty(CSSPropertyBorderColor, dark_gray_value);
-      style->SetProperty(CSSPropertyBackgroundColor, dark_gray_value);
+      style->SetProperty(CSSPropertyID::kBorderColor, dark_gray_value);
+      style->SetProperty(CSSPropertyID::kBackgroundColor, dark_gray_value);
     }
   } else if (name == kSizeAttr) {
     int size = value.ToInt();
-    if (size <= 1)
+    if (size <= 1) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyBorderBottomWidth, 0,
+          style, CSSPropertyID::kBorderBottomWidth, 0,
           CSSPrimitiveValue::UnitType::kPixels);
-    else
+    } else {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyHeight, size - 2,
+          style, CSSPropertyID::kHeight, size - 2,
           CSSPrimitiveValue::UnitType::kPixels);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

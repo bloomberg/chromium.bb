@@ -20,21 +20,21 @@ class CORE_EXPORT CSSPropertyName {
  public:
   explicit CSSPropertyName(CSSPropertyID property_id)
       : property_id_(property_id) {
-    DCHECK_NE(property_id, CSSPropertyInvalid);
-    DCHECK_NE(property_id, CSSPropertyVariable);
+    DCHECK_NE(property_id, CSSPropertyID::kInvalid);
+    DCHECK_NE(property_id, CSSPropertyID::kVariable);
   }
 
   explicit CSSPropertyName(const AtomicString& custom_property_name)
-      : property_id_(CSSPropertyVariable),
+      : property_id_(CSSPropertyID::kVariable),
         custom_property_name_(custom_property_name) {
     DCHECK(!custom_property_name.IsNull());
   }
 
   static base::Optional<CSSPropertyName> From(const String& value) {
     const CSSPropertyID property_id = cssPropertyID(value);
-    if (property_id == CSSPropertyInvalid)
+    if (property_id == CSSPropertyID::kInvalid)
       return base::nullopt;
-    if (property_id == CSSPropertyVariable)
+    if (property_id == CSSPropertyID::kVariable)
       return base::make_optional(CSSPropertyName(AtomicString(value)));
     return base::make_optional(CSSPropertyName(property_id));
   }
@@ -46,7 +46,9 @@ class CORE_EXPORT CSSPropertyName {
 
   CSSPropertyID Id() const { return property_id_; }
 
-  bool IsCustomProperty() const { return property_id_ == CSSPropertyVariable; }
+  bool IsCustomProperty() const {
+    return property_id_ == CSSPropertyID::kVariable;
+  }
 
   AtomicString ToAtomicString() const;
 

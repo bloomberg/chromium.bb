@@ -28,7 +28,7 @@ TEST_F(EditingStyleTest, mergeInlineStyleOfElement) {
       ToHTMLElement(GetDocument().getElementById("s1")),
       EditingStyle::kOverrideValues);
 
-  EXPECT_FALSE(editing_style->Style()->HasProperty(CSSPropertyFloat))
+  EXPECT_FALSE(editing_style->Style()->HasProperty(CSSPropertyID::kFloat))
       << "Don't merge a property with unresolved value";
   EXPECT_EQ("var(---B)",
             editing_style->Style()->GetPropertyValue(AtomicString("--A")))

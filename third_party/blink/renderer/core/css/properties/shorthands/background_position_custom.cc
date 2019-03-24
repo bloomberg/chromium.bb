@@ -29,13 +29,15 @@ bool BackgroundPosition::ParseShorthand(
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBackgroundPositionX, CSSPropertyBackgroundPosition, *result_x,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kBackgroundPositionX, CSSPropertyID::kBackgroundPosition,
+      *result_x, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBackgroundPositionY, CSSPropertyBackgroundPosition, *result_y,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kBackgroundPositionY, CSSPropertyID::kBackgroundPosition,
+      *result_y, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

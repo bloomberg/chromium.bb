@@ -600,7 +600,7 @@ void MultipleFieldsTemporalInputTypeView::HidePickerIndicator() {
     return;
   picker_indicator_is_visible_ = false;
   DCHECK(GetPickerIndicatorElement());
-  GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyDisplay,
+  GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyID::kDisplay,
                                                       CSSValueNone);
 }
 
@@ -609,7 +609,8 @@ void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
     return;
   picker_indicator_is_visible_ = true;
   DCHECK(GetPickerIndicatorElement());
-  GetPickerIndicatorElement()->RemoveInlineStyleProperty(CSSPropertyDisplay);
+  GetPickerIndicatorElement()->RemoveInlineStyleProperty(
+      CSSPropertyID::kDisplay);
 }
 
 void MultipleFieldsTemporalInputTypeView::FocusAndSelectClearButtonOwner() {
@@ -634,13 +635,13 @@ void MultipleFieldsTemporalInputTypeView::UpdateClearButtonVisibility() {
 
   if (GetElement().IsRequired() ||
       !GetDateTimeEditElement()->AnyEditableFieldsHaveValues()) {
-    clear_button->SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
+    clear_button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
                                          CSSPrimitiveValue::UnitType::kNumber);
-    clear_button->SetInlineStyleProperty(CSSPropertyPointerEvents,
+    clear_button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
                                          CSSValueNone);
   } else {
-    clear_button->RemoveInlineStyleProperty(CSSPropertyOpacity);
-    clear_button->RemoveInlineStyleProperty(CSSPropertyPointerEvents);
+    clear_button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
+    clear_button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
   }
 }
 

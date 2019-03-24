@@ -31,7 +31,9 @@ class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
     DCHECK(!IsKnownPropertyID());
     return string_;
   }
-  bool IsKnownPropertyID() const { return property_id_ != CSSPropertyInvalid; }
+  bool IsKnownPropertyID() const {
+    return property_id_ != CSSPropertyID::kInvalid;
+  }
   CSSPropertyID ValueAsPropertyID() const {
     DCHECK(IsKnownPropertyID());
     return property_id_;

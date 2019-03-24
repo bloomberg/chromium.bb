@@ -41,7 +41,7 @@ const CSSValue* BorderImageSource::InitialValue() const {
 void BorderImageSource::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
   state.Style()->SetBorderImageSource(
-      state.GetStyleImage(CSSPropertyBorderImageSource, value));
+      state.GetStyleImage(CSSPropertyID::kBorderImageSource, value));
 }
 
 }  // namespace css_longhand

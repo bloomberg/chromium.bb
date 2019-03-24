@@ -39,7 +39,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
   if (i >= PropertySet().PropertyCount())
     return "";
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
-  if (property.Id() == CSSPropertyVariable)
+  if (property.Id() == CSSPropertyID::kVariable)
     return To<CSSCustomPropertyDeclaration>(property.Value()).GetName();
   return property.Property().GetPropertyName();
 }
@@ -73,7 +73,7 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(
   CSSPropertyID property_id = cssPropertyID(property_name);
   if (!isValidCSSPropertyID(property_id))
     return String();
-  if (property_id == CSSPropertyVariable)
+  if (property_id == CSSPropertyID::kVariable)
     return PropertySet().GetPropertyValue(AtomicString(property_name));
   return PropertySet().GetPropertyValue(property_id);
 }
@@ -85,7 +85,7 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(
     return String();
 
   bool important = false;
-  if (property_id == CSSPropertyVariable)
+  if (property_id == CSSPropertyID::kVariable)
     important = PropertySet().PropertyIsImportant(AtomicString(property_name));
   else
     important = PropertySet().PropertyIsImportant(property_id);
@@ -147,7 +147,7 @@ String AbstractPropertySetCSSStyleDeclaration::removeProperty(
 
   String result;
   bool changed = false;
-  if (property_id == CSSPropertyVariable) {
+  if (property_id == CSSPropertyID::kVariable) {
     changed =
         PropertySet().RemoveProperty(AtomicString(property_name), &result);
   } else {
@@ -190,7 +190,7 @@ void AbstractPropertySetCSSStyleDeclaration::SetPropertyInternal(
   WillMutate();
 
   bool did_change = false;
-  if (unresolved_property == CSSPropertyVariable) {
+  if (unresolved_property == CSSPropertyID::kVariable) {
     AtomicString atomic_name(custom_property_name);
 
     bool is_animation_tainted = IsKeyframeStyle();

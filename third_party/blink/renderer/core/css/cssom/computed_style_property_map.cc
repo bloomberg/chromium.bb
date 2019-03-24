@@ -233,7 +233,7 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
   // Special cases for properties where CSSProperty::CSSValueFromComputedStyle
   // doesn't return the correct computed value
   switch (property_id) {
-    case CSSPropertyTransform:
+    case CSSPropertyID::kTransform:
       return ComputedTransform(*style);
     default:
       return CSSProperty::Get(property_id)
@@ -266,7 +266,7 @@ void ComputedStylePropertyMap::ForEachProperty(
   for (const CSSProperty* property :
        CSSComputedStyleDeclaration::ComputableProperties()) {
     DCHECK(property);
-    DCHECK(!property->IDEquals(CSSPropertyVariable));
+    DCHECK(!property->IDEquals(CSSPropertyID::kVariable));
     const CSSValue* value = property->CSSValueFromComputedStyle(
         *style, nullptr /* layout_object */, StyledNode(), false);
     if (value)

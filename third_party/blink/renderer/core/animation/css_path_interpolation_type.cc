@@ -21,9 +21,9 @@ namespace {
 // If the property's value is not a path(), returns nullptr.
 StylePath* GetPath(const CSSProperty& property, const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyD:
+    case CSSPropertyID::kD:
       return style.SvgStyle().D();
-    case CSSPropertyOffsetPath: {
+    case CSSPropertyID::kOffsetPath: {
       BasicShape* offset_path = style.OffsetPath();
       if (!offset_path || offset_path->GetType() != BasicShape::kStylePathType)
         return nullptr;
@@ -40,10 +40,10 @@ void SetPath(const CSSProperty& property,
              ComputedStyle& style,
              scoped_refptr<blink::StylePath> path) {
   switch (property.PropertyID()) {
-    case CSSPropertyD:
+    case CSSPropertyID::kD:
       style.SetD(std::move(path));
       return;
-    case CSSPropertyOffsetPath:
+    case CSSPropertyID::kOffsetPath:
       style.SetOffsetPath(std::move(path));
       return;
     default:

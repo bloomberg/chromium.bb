@@ -411,7 +411,7 @@ void BaseRenderingContext2D::setFilter(
     return;
 
   const CSSValue* filter_value = CSSParser::ParseSingleValue(
-      CSSPropertyFilter, filter_string,
+      CSSPropertyID::kFilter, filter_string,
       CSSParserContext::Create(kHTMLStandardMode,
                                execution_context->GetSecureContextMode()));
 

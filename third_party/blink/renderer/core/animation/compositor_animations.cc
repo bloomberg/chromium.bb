@@ -89,10 +89,10 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
 
 bool IsTransformRelatedCSSProperty(const PropertyHandle property) {
   return property.IsCSSProperty() &&
-         (property.GetCSSProperty().IDEquals(CSSPropertyRotate) ||
-          property.GetCSSProperty().IDEquals(CSSPropertyScale) ||
-          property.GetCSSProperty().IDEquals(CSSPropertyTransform) ||
-          property.GetCSSProperty().IDEquals(CSSPropertyTranslate));
+         (property.GetCSSProperty().IDEquals(CSSPropertyID::kRotate) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyID::kScale) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyID::kTransform) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyID::kTranslate));
 }
 
 bool IsTransformRelatedAnimation(const Element& target_element,
@@ -152,17 +152,17 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     return CompositorElementIdNamespace::kPrimary;
   }
   switch (property) {
-    case CSSPropertyOpacity:
+    case CSSPropertyID::kOpacity:
       return CompositorElementIdNamespace::kPrimaryEffect;
-    case CSSPropertyRotate:
-    case CSSPropertyScale:
-    case CSSPropertyTranslate:
-    case CSSPropertyTransform:
+    case CSSPropertyID::kRotate:
+    case CSSPropertyID::kScale:
+    case CSSPropertyID::kTranslate:
+    case CSSPropertyID::kTransform:
       return CompositorElementIdNamespace::kPrimaryTransform;
-    case CSSPropertyFilter:
-    case CSSPropertyBackdropFilter:
+    case CSSPropertyID::kFilter:
+    case CSSPropertyID::kBackdropFilter:
       return CompositorElementIdNamespace::kEffectFilter;
-    case CSSPropertyVariable:
+    case CSSPropertyID::kVariable:
       return CompositorElementIdNamespace::kPrimary;
     default:
       NOTREACHED();
@@ -234,12 +234,12 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
       // FIXME: Determine candidacy based on the CSSValue instead of a snapshot
       // AnimatableValue.
       switch (property.GetCSSProperty().PropertyID()) {
-        case CSSPropertyOpacity:
+        case CSSPropertyID::kOpacity:
           break;
-        case CSSPropertyRotate:
-        case CSSPropertyScale:
-        case CSSPropertyTranslate:
-        case CSSPropertyTransform:
+        case CSSPropertyID::kRotate:
+        case CSSPropertyID::kScale:
+        case CSSPropertyID::kTranslate:
+        case CSSPropertyID::kTransform:
           if (ToAnimatableTransform(keyframe->GetAnimatableValue())
                   ->GetTransformOperations()
                   .DependsOnBoxSize()) {
@@ -248,8 +248,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
                 "size");
           }
           break;
-        case CSSPropertyFilter:
-        case CSSPropertyBackdropFilter: {
+        case CSSPropertyID::kFilter:
+        case CSSPropertyID::kBackdropFilter: {
           const FilterOperations& operations =
               ToAnimatableFilterOperations(keyframe->GetAnimatableValue())
                   ->Operations();
@@ -259,7 +259,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           }
           break;
         }
-        case CSSPropertyVariable: {
+        case CSSPropertyID::kVariable: {
           DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
           if (!keyframe->GetAnimatableValue()->IsDouble()) {
             // TODO(kevers): Extend support to other custom property types.
@@ -657,7 +657,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     std::unique_ptr<CompositorAnimationCurve> curve;
     DCHECK(timing.timing_function);
     switch (property.GetCSSProperty().PropertyID()) {
-      case CSSPropertyOpacity: {
+      case CSSPropertyID::kOpacity: {
         target_property = compositor_target_property::OPACITY;
         auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
         AddKeyframesToCurve(*float_curve, values);
@@ -666,8 +666,8 @@ void CompositorAnimations::GetAnimationOnCompositor(
         curve = std::move(float_curve);
         break;
       }
-      case CSSPropertyFilter:
-      case CSSPropertyBackdropFilter: {
+      case CSSPropertyID::kFilter:
+      case CSSPropertyID::kBackdropFilter: {
         target_property = compositor_target_property::FILTER;
         auto filter_curve = std::make_unique<CompositorFilterAnimationCurve>();
         AddKeyframesToCurve(*filter_curve, values);
@@ -676,10 +676,10 @@ void CompositorAnimations::GetAnimationOnCompositor(
         curve = std::move(filter_curve);
         break;
       }
-      case CSSPropertyRotate:
-      case CSSPropertyScale:
-      case CSSPropertyTranslate:
-      case CSSPropertyTransform: {
+      case CSSPropertyID::kRotate:
+      case CSSPropertyID::kScale:
+      case CSSPropertyID::kTranslate:
+      case CSSPropertyID::kTransform: {
         target_property = compositor_target_property::TRANSFORM;
         auto transform_curve =
             std::make_unique<CompositorTransformAnimationCurve>();
@@ -689,7 +689,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
         curve = std::move(transform_curve);
         break;
       }
-      case CSSPropertyVariable: {
+      case CSSPropertyID::kVariable: {
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
         target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
         // TODO(kevers): Extend support to non-float types.

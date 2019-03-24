@@ -261,7 +261,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   // Look up the CSSPropertyIDs for each entry in |style_whitelist|.
   for (wtf_size_t i = 0; i < style_whitelist->length(); i++) {
     CSSPropertyID property_id = cssPropertyID(style_whitelist->get(i));
-    if (property_id == CSSPropertyInvalid)
+    if (property_id == CSSPropertyID::kInvalid)
       continue;
     css_property_whitelist_->push_back(
         std::make_pair(style_whitelist->get(i), property_id));
@@ -300,7 +300,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   // Look up the CSSPropertyIDs for each entry in |computed_styles|.
   for (size_t i = 0; i < computed_styles->length(); i++) {
     CSSPropertyID property_id = cssPropertyID(computed_styles->get(i));
-    if (property_id == CSSPropertyInvalid)
+    if (property_id == CSSPropertyID::kInvalid)
       continue;
     css_property_whitelist_->push_back(
         std::make_pair(computed_styles->get(i), property_id));

@@ -1370,7 +1370,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Will-change utility functions.
   bool HasWillChangeCompositingHint() const;
   bool HasWillChangeOpacityHint() const {
-    return WillChangeProperties().Contains(CSSPropertyOpacity);
+    return WillChangeProperties().Contains(CSSPropertyID::kOpacity);
   }
   bool HasWillChangeTransformHint() const;
 

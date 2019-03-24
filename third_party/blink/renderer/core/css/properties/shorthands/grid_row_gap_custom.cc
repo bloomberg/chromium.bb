@@ -23,8 +23,8 @@ bool GridRowGap::ParseShorthand(
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyRowGap, CSSPropertyGridRowGap, *gap_length, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kRowGap, CSSPropertyID::kGridRowGap, *gap_length,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

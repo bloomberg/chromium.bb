@@ -46,7 +46,7 @@ bool Grid::ParseShorthand(bool important,
                           const CSSParserContext& context,
                           const CSSParserLocalContext&,
                           HeapVector<CSSPropertyValue, 256>& properties) const {
-  DCHECK_EQ(shorthandForProperty(CSSPropertyGrid).length(), 6u);
+  DCHECK_EQ(shorthandForProperty(CSSPropertyID::kGrid).length(), 6u);
 
   CSSParserTokenRange range_copy = range;
 
@@ -62,17 +62,18 @@ bool Grid::ParseShorthand(bool important,
     DCHECK(template_areas);
 
     css_property_parser_helpers::AddProperty(
-        CSSPropertyGridTemplateRows, CSSPropertyGrid, *template_rows, important,
-        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-        properties);
-    css_property_parser_helpers::AddProperty(
-        CSSPropertyGridTemplateColumns, CSSPropertyGrid, *template_columns,
+        CSSPropertyID::kGridTemplateRows, CSSPropertyID::kGrid, *template_rows,
         important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
-        CSSPropertyGridTemplateAreas, CSSPropertyGrid, *template_areas,
-        important,
+        CSSPropertyID::kGridTemplateColumns, CSSPropertyID::kGrid,
+        *template_columns, important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
+    css_property_parser_helpers::AddProperty(
+        CSSPropertyID::kGridTemplateAreas, CSSPropertyID::kGrid,
+        *template_areas, important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
 
@@ -80,18 +81,18 @@ bool Grid::ParseShorthand(bool important,
     // a single grid declaration. The sub-properties not specified are set to
     // their initial value, as normal for shorthands.
     css_property_parser_helpers::AddProperty(
-        CSSPropertyGridAutoFlow, CSSPropertyGrid, *CSSInitialValue::Create(),
-        important,
+        CSSPropertyID::kGridAutoFlow, CSSPropertyID::kGrid,
+        *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
-        CSSPropertyGridAutoColumns, CSSPropertyGrid, *CSSInitialValue::Create(),
-        important,
+        CSSPropertyID::kGridAutoColumns, CSSPropertyID::kGrid,
+        *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
-        CSSPropertyGridAutoRows, CSSPropertyGrid, *CSSInitialValue::Create(),
-        important,
+        CSSPropertyID::kGridAutoRows, CSSPropertyID::kGrid,
+        *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     return true;
@@ -162,28 +163,31 @@ bool Grid::ParseShorthand(bool important,
   // single grid declaration. The sub-properties not specified are set to their
   // initial value, as normal for shorthands.
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridTemplateColumns, CSSPropertyGrid, *template_columns,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
-      properties);
-  css_property_parser_helpers::AddProperty(
-      CSSPropertyGridTemplateRows, CSSPropertyGrid, *template_rows, important,
+      CSSPropertyID::kGridTemplateColumns, CSSPropertyID::kGrid,
+      *template_columns, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridTemplateAreas, CSSPropertyGrid, *CSSInitialValue::Create(),
+      CSSPropertyID::kGridTemplateRows, CSSPropertyID::kGrid, *template_rows,
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridAutoFlow, CSSPropertyGrid, *grid_auto_flow, important,
+      CSSPropertyID::kGridTemplateAreas, CSSPropertyID::kGrid,
+      *CSSInitialValue::Create(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridAutoColumns, CSSPropertyGrid, *auto_columns_value,
+      CSSPropertyID::kGridAutoFlow, CSSPropertyID::kGrid, *grid_auto_flow,
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyGridAutoRows, CSSPropertyGrid, *auto_rows_value, important,
+      CSSPropertyID::kGridAutoColumns, CSSPropertyID::kGrid,
+      *auto_columns_value, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
+      CSSPropertyID::kGridAutoRows, CSSPropertyID::kGrid, *auto_rows_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

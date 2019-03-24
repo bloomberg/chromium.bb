@@ -252,10 +252,10 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         if ((!fully_selected_root_style ||
              !fully_selected_root_style->Style() ||
              !fully_selected_root_style->Style()->GetPropertyCSSValue(
-                 CSSPropertyBackgroundImage)) &&
+                 CSSPropertyID::kBackgroundImage)) &&
             fully_selected_root->hasAttribute(kBackgroundAttr)) {
           fully_selected_root_style->Style()->SetProperty(
-              CSSPropertyBackgroundImage,
+              CSSPropertyID::kBackgroundImage,
               "url('" + fully_selected_root->getAttribute(kBackgroundAttr) +
                   "')",
               /* important */ false,
@@ -268,14 +268,16 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
           // all text of a <body> element whose 'text-decoration' property is
           // "inherit", and copy it.
           if (!PropertyMissingOrEqualToNone(fully_selected_root_style->Style(),
-                                            CSSPropertyTextDecoration))
+                                            CSSPropertyID::kTextDecoration)) {
             fully_selected_root_style->Style()->SetProperty(
-                CSSPropertyTextDecoration, CSSValueNone);
+                CSSPropertyID::kTextDecoration, CSSValueNone);
+          }
           if (!PropertyMissingOrEqualToNone(
                   fully_selected_root_style->Style(),
-                  CSSPropertyWebkitTextDecorationsInEffect))
+                  CSSPropertyID::kWebkitTextDecorationsInEffect)) {
             fully_selected_root_style->Style()->SetProperty(
-                CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
+                CSSPropertyID::kWebkitTextDecorationsInEffect, CSSValueNone);
+          }
           markup_accumulator.WrapWithStyleNode(
               fully_selected_root_style->Style());
         }
@@ -287,7 +289,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         // don't want to keep styles that affect its relationship to the nodes
         // around it only the ones that affect it and the nodes within it.
         if (style && style->Style())
-          style->Style()->RemoveProperty(CSSPropertyFloat);
+          style->Style()->RemoveProperty(CSSPropertyID::kFloat);
         traverser.WrapWithNode(*ancestor, style);
       }
 
@@ -506,7 +508,7 @@ void StyledMarkupTraverser<Strategy>::AppendStartMarkup(Node& node) {
         // block }.
         inline_style->ForceInline();
         // FIXME: Should this be included in forceInline?
-        inline_style->Style()->SetProperty(CSSPropertyFloat, CSSValueNone);
+        inline_style->Style()->SetProperty(CSSPropertyID::kFloat, CSSValueNone);
       }
       accumulator_->AppendTextWithInlineStyle(text, inline_style);
       break;

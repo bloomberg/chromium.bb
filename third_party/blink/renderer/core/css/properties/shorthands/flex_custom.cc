@@ -76,20 +76,20 @@ bool Flex::ParseShorthand(bool important,
   if (!range.AtEnd())
     return false;
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFlexGrow, CSSPropertyFlex,
+      CSSPropertyID::kFlexGrow, CSSPropertyID::kFlex,
       *CSSPrimitiveValue::Create(clampTo<float>(flex_grow),
                                  CSSPrimitiveValue::UnitType::kNumber),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFlexShrink, CSSPropertyFlex,
+      CSSPropertyID::kFlexShrink, CSSPropertyID::kFlex,
       *CSSPrimitiveValue::Create(clampTo<float>(flex_shrink),
                                  CSSPrimitiveValue::UnitType::kNumber),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFlexBasis, CSSPropertyFlex, *flex_basis, important,
+      CSSPropertyID::kFlexBasis, CSSPropertyID::kFlex, *flex_basis, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 

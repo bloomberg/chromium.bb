@@ -128,13 +128,14 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
     StyleColor current_style_color = StyleColor::CurrentColor();
     if (is_text_decoration) {
       current_style_color =
-          current_color_getter(CSSProperty::Get(CSSPropertyWebkitTextFillColor),
-                               *state.Style())
+          current_color_getter(
+              CSSProperty::Get(CSSPropertyID::kWebkitTextFillColor),
+              *state.Style())
               .Access();
     }
     if (current_style_color.IsCurrentColor()) {
       current_style_color =
-          current_color_getter(CSSProperty::Get(CSSPropertyColor),
+          current_color_getter(CSSProperty::Get(CSSPropertyID::kColor),
                                *state.Style())
               .Access();
     }
@@ -225,7 +226,7 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
-  if (CssProperty().PropertyID() == CSSPropertyColor) {
+  if (CssProperty().PropertyID() == CSSPropertyID::kColor) {
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
     if (identifier_value &&
         identifier_value->GetValueID() == CSSValueCurrentcolor) {
@@ -277,12 +278,12 @@ void CSSColorInterpolationType::ApplyStandardPropertyValue(
       CssProperty(), *state.Style(),
       ResolveInterpolableColor(
           *color_pair.Get(kUnvisited), state, false,
-          CssProperty().PropertyID() == CSSPropertyTextDecorationColor));
+          CssProperty().PropertyID() == CSSPropertyID::kTextDecorationColor));
   ColorPropertyFunctions::SetVisitedColor(
       CssProperty(), *state.Style(),
       ResolveInterpolableColor(
           *color_pair.Get(kVisited), state, true,
-          CssProperty().PropertyID() == CSSPropertyTextDecorationColor));
+          CssProperty().PropertyID() == CSSPropertyID::kTextDecorationColor));
 }
 
 const CSSValue* CSSColorInterpolationType::CreateCSSValue(

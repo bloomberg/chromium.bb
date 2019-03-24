@@ -23,8 +23,8 @@ bool GridColumnGap::ParseShorthand(
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyColumnGap, CSSPropertyGridColumnGap, *gap_length, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kColumnGap, CSSPropertyID::kGridColumnGap, *gap_length,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }

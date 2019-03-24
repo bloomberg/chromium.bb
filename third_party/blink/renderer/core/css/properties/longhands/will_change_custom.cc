@@ -29,16 +29,16 @@ const CSSValue* WillChange::ParseSingleValue(
       return nullptr;
     CSSPropertyID unresolved_property =
         UnresolvedCSSPropertyID(range.Peek().Value());
-    if (unresolved_property != CSSPropertyInvalid &&
-        unresolved_property != CSSPropertyVariable) {
+    if (unresolved_property != CSSPropertyID::kInvalid &&
+        unresolved_property != CSSPropertyID::kVariable) {
 #if DCHECK_IS_ON()
       DCHECK(CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
                  .IsEnabled());
 #endif
       // Now "all" is used by both CSSValue and CSSPropertyValue.
-      // Need to return nullptr when currentValue is CSSPropertyAll.
-      if (unresolved_property == CSSPropertyWillChange ||
-          unresolved_property == CSSPropertyAll)
+      // Need to return nullptr when currentValue is CSSPropertyID::kAll.
+      if (unresolved_property == CSSPropertyID::kWillChange ||
+          unresolved_property == CSSPropertyID::kAll)
         return nullptr;
       values->Append(*CSSCustomIdentValue::Create(unresolved_property));
       range.ConsumeIncludingWhitespace();

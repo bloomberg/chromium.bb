@@ -24,7 +24,7 @@ namespace {
 const BasicShape* GetBasicShape(const CSSProperty& property,
                                 const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyShapeOutside:
+    case CSSPropertyID::kShapeOutside:
       if (!style.ShapeOutside())
         return nullptr;
       if (style.ShapeOutside()->GetType() != ShapeValue::kShape)
@@ -32,7 +32,7 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
       if (style.ShapeOutside()->CssBox() != CSSBoxType::kMissing)
         return nullptr;
       return style.ShapeOutside()->Shape();
-    case CSSPropertyClipPath:
+    case CSSPropertyID::kClipPath:
       if (!style.ClipPath())
         return nullptr;
       if (style.ClipPath()->GetType() != ClipPathOperation::SHAPE)
@@ -173,11 +173,11 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
           interpolable_value, *non_interpolable_value,
           state.CssToLengthConversionData());
   switch (CssProperty().PropertyID()) {
-    case CSSPropertyShapeOutside:
+    case CSSPropertyID::kShapeOutside:
       state.Style()->SetShapeOutside(
           ShapeValue::CreateShapeValue(std::move(shape), CSSBoxType::kMissing));
       break;
-    case CSSPropertyClipPath:
+    case CSSPropertyID::kClipPath:
       state.Style()->SetClipPath(
           ShapeClipPathOperation::Create(std::move(shape)));
       break;

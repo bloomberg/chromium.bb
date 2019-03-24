@@ -34,33 +34,33 @@ bool BorderImage::ParseShorthand(
   }
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBorderImageSource, CSSPropertyBorderImage,
+      CSSPropertyID::kBorderImageSource, CSSPropertyID::kBorderImage,
       source
           ? *source
           : *To<Longhand>(&GetCSSPropertyBorderImageSource())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
+      CSSPropertyID::kBorderImageSlice, CSSPropertyID::kBorderImage,
       slice ? *slice
             : *To<Longhand>(&GetCSSPropertyBorderImageSlice())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
+      CSSPropertyID::kBorderImageWidth, CSSPropertyID::kBorderImage,
       width ? *width
             : *To<Longhand>(&GetCSSPropertyBorderImageWidth())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
+      CSSPropertyID::kBorderImageOutset, CSSPropertyID::kBorderImage,
       outset
           ? *outset
           : *To<Longhand>(&GetCSSPropertyBorderImageOutset())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
+      CSSPropertyID::kBorderImageRepeat, CSSPropertyID::kBorderImage,
       repeat
           ? *repeat
           : *To<Longhand>(&GetCSSPropertyBorderImageRepeat())->InitialValue(),

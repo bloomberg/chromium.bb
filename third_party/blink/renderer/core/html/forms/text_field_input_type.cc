@@ -477,7 +477,7 @@ void TextFieldInputType::UpdatePlaceholderText() {
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->SetInlineStyleProperty(
-        CSSPropertyDisplay,
+        CSSPropertyID::kDisplay,
         GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
         true);
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());

@@ -130,15 +130,15 @@ void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kWrapAttr) {
     if (ShouldWrapText()) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
                                               CSSValuePreWrap);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
-                                              CSSValueBreakWord);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kOverflowWrap, CSSValueBreakWord);
     } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
                                               CSSValuePre);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
-                                              CSSValueNormal);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kOverflowWrap, CSSValueNormal);
     }
   } else {
     TextControlElement::CollectStyleForPresentationAttribute(name, value,
@@ -607,7 +607,7 @@ void HTMLTextAreaElement::UpdatePlaceholderText() {
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     placeholder->SetInlineStyleProperty(
-        CSSPropertyDisplay,
+        CSSPropertyID::kDisplay,
         IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
     UserAgentShadowRoot()->InsertBefore(placeholder, InnerEditorElement());
   }

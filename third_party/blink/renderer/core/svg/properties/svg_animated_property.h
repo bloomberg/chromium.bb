@@ -74,7 +74,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   }
 
   bool HasPresentationAttributeMapping() const {
-    return CssPropertyId() != CSSPropertyInvalid;
+    return CssPropertyId() != CSSPropertyID::kInvalid;
   }
 
   bool IsSpecified() const;
@@ -88,7 +88,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   SVGAnimatedPropertyBase(AnimatedPropertyType,
                           SVGElement*,
                           const QualifiedName& attribute_name,
-                          CSSPropertyID = CSSPropertyInvalid,
+                          CSSPropertyID = CSSPropertyID::kInvalid,
                           unsigned initial_value = 0);
 
   static constexpr int kInitialValueStorageBits = 3;
@@ -172,11 +172,12 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
   }
 
  protected:
-  SVGAnimatedPropertyCommon(SVGElement* context_element,
-                            const QualifiedName& attribute_name,
-                            Property* initial_value,
-                            CSSPropertyID css_property_id = CSSPropertyInvalid,
-                            unsigned initial_value_bits = 0)
+  SVGAnimatedPropertyCommon(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      Property* initial_value,
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
+      unsigned initial_value_bits = 0)
       : SVGAnimatedPropertyBase(Property::ClassType(),
                                 context_element,
                                 attribute_name,
@@ -217,7 +218,7 @@ class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyInvalid,
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
                       unsigned initial_value_bits = 0)
       : SVGAnimatedPropertyCommon<Property>(context_element,
                                             attribute_name,
@@ -238,7 +239,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
       SVGElement* context_element,
       const QualifiedName& attribute_name,
       Property* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return new SVGAnimatedProperty<Property>(context_element, attribute_name,
                                              initial_value, css_property_id);
   }
@@ -283,7 +284,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyInvalid,
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
                       unsigned initial_value_bits = 0)
       : SVGAnimatedPropertyCommon<Property>(context_element,
                                             attribute_name,
@@ -317,7 +318,7 @@ class SVGAnimatedProperty<Property, void, void>
       SVGElement* context_element,
       const QualifiedName& attribute_name,
       Property* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
     return new SVGAnimatedProperty<Property>(context_element, attribute_name,
                                              initial_value, css_property_id);
   }
@@ -326,7 +327,7 @@ class SVGAnimatedProperty<Property, void, void>
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyInvalid)
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid)
       : SVGAnimatedPropertyCommon<Property>(context_element,
                                             attribute_name,
                                             initial_value,

@@ -70,8 +70,8 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
 
   CSSPropertyID id = property.PropertyID();
   bool is_inherited = property.IsInherited();
-  if (id != CSSPropertyVariable && (value.IsVariableReferenceValue() ||
-                                    value.IsPendingSubstitutionValue())) {
+  if (id != CSSPropertyID::kVariable && (value.IsVariableReferenceValue() ||
+                                         value.IsPendingSubstitutionValue())) {
     bool omit_animation_tainted =
         CSSAnimations::IsAnimationAffectingProperty(property);
     const CSSValue* resolved_value =
@@ -117,9 +117,10 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
       is_initial = true;
   }
 
-  // CSSPropertyVariable currently handles initial/inherit inside ApplyValue.
-  DCHECK(id != CSSPropertyVariable || !is_initial);
-  DCHECK(id != CSSPropertyVariable || !is_inherit);
+  // CSSPropertyID::kVariable currently handles initial/inherit inside
+  // ApplyValue.
+  DCHECK(id != CSSPropertyID::kVariable || !is_initial);
+  DCHECK(id != CSSPropertyID::kVariable || !is_inherit);
 
   if (is_initial)
     To<Longhand>(property).ApplyInitial(state);

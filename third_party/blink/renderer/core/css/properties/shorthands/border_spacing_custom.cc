@@ -32,13 +32,13 @@ bool BorderSpacing::ParseShorthand(
   if (!vertical_spacing || !range.AtEnd())
     return false;
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitBorderHorizontalSpacing, CSSPropertyBorderSpacing,
-      *horizontal_spacing, important,
+      CSSPropertyID::kWebkitBorderHorizontalSpacing,
+      CSSPropertyID::kBorderSpacing, *horizontal_spacing, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitBorderVerticalSpacing, CSSPropertyBorderSpacing,
-      *vertical_spacing, important,
+      CSSPropertyID::kWebkitBorderVerticalSpacing,
+      CSSPropertyID::kBorderSpacing, *vertical_spacing, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;

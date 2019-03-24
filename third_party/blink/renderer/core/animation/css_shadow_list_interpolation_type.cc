@@ -25,9 +25,9 @@ namespace {
 const ShadowList* GetShadowList(const CSSProperty& property,
                                 const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyBoxShadow:
+    case CSSPropertyID::kBoxShadow:
       return style.BoxShadow();
-    case CSSPropertyTextShadow:
+    case CSSPropertyID::kTextShadow:
       return style.TextShadow();
     default:
       NOTREACHED();
@@ -175,10 +175,10 @@ void CSSShadowListInterpolationType::ApplyStandardPropertyValue(
   scoped_refptr<ShadowList> shadow_list =
       CreateShadowList(interpolable_value, non_interpolable_value, state);
   switch (CssProperty().PropertyID()) {
-    case CSSPropertyBoxShadow:
+    case CSSPropertyID::kBoxShadow:
       state.Style()->SetBoxShadow(std::move(shadow_list));
       return;
-    case CSSPropertyTextShadow:
+    case CSSPropertyID::kTextShadow:
       state.Style()->SetTextShadow(std::move(shadow_list));
       return;
     default:

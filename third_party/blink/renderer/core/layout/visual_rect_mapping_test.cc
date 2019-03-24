@@ -293,7 +293,7 @@ TEST_P(VisualRectMappingTest, LayoutViewDisplayNone) {
   EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
 
   Element* frame_element = GetDocument().getElementById("frame");
-  frame_element->SetInlineStyleProperty(CSSPropertyDisplay, "none");
+  frame_element->SetInlineStyleProperty(CSSPropertyID::kDisplay, "none");
   UpdateAllLifecyclePhasesForTest();
 
   frame_body = ToLayoutBlock(ChildDocument().body()->GetLayoutObject());

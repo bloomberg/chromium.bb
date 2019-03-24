@@ -81,7 +81,7 @@ bool HasCSSPropertyNamePrefix(const AtomicString& property_name,
 CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   unsigned length = property_name.length();
   if (!length)
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   StringBuilder builder;
   builder.ReserveCapacity(length);
@@ -92,7 +92,7 @@ CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   if (HasCSSPropertyNamePrefix(property_name, "webkit"))
     builder.Append('-');
   else if (IsASCIIUpper(property_name[0]))
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   bool has_seen_upper = IsASCIIUpper(property_name[i]);
 
@@ -114,7 +114,7 @@ CSSPropertyID ParseCSSPropertyID(const AtomicString& property_name) {
   // Reject names containing both dashes and upper-case characters, such as
   // "border-rightColor".
   if (has_seen_dash && has_seen_upper)
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   String prop_name = builder.ToString();
   return unresolvedCSSPropertyID(prop_name);
@@ -137,8 +137,8 @@ CSSPropertyID CssPropertyInfo(const AtomicString& name) {
     return iter->value;
 
   CSSPropertyID unresolved_property = ParseCSSPropertyID(name);
-  if (unresolved_property == CSSPropertyVariable)
-    unresolved_property = CSSPropertyInvalid;
+  if (unresolved_property == CSSPropertyID::kVariable)
+    unresolved_property = CSSPropertyID::kInvalid;
   map.insert(name, unresolved_property);
   DCHECK(
       !isValidCSSPropertyID(unresolved_property) ||

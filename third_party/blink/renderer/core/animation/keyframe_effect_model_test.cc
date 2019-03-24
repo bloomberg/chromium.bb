@@ -152,19 +152,19 @@ Interpolation* FindValue(HeapVector<Member<Interpolation>>& values,
 
 TEST_F(AnimationKeyframeEffectModel, BasicOperation) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyFontFamily, "serif", "cursive");
+      KeyframesAtZeroAndOne(CSSPropertyID::kFontFamily, "serif", "cursive");
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
   HeapVector<Member<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
   ASSERT_EQ(1UL, values.size());
-  ExpectProperty(CSSPropertyFontFamily, values.at(0));
+  ExpectProperty(CSSPropertyID::kFontFamily, values.at(0));
   ExpectNonInterpolableValue("cursive", values.at(0));
 }
 
 TEST_F(AnimationKeyframeEffectModel, CompositeReplaceNonInterpolable) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyFontFamily, "serif", "cursive");
+      KeyframesAtZeroAndOne(CSSPropertyID::kFontFamily, "serif", "cursive");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
   StringKeyframeEffectModel* effect =
@@ -176,7 +176,7 @@ TEST_F(AnimationKeyframeEffectModel, CompositeReplaceNonInterpolable) {
 
 TEST_F(AnimationKeyframeEffectModel, CompositeReplace) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
   StringKeyframeEffectModel* effect =
@@ -189,7 +189,7 @@ TEST_F(AnimationKeyframeEffectModel, CompositeReplace) {
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
 TEST_F(AnimationKeyframeEffectModel, DISABLED_CompositeAdd) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
   StringKeyframeEffectModel* effect =
@@ -201,7 +201,7 @@ TEST_F(AnimationKeyframeEffectModel, DISABLED_CompositeAdd) {
 
 TEST_F(AnimationKeyframeEffectModel, CompositeEaseIn) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[0]->SetEasing(CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
@@ -217,7 +217,7 @@ TEST_F(AnimationKeyframeEffectModel, CompositeEaseIn) {
 
 TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[0]->SetEasing(CubicBezierTimingFunction::Create(0.42, 0, 0.58, 1));
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
@@ -232,7 +232,7 @@ TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
 
 TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyFontFamily, "serif", "cursive");
+      KeyframesAtZeroAndOne(CSSPropertyID::kFontFamily, "serif", "cursive");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
   StringKeyframeEffectModel* effect =
@@ -244,7 +244,7 @@ TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable) {
 
 TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplace) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
@@ -257,7 +257,7 @@ TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplace) {
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
 TEST_F(AnimationKeyframeEffectModel, DISABLED_ExtrapolateAdd) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
   StringKeyframeEffectModel* effect =
@@ -280,7 +280,7 @@ TEST_F(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetZero) {
   StringKeyframeVector keyframes(1);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
@@ -296,8 +296,9 @@ TEST_F(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetOne) {
   StringKeyframeVector keyframes(1);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(1.0);
-  keyframes[0]->SetCSSPropertyValue(
-      CSSPropertyLeft, "5px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kLeft, "5px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
 
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
@@ -310,17 +311,17 @@ TEST_F(AnimationKeyframeEffectModel, MoreThanTwoKeyframes) {
   StringKeyframeVector keyframes(3);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "sans-serif",
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "sans-serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
-  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive",
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "cursive",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
@@ -336,16 +337,16 @@ TEST_F(AnimationKeyframeEffectModel, MoreThanTwoKeyframes) {
 TEST_F(AnimationKeyframeEffectModel, EndKeyframeOffsetsUnspecified) {
   StringKeyframeVector keyframes(3);
   keyframes[0] = StringKeyframe::Create();
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive",
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "cursive",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[2] = StringKeyframe::Create();
-  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
@@ -364,17 +365,17 @@ TEST_F(AnimationKeyframeEffectModel, SampleOnKeyframe) {
   StringKeyframeVector keyframes(3);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive",
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "cursive",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
-  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
@@ -393,47 +394,47 @@ TEST_F(AnimationKeyframeEffectModel, MultipleKeyframesWithSameOffset) {
   StringKeyframeVector keyframes(9);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.1);
-  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "sans-serif",
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "sans-serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(0.1);
-  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "monospace",
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "monospace",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[3] = StringKeyframe::Create();
   keyframes[3]->SetOffset(0.5);
-  keyframes[3]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive",
+  keyframes[3]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "cursive",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[4] = StringKeyframe::Create();
   keyframes[4]->SetOffset(0.5);
-  keyframes[4]->SetCSSPropertyValue(CSSPropertyFontFamily, "fantasy",
+  keyframes[4]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "fantasy",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[5] = StringKeyframe::Create();
   keyframes[5]->SetOffset(0.5);
-  keyframes[5]->SetCSSPropertyValue(CSSPropertyFontFamily, "system-ui",
+  keyframes[5]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "system-ui",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[6] = StringKeyframe::Create();
   keyframes[6]->SetOffset(0.9);
-  keyframes[6]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[6]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[7] = StringKeyframe::Create();
   keyframes[7]->SetOffset(0.9);
-  keyframes[7]->SetCSSPropertyValue(CSSPropertyFontFamily, "sans-serif",
+  keyframes[7]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "sans-serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[8] = StringKeyframe::Create();
   keyframes[8]->SetOffset(1.0);
-  keyframes[8]->SetCSSPropertyValue(CSSPropertyFontFamily, "monospace",
+  keyframes[8]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "monospace",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
@@ -461,12 +462,14 @@ TEST_F(AnimationKeyframeEffectModel, DISABLED_PerKeyframeComposite) {
   StringKeyframeVector keyframes(2);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(
-      CSSPropertyLeft, "3px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kLeft, "3px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetCSSPropertyValue(
-      CSSPropertyLeft, "5px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kLeft, "5px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
 
   StringKeyframeEffectModel* effect =
@@ -480,18 +483,18 @@ TEST_F(AnimationKeyframeEffectModel, MultipleProperties) {
   StringKeyframeVector keyframes(2);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "serif",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
-  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontStyle, "normal",
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kFontStyle, "normal",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive",
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kFontFamily, "cursive",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
-  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontStyle, "oblique",
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kFontStyle, "oblique",
                                     SecureContextMode::kInsecureContext,
                                     nullptr);
 
@@ -500,10 +503,10 @@ TEST_F(AnimationKeyframeEffectModel, MultipleProperties) {
   HeapVector<Member<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
   EXPECT_EQ(2UL, values.size());
-  Interpolation* left_value = FindValue(values, CSSPropertyFontFamily);
+  Interpolation* left_value = FindValue(values, CSSPropertyID::kFontFamily);
   ASSERT_TRUE(left_value);
   ExpectNonInterpolableValue("cursive", left_value);
-  Interpolation* right_value = FindValue(values, CSSPropertyFontStyle);
+  Interpolation* right_value = FindValue(values, CSSPropertyID::kFontStyle);
   ASSERT_TRUE(right_value);
   ExpectNonInterpolableValue("oblique", right_value);
 }
@@ -511,7 +514,7 @@ TEST_F(AnimationKeyframeEffectModel, MultipleProperties) {
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
 TEST_F(AnimationKeyframeEffectModel, DISABLED_RecompositeCompositableValue) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
   StringKeyframeEffectModel* effect =
@@ -524,7 +527,7 @@ TEST_F(AnimationKeyframeEffectModel, DISABLED_RecompositeCompositableValue) {
 
 TEST_F(AnimationKeyframeEffectModel, MultipleIterations) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyLeft, "1px", "3px");
+      KeyframesAtZeroAndOne(CSSPropertyID::kLeft, "1px", "3px");
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
   HeapVector<Member<Interpolation>> values;
@@ -541,17 +544,20 @@ TEST_F(AnimationKeyframeEffectModel, DISABLED_DependsOnUnderlyingValue) {
   StringKeyframeVector keyframes(3);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetCSSPropertyValue(
-      CSSPropertyLeft, "1px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kLeft, "1px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetCSSPropertyValue(
-      CSSPropertyLeft, "1px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyID::kLeft, "1px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
   keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
-  keyframes[2]->SetCSSPropertyValue(
-      CSSPropertyLeft, "1px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyID::kLeft, "1px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
 
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
@@ -580,8 +586,9 @@ TEST_F(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
   StringKeyframeVector keyframes(1);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.5);
-  keyframes[0]->SetCSSPropertyValue(
-      CSSPropertyLeft, "4px", SecureContextMode::kInsecureContext, nullptr);
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyID::kLeft, "4px",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
 
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
@@ -605,7 +612,7 @@ TEST_F(AnimationKeyframeEffectModel, ToKeyframeEffectModel) {
 
 TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
   StringKeyframeVector keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyOpacity, "0", "1");
+      KeyframesAtZeroAndOne(CSSPropertyID::kOpacity, "0", "1");
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(keyframes);
 
@@ -643,7 +650,7 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
 TEST_F(AnimationKeyframeEffectModel,
        CompositorSnapshotUpdateAfterKeyframeChange) {
   StringKeyframeVector opacity_keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyOpacity, "0", "1");
+      KeyframesAtZeroAndOne(CSSPropertyID::kOpacity, "0", "1");
   StringKeyframeEffectModel* effect =
       StringKeyframeEffectModel::Create(opacity_keyframes);
 
@@ -661,7 +668,7 @@ TEST_F(AnimationKeyframeEffectModel,
   EXPECT_TRUE(value->IsDouble());
 
   StringKeyframeVector filter_keyframes =
-      KeyframesAtZeroAndOne(CSSPropertyFilter, "blur(1px)", "blur(10px)");
+      KeyframesAtZeroAndOne(CSSPropertyID::kFilter, "blur(1px)", "blur(10px)");
   effect->SetFrames(filter_keyframes);
 
   // Snapshot should update after changing keyframes

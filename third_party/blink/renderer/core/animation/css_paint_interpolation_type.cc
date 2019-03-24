@@ -32,9 +32,9 @@ bool GetColor(const CSSProperty& property,
               const ComputedStyle& style,
               StyleColor& result) {
   switch (property.PropertyID()) {
-    case CSSPropertyFill:
+    case CSSPropertyID::kFill:
       return GetColorFromPaint(style.SvgStyle().FillPaint(), result);
-    case CSSPropertyStroke:
+    case CSSPropertyID::kStroke:
       return GetColorFromPaint(style.SvgStyle().StrokePaint(), result);
     default:
       NOTREACHED();
@@ -131,11 +131,11 @@ void CSSPaintInterpolationType::ApplyStandardPropertyValue(
       interpolable_color, state);
   SVGComputedStyle& mutable_svg_style = state.Style()->AccessSVGStyle();
   switch (CssProperty().PropertyID()) {
-    case CSSPropertyFill:
+    case CSSPropertyID::kFill:
       mutable_svg_style.SetFillPaint(SVGPaint(color));
       mutable_svg_style.SetVisitedLinkFillPaint(SVGPaint(color));
       break;
-    case CSSPropertyStroke:
+    case CSSPropertyID::kStroke:
       mutable_svg_style.SetStrokePaint(SVGPaint(color));
       mutable_svg_style.SetVisitedLinkStrokePaint(SVGPaint(color));
       break;

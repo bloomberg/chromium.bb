@@ -21,14 +21,14 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
                                  const CSSParserContext& context,
                                  bool use_legacy_parsing) {
   switch (property) {
-    case CSSPropertyTransitionDelay:
+    case CSSPropertyID::kTransitionDelay:
       return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
-    case CSSPropertyTransitionDuration:
+    case CSSPropertyID::kTransitionDuration:
       return css_property_parser_helpers::ConsumeTime(range,
                                                       kValueRangeNonNegative);
-    case CSSPropertyTransitionProperty:
+    case CSSPropertyID::kTransitionProperty:
       return css_parsing_utils::ConsumeTransitionProperty(range, context);
-    case CSSPropertyTransitionTimingFunction:
+    case CSSPropertyID::kTransitionTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:
       NOTREACHED();
@@ -57,7 +57,8 @@ bool Transition::ParseShorthand(
   }
 
   for (unsigned i = 0; i < longhand_count; ++i) {
-    if (shorthand.properties()[i]->IDEquals(CSSPropertyTransitionProperty) &&
+    if (shorthand.properties()[i]->IDEquals(
+            CSSPropertyID::kTransitionProperty) &&
         !css_parsing_utils::IsValidPropertyList(*longhands[i]))
       return false;
   }

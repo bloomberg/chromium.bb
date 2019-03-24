@@ -66,7 +66,7 @@ void DeclaredStylePropertyMap::SetCustomProperty(
   auto* variable_data =
       To<CSSVariableReferenceValue>(value).VariableDataValue();
   GetStyleRule()->MutableProperties().SetProperty(
-      CSSPropertyVariable,
+      CSSPropertyID::kVariable,
       *CSSCustomPropertyDeclaration::Create(property_name, variable_data));
 }
 

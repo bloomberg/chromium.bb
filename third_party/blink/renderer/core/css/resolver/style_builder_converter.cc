@@ -101,7 +101,7 @@ scoped_refptr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
         state.CssToLengthConversionData()));
   if (reflect_value.Mask()) {
     NinePieceImage mask = NinePieceImage::MaskDefaults();
-    CSSToStyleMap::MapNinePieceImage(state, CSSPropertyWebkitBoxReflect,
+    CSSToStyleMap::MapNinePieceImage(state, CSSPropertyID::kWebkitBoxReflect,
                                      *reflect_value.Mask(), mask);
     reflection->SetMask(mask);
   }
@@ -1290,9 +1290,10 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
   }
 
   if (value.IsImageValue() || value.IsImageGeneratorValue() ||
-      value.IsImageSetValue())
+      value.IsImageSetValue()) {
     return ShapeValue::CreateImageValue(
-        state.GetStyleImage(CSSPropertyShapeOutside, value));
+        state.GetStyleImage(CSSPropertyID::kShapeOutside, value));
+  }
 
   scoped_refptr<BasicShape> shape;
   CSSBoxType css_box = CSSBoxType::kMissing;

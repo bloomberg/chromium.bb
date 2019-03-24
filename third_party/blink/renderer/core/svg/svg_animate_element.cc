@@ -102,7 +102,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tag_name,
                                      Document& document)
     : SVGAnimationElement(tag_name, document),
       type_(kAnimatedUnknown),
-      css_property_id_(CSSPropertyInvalid),
+      css_property_id_(CSSPropertyID::kInvalid),
       from_property_value_type_(kRegularPropertyValue),
       to_property_value_type_(kRegularPropertyValue),
       attribute_type_(kAttributeTypeAuto) {}
@@ -178,13 +178,13 @@ void SVGAnimateElement::ResolveTargetProperty() {
     // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
     if (type_ == kAnimatedTransformList) {
       type_ = kAnimatedUnknown;
-      css_property_id_ = CSSPropertyInvalid;
+      css_property_id_ = CSSPropertyID::kInvalid;
     }
   } else {
     type_ = SVGElement::AnimatedPropertyTypeForCSSAttribute(AttributeName());
     css_property_id_ = type_ != kAnimatedUnknown
                            ? cssPropertyID(AttributeName().LocalName())
-                           : CSSPropertyInvalid;
+                           : CSSPropertyID::kInvalid;
   }
   // Blacklist <script> targets here for now to prevent unpleasantries. This
   // also disallows the perfectly "valid" animation of 'className' on said
@@ -192,7 +192,7 @@ void SVGAnimateElement::ResolveTargetProperty() {
   // this can be removed.
   if (IsSVGScriptElement(*targetElement())) {
     type_ = kAnimatedUnknown;
-    css_property_id_ = CSSPropertyInvalid;
+    css_property_id_ = CSSPropertyID::kInvalid;
   }
   DCHECK(type_ != kAnimatedPoint && type_ != kAnimatedStringList &&
          type_ != kAnimatedTransform && type_ != kAnimatedTransformList);
@@ -201,7 +201,7 @@ void SVGAnimateElement::ResolveTargetProperty() {
 void SVGAnimateElement::ClearTargetProperty() {
   target_property_ = nullptr;
   type_ = kAnimatedUnknown;
-  css_property_id_ = CSSPropertyInvalid;
+  css_property_id_ = CSSPropertyID::kInvalid;
 }
 
 AnimatedPropertyType SVGAnimateElement::GetAnimatedPropertyType() {

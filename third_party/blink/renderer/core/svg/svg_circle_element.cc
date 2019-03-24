@@ -31,17 +31,17 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
                                     svg_names::kCxAttr,
                                     SVGLengthMode::kWidth,
                                     SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyCx)),
+                                    CSSPropertyID::kCx)),
       cy_(SVGAnimatedLength::Create(this,
                                     svg_names::kCyAttr,
                                     SVGLengthMode::kHeight,
                                     SVGLength::Initial::kUnitlessZero,
-                                    CSSPropertyCy)),
+                                    CSSPropertyID::kCy)),
       r_(SVGAnimatedLength::Create(this,
                                    svg_names::kRAttr,
                                    SVGLengthMode::kOther,
                                    SVGLength::Initial::kUnitlessZero,
-                                   CSSPropertyR)) {
+                                   CSSPropertyID::kR)) {
   AddToPropertyMap(cx_);
   AddToPropertyMap(cy_);
   AddToPropertyMap(r_);

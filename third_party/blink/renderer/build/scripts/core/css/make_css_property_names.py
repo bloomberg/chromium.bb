@@ -21,10 +21,6 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
     def _enum_declaration(self, property_):
         return "    %(enum_key)s = %(enum_value)s," % property_
 
-    def _unscoped_enum_declaration_compat(self, property_):
-        return "constexpr CSSPropertyID %(property_id)s = " \
-            "CSSPropertyID::%(enum_key)s;" % property_
-
     def _array_item(self, property_):
         return "    static_cast<CSSPropertyID>(%(enum_value)s), " \
             "// %(property_id)s" % property_
@@ -36,9 +32,6 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
             'class_name': self.class_name,
             'property_enums': "\n".join(map(
                 self._enum_declaration,
-                self._css_properties.properties_including_aliases)),
-            'property_enums_compat': "\n".join(map(
-                self._unscoped_enum_declaration_compat,
                 self._css_properties.properties_including_aliases)),
             'property_aliases': "\n".join(
                 map(self._array_item, self._css_properties.aliases)),

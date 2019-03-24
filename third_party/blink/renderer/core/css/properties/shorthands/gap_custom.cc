@@ -18,7 +18,7 @@ bool Gap::ParseShorthand(bool important,
                          const CSSParserContext& context,
                          const CSSParserLocalContext&,
                          HeapVector<CSSPropertyValue, 256>& properties) const {
-  DCHECK_EQ(shorthandForProperty(CSSPropertyGap).length(), 2u);
+  DCHECK_EQ(shorthandForProperty(CSSPropertyID::kGap).length(), 2u);
   CSSValue* row_gap = css_parsing_utils::ConsumeGapLength(range, context);
   CSSValue* column_gap = css_parsing_utils::ConsumeGapLength(range, context);
   if (!row_gap || !range.AtEnd())
@@ -26,11 +26,11 @@ bool Gap::ParseShorthand(bool important,
   if (!column_gap)
     column_gap = row_gap;
   css_property_parser_helpers::AddProperty(
-      CSSPropertyRowGap, CSSPropertyGap, *row_gap, important,
+      CSSPropertyID::kRowGap, CSSPropertyID::kGap, *row_gap, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyColumnGap, CSSPropertyGap, *column_gap, important,
+      CSSPropertyID::kColumnGap, CSSPropertyID::kGap, *column_gap, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;

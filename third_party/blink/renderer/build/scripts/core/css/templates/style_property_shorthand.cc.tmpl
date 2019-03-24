@@ -54,7 +54,7 @@ const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
     &GetCSSPropertyOffsetDistance(),
     &GetCSSPropertyOffsetRotate(),
   };
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyOffset, offsetProperties, base::size(offsetProperties)));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyID::kOffset, offsetProperties, base::size(offsetProperties)));
   return offsetLonghands;
 }
 
@@ -63,7 +63,7 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
   static StylePropertyShorthand emptyShorthand;
 
-  if (propertyID == CSSPropertyOffset &&
+  if (propertyID == CSSPropertyID::kOffset &&
       !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
     return offsetShorthandWithoutPositionAnchor();
   switch (propertyID) {

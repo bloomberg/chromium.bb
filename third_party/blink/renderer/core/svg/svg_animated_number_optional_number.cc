@@ -30,7 +30,7 @@ SVGAnimatedNumberOptionalNumber::SVGAnimatedNumberOptionalNumber(
           attribute_name,
           SVGNumberOptionalNumber::Create(SVGNumber::Create(initial_value),
                                           SVGNumber::Create(initial_value)),
-          CSSPropertyInvalid,
+          CSSPropertyID::kInvalid,
           static_cast<unsigned>(initial_value)),
       first_number_(SVGAnimatedNumber::Create(context_element,
                                               attribute_name,

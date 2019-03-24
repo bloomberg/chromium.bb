@@ -42,16 +42,16 @@ void HTMLParagraphElement::CollectStyleForPresentationAttribute(
   if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
         DeprecatedEqualIgnoringCase(value, "center"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueWebkitCenter);
     else if (DeprecatedEqualIgnoringCase(value, "left"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueWebkitLeft);
     else if (DeprecatedEqualIgnoringCase(value, "right"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueWebkitRight);
     else
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);

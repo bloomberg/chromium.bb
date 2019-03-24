@@ -26,9 +26,9 @@ const FilterOperations& GetFilterList(const CSSProperty& property,
     default:
       NOTREACHED();
       FALLTHROUGH;
-    case CSSPropertyBackdropFilter:
+    case CSSPropertyID::kBackdropFilter:
       return style.BackdropFilter();
-    case CSSPropertyFilter:
+    case CSSPropertyID::kFilter:
       return style.Filter();
   }
 }
@@ -37,10 +37,10 @@ void SetFilterList(const CSSProperty& property,
                    ComputedStyle& style,
                    const FilterOperations& filter_operations) {
   switch (property.PropertyID()) {
-    case CSSPropertyBackdropFilter:
+    case CSSPropertyID::kBackdropFilter:
       style.SetBackdropFilter(filter_operations);
       break;
-    case CSSPropertyFilter:
+    case CSSPropertyID::kFilter:
       style.SetFilter(filter_operations);
       break;
     default:

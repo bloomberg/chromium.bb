@@ -448,7 +448,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
   Options options;
   options.disallow_animation_tainted = disallow_animation_tainted;
 
-  if (id == CSSPropertyFontSize) {
+  if (id == CSSPropertyID::kFontSize) {
     bool is_root =
         state_.GetElement() &&
         state_.GetElement() == state_.GetDocument().documentElement();

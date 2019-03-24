@@ -73,9 +73,9 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
   MutableCSSPropertyValueSet* font_face_descriptor =
       MutableCSSPropertyValueSet::Create(properties, base::size(properties));
 
-  font_face_descriptor->SetProperty(CSSPropertyFontStretch, stretch);
-  font_face_descriptor->SetProperty(CSSPropertyFontStyle, style);
-  font_face_descriptor->SetProperty(CSSPropertyFontWeight, weight);
+  font_face_descriptor->SetProperty(CSSPropertyID::kFontStretch, stretch);
+  font_face_descriptor->SetProperty(CSSPropertyID::kFontStyle, style);
+  font_face_descriptor->SetProperty(CSSPropertyID::kFontWeight, weight);
 
   StyleRuleFontFace* style_rule_font_face =
       StyleRuleFontFace::Create(font_face_descriptor);

@@ -60,13 +60,13 @@ bool Offset::ParseShorthand(
 
   if (offset_position) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetPosition, CSSPropertyOffset, *offset_position,
-        important,
+        CSSPropertyID::kOffsetPosition, CSSPropertyID::kOffset,
+        *offset_position, important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetPosition, CSSPropertyOffset,
+        CSSPropertyID::kOffsetPosition, CSSPropertyID::kOffset,
         *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
@@ -74,26 +74,27 @@ bool Offset::ParseShorthand(
 
   if (offset_path) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path, important,
+        CSSPropertyID::kOffsetPath, CSSPropertyID::kOffset, *offset_path,
+        important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetPath, CSSPropertyOffset, *CSSInitialValue::Create(),
-        important,
+        CSSPropertyID::kOffsetPath, CSSPropertyID::kOffset,
+        *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
 
   if (offset_distance) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetDistance, CSSPropertyOffset, *offset_distance,
-        important,
+        CSSPropertyID::kOffsetDistance, CSSPropertyID::kOffset,
+        *offset_distance, important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetDistance, CSSPropertyOffset,
+        CSSPropertyID::kOffsetDistance, CSSPropertyID::kOffset,
         *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
@@ -101,26 +102,28 @@ bool Offset::ParseShorthand(
 
   if (offset_rotate) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetRotate, CSSPropertyOffset, *offset_rotate, important,
+        CSSPropertyID::kOffsetRotate, CSSPropertyID::kOffset, *offset_rotate,
+        important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetRotate, CSSPropertyOffset, *CSSInitialValue::Create(),
-        important,
+        CSSPropertyID::kOffsetRotate, CSSPropertyID::kOffset,
+        *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
 
   if (offset_anchor) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetAnchor, CSSPropertyOffset, *offset_anchor, important,
+        CSSPropertyID::kOffsetAnchor, CSSPropertyID::kOffset, *offset_anchor,
+        important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyOffsetAnchor, CSSPropertyOffset, *CSSInitialValue::Create(),
-        important,
+        CSSPropertyID::kOffsetAnchor, CSSPropertyID::kOffset,
+        *CSSInitialValue::Create(), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }

@@ -90,7 +90,7 @@ MutableCSSPropertyValueSet* CanvasFontCache::ParseFont(
     parsed_style = i->value;
   } else {
     parsed_style = MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
-    CSSParser::ParseValue(parsed_style, CSSPropertyFont, font_string, true,
+    CSSParser::ParseValue(parsed_style, CSSPropertyID::kFont, font_string, true,
                           document_->GetSecureContextMode());
     if (parsed_style->IsEmpty())
       return nullptr;
@@ -98,7 +98,7 @@ MutableCSSPropertyValueSet* CanvasFontCache::ParseFont(
     // http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
     // the "inherit", "initial" and "unset" values must be ignored.
     const CSSValue* font_value =
-        parsed_style->GetPropertyCSSValue(CSSPropertyFontSize);
+        parsed_style->GetPropertyCSSValue(CSSPropertyID::kFontSize);
     if (font_value && font_value->IsCSSWideKeyword())
       return nullptr;
     fetched_fonts_.insert(font_string, parsed_style);

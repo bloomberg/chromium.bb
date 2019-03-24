@@ -23,7 +23,7 @@ const CSSProperty& GetCSSPropertyVariable() {
 }
 
 const CSSProperty& CSSProperty::Get(CSSPropertyID id) {
-  DCHECK_NE(id, CSSPropertyInvalid);
+  DCHECK_NE(id, CSSPropertyID::kInvalid);
   DCHECK_LE(id, lastCSSProperty);  // last property id
   return To<CSSProperty>(CSSUnresolvedProperty::GetNonAliasProperty(id));
 }
@@ -63,7 +63,7 @@ const StylePropertyShorthand& CSSProperty::BorderDirections() {
       &GetCSSPropertyBorderBottom(), &GetCSSPropertyBorderLeft()};
   DEFINE_STATIC_LOCAL(
       StylePropertyShorthand, border_directions,
-      (CSSPropertyBorder, kProperties, base::size(kProperties)));
+      (CSSPropertyID::kBorder, kProperties, base::size(kProperties)));
   return border_directions;
 }
 

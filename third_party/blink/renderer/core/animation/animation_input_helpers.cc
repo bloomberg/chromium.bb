@@ -33,13 +33,13 @@ static String RemoveSVGPrefix(const String& property) {
 }
 
 static String CSSPropertyToKeyframeAttribute(const CSSProperty& property) {
-  DCHECK_NE(property.PropertyID(), CSSPropertyInvalid);
-  DCHECK_NE(property.PropertyID(), CSSPropertyVariable);
+  DCHECK_NE(property.PropertyID(), CSSPropertyID::kInvalid);
+  DCHECK_NE(property.PropertyID(), CSSPropertyID::kVariable);
 
   switch (property.PropertyID()) {
-    case CSSPropertyFloat:
+    case CSSPropertyID::kFloat:
       return "cssFloat";
-    case CSSPropertyOffset:
+    case CSSPropertyID::kOffset:
       return "cssOffset";
     default:
       return property.GetJSPropertyName();
@@ -58,23 +58,23 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
     const String& property,
     const Document& document) {
   if (CSSVariableParser::IsValidVariableName(property))
-    return CSSPropertyVariable;
+    return CSSPropertyID::kVariable;
 
   // Disallow prefixed properties.
   if (property[0] == '-')
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   if (IsASCIIUpper(property[0]))
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   if (property == "cssFloat")
-    return CSSPropertyFloat;
+    return CSSPropertyID::kFloat;
   if (property == "cssOffset")
-    return CSSPropertyOffset;
+    return CSSPropertyID::kOffset;
 
   StringBuilder builder;
   for (wtf_size_t i = 0; i < property.length(); ++i) {
     // Disallow hyphenated properties.
     if (property[i] == '-')
-      return CSSPropertyInvalid;
+      return CSSPropertyID::kInvalid;
     if (IsASCIIUpper(property[i]))
       builder.Append('-');
     builder.Append(property[i]);
@@ -87,14 +87,14 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
     const Element* element) {
   if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() || !element ||
       !element->IsSVGElement() || !IsSVGPrefixed(property))
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   String unprefixed_property = RemoveSVGPrefix(property);
   if (SVGElement::IsAnimatableCSSProperty(QualifiedName(
           g_null_atom, AtomicString(unprefixed_property), g_null_atom)))
     return cssPropertyID(unprefixed_property);
 
-  return CSSPropertyInvalid;
+  return CSSPropertyID::kInvalid;
 }
 
 using AttributeNameMap = HashMap<QualifiedName, const QualifiedName*>;
@@ -250,9 +250,9 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
   SecureContextMode secure_context_mode =
       document ? document->GetSecureContextMode()
                : SecureContextMode::kInsecureContext;
-  const CSSValue* value =
-      CSSParser::ParseSingleValue(CSSPropertyTransitionTimingFunction, string,
-                                  StrictCSSParserContext(secure_context_mode));
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kTransitionTimingFunction, string,
+      StrictCSSParserContext(secure_context_mode));
   const auto* value_list = DynamicTo<CSSValueList>(value);
   if (!value_list) {
     DCHECK(!value || value->IsCSSWideKeyword());

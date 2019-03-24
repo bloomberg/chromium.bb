@@ -52,10 +52,11 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
     // etc. -dwh
     if (!value.IsEmpty()) {
       if (DeprecatedEqualIgnoringCase(value, "all"))
-        AddPropertyToPresentationAttributeStyle(style, CSSPropertyClear,
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kClear,
                                                 CSSValueBoth);
       else
-        AddPropertyToPresentationAttributeStyle(style, CSSPropertyClear, value);
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kClear,
+                                                value);
     }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);

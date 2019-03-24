@@ -45,7 +45,7 @@ const StylePropertyShorthand& animationShorthandForParsing() {
       &GetCSSPropertyAnimationPlayState(),
       &GetCSSPropertyAnimationName()};
   static StylePropertyShorthand webkit_animation_longhands_for_parsing(
-      CSSPropertyAnimation, kAnimationPropertiesForParsing,
+      CSSPropertyID::kAnimation, kAnimationPropertiesForParsing,
       base::size(kAnimationPropertiesForParsing));
   return webkit_animation_longhands_for_parsing;
 }
@@ -58,7 +58,7 @@ const StylePropertyShorthand& transitionShorthandForParsing() {
       &GetCSSPropertyTransitionTimingFunction(),
       &GetCSSPropertyTransitionDelay(), &GetCSSPropertyTransitionProperty()};
   static StylePropertyShorthand transition_longhands(
-      CSSPropertyTransition, kTransitionProperties,
+      CSSPropertyID::kTransition, kTransitionProperties,
       base::size(kTransitionProperties));
   return transition_longhands;
 }

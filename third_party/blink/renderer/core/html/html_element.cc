@@ -195,10 +195,10 @@ unsigned HTMLElement::ParseBorderWidthAttribute(
 void HTMLElement::ApplyBorderAttributeToStyle(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderWidth,
+  AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderWidth,
                                           ParseBorderWidthAttribute(value),
                                           CSSPrimitiveValue::UnitType::kPixels);
-  AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderStyle,
+  AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
                                           CSSValueSolid);
 }
 
@@ -208,7 +208,7 @@ void HTMLElement::MapLanguageAttributeToLocale(
   if (!value.IsEmpty()) {
     // Have to quote so the locale id is treated as a string instead of as a CSS
     // keyword.
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWebkitLocale,
                                             SerializeString(value));
 
     // FIXME: Remove the following UseCounter code when we collect enough
@@ -235,7 +235,7 @@ void HTMLElement::MapLanguageAttributeToLocale(
     }
   } else {
     // The empty string means the language is explicitly unknown.
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWebkitLocale,
                                             CSSValueAuto);
   }
 }
@@ -261,66 +261,70 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle"))
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               CSSValueCenter);
     else
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
                                               value);
   } else if (name == kContenteditableAttr) {
     if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWebkitUserModify, CSSValueReadWrite);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
-                                              CSSValueBreakWord);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
-                                              CSSValueAfterWhiteSpace);
+          style, CSSPropertyID::kWebkitUserModify, CSSValueReadWrite);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kOverflowWrap, CSSValueBreakWord);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kWebkitLineBreak, CSSValueAfterWhiteSpace);
       UseCounter::Count(GetDocument(), WebFeature::kContentEditableTrue);
       if (HasTagName(kHTMLTag)) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kContentEditableTrueOnHTML);
       }
     } else if (DeprecatedEqualIgnoringCase(value, "plaintext-only")) {
+      AddPropertyToPresentationAttributeStyle(style,
+                                              CSSPropertyID::kWebkitUserModify,
+                                              CSSValueReadWritePlaintextOnly);
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWebkitUserModify, CSSValueReadWritePlaintextOnly);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
-                                              CSSValueBreakWord);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
-                                              CSSValueAfterWhiteSpace);
+          style, CSSPropertyID::kOverflowWrap, CSSValueBreakWord);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kWebkitLineBreak, CSSValueAfterWhiteSpace);
       UseCounter::Count(GetDocument(),
                         WebFeature::kContentEditablePlainTextOnly);
     } else if (DeprecatedEqualIgnoringCase(value, "false")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWebkitUserModify, CSSValueReadOnly);
+          style, CSSPropertyID::kWebkitUserModify, CSSValueReadOnly);
     }
   } else if (name == kHiddenAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyDisplay,
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDisplay,
                                             CSSValueNone);
   } else if (name == kDraggableAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kDraggableAttribute);
     if (DeprecatedEqualIgnoringCase(value, "true")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
-                                              CSSValueElement);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyUserSelect,
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kWebkitUserDrag, CSSValueElement);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kUserSelect,
                                               CSSValueNone);
     } else if (DeprecatedEqualIgnoringCase(value, "false")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitUserDrag,
-                                              CSSValueNone);
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kWebkitUserDrag, CSSValueNone);
     }
   } else if (name == kDirAttr) {
     if (DeprecatedEqualIgnoringCase(value, "auto")) {
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyUnicodeBidi, UnicodeBidiAttributeForDirAuto(this));
+          style, CSSPropertyID::kUnicodeBidi,
+          UnicodeBidiAttributeForDirAuto(this));
     } else {
-      if (IsValidDirAttribute(value))
-        AddPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
-                                                value);
-      else if (IsHTMLBodyElement(*this))
-        AddPropertyToPresentationAttributeStyle(style, CSSPropertyDirection,
-                                                "ltr");
+      if (IsValidDirAttribute(value)) {
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kDirection, value);
+      } else if (IsHTMLBodyElement(*this)) {
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kDirection, "ltr");
+      }
       if (!HasTagName(kBdiTag) && !HasTagName(kBdoTag) &&
-          !HasTagName(kOutputTag))
-        AddPropertyToPresentationAttributeStyle(style, CSSPropertyUnicodeBidi,
-                                                CSSValueIsolate);
+          !HasTagName(kOutputTag)) {
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kUnicodeBidi, CSSValueIsolate);
+      }
     }
   } else if (name.Matches(xml_names::kLangAttr)) {
     MapLanguageAttributeToLocale(value, style);
@@ -820,13 +824,15 @@ void HTMLElement::ApplyAlignmentAttributeToStyle(
     vertical_align_value = CSSValueTextTop;
   }
 
-  if (float_value != CSSValueInvalid)
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyFloat,
+  if (float_value != CSSValueInvalid) {
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFloat,
                                             float_value);
+  }
 
-  if (vertical_align_value != CSSValueInvalid)
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
-                                            vertical_align_value);
+  if (vertical_align_value != CSSValueInvalid) {
+    AddPropertyToPresentationAttributeStyle(
+        style, CSSPropertyID::kVerticalAlign, vertical_align_value);
+  }
 }
 
 bool HTMLElement::HasCustomFocusLogic() const {
@@ -1167,7 +1173,7 @@ void HTMLElement::AddHTMLLengthToStyle(MutableCSSPropertyValueSet* style,
   HTMLDimension dimension;
   if (!ParseDimensionValue(value, dimension))
     return;
-  if (property_id == CSSPropertyWidth &&
+  if (property_id == CSSPropertyID::kWidth &&
       (dimension.IsPercentage() || dimension.IsRelative())) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLElementDeprecatedWidth);
   }

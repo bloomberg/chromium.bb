@@ -236,12 +236,12 @@ void SVGTextContentElement::CollectStyleForPresentationAttribute(
 
     if (value == preserve_string) {
       UseCounter::Count(GetDocument(), WebFeature::kWhiteSpacePreFromXMLSpace);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
                                               CSSValuePre);
     } else {
       UseCounter::Count(GetDocument(),
                         WebFeature::kWhiteSpaceNowrapFromXMLSpace);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
                                               CSSValueNowrap);
     }
   } else {

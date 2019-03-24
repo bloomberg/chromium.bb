@@ -125,7 +125,7 @@ void TextTrackContainer::UpdateDefaultFontSize(
   current_font_size = font_size;
   if (current_font_size == old_font_size)
     return;
-  SetInlineStyleProperty(CSSPropertyFontSize, default_font_size_,
+  SetInlineStyleProperty(CSSPropertyID::kFontSize, default_font_size_,
                          CSSPrimitiveValue::UnitType::kPixels);
 }
 

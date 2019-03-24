@@ -74,7 +74,8 @@ bool EditingStyleUtilities::HasAncestorVerticalAlignStyle(Node& node,
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(node)) {
     CSSComputedStyleDeclaration* ancestor_style =
         CSSComputedStyleDeclaration::Create(&runner);
-    if (GetIdentifierValue(ancestor_style, CSSPropertyVerticalAlign) == value)
+    if (GetIdentifierValue(ancestor_style, CSSPropertyID::kVerticalAlign) ==
+        value)
       return true;
   }
   return false;
@@ -170,16 +171,16 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
   // style(vertical-align) to it so that document.queryCommandState() works with
   // the style. See bug http://crbug.com/582225.
   CSSValueID value_id =
-      GetIdentifierValue(style_to_check, CSSPropertyVerticalAlign);
+      GetIdentifierValue(style_to_check, CSSPropertyID::kVerticalAlign);
   if (value_id == CSSValueSub || value_id == CSSValueSuper) {
     CSSComputedStyleDeclaration* element_style =
         CSSComputedStyleDeclaration::Create(element);
     // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of
     // CSS vertical-align property.
-    if (GetIdentifierValue(element_style, CSSPropertyVerticalAlign) ==
+    if (GetIdentifierValue(element_style, CSSPropertyID::kVerticalAlign) ==
             CSSValueBaseline &&
         HasAncestorVerticalAlignStyle(*element, value_id))
-      style->Style()->SetProperty(CSSPropertyVerticalAlign, value_id);
+      style->Style()->SetProperty(CSSPropertyID::kVerticalAlign, value_id);
   }
 
   // If background color is transparent, traverse parent nodes until we hit a
@@ -191,7 +192,7 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
     const EphemeralRange range(selection.ToNormalizedEphemeralRange());
     if (const CSSValue* value =
             BackgroundColorValueInEffect(range.CommonAncestorContainer())) {
-      style->SetProperty(CSSPropertyBackgroundColor, value->CssText(),
+      style->SetProperty(CSSPropertyID::kBackgroundColor, value->CssText(),
                          /* important */ false,
                          document.GetSecureContextMode());
     }
@@ -213,14 +214,14 @@ bool EditingStyleUtilities::IsTransparentColorValue(const CSSValue* css_value) {
 bool EditingStyleUtilities::HasTransparentBackgroundColor(
     CSSStyleDeclaration* style) {
   const CSSValue* css_value =
-      style->GetPropertyCSSValueInternal(CSSPropertyBackgroundColor);
+      style->GetPropertyCSSValueInternal(CSSPropertyID::kBackgroundColor);
   return IsTransparentColorValue(css_value);
 }
 
 bool EditingStyleUtilities::HasTransparentBackgroundColor(
     CSSPropertyValueSet* style) {
   const CSSValue* css_value =
-      style->GetPropertyCSSValue(CSSPropertyBackgroundColor);
+      style->GetPropertyCSSValue(CSSPropertyID::kBackgroundColor);
   return IsTransparentColorValue(css_value);
 }
 

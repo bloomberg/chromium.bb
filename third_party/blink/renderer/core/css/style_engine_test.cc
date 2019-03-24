@@ -1021,7 +1021,7 @@ TEST_F(StyleEngineTest, VisitedExplicitInheritanceMatchedPropertiesCache) {
   style = span->firstChild()->GetComputedStyle();
   EXPECT_TRUE(MatchedPropertiesCache::IsStyleCacheable(*style));
 
-  span->SetInlineStyleProperty(CSSPropertyColor, "blue");
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
 
   // Should not DCHECK on applying overflow:inherit on cached matched properties
   UpdateAllLifecyclePhases();
@@ -1576,7 +1576,7 @@ TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
 
   // This should not cause DCHECK errors on style recalc flags.
   shadow_root.getElementById("span")->remove();
-  host->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  host->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhases();
 }
 
@@ -1593,7 +1593,7 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
   UpdateAllLifecyclePhases();
   GetDocument().body()->EnsureComputedStyle();
   GetDocument().getElementById("inner")->SetInlineStyleProperty(
-      CSSPropertyColor, "blue");
+      CSSPropertyID::kColor, "blue");
   UpdateAllLifecyclePhases();
 }
 
@@ -1615,7 +1615,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
 
   Element* div = GetDocument().QuerySelector("div");
   ASSERT_TRUE(div);
-  div->SetInlineStyleProperty(CSSPropertyColor, "green");
+  div->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetStyleEngine().RecalcStyle({});
@@ -1827,7 +1827,7 @@ TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
   EXPECT_FALSE(span_inner->GetComputedStyle());
 
   // Setting span color should not create ComputedStyles during style recalc.
-  span_outer->SetInlineStyleProperty(CSSPropertyColor, "blue");
+  span_outer->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
   EXPECT_TRUE(span_outer->NeedsStyleRecalc());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   GetStyleEngine().RecalcStyle({});
@@ -1841,7 +1841,7 @@ TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
 
   // Triggering style recalc which propagates the color down the tree should
   // clear ComputedStyle objects in the display:none subtree.
-  GetDocument().body()->SetInlineStyleProperty(CSSPropertyColor, "pink");
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kColor, "pink");
   UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(computed->GetComputedStyle());
@@ -1874,7 +1874,7 @@ TEST_F(StyleEngineTest, EnsureCustomComputedStyle) {
   }
 
   // This triggers layout tree building.
-  div->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  div->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhases();
 
   // We must not create LayoutObjects for Nodes with

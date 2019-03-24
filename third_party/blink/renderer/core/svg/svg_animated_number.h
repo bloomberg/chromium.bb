@@ -68,7 +68,7 @@ class SVGAnimatedNumber : public ScriptWrappable,
             context_element,
             attribute_name,
             initial_value,
-            CSSPropertyInvalid,
+            CSSPropertyID::kInvalid,
             static_cast<unsigned>(initial_value->Value())),
         parent_number_optional_number_(nullptr) {}
 

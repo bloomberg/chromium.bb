@@ -26,11 +26,11 @@ bool BorderInline::ParseShorthand(
   };
 
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderInlineWidth, *width, important, properties);
+      CSSPropertyID::kBorderInlineWidth, *width, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderInlineStyle, *style, important, properties);
+      CSSPropertyID::kBorderInlineStyle, *style, important, properties);
   css_property_parser_helpers::AddExpandedPropertyForValue(
-      CSSPropertyBorderInlineColor, *color, important, properties);
+      CSSPropertyID::kBorderInlineColor, *color, important, properties);
 
   return range.AtEnd();
 }

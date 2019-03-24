@@ -30,14 +30,14 @@ bool WebkitMaskRepeat::ParseShorthand(
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskRepeatX, CSSPropertyWebkitMaskRepeat, *result_x,
-      important,
+      CSSPropertyID::kWebkitMaskRepeatX, CSSPropertyID::kWebkitMaskRepeat,
+      *result_x, important,
       implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
                : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyWebkitMaskRepeatY, CSSPropertyWebkitMaskRepeat, *result_y,
-      important,
+      CSSPropertyID::kWebkitMaskRepeatY, CSSPropertyID::kWebkitMaskRepeat,
+      *result_y, important,
       implicit ? css_property_parser_helpers::IsImplicitProperty::kImplicit
                : css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

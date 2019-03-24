@@ -143,7 +143,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
   body->setAttribute(kStyleAttr,
                      "height: 100%; width: 100%; overflow: hidden; margin: 0");
   body->SetInlineStyleProperty(
-      CSSPropertyBackgroundColor,
+      CSSPropertyID::kBackgroundColor,
       *cssvalue::CSSColorValue::Create(background_color_.Rgb()));
   root_element->AppendChild(body);
   if (IsStopped()) {

@@ -24,7 +24,7 @@ static_assert(sizeof(CSSPropertyName) == sizeof(SameSizeAsCSSPropertyName),
 bool CSSPropertyName::operator==(const CSSPropertyName& other) const {
   if (property_id_ != other.property_id_)
     return false;
-  if (property_id_ != CSSPropertyVariable)
+  if (property_id_ != CSSPropertyID::kVariable)
     return true;
   return custom_property_name_ == other.custom_property_name_;
 }

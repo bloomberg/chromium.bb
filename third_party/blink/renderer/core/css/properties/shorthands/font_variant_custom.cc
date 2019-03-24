@@ -24,22 +24,22 @@ bool FontVariant::ParseShorthand(
   if (css_property_parser_helpers::IdentMatches<CSSValueNormal, CSSValueNone>(
           range.Peek().Id())) {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
+        CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFontVariant,
         *css_property_parser_helpers::ConsumeIdent(range), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
-        CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
+        CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
-        CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
+        CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
-        CSSPropertyFontVariantEastAsian, CSSPropertyFontVariant,
+        CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
@@ -92,22 +92,22 @@ bool FontVariant::ParseShorthand(
   } while (!range.AtEnd());
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
+      CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFontVariant,
       *ligatures_parser.FinalizeValue(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
+      CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFontVariant,
       *numeric_parser.FinalizeValue(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantEastAsian, CSSPropertyFontVariant,
+      CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFontVariant,
       *east_asian_parser.FinalizeValue(), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
+      CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFontVariant,
       caps_value ? *caps_value : *CSSIdentifierValue::Create(CSSValueNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

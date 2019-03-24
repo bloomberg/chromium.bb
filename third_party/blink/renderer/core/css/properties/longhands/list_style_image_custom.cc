@@ -34,7 +34,7 @@ const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
 void ListStyleImage::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
   state.Style()->SetListStyleImage(
-      state.GetStyleImage(CSSPropertyListStyleImage, value));
+      state.GetStyleImage(CSSPropertyID::kListStyleImage, value));
 }
 
 }  // namespace css_longhand

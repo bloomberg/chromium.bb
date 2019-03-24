@@ -30,8 +30,8 @@ const CSSValue* WebkitBorderImage::CSSValueFromComputedStyleInternal(
 void WebkitBorderImage::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
   NinePieceImage image;
-  CSSToStyleMap::MapNinePieceImage(state, CSSPropertyWebkitBorderImage, value,
-                                   image);
+  CSSToStyleMap::MapNinePieceImage(state, CSSPropertyID::kWebkitBorderImage,
+                                   value, image);
   state.Style()->SetBorderImage(image);
 }
 

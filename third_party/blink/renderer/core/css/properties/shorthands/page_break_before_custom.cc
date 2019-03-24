@@ -25,7 +25,7 @@ bool PageBreakBefore::ParseShorthand(
 
   DCHECK_NE(value, CSSValueInvalid);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBreakBefore, CSSPropertyPageBreakBefore,
+      CSSPropertyID::kBreakBefore, CSSPropertyID::kPageBreakBefore,
       *CSSIdentifierValue::Create(value), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

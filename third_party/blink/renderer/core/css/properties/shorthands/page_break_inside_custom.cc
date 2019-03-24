@@ -24,7 +24,7 @@ bool PageBreakInside::ParseShorthand(
   }
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyBreakInside, CSSPropertyPageBreakInside,
+      CSSPropertyID::kBreakInside, CSSPropertyID::kPageBreakInside,
       *CSSIdentifierValue::Create(value), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);

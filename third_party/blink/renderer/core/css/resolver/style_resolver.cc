@@ -123,7 +123,7 @@ static CSSPropertyValueSet* LeftToRightDeclaration() {
                       left_to_right_decl,
                       (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
   if (left_to_right_decl->IsEmpty())
-    left_to_right_decl->SetProperty(CSSPropertyDirection, CSSValueLtr);
+    left_to_right_decl->SetProperty(CSSPropertyID::kDirection, CSSValueLtr);
   return left_to_right_decl;
 }
 
@@ -132,7 +132,7 @@ static CSSPropertyValueSet* RightToLeftDeclaration() {
                       right_to_left_decl,
                       (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
   if (right_to_left_decl->IsEmpty())
-    right_to_left_decl->SetProperty(CSSPropertyDirection, CSSValueRtl);
+    right_to_left_decl->SetProperty(CSSPropertyID::kDirection, CSSValueRtl);
   return right_to_left_decl;
 }
 
@@ -776,7 +776,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
           collector.MatchedResult().AuthorRules();
       for (const auto& matched : matched_range) {
         const CSSValue* value =
-            matched.properties->GetPropertyCSSValue(CSSPropertyDisplay);
+            matched.properties->GetPropertyCSSValue(CSSPropertyID::kDisplay);
         auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
         if (identifier_value &&
             identifier_value->GetValueID() == CSSValueBlock) {
@@ -1240,48 +1240,48 @@ void StyleResolver::ApplyAnimatedStandardProperties(
 
 static inline bool IsValidCueStyleProperty(CSSPropertyID id) {
   switch (id) {
-    case CSSPropertyBackground:
-    case CSSPropertyBackgroundAttachment:
-    case CSSPropertyBackgroundClip:
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyBackgroundOrigin:
-    case CSSPropertyBackgroundPosition:
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyBackgroundRepeatX:
-    case CSSPropertyBackgroundRepeatY:
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyColor:
-    case CSSPropertyFont:
-    case CSSPropertyFontFamily:
-    case CSSPropertyFontSize:
-    case CSSPropertyFontStretch:
-    case CSSPropertyFontStyle:
-    case CSSPropertyFontVariant:
-    case CSSPropertyFontWeight:
-    case CSSPropertyLineHeight:
-    case CSSPropertyOpacity:
-    case CSSPropertyOutline:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyOutlineOffset:
-    case CSSPropertyOutlineStyle:
-    case CSSPropertyOutlineWidth:
-    case CSSPropertyVisibility:
-    case CSSPropertyWhiteSpace:
+    case CSSPropertyID::kBackground:
+    case CSSPropertyID::kBackgroundAttachment:
+    case CSSPropertyID::kBackgroundClip:
+    case CSSPropertyID::kBackgroundColor:
+    case CSSPropertyID::kBackgroundImage:
+    case CSSPropertyID::kBackgroundOrigin:
+    case CSSPropertyID::kBackgroundPosition:
+    case CSSPropertyID::kBackgroundPositionX:
+    case CSSPropertyID::kBackgroundPositionY:
+    case CSSPropertyID::kBackgroundRepeat:
+    case CSSPropertyID::kBackgroundRepeatX:
+    case CSSPropertyID::kBackgroundRepeatY:
+    case CSSPropertyID::kBackgroundSize:
+    case CSSPropertyID::kColor:
+    case CSSPropertyID::kFont:
+    case CSSPropertyID::kFontFamily:
+    case CSSPropertyID::kFontSize:
+    case CSSPropertyID::kFontStretch:
+    case CSSPropertyID::kFontStyle:
+    case CSSPropertyID::kFontVariant:
+    case CSSPropertyID::kFontWeight:
+    case CSSPropertyID::kLineHeight:
+    case CSSPropertyID::kOpacity:
+    case CSSPropertyID::kOutline:
+    case CSSPropertyID::kOutlineColor:
+    case CSSPropertyID::kOutlineOffset:
+    case CSSPropertyID::kOutlineStyle:
+    case CSSPropertyID::kOutlineWidth:
+    case CSSPropertyID::kVisibility:
+    case CSSPropertyID::kWhiteSpace:
     // FIXME: 'text-decoration' shorthand to be handled when available.
     // See https://chromiumcodereview.appspot.com/19516002 for details.
-    case CSSPropertyTextDecoration:
-    case CSSPropertyTextShadow:
-    case CSSPropertyBorderStyle:
+    case CSSPropertyID::kTextDecoration:
+    case CSSPropertyID::kTextShadow:
+    case CSSPropertyID::kBorderStyle:
       return true;
-    case CSSPropertyTextDecorationLine:
-    case CSSPropertyTextDecorationStyle:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyTextDecorationSkipInk:
+    case CSSPropertyID::kTextDecorationLine:
+    case CSSPropertyID::kTextDecorationStyle:
+    case CSSPropertyID::kTextDecorationColor:
+    case CSSPropertyID::kTextDecorationSkipInk:
       return true;
-    case CSSPropertyFontVariationSettings:
+    case CSSPropertyID::kFontVariationSettings:
       return true;
     default:
       break;
@@ -1293,114 +1293,114 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
   switch (id) {
     // Valid ::first-letter properties listed in spec:
     // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling
-    case CSSPropertyBackgroundAttachment:
-    case CSSPropertyBackgroundBlendMode:
-    case CSSPropertyBackgroundClip:
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyBackgroundOrigin:
-    case CSSPropertyBackgroundPosition:
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyBackgroundRepeatX:
-    case CSSPropertyBackgroundRepeatY:
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyBorderBlockEnd:
-    case CSSPropertyBorderBlockEndColor:
-    case CSSPropertyBorderBlockEndStyle:
-    case CSSPropertyBorderBlockEndWidth:
-    case CSSPropertyBorderBlockStart:
-    case CSSPropertyBorderBlockStartColor:
-    case CSSPropertyBorderBlockStartStyle:
-    case CSSPropertyBorderBlockStartWidth:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-    case CSSPropertyBorderBottomStyle:
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderImageOutset:
-    case CSSPropertyBorderImageRepeat:
-    case CSSPropertyBorderImageSlice:
-    case CSSPropertyBorderImageSource:
-    case CSSPropertyBorderImageWidth:
-    case CSSPropertyBorderInlineEnd:
-    case CSSPropertyBorderInlineEndColor:
-    case CSSPropertyBorderInlineEndStyle:
-    case CSSPropertyBorderInlineEndWidth:
-    case CSSPropertyBorderInlineStart:
-    case CSSPropertyBorderInlineStartColor:
-    case CSSPropertyBorderInlineStartStyle:
-    case CSSPropertyBorderInlineStartWidth:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderLeftStyle:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderRightStyle:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderTopRightRadius:
-    case CSSPropertyBorderTopStyle:
-    case CSSPropertyBorderTopWidth:
-    case CSSPropertyBoxShadow:
-    case CSSPropertyColor:
-    case CSSPropertyFloat:
-    case CSSPropertyFontFamily:
-    case CSSPropertyFontFeatureSettings:
-    case CSSPropertyFontKerning:
-    case CSSPropertyFontSize:
-    case CSSPropertyFontSizeAdjust:
-    case CSSPropertyFontStretch:
-    case CSSPropertyFontStyle:
-    case CSSPropertyFontVariant:
-    case CSSPropertyFontVariantCaps:
-    case CSSPropertyFontVariantLigatures:
-    case CSSPropertyFontVariantNumeric:
-    case CSSPropertyFontVariantEastAsian:
-    case CSSPropertyFontVariationSettings:
-    case CSSPropertyFontWeight:
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyLineHeight:
-    case CSSPropertyMarginBlockEnd:
-    case CSSPropertyMarginBlockStart:
-    case CSSPropertyMarginBottom:
-    case CSSPropertyMarginInlineEnd:
-    case CSSPropertyMarginInlineStart:
-    case CSSPropertyMarginLeft:
-    case CSSPropertyMarginRight:
-    case CSSPropertyMarginTop:
-    case CSSPropertyOpacity:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingTop:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyTextDecorationLine:
-    case CSSPropertyTextDecorationStyle:
-    case CSSPropertyTextDecorationSkipInk:
-    case CSSPropertyTextJustify:
-    case CSSPropertyTextShadow:
-    case CSSPropertyTextTransform:
-    case CSSPropertyTextUnderlinePosition:
-    case CSSPropertyVerticalAlign:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderImage:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyWebkitMarginAfterCollapse:
-    case CSSPropertyWebkitMarginBeforeCollapse:
-    case CSSPropertyWebkitMarginBottomCollapse:
-    case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyWordSpacing:
+    case CSSPropertyID::kBackgroundAttachment:
+    case CSSPropertyID::kBackgroundBlendMode:
+    case CSSPropertyID::kBackgroundClip:
+    case CSSPropertyID::kBackgroundColor:
+    case CSSPropertyID::kBackgroundImage:
+    case CSSPropertyID::kBackgroundOrigin:
+    case CSSPropertyID::kBackgroundPosition:
+    case CSSPropertyID::kBackgroundPositionX:
+    case CSSPropertyID::kBackgroundPositionY:
+    case CSSPropertyID::kBackgroundRepeat:
+    case CSSPropertyID::kBackgroundRepeatX:
+    case CSSPropertyID::kBackgroundRepeatY:
+    case CSSPropertyID::kBackgroundSize:
+    case CSSPropertyID::kBorderBlockEnd:
+    case CSSPropertyID::kBorderBlockEndColor:
+    case CSSPropertyID::kBorderBlockEndStyle:
+    case CSSPropertyID::kBorderBlockEndWidth:
+    case CSSPropertyID::kBorderBlockStart:
+    case CSSPropertyID::kBorderBlockStartColor:
+    case CSSPropertyID::kBorderBlockStartStyle:
+    case CSSPropertyID::kBorderBlockStartWidth:
+    case CSSPropertyID::kBorderBottomColor:
+    case CSSPropertyID::kBorderBottomLeftRadius:
+    case CSSPropertyID::kBorderBottomRightRadius:
+    case CSSPropertyID::kBorderBottomStyle:
+    case CSSPropertyID::kBorderBottomWidth:
+    case CSSPropertyID::kBorderImageOutset:
+    case CSSPropertyID::kBorderImageRepeat:
+    case CSSPropertyID::kBorderImageSlice:
+    case CSSPropertyID::kBorderImageSource:
+    case CSSPropertyID::kBorderImageWidth:
+    case CSSPropertyID::kBorderInlineEnd:
+    case CSSPropertyID::kBorderInlineEndColor:
+    case CSSPropertyID::kBorderInlineEndStyle:
+    case CSSPropertyID::kBorderInlineEndWidth:
+    case CSSPropertyID::kBorderInlineStart:
+    case CSSPropertyID::kBorderInlineStartColor:
+    case CSSPropertyID::kBorderInlineStartStyle:
+    case CSSPropertyID::kBorderInlineStartWidth:
+    case CSSPropertyID::kBorderLeftColor:
+    case CSSPropertyID::kBorderLeftStyle:
+    case CSSPropertyID::kBorderLeftWidth:
+    case CSSPropertyID::kBorderRightColor:
+    case CSSPropertyID::kBorderRightStyle:
+    case CSSPropertyID::kBorderRightWidth:
+    case CSSPropertyID::kBorderTopColor:
+    case CSSPropertyID::kBorderTopLeftRadius:
+    case CSSPropertyID::kBorderTopRightRadius:
+    case CSSPropertyID::kBorderTopStyle:
+    case CSSPropertyID::kBorderTopWidth:
+    case CSSPropertyID::kBoxShadow:
+    case CSSPropertyID::kColor:
+    case CSSPropertyID::kFloat:
+    case CSSPropertyID::kFontFamily:
+    case CSSPropertyID::kFontFeatureSettings:
+    case CSSPropertyID::kFontKerning:
+    case CSSPropertyID::kFontSize:
+    case CSSPropertyID::kFontSizeAdjust:
+    case CSSPropertyID::kFontStretch:
+    case CSSPropertyID::kFontStyle:
+    case CSSPropertyID::kFontVariant:
+    case CSSPropertyID::kFontVariantCaps:
+    case CSSPropertyID::kFontVariantLigatures:
+    case CSSPropertyID::kFontVariantNumeric:
+    case CSSPropertyID::kFontVariantEastAsian:
+    case CSSPropertyID::kFontVariationSettings:
+    case CSSPropertyID::kFontWeight:
+    case CSSPropertyID::kLetterSpacing:
+    case CSSPropertyID::kLineHeight:
+    case CSSPropertyID::kMarginBlockEnd:
+    case CSSPropertyID::kMarginBlockStart:
+    case CSSPropertyID::kMarginBottom:
+    case CSSPropertyID::kMarginInlineEnd:
+    case CSSPropertyID::kMarginInlineStart:
+    case CSSPropertyID::kMarginLeft:
+    case CSSPropertyID::kMarginRight:
+    case CSSPropertyID::kMarginTop:
+    case CSSPropertyID::kOpacity:
+    case CSSPropertyID::kPaddingBottom:
+    case CSSPropertyID::kPaddingLeft:
+    case CSSPropertyID::kPaddingRight:
+    case CSSPropertyID::kPaddingTop:
+    case CSSPropertyID::kTextDecorationColor:
+    case CSSPropertyID::kTextDecorationLine:
+    case CSSPropertyID::kTextDecorationStyle:
+    case CSSPropertyID::kTextDecorationSkipInk:
+    case CSSPropertyID::kTextJustify:
+    case CSSPropertyID::kTextShadow:
+    case CSSPropertyID::kTextTransform:
+    case CSSPropertyID::kTextUnderlinePosition:
+    case CSSPropertyID::kVerticalAlign:
+    case CSSPropertyID::kWebkitBorderHorizontalSpacing:
+    case CSSPropertyID::kWebkitBorderImage:
+    case CSSPropertyID::kWebkitBorderVerticalSpacing:
+    case CSSPropertyID::kWebkitFontSmoothing:
+    case CSSPropertyID::kWebkitMarginAfterCollapse:
+    case CSSPropertyID::kWebkitMarginBeforeCollapse:
+    case CSSPropertyID::kWebkitMarginBottomCollapse:
+    case CSSPropertyID::kWebkitMarginCollapse:
+    case CSSPropertyID::kWebkitMarginTopCollapse:
+    case CSSPropertyID::kWordSpacing:
       return true;
 
     // Not directly specified in spec, but variables should be supported nearly
     // anywhere.
-    case CSSPropertyVariable:
+    case CSSPropertyID::kVariable:
     // Properties that we currently support outside of spec.
-    case CSSPropertyVisibility:
+    case CSSPropertyID::kVisibility:
       return true;
 
     default:
@@ -1499,7 +1499,7 @@ static inline void ApplyProperty(
   static_assert(
       priority != kResolveVariables,
       "Application of custom properties must use specialized template");
-  DCHECK_NE(reference.Id(), CSSPropertyVariable);
+  DCHECK_NE(reference.Id(), CSSPropertyID::kVariable);
   StyleBuilder::ApplyProperty(reference.Property(), state, reference.Value());
 }
 
@@ -1525,7 +1525,7 @@ void StyleResolver::ApplyProperties(
     CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
     CSSPropertyID property_id = current.Id();
 
-    if (property_id == CSSPropertyAll &&
+    if (property_id == CSSPropertyID::kAll &&
         is_important == current.IsImportant()) {
       if (shouldUpdateNeedsApplyPass) {
         needs_apply_pass.Set(kAnimationPropertyPriority, is_important);
@@ -1977,7 +1977,7 @@ void StyleResolver::ComputeFont(ComputedStyle* style,
   state.SetStyle(style);
 
   for (const CSSProperty* property : properties) {
-    if (property->IDEquals(CSSPropertyLineHeight))
+    if (property->IDEquals(CSSPropertyID::kLineHeight))
       UpdateFont(state);
     StyleBuilder::ApplyProperty(
         *property, state,

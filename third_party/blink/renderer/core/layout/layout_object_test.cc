@@ -584,7 +584,7 @@ TEST_F(LayoutObjectTest, DisplayContentsAddInlineWrapper) {
   ASSERT_TRUE(text);
   ExpectAnonymousInlineWrapperFor<false>(text);
 
-  div->SetInlineStyleProperty(CSSPropertyColor, "pink");
+  div->SetInlineStyleProperty(CSSPropertyID::kColor, "pink");
   UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<true>(text);
 }
@@ -597,7 +597,7 @@ TEST_F(LayoutObjectTest, DisplayContentsRemoveInlineWrapper) {
   ASSERT_TRUE(text);
   ExpectAnonymousInlineWrapperFor<true>(text);
 
-  div->RemoveInlineStyleProperty(CSSPropertyColor);
+  div->RemoveInlineStyleProperty(CSSPropertyID::kColor);
   UpdateAllLifecyclePhasesForTest();
   ExpectAnonymousInlineWrapperFor<false>(text);
 }
@@ -637,7 +637,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTable) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
@@ -663,7 +663,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableSection) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
@@ -689,7 +689,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableRow) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   LayoutObject* inline_parent = none->GetLayoutObject()->Parent();
@@ -716,7 +716,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
 
   ExpectAnonymousInlineWrapperFor<true>(contents->firstChild());
 
-  none->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  none->SetInlineStyleProperty(CSSPropertyID::kDisplay, "inline");
   UpdateAllLifecyclePhasesForTest();
   ASSERT_TRUE(none->GetLayoutObject());
   EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
@@ -938,7 +938,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
   EXPECT_EQ(result.InnerNode(), target);
 
   Element* occluder = GetDocument().getElementById("occluder");
-  occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-150px");
+  occluder->SetInlineStyleProperty(CSSPropertyID::kMarginTop, "-150px");
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();

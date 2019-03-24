@@ -41,9 +41,10 @@ void HTMLTableCaptionElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kAlignAttr) {
-    if (!value.IsEmpty())
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide,
-                                              value);
+    if (!value.IsEmpty()) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kCaptionSide, value);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

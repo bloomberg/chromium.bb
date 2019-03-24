@@ -71,8 +71,8 @@ void PaintWorkletStylePropertyMap::BuildNativeValues(
   DCHECK(IsMainThread());
   for (const auto& property_id : native_properties) {
     // Silently drop shorthand properties.
-    DCHECK_NE(property_id, CSSPropertyInvalid);
-    DCHECK_NE(property_id, CSSPropertyVariable);
+    DCHECK_NE(property_id, CSSPropertyID::kInvalid);
+    DCHECK_NE(property_id, CSSPropertyID::kVariable);
     if (CSSProperty::Get(property_id).IsShorthand())
       continue;
     std::unique_ptr<CrossThreadStyleValue> value =
@@ -121,7 +121,7 @@ CSSStyleValueVector PaintWorkletStylePropertyMap::getAll(
     const String& property_name,
     ExceptionState& exception_state) const {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid) {
+  if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return CSSStyleValueVector();
   }

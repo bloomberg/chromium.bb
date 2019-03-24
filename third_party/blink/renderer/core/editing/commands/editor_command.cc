@@ -671,7 +671,7 @@ static bool ExecuteJustifyCenter(LocalFrame& frame,
                                  const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyCenter,
-                                    CSSPropertyTextAlign, "center");
+                                    CSSPropertyID::kTextAlign, "center");
 }
 
 static bool ExecuteJustifyFull(LocalFrame& frame,
@@ -680,7 +680,7 @@ static bool ExecuteJustifyFull(LocalFrame& frame,
                                const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyFull,
-                                    CSSPropertyTextAlign, "justify");
+                                    CSSPropertyID::kTextAlign, "justify");
 }
 
 static bool ExecuteJustifyLeft(LocalFrame& frame,
@@ -689,7 +689,7 @@ static bool ExecuteJustifyLeft(LocalFrame& frame,
                                const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyLeft,
-                                    CSSPropertyTextAlign, "left");
+                                    CSSPropertyID::kTextAlign, "left");
 }
 
 static bool ExecuteJustifyRight(LocalFrame& frame,
@@ -698,7 +698,7 @@ static bool ExecuteJustifyRight(LocalFrame& frame,
                                 const String&) {
   return ExecuteApplyParagraphStyle(frame, source,
                                     InputEvent::InputType::kFormatJustifyRight,
-                                    CSSPropertyTextAlign, "right");
+                                    CSSPropertyID::kTextAlign, "right");
 }
 
 static bool ExecuteOutdent(LocalFrame& frame,
@@ -1217,19 +1217,19 @@ static EditingTriState StateUnorderedList(LocalFrame& frame, Event*) {
 }
 
 static EditingTriState StateJustifyCenter(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "center");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "center");
 }
 
 static EditingTriState StateJustifyFull(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "justify");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "justify");
 }
 
 static EditingTriState StateJustifyLeft(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "left");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "left");
 }
 
 static EditingTriState StateJustifyRight(LocalFrame& frame, Event*) {
-  return StyleCommands::StateStyle(frame, CSSPropertyTextAlign, "right");
+  return StyleCommands::StateStyle(frame, CSSPropertyID::kTextAlign, "right");
 }
 
 // Value functions

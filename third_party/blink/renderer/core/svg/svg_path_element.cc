@@ -30,7 +30,8 @@ namespace blink {
 
 inline SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(svg_names::kPathTag, document),
-      path_(SVGAnimatedPath::Create(this, svg_names::kDAttr, CSSPropertyD)) {
+      path_(
+          SVGAnimatedPath::Create(this, svg_names::kDAttr, CSSPropertyID::kD)) {
   AddToPropertyMap(path_);
 }
 

@@ -227,7 +227,7 @@ bool MediaControlPopupMenuElement::FocusListItemIfDisplayed(Node* node) {
   Element* element = ToElement(node);
 
   if (!element->InlineStyle() ||
-      !element->InlineStyle()->HasProperty(CSSPropertyDisplay)) {
+      !element->InlineStyle()->HasProperty(CSSPropertyID::kDisplay)) {
     element->focus();
     last_focused_element_ = element;
     return true;

@@ -90,9 +90,9 @@ void SetKeyframeValue(Element* element,
   StyleSheetContents* style_sheet_contents = document.ElementSheet().Contents();
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
-        css_property == CSSPropertyVariable
+        css_property == CSSPropertyID::kVariable
             ? keyframe.SetCSSPropertyValue(
                   AtomicString(property), document.GetPropertyRegistry(), value,
                   document.GetSecureContextMode(), style_sheet_contents)
@@ -111,7 +111,7 @@ void SetKeyframeValue(Element* element,
   css_property =
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     keyframe.SetPresentationAttributeValue(
         CSSProperty::Get(css_property), value, document.GetSecureContextMode(),
         style_sheet_contents);
@@ -190,7 +190,7 @@ bool IsAnimatableKeyframeAttribute(const String& property,
                                    const Document& document) {
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     return !CSSAnimations::IsAnimationAffectingProperty(
         CSSProperty::Get(css_property));
   }
@@ -198,7 +198,7 @@ bool IsAnimatableKeyframeAttribute(const String& property,
   css_property =
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
-  if (css_property != CSSPropertyInvalid)
+  if (css_property != CSSPropertyID::kInvalid)
     return true;
 
   return !!AnimationInputHelpers::KeyframeAttributeToSVGAttribute(property,

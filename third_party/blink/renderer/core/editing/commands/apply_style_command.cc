@@ -501,14 +501,14 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
         max(kMinimumFontSize,
             starting_font_sizes.at(node) + style->FontSizeDelta());
     const CSSValue* value =
-        inline_style->GetPropertyCSSValue(CSSPropertyFontSize);
+        inline_style->GetPropertyCSSValue(CSSPropertyID::kFontSize);
     if (value) {
-      element->RemoveInlineStyleProperty(CSSPropertyFontSize);
+      element->RemoveInlineStyleProperty(CSSPropertyID::kFontSize);
       current_font_size = ComputedFontSize(node);
     }
     if (current_font_size != desired_font_size) {
       inline_style->SetProperty(
-          CSSPropertyFontSize,
+          CSSPropertyID::kFontSize,
           *CSSPrimitiveValue::Create(desired_font_size,
                                      CSSPrimitiveValue::UnitType::kPixels),
           false);
@@ -576,8 +576,9 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (runner == block)
       break;
-    int unicode_bidi = GetIdentifierValue(
-        CSSComputedStyleDeclaration::Create(&runner), CSSPropertyUnicodeBidi);
+    int unicode_bidi =
+        GetIdentifierValue(CSSComputedStyleDeclaration::Create(&runner),
+                           CSSPropertyID::kUnicodeBidi);
     if (unicode_bidi && unicode_bidi != CSSValueNormal) {
       highest_ancestor_unicode_bidi = unicode_bidi;
       next_highest_ancestor_with_unicode_bidi =
@@ -635,8 +636,9 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
       continue;
 
     Element* element = ToElement(&runner);
-    int unicode_bidi = GetIdentifierValue(
-        CSSComputedStyleDeclaration::Create(element), CSSPropertyUnicodeBidi);
+    int unicode_bidi =
+        GetIdentifierValue(CSSComputedStyleDeclaration::Create(element),
+                           CSSPropertyID::kUnicodeBidi);
     if (!unicode_bidi || unicode_bidi == CSSValueNormal)
       continue;
 
@@ -653,8 +655,8 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
     } else {
       MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
-      inline_style->SetProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
-      inline_style->RemoveProperty(CSSPropertyDirection);
+      inline_style->SetProperty(CSSPropertyID::kUnicodeBidi, CSSValueNormal);
+      inline_style->RemoveProperty(CSSPropertyID::kDirection);
       SetNodeAttribute(element, kStyleAttr,
                        AtomicString(inline_style->AsText()));
       if (IsSpanWithoutAttributesOrUnstyledStyleSpan(element)) {
@@ -670,8 +672,9 @@ static HTMLElement* HighestEmbeddingAncestor(Node* start_node,
                                              Node* enclosing_node) {
   for (Node* n = start_node; n && n != enclosing_node; n = n->parentNode()) {
     if (n->IsHTMLElement() &&
-        EditingStyleUtilities::IsEmbedOrIsolate(GetIdentifierValue(
-            CSSComputedStyleDeclaration::Create(n), CSSPropertyUnicodeBidi))) {
+        EditingStyleUtilities::IsEmbedOrIsolate(
+            GetIdentifierValue(CSSComputedStyleDeclaration::Create(n),
+                               CSSPropertyID::kUnicodeBidi))) {
       return ToHTMLElement(n);
     }
   }

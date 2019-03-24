@@ -52,7 +52,7 @@ void InlineStylePropertyMap::SetCustomProperty(
   auto* variable_data =
       To<CSSVariableReferenceValue>(value).VariableDataValue();
   owner_element_->SetInlineStyleProperty(
-      CSSPropertyVariable,
+      CSSPropertyID::kVariable,
       *CSSCustomPropertyDeclaration::Create(property_name, variable_data));
 }
 

@@ -130,15 +130,16 @@ bool IsElementVisible(Element& element) {
   if (!inline_style)
     return element.getAttribute("class") != "transparent";
 
-  if (inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
+  if (inline_style->GetPropertyValue(CSSPropertyID::kDisplay) == "none")
     return false;
 
-  if (inline_style->HasProperty(CSSPropertyOpacity) &&
-      inline_style->GetPropertyValue(CSSPropertyOpacity).ToDouble() == 0.0) {
+  if (inline_style->HasProperty(CSSPropertyID::kOpacity) &&
+      inline_style->GetPropertyValue(CSSPropertyID::kOpacity).ToDouble() ==
+          0.0) {
     return false;
   }
 
-  if (inline_style->GetPropertyValue(CSSPropertyVisibility) == "hidden")
+  if (inline_style->GetPropertyValue(CSSPropertyID::kVisibility) == "hidden")
     return false;
 
   if (Element* parent = element.parentElement())
@@ -882,7 +883,7 @@ class MediaControlsImplTestWithMockScheduler
     const CSSPropertyValueSet* style = MediaControls().InlineStyle();
     if (!style)
       return false;
-    return style->GetPropertyValue(CSSPropertyCursor) == "none";
+    return style->GetPropertyValue(CSSPropertyID::kCursor) == "none";
   }
 };
 

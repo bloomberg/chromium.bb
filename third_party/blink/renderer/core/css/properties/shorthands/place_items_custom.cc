@@ -20,7 +20,7 @@ bool PlaceItems::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceItems).length(), 2u);
+  DCHECK_EQ(shorthandForProperty(CSSPropertyID::kPlaceItems).length(), 2u);
 
   CSSParserTokenRange range_copy = range;
   const CSSValue* align_items_value =
@@ -42,12 +42,14 @@ bool PlaceItems::ParseShorthand(
   DCHECK(justify_items_value);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyAlignItems, CSSPropertyPlaceItems, *align_items_value,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kAlignItems, CSSPropertyID::kPlaceItems,
+      *align_items_value, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyJustifyItems, CSSPropertyPlaceItems, *justify_items_value,
-      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kJustifyItems, CSSPropertyID::kPlaceItems,
+      *justify_items_value, important,
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;

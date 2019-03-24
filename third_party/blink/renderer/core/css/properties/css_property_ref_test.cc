@@ -21,20 +21,20 @@ class CSSPropertyRefTest : public PageTestBase {};
 TEST_F(CSSPropertyRefTest, LookupUnregistred) {
   CSSPropertyRef ref("--x", GetDocument());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyID::kVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, LookupRegistered) {
   RegisterProperty(GetDocument(), "--x", "<length>", "42px", false);
   CSSPropertyRef ref("--x", GetDocument());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyID::kVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, LookupStandard) {
   CSSPropertyRef ref("font-size", GetDocument());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(CSSPropertyFontSize, ref.GetProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyID::kFontSize, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, IsValid) {
@@ -46,13 +46,13 @@ TEST_F(CSSPropertyRefTest, FromCustomProperty) {
   CustomProperty custom(AtomicString("--x"), GetDocument());
   CSSPropertyRef ref(custom);
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyID::kVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, FromStandardProperty) {
   CSSPropertyRef ref(GetCSSPropertyFontSize());
   EXPECT_TRUE(ref.IsValid());
-  EXPECT_EQ(CSSPropertyFontSize, ref.GetProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyID::kFontSize, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, FromStaticVariableInstance) {
@@ -88,12 +88,12 @@ TEST_F(CSSPropertyRefTest, GetResolvedPropertyAlias) {
 TEST_F(CSSPropertyRefTest, FromCSSPropertyNameCustom) {
   RegisterProperty(GetDocument(), "--x", "<length>", "42px", false);
   CSSPropertyRef ref(CSSPropertyName("--x"), GetDocument());
-  EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
+  EXPECT_EQ(CSSPropertyID::kVariable, ref.GetProperty().PropertyID());
 }
 
 TEST_F(CSSPropertyRefTest, FromCSSPropertyNameStandard) {
-  CSSPropertyRef ref(CSSPropertyName(CSSPropertyFontSize), GetDocument());
-  EXPECT_EQ(CSSPropertyFontSize, ref.GetProperty().PropertyID());
+  CSSPropertyRef ref(CSSPropertyName(CSSPropertyID::kFontSize), GetDocument());
+  EXPECT_EQ(CSSPropertyID::kFontSize, ref.GetProperty().PropertyID());
 }
 
 }  // namespace blink

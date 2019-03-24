@@ -36,19 +36,19 @@ bool ConsumeSystemFont(bool important,
                                      font_size, font_family);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontStyle, CSSPropertyFont,
+      CSSPropertyID::kFontStyle, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(
           font_style == ItalicSlopeValue() ? CSSValueItalic : CSSValueNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontWeight, CSSPropertyFont,
+      CSSPropertyID::kFontWeight, CSSPropertyID::kFont,
       *CSSPrimitiveValue::Create(font_weight,
                                  CSSPrimitiveValue::UnitType::kNumber),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontSize, CSSPropertyFont,
+      CSSPropertyID::kFontSize, CSSPropertyID::kFont,
       *CSSPrimitiveValue::Create(font_size,
                                  CSSPrimitiveValue::UnitType::kPixels),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
@@ -57,37 +57,37 @@ bool ConsumeSystemFont(bool important,
   CSSValueList* font_family_list = CSSValueList::CreateCommaSeparated();
   font_family_list->Append(*CSSFontFamilyValue::Create(font_family));
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontFamily, CSSPropertyFont, *font_family_list, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kFontFamily, CSSPropertyID::kFont, *font_family_list,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontStretch, CSSPropertyFont,
+      CSSPropertyID::kFontStretch, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantCaps, CSSPropertyFont,
+      CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantLigatures, CSSPropertyFont,
+      CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantNumeric, CSSPropertyFont,
+      CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantEastAsian, CSSPropertyFont,
+      CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyLineHeight, CSSPropertyFont,
+      CSSPropertyID::kLineHeight, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
@@ -143,39 +143,39 @@ bool ConsumeFont(bool important,
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontStyle, CSSPropertyFont,
+      CSSPropertyID::kFontStyle, CSSPropertyID::kFont,
       font_style ? *font_style : *CSSIdentifierValue::Create(CSSValueNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantCaps, CSSPropertyFont,
+      CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFont,
       font_variant_caps ? *font_variant_caps
                         : *CSSIdentifierValue::Create(CSSValueNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantLigatures, CSSPropertyFont,
+      CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantNumeric, CSSPropertyFont,
+      CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontVariantEastAsian, CSSPropertyFont,
+      CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontWeight, CSSPropertyFont,
+      CSSPropertyID::kFontWeight, CSSPropertyID::kFont,
       font_weight ? *font_weight : *CSSIdentifierValue::Create(CSSValueNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontStretch, CSSPropertyFont,
+      CSSPropertyID::kFontStretch, CSSPropertyID::kFont,
       font_stretch ? *font_stretch
                    : *CSSIdentifierValue::Create(CSSValueNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
@@ -188,7 +188,7 @@ bool ConsumeFont(bool important,
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontSize, CSSPropertyFont, *font_size, important,
+      CSSPropertyID::kFontSize, CSSPropertyID::kFont, *font_size, important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
@@ -198,12 +198,13 @@ bool ConsumeFont(bool important,
     if (!line_height)
       return false;
     css_property_parser_helpers::AddProperty(
-        CSSPropertyLineHeight, CSSPropertyFont, *line_height, important,
+        CSSPropertyID::kLineHeight, CSSPropertyID::kFont, *line_height,
+        important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else {
     css_property_parser_helpers::AddProperty(
-        CSSPropertyLineHeight, CSSPropertyFont,
+        CSSPropertyID::kLineHeight, CSSPropertyID::kFont,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
@@ -215,8 +216,8 @@ bool ConsumeFont(bool important,
     return false;
 
   css_property_parser_helpers::AddProperty(
-      CSSPropertyFontFamily, CSSPropertyFont, *parsed_family_value, important,
-      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      CSSPropertyID::kFontFamily, CSSPropertyID::kFont, *parsed_family_value,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20110324/#font-prop requires

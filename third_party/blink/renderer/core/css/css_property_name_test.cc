@@ -9,18 +9,18 @@
 namespace blink {
 
 TEST(CSSPropertyNameTest, IdStandardProperty) {
-  CSSPropertyName name(CSSPropertyFontSize);
-  EXPECT_EQ(CSSPropertyFontSize, name.Id());
+  CSSPropertyName name(CSSPropertyID::kFontSize);
+  EXPECT_EQ(CSSPropertyID::kFontSize, name.Id());
 }
 
 TEST(CSSPropertyNameTest, IdCustomProperty) {
   CSSPropertyName name(AtomicString("--x"));
-  EXPECT_EQ(CSSPropertyVariable, name.Id());
+  EXPECT_EQ(CSSPropertyID::kVariable, name.Id());
   EXPECT_TRUE(name.IsCustomProperty());
 }
 
 TEST(CSSPropertyNameTest, GetNameStandardProperty) {
-  CSSPropertyName name(CSSPropertyFontSize);
+  CSSPropertyName name(CSSPropertyID::kFontSize);
   EXPECT_EQ(AtomicString("font-size"), name.ToAtomicString());
 }
 
@@ -31,11 +31,11 @@ TEST(CSSPropertyNameTest, GetNameCustomProperty) {
 
 TEST(CSSPropertyNameTest, OperatorEquals) {
   EXPECT_EQ(CSSPropertyName("--x"), CSSPropertyName("--x"));
-  EXPECT_EQ(CSSPropertyName(CSSPropertyColor),
-            CSSPropertyName(CSSPropertyColor));
+  EXPECT_EQ(CSSPropertyName(CSSPropertyID::kColor),
+            CSSPropertyName(CSSPropertyID::kColor));
   EXPECT_NE(CSSPropertyName("--x"), CSSPropertyName("--y"));
-  EXPECT_NE(CSSPropertyName(CSSPropertyColor),
-            CSSPropertyName(CSSPropertyBackgroundColor));
+  EXPECT_NE(CSSPropertyName(CSSPropertyID::kColor),
+            CSSPropertyName(CSSPropertyID::kBackgroundColor));
 }
 
 TEST(CSSPropertyNameTest, From) {
@@ -44,13 +44,14 @@ TEST(CSSPropertyNameTest, From) {
   EXPECT_FALSE(CSSPropertyName::From("notaproperty"));
   EXPECT_FALSE(CSSPropertyName::From("-not-a-property"));
 
-  EXPECT_EQ(*CSSPropertyName::From("color"), CSSPropertyName(CSSPropertyColor));
+  EXPECT_EQ(*CSSPropertyName::From("color"),
+            CSSPropertyName(CSSPropertyID::kColor));
   EXPECT_EQ(*CSSPropertyName::From("--x"), CSSPropertyName("--x"));
 }
 
 TEST(CSSPropertyNameTest, FromNativeCSSProperty) {
   CSSPropertyName name = GetCSSPropertyFontSize().GetCSSPropertyName();
-  EXPECT_EQ(CSSPropertyName(CSSPropertyFontSize), name);
+  EXPECT_EQ(CSSPropertyName(CSSPropertyID::kFontSize), name);
 }
 
 }  // namespace blink

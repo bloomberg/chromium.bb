@@ -172,16 +172,16 @@ const CSSValueList* ComputedStyleUtils::CreatePositionListForLayer(
     const ComputedStyle& style) {
   CSSValueList* position_list = CSSValueList::CreateSpaceSeparated();
   if (layer.IsBackgroundXOriginSet()) {
-    DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
-           property.IDEquals(CSSPropertyWebkitMaskPosition));
+    DCHECK(property.IDEquals(CSSPropertyID::kBackgroundPosition) ||
+           property.IDEquals(CSSPropertyID::kWebkitMaskPosition));
     position_list->Append(
         *CSSIdentifierValue::Create(layer.BackgroundXOrigin()));
   }
   position_list->Append(
       *ZoomAdjustedPixelValueForLength(layer.PositionX(), style));
   if (layer.IsBackgroundYOriginSet()) {
-    DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
-           property.IDEquals(CSSPropertyWebkitMaskPosition));
+    DCHECK(property.IDEquals(CSSPropertyID::kBackgroundPosition) ||
+           property.IDEquals(CSSPropertyID::kWebkitMaskPosition));
     position_list->Append(
         *CSSIdentifierValue::Create(layer.BackgroundYOrigin()));
   }
@@ -519,19 +519,19 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   std::pair<const Length*, const Length*> positions;
   bool is_horizontal_property;
   switch (property.PropertyID()) {
-    case CSSPropertyLeft:
+    case CSSPropertyID::kLeft:
       positions = std::make_pair(&style.Left(), &style.Right());
       is_horizontal_property = true;
       break;
-    case CSSPropertyRight:
+    case CSSPropertyID::kRight:
       positions = std::make_pair(&style.Right(), &style.Left());
       is_horizontal_property = true;
       break;
-    case CSSPropertyTop:
+    case CSSPropertyID::kTop:
       positions = std::make_pair(&style.Top(), &style.Bottom());
       is_horizontal_property = false;
       break;
-    case CSSPropertyBottom:
+    case CSSPropertyID::kBottom:
       positions = std::make_pair(&style.Bottom(), &style.Top());
       is_horizontal_property = false;
       break;
@@ -610,17 +610,17 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
       LayoutUnit position;
 
       switch (property.PropertyID()) {
-        case CSSPropertyLeft:
+        case CSSPropertyID::kLeft:
           position = client_offset.Width() - layout_box->MarginLeft();
           break;
-        case CSSPropertyTop:
+        case CSSPropertyID::kTop:
           position = client_offset.Height() - layout_box->MarginTop();
           break;
-        case CSSPropertyRight:
+        case CSSPropertyID::kRight:
           position = container->ClientWidth() - layout_box->MarginRight() -
                      (layout_box->OffsetWidth() + client_offset.Width());
           break;
-        case CSSPropertyBottom:
+        case CSSPropertyID::kBottom:
           position = container->ClientHeight() - layout_box->MarginBottom() -
                      (layout_box->OffsetHeight() + client_offset.Height());
           break;
@@ -2279,7 +2279,8 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
     if (shorthand_case == kAllNormal && identifier_value &&
         identifier_value->GetValueID() == CSSValueNone &&
-        shorthand.properties()[i]->IDEquals(CSSPropertyFontVariantLigatures)) {
+        shorthand.properties()[i]->IDEquals(
+            CSSPropertyID::kFontVariantLigatures)) {
       shorthand_case = kNoneLigatures;
     } else if (!(identifier_value &&
                  identifier_value->GetValueID() == CSSValueNormal)) {

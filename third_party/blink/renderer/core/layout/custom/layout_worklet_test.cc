@@ -77,10 +77,11 @@ TEST_F(LayoutWorkletTest, ParseProperties) {
   CSSLayoutDefinition* definition = global_scope->FindDefinition("foo");
   EXPECT_NE(nullptr, definition);
 
-  Vector<CSSPropertyID> native_invalidation_properties = {CSSPropertyFlexBasis};
+  Vector<CSSPropertyID> native_invalidation_properties = {
+      CSSPropertyID::kFlexBasis};
   Vector<AtomicString> custom_invalidation_properties = {"--prop"};
   Vector<CSSPropertyID> child_native_invalidation_properties = {
-      CSSPropertyMarginTop};
+      CSSPropertyID::kMarginTop};
   Vector<AtomicString> child_custom_invalidation_properties = {"--child-prop"};
 
   EXPECT_EQ(native_invalidation_properties,

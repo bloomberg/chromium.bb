@@ -157,7 +157,7 @@ void HTMLProgressElement::Trace(Visitor* visitor) {
 }
 
 void HTMLProgressElement::SetValueWidthPercentage(double width) const {
-  value_->SetInlineStyleProperty(CSSPropertyWidth, width,
+  value_->SetInlineStyleProperty(CSSPropertyID::kWidth, width,
                                  CSSPrimitiveValue::UnitType::kPercentage);
 }
 

@@ -486,7 +486,7 @@ void ImageDocument::WindowSizeChanged() {
 
   if (shrink_to_fit_mode_ == kViewport) {
     int div_width = CalculateDivWidth();
-    div_element_->SetInlineStyleProperty(CSSPropertyWidth, div_width,
+    div_element_->SetInlineStyleProperty(CSSPropertyID::kWidth, div_width,
                                          CSSPrimitiveValue::UnitType::kPixels);
 
     // Explicitly set the height of the <div> containing the <img> so that it
@@ -500,7 +500,7 @@ void ImageDocument::WindowSizeChanged() {
     float aspect_ratio = View()->GetLayoutSize().AspectRatio();
     int div_height = std::max(ImageSize().Height(),
                               static_cast<int>(div_width / aspect_ratio));
-    div_element_->SetInlineStyleProperty(CSSPropertyHeight, div_height,
+    div_element_->SetInlineStyleProperty(CSSPropertyID::kHeight, div_height,
                                          CSSPrimitiveValue::UnitType::kPixels);
     return;
   }

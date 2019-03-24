@@ -44,22 +44,22 @@ TEST_F(CSSPropertyValueSetTest, MergeAndOverrideOnConflictCustomProperty) {
   MutableCSSPropertyValueSet& set1 = rule1->MutableProperties();
 
   EXPECT_EQ(3u, set0.PropertyCount());
-  EXPECT_EQ("red", set0.GetPropertyValue(CSSPropertyColor));
+  EXPECT_EQ("red", set0.GetPropertyValue(CSSPropertyID::kColor));
   EXPECT_EQ("foo", set0.GetPropertyValue(AtomicString("--x")));
   EXPECT_EQ("foo", set0.GetPropertyValue(AtomicString("--y")));
   EXPECT_EQ(3u, set1.PropertyCount());
-  EXPECT_EQ("green", set1.GetPropertyValue(CSSPropertyColor));
+  EXPECT_EQ("green", set1.GetPropertyValue(CSSPropertyID::kColor));
   EXPECT_EQ("bar", set1.GetPropertyValue(AtomicString("--x")));
   EXPECT_EQ("bar", set1.GetPropertyValue(AtomicString("--y")));
 
   set0.MergeAndOverrideOnConflict(&set1);
 
   EXPECT_EQ(3u, set0.PropertyCount());
-  EXPECT_EQ("green", set0.GetPropertyValue(CSSPropertyColor));
+  EXPECT_EQ("green", set0.GetPropertyValue(CSSPropertyID::kColor));
   EXPECT_EQ("bar", set0.GetPropertyValue(AtomicString("--x")));
   EXPECT_EQ("bar", set0.GetPropertyValue(AtomicString("--y")));
   EXPECT_EQ(3u, set1.PropertyCount());
-  EXPECT_EQ("green", set1.GetPropertyValue(CSSPropertyColor));
+  EXPECT_EQ("green", set1.GetPropertyValue(CSSPropertyID::kColor));
   EXPECT_EQ("bar", set1.GetPropertyValue(AtomicString("--x")));
   EXPECT_EQ("bar", set1.GetPropertyValue(AtomicString("--y")));
 }

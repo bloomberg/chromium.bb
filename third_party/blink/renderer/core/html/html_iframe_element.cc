@@ -105,9 +105,9 @@ void HTMLIFrameElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else if (name == kHeightAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else if (name == kFrameborderAttr) {
@@ -117,7 +117,7 @@ void HTMLIFrameElement::CollectStyleForPresentationAttribute(
     if (!value.ToInt()) {
       // Add a rule that nulls out our border width.
       AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyBorderWidth, 0,
+          style, CSSPropertyID::kBorderWidth, 0,
           CSSPrimitiveValue::UnitType::kPixels);
     }
   } else {
