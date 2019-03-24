@@ -248,7 +248,7 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
     int percent;
     if (id == start)
       percent = 0;
-    else if (id == CSSValueCenter)
+    else if (id == CSSValueID::kCenter)
       percent = 50;
     else if (id == end)
       percent = 100;

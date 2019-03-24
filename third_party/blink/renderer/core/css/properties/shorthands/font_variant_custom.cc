@@ -21,7 +21,8 @@ bool FontVariant::ParseShorthand(
     const CSSParserContext&,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  if (css_property_parser_helpers::IdentMatches<CSSValueNormal, CSSValueNone>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueID::kNormal,
+                                                CSSValueID::kNone>(
           range.Peek().Id())) {
     css_property_parser_helpers::AddProperty(
         CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFontVariant,
@@ -30,17 +31,17 @@ bool FontVariant::ParseShorthand(
         properties);
     css_property_parser_helpers::AddProperty(
         CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFontVariant,
-        *CSSIdentifierValue::Create(CSSValueNormal), important,
+        *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
         CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFontVariant,
-        *CSSIdentifierValue::Create(CSSValueNormal), important,
+        *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     css_property_parser_helpers::AddProperty(
         CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFontVariant,
-        *CSSIdentifierValue::Create(CSSValueNormal), important,
+        *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
     return range.AtEnd();
@@ -75,12 +76,12 @@ bool FontVariant::ParseShorthand(
 
     CSSValueID id = range.Peek().Id();
     switch (id) {
-      case CSSValueSmallCaps:
-      case CSSValueAllSmallCaps:
-      case CSSValuePetiteCaps:
-      case CSSValueAllPetiteCaps:
-      case CSSValueUnicase:
-      case CSSValueTitlingCaps:
+      case CSSValueID::kSmallCaps:
+      case CSSValueID::kAllSmallCaps:
+      case CSSValueID::kPetiteCaps:
+      case CSSValueID::kAllPetiteCaps:
+      case CSSValueID::kUnicase:
+      case CSSValueID::kTitlingCaps:
         // Only one caps value permitted in font-variant grammar.
         if (caps_value)
           return false;
@@ -108,7 +109,8 @@ bool FontVariant::ParseShorthand(
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFontVariant,
-      caps_value ? *caps_value : *CSSIdentifierValue::Create(CSSValueNormal),
+      caps_value ? *caps_value
+                 : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;

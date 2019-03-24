@@ -48,17 +48,17 @@ bool GridArea::ParseShorthand(
   if (!column_start_value) {
     column_start_value = row_start_value->IsCustomIdentValue()
                              ? row_start_value
-                             : CSSIdentifierValue::Create(CSSValueAuto);
+                             : CSSIdentifierValue::Create(CSSValueID::kAuto);
   }
   if (!row_end_value) {
     row_end_value = row_start_value->IsCustomIdentValue()
                         ? row_start_value
-                        : CSSIdentifierValue::Create(CSSValueAuto);
+                        : CSSIdentifierValue::Create(CSSValueID::kAuto);
   }
   if (!column_end_value) {
     column_end_value = column_start_value->IsCustomIdentValue()
                            ? column_start_value
-                           : CSSIdentifierValue::Create(CSSValueAuto);
+                           : CSSIdentifierValue::Create(CSSValueID::kAuto);
   }
 
   css_property_parser_helpers::AddProperty(

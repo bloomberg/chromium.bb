@@ -103,7 +103,7 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // transition-property default value.
-  list->Append(*CSSIdentifierValue::Create(CSSValueAll));
+  list->Append(*CSSIdentifierValue::Create(CSSValueID::kAll));
   list->Append(
       *CSSPrimitiveValue::Create(CSSTransitionData::InitialDuration(),
                                  CSSPrimitiveValue::UnitType::kSeconds));

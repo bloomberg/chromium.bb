@@ -19,7 +19,7 @@ bool Overflow::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValueID x_id = CSSValueInvalid;
+  CSSValueID x_id = CSSValueID::kInvalid;
   // Per the FIXME below, if only one value is specified, it could be a valid
   // value for overflow-y but not overflow-x. Thus, we first assume it is the
   // overflow-y value.
@@ -47,8 +47,9 @@ bool Overflow::ParseShorthand(
   // same value.
   if (IsValidCSSValueID(x_id))
     overflow_x_value = CSSIdentifierValue::Create(x_id);
-  else if (y_id == CSSValueWebkitPagedX || y_id == CSSValueWebkitPagedY)
-    overflow_x_value = CSSIdentifierValue::Create(CSSValueAuto);
+  else if (y_id == CSSValueID::kWebkitPagedX ||
+           y_id == CSSValueID::kWebkitPagedY)
+    overflow_x_value = CSSIdentifierValue::Create(CSSValueID::kAuto);
   else
     overflow_x_value = overflow_y_value;
   css_property_parser_helpers::AddProperty(

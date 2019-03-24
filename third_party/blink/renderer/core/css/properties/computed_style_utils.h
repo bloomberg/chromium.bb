@@ -31,7 +31,7 @@ class ComputedStyleUtils {
       const Length& length,
       const ComputedStyle& style) {
     if (length.IsAuto())
-      return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSIdentifierValue::Create(CSSValueID::kAuto);
     return ZoomAdjustedPixelValue(length.Value(), style);
   }
 

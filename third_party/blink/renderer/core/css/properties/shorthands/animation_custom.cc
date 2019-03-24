@@ -26,23 +26,24 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
       return css_property_parser_helpers::ConsumeTime(range, kValueRangeAll);
     case CSSPropertyID::kAnimationDirection:
       return css_property_parser_helpers::ConsumeIdent<
-          CSSValueNormal, CSSValueAlternate, CSSValueReverse,
-          CSSValueAlternateReverse>(range);
+          CSSValueID::kNormal, CSSValueID::kAlternate, CSSValueID::kReverse,
+          CSSValueID::kAlternateReverse>(range);
     case CSSPropertyID::kAnimationDuration:
       return css_property_parser_helpers::ConsumeTime(range,
                                                       kValueRangeNonNegative);
     case CSSPropertyID::kAnimationFillMode:
       return css_property_parser_helpers::ConsumeIdent<
-          CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>(
-          range);
+          CSSValueID::kNone, CSSValueID::kForwards, CSSValueID::kBackwards,
+          CSSValueID::kBoth>(range);
     case CSSPropertyID::kAnimationIterationCount:
       return css_parsing_utils::ConsumeAnimationIterationCount(range);
     case CSSPropertyID::kAnimationName:
       return css_parsing_utils::ConsumeAnimationName(range, context,
                                                      use_legacy_parsing);
     case CSSPropertyID::kAnimationPlayState:
-      return css_property_parser_helpers::ConsumeIdent<CSSValueRunning,
-                                                       CSSValuePaused>(range);
+      return css_property_parser_helpers::ConsumeIdent<CSSValueID::kRunning,
+                                                       CSSValueID::kPaused>(
+          range);
     case CSSPropertyID::kAnimationTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range);
     default:
@@ -117,7 +118,7 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // animation-name default value.
-  list->Append(*CSSIdentifierValue::Create(CSSValueNone));
+  list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
   list->Append(
       *CSSPrimitiveValue::Create(CSSAnimationData::InitialDuration(),
                                  CSSPrimitiveValue::UnitType::kSeconds));
@@ -133,7 +134,7 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
   list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
       CSSAnimationData::InitialFillMode()));
   // Initial animation-play-state.
-  list->Append(*CSSIdentifierValue::Create(CSSValueRunning));
+  list->Append(*CSSIdentifierValue::Create(CSSValueID::kRunning));
   return list;
 }
 
