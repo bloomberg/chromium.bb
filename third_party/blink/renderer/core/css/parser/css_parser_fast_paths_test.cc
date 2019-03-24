@@ -18,7 +18,7 @@ TEST(CSSParserFastPathsTest, ParseKeyword) {
       CSSPropertyID::kFloat, "left", kHTMLStandardMode);
   ASSERT_NE(nullptr, value);
   CSSIdentifierValue* identifier_value = To<CSSIdentifierValue>(value);
-  EXPECT_EQ(CSSValueLeft, identifier_value->GetValueID());
+  EXPECT_EQ(CSSValueID::kLeft, identifier_value->GetValueID());
   value = CSSParserFastPaths::MaybeParseValue(CSSPropertyID::kFloat, "foo",
                                               kHTMLStandardMode);
   ASSERT_EQ(nullptr, value);

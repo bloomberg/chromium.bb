@@ -337,7 +337,7 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   const auto* list = To<CSSValueList>(value);
   EXPECT_EQ(1U, list->length());
-  EXPECT_EQ(CSSValuePanDown,
+  EXPECT_EQ(CSSValueID::kPanDown,
             To<CSSIdentifierValue>(list->Item(0U)).GetValueID());
 }
 
@@ -348,9 +348,10 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertyTwoValuesCombined) {
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   const auto* list = To<CSSValueList>(value);
   EXPECT_EQ(2U, list->length());
-  EXPECT_EQ(CSSValuePanLeft,
+  EXPECT_EQ(CSSValueID::kPanLeft,
             To<CSSIdentifierValue>(list->Item(0U)).GetValueID());
-  EXPECT_EQ(CSSValuePanY, To<CSSIdentifierValue>(list->Item(1U)).GetValueID());
+  EXPECT_EQ(CSSValueID::kPanY,
+            To<CSSIdentifierValue>(list->Item(1U)).GetValueID());
 }
 
 TEST(CSSPropertyParserTest, ScrollCustomizationPropertyInvalidEntries) {

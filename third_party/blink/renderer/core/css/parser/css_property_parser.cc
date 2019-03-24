@@ -191,22 +191,22 @@ static CSSValueID CssValueKeywordID(const CharacterType* value_keyword,
   for (unsigned i = 0; i != length; ++i) {
     CharacterType c = value_keyword[i];
     if (c == 0 || c >= 0x7F)
-      return CSSValueInvalid;  // illegal character
+      return CSSValueID::kInvalid;  // illegal character
     buffer[i] = WTF::ToASCIILower(c);
   }
   buffer[length] = '\0';
 
   const Value* hash_table_entry = FindValue(buffer, length);
   return hash_table_entry ? static_cast<CSSValueID>(hash_table_entry->id)
-                          : CSSValueInvalid;
+                          : CSSValueID::kInvalid;
 }
 
 CSSValueID CssValueKeywordID(StringView string) {
   unsigned length = string.length();
   if (!length)
-    return CSSValueInvalid;
+    return CSSValueID::kInvalid;
   if (length > maxCSSValueKeywordLength)
-    return CSSValueInvalid;
+    return CSSValueID::kInvalid;
 
   return string.Is8Bit() ? CssValueKeywordID(string.Characters8(), length)
                          : CssValueKeywordID(string.Characters16(), length);
@@ -220,11 +220,11 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
     return false;
 
   CSSValue* value = nullptr;
-  if (id == CSSValueInitial)
+  if (id == CSSValueID::kInitial)
     value = CSSInitialValue::Create();
-  else if (id == CSSValueInherit)
+  else if (id == CSSValueID::kInherit)
     value = CSSInheritedValue::Create();
-  else if (id == CSSValueUnset)
+  else if (id == CSSValueID::kUnset)
     value = cssvalue::CSSUnsetValue::Create();
   else
     return false;
@@ -254,14 +254,14 @@ static CSSValue* ConsumeSingleViewportDescriptor(
     case CSSPropertyID::kMaxWidth:
     case CSSPropertyID::kMinHeight:
     case CSSPropertyID::kMaxHeight:
-      if (id == CSSValueAuto || id == CSSValueInternalExtendToZoom)
+      if (id == CSSValueID::kAuto || id == CSSValueID::kInternalExtendToZoom)
         return ConsumeIdent(range);
       return ConsumeLengthOrPercent(range, css_parser_mode,
                                     kValueRangeNonNegative);
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
     case CSSPropertyID::kZoom: {
-      if (id == CSSValueAuto)
+      if (id == CSSValueID::kAuto)
         return ConsumeIdent(range);
       CSSValue* parsed_value = ConsumeNumber(range, kValueRangeNonNegative);
       if (parsed_value)
@@ -269,12 +269,13 @@ static CSSValue* ConsumeSingleViewportDescriptor(
       return ConsumePercent(range, kValueRangeNonNegative);
     }
     case CSSPropertyID::kUserZoom:
-      return ConsumeIdent<CSSValueZoom, CSSValueFixed>(range);
+      return ConsumeIdent<CSSValueID::kZoom, CSSValueID::kFixed>(range);
     case CSSPropertyID::kOrientation:
-      return ConsumeIdent<CSSValueAuto, CSSValuePortrait, CSSValueLandscape>(
-          range);
+      return ConsumeIdent<CSSValueID::kAuto, CSSValueID::kPortrait,
+                          CSSValueID::kLandscape>(range);
     case CSSPropertyID::kViewportFit:
-      return ConsumeIdent<CSSValueAuto, CSSValueContain, CSSValueCover>(range);
+      return ConsumeIdent<CSSValueID::kAuto, CSSValueID::kContain,
+                          CSSValueID::kCover>(range);
     default:
       NOTREACHED();
       break;

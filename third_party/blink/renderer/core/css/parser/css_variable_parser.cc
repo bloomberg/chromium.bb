@@ -28,12 +28,12 @@ bool ClassifyBlock(CSSParserTokenRange range, bool& has_references) {
       // A block may have both var and env references. They can also be nested
       // and used as fallbacks.
       switch (token.FunctionId()) {
-        case CSSValueVar:
+        case CSSValueID::kVar:
           if (!IsValidVariableReference(range.ConsumeBlock()))
             return false;  // Invalid reference.
           has_references = true;
           continue;
-        case CSSValueEnv:
+        case CSSValueID::kEnv:
           if (!IsValidEnvVariableReference(range.ConsumeBlock()))
             return false;  // Invalid reference.
           has_references = true;
@@ -115,13 +115,14 @@ CSSValueID ClassifyVariableRange(CSSParserTokenRange range,
   if (range.Peek().GetType() == kIdentToken) {
     CSSValueID id = range.ConsumeIncludingWhitespace().Id();
     if (range.AtEnd() &&
-        (id == CSSValueInherit || id == CSSValueInitial || id == CSSValueUnset))
+        (id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
+         id == CSSValueID::kUnset))
       return id;
   }
 
   if (ClassifyBlock(range, has_references))
-    return CSSValueInternalVariableValue;
-  return CSSValueInvalid;
+    return CSSValueID::kInternalVariableValue;
+  return CSSValueID::kInvalid;
 }
 
 }  // namespace
@@ -142,7 +143,7 @@ bool CSSVariableParser::ContainsValidVariableReferences(
     CSSParserTokenRange range) {
   bool has_references;
   CSSValueID type = ClassifyVariableRange(range, has_references);
-  return type == CSSValueInternalVariableValue && has_references;
+  return type == CSSValueID::kInternalVariableValue && has_references;
 }
 
 CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
@@ -158,7 +159,7 @@ CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
 
   if (!IsValidCSSValueID(type))
     return nullptr;
-  if (type == CSSValueInternalVariableValue) {
+  if (type == CSSValueID::kInternalVariableValue) {
     return CSSCustomPropertyDeclaration::Create(
         variable_name,
         CSSVariableData::Create(range, is_animation_tainted, has_references,
@@ -178,7 +179,7 @@ CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
   bool has_references;
   CSSValueID type = ClassifyVariableRange(range, has_references);
 
-  if (type != CSSValueInternalVariableValue)
+  if (type != CSSValueID::kInternalVariableValue)
     return nullptr;  // Invalid or a css-wide keyword
   if (require_var_reference && !has_references)
     return nullptr;
