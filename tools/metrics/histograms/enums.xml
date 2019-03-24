@@ -36873,6 +36873,15 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Scripting Content with Certificate Errors"/>
 </enum>
 
+<enum name="MjpegDecodeAcceleratorErrorCode">
+  <int value="0" label="NO_ERRORS"/>
+  <int value="1" label="INVALID_ARGUMENT"/>
+  <int value="2" label="UNREADABLE_INPUT"/>
+  <int value="3" label="PARSE_JPEG_FAILED"/>
+  <int value="4" label="UNSUPPORTED_JPEG"/>
+  <int value="5" label="PLATFORM_FAILURE"/>
+</enum>
+
 <enum name="MobileDefaultBrowserState">
   <int value="0" label="No default"/>
   <int value="1" label="Chrome: System default"/>

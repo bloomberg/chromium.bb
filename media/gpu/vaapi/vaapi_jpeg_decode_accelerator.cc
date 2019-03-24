@@ -39,9 +39,16 @@ enum VAJDADecoderFailure {
   VAJDA_DECODER_FAILURES_MAX,
 };
 
-static void ReportToUMA(VAJDADecoderFailure failure) {
+static void ReportToVAJDADecoderFailureUMA(VAJDADecoderFailure failure) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAJDA.DecoderFailure", failure,
                             VAJDA_DECODER_FAILURES_MAX + 1);
+}
+
+static void ReportToVAJDAResponseToClientUMA(
+    MjpegDecodeAccelerator::Error response) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.VAJDA.ResponseToClient", response,
+      MjpegDecodeAccelerator::Error::MJDA_ERROR_CODE_MAX + 1);
 }
 
 static MjpegDecodeAccelerator::Error VaapiJpegDecodeStatusToError(
@@ -85,12 +92,17 @@ void VaapiJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
     return;
   }
   VLOGF(1) << "Notifying of error " << error;
+  // |error| shouldn't be NO_ERRORS because successful decodes should be handled
+  // by VideoFrameReady().
+  DCHECK_NE(MjpegDecodeAccelerator::Error::NO_ERRORS, error);
+  ReportToVAJDAResponseToClientUMA(error);
   DCHECK(client_);
   client_->NotifyError(bitstream_buffer_id, error);
 }
 
 void VaapiJpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  ReportToVAJDAResponseToClientUMA(MjpegDecodeAccelerator::Error::NO_ERRORS);
   client_->VideoFrameReady(bitstream_buffer_id);
 }
 
@@ -116,8 +128,10 @@ bool VaapiJpegDecodeAccelerator::Initialize(Client* client) {
 
   client_ = client;
 
-  if (!decoder_.Initialize(base::BindRepeating(&ReportToUMA, VAAPI_ERROR)))
+  if (!decoder_.Initialize(
+          base::BindRepeating(&ReportToVAJDADecoderFailureUMA, VAAPI_ERROR))) {
     return false;
+  }
 
   if (!decoder_thread_.Start()) {
     VLOGF(1) << "Failed to start decoding thread.";
