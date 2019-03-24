@@ -25,10 +25,10 @@ bool Flex::ParseShorthand(bool important,
   double flex_shrink = kUnsetValue;
   CSSValue* flex_basis = nullptr;
 
-  if (range.Peek().Id() == CSSValueNone) {
+  if (range.Peek().Id() == CSSValueID::kNone) {
     flex_grow = 0;
     flex_shrink = 0;
-    flex_basis = CSSIdentifierValue::Create(CSSValueAuto);
+    flex_basis = CSSIdentifierValue::Create(CSSValueID::kAuto);
     range.ConsumeIncludingWhitespace();
   } else {
     unsigned index = 0;
@@ -51,7 +51,7 @@ bool Flex::ParseShorthand(bool important,
           return false;
         }
       } else if (!flex_basis) {
-        if (range.Peek().Id() == CSSValueAuto)
+        if (range.Peek().Id() == CSSValueID::kAuto)
           flex_basis = css_property_parser_helpers::ConsumeIdent(range);
         if (!flex_basis) {
           flex_basis = css_property_parser_helpers::ConsumeLengthOrPercent(

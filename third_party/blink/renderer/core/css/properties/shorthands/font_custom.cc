@@ -23,8 +23,8 @@ bool ConsumeSystemFont(bool important,
                        CSSParserTokenRange& range,
                        HeapVector<CSSPropertyValue, 256>& properties) {
   CSSValueID system_font_id = range.ConsumeIncludingWhitespace().Id();
-  DCHECK_GE(system_font_id, CSSValueCaption);
-  DCHECK_LE(system_font_id, CSSValueStatusBar);
+  DCHECK_GE(system_font_id, CSSValueID::kCaption);
+  DCHECK_LE(system_font_id, CSSValueID::kStatusBar);
   if (!range.AtEnd())
     return false;
 
@@ -37,8 +37,9 @@ bool ConsumeSystemFont(bool important,
 
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontStyle, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(
-          font_style == ItalicSlopeValue() ? CSSValueItalic : CSSValueNormal),
+      *CSSIdentifierValue::Create(font_style == ItalicSlopeValue()
+                                      ? CSSValueID::kItalic
+                                      : CSSValueID::kNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
@@ -63,32 +64,32 @@ bool ConsumeSystemFont(bool important,
 
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontStretch, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kLineHeight, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
@@ -105,15 +106,16 @@ bool ConsumeFont(bool important,
   CSSValue* font_stretch = nullptr;
   while (!range.AtEnd()) {
     CSSValueID id = range.Peek().Id();
-    if (!font_style && (id == CSSValueNormal || id == CSSValueItalic ||
-                        id == CSSValueOblique)) {
+    if (!font_style &&
+        (id == CSSValueID::kNormal || id == CSSValueID::kItalic ||
+         id == CSSValueID::kOblique)) {
       font_style = css_parsing_utils::ConsumeFontStyle(range, context.Mode());
       if (!font_style)
         return false;
       continue;
     }
     if (!font_variant_caps &&
-        (id == CSSValueNormal || id == CSSValueSmallCaps)) {
+        (id == CSSValueID::kNormal || id == CSSValueID::kSmallCaps)) {
       // Font variant in the shorthand is particular, it only accepts normal or
       // small-caps.
       // See https://drafts.csswg.org/css-fonts/#propdef-font
@@ -144,40 +146,42 @@ bool ConsumeFont(bool important,
 
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontStyle, CSSPropertyID::kFont,
-      font_style ? *font_style : *CSSIdentifierValue::Create(CSSValueNormal),
+      font_style ? *font_style
+                 : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantCaps, CSSPropertyID::kFont,
       font_variant_caps ? *font_variant_caps
-                        : *CSSIdentifierValue::Create(CSSValueNormal),
+                        : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantNumeric, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFont,
-      *CSSIdentifierValue::Create(CSSValueNormal), important,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontWeight, CSSPropertyID::kFont,
-      font_weight ? *font_weight : *CSSIdentifierValue::Create(CSSValueNormal),
+      font_weight ? *font_weight
+                  : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kFontStretch, CSSPropertyID::kFont,
       font_stretch ? *font_stretch
-                   : *CSSIdentifierValue::Create(CSSValueNormal),
+                   : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
@@ -205,7 +209,7 @@ bool ConsumeFont(bool important,
   } else {
     css_property_parser_helpers::AddProperty(
         CSSPropertyID::kLineHeight, CSSPropertyID::kFont,
-        *CSSIdentifierValue::Create(CSSValueNormal), important,
+        *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
         css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
@@ -236,7 +240,8 @@ bool Font::ParseShorthand(bool important,
                           const CSSParserLocalContext&,
                           HeapVector<CSSPropertyValue, 256>& properties) const {
   const CSSParserToken& token = range.Peek();
-  if (token.Id() >= CSSValueCaption && token.Id() <= CSSValueStatusBar)
+  if (token.Id() >= CSSValueID::kCaption &&
+      token.Id() <= CSSValueID::kStatusBar)
     return ConsumeSystemFont(important, range, properties);
   return ConsumeFont(important, range, context, properties);
 }

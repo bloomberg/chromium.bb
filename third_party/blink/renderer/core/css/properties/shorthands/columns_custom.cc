@@ -31,9 +31,9 @@ bool Columns::ParseShorthand(
   if (!range.AtEnd())
     return false;
   if (!column_width)
-    column_width = CSSIdentifierValue::Create(CSSValueAuto);
+    column_width = CSSIdentifierValue::Create(CSSValueID::kAuto);
   if (!column_count)
-    column_count = CSSIdentifierValue::Create(CSSValueAuto);
+    column_count = CSSIdentifierValue::Create(CSSValueID::kAuto);
   css_property_parser_helpers::AddProperty(
       CSSPropertyID::kColumnWidth, CSSPropertyID::kInvalid, *column_width,
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,

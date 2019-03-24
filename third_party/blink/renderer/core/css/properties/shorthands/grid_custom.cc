@@ -20,15 +20,17 @@ CSSValueList* ConsumeImplicitAutoFlow(CSSParserTokenRange& range,
                                       const CSSValue& flow_direction) {
   // [ auto-flow && dense? ]
   CSSValue* dense_algorithm = nullptr;
-  if ((css_property_parser_helpers::ConsumeIdent<CSSValueAutoFlow>(range))) {
+  if ((css_property_parser_helpers::ConsumeIdent<CSSValueID::kAutoFlow>(
+          range))) {
     dense_algorithm =
-        css_property_parser_helpers::ConsumeIdent<CSSValueDense>(range);
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kDense>(range);
   } else {
     dense_algorithm =
-        css_property_parser_helpers::ConsumeIdent<CSSValueDense>(range);
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kDense>(range);
     if (!dense_algorithm)
       return nullptr;
-    if (!css_property_parser_helpers::ConsumeIdent<CSSValueAutoFlow>(range))
+    if (!css_property_parser_helpers::ConsumeIdent<CSSValueID::kAutoFlow>(
+            range))
       return nullptr;
   }
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -106,12 +108,12 @@ bool Grid::ParseShorthand(bool important,
   template_rows = nullptr;
   template_columns = nullptr;
 
-  if (css_property_parser_helpers::IdentMatches<CSSValueDense,
-                                                CSSValueAutoFlow>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueID::kDense,
+                                                CSSValueID::kAutoFlow>(
           range.Peek().Id())) {
     // 2- [ auto-flow && dense? ] <grid-auto-rows>? / <grid-template-columns>
     grid_auto_flow = ConsumeImplicitAutoFlow(
-        range, *CSSIdentifierValue::Create(CSSValueRow));
+        range, *CSSIdentifierValue::Create(CSSValueID::kRow));
     if (!grid_auto_flow)
       return false;
     if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
@@ -140,7 +142,7 @@ bool Grid::ParseShorthand(bool important,
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return false;
     grid_auto_flow = ConsumeImplicitAutoFlow(
-        range, *CSSIdentifierValue::Create(CSSValueColumn));
+        range, *CSSIdentifierValue::Create(CSSValueID::kColumn));
     if (!grid_auto_flow)
       return false;
     if (range.AtEnd()) {
