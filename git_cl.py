@@ -2723,6 +2723,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
     try:
+      push_returncode = 0
       before_push = time_time()
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
@@ -2730,7 +2731,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           # Flush after every line: useful for seeing progress when running as
           # recipe.
           filter_fn=lambda _: sys.stdout.flush())
-      push_returncode = 0
     except subprocess2.CalledProcessError as e:
       push_returncode = e.returncode
       DieWithError('Failed to create a change. Please examine output above '
