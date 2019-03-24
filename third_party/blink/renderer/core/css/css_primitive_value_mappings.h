@@ -306,7 +306,8 @@ template <>
 inline ControlPart CSSIdentifierValue::ConvertTo() const {
   if (value_id_ == CSSValueNone)
     return kNoControlPart;
-  return ControlPart(value_id_ - CSSValueCheckbox + 1);
+  return ControlPart(static_cast<int>(value_id_) -
+                     static_cast<int>(CSSValueID::kCheckbox) + 1);
 }
 
 template <>

@@ -156,7 +156,7 @@ CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
   bool has_references;
   CSSValueID type = ClassifyVariableRange(range, has_references);
 
-  if (type == CSSValueInvalid)
+  if (!IsValidCSSValueID(type))
     return nullptr;
   if (type == CSSValueInternalVariableValue) {
     return CSSCustomPropertyDeclaration::Create(

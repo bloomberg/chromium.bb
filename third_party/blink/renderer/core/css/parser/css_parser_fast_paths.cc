@@ -546,7 +546,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     CSSPropertyID property_id,
     CSSValueID value_id,
     CSSParserMode parser_mode) {
-  if (value_id == CSSValueInvalid ||
+  if (!IsValidCSSValueID(value_id) ||
       !isValueAllowedInMode(value_id, parser_mode))
     return false;
 
@@ -1042,7 +1042,7 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
 
   CSSValueID value_id = CssValueKeywordID(string);
 
-  if (!value_id)
+  if (!IsValidCSSValueID(value_id))
     return nullptr;
 
   if (value_id == CSSValueInherit)

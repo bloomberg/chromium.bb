@@ -216,7 +216,7 @@ HTMLElementEquivalent::HTMLElementEquivalent(CSSPropertyID id,
     : property_id_(id),
       identifier_value_(CSSIdentifierValue::Create(value_id)),
       tag_name_(&tag_name) {
-  DCHECK_NE(value_id, CSSValueInvalid);
+  DCHECK(IsValidCSSValueID(value_id));
 }
 
 bool HTMLElementEquivalent::ValueIsPresentInStyle(
@@ -483,7 +483,8 @@ static inline Color BackgroundColorInEffect(Node* node) {
       EditingStyleUtilities::BackgroundColorValueInEffect(node));
 }
 
-static int TextAlignResolvingStartAndEnd(int text_align, int direction) {
+static CSSValueID TextAlignResolvingStartAndEnd(CSSValueID text_align,
+                                                CSSValueID direction) {
   switch (text_align) {
     case CSSValueCenter:
     case CSSValueWebkitCenter:
@@ -500,12 +501,13 @@ static int TextAlignResolvingStartAndEnd(int text_align, int direction) {
       return direction != CSSValueRtl ? CSSValueLeft : CSSValueRight;
     case CSSValueEnd:
       return direction == CSSValueRtl ? CSSValueRight : CSSValueLeft;
+    default:
+      return CSSValueID::kInvalid;
   }
-  return CSSValueInvalid;
 }
 
 template <typename T>
-static int TextAlignResolvingStartAndEnd(T* style) {
+static CSSValueID TextAlignResolvingStartAndEnd(T* style) {
   return TextAlignResolvingStartAndEnd(
       GetIdentifierValue(style, CSSPropertyID::kTextAlign),
       GetIdentifierValue(style, CSSPropertyID::kDirection));
@@ -1668,7 +1670,7 @@ void StyleChange::ExtractTextStyles(Document* document,
     apply_bold_ = true;
   }
 
-  int font_style = GetIdentifierValue(style, CSSPropertyID::kFontStyle);
+  CSSValueID font_style = GetIdentifierValue(style, CSSPropertyID::kFontStyle);
   if (font_style == CSSValueItalic || font_style == CSSValueOblique) {
     style->RemoveProperty(CSSPropertyID::kFontStyle);
     apply_italic_ = true;
@@ -1698,7 +1700,8 @@ void StyleChange::ExtractTextStyles(Document* document,
                               document->GetSecureContextMode());
   }
 
-  int vertical_align = GetIdentifierValue(style, CSSPropertyID::kVerticalAlign);
+  CSSValueID vertical_align =
+      GetIdentifierValue(style, CSSPropertyID::kVerticalAlign);
   switch (vertical_align) {
     case CSSValueSub:
       style->RemoveProperty(CSSPropertyID::kVerticalAlign);
@@ -1707,6 +1710,8 @@ void StyleChange::ExtractTextStyles(Document* document,
     case CSSValueSuper:
       style->RemoveProperty(CSSPropertyID::kVerticalAlign);
       apply_superscript_ = true;
+      break;
+    default:
       break;
   }
 
@@ -1886,8 +1891,10 @@ int LegacyFontSizeFromCSSValue(Document* document,
 
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     if (CSSValueXSmall <= identifier_value->GetValueID() &&
-        identifier_value->GetValueID() <= CSSValueWebkitXxxLarge)
-      return identifier_value->GetValueID() - CSSValueXSmall + 1;
+        identifier_value->GetValueID() <= CSSValueID::kWebkitXxxLarge) {
+      return static_cast<int>(identifier_value->GetValueID()) -
+             static_cast<int>(CSSValueID::kXSmall) + 1;
+    }
   }
 
   return 0;

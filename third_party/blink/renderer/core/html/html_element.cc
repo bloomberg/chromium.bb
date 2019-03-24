@@ -824,12 +824,12 @@ void HTMLElement::ApplyAlignmentAttributeToStyle(
     vertical_align_value = CSSValueTextTop;
   }
 
-  if (float_value != CSSValueInvalid) {
+  if (IsValidCSSValueID(float_value)) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFloat,
                                             float_value);
   }
 
-  if (vertical_align_value != CSSValueInvalid) {
+  if (IsValidCSSValueID(vertical_align_value)) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyID::kVerticalAlign, vertical_align_value);
   }

@@ -728,7 +728,8 @@ CSSValueID IdentifierForFamily(const AtomicString& family) {
 }
 
 CSSValue* ValueForFamily(const AtomicString& family) {
-  if (CSSValueID family_identifier = IdentifierForFamily(family))
+  CSSValueID family_identifier = IdentifierForFamily(family);
+  if (IsValidCSSValueID(family_identifier))
     return CSSIdentifierValue::Create(family_identifier);
   return CSSFontFamilyValue::Create(family.GetString());
 }
@@ -921,7 +922,7 @@ CSSIdentifierValue* ValueForFontStretchAsKeyword(const ComputedStyle& style) {
   if (stretch_value == UltraExpandedWidthValue())
     value_id = CSSValueUltraExpanded;
 
-  if (value_id != CSSValueInvalid)
+  if (IsValidCSSValueID(value_id))
     return CSSIdentifierValue::Create(value_id);
   return nullptr;
 }

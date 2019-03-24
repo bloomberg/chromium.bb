@@ -76,11 +76,11 @@ class CORE_EXPORT CSSValuePool
 
   // Vector caches.
   CSSIdentifierValue* IdentifierCacheValue(CSSValueID ident) {
-    return identifier_value_cache_[ident];
+    return identifier_value_cache_[static_cast<int>(ident)];
   }
   CSSIdentifierValue* SetIdentifierCacheValue(CSSValueID ident,
                                               CSSIdentifierValue* css_value) {
-    return identifier_value_cache_[ident] = css_value;
+    return identifier_value_cache_[static_cast<int>(ident)] = css_value;
   }
   CSSPrimitiveValue* PixelCacheValue(int int_value) {
     return pixel_value_cache_[int_value];

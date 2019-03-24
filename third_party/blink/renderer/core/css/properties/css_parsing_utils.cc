@@ -2386,7 +2386,7 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
                                 const CSSParserContext& context,
                                 bool use_legacy_parsing) {
   CSSValueID function_id = range.Peek().FunctionId();
-  if (function_id == CSSValueInvalid)
+  if (!IsValidCSSValueID(function_id))
     return nullptr;
   CSSParserTokenRange args =
       css_property_parser_helpers::ConsumeFunction(range);

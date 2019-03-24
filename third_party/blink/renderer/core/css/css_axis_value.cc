@@ -57,7 +57,7 @@ CSSAxisValue::CSSAxisValue(double x, double y, double z)
 
 String CSSAxisValue::CustomCSSText() const {
   StringBuilder result;
-  if (axis_name_ != CSSValueInvalid) {
+  if (IsValidCSSValueID(axis_name_)) {
     result.Append(AtomicString(getValueName(axis_name_)));
   } else {
     result.Append(CSSValueList::CustomCSSText());

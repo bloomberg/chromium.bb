@@ -207,7 +207,8 @@ const CSSPropertyID kComputedPropertyArray[] = {
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);
   DCHECK_LE(keyword_size, 8);
-  return static_cast<CSSValueID>(CSSValueXxSmall + keyword_size - 1);
+  return static_cast<CSSValueID>(static_cast<int>(CSSValueID::kXxSmall) +
+                                 keyword_size - 1);
 }
 
 void LogUnimplementedPropertyID(const CSSProperty& property) {
