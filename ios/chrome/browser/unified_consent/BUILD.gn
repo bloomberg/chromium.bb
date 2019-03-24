@@ -14,6 +14,7 @@ source_set("unified_consent") {
     "//components/metrics",
     "//components/signin/core/browser",
     "//components/sync",
+    "//components/sync_preferences",
     "//components/unified_consent",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
