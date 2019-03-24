@@ -21,7 +21,7 @@ namespace {
 CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
   CSSValueList* values = CSSValueList::CreateCommaSeparated();
   do {
-    if (range.Peek().Id() == CSSValueAll) {
+    if (range.Peek().Id() == CSSValueID::kAll) {
       // FIXME: CSSPropertyParser::ParseFontVariant() implements
       // the old css3 draft:
       // http://www.w3.org/TR/2002/WD-css3-webfonts-20020802/#font-variant
@@ -44,8 +44,8 @@ CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
 
 CSSIdentifierValue* ConsumeFontDisplay(CSSParserTokenRange& range) {
   return css_property_parser_helpers::ConsumeIdent<
-      CSSValueAuto, CSSValueBlock, CSSValueSwap, CSSValueFallback,
-      CSSValueOptional>(range);
+      CSSValueID::kAuto, CSSValueID::kBlock, CSSValueID::kSwap,
+      CSSValueID::kFallback, CSSValueID::kOptional>(range);
 }
 
 CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
@@ -76,7 +76,7 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
       url, context.CompleteURL(url), context.GetReferrer(),
       context.ShouldCheckContentSecurityPolicy()));
 
-  if (range.Peek().FunctionId() != CSSValueFormat)
+  if (range.Peek().FunctionId() != CSSValueID::kFormat)
     return uri_value;
 
   // FIXME: https://drafts.csswg.org/css-fonts says that format() contains a
@@ -122,7 +122,7 @@ CSSValueList* ConsumeFontFaceSrc(CSSParserTokenRange& range,
   do {
     const CSSParserToken& token = range.Peek();
     CSSValue* parsed_value = nullptr;
-    if (token.FunctionId() == CSSValueLocal)
+    if (token.FunctionId() == CSSValueID::kLocal)
       parsed_value = ConsumeFontFaceSrcLocal(range, context);
     else
       parsed_value = ConsumeFontFaceSrcURI(range, context);
