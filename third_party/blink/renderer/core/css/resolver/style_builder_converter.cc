@@ -683,17 +683,17 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
       ComputedStyleInitialValues::InitialContentAlignment();
   const CSSContentDistributionValue& content_value =
       To<CSSContentDistributionValue>(value);
-  if (content_value.Distribution() != CSSValueInvalid) {
+  if (IsValidCSSValueID(content_value.Distribution())) {
     alignment_data.SetDistribution(
         CSSIdentifierValue::Create(content_value.Distribution())
             ->ConvertTo<ContentDistributionType>());
   }
-  if (content_value.Position() != CSSValueInvalid) {
+  if (IsValidCSSValueID(content_value.Position())) {
     alignment_data.SetPosition(
         CSSIdentifierValue::Create(content_value.Position())
             ->ConvertTo<ContentPosition>());
   }
-  if (content_value.Overflow() != CSSValueInvalid) {
+  if (IsValidCSSValueID(content_value.Overflow())) {
     alignment_data.SetOverflow(
         CSSIdentifierValue::Create(content_value.Overflow())
             ->ConvertTo<OverflowAlignment>());
@@ -1418,7 +1418,7 @@ TextEmphasisPosition StyleBuilderConverter::ConvertTextTextEmphasisPosition(
 float StyleBuilderConverter::ConvertTextStrokeWidth(StyleResolverState& state,
                                                     const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value && identifier_value->GetValueID()) {
+  if (identifier_value && IsValidCSSValueID(identifier_value->GetValueID())) {
     float multiplier = ConvertLineWidth<float>(state, value);
     return CSSPrimitiveValue::Create(multiplier / 48,
                                      CSSPrimitiveValue::UnitType::kEms)

@@ -572,14 +572,15 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
 
   ContainerNode* highest_ancestor_with_unicode_bidi = nullptr;
   ContainerNode* next_highest_ancestor_with_unicode_bidi = nullptr;
-  int highest_ancestor_unicode_bidi = 0;
+  CSSValueID highest_ancestor_unicode_bidi = CSSValueID::kInvalid;
   for (Node& runner : NodeTraversal::AncestorsOf(*node)) {
     if (runner == block)
       break;
-    int unicode_bidi =
+    CSSValueID unicode_bidi =
         GetIdentifierValue(CSSComputedStyleDeclaration::Create(&runner),
                            CSSPropertyID::kUnicodeBidi);
-    if (unicode_bidi && unicode_bidi != CSSValueNormal) {
+    if (IsValidCSSValueID(unicode_bidi) &&
+        unicode_bidi != CSSValueID::kNormal) {
       highest_ancestor_unicode_bidi = unicode_bidi;
       next_highest_ancestor_with_unicode_bidi =
           highest_ancestor_with_unicode_bidi;
@@ -636,10 +637,10 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
       continue;
 
     Element* element = ToElement(&runner);
-    int unicode_bidi =
+    CSSValueID unicode_bidi =
         GetIdentifierValue(CSSComputedStyleDeclaration::Create(element),
                            CSSPropertyID::kUnicodeBidi);
-    if (!unicode_bidi || unicode_bidi == CSSValueNormal)
+    if (!IsValidCSSValueID(unicode_bidi) || unicode_bidi == CSSValueID::kNormal)
       continue;
 
     // FIXME: This code should really consider the mapped attribute 'dir', the

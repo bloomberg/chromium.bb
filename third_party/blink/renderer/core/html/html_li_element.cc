@@ -73,7 +73,7 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == kTypeAttr) {
     CSSValueID type_value = ListTypeToCSSValueID(value);
-    if (type_value != CSSValueInvalid) {
+    if (IsValidCSSValueID(type_value)) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kListStyleType, type_value);
     }

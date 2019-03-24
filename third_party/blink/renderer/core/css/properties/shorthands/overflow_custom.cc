@@ -45,7 +45,7 @@ bool Overflow::ParseShorthand(
   // should default to hidden. If the overflow-y value is anything but
   // paged-x or paged-y, then overflow-x and overflow-y should have the
   // same value.
-  if (x_id)
+  if (IsValidCSSValueID(x_id))
     overflow_x_value = CSSIdentifierValue::Create(x_id);
   else if (y_id == CSSValueWebkitPagedX || y_id == CSSValueWebkitPagedY)
     overflow_x_value = CSSIdentifierValue::Create(CSSValueAuto);

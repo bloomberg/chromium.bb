@@ -24,7 +24,7 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
         std::move(length_non_interpolable_value)));
   }
 
-  bool IsKeyword() const { return keyword_ != CSSValueInvalid; }
+  bool IsKeyword() const { return IsValidCSSValueID(keyword_); }
   CSSValueID Keyword() const {
     DCHECK(IsKeyword());
     return keyword_;

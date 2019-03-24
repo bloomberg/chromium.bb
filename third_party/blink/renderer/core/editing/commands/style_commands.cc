@@ -492,14 +492,14 @@ WritingDirection StyleCommands::TextDirectionForSelection(
       return WritingDirection::kNatural;
 
     DCHECK(EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value))
-        << unicode_bidi_value;
+        << static_cast<int>(unicode_bidi_value);
     const CSSValue* direction =
         style.GetPropertyCSSValue(GetCSSPropertyDirection());
     auto* direction_identifier_value = DynamicTo<CSSIdentifierValue>(direction);
     if (!direction_identifier_value)
       continue;
 
-    const int direction_value = direction_identifier_value->GetValueID();
+    const CSSValueID direction_value = direction_identifier_value->GetValueID();
     if (direction_value != CSSValueLtr && direction_value != CSSValueRtl)
       continue;
 

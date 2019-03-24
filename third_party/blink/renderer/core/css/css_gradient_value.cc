@@ -1278,7 +1278,8 @@ scoped_refptr<Gradient> CSSRadialGradientValue::CreateGradient(
                              ? kCircleEndShape
                              : kEllipseEndShape;
 
-    switch (sizing_behavior_ ? sizing_behavior_->GetValueID() : 0) {
+    switch (sizing_behavior_ ? sizing_behavior_->GetValueID()
+                             : CSSValueID::kInvalid) {
       case CSSValueContain:
       case CSSValueClosestSide:
         second_radius = RadiusToSide(second_point, size, shape,

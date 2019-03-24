@@ -198,7 +198,7 @@ class LayoutThemeMac final : public LayoutTheme {
   mutable base::scoped_nsobject<NSSearchFieldCell> search_;
   mutable base::scoped_nsobject<NSTextFieldCell> text_field_;
 
-  mutable HashMap<int, RGBA32> system_color_cache_;
+  mutable HashMap<CSSValueID, RGBA32> system_color_cache_;
 
   base::scoped_nsobject<BlinkLayoutThemeNotificationObserver>
       notification_observer_;

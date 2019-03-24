@@ -24,9 +24,9 @@ CSSContentDistributionValue::~CSSContentDistributionValue() = default;
 String CSSContentDistributionValue::CustomCSSText() const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  if (distribution_ != CSSValueInvalid)
+  if (IsValidCSSValueID(distribution_))
     list->Append(*CSSIdentifierValue::Create(distribution_));
-  if (position_ != CSSValueInvalid) {
+  if (IsValidCSSValueID(position_)) {
     if (position_ == CSSValueFirstBaseline ||
         position_ == CSSValueLastBaseline) {
       CSSValueID preference =
@@ -34,7 +34,7 @@ String CSSContentDistributionValue::CustomCSSText() const {
       list->Append(*CSSIdentifierValue::Create(preference));
       list->Append(*CSSIdentifierValue::Create(CSSValueBaseline));
     } else {
-      if (overflow_ != CSSValueInvalid)
+      if (IsValidCSSValueID(overflow_))
         list->Append(*CSSIdentifierValue::Create(overflow_));
       list->Append(*CSSIdentifierValue::Create(position_));
     }
