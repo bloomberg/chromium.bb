@@ -40,6 +40,9 @@ QUIC_FLAG(bool,
 // If true, disable pacing in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_disable_pacing_for_perf_tests, false)
 
+// If true, enforce that QUIC CHLOs fit in one packet.
+QUIC_FLAG(bool, FLAGS_quic_enforce_single_packet_chlo, true)
+
 // If true, QUIC will use cheap stateless rejects without creating a full
 // connection.
 QUIC_FLAG(bool,
@@ -211,22 +214,11 @@ QUIC_FLAG(bool,
 // If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
 
-// If true, QuicSpdyStream::WritevBody() will convert iovs into QuicMemSliceSpan
-// and call WriteMemSlices instead.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_call_write_mem_slices, true)
-
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
-
-// If true, disconnected quic connection will not be added to dispatcher's write
-// blocked list.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_connection_do_not_add_to_write_blocked_list_if_disconnected,
-    true)
 
 // If true, QuicPacketCreator::SetTransmissionType will set the transmission
 // type of the next successfully added frame.
@@ -238,14 +230,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
           true)
-
-// If true, QuicCryptoServerConfig will correctly rotate configs based on
-// primary time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_config_rotation, true)
-
-// If true, use numeric_limits<uint64_t>::max() to represent uninitialized
-// packet number.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_uint64max_uninitialized_pn, true)
 
 // If true, enable QUIC version 47 which adds CRYPTO frames.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
@@ -278,16 +262,13 @@ QUIC_FLAG(
 
 // If true, GFE time wait list will send termination packets based on current
 // packet's encryption level.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_termination_packets, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_termination_packets, true)
 
 // If true, stop using AckBundling mode to send ACK, also deprecate ack_queued
 // from QuicConnection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_ack_bundling_mode,
           false)
-
-// If true, enforce that QUIC CHLOs fit in one packet.
-QUIC_FLAG(bool, FLAGS_quic_enforce_single_packet_chlo, true)
 
 // If both this flag and gfe2_reloadable_flag_quic_deprecate_ack_bundling_mode
 // are true, QuicReceivedPacketManager decides when to send ACKs.
@@ -299,7 +280,7 @@ QUIC_FLAG(bool,
 // reset in reponse to short headers.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_reset_short_header_packets,
-          false)
+          true)
 
 // In QUIC, do not close connection if received an in-order ACK with decreased
 // largest_acked.
