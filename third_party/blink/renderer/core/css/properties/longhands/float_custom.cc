@@ -16,7 +16,7 @@ const CSSValue* Float::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.Display() != EDisplay::kNone && style.HasOutOfFlowPosition())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   return CSSIdentifierValue::Create(style.Floating());
 }
 

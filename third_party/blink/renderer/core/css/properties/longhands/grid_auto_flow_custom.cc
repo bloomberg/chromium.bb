@@ -17,14 +17,14 @@ const CSSValue* GridAutoFlow::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSIdentifierValue* row_or_column_value =
-      css_property_parser_helpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
-          range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kRow,
+                                                CSSValueID::kColumn>(range);
   CSSIdentifierValue* dense_algorithm =
-      css_property_parser_helpers::ConsumeIdent<CSSValueDense>(range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kDense>(range);
   if (!row_or_column_value) {
     row_or_column_value =
-        css_property_parser_helpers::ConsumeIdent<CSSValueRow, CSSValueColumn>(
-            range);
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kRow,
+                                                  CSSValueID::kColumn>(range);
     if (!row_or_column_value && !dense_algorithm)
       return nullptr;
   }
@@ -46,11 +46,11 @@ const CSSValue* GridAutoFlow::CSSValueFromComputedStyleInternal(
   switch (style.GetGridAutoFlow()) {
     case kAutoFlowRow:
     case kAutoFlowRowDense:
-      list->Append(*CSSIdentifierValue::Create(CSSValueRow));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kRow));
       break;
     case kAutoFlowColumn:
     case kAutoFlowColumnDense:
-      list->Append(*CSSIdentifierValue::Create(CSSValueColumn));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kColumn));
       break;
     default:
       NOTREACHED();
@@ -59,7 +59,7 @@ const CSSValue* GridAutoFlow::CSSValueFromComputedStyleInternal(
   switch (style.GetGridAutoFlow()) {
     case kAutoFlowRowDense:
     case kAutoFlowColumnDense:
-      list->Append(*CSSIdentifierValue::Create(CSSValueDense));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kDense));
       break;
     default:
       // Do nothing.

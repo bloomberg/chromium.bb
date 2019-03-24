@@ -16,7 +16,7 @@ namespace css_longhand {
 const CSSValue* Quotes::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
                                          const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
   while (!range.AtEnd()) {
@@ -50,7 +50,7 @@ const CSSValue* Quotes::CSSValueFromComputedStyleInternal(
     }
     return list;
   }
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 }  // namespace css_longhand

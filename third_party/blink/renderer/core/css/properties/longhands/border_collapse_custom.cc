@@ -16,8 +16,8 @@ const CSSValue* BorderCollapse::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.BorderCollapse() == EBorderCollapse::kCollapse)
-    return CSSIdentifierValue::Create(CSSValueCollapse);
-  return CSSIdentifierValue::Create(CSSValueSeparate);
+    return CSSIdentifierValue::Create(CSSValueID::kCollapse);
+  return CSSIdentifierValue::Create(CSSValueID::kSeparate);
 }
 
 }  // namespace css_longhand

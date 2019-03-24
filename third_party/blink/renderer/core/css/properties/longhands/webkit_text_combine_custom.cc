@@ -16,7 +16,7 @@ const CSSValue* WebkitTextCombine::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.TextCombine() == ETextCombine::kAll)
-    return CSSIdentifierValue::Create(CSSValueHorizontal);
+    return CSSIdentifierValue::Create(CSSValueID::kHorizontal);
   return CSSIdentifierValue::Create(style.TextCombine());
 }
 

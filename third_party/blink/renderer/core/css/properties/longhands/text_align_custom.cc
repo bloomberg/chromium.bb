@@ -19,11 +19,12 @@ const CSSValue* TextAlign::CSSValueFromComputedStyleInternal(
 void TextAlign::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
   const auto* ident_value = DynamicTo<CSSIdentifierValue>(value);
-  if (ident_value && ident_value->GetValueID() != CSSValueWebkitMatchParent) {
+  if (ident_value &&
+      ident_value->GetValueID() != CSSValueID::kWebkitMatchParent) {
     // Special case for th elements - UA stylesheet text-align does not apply if
     // parent's computed value for text-align is not its initial value
     // https://html.spec.whatwg.org/C/#tables-2
-    if (ident_value->GetValueID() == CSSValueInternalCenter &&
+    if (ident_value->GetValueID() == CSSValueID::kInternalCenter &&
         state.ParentStyle()->GetTextAlign() !=
             ComputedStyleInitialValues::InitialTextAlign())
       state.Style()->SetTextAlign(state.ParentStyle()->GetTextAlign());

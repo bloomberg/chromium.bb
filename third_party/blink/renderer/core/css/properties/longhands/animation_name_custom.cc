@@ -41,7 +41,7 @@ const CSSValue* AnimationName::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationName::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueNone)));
+                      (CSSIdentifierValue::Create(CSSValueID::kNone)));
   return value;
 }
 

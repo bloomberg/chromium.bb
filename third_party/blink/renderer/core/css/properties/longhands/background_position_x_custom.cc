@@ -18,7 +18,8 @@ const CSSValue* BackgroundPositionX::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeCommaSeparatedList(
-      css_parsing_utils::ConsumePositionLonghand<CSSValueLeft, CSSValueRight>,
+      css_parsing_utils::ConsumePositionLonghand<CSSValueID::kLeft,
+                                                 CSSValueID::kRight>,
       range, context.Mode());
 }
 

@@ -28,7 +28,7 @@ const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.ListStyleImage())
     return style.ListStyleImage()->ComputedCSSValue();
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 void ListStyleImage::ApplyValue(StyleResolverState& state,

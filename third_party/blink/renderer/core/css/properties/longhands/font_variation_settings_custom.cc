@@ -48,7 +48,7 @@ const CSSValue* FontVariationSettings::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueNormal)
+  if (range.Peek().Id() == CSSValueID::kNormal)
     return css_property_parser_helpers::ConsumeIdent(range);
   CSSValueList* variation_settings = CSSValueList::CreateCommaSeparated();
   do {
@@ -70,7 +70,7 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
   const blink::FontVariationSettings* variation_settings =
       style.GetFontDescription().VariationSettings();
   if (!variation_settings || !variation_settings->size())
-    return CSSIdentifierValue::Create(CSSValueNormal);
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (wtf_size_t i = 0; i < variation_settings->size(); ++i) {
     const FontVariationAxis& variation_axis = variation_settings->at(i);

@@ -35,7 +35,7 @@ const CSSValue* TransitionProperty::CSSValueFromComputedStyleInternal(
 
 const CSSValue* TransitionProperty::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueAll)));
+                      (CSSIdentifierValue::Create(CSSValueID::kAll)));
   return value;
 }
 

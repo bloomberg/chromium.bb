@@ -22,14 +22,15 @@ const CSSValue* WebkitTextEmphasisPosition::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSIdentifierValue* values[2] = {
-      css_property_parser_helpers::ConsumeIdent<CSSValueOver, CSSValueUnder,
-                                                CSSValueRight, CSSValueLeft>(
-          range),
+      css_property_parser_helpers::ConsumeIdent<
+          CSSValueID::kOver, CSSValueID::kUnder, CSSValueID::kRight,
+          CSSValueID::kLeft>(range),
       nullptr};
   if (!values[0])
     return nullptr;
   values[1] = css_property_parser_helpers::ConsumeIdent<
-      CSSValueOver, CSSValueUnder, CSSValueRight, CSSValueLeft>(range);
+      CSSValueID::kOver, CSSValueID::kUnder, CSSValueID::kRight,
+      CSSValueID::kLeft>(range);
   CSSIdentifierValue* over_under = nullptr;
   CSSIdentifierValue* left_right = nullptr;
 
@@ -37,14 +38,14 @@ const CSSValue* WebkitTextEmphasisPosition::ParseSingleValue(
     if (!value)
       break;
     switch (value->GetValueID()) {
-      case CSSValueOver:
-      case CSSValueUnder:
+      case CSSValueID::kOver:
+      case CSSValueID::kUnder:
         if (over_under)
           return nullptr;
         over_under = value;
         break;
-      case CSSValueLeft:
-      case CSSValueRight:
+      case CSSValueID::kLeft:
+      case CSSValueID::kRight:
         if (left_right)
           return nullptr;
         left_right = value;
@@ -57,7 +58,7 @@ const CSSValue* WebkitTextEmphasisPosition::ParseSingleValue(
   if (!over_under)
     return nullptr;
   if (!left_right)
-    left_right = CSSIdentifierValue::Create(CSSValueRight);
+    left_right = CSSIdentifierValue::Create(CSSValueID::kRight);
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*over_under);
   list->Append(*left_right);
@@ -73,20 +74,20 @@ const CSSValue* WebkitTextEmphasisPosition::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   switch (style.GetTextEmphasisPosition()) {
     case TextEmphasisPosition::kOverRight:
-      list->Append(*CSSIdentifierValue::Create(CSSValueOver));
-      list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kOver));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kRight));
       break;
     case TextEmphasisPosition::kOverLeft:
-      list->Append(*CSSIdentifierValue::Create(CSSValueOver));
-      list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kOver));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kLeft));
       break;
     case TextEmphasisPosition::kUnderRight:
-      list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
-      list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnder));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kRight));
       break;
     case TextEmphasisPosition::kUnderLeft:
-      list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
-      list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnder));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kLeft));
       break;
   }
   return list;

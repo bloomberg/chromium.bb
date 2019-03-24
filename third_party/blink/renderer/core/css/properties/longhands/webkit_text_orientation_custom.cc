@@ -16,7 +16,7 @@ const CSSValue* WebkitTextOrientation::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.GetTextOrientation() == ETextOrientation::kMixed)
-    return CSSIdentifierValue::Create(CSSValueVerticalRight);
+    return CSSIdentifierValue::Create(CSSValueID::kVerticalRight);
   return CSSIdentifierValue::Create(style.GetTextOrientation());
 }
 

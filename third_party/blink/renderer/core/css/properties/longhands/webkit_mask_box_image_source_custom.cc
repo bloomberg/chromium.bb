@@ -28,7 +28,7 @@ const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (style.MaskBoxImageSource())
     return style.MaskBoxImageSource()->ComputedCSSValue();
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 void WebkitMaskBoxImageSource::ApplyValue(StyleResolverState& state,

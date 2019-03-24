@@ -15,7 +15,7 @@ namespace {
 
 CSSValue* ConsumeClipComponent(CSSParserTokenRange& range,
                                CSSParserMode css_parser_mode) {
-  if (range.Peek().Id() == CSSValueAuto)
+  if (range.Peek().Id() == CSSValueID::kAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeLength(
       range, css_parser_mode, kValueRangeAll,
@@ -28,10 +28,10 @@ namespace css_longhand {
 const CSSValue* Clip::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
                                        const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueAuto)
+  if (range.Peek().Id() == CSSValueID::kAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
 
-  if (range.Peek().FunctionId() != CSSValueRect)
+  if (range.Peek().FunctionId() != CSSValueID::kRect)
     return nullptr;
 
   CSSParserTokenRange args =
@@ -66,7 +66,7 @@ const CSSValue* Clip::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.HasAutoClip())
-    return CSSIdentifierValue::Create(CSSValueAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
   CSSValue* top = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(
       style.Clip().Top(), style);
   CSSValue* right = ComputedStyleUtils::ZoomAdjustedPixelValueOrAuto(

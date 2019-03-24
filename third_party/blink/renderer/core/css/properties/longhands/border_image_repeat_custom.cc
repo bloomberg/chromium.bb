@@ -29,7 +29,7 @@ const CSSValue* BorderImageRepeat::CSSValueFromComputedStyleInternal(
 
 const CSSValue* BorderImageRepeat::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueStretch)));
+                      (CSSIdentifierValue::Create(CSSValueID::kStretch)));
   return value;
 }
 

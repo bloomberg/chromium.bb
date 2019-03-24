@@ -24,7 +24,7 @@ const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.HasAutoColumnCount())
-    return CSSIdentifierValue::Create(CSSValueAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return CSSPrimitiveValue::Create(style.ColumnCount(),
                                    CSSPrimitiveValue::UnitType::kNumber);
 }

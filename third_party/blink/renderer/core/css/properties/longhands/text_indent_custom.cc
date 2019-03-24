@@ -35,11 +35,11 @@ const CSSValue* TextIndent::ParseSingleValue(
 
     if (RuntimeEnabledFeatures::CSS3TextEnabled()) {
       CSSValueID id = range.Peek().Id();
-      if (!hanging && id == CSSValueHanging) {
+      if (!hanging && id == CSSValueID::kHanging) {
         hanging = css_property_parser_helpers::ConsumeIdent(range);
         continue;
       }
-      if (!each_line && id == CSSValueEachLine) {
+      if (!each_line && id == CSSValueID::kEachLine) {
         each_line = css_property_parser_helpers::ConsumeIdent(range);
         continue;
       }
@@ -72,9 +72,9 @@ const CSSValue* TextIndent::CSSValueFromComputedStyleInternal(
       style.TextIndent(), style));
   if (RuntimeEnabledFeatures::CSS3TextEnabled()) {
     if (style.GetTextIndentType() == TextIndentType::kHanging)
-      list->Append(*CSSIdentifierValue::Create(CSSValueHanging));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kHanging));
     if (style.GetTextIndentLine() == TextIndentLine::kEachLine)
-      list->Append(*CSSIdentifierValue::Create(CSSValueEachLine));
+      list->Append(*CSSIdentifierValue::Create(CSSValueID::kEachLine));
   }
   return list;
 }
@@ -107,10 +107,10 @@ void TextIndent::ApplyValue(StyleResolverState& state,
       length_or_percentage_value = list_primitive_value->ConvertToLength(
           state.CssToLengthConversionData());
     } else if (To<CSSIdentifierValue>(*list_value).GetValueID() ==
-               CSSValueEachLine) {
+               CSSValueID::kEachLine) {
       text_indent_line_value = TextIndentLine::kEachLine;
     } else if (To<CSSIdentifierValue>(*list_value).GetValueID() ==
-               CSSValueHanging) {
+               CSSValueID::kHanging) {
       text_indent_type_value = TextIndentType::kHanging;
     } else {
       NOTREACHED();

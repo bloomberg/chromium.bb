@@ -17,11 +17,11 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueNone)
+  if (id == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (id == CSSValueStrict || id == CSSValueContent) {
+  if (id == CSSValueID::kStrict || id == CSSValueID::kContent) {
     list->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return list;
   }
@@ -32,13 +32,13 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
   CSSIdentifierValue* paint = nullptr;
   while (true) {
     id = range.Peek().Id();
-    if (id == CSSValueSize && !size)
+    if (id == CSSValueID::kSize && !size)
       size = css_property_parser_helpers::ConsumeIdent(range);
-    else if (id == CSSValueLayout && !layout)
+    else if (id == CSSValueID::kLayout && !layout)
       layout = css_property_parser_helpers::ConsumeIdent(range);
-    else if (id == CSSValueStyle && !style)
+    else if (id == CSSValueID::kStyle && !style)
       style = css_property_parser_helpers::ConsumeIdent(range);
-    else if (id == CSSValuePaint && !paint)
+    else if (id == CSSValueID::kPaint && !paint)
       paint = css_property_parser_helpers::ConsumeIdent(range);
     else
       break;
@@ -63,21 +63,21 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (!style.Contain())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   if (style.Contain() == kContainsStrict)
-    return CSSIdentifierValue::Create(CSSValueStrict);
+    return CSSIdentifierValue::Create(CSSValueID::kStrict);
   if (style.Contain() == kContainsContent)
-    return CSSIdentifierValue::Create(CSSValueContent);
+    return CSSIdentifierValue::Create(CSSValueID::kContent);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (style.ContainsSize())
-    list->Append(*CSSIdentifierValue::Create(CSSValueSize));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kSize));
   if (style.Contain() & kContainsLayout)
-    list->Append(*CSSIdentifierValue::Create(CSSValueLayout));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kLayout));
   if (style.ContainsStyle())
-    list->Append(*CSSIdentifierValue::Create(CSSValueStyle));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kStyle));
   if (style.ContainsPaint())
-    list->Append(*CSSIdentifierValue::Create(CSSValuePaint));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kPaint));
   DCHECK(list->length());
   return list;
 }

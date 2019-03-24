@@ -25,7 +25,7 @@ void Resize::ApplyValue(StyleResolverState& state,
   const CSSIdentifierValue& identifier_value = To<CSSIdentifierValue>(value);
 
   EResize r = EResize::kNone;
-  if (identifier_value.GetValueID() == CSSValueAuto) {
+  if (identifier_value.GetValueID() == CSSValueID::kAuto) {
     if (Settings* settings = state.GetDocument().GetSettings()) {
       r = settings->GetTextAreasAreResizable() ? EResize::kBoth
                                                : EResize::kNone;

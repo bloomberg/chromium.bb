@@ -17,7 +17,7 @@ const CSSValue* FontSizeAdjust::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled());
-  if (range.Peek().Id() == CSSValueNone)
+  if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeNumber(range,
                                                     kValueRangeNonNegative);
@@ -33,7 +33,7 @@ const CSSValue* FontSizeAdjust::CSSValueFromComputedStyleInternal(
     return CSSPrimitiveValue::Create(style.FontSizeAdjust(),
                                      CSSPrimitiveValue::UnitType::kNumber);
   }
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 }  // namespace css_longhand

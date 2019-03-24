@@ -14,8 +14,9 @@ namespace css_longhand {
 
 static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
   return css_property_parser_helpers::ConsumeIdent<
-      CSSValueA3, CSSValueA4, CSSValueA5, CSSValueB4, CSSValueB5,
-      CSSValueLedger, CSSValueLegal, CSSValueLetter>(range);
+      CSSValueID::kA3, CSSValueID::kA4, CSSValueID::kA5, CSSValueID::kB4,
+      CSSValueID::kB5, CSSValueID::kLedger, CSSValueID::kLegal,
+      CSSValueID::kLetter>(range);
 }
 
 static float MmToPx(float mm) {
@@ -26,21 +27,21 @@ static float InchToPx(float inch) {
 }
 static FloatSize GetPageSizeFromName(const CSSIdentifierValue& page_size_name) {
   switch (page_size_name.GetValueID()) {
-    case CSSValueA5:
+    case CSSValueID::kA5:
       return FloatSize(MmToPx(148), MmToPx(210));
-    case CSSValueA4:
+    case CSSValueID::kA4:
       return FloatSize(MmToPx(210), MmToPx(297));
-    case CSSValueA3:
+    case CSSValueID::kA3:
       return FloatSize(MmToPx(297), MmToPx(420));
-    case CSSValueB5:
+    case CSSValueID::kB5:
       return FloatSize(MmToPx(176), MmToPx(250));
-    case CSSValueB4:
+    case CSSValueID::kB4:
       return FloatSize(MmToPx(250), MmToPx(353));
-    case CSSValueLetter:
+    case CSSValueID::kLetter:
       return FloatSize(InchToPx(8.5), InchToPx(11));
-    case CSSValueLegal:
+    case CSSValueID::kLegal:
       return FloatSize(InchToPx(8.5), InchToPx(14));
-    case CSSValueLedger:
+    case CSSValueID::kLedger:
       return FloatSize(InchToPx(11), InchToPx(17));
     default:
       NOTREACHED();
@@ -53,7 +54,7 @@ const CSSValue* Size::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserLocalContext&) const {
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
 
-  if (range.Peek().Id() == CSSValueAuto) {
+  if (range.Peek().Id() == CSSValueID::kAuto) {
     result->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return result;
   }
@@ -70,8 +71,8 @@ const CSSValue* Size::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSValue* page_size = ConsumePageSize(range);
   CSSValue* orientation =
-      css_property_parser_helpers::ConsumeIdent<CSSValuePortrait,
-                                                CSSValueLandscape>(range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kPortrait,
+                                                CSSValueID::kLandscape>(range);
   if (!page_size)
     page_size = ConsumePageSize(range);
 
@@ -109,9 +110,11 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
       // <page-size> <orientation>
       size = GetPageSizeFromName(To<CSSIdentifierValue>(first));
 
-      DCHECK(To<CSSIdentifierValue>(second).GetValueID() == CSSValueLandscape ||
-             To<CSSIdentifierValue>(second).GetValueID() == CSSValuePortrait);
-      if (To<CSSIdentifierValue>(second).GetValueID() == CSSValueLandscape)
+      DCHECK(To<CSSIdentifierValue>(second).GetValueID() ==
+                 CSSValueID::kLandscape ||
+             To<CSSIdentifierValue>(second).GetValueID() ==
+                 CSSValueID::kPortrait);
+      if (To<CSSIdentifierValue>(second).GetValueID() == CSSValueID::kLandscape)
         size = size.TransposedSize();
     }
     page_size_type = EPageSizeType::kResolved;
@@ -129,13 +132,13 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     } else {
       const auto& ident = To<CSSIdentifierValue>(first);
       switch (ident.GetValueID()) {
-        case CSSValueAuto:
+        case CSSValueID::kAuto:
           page_size_type = EPageSizeType::kAuto;
           break;
-        case CSSValuePortrait:
+        case CSSValueID::kPortrait:
           page_size_type = EPageSizeType::kPortrait;
           break;
-        case CSSValueLandscape:
+        case CSSValueID::kLandscape:
           page_size_type = EPageSizeType::kLandscape;
           break;
         default:

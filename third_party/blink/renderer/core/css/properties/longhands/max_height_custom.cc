@@ -27,7 +27,7 @@ const CSSValue* MaxHeight::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   const Length& max_height = style.MaxHeight();
   if (max_height.IsMaxSizeNone())
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_height, style);
 }
 

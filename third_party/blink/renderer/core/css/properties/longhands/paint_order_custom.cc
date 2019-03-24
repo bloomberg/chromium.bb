@@ -15,7 +15,7 @@ const CSSValue* PaintOrder::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueNormal)
+  if (range.Peek().Id() == CSSValueID::kNormal)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   Vector<CSSValueID, 3> paint_type_list;
@@ -24,11 +24,11 @@ const CSSValue* PaintOrder::ParseSingleValue(
   CSSIdentifierValue* markers = nullptr;
   do {
     CSSValueID id = range.Peek().Id();
-    if (id == CSSValueFill && !fill)
+    if (id == CSSValueID::kFill && !fill)
       fill = css_property_parser_helpers::ConsumeIdent(range);
-    else if (id == CSSValueStroke && !stroke)
+    else if (id == CSSValueID::kStroke && !stroke)
       stroke = css_property_parser_helpers::ConsumeIdent(range);
-    else if (id == CSSValueMarkers && !markers)
+    else if (id == CSSValueID::kMarkers && !markers)
       markers = css_property_parser_helpers::ConsumeIdent(range);
     else
       return nullptr;
@@ -41,19 +41,19 @@ const CSSValue* PaintOrder::ParseSingleValue(
   CSSValueID first_paint_order_type = paint_type_list.at(0);
   CSSValueList* paint_order_list = CSSValueList::CreateSpaceSeparated();
   switch (first_paint_order_type) {
-    case CSSValueFill:
-    case CSSValueStroke:
+    case CSSValueID::kFill:
+    case CSSValueID::kStroke:
       paint_order_list->Append(
-          first_paint_order_type == CSSValueFill ? *fill : *stroke);
+          first_paint_order_type == CSSValueID::kFill ? *fill : *stroke);
       if (paint_type_list.size() > 1) {
-        if (paint_type_list.at(1) == CSSValueMarkers)
+        if (paint_type_list.at(1) == CSSValueID::kMarkers)
           paint_order_list->Append(*markers);
       }
       break;
-    case CSSValueMarkers:
+    case CSSValueID::kMarkers:
       paint_order_list->Append(*markers);
       if (paint_type_list.size() > 1) {
-        if (paint_type_list.at(1) == CSSValueStroke)
+        if (paint_type_list.at(1) == CSSValueID::kStroke)
           paint_order_list->Append(*stroke);
       }
       break;
@@ -72,7 +72,7 @@ const CSSValue* PaintOrder::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   const EPaintOrder paint_order = svg_style.PaintOrder();
   if (paint_order == kPaintOrderNormal)
-    return CSSIdentifierValue::Create(CSSValueNormal);
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
 
   // Table mapping to the shortest (canonical) form of the property.
   //

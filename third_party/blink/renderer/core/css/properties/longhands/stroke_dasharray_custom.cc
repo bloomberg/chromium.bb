@@ -17,7 +17,7 @@ const CSSValue* StrokeDasharray::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueNone)
+  if (id == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* dashes = CSSValueList::CreateCommaSeparated();

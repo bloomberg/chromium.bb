@@ -17,11 +17,11 @@ const CSSValue* WebkitAppRegion::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   if (style.DraggableRegionMode() == EDraggableRegionMode::kNone)
-    return CSSIdentifierValue::Create(CSSValueNone);
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
   return CSSIdentifierValue::Create(style.DraggableRegionMode() ==
                                             EDraggableRegionMode::kDrag
-                                        ? CSSValueDrag
-                                        : CSSValueNoDrag);
+                                        ? CSSValueID::kDrag
+                                        : CSSValueID::kNoDrag);
 }
 
 void WebkitAppRegion::ApplyInitial(StyleResolverState& state) const {}
@@ -32,7 +32,7 @@ void WebkitAppRegion::ApplyValue(StyleResolverState& state,
                                  const CSSValue& value) const {
   const auto& identifier_value = To<CSSIdentifierValue>(value);
   state.Style()->SetDraggableRegionMode(identifier_value.GetValueID() ==
-                                                CSSValueDrag
+                                                CSSValueID::kDrag
                                             ? EDraggableRegionMode::kDrag
                                             : EDraggableRegionMode::kNoDrag);
   state.GetDocument().SetHasAnnotatedRegions(true);

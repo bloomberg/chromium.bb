@@ -17,9 +17,9 @@ const CSSValue* FontVariantCaps::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeIdent<
-      CSSValueNormal, CSSValueSmallCaps, CSSValueAllSmallCaps,
-      CSSValuePetiteCaps, CSSValueAllPetiteCaps, CSSValueUnicase,
-      CSSValueTitlingCaps>(range);
+      CSSValueID::kNormal, CSSValueID::kSmallCaps, CSSValueID::kAllSmallCaps,
+      CSSValueID::kPetiteCaps, CSSValueID::kAllPetiteCaps, CSSValueID::kUnicase,
+      CSSValueID::kTitlingCaps>(range);
 }
 
 const CSSValue* FontVariantCaps::CSSValueFromComputedStyleInternal(

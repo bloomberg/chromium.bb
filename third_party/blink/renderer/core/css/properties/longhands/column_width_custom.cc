@@ -25,7 +25,7 @@ const CSSValue* ColumnWidth::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.HasAutoColumnWidth())
-    return CSSIdentifierValue::Create(CSSValueAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return ZoomAdjustedPixelValue(style.ColumnWidth(), style);
 }
 

@@ -16,8 +16,8 @@ const CSSValue* JustifyContent::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   // justify-content property does not allow the <baseline-position> values.
-  if (css_property_parser_helpers::IdentMatches<CSSValueFirst, CSSValueLast,
-                                                CSSValueBaseline>(
+  if (css_property_parser_helpers::IdentMatches<
+          CSSValueID::kFirst, CSSValueID::kLast, CSSValueID::kBaseline>(
           range.Peek().Id()))
     return nullptr;
   return css_parsing_utils::ConsumeContentDistributionOverflowPosition(

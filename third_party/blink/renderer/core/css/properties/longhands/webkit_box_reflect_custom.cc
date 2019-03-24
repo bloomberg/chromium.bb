@@ -18,7 +18,8 @@ namespace {
 CSSValue* ConsumeReflect(CSSParserTokenRange& range,
                          const CSSParserContext& context) {
   CSSIdentifierValue* direction = css_property_parser_helpers::ConsumeIdent<
-      CSSValueAbove, CSSValueBelow, CSSValueLeft, CSSValueRight>(range);
+      CSSValueID::kAbove, CSSValueID::kBelow, CSSValueID::kLeft,
+      CSSValueID::kRight>(range);
   if (!direction)
     return nullptr;
 

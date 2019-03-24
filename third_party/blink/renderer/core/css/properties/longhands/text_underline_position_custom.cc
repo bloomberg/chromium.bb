@@ -17,19 +17,19 @@ const CSSValue* TextUnderlinePosition::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (range.Peek().Id() == CSSValueAuto)
+  if (range.Peek().Id() == CSSValueID::kAuto)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSIdentifierValue* under_value =
-      css_property_parser_helpers::ConsumeIdent<CSSValueUnder>(range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
   CSSIdentifierValue* left_or_right_value = nullptr;
   if (RuntimeEnabledFeatures::TextUnderlinePositionLeftRightEnabled()) {
     left_or_right_value =
-        css_property_parser_helpers::ConsumeIdent<CSSValueLeft, CSSValueRight>(
-            range);
+        css_property_parser_helpers::ConsumeIdent<CSSValueID::kLeft,
+                                                  CSSValueID::kRight>(range);
     if (left_or_right_value && !under_value) {
       under_value =
-          css_property_parser_helpers::ConsumeIdent<CSSValueUnder>(range);
+          css_property_parser_helpers::ConsumeIdent<CSSValueID::kUnder>(range);
     }
   }
   if (!under_value && !left_or_right_value) {
@@ -51,21 +51,21 @@ const CSSValue* TextUnderlinePosition::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   auto text_underline_position = style.TextUnderlinePosition();
   if (text_underline_position == kTextUnderlinePositionAuto)
-    return CSSIdentifierValue::Create(CSSValueAuto);
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
   if (text_underline_position == kTextUnderlinePositionUnder)
-    return CSSIdentifierValue::Create(CSSValueUnder);
+    return CSSIdentifierValue::Create(CSSValueID::kUnder);
   if (text_underline_position == kTextUnderlinePositionLeft)
-    return CSSIdentifierValue::Create(CSSValueLeft);
+    return CSSIdentifierValue::Create(CSSValueID::kLeft);
   if (text_underline_position == kTextUnderlinePositionRight)
-    return CSSIdentifierValue::Create(CSSValueRight);
+    return CSSIdentifierValue::Create(CSSValueID::kRight);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   DCHECK(text_underline_position & kTextUnderlinePositionUnder);
-  list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
+  list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnder));
   if (text_underline_position & kTextUnderlinePositionLeft)
-    list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kLeft));
   if (text_underline_position & kTextUnderlinePositionRight)
-    list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kRight));
   DCHECK_EQ(list->length(), 2U);
   return list;
 }

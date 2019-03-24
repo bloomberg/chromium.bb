@@ -25,7 +25,7 @@ const CSSValue* OffsetPath::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (const BasicShape* style_motion_path = style.OffsetPath())
     return ValueForBasicShape(style, style_motion_path);
-  return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 }  // namespace css_longhand

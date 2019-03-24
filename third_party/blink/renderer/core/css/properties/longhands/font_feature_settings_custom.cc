@@ -27,7 +27,7 @@ const CSSValue* FontFeatureSettings::CSSValueFromComputedStyleInternal(
   const blink::FontFeatureSettings* feature_settings =
       style.GetFontDescription().FeatureSettings();
   if (!feature_settings || !feature_settings->size())
-    return CSSIdentifierValue::Create(CSSValueNormal);
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (wtf_size_t i = 0; i < feature_settings->size(); ++i) {
     const FontFeature& feature = feature_settings->at(i);

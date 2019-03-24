@@ -25,7 +25,7 @@ const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
     return nullptr;
 
   CSSValueID function = range.Peek().FunctionId();
-  if (function != CSSValueLayout && function != CSSValueInlineLayout)
+  if (function != CSSValueID::kLayout && function != CSSValueID::kInlineLayout)
     return nullptr;
 
   CSSParserTokenRange range_copy = range;
@@ -41,7 +41,7 @@ const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
 
   range = range_copy;
   return cssvalue::CSSLayoutFunctionValue::Create(
-      name, /* is_inline */ function == CSSValueInlineLayout);
+      name, /* is_inline */ function == CSSValueID::kInlineLayout);
 }
 
 const CSSValue* Display::CSSValueFromComputedStyleInternal(

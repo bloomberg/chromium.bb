@@ -32,7 +32,7 @@ const CSSValue* AnimationTimingFunction::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationTimingFunction::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueEase)));
+                      (CSSIdentifierValue::Create(CSSValueID::kEase)));
   return value;
 }
 

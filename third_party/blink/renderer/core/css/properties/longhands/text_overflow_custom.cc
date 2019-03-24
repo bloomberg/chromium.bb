@@ -16,8 +16,8 @@ const CSSValue* TextOverflow::CSSValueFromComputedStyleInternal(
     Node* styled_node,
     bool allow_visited_style) const {
   if (style.TextOverflow() != ETextOverflow::kClip)
-    return CSSIdentifierValue::Create(CSSValueEllipsis);
-  return CSSIdentifierValue::Create(CSSValueClip);
+    return CSSIdentifierValue::Create(CSSValueID::kEllipsis);
+  return CSSIdentifierValue::Create(CSSValueID::kClip);
 }
 
 }  // namespace css_longhand

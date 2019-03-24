@@ -18,11 +18,12 @@ static bool ConsumePan(CSSParserTokenRange& range,
                        CSSValue** pan_x,
                        CSSValue** pan_y) {
   CSSValueID id = range.Peek().Id();
-  if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) &&
+  if ((id == CSSValueID::kPanX || id == CSSValueID::kPanRight ||
+       id == CSSValueID::kPanLeft) &&
       !*pan_x) {
     *pan_x = css_property_parser_helpers::ConsumeIdent(range);
-  } else if ((id == CSSValuePanY || id == CSSValuePanDown ||
-              id == CSSValuePanUp) &&
+  } else if ((id == CSSValueID::kPanY || id == CSSValueID::kPanDown ||
+              id == CSSValueID::kPanUp) &&
              !*pan_y) {
     *pan_y = css_property_parser_helpers::ConsumeIdent(range);
   } else {
@@ -40,7 +41,7 @@ const CSSValue* ScrollCustomization::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueAuto || id == CSSValueNone) {
+  if (id == CSSValueID::kAuto || id == CSSValueID::kNone) {
     list->Append(*css_property_parser_helpers::ConsumeIdent(range));
     return list;
   }

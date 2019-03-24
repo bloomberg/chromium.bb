@@ -18,7 +18,7 @@ const CSSValue* WebkitTextEmphasisStyle::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
-  if (id == CSSValueNone)
+  if (id == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   if (CSSValue* text_emphasis_style =
@@ -26,15 +26,14 @@ const CSSValue* WebkitTextEmphasisStyle::ParseSingleValue(
     return text_emphasis_style;
 
   CSSIdentifierValue* fill =
-      css_property_parser_helpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
-          range);
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kFilled,
+                                                CSSValueID::kOpen>(range);
   CSSIdentifierValue* shape = css_property_parser_helpers::ConsumeIdent<
-      CSSValueDot, CSSValueCircle, CSSValueDoubleCircle, CSSValueTriangle,
-      CSSValueSesame>(range);
+      CSSValueID::kDot, CSSValueID::kCircle, CSSValueID::kDoubleCircle,
+      CSSValueID::kTriangle, CSSValueID::kSesame>(range);
   if (!fill) {
-    fill =
-        css_property_parser_helpers::ConsumeIdent<CSSValueFilled, CSSValueOpen>(
-            range);
+    fill = css_property_parser_helpers::ConsumeIdent<CSSValueID::kFilled,
+                                                     CSSValueID::kOpen>(range);
   }
   if (fill && shape) {
     CSSValueList* parsed_values = CSSValueList::CreateSpaceSeparated();
@@ -57,7 +56,7 @@ const CSSValue* WebkitTextEmphasisStyle::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   switch (style.GetTextEmphasisMark()) {
     case TextEmphasisMark::kNone:
-      return CSSIdentifierValue::Create(CSSValueNone);
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
     case TextEmphasisMark::kCustom:
       return CSSStringValue::Create(style.TextEmphasisCustomMark());
     case TextEmphasisMark::kAuto:
@@ -102,8 +101,8 @@ void WebkitTextEmphasisStyle::ApplyValue(StyleResolverState& state,
     DCHECK_EQ(list->length(), 2U);
     for (unsigned i = 0; i < 2; ++i) {
       const auto& ident_value = To<CSSIdentifierValue>(list->Item(i));
-      if (ident_value.GetValueID() == CSSValueFilled ||
-          ident_value.GetValueID() == CSSValueOpen) {
+      if (ident_value.GetValueID() == CSSValueID::kFilled ||
+          ident_value.GetValueID() == CSSValueID::kOpen) {
         state.Style()->SetTextEmphasisFill(
             ident_value.ConvertTo<TextEmphasisFill>());
       } else {
@@ -127,8 +126,8 @@ void WebkitTextEmphasisStyle::ApplyValue(StyleResolverState& state,
 
   state.Style()->SetTextEmphasisCustomMark(g_null_atom);
 
-  if (identifier_value.GetValueID() == CSSValueFilled ||
-      identifier_value.GetValueID() == CSSValueOpen) {
+  if (identifier_value.GetValueID() == CSSValueID::kFilled ||
+      identifier_value.GetValueID() == CSSValueID::kOpen) {
     state.Style()->SetTextEmphasisFill(
         identifier_value.ConvertTo<TextEmphasisFill>());
     state.Style()->SetTextEmphasisMark(TextEmphasisMark::kAuto);

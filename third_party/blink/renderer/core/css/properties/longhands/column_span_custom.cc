@@ -13,8 +13,8 @@ const CSSValue* ColumnSpan::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeIdent<CSSValueAll, CSSValueNone>(
-      range);
+  return css_property_parser_helpers::ConsumeIdent<CSSValueID::kAll,
+                                                   CSSValueID::kNone>(range);
 }
 
 const CSSValue* ColumnSpan::CSSValueFromComputedStyleInternal(
@@ -24,8 +24,8 @@ const CSSValue* ColumnSpan::CSSValueFromComputedStyleInternal(
     Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(static_cast<unsigned>(style.GetColumnSpan())
-                                        ? CSSValueAll
-                                        : CSSValueNone);
+                                        ? CSSValueID::kAll
+                                        : CSSValueID::kNone);
 }
 
 }  // namespace css_longhand

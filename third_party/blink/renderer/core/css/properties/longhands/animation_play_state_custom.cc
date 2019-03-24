@@ -17,8 +17,8 @@ const CSSValue* AnimationPlayState::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeCommaSeparatedList(
-      css_property_parser_helpers::ConsumeIdent<CSSValueRunning,
-                                                CSSValuePaused>,
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kRunning,
+                                                CSSValueID::kPaused>,
       range);
 }
 
@@ -43,7 +43,7 @@ const CSSValue* AnimationPlayState::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationPlayState::InitialValue() const {
   DEFINE_STATIC_LOCAL(Persistent<CSSValue>, value,
-                      (CSSIdentifierValue::Create(CSSValueRunning)));
+                      (CSSIdentifierValue::Create(CSSValueID::kRunning)));
   return value;
 }
 
