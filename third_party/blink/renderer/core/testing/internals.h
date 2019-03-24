@@ -596,8 +596,6 @@ class Internals final : public ScriptWrappable {
 
   LocalFrame* GetFrame() const;
 
-  void setDeviceEmulationScale(float scale, ExceptionState&);
-
  private:
   Document* ContextDocument() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;
