@@ -44,7 +44,7 @@ using chrome_test_util::SettingsDoneButton;
 
 // Verifies that keyboard commands are registered by the BVC.
 - (void)verifyKeyboardCommandsAreRegistered {
-  BOOL (^block)
+  BOOL(^block)
   () = ^BOOL {
     return chrome_test_util::GetRegisteredKeyCommandsCount() > 0;
   };
@@ -61,7 +61,7 @@ using chrome_test_util::SettingsDoneButton;
 
 // Verifies that no keyboard commands are registered by the BVC.
 - (void)verifyNoKeyboardCommandsAreRegistered {
-  BOOL (^block)
+  BOOL(^block)
   () = ^BOOL {
     return chrome_test_util::GetRegisteredKeyCommandsCount() == 0;
   };
@@ -77,7 +77,7 @@ using chrome_test_util::SettingsDoneButton;
 
 // Waits for the bookmark editor to display.
 - (void)waitForSingleBookmarkEditorToDisplay {
-  BOOL (^block)
+  BOOL(^block)
   () = ^BOOL {
     NSError* error = nil;
     id<GREYMatcher> singleBookmarkEditor =

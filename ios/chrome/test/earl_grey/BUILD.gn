@@ -88,7 +88,6 @@ chrome_ios_eg_test("ios_chrome_tab_grid_egtests") {
 
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
-    "//ios/chrome/browser/ui:eg_tests",
     "//ios/chrome/browser/ui/activity_services:eg_tests",
     "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
     "//ios/chrome/browser/ui/autofill:eg_tests",
@@ -101,6 +100,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/fullscreen:eg_tests",
     "//ios/chrome/browser/ui/history:eg_tests",
     "//ios/chrome/browser/ui/infobars:eg_tests",
+    "//ios/chrome/browser/ui/keyboard:eg_tests",
     "//ios/chrome/browser/ui/ntp:eg_tests",
     "//ios/chrome/browser/ui/omnibox/popup:eg_tests",
     "//ios/chrome/browser/ui/omnibox/popup/shortcuts:eg_tests",
