@@ -40,6 +40,7 @@ class BrowserContext;
 class DevToolsAgentHostImpl;
 class DevToolsIOContext;
 class RenderFrameHostImpl;
+class RenderProcessHost;
 class InterceptionHandle;
 class NavigationHandle;
 class NavigationRequest;
@@ -145,8 +146,13 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<TakeResponseBodyForInterceptionAsStreamCallback> callback)
       override;
 
+  // Note that |frame_token| below is for the frame that is associated with the
+  // factory being created, and is therefore not necessarily the same as one
+  // associated with the NetworkHandler itself (which is the token of the local
+  // root frame).
   bool MaybeCreateProxyForInterception(
-      RenderFrameHostImpl* rfh,
+      RenderProcessHost* rph,
+      const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
       network::mojom::URLLoaderFactoryRequest* target_factory_request);

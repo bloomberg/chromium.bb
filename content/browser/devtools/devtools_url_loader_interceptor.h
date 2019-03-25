@@ -11,7 +11,7 @@
 
 namespace content {
 
-class RenderFrameHostImpl;
+class RenderProcessHost;
 
 class DevToolsURLLoaderInterceptor {
  public:
@@ -51,7 +51,8 @@ class DevToolsURLLoaderInterceptor {
           callback);
 
   bool CreateProxyForInterception(
-      RenderFrameHostImpl* rfh,
+      RenderProcessHost* rph,
+      const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
       network::mojom::URLLoaderFactoryRequest* target_factory_request) const;

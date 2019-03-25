@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -102,6 +103,7 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
 // The network factory does not support reconnection to the network service.
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     RenderProcessHost* rph,
+    int routing_id,
     const url::Origin& origin) {
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   network::mojom::URLLoaderFactoryRequest default_factory_request =
@@ -116,6 +118,8 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
         false /* is_navigation */, false /* is_download */, origin,
         &default_factory_request, &default_header_client,
         &bypass_redirect_checks);
+    devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
+        rph, routing_id, &default_factory_request);
   }
 
   if (!GetNetworkFactoryCallbackForTest()) {
@@ -248,28 +252,6 @@ void SetupOnUIThread(int embedded_worker_id,
         std::move(request));
   }
 
-  // S13nServiceWorker: Create factory bundles for this worker to do loading.
-  // These bundles don't support reconnection to the network service, see
-  // below comments.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    const url::Origin origin = url::Origin::Create(params->script_url);
-
-    // The bundle for the browser is passed to ServiceWorkerScriptLoaderFactory
-    // and used to request non-installed service worker scripts. It's OK to not
-    // support reconnection to then network service because it can only used
-    // until the service worker reaches the 'installed' state.
-    //
-    // TODO(falken): Only make this bundle for non-installed service workers.
-    factory_bundle_for_browser = CreateFactoryBundle(rph, origin);
-
-    // The bundle for the renderer is passed to the service worker, and
-    // used for subresource loading from the service worker (i.e., fetch()).
-    // It's OK to not support reconnection to the network service because the
-    // service worker terminates itself when the connection breaks, so a new
-    // instance can be started.
-    factory_bundle_for_renderer = CreateFactoryBundle(rph, origin);
-  }
-
   // Register to DevTools and update params accordingly.
   // TODO(dgozman): we can now remove this routing id and use something else
   // as id when talking to ServiceWorkerDevToolsManager.
@@ -284,6 +266,28 @@ void SetupOnUIThread(int embedded_worker_id,
   // balanced by DevToolsProxy's destructor calling WorkerDestroyed().
   devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
       process_id, routing_id);
+
+  // S13nServiceWorker: Create factory bundles for this worker to do loading.
+  // These bundles don't support reconnection to the network service, see
+  // below comments.
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    const url::Origin origin = url::Origin::Create(params->script_url);
+
+    // The bundle for the browser is passed to ServiceWorkerScriptLoaderFactory
+    // and used to request non-installed service worker scripts. It's OK to not
+    // support reconnection to then network service because it can only used
+    // until the service worker reaches the 'installed' state.
+    //
+    // TODO(falken): Only make this bundle for non-installed service workers.
+    factory_bundle_for_browser = CreateFactoryBundle(rph, routing_id, origin);
+
+    // The bundle for the renderer is passed to the service worker, and
+    // used for subresource loading from the service worker (i.e., fetch()).
+    // It's OK to not support reconnection to the network service because the
+    // service worker terminates itself when the connection breaks, so a new
+    // instance can be started.
+    factory_bundle_for_renderer = CreateFactoryBundle(rph, routing_id, origin);
+  }
 
   // TODO(crbug.com/862854): Support changes to
   // blink::mojom::RendererPreferences while the worker is running.
