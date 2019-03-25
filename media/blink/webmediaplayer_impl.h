@@ -780,6 +780,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // MediaResource::Type::URL for now.
   bool using_media_player_renderer_ = false;
 
+#if defined(OS_ANDROID)
+  // Set during the initial DoLoad() call. Used to determine whether to allow
+  // credentials or not for MediaPlayerRenderer.
+  bool allow_media_player_renderer_credentials_ = false;
+#endif
+
   // Set whenever the demuxer encounters an HLS file.
   // This flag is distinct from |using_media_player_renderer_|, because on older
   // devices we might use MediaPlayerRenderer for non HLS playback.

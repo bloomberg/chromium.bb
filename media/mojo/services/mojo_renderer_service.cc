@@ -73,6 +73,7 @@ void MojoRendererService::Initialize(
     base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
     const base::Optional<GURL>& media_url,
     const base::Optional<GURL>& site_for_cookies,
+    bool allow_credentials,
     InitializeCallback callback) {
   DVLOG(1) << __func__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -90,8 +91,8 @@ void MojoRendererService::Initialize(
 
   DCHECK(!media_url.value().is_empty());
   DCHECK(site_for_cookies);
-  media_resource_.reset(new MediaUrlDemuxer(nullptr, media_url.value(),
-                                            site_for_cookies.value()));
+  media_resource_.reset(new MediaUrlDemuxer(
+      nullptr, media_url.value(), site_for_cookies.value(), allow_credentials));
   renderer_->Initialize(
       media_resource_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,

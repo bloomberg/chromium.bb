@@ -659,6 +659,18 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+#if defined(OS_ANDROID)
+  // Only allow credentials if the crossorigin attribute is unspecified
+  // (kCorsModeUnspecified) or "use-credentials" (kCorsModeUseCredentials).
+  // This value is only used by the MediaPlayerRenderer.
+  // See https://crbug.com/936566.
+  //
+  // The credentials mode also has repercussions in WouldTaintOrigin(), but we
+  // access what we need from |mb_data_source_|->cors_mode() directly, instead
+  // of storing it here.
+  allow_media_player_renderer_credentials_ = cors_mode != kCorsModeAnonymous;
+#endif  // defined(OS_ANDROID)
+
   // Note: |url| may be very large, take care when making copies.
   loaded_url_ = GURL(url);
   load_type_ = load_type;
@@ -2532,6 +2544,7 @@ void WebMediaPlayerImpl::StartPipeline() {
                      BindToCurrentLoop(base::BindOnce(
                          &WebMediaPlayerImpl::OnFirstFrame, AsWeakPtr()))));
 
+#if defined(OS_ANDROID)
   if (demuxer_found_hls_ ||
       renderer_factory_selector_->GetCurrentFactory()
               ->GetRequiredMediaResourceType() == MediaResource::Type::URL) {
@@ -2543,12 +2556,14 @@ void WebMediaPlayerImpl::StartPipeline() {
     // reporter.
     video_decode_stats_reporter_.reset();
 
-    demuxer_.reset(new MediaUrlDemuxer(media_task_runner_, loaded_url_,
-                                       frame_->GetDocument().SiteForCookies()));
+    demuxer_.reset(new MediaUrlDemuxer(
+        media_task_runner_, loaded_url_, frame_->GetDocument().SiteForCookies(),
+        allow_media_player_renderer_credentials_));
     pipeline_controller_.Start(Pipeline::StartType::kNormal, demuxer_.get(),
                                this, false, false);
     return;
   }
+#endif  // defined(OS_ANDROID)
 
   // Figure out which demuxer to use.
   if (load_type_ != kLoadTypeMediaSource) {

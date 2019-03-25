@@ -18,7 +18,8 @@ interface Renderer {
   Initialize(associated RendererClient client,
              array<DemuxerStream>? streams,
              url.mojom.Url? media_url,
-             url.mojom.Url? first_party_for_cookies) => (bool success);
+             url.mojom.Url? first_party_for_cookies, bool allow_credentials)
+               => (bool success);
 
   // Discards any buffered data, executing callback when completed.
   // NOTE: If an error occurs, RendererClient::OnError() can be called

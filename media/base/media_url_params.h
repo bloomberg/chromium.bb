@@ -23,6 +23,16 @@ struct MEDIA_EXPORT MediaUrlParams {
   // MediaResourceGetterTask::CheckPolicyForCookies, to limit the scope of the
   // cookies that the MediaPlayerRenderer has access to.
   GURL site_for_cookies;
+
+  // True when the crossorigin mode is unspecified or set to "use-credentials",
+  // false when it's "anonymous".
+  //
+  // Used by MediaPlayerRenderer when determining whether or not send cookies
+  // and credentials to the underlying Android MediaPlayer. Cookies/credentials
+  // are retrieved based on whether or not the |media_url| passes the checks
+  // initiated in MediaResourceGetter::CheckPolicyForCookies() for the given
+  // |site_for_cookies|.
+  bool allow_credentials;
 };
 
 }  // namespace media

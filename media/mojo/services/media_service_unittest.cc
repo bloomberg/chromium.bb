@@ -259,7 +259,7 @@ class MediaServiceTest : public testing::Test {
         .WillOnce(QuitLoop(&run_loop));
     renderer_->Initialize(
         std::move(client_ptr_info), std::move(streams), base::nullopt,
-        base::nullopt,
+        base::nullopt, /* allow_credentials */ false,
         base::BindOnce(&MediaServiceTest::OnRendererInitialized,
                        base::Unretained(this)));
     run_loop.Run();

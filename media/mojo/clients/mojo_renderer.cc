@@ -103,7 +103,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
       std::move(client_ptr_info), std::move(stream_proxies), base::nullopt,
-      base::nullopt,
+      base::nullopt, /* allow_credentials */ false,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -124,7 +124,7 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   std::vector<mojom::DemuxerStreamPtrInfo> streams;
   remote_renderer_->Initialize(
       std::move(client_ptr_info), std::move(streams), url_params.media_url,
-      url_params.site_for_cookies,
+      url_params.site_for_cookies, url_params.allow_credentials,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
