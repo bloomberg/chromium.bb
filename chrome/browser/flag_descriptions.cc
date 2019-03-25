@@ -1230,6 +1230,12 @@ const char kLoadMediaRouterComponentExtensionName[] =
 const char kLoadMediaRouterComponentExtensionDescription[] =
     "Loads the Media Router component extension at startup.";
 
+const char kLogJsConsoleMessagesName[] =
+    "Log JS console messages in system logs";
+const char kLogJsConsoleMessagesDescription[] =
+    "Enable logging JS console messages in system logs, please note that they "
+    "may contain PII.";
+
 const char kLookalikeUrlNavigationSuggestionsName[] =
     "Navigation suggestions for lookalike URLs";
 const char kLookalikeUrlNavigationSuggestionsDescription[] =

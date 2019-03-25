@@ -32663,6 +32663,7 @@ from previous Chrome versions.
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
   <int value="-763730918" label="CCTTargetTranslateLanguage:disabled"/>
+  <int value="-762738927" label="LogJsConsoleMessages:enabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
   <int value="-758048639" label="InfiniteSessionRestore:enabled"/>
@@ -33230,6 +33231,7 @@ from previous Chrome versions.
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>
   <int value="191737931" label="enable-mark-http-as"/>
+  <int value="192167036" label="LogJsConsoleMessages:disabled"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>

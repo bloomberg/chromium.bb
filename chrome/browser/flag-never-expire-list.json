@@ -29,6 +29,7 @@
   "enable-future-v8-vm-features",
   "enable-gpu-rasterization",
   "enable-gpu-service-logging",
+  "enable-logging-js-console-messages",
   "enable-network-logging-to-file",
   "enable-show-autofill-signatures",
   "enable-site-per-process",

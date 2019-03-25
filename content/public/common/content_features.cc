@@ -247,6 +247,9 @@ const base::Feature kLazyImageVisibleLoadTimeMetrics{
 const base::Feature kLazyInitializeMediaControls{
     "LazyInitializeMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLogJsConsoleMessages{"LogJsConsoleMessages",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables lowering the priority of the resources in iframes.
 const base::Feature kLowPriorityIframes{"LowPriorityIframes",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

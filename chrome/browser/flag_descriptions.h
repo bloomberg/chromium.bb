@@ -739,6 +739,9 @@ extern const char kLcdTextDescription[];
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
 
+extern const char kLogJsConsoleMessagesName[];
+extern const char kLogJsConsoleMessagesDescription[];
+
 extern const char kLookalikeUrlNavigationSuggestionsName[];
 extern const char kLookalikeUrlNavigationSuggestionsDescription[];
 
