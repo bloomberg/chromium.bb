@@ -747,6 +747,29 @@ bool EventTarget::FireEventListeners(Event& event,
   // dispatch. Conveniently, all new event listeners will be added after or at
   // index |size|, so iterating up to (but not including) |size| naturally
   // excludes new event listeners.
+
+  struct CountedEvent {
+    const AtomicString& event_type;
+    const WebFeature feature;
+  };
+  static const CountedEvent counted_events[] = {
+      {event_type_names::kUnload, WebFeature::kDocumentUnloadFired},
+      {event_type_names::kPagehide, WebFeature::kDocumentPageHideFired},
+      {event_type_names::kPageshow, WebFeature::kDocumentPageShowFired},
+      {event_type_names::kDOMFocusIn, WebFeature::kDOMFocusInOutEvent},
+      {event_type_names::kDOMFocusOut, WebFeature::kDOMFocusInOutEvent},
+      {event_type_names::kFocusin, WebFeature::kFocusInOutEvent},
+      {event_type_names::kFocusout, WebFeature::kFocusInOutEvent},
+      {event_type_names::kTextInput, WebFeature::kTextInputFired},
+      {event_type_names::kTouchstart, WebFeature::kTouchStartFired},
+      {event_type_names::kMousedown, WebFeature::kMouseDownFired},
+      {event_type_names::kPointerenter, WebFeature::kPointerEnterLeaveFired},
+      {event_type_names::kPointerleave, WebFeature::kPointerEnterLeaveFired},
+      {event_type_names::kPointerover, WebFeature::kPointerOverOutFired},
+      {event_type_names::kPointerout, WebFeature::kPointerOverOutFired},
+      {event_type_names::kSearch, WebFeature::kSearchEventFired},
+  };
+
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (const Document* document = executing_window->document()) {
       if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
@@ -754,34 +777,6 @@ bool EventTarget::FireEventListeners(Event& event,
                                 document)) {
         if (executing_window != executing_window->top())
           UseCounter::Count(*document, WebFeature::kSubFrameBeforeUnloadFired);
-      } else if (CheckTypeThenUseCount(event, event_type_names::kUnload,
-                                       WebFeature::kDocumentUnloadFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPagehide,
-                                       WebFeature::kDocumentPageHideFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPageshow,
-                                       WebFeature::kDocumentPageShowFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kDOMFocusIn,
-                                       WebFeature::kDOMFocusInOutEvent,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kDOMFocusOut,
-                                       WebFeature::kDOMFocusInOutEvent,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kFocusin,
-                                       WebFeature::kFocusInOutEvent,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kFocusout,
-                                       WebFeature::kFocusInOutEvent,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kTextInput,
-                                       WebFeature::kTextInputFired, document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kTouchstart,
-                                       WebFeature::kTouchStartFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kMousedown,
-                                       WebFeature::kMouseDownFired, document)) {
       } else if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
                                        WebFeature::kPointerDownFired,
                                        document)) {
@@ -789,32 +784,29 @@ bool EventTarget::FireEventListeners(Event& event,
             static_cast<PointerEvent&>(event).pointerType() == "touch") {
           UseCounter::Count(*document, WebFeature::kPointerDownFiredForTouch);
         }
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerenter,
-                                       WebFeature::kPointerEnterLeaveFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerleave,
-                                       WebFeature::kPointerEnterLeaveFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerover,
-                                       WebFeature::kPointerOverOutFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerout,
-                                       WebFeature::kPointerOverOutFired,
-                                       document)) {
-      } else if (CheckTypeThenUseCount(event, event_type_names::kSearch,
-                                       WebFeature::kSearchEventFired,
-                                       document)) {
-      } else if (event.eventPhase() == Event::kCapturingPhase ||
-                 event.eventPhase() == Event::kBubblingPhase) {
-        if (CheckTypeThenUseCount(
-                event, event_type_names::kDOMNodeRemoved,
-                WebFeature::kDOMNodeRemovedEventListenedAtNonTarget,
-                document)) {
-        } else if (CheckTypeThenUseCount(
-                       event, event_type_names::kDOMNodeRemovedFromDocument,
-                       WebFeature::
-                           kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
-                       document)) {
+      } else {
+        bool did_count = false;
+        for (const auto& counted_event : counted_events) {
+          if (CheckTypeThenUseCount(event, counted_event.event_type,
+                                    counted_event.feature, document)) {
+            did_count = true;
+            break;
+          }
+        }
+
+        if (!did_count && (event.eventPhase() == Event::kCapturingPhase ||
+                           event.eventPhase() == Event::kBubblingPhase)) {
+          if (CheckTypeThenUseCount(
+                  event, event_type_names::kDOMNodeRemoved,
+                  WebFeature::kDOMNodeRemovedEventListenedAtNonTarget,
+                  document)) {
+          } else if (
+              CheckTypeThenUseCount(
+                  event, event_type_names::kDOMNodeRemovedFromDocument,
+                  WebFeature::
+                      kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
+                  document)) {
+          }
         }
       }
     }
