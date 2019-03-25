@@ -109,6 +109,11 @@ bool IsHomeLauncherEnabledInTabletMode() {
   return IsTabletModeEnabled();
 }
 
+int GetAccessibilityPanelHeight(aura::Window* window) {
+  return RootWindowController::ForWindow(window->GetRootWindow())
+      ->GetAccessibilityPanelHeight();
+}
+
 }  // namespace
 
 // ShelfLayoutManager::UpdateShelfObserver -------------------------------------
@@ -460,11 +465,6 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   return SHELF_BACKGROUND_DEFAULT;
 }
 
-void ShelfLayoutManager::SetAccessibilityPanelHeight(int height) {
-  accessibility_panel_height_ = height;
-  LayoutShelf();
-}
-
 void ShelfLayoutManager::SetDockedMagnifierHeight(int height) {
   docked_magnifier_height_ = height;
   LayoutShelf();
@@ -506,6 +506,11 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
 void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
     aura::Window* root_window) {
   UpdateVisibilityState();
+}
+
+void ShelfLayoutManager::OnAccessibilityPanelBoundsChanged(
+    aura::Window* root_window) {
+  LayoutShelf();
 }
 
 void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
@@ -921,7 +926,8 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
   gfx::Rect available_bounds =
       screen_util::GetDisplayBoundsWithShelf(shelf_window);
   available_bounds.Inset(
-      0, accessibility_panel_height_ + docked_magnifier_height_, 0, 0);
+      0, GetAccessibilityPanelHeight(shelf_window) + docked_magnifier_height_,
+      0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
   const int shelf_primary_position = SelectValueForShelfAlignment(
@@ -971,7 +977,8 @@ gfx::Rect ShelfLayoutManager::CalculateTargetBounds(
   // Also push in the work area insets for both the ChromeVox panel and the
   // Docked Magnifier.
   target_bounds->work_area_insets += gfx::Insets(
-      accessibility_panel_height_ + docked_magnifier_height_, 0, 0, 0);
+      GetAccessibilityPanelHeight(shelf_window) + docked_magnifier_height_, 0,
+      0, 0);
 
   target_bounds->opacity = ComputeTargetOpacity(state);
   target_bounds->status_opacity =

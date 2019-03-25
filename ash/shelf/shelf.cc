@@ -239,17 +239,6 @@ ShelfVisibilityState Shelf::GetVisibilityState() const {
                                : SHELF_HIDDEN;
 }
 
-int Shelf::GetAccessibilityPanelHeight() const {
-  return shelf_layout_manager_
-             ? shelf_layout_manager_->accessibility_panel_height()
-             : 0;
-}
-
-void Shelf::SetAccessibilityPanelHeight(int height) {
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->SetAccessibilityPanelHeight(height);
-}
-
 int Shelf::GetDockedMagnifierHeight() const {
   return shelf_layout_manager_
              ? shelf_layout_manager_->docked_magnifier_height()

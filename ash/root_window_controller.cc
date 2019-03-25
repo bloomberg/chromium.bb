@@ -512,6 +512,12 @@ gfx::Point RootWindowController::GetLastMouseLocationInRoot() {
   return window_tree_host_->dispatcher()->GetLastMouseLocationInRoot();
 }
 
+int RootWindowController::GetAccessibilityPanelHeight() const {
+  const AccessibilityPanelLayoutManager* layout_manager =
+      GetAccessibilityPanelLayoutManager();
+  return layout_manager ? layout_manager->GetPanelHeight() : 0;
+}
+
 aura::Window* RootWindowController::GetContainer(int container_id) {
   return GetRootWindow()->GetChildById(container_id);
 }
@@ -672,6 +678,11 @@ void RootWindowController::UpdateAfterLoginStatusChange(LoginStatus status) {
       shelf_->shelf_widget()->status_area_widget();
   if (status_area_widget)
     status_area_widget->UpdateAfterLoginStatusChange(status);
+}
+
+AccessibilityPanelLayoutManager*
+RootWindowController::GetAccessibilityPanelLayoutManagerForTest() {
+  return GetAccessibilityPanelLayoutManager();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1061,6 +1072,15 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
     Shell::Get()->shell_state()->SetRootWindowForNewWindows(
         primary_root == root ? nullptr : primary_root);
   }
+}
+
+AccessibilityPanelLayoutManager*
+RootWindowController::GetAccessibilityPanelLayoutManager() const {
+  aura::Window* container = const_cast<aura::Window*>(
+      GetContainer(kShellWindowId_AccessibilityPanelContainer));
+  auto* layout_manager = static_cast<AccessibilityPanelLayoutManager*>(
+      container->layout_manager());
+  return layout_manager;
 }
 
 void RootWindowController::OnMenuClosed(

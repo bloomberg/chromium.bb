@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "ash/public/cpp/window_animation_types.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shell.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -187,8 +189,10 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
           ? keyboard_controller->GetKeyboardLockScreenOffsetBounds().height()
           : 0;
   gfx::Rect bounds = screen_util::GetDisplayBoundsWithShelf(window);
-  bounds.Inset(0, Shelf::ForWindow(window)->GetAccessibilityPanelHeight(), 0,
-               keyboard_height);
+  bounds.Inset(0,
+               RootWindowController::ForWindow(window->GetRootWindow())
+                   ->GetAccessibilityPanelHeight(),
+               0, keyboard_height);
   return bounds;
 }
 

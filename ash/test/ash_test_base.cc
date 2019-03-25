@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -16,6 +17,7 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -440,6 +442,13 @@ void AshTestBase::SimulateKioskMode(user_manager::UserType user_type) {
   session->AddUserSession(user_email, user_type);
   session->SwitchActiveUser(AccountId::FromUserEmail(user_email));
   session->SetSessionState(SessionState::ACTIVE);
+}
+
+void AshTestBase::SetAccessibilityPanelHeight(int panel_height) {
+  Shell::GetPrimaryRootWindowController()
+      ->GetAccessibilityPanelLayoutManagerForTest()
+      ->SetPanelBounds(gfx::Rect(0, 0, 0, panel_height),
+                       mojom::AccessibilityPanelState::FULL_WIDTH);
 }
 
 void AshTestBase::ClearLogin() {
