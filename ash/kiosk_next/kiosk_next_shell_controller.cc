@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
@@ -36,6 +37,15 @@ bool KioskNextShellController::IsEnabled() {
   return kiosk_next_enabled_;
 }
 
+void KioskNextShellController::AddObserver(KioskNextShellObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void KioskNextShellController::RemoveObserver(
+    KioskNextShellObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void KioskNextShellController::SetClient(
     mojom::KioskNextShellClientPtr client) {
   kiosk_next_shell_client_ = std::move(client);
@@ -54,7 +64,11 @@ void KioskNextShellController::OnActiveUserPrefServiceChanged(
                                                        ->session_controller()
                                                        ->GetPrimaryUserSession()
                                                        ->user_info->account_id);
+
+    // Notify observers that KioskNextShell has been enabled.
+    for (KioskNextShellObserver& observer : observer_list_) {
+      observer.OnKioskNextEnabled();
+    }
   }
 }
-
 }  // namespace ash

@@ -6,9 +6,11 @@
 #define ASH_KIOSK_NEXT_KIOSK_NEXT_SHELL_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 class PrefRegistrySimple;
@@ -35,6 +37,9 @@ class ASH_EXPORT KioskNextShellController
   // no signed-in user, this returns false.
   bool IsEnabled();
 
+  void AddObserver(KioskNextShellObserver* observer);
+  void RemoveObserver(KioskNextShellObserver* observer);
+
   // mojom::KioskNextShellController:
   void SetClient(mojom::KioskNextShellClientPtr client) override;
 
@@ -44,6 +49,7 @@ class ASH_EXPORT KioskNextShellController
  private:
   mojom::KioskNextShellClientPtr kiosk_next_shell_client_;
   mojo::BindingSet<mojom::KioskNextShellController> bindings_;
+  base::ObserverList<KioskNextShellObserver> observer_list_;
   ScopedSessionObserver session_observer_{this};
   bool kiosk_next_enabled_ = false;
 
