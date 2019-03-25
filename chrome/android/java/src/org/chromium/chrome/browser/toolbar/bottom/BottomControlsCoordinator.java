@@ -81,7 +81,7 @@ public class BottomControlsCoordinator {
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
             mTabGroupUi = TabManagementModuleProvider.getTabManagementModule().createTabGroupUi(
-                    root.findViewById(R.id.bottom_container_slot));
+                    root.findViewById(R.id.bottom_container_slot), themeColorProvider);
         } else {
             mBottomToolbarCoordinator = new BottomToolbarCoordinator(
                     root.findViewById(R.id.bottom_toolbar_stub), tabProvider, homeButtonListener,

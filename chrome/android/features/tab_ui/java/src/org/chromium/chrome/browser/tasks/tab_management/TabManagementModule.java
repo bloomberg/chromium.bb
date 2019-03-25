@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ThemeColorProvider;
 
 /**
  * Interface to get access to components concerning tab management.
  */
 public interface TabManagementModule {
     GridTabSwitcher createGridTabSwitcher(ChromeActivity activity);
-    TabGroupUi createTabGroupUi(ViewGroup parentView);
+    TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider);
 }

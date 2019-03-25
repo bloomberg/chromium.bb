@@ -817,12 +817,6 @@ public class BottomSheet
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), colorId));
 
-        // Set color on the content view to compensate for a JellyBean bug (crbug.com/766237).
-        if (content != null) {
-            content.getContentView().setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), colorId));
-        }
-
         // Return early if there are no animators to run.
         if (animators.isEmpty()) {
             onContentSwapAnimationEnd(content);

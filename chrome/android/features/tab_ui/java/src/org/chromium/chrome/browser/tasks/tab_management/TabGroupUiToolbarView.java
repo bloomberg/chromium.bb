@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,5 +67,15 @@ public class TabGroupUiToolbarView extends FrameLayout {
             throw new IllegalStateException("Current Toolbar doesn't have a title text view");
 
         mTitleTextView.setText(title);
+    }
+
+    void setPrimaryColor(int color) {
+        DrawableCompat.setTint(getBackground(), color);
+    }
+
+    void setTint(ColorStateList tint) {
+        DrawableCompat.setTintList(mLeftButton.getDrawable(), tint);
+        DrawableCompat.setTintList(mRightButton.getDrawable(), tint);
+        if (mTitleTextView != null) mTitleTextView.setTextColor(tint);
     }
 }

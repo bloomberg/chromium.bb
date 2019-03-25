@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.ADD_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.EXPAND_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.PRIMARY_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabStripToolbarViewProperties.TINT;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,6 +32,10 @@ class TabGroupUiToolbarViewBinder {
             view.setRightButtonOnClickListener(model.get(ADD_CLICK_LISTENER));
         } else if (IS_MAIN_CONTENT_VISIBLE == propertyKey) {
             view.setMainContentVisibility(model.get(IS_MAIN_CONTENT_VISIBLE));
+        } else if (PRIMARY_COLOR == propertyKey) {
+            view.setPrimaryColor(model.get(PRIMARY_COLOR));
+        } else if (TINT == propertyKey) {
+            view.setTint(model.get(TINT));
         }
     }
 }

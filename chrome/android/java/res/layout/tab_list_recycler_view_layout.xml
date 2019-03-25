@@ -9,5 +9,4 @@
     android:layout_height="match_parent"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    android:visibility="invisible"
-    android:background="@color/modern_primary_color"/>
+    android:visibility="invisible"/>
