@@ -578,6 +578,20 @@ void AwDrawFnImpl::PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params) {
   if (!vulkan_context_provider_ || !gl_context_ || !pending_draw)
     return;
 
+  // Get the final state of the SkImage so that we can pass this back to Skia
+  // during re-use.
+  GrBackendTexture backend_texture =
+      pending_draw->ahb_skimage->getBackendTexture(
+          true /* flushPendingGrContextIO */);
+  GrVkImageInfo image_info;
+  if (!backend_texture.getVkImageInfo(&image_info)) {
+    LOG(ERROR) << "Could not get Vk image info.";
+    return;
+  }
+
+  // Copy image layout to our cached image info.
+  pending_draw->image_info.fImageLayout = image_info.fImageLayout;
+
   // Release the SkImage so that Skia transitions it back to
   // VK_QUEUE_FAMILY_EXTERNAL.
   pending_draw->ahb_skimage.reset();
