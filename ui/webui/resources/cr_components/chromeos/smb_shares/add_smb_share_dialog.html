@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -18,7 +17,7 @@
   <template>
     <style include="md-select paper-button-style">
       #dialog [slot=body] {
-        height: 350px;
+        height: 400px;
       }
 
       .md-select {
@@ -40,21 +39,11 @@
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
-      cr-toast {
-        left: 0;
-        max-height: 78px;
-        max-width: 300px;
-        position: absolute;
-        right: 0;
-      }
-
       paper-button {
         position: relative;
-        top: 38px;
       }
 
       [slot='button-container'] {
-        height: 78px;
         justify-content: space-between;
       }
 
