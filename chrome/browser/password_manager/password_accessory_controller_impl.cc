@@ -204,13 +204,20 @@ void PasswordAccessoryControllerImpl::GetFavicon(
 void PasswordAccessoryControllerImpl::OnFillingTriggered(
     bool is_password,
     const base::string16& text_to_fill) {
+  content::RenderFrameHost* target = web_contents_->GetFocusedFrame();
+
+  const url::Origin& origin = target->GetLastCommittedOrigin();
+  if (!AppearsInSuggestions(text_to_fill, is_password, origin)) {
+    NOTREACHED() << "Tried to fill '" << text_to_fill << "' into " << origin;
+    return;  // Never fill across different origins!
+  }
+
   password_manager::ContentPasswordManagerDriverFactory* factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           web_contents_);
   DCHECK(factory);
-  // TODO(fhorschig): Consider allowing filling on non-main frames.
   password_manager::ContentPasswordManagerDriver* driver =
-      factory->GetDriverForFrame(web_contents_->GetMainFrame());
+      factory->GetDriverForFrame(target);
   if (!driver) {
     return;
   }  // |driver| can be NULL if the tab is being closed.
@@ -295,6 +302,19 @@ void PasswordAccessoryControllerImpl::OnImageFetched(
     }
   }
   icon_request->pending_requests.clear();
+}
+
+bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
+    const base::string16& suggestion,
+    bool is_password,
+    const url::Origin& origin) const {
+  for (const SuggestionElementData& element : origin_suggestions_.at(origin)) {
+    const base::string16& candidate =
+        is_password ? element.password : element.username;
+    if (candidate == suggestion)
+      return true;
+  }
+  return false;
 }
 
 base::WeakPtr<ManualFillingController>
