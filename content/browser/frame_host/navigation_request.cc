@@ -242,6 +242,7 @@ void AddAdditionalRequestHeaders(
         // moment. Let's assume it'll be similar to a frame until we decide
         // otherwise.
         destination = "nested-document";
+        mode = "nested-navigate";
     }
     headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
