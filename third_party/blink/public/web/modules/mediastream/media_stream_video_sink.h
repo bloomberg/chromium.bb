@@ -2,29 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_SINK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_SINK_H_
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "base/time/time.h"
-#include "content/common/content_export.h"
-#include "media/capture/video_capturer_source.h"
+#include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
-namespace content {
+namespace blink {
 
 // MediaStreamVideoSink is a base class that contains implementation commonly
-// useful for implementations of blink::WebMediaStreamSink which
+// useful for implementations of WebMediaStreamSink which
 // connect/disconnect the sink implementation to a track to start/stop the flow
 // of video frames.
 //
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // All methods calls must be made from the main render thread.
-class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
+class BLINK_EXPORT MediaStreamVideoSink : public WebMediaStreamSink {
  public:
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
 
@@ -47,21 +43,21 @@ class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
   // |is_sink_secure| indicates if this MediaStreamVideoSink is secure (i.e.
   // meets output protection requirement). Generally, this should be false
   // unless you know what you are doing.
-  void ConnectToTrack(const blink::WebMediaStreamTrack& track,
-                      const blink::VideoCaptureDeliverFrameCB& callback,
+  void ConnectToTrack(const WebMediaStreamTrack& track,
+                      const VideoCaptureDeliverFrameCB& callback,
                       bool is_sink_secure);
   void DisconnectFromTrack();
 
   // Returns the currently-connected track, or a null instance otherwise.
-  const blink::WebMediaStreamTrack& connected_track() const {
+  const WebMediaStreamTrack& connected_track() const {
     return connected_track_;
   }
 
  private:
   // Set by ConnectToTrack() and cleared by DisconnectFromTrack().
-  blink::WebMediaStreamTrack connected_track_;
+  WebMediaStreamTrack connected_track_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_SINK_H_

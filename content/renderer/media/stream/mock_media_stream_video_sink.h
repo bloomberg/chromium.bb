@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SINK_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SINK_H_
 
-#include "content/renderer/media_stream_video_sink.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_frame.h"
@@ -14,23 +14,24 @@
 
 namespace content {
 
-class MockMediaStreamVideoSink : public MediaStreamVideoSink {
+class MockMediaStreamVideoSink : public blink::MediaStreamVideoSink {
  public:
   MockMediaStreamVideoSink();
   ~MockMediaStreamVideoSink() override;
 
   void ConnectToTrack(const blink::WebMediaStreamTrack& track) {
-    MediaStreamVideoSink::ConnectToTrack(track, GetDeliverFrameCB(), true);
+    blink::MediaStreamVideoSink::ConnectToTrack(track, GetDeliverFrameCB(),
+                                                true);
   }
 
   void ConnectToTrackWithCallback(
       const blink::WebMediaStreamTrack& track,
       const blink::VideoCaptureDeliverFrameCB& callback) {
-    MediaStreamVideoSink::ConnectToTrack(track, callback, true);
+    blink::MediaStreamVideoSink::ConnectToTrack(track, callback, true);
   }
 
   void DisconnectFromTrack() {
-    MediaStreamVideoSink::DisconnectFromTrack();
+    blink::MediaStreamVideoSink::DisconnectFromTrack();
   }
 
   void OnReadyStateChanged(

@@ -139,7 +139,7 @@ void ImageCaptureFrameGrabber::GrabFrame(
   // is being processed, which might be further held up if UI is busy, see
   // https://crbug.com/623042.
   frame_grab_in_progress_ = true;
-  MediaStreamVideoSink::ConnectToTrack(
+  blink::MediaStreamVideoSink::ConnectToTrack(
       *track,
       base::BindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
@@ -158,7 +158,7 @@ void ImageCaptureFrameGrabber::OnSkImage(
     sk_sp<SkImage> image) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   frame_grab_in_progress_ = false;
   if (image)
     callbacks.PassCallbacks()->OnSuccess(image);

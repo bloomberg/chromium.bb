@@ -9,12 +9,8 @@
 
 #include "base/callback.h"
 #include "base/guid.h"
-#include "base/rand_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/media_stream_video_capturer_source.h"
-#include "media/base/audio_capturer_source.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
@@ -55,44 +51,6 @@ bool AddVideoTrackToMediaStream(
       media_stream_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
       true));
   return true;
-}
-
-void RequestRefreshFrameFromVideoTrack(
-    const blink::WebMediaStreamTrack& video_track) {
-  if (video_track.IsNull())
-    return;
-  blink::MediaStreamVideoSource* const source =
-      blink::MediaStreamVideoSource::GetVideoSource(video_track.Source());
-  if (source)
-    source->RequestRefreshFrame();
-}
-
-void AddSinkToMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    blink::WebMediaStreamSink* sink,
-    const blink::VideoCaptureDeliverFrameCB& callback,
-    bool is_sink_secure) {
-  blink::MediaStreamVideoTrack* const video_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(track);
-  DCHECK(video_track);
-  video_track->AddSink(sink, callback, is_sink_secure);
-}
-
-void RemoveSinkFromMediaStreamTrack(const blink::WebMediaStreamTrack& track,
-                                    blink::WebMediaStreamSink* sink) {
-  blink::MediaStreamVideoTrack* const video_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(track);
-  if (video_track)
-    video_track->RemoveSink(sink);
-}
-
-void OnFrameDroppedAtMediaStreamSink(
-    const blink::WebMediaStreamTrack& track,
-    media::VideoCaptureFrameDropReason reason) {
-  blink::MediaStreamVideoTrack* const video_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(track);
-  if (video_track)
-    video_track->OnFrameDropped(reason);
 }
 
 }  // namespace content

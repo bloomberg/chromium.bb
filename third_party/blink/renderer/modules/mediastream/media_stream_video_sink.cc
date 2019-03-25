@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_stream_video_sink.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 
-#include "content/public/renderer/media_stream_utils.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 
-namespace content {
+namespace blink {
 
-MediaStreamVideoSink::MediaStreamVideoSink() : blink::WebMediaStreamSink() {}
+MediaStreamVideoSink::MediaStreamVideoSink() : WebMediaStreamSink() {}
 
 MediaStreamVideoSink::~MediaStreamVideoSink() {
   // Ensure this sink has disconnected from the track.
@@ -17,8 +17,8 @@ MediaStreamVideoSink::~MediaStreamVideoSink() {
 }
 
 void MediaStreamVideoSink::ConnectToTrack(
-    const blink::WebMediaStreamTrack& track,
-    const blink::VideoCaptureDeliverFrameCB& callback,
+    const WebMediaStreamTrack& track,
+    const VideoCaptureDeliverFrameCB& callback,
     bool is_sink_secure) {
   DCHECK(connected_track_.IsNull());
   connected_track_ = track;
@@ -37,4 +37,4 @@ void MediaStreamVideoSink::OnFrameDropped(
   OnFrameDroppedAtMediaStreamSink(connected_track_, reason);
 }
 
-}  // namespace content
+}  // namespace blink

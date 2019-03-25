@@ -13,11 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "content/common/content_export.h"
 #include "content/public/common/buildflags.h"
-#include "content/renderer/media_stream_video_sink.h"
 #include "media/muxers/webm_muxer.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace base {
@@ -51,7 +52,7 @@ namespace content {
 // MediaStreamVideo* classes that are constructed/configured on Main Render
 // thread but that pass frames on Render IO thread. It has an internal Encoder
 // with its own threading subtleties, see the implementation file.
-class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
+class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
  public:
   // Do not change the order of codecs; add new ones right before LAST.
   enum class CodecId {

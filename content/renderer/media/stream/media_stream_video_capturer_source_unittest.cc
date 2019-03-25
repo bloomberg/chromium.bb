@@ -12,11 +12,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
-#include "content/renderer/media_stream_video_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -63,7 +63,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   media::VideoCaptureParams capture_params_;
 };
 
-class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
+class FakeMediaStreamVideoSink : public blink::MediaStreamVideoSink {
  public:
   FakeMediaStreamVideoSink(base::TimeTicks* capture_time,
                            media::VideoFrameMetadata* metadata,
@@ -73,14 +73,16 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
         got_frame_cb_(got_frame_cb) {}
 
   void ConnectToTrack(const blink::WebMediaStreamTrack& track) {
-    MediaStreamVideoSink::ConnectToTrack(
+    blink::MediaStreamVideoSink::ConnectToTrack(
         track,
         base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
                    base::Unretained(this)),
         true);
   }
 
-  void DisconnectFromTrack() { MediaStreamVideoSink::DisconnectFromTrack(); }
+  void DisconnectFromTrack() {
+    blink::MediaStreamVideoSink::DisconnectFromTrack();
+  }
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks capture_time) {

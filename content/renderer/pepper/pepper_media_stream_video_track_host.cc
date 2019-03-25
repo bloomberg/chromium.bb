@@ -303,7 +303,7 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
 }
 
 void PepperMediaStreamVideoTrackHost::OnClose() {
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -446,12 +446,13 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
 };
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
-  if (!MediaStreamVideoSink::connected_track().IsNull())
+  if (!blink::MediaStreamVideoSink::connected_track().IsNull())
     return;
-  MediaStreamVideoSink::ConnectToTrack(
-      track_, media::BindToCurrentLoop(
-                  base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
-                             weak_factory_.GetWeakPtr())),
+  blink::MediaStreamVideoSink::ConnectToTrack(
+      track_,
+      media::BindToCurrentLoop(
+          base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
+                     weak_factory_.GetWeakPtr())),
       false);
 }
 
