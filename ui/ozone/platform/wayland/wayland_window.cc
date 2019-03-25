@@ -132,7 +132,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   }
   wl_surface_set_user_data(surface_.get(), this);
   AddSurfaceListener();
-  MaybeUpdateOpaqueRegion();
 
   ui::PlatformWindowType ui_window_type = properties.type;
   switch (ui_window_type) {
@@ -160,6 +159,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
+  MaybeUpdateOpaqueRegion();
   return true;
 }
 
@@ -250,6 +250,10 @@ void WaylandWindow::ApplyPendingBounds() {
   xdg_surface_->AckConfigure();
   pending_bounds_ = gfx::Rect();
   connection_->ScheduleFlush();
+
+  // Opaque region is based on the size of the window. Thus, update the region
+  // on each update.
+  MaybeUpdateOpaqueRegion();
 }
 
 void WaylandWindow::DispatchHostWindowDragMovement(
@@ -324,11 +328,6 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;
   bounds_ = bounds;
-
-  // Opaque region is based on the size of the window. Thus, update the region
-  // on each update.
-  MaybeUpdateOpaqueRegion();
-
   delegate_->OnBoundsChanged(bounds);
 }
 
