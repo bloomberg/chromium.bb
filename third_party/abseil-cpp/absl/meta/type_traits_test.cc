@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -951,6 +951,87 @@ TEST(TypeTraitsTest, IsMoveAssignable) {
   EXPECT_TRUE(TestMoveAssign<int(...) volatile&>());
   EXPECT_TRUE(TestMoveAssign<int(int, ...) const volatile&&>());
 #endif  // _LIBCPP_VERSION
+}
+
+namespace adl_namespace {
+
+struct DeletedSwap {
+};
+
+void swap(DeletedSwap&, DeletedSwap&) = delete;
+
+struct SpecialNoexceptSwap {
+  SpecialNoexceptSwap(SpecialNoexceptSwap&&) {}
+  SpecialNoexceptSwap& operator=(SpecialNoexceptSwap&&) { return *this; }
+  ~SpecialNoexceptSwap() = default;
+};
+
+void swap(SpecialNoexceptSwap&, SpecialNoexceptSwap&) noexcept {}
+
+}  // namespace adl_namespace
+
+TEST(TypeTraitsTest, IsSwappable) {
+  using absl::type_traits_internal::IsSwappable;
+  using absl::type_traits_internal::StdSwapIsUnconstrained;
+
+  EXPECT_TRUE(IsSwappable<int>::value);
+
+  struct S {};
+  EXPECT_TRUE(IsSwappable<S>::value);
+
+  struct NoConstruct {
+    NoConstruct(NoConstruct&&) = delete;
+    NoConstruct& operator=(NoConstruct&&) { return *this; }
+    ~NoConstruct() = default;
+  };
+
+  EXPECT_EQ(IsSwappable<NoConstruct>::value, StdSwapIsUnconstrained::value);
+  struct NoAssign {
+    NoAssign(NoAssign&&) {}
+    NoAssign& operator=(NoAssign&&) = delete;
+    ~NoAssign() = default;
+  };
+
+  EXPECT_EQ(IsSwappable<NoAssign>::value, StdSwapIsUnconstrained::value);
+
+  EXPECT_FALSE(IsSwappable<adl_namespace::DeletedSwap>::value);
+
+  EXPECT_TRUE(IsSwappable<adl_namespace::SpecialNoexceptSwap>::value);
+}
+
+TEST(TypeTraitsTest, IsNothrowSwappable) {
+  using absl::type_traits_internal::IsNothrowSwappable;
+  using absl::type_traits_internal::StdSwapIsUnconstrained;
+
+  EXPECT_TRUE(IsNothrowSwappable<int>::value);
+
+  struct NonNoexceptMoves {
+    NonNoexceptMoves(NonNoexceptMoves&&) {}
+    NonNoexceptMoves& operator=(NonNoexceptMoves&&) { return *this; }
+    ~NonNoexceptMoves() = default;
+  };
+
+  EXPECT_FALSE(IsNothrowSwappable<NonNoexceptMoves>::value);
+
+  struct NoConstruct {
+    NoConstruct(NoConstruct&&) = delete;
+    NoConstruct& operator=(NoConstruct&&) { return *this; }
+    ~NoConstruct() = default;
+  };
+
+  EXPECT_FALSE(IsNothrowSwappable<NoConstruct>::value);
+
+  struct NoAssign {
+    NoAssign(NoAssign&&) {}
+    NoAssign& operator=(NoAssign&&) = delete;
+    ~NoAssign() = default;
+  };
+
+  EXPECT_FALSE(IsNothrowSwappable<NoAssign>::value);
+
+  EXPECT_FALSE(IsNothrowSwappable<adl_namespace::DeletedSwap>::value);
+
+  EXPECT_TRUE(IsNothrowSwappable<adl_namespace::SpecialNoexceptSwap>::value);
 }
 
 }  // namespace

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,7 +58,6 @@
 //   std::string s = absl::FormatTime(
 //       "My flight will land in Sydney on %Y-%m-%d at %H:%M:%S",
 //       landing, syd);
-//
 
 #ifndef ABSL_TIME_TIME_H_
 #define ABSL_TIME_TIME_H_
@@ -77,7 +76,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "absl/base/port.h"  // Needed for string vs std::string
 #include "absl/strings/string_view.h"
 #include "absl/time/civil_time.h"
 #include "absl/time/internal/cctz/include/cctz/time_zone.h"
@@ -570,7 +568,6 @@ std::string UnparseFlag(Duration d);
 // The `absl::Time` class represents an instant in time as a count of clock
 // ticks of some granularity (resolution) from some starting point (epoch).
 //
-//
 // `absl::Time` uses a resolution that is high enough to avoid loss in
 // precision, and a range that is wide enough to avoid overflow, when
 // converting between tick counts in most Google time scales (i.e., resolution
@@ -837,8 +834,8 @@ std::string UnparseFlag(Time t);
 //
 // See also:
 // - https://github.com/google/cctz
-// - http://www.iana.org/time-zones
-// - http://en.wikipedia.org/wiki/Zoneinfo
+// - https://www.iana.org/time-zones
+// - https://en.wikipedia.org/wiki/Zoneinfo
 class TimeZone {
  public:
   explicit TimeZone(time_internal::cctz::time_zone tz) : cz_(tz) {}
@@ -1222,7 +1219,7 @@ extern const char RFC1123_no_wday[];  // %d %b %E4Y %H:%M:%S %z
 //
 //   absl::CivilSecond cs(2013, 1, 2, 3, 4, 5);
 //   absl::Time t = absl::FromCivil(cs, lax);
-//   string f = absl::FormatTime("%H:%M:%S", t, lax);  // "03:04:05"
+//   std::string f = absl::FormatTime("%H:%M:%S", t, lax);  // "03:04:05"
 //   f = absl::FormatTime("%H:%M:%E3S", t, lax);  // "03:04:05.000"
 //
 // Note: If the given `absl::Time` is `absl::InfiniteFuture()`, the returned
@@ -1451,6 +1448,7 @@ T ToChronoDuration(Duration d) {
 }
 
 }  // namespace time_internal
+
 constexpr Duration Nanoseconds(int64_t n) {
   return time_internal::FromInt64(n, std::nano{});
 }
