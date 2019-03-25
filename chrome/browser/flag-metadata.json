@@ -1331,6 +1331,14 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-logging-js-console-messages",
+    "owners": [ "hazems" ],
+    // Never expires because it is used by developers to enable logging JS
+    // console messages in system logs for debugging purposes. It's disabled by
+    // default because logs may contain PII.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-lookalike-url-navigation-suggestions",
     "owners": [ "jdeblasio", "meacer" ],
     "expiry_milestone": 78

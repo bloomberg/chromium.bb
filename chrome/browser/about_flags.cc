@@ -4110,6 +4110,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
 
+#if defined(OS_ANDROID)
+    {"enable-logging-js-console-messages",
+     flag_descriptions::kLogJsConsoleMessagesName,
+     flag_descriptions::kLogJsConsoleMessagesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kLogJsConsoleMessages)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
