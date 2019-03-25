@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MESSAGE_EVENT_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -131,11 +132,11 @@ class CORE_EXPORT MessageEvent final : public Event {
   void initMessageEvent(const AtomicString& type,
                         bool bubbles,
                         bool cancelable,
-                        ScriptValue data,
+                        const ScriptValue& data,
                         const String& origin,
                         const String& last_event_id,
                         EventTarget* source,
-                        MessagePortArray*);
+                        MessagePortArray& ports);
   void initMessageEvent(const AtomicString& type,
                         bool bubbles,
                         bool cancelable,

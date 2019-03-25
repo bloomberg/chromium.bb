@@ -178,11 +178,11 @@ MessageEvent* MessageEvent::Create(const AtomicString& type,
 void MessageEvent::initMessageEvent(const AtomicString& type,
                                     bool bubbles,
                                     bool cancelable,
-                                    ScriptValue data,
+                                    const ScriptValue& data,
                                     const String& origin,
                                     const String& last_event_id,
                                     EventTarget* source,
-                                    MessagePortArray* ports) {
+                                    MessagePortArray& ports) {
   if (IsBeingDispatched())
     return;
 
@@ -193,7 +193,12 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   origin_ = origin;
   last_event_id_ = last_event_id;
   source_ = source;
-  ports_ = ports;
+  if (ports.IsEmpty()) {
+    ports_ = nullptr;
+  } else {
+    ports_ = MakeGarbageCollected<MessagePortArray>();
+    swap(*ports_, ports);
+  }
   is_ports_dirty_ = true;
 }
 

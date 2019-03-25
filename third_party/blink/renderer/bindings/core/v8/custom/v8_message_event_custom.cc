@@ -30,15 +30,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_event.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
-#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
-#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
@@ -99,41 +93,6 @@ void V8MessageEvent::DataAttributeGetterCustom(
   // result in future invocations.
   private_cached_data.Set(info.Holder(), result);
   V8SetReturnValue(info, result);
-}
-
-void V8MessageEvent::InitMessageEventMethodCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(),
-                                 ExceptionState::kExecutionContext,
-                                 "MessageEvent", "initMessageEvent");
-  if (UNLIKELY(info.Length() < 1)) {
-    exception_state.ThrowTypeError(
-        ExceptionMessages::NotEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  MessageEvent* event = V8MessageEvent::ToImpl(info.Holder());
-  TOSTRING_VOID(V8StringResource<>, type_arg, info[0]);
-  bool bubbles_arg = info[1]->BooleanValue(info.GetIsolate());
-  bool cancelable_arg = info[2]->BooleanValue(info.GetIsolate());
-  v8::Local<v8::Value> data_arg = info[3];
-  TOSTRING_VOID(V8StringResource<>, origin_arg, info[4]);
-  TOSTRING_VOID(V8StringResource<>, last_event_id_arg, info[5]);
-  EventTarget* source_arg =
-      V8EventTarget::ToImplWithTypeCheck(info.GetIsolate(), info[6]);
-  MessagePortArray* port_array = nullptr;
-  const int kPortArrayIndex = 7;
-  if (!IsUndefinedOrNull(info[kPortArrayIndex])) {
-    port_array = MakeGarbageCollected<MessagePortArray>();
-    *port_array = NativeValueTraits<IDLSequence<MessagePort>>::NativeValue(
-        info.GetIsolate(), info[kPortArrayIndex], exception_state);
-    if (exception_state.HadException())
-      return;
-  }
-  event->initMessageEvent(
-      type_arg, bubbles_arg, cancelable_arg,
-      ScriptValue(ScriptState::Current(info.GetIsolate()), data_arg),
-      origin_arg, last_event_id_arg, source_arg, port_array);
 }
 
 }  // namespace blink
