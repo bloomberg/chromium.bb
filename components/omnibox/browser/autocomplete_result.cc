@@ -611,7 +611,9 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
   if (non_tail_default == matches->end()) {
-    base::EraseIf(*matches, std::not1(is_tail));
+    base::EraseIf(*matches, [&is_tail](const AutocompleteMatch& match) {
+      return !is_tail(match);
+    });
     return;
   }
   // Determine if there are both tail and non-tail matches, excluding the
