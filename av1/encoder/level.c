@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom_ports/system_state.h"
+
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/level.h"
 
@@ -221,14 +223,24 @@ typedef enum {
   LUMA_PIC_V_SIZE_TOO_LARGE,
   TOO_MANY_TILE_COLUMNS,
   TOO_MANY_TILES,
+  TILE_TOO_LARGE,
+  CROPPED_TILE_WIDTH_TOO_SMALL,
+  CROPPED_TILE_HEIGHT_TOO_SMALL,
+  TILE_WIDTH_INVALID,
 
   TARGET_LEVEL_FAIL_IDS
 } TARGET_LEVEL_FAIL_ID;
 
 static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
-  "The picture size is too large.",   "The picture width is too large.",
-  "The picture height is too large.", "Too many tile columns are used.",
+  "The picture size is too large.",
+  "The picture width is too large.",
+  "The picture height is too large.",
+  "Too many tile columns are used.",
   "Too many tiles are used.",
+  "The tile size is too large.",
+  "The cropped tile width is less than 8",
+  "The cropped tile height is less than 8",
+  "The tile width is invalid",
 };
 
 static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
@@ -266,6 +278,26 @@ static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
       fail_id = TOO_MANY_TILES;
       break;
     }
+
+    if (level_spec->max_tile_size > 4096 * 2304) {
+      fail_id = TILE_TOO_LARGE;
+      break;
+    }
+
+    if (level_spec->min_cropped_tile_width < 8) {
+      fail_id = CROPPED_TILE_WIDTH_TOO_SMALL;
+      break;
+    }
+
+    if (level_spec->min_cropped_tile_height < 8) {
+      fail_id = CROPPED_TILE_HEIGHT_TOO_SMALL;
+      break;
+    }
+
+    if (!level_spec->tile_width_is_valid) {
+      fail_id = TILE_WIDTH_INVALID;
+      break;
+    }
   } while (0);
 
   if (fail_id != TARGET_LEVEL_FAIL_IDS) {
@@ -288,23 +320,86 @@ static INLINE int is_in_operating_point(int operating_point,
          ((operating_point >> (spatial_layer_id + 8)) & 1);
 }
 
+static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
+                           int *min_cropped_tile_width,
+                           int *min_cropped_tile_height,
+                           int *tile_width_valid) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
+
+  *max_tile_size = 0;
+  *min_cropped_tile_width = INT_MAX;
+  *min_cropped_tile_height = INT_MAX;
+  *tile_width_valid = 1;
+
+  for (int tile_row = 0; tile_row < tile_rows; ++tile_row) {
+    for (int tile_col = 0; tile_col < tile_cols; ++tile_col) {
+      const TileInfo *const tile_info =
+          &cpi->tile_data[tile_row * cm->tile_cols + tile_col].tile_info;
+      const int tile_width =
+          (tile_info->mi_col_end - tile_info->mi_col_start) * MI_SIZE;
+      const int tile_height =
+          (tile_info->mi_row_end - tile_info->mi_row_start) * MI_SIZE;
+      const int tile_size = tile_width * tile_height;
+      *max_tile_size = AOMMAX(*max_tile_size, tile_size);
+
+      const int cropped_tile_width =
+          cm->width - tile_info->mi_col_start * MI_SIZE;
+      const int cropped_tile_height =
+          cm->height - tile_info->mi_row_start * MI_SIZE;
+      *min_cropped_tile_width =
+          AOMMIN(*min_cropped_tile_width, cropped_tile_width);
+      *min_cropped_tile_height =
+          AOMMIN(*min_cropped_tile_height, cropped_tile_height);
+
+      const int is_right_most_tile = tile_info->mi_col_end == cm->mi_cols;
+      if (!is_right_most_tile) {
+        if (av1_superres_scaled(cm))
+          *tile_width_valid &= tile_width >= 128;
+        else
+          *tile_width_valid &= tile_width >= 64;
+      }
+    }
+  }
+}
+
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end) {
   const AV1_COMMON *const cm = &cpi->common;
-  const uint32_t luma_pic_size = cm->superres_upscaled_width * cm->height;
-  const uint32_t pic_size_profile_factor =
+  const int upscaled_width = cm->superres_upscaled_width;
+  const int height = cm->height;
+  const int tile_cols = cm->tile_cols;
+  const int tile_rows = cm->tile_rows;
+  const int tiles = tile_cols * tile_rows;
+  const int luma_pic_size = upscaled_width * height;
+
+  int max_tile_size;
+  int min_cropped_tile_width;
+  int min_cropped_tile_height;
+  int tile_width_is_valid;
+  get_tile_stats(cpi, &max_tile_size, &min_cropped_tile_width,
+                 &min_cropped_tile_height, &tile_width_is_valid);
+
+  const int pic_size_profile_factor =
       cm->seq_params.profile == PROFILE_0
           ? 15
           : (cm->seq_params.profile == PROFILE_1 ? 30 : 36);
   const size_t frame_compressed_size = (size > 129 ? size - 128 : 1);
   const size_t frame_uncompressed_size =
       (luma_pic_size * pic_size_profile_factor) >> 3;
+
+  aom_clear_system_state();
   const double compression_ratio =
       frame_uncompressed_size / (double)frame_compressed_size;
+  const double total_time_encoded =
+      (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
+      (double)TICKS_PER_SEC;
 
   const SequenceHeader *const seq = &cm->seq_params;
   const int temporal_layer_id = cm->temporal_layer_id;
   const int spatial_layer_id = cm->spatial_layer_id;
+
   // update level_stats
   // TODO(kyslov@) fix the implementation according to buffer model
   for (int i = 0; i < seq->operating_points_cnt_minus_1 + 1; ++i) {
@@ -315,37 +410,27 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
     AV1LevelInfo *const level_info = &cpi->level_info[i];
     AV1LevelStats *const level_stats = &level_info->level_stats;
+
     level_stats->total_compressed_size += frame_compressed_size;
-    if (cm->show_frame) {
-      level_stats->total_time_encoded =
-          (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
-          (double)TICKS_PER_SEC;
-    }
+    if (cm->show_frame) level_stats->total_time_encoded = total_time_encoded;
 
     // update level_spec
     // TODO(kyslov@) update all spec fields
     AV1LevelSpec *const level_spec = &level_info->level_spec;
-    if (luma_pic_size > level_spec->max_picture_size) {
-      level_spec->max_picture_size = luma_pic_size;
-    }
-
-    if (cm->superres_upscaled_width > (int)level_spec->max_h_size) {
-      level_spec->max_h_size = cm->superres_upscaled_width;
-    }
-
-    if (cm->height > (int)level_spec->max_v_size) {
-      level_spec->max_v_size = cm->height;
-    }
-
-    if (level_spec->max_tile_cols < (1 << cm->log2_tile_cols)) {
-      level_spec->max_tile_cols = (1 << cm->log2_tile_cols);
-    }
-
-    if (level_spec->max_tiles <
-        (1 << cm->log2_tile_cols) * (1 << cm->log2_tile_rows)) {
-      level_spec->max_tiles =
-          (1 << cm->log2_tile_cols) * (1 << cm->log2_tile_rows);
-    }
+    level_spec->max_picture_size =
+        AOMMAX(level_spec->max_picture_size, luma_pic_size);
+    level_spec->max_h_size =
+        AOMMAX(level_spec->max_h_size, cm->superres_upscaled_width);
+    level_spec->max_v_size = AOMMAX(level_spec->max_v_size, height);
+    level_spec->max_tile_cols = AOMMAX(level_spec->max_tile_cols, tile_cols);
+    level_spec->max_tiles = AOMMAX(level_spec->max_tiles, tiles);
+    level_spec->max_tile_size =
+        AOMMAX(level_spec->max_tile_size, max_tile_size);
+    level_spec->min_cropped_tile_width =
+        AOMMIN(level_spec->min_cropped_tile_width, min_cropped_tile_width);
+    level_spec->min_cropped_tile_height =
+        AOMMIN(level_spec->min_cropped_tile_height, min_cropped_tile_height);
+    level_spec->tile_width_is_valid &= tile_width_is_valid;
 
     // TODO(kyslov@) These are needed for further level stat calculations
     (void)compression_ratio;

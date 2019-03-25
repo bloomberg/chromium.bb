@@ -19,18 +19,22 @@ struct AV1_COMP;
 // AV1 Level Specifications
 typedef struct {
   AV1_LEVEL level;
-  uint32_t max_picture_size;
-  uint32_t max_h_size;
-  uint32_t max_v_size;
-  uint64_t max_display_rate;
-  uint64_t max_decode_rate;
-  uint32_t max_header_rate;
+  int max_picture_size;
+  int max_h_size;
+  int max_v_size;
+  int max_header_rate;
+  int max_tiles;
+  int max_tile_cols;
+  int max_tile_size;
+  int min_cropped_tile_width;
+  int min_cropped_tile_height;
+  int tile_width_is_valid;
+  int64_t max_display_rate;
+  int64_t max_decode_rate;
   double main_mbps;
   double high_mbps;
   double main_cr;
   double high_cr;
-  int32_t max_tiles;
-  int32_t max_tile_cols;
 } AV1LevelSpec;
 
 // Used to keep track of AV1 Level Stats. Currently unimplemented.

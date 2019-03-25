@@ -2550,8 +2550,13 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
 static void init_level_info(AV1LevelInfo *level_info) {
   memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
-  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i)
-    level_info[i].level_spec.level = SEQ_LEVEL_MAX;
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    AV1LevelSpec *level_spec = &level_info[i].level_spec;
+    level_spec->level = SEQ_LEVEL_MAX;
+    level_spec->min_cropped_tile_width = INT_MAX;
+    level_spec->min_cropped_tile_height = INT_MAX;
+    level_spec->tile_width_is_valid = 1;
+  }
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
