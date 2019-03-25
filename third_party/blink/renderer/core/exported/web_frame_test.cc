@@ -11047,13 +11047,17 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
                                           test::CoreTestDataPath("foo.html"));
   helper.LocalMainFrame()->LoadJavaScriptURL(javascript_url);
 
-  // Normally, the result of the JS url replaces the existing contents on the
-  // Document. However, if the JS triggers a navigation, the contents should
-  // not be replaced.
-  EXPECT_EQ("", To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
+  // The result of the JS url replaces the existing contents on the
+  // Document, but the JS-triggered navigation should still occur.
+  EXPECT_NE("", To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
                     ->GetDocument()
                     ->documentElement()
                     ->innerText());
+  RunPendingTasks();
+  EXPECT_EQ(ToKURL(redirect_url),
+            To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
+                ->GetDocument()
+                ->Url());
 }
 
 class TestResourcePriorityWebFrameClient

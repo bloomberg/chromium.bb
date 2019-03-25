@@ -3123,7 +3123,8 @@ void Document::CancelParsing() {
   DetachParser();
   SetParsingState(kFinishedParsing);
   SetReadyState(kComplete);
-  SuppressLoadEvent();
+  if (!LoadEventFinished())
+    load_event_progress_ = kLoadEventCompleted;
   javascript_url_task_handle_.Cancel();
 }
 
@@ -3377,11 +3378,7 @@ void Document::ImplicitClose() {
     return;
   }
 
-  // Make sure both the initial layout and reflow happen after the onload
-  // fires. This will improve onload scores, and other browsers do it.
-  // If they wanna cheat, we can too. -dwh
-
-  if (GetFrame()->GetNavigationScheduler().LocationChangePending() &&
+  if (GetFrame()->Loader().HasProvisionalNavigation() &&
       ElapsedTime() < kCLayoutScheduleThreshold) {
     // Just bail out. Before or during the onload we were shifted to another
     // page.  The old i-Bench suite does this. When this happens don't bother
@@ -6843,11 +6840,6 @@ Element* Document::PointerLockElement() const {
       return element;
   }
   return nullptr;
-}
-
-void Document::SuppressLoadEvent() {
-  if (!LoadEventFinished())
-    load_event_progress_ = kLoadEventCompleted;
 }
 
 void Document::DecrementLoadEventDelayCount() {

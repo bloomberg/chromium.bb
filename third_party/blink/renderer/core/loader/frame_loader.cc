@@ -383,8 +383,6 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
           : WebGlobalObjectReusePolicy::kCreateNew;
 
   document_loader_->StopLoading();
-  DetachDocumentLoader(provisional_document_loader_);
-  frame_->GetNavigationScheduler().Cancel();
 
   // Don't allow any new child frames to load in this frame: attaching a new
   // child frame during or after detaching children results in an attached
