@@ -71,8 +71,7 @@ base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
   std::string brand;
-  if (google_brand::GetBrand(&brand) && !brand.empty() &&
-      !google_brand::IsOrganic(brand)) {
+  if (google_brand::GetBrand(&brand) && !google_brand::IsOrganic(brand)) {
     // This call will return false the first time(s) it is called until the
     // value has been cached. This normally would mean that at most one omnibox
     // search might not send the RLZ data but this is not really a problem.
