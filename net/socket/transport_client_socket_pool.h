@@ -22,63 +22,11 @@
 namespace net {
 
 struct CommonConnectJobParams;
-class HttpProxySocketParams;
-class SOCKSSocketParams;
-class SSLSocketParams;
-class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool
     : public ClientSocketPool,
       public SSLConfigService::Observer {
  public:
-  // Callback to create a ConnectJob using the provided arguments. The lower
-  // level parameters used to construct the ConnectJob (like hostname, type of
-  // socket, proxy, etc) are all already bound to the callback.  If
-  // |websocket_endpoint_lock_manager| is non-null, a ConnectJob for use by
-  // WebSockets should be created.
-  using CreateConnectJobCallback =
-      base::RepeatingCallback<std::unique_ptr<ConnectJob>(
-          RequestPriority priority,
-          const SocketTag& socket_tag,
-          const CommonConnectJobParams* common_connect_job_params,
-          ConnectJob::Delegate* delegate)>;
-
-  // "Parameters" that own a single callback for creating a ConnectJob that can
-  // be of any type.
-  //
-  // TODO(mmenke): Once all the socket pool subclasses have been merged, replace
-  // this class with a callback.
-  class NET_EXPORT_PRIVATE SocketParams
-      : public base::RefCounted<SocketParams> {
-   public:
-    explicit SocketParams(
-        const CreateConnectJobCallback& create_connect_job_callback);
-
-    const CreateConnectJobCallback& create_connect_job_callback() {
-      return create_connect_job_callback_;
-    }
-
-    static scoped_refptr<SocketParams> CreateFromTransportSocketParams(
-        scoped_refptr<TransportSocketParams> transport_client_params);
-
-    static scoped_refptr<SocketParams> CreateFromSOCKSSocketParams(
-        scoped_refptr<SOCKSSocketParams> socks_socket_params);
-
-    static scoped_refptr<SocketParams> CreateFromSSLSocketParams(
-        scoped_refptr<SSLSocketParams> ssl_socket_params);
-
-    static scoped_refptr<SocketParams> CreateFromHttpProxySocketParams(
-        scoped_refptr<HttpProxySocketParams> http_proxy_socket_params);
-
-   private:
-    friend class base::RefCounted<SocketParams>;
-    ~SocketParams();
-
-    const CreateConnectJobCallback create_connect_job_callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(SocketParams);
-  };
-
   TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
@@ -105,7 +53,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
   // ClientSocketPool implementation.
   int RequestSocket(const GroupId& group_id,
-                    const void* resolve_info,
+                    scoped_refptr<SocketParams> socket_params,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
                     RespectLimits respect_limits,
@@ -114,7 +62,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                     const ProxyAuthCallback& proxy_auth_callback,
                     const NetLogWithSource& net_log) override;
   void RequestSockets(const GroupId& group_id,
-                      const void* params,
+                      scoped_refptr<SocketParams> socket_params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override;
   void SetPriority(const GroupId& group_id,

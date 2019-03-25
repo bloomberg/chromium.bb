@@ -677,7 +677,7 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
 
   int RequestSocket(
       const ClientSocketPool::GroupId& group_id,
-      const void* socket_params,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       RequestPriority priority,
       const SocketTag& socket_tag,
       ClientSocketPool::RespectLimits respect_limits,

@@ -42,92 +42,7 @@ std::unique_ptr<base::Value> NetLogGroupIdCallback(
   return event_params;
 }
 
-// TODO(mmenke): Once the socket pool arguments are no longer needed, remove
-// this method and use TransportConnectJob::CreateTransportConnectJob()
-// directly.
-std::unique_ptr<ConnectJob> CreateTransportConnectJob(
-    scoped_refptr<TransportSocketParams> transport_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return TransportConnectJob::CreateTransportConnectJob(
-      std::move(transport_socket_params), priority, socket_tag,
-      common_connect_job_params, delegate, nullptr /* net_log */);
-}
-
-std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
-    scoped_refptr<SOCKSSocketParams> socks_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return std::make_unique<SOCKSConnectJob>(
-      priority, socket_tag, common_connect_job_params,
-      std::move(socks_socket_params), delegate, nullptr /* net_log */);
-}
-
-std::unique_ptr<ConnectJob> CreateSSLConnectJob(
-    scoped_refptr<SSLSocketParams> ssl_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return std::make_unique<SSLConnectJob>(
-      priority, socket_tag, common_connect_job_params,
-      std::move(ssl_socket_params), delegate, nullptr /* net_log */);
-}
-
-std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
-    scoped_refptr<HttpProxySocketParams> http_proxy_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return std::make_unique<HttpProxyConnectJob>(
-      priority, socket_tag, common_connect_job_params,
-      std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
-}
-
 }  // namespace
-
-TransportClientSocketPool::SocketParams::SocketParams(
-    const CreateConnectJobCallback& create_connect_job_callback)
-    : create_connect_job_callback_(create_connect_job_callback) {}
-
-scoped_refptr<TransportClientSocketPool::SocketParams>
-TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-    scoped_refptr<TransportSocketParams> transport_client_params) {
-  CreateConnectJobCallback callback = base::BindRepeating(
-      &CreateTransportConnectJob, std::move(transport_client_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-scoped_refptr<TransportClientSocketPool::SocketParams>
-TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-    scoped_refptr<SOCKSSocketParams> socks_socket_params) {
-  CreateConnectJobCallback callback = base::BindRepeating(
-      &CreateSOCKSConnectJob, std::move(socks_socket_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-scoped_refptr<TransportClientSocketPool::SocketParams>
-TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-    scoped_refptr<SSLSocketParams> ssl_socket_params) {
-  CreateConnectJobCallback callback =
-      base::BindRepeating(&CreateSSLConnectJob, std::move(ssl_socket_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-scoped_refptr<TransportClientSocketPool::SocketParams>
-TransportClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
-    scoped_refptr<HttpProxySocketParams> http_proxy_socket_params) {
-  CreateConnectJobCallback callback = base::BindRepeating(
-      &CreateHttpProxyConnectJob, std::move(http_proxy_socket_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-TransportClientSocketPool::SocketParams::~SocketParams() = default;
 
 TransportClientSocketPool::TransportConnectJobFactory::
     TransportConnectJobFactory(
@@ -185,7 +100,7 @@ TransportClientSocketPool::CreateForTesting(
 
 int TransportClientSocketPool::RequestSocket(
     const GroupId& group_id,
-    const void* params,
+    scoped_refptr<SocketParams> socket_params,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -193,12 +108,9 @@ int TransportClientSocketPool::RequestSocket(
     CompletionOnceCallback callback,
     const ProxyAuthCallback& proxy_auth_callback,
     const NetLogWithSource& net_log) {
-  const scoped_refptr<SocketParams>* casted_params =
-      static_cast<const scoped_refptr<SocketParams>*>(params);
-
   NetLogTcpClientSocketPoolRequestedSocket(net_log, group_id);
 
-  return base_.RequestSocket(group_id, *casted_params, priority, socket_tag,
+  return base_.RequestSocket(group_id, socket_params, priority, socket_tag,
                              respect_limits, handle, std::move(callback),
                              proxy_auth_callback, net_log);
 }
@@ -216,12 +128,9 @@ void TransportClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
 
 void TransportClientSocketPool::RequestSockets(
     const GroupId& group_id,
-    const void* params,
+    scoped_refptr<SocketParams> socket_params,
     int num_sockets,
     const NetLogWithSource& net_log) {
-  const scoped_refptr<SocketParams>* casted_params =
-      static_cast<const scoped_refptr<SocketParams>*>(params);
-
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
@@ -229,7 +138,7 @@ void TransportClientSocketPool::RequestSockets(
                                          base::Unretained(&group_id)));
   }
 
-  base_.RequestSockets(group_id, *casted_params, num_sockets, net_log);
+  base_.RequestSockets(group_id, socket_params, num_sockets, net_log);
 }
 
 void TransportClientSocketPool::SetPriority(const GroupId& group_id,

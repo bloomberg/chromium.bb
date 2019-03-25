@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
 
   // ClientSocketPool implementation.
   int RequestSocket(const GroupId& group_id,
-                    const void* resolve_info,
+                    scoped_refptr<SocketParams> params,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
                     RespectLimits respect_limits,
@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                     const ProxyAuthCallback& proxy_auth_callback,
                     const NetLogWithSource& net_log) override;
   void RequestSockets(const GroupId& group_id,
-                      const void* params,
+                      scoped_refptr<SocketParams> params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override;
   void SetPriority(const GroupId& group_id,

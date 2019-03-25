@@ -29,6 +29,36 @@ ClientSocketHandle::~ClientSocketHandle() {
   Reset();
 }
 
+int ClientSocketHandle::Init(
+    const ClientSocketPool::GroupId& group_id,
+    scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    ClientSocketPool::RespectLimits respect_limits,
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+    ClientSocketPool* pool,
+    const NetLogWithSource& net_log) {
+  requesting_source_ = net_log.source();
+
+  CHECK(!group_id.destination().IsEmpty());
+  ResetInternal(true);
+  ResetErrorState();
+  pool_ = pool;
+  group_id_ = group_id;
+  CompletionOnceCallback io_complete_callback =
+      base::BindOnce(&ClientSocketHandle::OnIOComplete, base::Unretained(this));
+  int rv = pool_->RequestSocket(
+      group_id, std::move(socket_params), priority, socket_tag, respect_limits,
+      this, std::move(io_complete_callback), proxy_auth_callback, net_log);
+  if (rv == ERR_IO_PENDING) {
+    callback_ = std::move(callback);
+  } else {
+    HandleInitCompletion(rv);
+  }
+  return rv;
+}
+
 void ClientSocketHandle::SetPriority(RequestPriority priority) {
   if (socket_) {
     // The priority of the handle is no longer relevant to the socket pool;

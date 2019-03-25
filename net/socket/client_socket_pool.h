@@ -17,6 +17,7 @@
 #include "net/base/request_priority.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_request_info.h"
+#include "net/socket/connect_job.h"
 
 namespace base {
 class DictionaryValue;
@@ -25,10 +26,15 @@ class DictionaryValue;
 namespace net {
 
 class ClientSocketHandle;
+struct CommonConnectJobParams;
 class HttpAuthController;
+class HttpProxySocketParams;
 class HttpResponseInfo;
 class NetLogWithSource;
+class SOCKSSocketParams;
+class SSLSocketParams;
 class StreamSocket;
+class TransportSocketParams;
 
 // ClientSocketPools are layered. This defines an interface for lower level
 // socket pools to communicate with higher layer pools.
@@ -143,6 +149,51 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     bool privacy_mode_;
   };
 
+  // Callback to create a ConnectJob using the provided arguments. The lower
+  // level parameters used to construct the ConnectJob (like hostname, type of
+  // socket, proxy, etc) are all already bound to the callback.  If
+  // |websocket_endpoint_lock_manager| is non-null, a ConnectJob for use by
+  // WebSockets should be created.
+  using CreateConnectJobCallback =
+      base::RepeatingCallback<std::unique_ptr<ConnectJob>(
+          RequestPriority priority,
+          const SocketTag& socket_tag,
+          const CommonConnectJobParams* common_connect_job_params,
+          ConnectJob::Delegate* delegate)>;
+
+  // "Parameters" that own a single callback for creating a ConnectJob that can
+  // be of any type.
+  class NET_EXPORT_PRIVATE SocketParams
+      : public base::RefCounted<SocketParams> {
+   public:
+    explicit SocketParams(
+        const CreateConnectJobCallback& create_connect_job_callback);
+
+    const CreateConnectJobCallback& create_connect_job_callback() {
+      return create_connect_job_callback_;
+    }
+
+    static scoped_refptr<SocketParams> CreateFromTransportSocketParams(
+        scoped_refptr<TransportSocketParams> transport_client_params);
+
+    static scoped_refptr<SocketParams> CreateFromSOCKSSocketParams(
+        scoped_refptr<SOCKSSocketParams> socks_socket_params);
+
+    static scoped_refptr<SocketParams> CreateFromSSLSocketParams(
+        scoped_refptr<SSLSocketParams> ssl_socket_params);
+
+    static scoped_refptr<SocketParams> CreateFromHttpProxySocketParams(
+        scoped_refptr<HttpProxySocketParams> http_proxy_socket_params);
+
+   private:
+    friend class base::RefCounted<SocketParams>;
+    ~SocketParams();
+
+    const CreateConnectJobCallback create_connect_job_callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(SocketParams);
+  };
+
   // Requests a connected socket with a specified GroupId.
   //
   // There are five possible results from calling this function:
@@ -157,8 +208,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // The caller must recover from the error before using the connection, or
   // Disconnect the socket before releasing or resetting the |handle|.
   // The current recoverable errors are: the errors accepted by
-  // IsCertificateError(err) and PROXY_AUTH_REQUESTED, or
-  // HTTPS_PROXY_TUNNEL_RESPONSE when reported by HttpProxyClientSocketPool.
+  // IsCertificateError(err) and HTTPS_PROXY_TUNNEL_RESPONSE when reported by
+  // HttpProxyClientSocketPool.
   //
   // If this function returns OK, then |handle| is initialized upon return.
   // The |handle|'s is_initialized method will return true in this case.  If a
@@ -180,7 +231,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // synchronously when RequestSocket is called, and will be invoked once for
   // each challenge seen.
   virtual int RequestSocket(const GroupId& group_id,
-                            const void* params,
+                            scoped_refptr<SocketParams> params,
                             RequestPriority priority,
                             const SocketTag& socket_tag,
                             RespectLimits respect_limits,
@@ -200,7 +251,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // is intended to make sure ahead of time that |num_sockets| sockets are
   // available to talk to a host.
   virtual void RequestSockets(const GroupId& group_id,
-                              const void* params,
+                              scoped_refptr<SocketParams> params,
                               int num_sockets,
                               const NetLogWithSource& net_log) = 0;
 
@@ -276,16 +327,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);
 };
-
-template <typename PoolType>
-void RequestSocketsForPool(
-    PoolType* pool,
-    const ClientSocketPool::GroupId& group_id,
-    const scoped_refptr<typename PoolType::SocketParams>& params,
-    int num_sockets,
-    const NetLogWithSource& net_log) {
-  pool->RequestSockets(group_id, &params, num_sockets, net_log);
-}
 
 }  // namespace net
 
