@@ -1658,11 +1658,6 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'password_generator_fips181_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'password_generator_proto_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
