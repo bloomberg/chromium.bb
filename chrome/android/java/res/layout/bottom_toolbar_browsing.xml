@@ -12,7 +12,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/bottom_toolbar_height"
-    android:background="@color/modern_primary_color"
+    android:background="@color/toolbar_background_primary"
     android:layout_gravity="top|center_horizontal"
     android:paddingStart="@dimen/bottom_toolbar_start_padding"
     android:paddingEnd="@dimen/bottom_toolbar_end_padding" >
