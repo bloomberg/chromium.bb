@@ -506,6 +506,7 @@ Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
       web_app::GenerateApplicationNameForFocusMode(), true /* trusted_source */,
       gfx::Rect(), profile, true /* user_gesture */));
+  browser_params.is_focus_mode = true;
   return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
 }
 

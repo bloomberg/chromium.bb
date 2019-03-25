@@ -41,6 +41,7 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
                              ->GetActiveWebContents()
                              ->GetLastCommittedURL();
   EXPECT_EQ(url, app_browser_url);
+  EXPECT_TRUE(app_browser->is_focus_mode());
 }
 
 IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
@@ -49,6 +50,7 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
   feature_list.InitAndEnableFeature(features::kFocusMode);
   chrome::AddTabAt(browser(), url, -1, true);
   chrome::AddTabAt(browser(), GURL(), -1, true);
+  EXPECT_FALSE(browser()->is_focus_mode());
   ASSERT_EQ(3, browser()->tab_strip_model()->count());
 
   Browser* app_browser =
@@ -57,4 +59,5 @@ IN_PROC_BROWSER_TEST_F(ApplicationLaunchBrowserTest,
   EXPECT_NE(app_browser, browser());
   EXPECT_EQ(url, GetWebContentsForTab(app_browser, 0)->GetURL());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_TRUE(app_browser->is_focus_mode());
 }
