@@ -25,8 +25,6 @@ import org.chromium.ui.base.DeviceFormFactor;
  * instantiated using {@link AppHooks#createFreIntentCreator}.
  */
 public class FreIntentCreator {
-    private static final int FIRST_RUN_EXPERIENCE_REQUEST_CODE = 101;
-
     /**
      * Creates an intent to launch the First Run Experience.
      *
@@ -129,14 +127,14 @@ public class FreIntentCreator {
      */
     private static void addPendingIntent(Context context, Intent firstRunIntent,
             Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
-        PendingIntent pendingIntent = null;
+        final PendingIntent pendingIntent;
         int pendingIntentFlags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT;
         if (requiresBroadcast) {
-            pendingIntent = PendingIntent.getBroadcast(context, FIRST_RUN_EXPERIENCE_REQUEST_CODE,
-                    intentToLaunchAfterFreComplete, pendingIntentFlags);
+            pendingIntent = PendingIntent.getBroadcast(
+                    context, 0, intentToLaunchAfterFreComplete, pendingIntentFlags);
         } else {
-            pendingIntent = PendingIntent.getActivity(context, FIRST_RUN_EXPERIENCE_REQUEST_CODE,
-                    intentToLaunchAfterFreComplete, pendingIntentFlags);
+            pendingIntent = PendingIntent.getActivity(
+                    context, 0, intentToLaunchAfterFreComplete, pendingIntentFlags);
         }
         firstRunIntent.putExtra(FirstRunActivity.EXTRA_FRE_COMPLETE_LAUNCH_INTENT, pendingIntent);
     }
