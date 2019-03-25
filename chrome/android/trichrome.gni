@@ -21,6 +21,10 @@ declare_args() {
   # Android. You can use "apksigner verify --print-certs" on the signed APK to
   # calculate the correct digest.
   trichrome_certdigest = default_trichrome_certdigest
+
+  # WIP: Enable synchronized proguard for Trichrome. (http://crbug.com/901465)
+  # Only affects trichrome targets when !is_java_debug.
+  enable_trichrome_synchronized_proguard = false
 }
 
 trichrome_jinja_variables = [
@@ -31,6 +35,9 @@ trichrome_jinja_variables = [
   "trichrome_certdigest=$trichrome_certdigest",
   "use32bitAbi=android:use32bitAbi=\"true\"",
 ]
+
+trichrome_synchronized_proguard =
+    enable_trichrome_synchronized_proguard && !is_java_debug
 
 template("trichrome_library_apk_tmpl") {
   android_apk(target_name) {

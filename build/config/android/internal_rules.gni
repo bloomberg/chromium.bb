@@ -2318,6 +2318,25 @@ if (enable_java_templates) {
       if (defined(invoker.package_name)) {
         args += [ "--package-name=${invoker.package_name}" ]
       }
+
+      if (defined(invoker.emit_ids_out_path)) {
+        outputs += [ invoker.emit_ids_out_path ]
+        _rebased_emit_ids_path =
+            rebase_path(invoker.emit_ids_out_path, root_out_dir)
+        args += [ "--emit-ids-out=$_rebased_emit_ids_path" ]
+      }
+
+      if (defined(invoker.resource_ids_provider_dep)) {
+        _compile_res_dep =
+            "${invoker.resource_ids_provider_dep}__compile_resources"
+        _gen_dir = get_label_info(_compile_res_dep, "target_gen_dir")
+        _name = get_label_info(_compile_res_dep, "name")
+        _resource_ids_path = "$_gen_dir/$_name.resource_ids"
+        inputs += [ _resource_ids_path ]
+        _rebased_ids_path = rebase_path(_resource_ids_path, root_out_dir)
+        args += [ "--use-resource-ids-path=$_rebased_ids_path" ]
+        deps += [ _compile_res_dep ]
+      }
     }
 
     if (defined(invoker.post_process_script)) {

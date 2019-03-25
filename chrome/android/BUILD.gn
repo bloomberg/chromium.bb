@@ -1732,6 +1732,7 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "module_name",
                              "verify_android_configuration",
                              "proguard_jar_path",
+                             "resource_ids_provider_dep",
                              "target_type",
                              "use_trichrome_library",
                            ])
@@ -1798,6 +1799,9 @@ monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
   apk_name = "TrichromeChrome"
   target_type = "android_apk"
   use_trichrome_library = true
+  if (trichrome_synchronized_proguard) {
+    resource_ids_provider_dep = "//android_webview:trichrome_webview_apk"
+  }
 }
 
 chrome_public_test_apk_manifest =

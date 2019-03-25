@@ -2318,21 +2318,28 @@ if (enable_java_templates) {
     _compile_resources_target = "${_template_name}__compile_resources"
     _compile_resources_rtxt_out =
         "${target_gen_dir}/${_compile_resources_target}_R.txt"
+    _emit_resource_ids =
+        defined(invoker.emit_resource_ids) && invoker.emit_resource_ids
+    if (_emit_resource_ids) {
+      _compile_resources_emit_ids_out =
+          "${target_gen_dir}/${_compile_resources_target}.resource_ids"
+    }
     compile_resources(_compile_resources_target) {
       forward_variables_from(invoker,
                              [
+                               "aapt_locale_whitelist",
                                "app_as_shared_lib",
+                               "no_xml_namespaces",
+                               "package_name",
+                               "package_name_to_id_mapping",
+                               "png_to_webp",
+                               "resource_blacklist_exceptions",
+                               "resource_blacklist_regex",
+                               "resource_ids_provider_dep",
+                               "resources_config_path",
                                "shared_resources",
                                "shared_resources_whitelist_locales",
                                "support_zh_hk",
-                               "aapt_locale_whitelist",
-                               "package_name",
-                               "package_name_to_id_mapping",
-                               "resource_blacklist_regex",
-                               "resource_blacklist_exceptions",
-                               "resources_config_path",
-                               "png_to_webp",
-                               "no_xml_namespaces",
                              ])
       android_manifest = _android_manifest
       version_code = _version_code
@@ -2343,6 +2350,9 @@ if (enable_java_templates) {
       }
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = _compile_resources_rtxt_out
+      if (_emit_resource_ids) {
+        emit_ids_out_path = _compile_resources_emit_ids_out
+      }
       proguard_file = _generated_proguard_config
       if (_enable_main_dex_list) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
@@ -3051,6 +3061,7 @@ if (enable_java_templates) {
                                "dexlayout_profile",
                                "dist_ijar_path",
                                "dont_load_shared_libraries",
+                               "emit_resource_ids",
                                "emma_never_instrument",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
@@ -3086,6 +3097,7 @@ if (enable_java_templates) {
                                "proguard_jar_path",
                                "resource_blacklist_regex",
                                "resource_blacklist_exceptions",
+                               "resource_ids_provider_dep",
                                "resources_config_path",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
