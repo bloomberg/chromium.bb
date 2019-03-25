@@ -433,7 +433,7 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
   base::FilePath wpr_executable_binary =
       base::FilePath(FILE_PATH_LITERAL("win"))
           .AppendASCII("x86_64")
-          .AppendASCII("wpr.exe");
+          .AppendASCII("wpr");
 #elif defined(OS_MACOSX)
   base::FilePath wpr_executable_binary =
       base::FilePath(FILE_PATH_LITERAL("mac"))
