@@ -341,16 +341,10 @@ public class ToolbarTablet extends ToolbarLayout
         super.onTabOrModelChanged();
         final boolean incognito = isIncognito();
         if (mIsIncognito == null || mIsIncognito != incognito) {
-            final int color = ColorUtils.getDefaultThemeColor(getResources(), incognito);
-            setBackgroundColor(color);
-            getProgressBar().setThemeColor(color, isIncognito());
+            // TODO (amaralp): Have progress bar observe theme color and incognito changes directly.
+            getProgressBar().setThemeColor(
+                    ColorUtils.getDefaultThemeColor(getResources(), incognito), isIncognito());
 
-            final int textBoxColor =
-                    ColorUtils.getTextBoxColorForToolbarBackground(getResources(), false, color);
-            mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
-
-            mAccessibilitySwitcherButton.setUseLightDrawables(incognito);
-            mLocationBar.updateVisualsForState();
             mIsIncognito = incognito;
         }
 
@@ -364,6 +358,17 @@ public class ToolbarTablet extends ToolbarLayout
         ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
         ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
         ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
+        mAccessibilitySwitcherButton.setUseLightDrawables(useLight);
+    }
+
+    @Override
+    public void onThemeColorChanged(int color, boolean shouldAnimate) {
+        setBackgroundColor(color);
+        final int textBoxColor =
+                ColorUtils.getTextBoxColorForToolbarBackground(getResources(), false, color);
+        mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
+
+        mLocationBar.updateVisualsForState();
     }
 
     /**
