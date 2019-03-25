@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,6 +95,8 @@ BrowserActionsContainer::BrowserActionsContainer(
       separator_ = new views::Separator();
       AddChildView(separator_);
     }
+  } else {
+    DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   }
 }
 
