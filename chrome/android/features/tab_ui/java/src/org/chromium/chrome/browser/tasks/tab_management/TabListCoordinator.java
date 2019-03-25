@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -55,7 +54,8 @@ public class TabListCoordinator implements Destroyable {
      * @param context The context to use for accessing {@link android.content.res.Resources}.
      * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
      *                              the tabs concerned.
-     * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
+     * @param thumbnailProvider Provider to provide screenshot related details.
+     * @param titleProvider Provider for a given tab's title.
      * @param parentView {@link ViewGroup} The root view of the UI.
      * @param attachToParent Whether the UI should attach to root view.
      * @param componentName A unique string uses to identify different components for UMA recording.
@@ -63,7 +63,8 @@ public class TabListCoordinator implements Destroyable {
      *                      through actions.xml file.
      */
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager, @NonNull ViewGroup parentView,
+            TabListMediator.ThumbnailProvider thumbnailProvider,
+            TabListMediator.TitleProvider titleProvider, @NonNull ViewGroup parentView,
             boolean attachToParent, String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
@@ -106,11 +107,11 @@ public class TabListCoordinator implements Destroyable {
 
         mRecyclerView.setHasFixedSize(true);
 
-        TabListFaviconProvider mTabListFaviconProvider =
+        TabListFaviconProvider tabListFaviconProvider =
                 new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
-        mMediator = new TabListMediator(tabListModel, tabModelSelector, tabContentManager,
-                mTabListFaviconProvider, componentName);
+        mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
+                titleProvider, tabListFaviconProvider, componentName);
     }
 
     /**
