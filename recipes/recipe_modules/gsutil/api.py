@@ -16,7 +16,8 @@ class GSUtilApi(recipe_api.RecipeApi):
                **kwargs):
     """A step to run arbitrary gsutil commands.
 
-    Note that this assumes that gsutil authentication environment variables
+    On LUCI this should automatically use the ambient task account credentials.
+    On Buildbot, this assumes that gsutil authentication environment variables
     (AWS_CREDENTIAL_FILE and BOTO_CONFIG) are already set, though if you want to
     set them to something else you can always do so using the env={} kwarg.
 
@@ -24,14 +25,22 @@ class GSUtilApi(recipe_api.RecipeApi):
     valid in file-like portions of the cmd. See 'gsutil help wildcards'.
 
     Arguments:
-      cmd: list of (string) arguments to pass to gsutil.
-           Include gsutil-level options first (see 'gsutil help options').
-      name: the (string) name of the step to use.
-            Defaults to the first non-flag token in the cmd.
+
+      * cmd (List[str|Path]) - Arguments to pass to gsutil. Include gsutil-level
+          options first (see 'gsutil help options').
+      * name (str) - Name of the step to use. Defaults to the first non-flag
+          token in the cmd.
     """
-    if not name:
-      name = (t for t in cmd if not t.startswith('-')).next()
-    full_name = 'gsutil ' + name
+    if name:
+      full_name = 'gsutil ' + name
+    else:
+      full_name = 'gsutil'  # our fall-through name
+      # Find first cmd token not starting with '-'
+      for itm in cmd:
+        token = str(itm)   # it could be a Path
+        if not token.startswith('-'):
+          full_name = 'gsutil ' + token
+          break
 
     gsutil_path = self.gsutil_py_path
     cmd_prefix = []

@@ -615,7 +615,8 @@ Generates a Gitiles repo URL. See also parse_repo_url.
 
 A step to run arbitrary gsutil commands.
 
-Note that this assumes that gsutil authentication environment variables
+On LUCI this should automatically use the ambient task account credentials.
+On Buildbot, this assumes that gsutil authentication environment variables
 (AWS_CREDENTIAL_FILE and BOTO_CONFIG) are already set, though if you want to
 set them to something else you can always do so using the env={} kwarg.
 
@@ -623,28 +624,29 @@ Note also that gsutil does its own wildcard processing, so wildcards are
 valid in file-like portions of the cmd. See 'gsutil help wildcards'.
 
 Arguments:
-  cmd: list of (string) arguments to pass to gsutil.
-       Include gsutil-level options first (see 'gsutil help options').
-  name: the (string) name of the step to use.
-        Defaults to the first non-flag token in the cmd.
 
-&mdash; **def [cat](/recipes/recipe_modules/gsutil/api.py#99)(self, url, args=None, \*\*kwargs):**
+  * cmd (List[str|Path]) - Arguments to pass to gsutil. Include gsutil-level
+      options first (see 'gsutil help options').
+  * name (str) - Name of the step to use. Defaults to the first non-flag
+      token in the cmd.
 
-&mdash; **def [copy](/recipes/recipe_modules/gsutil/api.py#106)(self, source_bucket, source, dest_bucket, dest, args=None, link_name='gsutil.copy', metadata=None, unauthenticated_url=False, \*\*kwargs):**
+&mdash; **def [cat](/recipes/recipe_modules/gsutil/api.py#108)(self, url, args=None, \*\*kwargs):**
 
-&mdash; **def [download](/recipes/recipe_modules/gsutil/api.py#85)(self, bucket, source, dest, args=None, \*\*kwargs):**
+&mdash; **def [copy](/recipes/recipe_modules/gsutil/api.py#115)(self, source_bucket, source, dest_bucket, dest, args=None, link_name='gsutil.copy', metadata=None, unauthenticated_url=False, \*\*kwargs):**
 
-&mdash; **def [download\_url](/recipes/recipe_modules/gsutil/api.py#92)(self, url, dest, args=None, \*\*kwargs):**
+&mdash; **def [download](/recipes/recipe_modules/gsutil/api.py#94)(self, bucket, source, dest, args=None, \*\*kwargs):**
+
+&mdash; **def [download\_url](/recipes/recipe_modules/gsutil/api.py#101)(self, url, dest, args=None, \*\*kwargs):**
 
 &emsp; **@property**<br>&mdash; **def [gsutil\_py\_path](/recipes/recipe_modules/gsutil/api.py#10)(self):**
 
-&mdash; **def [list](/recipes/recipe_modules/gsutil/api.py#123)(self, url, args=None, \*\*kwargs):**
+&mdash; **def [list](/recipes/recipe_modules/gsutil/api.py#132)(self, url, args=None, \*\*kwargs):**
 
-&mdash; **def [remove\_url](/recipes/recipe_modules/gsutil/api.py#137)(self, url, args=None, \*\*kwargs):**
+&mdash; **def [remove\_url](/recipes/recipe_modules/gsutil/api.py#146)(self, url, args=None, \*\*kwargs):**
 
-&mdash; **def [signurl](/recipes/recipe_modules/gsutil/api.py#130)(self, private_key_file, bucket, dest, args=None, \*\*kwargs):**
+&mdash; **def [signurl](/recipes/recipe_modules/gsutil/api.py#139)(self, private_key_file, bucket, dest, args=None, \*\*kwargs):**
 
-&mdash; **def [upload](/recipes/recipe_modules/gsutil/api.py#69)(self, source, bucket, dest, args=None, link_name='gsutil.upload', metadata=None, unauthenticated_url=False, \*\*kwargs):**
+&mdash; **def [upload](/recipes/recipe_modules/gsutil/api.py#78)(self, source, bucket, dest, args=None, link_name='gsutil.upload', metadata=None, unauthenticated_url=False, \*\*kwargs):**
 ### *recipe_modules* / [infra\_paths](/recipes/recipe_modules/infra_paths)
 
 [DEPS](/recipes/recipe_modules/infra_paths/__init__.py#1): [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
