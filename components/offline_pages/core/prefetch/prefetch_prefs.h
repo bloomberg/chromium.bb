@@ -32,6 +32,7 @@ bool IsEnabled(PrefService* prefs);
 // Configures the user controlled setting that enables or disables the
 // prefetching of offline pages to run.
 void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled);
+bool IsPrefetchingEnabledInSettings(PrefService* prefs);
 
 // To be set to |true| when a successful GeneratePageBundle request has been
 // made, or |false| if OPS responds with 403 Forbidden. If |enabled| is false,
@@ -57,6 +58,10 @@ std::string GetPrefetchTestingHeader(PrefService* prefs);
 // Returns true if prefetching is enabled and the scheduled GeneratePageBundle
 // check time has passed.
 bool IsForbiddenCheckDue(PrefService* prefs);
+
+// Returns true if the client has not yet been enabled or disabled by the
+// server (implies |IsEnabledByServer()| = false).
+bool IsEnabledByServerUnknown(PrefService* prefs);
 
 // Sets "enabled-by-server" to false and sets the forbidden check due time to
 // sometime in the past. Note that the prefetching enabled feature flag and

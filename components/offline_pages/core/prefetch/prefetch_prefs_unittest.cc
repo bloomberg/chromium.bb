@@ -135,4 +135,22 @@ TEST_F(PrefetchPrefsTest, ForbiddenCheck) {
   EXPECT_FALSE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
 }
 
+TEST_F(PrefetchPrefsTest, FirstForbiddenCheck) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
+
+  EXPECT_TRUE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
+  EXPECT_TRUE(prefetch_prefs::IsEnabledByServerUnknown(prefs()));
+
+  // Pretend a check was performed and failed.
+  prefetch_prefs::SetEnabledByServer(prefs(), false);
+
+  // Jump ahead in time so that a check should be due.
+  TestScopedOfflineClock test_clock;
+  test_clock.SetNow(OfflineTimeNow() + base::TimeDelta::FromDays(8));
+
+  EXPECT_TRUE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
+  EXPECT_FALSE(prefetch_prefs::IsEnabledByServerUnknown(prefs()));
+}
+
 }  // namespace offline_pages

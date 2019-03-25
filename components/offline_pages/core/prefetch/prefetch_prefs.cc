@@ -40,6 +40,10 @@ void SetPrefetchingEnabledInSettings(PrefService* prefs, bool enabled) {
   prefs->SetBoolean(kEnabled, enabled);
 }
 
+bool IsPrefetchingEnabledInSettings(PrefService* prefs) {
+  return prefs->GetBoolean(kEnabled);
+}
+
 bool IsEnabled(PrefService* prefs) {
   return IsPrefetchingOfflinePagesEnabled() && prefs->GetBoolean(kEnabled) &&
          IsEnabledByServer(prefs);
@@ -88,6 +92,12 @@ bool IsForbiddenCheckDue(PrefService* prefs) {
               OfflineTimeNow() +
                   kForbiddenCheckDelay);  // is the next time unreasonably far
                                           // in the future (e.g. clock change)?
+}
+
+bool IsEnabledByServerUnknown(PrefService* prefs) {
+  DCHECK(prefs);
+  return IsForbiddenCheckDue(prefs) &&
+         (prefs->GetTime(kNextForbiddenCheckTimePref) == base::Time());
 }
 
 void SetEnabledByServer(PrefService* prefs, bool enabled) {
