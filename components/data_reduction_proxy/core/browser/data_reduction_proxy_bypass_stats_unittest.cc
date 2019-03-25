@@ -161,8 +161,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     // fully bypassed.
     std::vector<DataReductionProxyServer> data_reduction_proxy_servers;
     data_reduction_proxy_servers.push_back(DataReductionProxyServer(
-        config()->test_params()->proxies_for_http().front().proxy_server(),
-        ProxyServer::CORE));
+        config()->test_params()->proxies_for_http().front().proxy_server()));
     config()->test_params()->UseNonSecureProxiesForHttp();
     config()->test_params()->SetProxiesForHttp(data_reduction_proxy_servers);
   }
@@ -841,14 +840,10 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
   // Explicitly set primary and fallback Data Reduction Proxies to use.
   config()->test_params()->SetProxiesForHttp(
       std::vector<DataReductionProxyServer>(
-          {DataReductionProxyServer(
-               net::ProxyServer::FromURI("http://origin.net",
-                                         net::ProxyServer::SCHEME_HTTP),
-               ProxyServer::CORE),
-           DataReductionProxyServer(
-               net::ProxyServer::FromURI("http://fallback.net",
-                                         net::ProxyServer::SCHEME_HTTP),
-               ProxyServer::CORE)}));
+          {DataReductionProxyServer(net::ProxyServer::FromURI(
+               "http://origin.net", net::ProxyServer::SCHEME_HTTP)),
+           DataReductionProxyServer(net::ProxyServer::FromURI(
+               "http://fallback.net", net::ProxyServer::SCHEME_HTTP))}));
 
   // Make the first Data Reduction Proxy host in the list of Data Reduction
   // Proxies to use fail to resolve, so that the tests below will use the

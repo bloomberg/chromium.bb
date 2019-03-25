@@ -19,11 +19,9 @@ ClientConfig CreateConfig(const std::string& session_key,
                           ProxyServer_ProxyScheme primary_scheme,
                           const std::string& primary_host,
                           int primary_port,
-                          const ProxyServer_ProxyType& primary_proxy_type,
                           ProxyServer_ProxyScheme secondary_scheme,
                           const std::string& secondary_host,
                           int secondary_port,
-                          const ProxyServer_ProxyType& secondary_proxy_type,
                           float reporting_fraction,
                           bool ignore_long_term_black_list_rules);
 

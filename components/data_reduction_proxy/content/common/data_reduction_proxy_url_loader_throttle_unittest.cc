@@ -108,7 +108,7 @@ std::unique_ptr<DataReductionProxyThrottleManager> CreateManager(
 DataReductionProxyServer MakeCoreDrpServer(const std::string pac_string) {
   auto proxy_server = net::ProxyServer::FromPacString(pac_string);
   EXPECT_TRUE(proxy_server.is_valid());
-  return DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE);
+  return DataReductionProxyServer(proxy_server);
 }
 
 class DataReductionProxyURLLoaderThrottleTest : public ::testing::Test {

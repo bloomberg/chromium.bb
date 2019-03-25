@@ -55,13 +55,12 @@ class DataUseMeasurementBrowserTestWithDataSaverEnabled
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     net::HostPortPair host_port_pair = embedded_test_server()->host_port_pair();
-    std::string config = data_reduction_proxy::EncodeConfig(CreateConfig(
-        "TheSessionKeyYay!", 1000, 0,
-        data_reduction_proxy::ProxyServer_ProxyScheme_HTTP,
-        host_port_pair.host(), host_port_pair.port(),
-        data_reduction_proxy::ProxyServer::CORE,
-        data_reduction_proxy::ProxyServer_ProxyScheme_HTTP, "fallback.net", 80,
-        data_reduction_proxy::ProxyServer::UNSPECIFIED_TYPE, 0.5f, false));
+    std::string config = data_reduction_proxy::EncodeConfig(
+        CreateConfig("TheSessionKeyYay!", 1000, 0,
+                     data_reduction_proxy::ProxyServer_ProxyScheme_HTTP,
+                     host_port_pair.host(), host_port_pair.port(),
+                     data_reduction_proxy::ProxyServer_ProxyScheme_HTTP,
+                     "fallback.net", 80, 0.5f, false));
     command_line->AppendSwitchASCII(
         data_reduction_proxy::switches::kDataReductionProxyServerClientConfig,
         config);

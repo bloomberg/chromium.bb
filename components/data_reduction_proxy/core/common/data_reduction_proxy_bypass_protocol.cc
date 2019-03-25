@@ -159,7 +159,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
       // TODO(sclittle): Remove this workaround once http://crbug.com/876776 is
       // fixed.
       placeholder_proxy_servers.push_back(
-          DataReductionProxyServer(proxy_server, ProxyServer_ProxyType_CORE));
+          DataReductionProxyServer(proxy_server));
     } else {
       ReportResponseProxyServerStatusHistogram(
           RESPONSE_PROXY_SERVER_STATUS_DRP);

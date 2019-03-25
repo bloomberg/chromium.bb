@@ -340,9 +340,8 @@ bool GetOverrideProxiesForHttpFromCommandLine(
       DCHECK(proxy_server.is_valid());
       DCHECK(!proxy_server.is_direct());
 
-      // Overriding proxies have type UNSPECIFIED_TYPE.
-      override_proxies_for_http->push_back(DataReductionProxyServer(
-          std::move(proxy_server), ProxyServer::UNSPECIFIED_TYPE));
+      override_proxies_for_http->push_back(
+          DataReductionProxyServer(std::move(proxy_server)));
     }
 
     return true;
@@ -361,22 +360,21 @@ bool GetOverrideProxiesForHttpFromCommandLine(
 
   override_proxies_for_http->clear();
 
-  // Overriding proxies have type UNSPECIFIED_TYPE.
   if (!origin.empty()) {
     net::ProxyServer primary_proxy =
         net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
     DCHECK(primary_proxy.is_valid());
     DCHECK(!primary_proxy.is_direct());
-    override_proxies_for_http->push_back(DataReductionProxyServer(
-        std::move(primary_proxy), ProxyServer::UNSPECIFIED_TYPE));
+    override_proxies_for_http->push_back(
+        DataReductionProxyServer(std::move(primary_proxy)));
   }
   if (!fallback_origin.empty()) {
     net::ProxyServer fallback_proxy = net::ProxyServer::FromURI(
         fallback_origin, net::ProxyServer::SCHEME_HTTP);
     DCHECK(fallback_proxy.is_valid());
     DCHECK(!fallback_proxy.is_direct());
-    override_proxies_for_http->push_back(DataReductionProxyServer(
-        std::move(fallback_proxy), ProxyServer::UNSPECIFIED_TYPE));
+    override_proxies_for_http->push_back(
+        DataReductionProxyServer(std::move(fallback_proxy)));
   }
 
   return true;
@@ -443,14 +441,12 @@ DataReductionProxyParams::DataReductionProxyParams() {
 
   if (!use_override_proxies_for_http) {
     DCHECK(proxies_for_http_.empty());
-    proxies_for_http_.push_back(DataReductionProxyServer(
-        net::ProxyServer::FromURI("https://proxy.googlezip.net:443",
-                                  net::ProxyServer::SCHEME_HTTP),
-        ProxyServer::CORE));
-    proxies_for_http_.push_back(DataReductionProxyServer(
-        net::ProxyServer::FromURI("compress.googlezip.net:80",
-                                  net::ProxyServer::SCHEME_HTTP),
-        ProxyServer::CORE));
+    proxies_for_http_.push_back(
+        DataReductionProxyServer(net::ProxyServer::FromURI(
+            "https://proxy.googlezip.net:443", net::ProxyServer::SCHEME_HTTP)));
+    proxies_for_http_.push_back(
+        DataReductionProxyServer(net::ProxyServer::FromURI(
+            "compress.googlezip.net:80", net::ProxyServer::SCHEME_HTTP)));
   }
 
   DCHECK(std::all_of(proxies_for_http_.begin(), proxies_for_http_.end(),

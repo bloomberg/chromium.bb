@@ -97,13 +97,11 @@ std::vector<DataReductionProxyServer> GetProxiesForHTTP(
   std::vector<DataReductionProxyServer> proxies;
   for (const auto& server : proxy_config.http_proxy_servers()) {
     if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
-      proxies.push_back(DataReductionProxyServer(
-          net::ProxyServer(
-              protobuf_parser::SchemeFromProxyScheme(server.scheme()),
-              net::HostPortPair(server.host(), server.port()),
-              /* HTTPS proxies are marked as trusted. */
-              server.scheme() == ProxyServer_ProxyScheme_HTTPS),
-          server.type()));
+      proxies.push_back(DataReductionProxyServer(net::ProxyServer(
+          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
+          net::HostPortPair(server.host(), server.port()),
+          /* HTTPS proxies are marked as trusted. */
+          server.scheme() == ProxyServer_ProxyScheme_HTTPS)));
     }
   }
 
