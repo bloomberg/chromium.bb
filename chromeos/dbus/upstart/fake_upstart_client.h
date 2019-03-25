@@ -32,6 +32,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpstartClient : public UpstartClient {
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override;
   void StopMediaAnalytics() override;
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override;
+  void StartWilcoDtcService(VoidDBusMethodCallback callback) override;
+  void StopWilcoDtcService(VoidDBusMethodCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeUpstartClient);

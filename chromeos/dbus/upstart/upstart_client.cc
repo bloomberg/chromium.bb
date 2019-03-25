@@ -24,6 +24,11 @@ constexpr char kStopMethod[] = "Stop";
 constexpr char kUpstartJobsPath[] = "/com/ubuntu/Upstart/jobs/";
 constexpr char kAuthPolicyJob[] = "authpolicyd";
 constexpr char kMediaAnalyticsJob[] = "rtanalytics";
+// "wilco_5fdtc_5fdispatcher" below refers to the "wilco_dtc_dispatcher" upstart
+// job. Upstart escapes characters that aren't valid in D-Bus object paths
+// using underscore as the escape character, followed by the character code in
+// hex.
+constexpr char kWilcoDtcDispatcherJob[] = "wilco_5fdtc_5fdispatcher";
 
 UpstartClient* g_instance = nullptr;
 
@@ -70,6 +75,14 @@ class UpstartClientImpl : public UpstartClient {
 
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override {
     StopJob(kMediaAnalyticsJob, std::move(callback));
+  }
+
+  void StartWilcoDtcService(VoidDBusMethodCallback callback) override {
+    StartJob(kWilcoDtcDispatcherJob, {}, std::move(callback));
+  }
+
+  void StopWilcoDtcService(VoidDBusMethodCallback callback) override {
+    StopJob(kWilcoDtcDispatcherJob, std::move(callback));
   }
 
  private:

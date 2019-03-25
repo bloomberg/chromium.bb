@@ -36,7 +36,7 @@ namespace chromeos {
 class ArcKioskAppManager;
 class CrosUsbDetector;
 class DemoModeResourcesRemover;
-class DiagnosticsdBridge;
+class DiagnosticsdManager;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
@@ -157,11 +157,11 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
   std::unique_ptr<DiscoverManager> discover_manager_;
-  std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
   std::unique_ptr<SchedulerConfigurationManager>
       scheduler_configuration_manager_;
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
+  std::unique_ptr<DiagnosticsdManager> diagnosticsd_manager_;
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
