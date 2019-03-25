@@ -774,7 +774,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
       CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
-  // Add some data to the ad frame so it get reported.
+  // Add some data to the ad frame so it gets reported.
   ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
 
   // Perform some updates on ad and non-ad frames.
@@ -1033,4 +1033,40 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram(
           "Cpu.AdFrames.PerFrame.PercentUsage.Unactivated.PostInteractive"), 0);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
+  OverrideVisibilityTrackerWithMockClock();
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* non_ad_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it get reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Perform some updates on ad and non-ad frames.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Set interactive after 1 microsecond.
+  AdvancePageDuration(base::TimeDelta::FromMicroseconds(1));
+  OnMainFrameInteractive(base::TimeDelta::FromMicroseconds(1));
+
+  // Do some more work on the ad frame.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
+
+  // Do some more work on the main frame.
+  OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
+
+  // Navigate away after 2 microseconds.
+  AdvancePageDuration(base::TimeDelta::FromMicroseconds(1));
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // Make sure there are no numbers reported, as the timeframes are too short.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Activated"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PercentUsage.Unctivated"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.PercentUsage"), 0);
 }
