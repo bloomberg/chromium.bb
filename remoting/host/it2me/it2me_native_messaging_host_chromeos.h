@@ -18,6 +18,10 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace policy {
 class PolicyService;
 }  // namespace policy
@@ -30,6 +34,7 @@ namespace remoting {
 std::unique_ptr<extensions::NativeMessageHost>
 CreateIt2MeNativeMessagingHostForChromeOS(
     net::URLRequestContextGetter* system_request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_runnner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runnner,
     policy::PolicyService* policy_service);
