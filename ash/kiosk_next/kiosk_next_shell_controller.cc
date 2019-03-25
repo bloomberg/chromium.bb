@@ -33,32 +33,28 @@ void KioskNextShellController::BindRequest(
 }
 
 bool KioskNextShellController::IsEnabled() {
-  if (!base::FeatureList::IsEnabled(features::kKioskNextShell))
-    return false;
-
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-
-  // If we don't have user prefs, this method is being called before the first
-  // sign-in happens. In these cases the shell is always disabled.
-  if (!prefs)
-    return false;
-
-  return prefs->GetBoolean(prefs::kKioskNextShellEnabled);
-}
-
-void KioskNextShellController::LaunchKioskNextShellIfEnabled() {
-  if (!IsEnabled())
-    return;
-  kiosk_next_shell_client_->LaunchKioskNextShell(Shell::Get()
-                                                     ->session_controller()
-                                                     ->GetPrimaryUserSession()
-                                                     ->user_info->account_id);
+  return kiosk_next_enabled_;
 }
 
 void KioskNextShellController::SetClient(
     mojom::KioskNextShellClientPtr client) {
   kiosk_next_shell_client_ = std::move(client);
+}
+
+void KioskNextShellController::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  bool prev_kiosk_next_enabled = kiosk_next_enabled_;
+
+  kiosk_next_enabled_ =
+      base::FeatureList::IsEnabled(features::kKioskNextShell) &&
+      pref_service->GetBoolean(prefs::kKioskNextShellEnabled);
+
+  if (!prev_kiosk_next_enabled && kiosk_next_enabled_) {
+    kiosk_next_shell_client_->LaunchKioskNextShell(Shell::Get()
+                                                       ->session_controller()
+                                                       ->GetPrimaryUserSession()
+                                                       ->user_info->account_id);
+  }
 }
 
 }  // namespace ash

@@ -645,8 +645,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
-      kiosk_next_shell_controller_(
-          std::make_unique<KioskNextShellController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
       media_controller_(std::make_unique<MediaController>(connector)),
       new_window_controller_(std::make_unique<NewWindowController>()),
@@ -762,6 +760,7 @@ Shell::~Shell() {
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_.reset();
+  kiosk_next_shell_controller_.reset();
 
   toast_manager_.reset();
 
@@ -1023,7 +1022,7 @@ void Shell::Init(
                    weak_factory_.GetWeakPtr()),
         prefs::mojom::kLocalStateServiceName);
   }
-
+  kiosk_next_shell_controller_ = std::make_unique<KioskNextShellController>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
   accessibility_focus_ring_controller_ =
@@ -1443,9 +1442,6 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // Disable drag-and-drop during OOBE and GAIA login screens by only enabling
   // the controller when the session is active. https://crbug.com/464118
   drag_drop_controller_->set_enabled(is_session_active);
-
-  if (is_session_active)
-    kiosk_next_shell_controller_->LaunchKioskNextShellIfEnabled();
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {
