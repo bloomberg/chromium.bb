@@ -5873,6 +5873,7 @@ weston_output_init(struct weston_output *output,
 	wl_list_init(&output->link);
 	wl_signal_init(&output->user_destroy_signal);
 	output->enabled = false;
+	output->desired_protection = WESTON_HDCP_DISABLE;
 
 	wl_list_init(&output->head_list);
 

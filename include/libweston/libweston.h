@@ -169,6 +169,20 @@ enum dpms_enum {
 	WESTON_DPMS_OFF
 };
 
+/* enum for content protection requests/status
+ *
+ * This enum represents the content protection requests and statuses in
+ * libweston and its enum values correspond to those of 'type' enum defined in
+ * weston-content-protection protocol. The values should exactly match to the
+ * values of the 'type' enum of the protocol.
+ */
+
+enum weston_hdcp_protection {
+	WESTON_HDCP_DISABLE = 0,
+	WESTON_HDCP_ENABLE_TYPE_0,
+	WESTON_HDCP_ENABLE_TYPE_1
+};
+
 /** Represents a monitor
  *
  * This object represents a monitor (hardware backends like DRM) or a window
@@ -276,6 +290,8 @@ struct weston_output {
 	struct wl_list mode_list;
 
 	struct wl_list head_list; /**< List of driven weston_heads */
+
+	enum weston_hdcp_protection desired_protection;
 
 	void (*start_repaint_loop)(struct weston_output *output);
 	int (*repaint)(struct weston_output *output,
