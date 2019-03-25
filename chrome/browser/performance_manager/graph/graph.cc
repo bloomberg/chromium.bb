@@ -127,10 +127,11 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
 
 void Graph::AddNewNode(NodeBase* new_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Allow the node to initialize itself.
-  new_node->JoinGraph();
   auto it = nodes_.emplace(new_node->id(), new_node);
   DCHECK(it.second);  // Inserted successfully
+
+  // Allow the node to initialize itself now that it's been added.
+  new_node->JoinGraph();
   OnNodeAdded(new_node);
 }
 

@@ -76,8 +76,16 @@ void PerformanceManager::DistributeMeasurementBatch(
                      base::Unretained(this), std::move(batch)));
 }
 
-std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode() {
-  return CreateNodeImpl<FrameNodeImpl>();
+std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
+    PageNodeImpl* page_node,
+    FrameNodeImpl* parent_frame_node) {
+  std::unique_ptr<FrameNodeImpl> new_node =
+      std::make_unique<FrameNodeImpl>(&graph_, page_node, parent_frame_node);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Graph::AddNewNode, base::Unretained(&graph_),
+                                base::Unretained(new_node.get())));
+
+  return new_node;
 }
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode() {

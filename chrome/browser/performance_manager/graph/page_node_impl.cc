@@ -42,6 +42,7 @@ PageNodeImpl::~PageNodeImpl() {
 void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
+  DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK(NodeInGraph(frame_node));
 
   // TODO(https://crbug.com/944150): This method is called on navigation
@@ -50,7 +51,6 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   //     should be removed.
   const bool inserted = frame_nodes_.insert(frame_node).second;
   if (inserted) {
-    frame_node->AddPageNode(this);
 
     OnNumFrozenFramesStateChange(
         frame_node->lifecycle_state() ==
@@ -61,21 +61,21 @@ void PageNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
   }
 }
 
-void PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
+void PageNodeImpl::MaybeRemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(frame_node);
+  DCHECK_EQ(this, frame_node->GetPageNode());
   DCHECK(NodeInGraph(frame_node));
 
   size_t removed = frame_nodes_.erase(frame_node);
-  DCHECK_EQ(1u, removed);
-  frame_node->RemovePageNode(this);
-
-  OnNumFrozenFramesStateChange(
-      frame_node->lifecycle_state() ==
-              resource_coordinator::mojom::LifecycleState::kFrozen
-          ? -1
-          : 0);
-  MaybeInvalidateInterventionPolicies(frame_node, false /* adding_frame */);
+  if (removed) {
+    OnNumFrozenFramesStateChange(
+        frame_node->lifecycle_state() ==
+                resource_coordinator::mojom::LifecycleState::kFrozen
+            ? -1
+            : 0);
+    MaybeInvalidateInterventionPolicies(frame_node, false /* adding_frame */);
+  }
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {
@@ -261,14 +261,9 @@ void PageNodeImpl::JoinGraph() {
 void PageNodeImpl::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(siggi): This fails browser_tests for some reason. Would be nice to
-  //     assert this.
-  // DCHECK(frame_nodes_.empty());
+  DCHECK(frame_nodes_.empty());
 
   NodeBase::LeaveGraph();
-
-  for (auto* child_frame : frame_nodes_)
-    child_frame->RemovePageNode(this);
 }
 
 void PageNodeImpl::SetPageAlmostIdle(bool page_almost_idle) {

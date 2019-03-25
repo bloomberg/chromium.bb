@@ -26,8 +26,10 @@ class SystemNodeImpl;
 template <class NodeClass>
 class TestNodeWrapper {
  public:
-  static TestNodeWrapper<NodeClass> Create(Graph* graph) {
-    std::unique_ptr<NodeClass> node = std::make_unique<NodeClass>(graph);
+  template <typename... Args>
+  static TestNodeWrapper<NodeClass> Create(Graph* graph, Args&&... args) {
+    std::unique_ptr<NodeClass> node =
+        std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
     graph->AddNewNode(node.get());
     return TestNodeWrapper<NodeClass>(std::move(node));
   }
@@ -87,9 +89,10 @@ class GraphTestHarness : public ::testing::Test {
   GraphTestHarness();
   ~GraphTestHarness() override;
 
-  template <class NodeClass>
-  TestNodeWrapper<NodeClass> CreateNode() {
-    return TestNodeWrapper<NodeClass>::Create(graph());
+  template <class NodeClass, typename... Args>
+  TestNodeWrapper<NodeClass> CreateNode(Args&&... args) {
+    return TestNodeWrapper<NodeClass>::Create(graph(),
+                                              std::forward<Args>(args)...);
   }
 
   TestNodeWrapper<SystemNodeImpl> GetSystemCoordinationUnit() {

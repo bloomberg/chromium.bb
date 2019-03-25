@@ -51,22 +51,22 @@ class PerformanceManagerTest : public testing::Test {
 };
 
 TEST_F(PerformanceManagerTest, InstantiateNodes) {
-  // Create a node of each type.
-  std::unique_ptr<FrameNodeImpl> frame_node =
-      performance_manager()->CreateFrameNode();
-  EXPECT_NE(nullptr, frame_node.get());
-
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode();
   EXPECT_NE(nullptr, page_node.get());
+
+  // Create a node of each type.
+  std::unique_ptr<FrameNodeImpl> frame_node =
+      performance_manager()->CreateFrameNode(page_node.get(), nullptr);
+  EXPECT_NE(nullptr, frame_node.get());
 
   std::unique_ptr<ProcessNodeImpl> process_node =
       performance_manager()->CreateProcessNode();
   EXPECT_NE(nullptr, process_node.get());
 
   performance_manager()->DeleteNode(std::move(process_node));
-  performance_manager()->DeleteNode(std::move(page_node));
   performance_manager()->DeleteNode(std::move(frame_node));
+  performance_manager()->DeleteNode(std::move(page_node));
 }
 
 // TODO(siggi): More tests!

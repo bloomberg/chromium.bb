@@ -64,7 +64,9 @@ class PerformanceManager {
 
   // Creates a new node of the requested type and adds it to the graph.
   // May be called from any sequence.
-  std::unique_ptr<FrameNodeImpl> CreateFrameNode();
+  std::unique_ptr<FrameNodeImpl> CreateFrameNode(
+      PageNodeImpl* page_node,
+      FrameNodeImpl* parent_frame_node);
   std::unique_ptr<PageNodeImpl> CreatePageNode();
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
 

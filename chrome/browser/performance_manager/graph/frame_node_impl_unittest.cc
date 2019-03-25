@@ -36,30 +36,23 @@ class FrameNodeImplTest : public GraphTestHarness {
 
 }  // namespace
 
-TEST_F(FrameNodeImplTest, AddChildFrameBasic) {
-  auto frame1_node = CreateNode<FrameNodeImpl>();
-  auto frame2_node = CreateNode<FrameNodeImpl>();
-  auto frame3_node = CreateNode<FrameNodeImpl>();
+TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {
+  auto page = CreateNode<PageNodeImpl>();
+  auto parent_node = CreateNode<FrameNodeImpl>(page.get(), nullptr);
+  auto child2_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
+  auto child3_node = CreateNode<FrameNodeImpl>(page.get(), parent_node.get());
 
-  frame1_node->AddChildFrame(frame2_node.get());
-  frame1_node->AddChildFrame(frame3_node.get());
-  EXPECT_EQ(nullptr, frame1_node->GetParentFrameNode());
-  EXPECT_EQ(2u, frame1_node->child_frame_nodes_for_testing().size());
-  EXPECT_EQ(frame1_node.get(), frame2_node->GetParentFrameNode());
-  EXPECT_EQ(frame1_node.get(), frame3_node->GetParentFrameNode());
+  EXPECT_EQ(nullptr, parent_node->GetParentFrameNode());
+  EXPECT_EQ(2u, parent_node->child_frame_nodes_for_testing().size());
+  EXPECT_EQ(parent_node.get(), child2_node->GetParentFrameNode());
+  EXPECT_EQ(parent_node.get(), child3_node->GetParentFrameNode());
 }
 
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
-  auto parent_frame_node = CreateNode<FrameNodeImpl>();
-  auto child_frame_node = CreateNode<FrameNodeImpl>();
-
-  // Parent-child relationships have not been established yet.
-  EXPECT_EQ(0u, parent_frame_node->child_frame_nodes_for_testing().size());
-  EXPECT_TRUE(!parent_frame_node->GetParentFrameNode());
-  EXPECT_EQ(0u, child_frame_node->child_frame_nodes_for_testing().size());
-  EXPECT_TRUE(!child_frame_node->GetParentFrameNode());
-
-  parent_frame_node->AddChildFrame(child_frame_node.get());
+  auto page = CreateNode<PageNodeImpl>();
+  auto parent_frame_node = CreateNode<FrameNodeImpl>(page.get(), nullptr);
+  auto child_frame_node =
+      CreateNode<FrameNodeImpl>(page.get(), parent_frame_node.get());
 
   // Ensure correct Parent-child relationships have been established.
   EXPECT_EQ(1u, parent_frame_node->child_frame_nodes_for_testing().size());
@@ -67,13 +60,11 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   EXPECT_EQ(0u, child_frame_node->child_frame_nodes_for_testing().size());
   EXPECT_EQ(parent_frame_node.get(), child_frame_node->GetParentFrameNode());
 
-  parent_frame_node->RemoveChildFrame(child_frame_node.get());
+  child_frame_node.reset();
 
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(0u, parent_frame_node->child_frame_nodes_for_testing().size());
   EXPECT_TRUE(!parent_frame_node->GetParentFrameNode());
-  EXPECT_EQ(0u, child_frame_node->child_frame_nodes_for_testing().size());
-  EXPECT_TRUE(!child_frame_node->GetParentFrameNode());
 }
 
 int64_t GetLifecycleState(PageNodeImpl* cu) {

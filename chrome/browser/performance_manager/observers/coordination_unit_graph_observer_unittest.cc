@@ -64,9 +64,11 @@ TEST_F(GraphObserverTest, CallbacksInvoked) {
       graph()->observers_for_testing()[0].get());
 
   {
+    auto page_node = CreateNode<PageNodeImpl>();
     auto process_node = CreateNode<ProcessNodeImpl>();
-    auto root_frame_node = CreateNode<FrameNodeImpl>();
-    auto frame_node = CreateNode<FrameNodeImpl>();
+    auto root_frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
+    auto frame_node =
+        CreateNode<FrameNodeImpl>(page_node.get(), root_frame_node.get());
 
     EXPECT_EQ(2u, observer->node_created_count());
 

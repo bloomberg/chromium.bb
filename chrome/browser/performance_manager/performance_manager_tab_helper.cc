@@ -71,9 +71,12 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
-  performance_manager_->DeleteNode(std::move(page_node_));
+  // Delete all the frames.
   for (auto& kv : frames_)
     performance_manager_->DeleteNode(std::move(kv.second));
+
+  // And only then their associated page.
+  performance_manager_->DeleteNode(std::move(page_node_));
 
   if (first_ == this)
     first_ = next_;
@@ -94,17 +97,21 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   // This must not exist in the map yet.
   DCHECK(!base::ContainsKey(frames_, render_frame_host));
 
-  std::unique_ptr<FrameNodeImpl> frame =
-      performance_manager_->CreateFrameNode();
   content::RenderFrameHost* parent = render_frame_host->GetParent();
+  FrameNodeImpl* parent_frame_node = nullptr;
   if (parent) {
     DCHECK(base::ContainsKey(frames_, parent));
-    auto& parent_frame_node = frames_[parent];
-    performance_manager_->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FrameNodeImpl::AddChildFrame,
-                       base::Unretained(parent_frame_node.get()), frame.get()));
+    parent_frame_node = frames_[parent].get();
   }
+
+  std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
+      page_node_.get(), parent_frame_node);
+
+  // TODO(siggi): Do this automatically on FrameNodeImpl::JoinGraph.
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::AddFrame,
+                     base::Unretained(page_node_.get()), frame.get()));
 
   RenderProcessUserData* user_data =
       RenderProcessUserData::GetForRenderProcessHost(
@@ -169,12 +176,6 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   //     the network service.
   auto it = frames_.find(render_frame_host);
   if (it != frames_.end()) {
-    // TODO(siggi): See whether this can be done in RenderFrameCreated.
-    performance_manager_->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PageNodeImpl::AddFrame,
-                       base::Unretained(page_node_.get()), it->second.get()));
-
     if (navigation_handle->IsInMainFrame()) {
       OnMainFrameNavigation(navigation_handle->GetNavigationId());
       performance_manager_->task_runner()->PostTask(
