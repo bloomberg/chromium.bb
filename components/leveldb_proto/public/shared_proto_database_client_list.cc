@@ -50,6 +50,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "TestDatabase1";
     case ProtoDbType::TEST_DATABASE2:
       return "TestDatabase2";
+    case ProtoDbType::DOWNLOAD_STORE:
+      return "DownloadService";
   }
   return std::string();
 }
