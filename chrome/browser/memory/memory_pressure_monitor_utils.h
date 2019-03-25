@@ -28,7 +28,7 @@ namespace internal {
 template <typename T>
 class ObservationWindow {
  public:
-  explicit ObservationWindow(base::TimeDelta window_length);
+  explicit ObservationWindow(const base::TimeDelta window_length);
   virtual ~ObservationWindow();
 
   // Function that should be called each time a new sample is available. When a
@@ -42,10 +42,12 @@ class ObservationWindow {
  protected:
   using Observation = std::pair<const base::TimeTicks, const T>;
 
-  // Called each time a sample gets added to the observation window.
+  // Called each time a sample gets added to the observation window. This gets
+  // called before inserting the sample into the observation window.
   virtual void OnSampleAdded(const T& sample) = 0;
 
-  // Called each time a sample gets removed from the observation window.
+  // Called each time a sample gets removed from the observation window. This
+  // gets called before removing the sample from the observation window.
   virtual void OnSampleRemoved(const T& sample) = 0;
 
   const std::deque<Observation>& observations_for_testing() {
@@ -84,8 +86,6 @@ class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
   // approximations of what value could be used here, they're not based on any
   // metric.
   struct Config {
-    const base::TimeDelta window_length = base::TimeDelta::FromMinutes(1);
-
     // The minimum number of samples to consider that the data in this window is
     // meaningful.
     const size_t min_sample_count = 4;
@@ -104,7 +104,8 @@ class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
     const int low_memory_critical_limit_mb = 400;
   };
 
-  explicit FreeMemoryObservationWindow(const Config& config);
+  FreeMemoryObservationWindow(const base::TimeDelta window_length,
+                              const Config& config);
   ~FreeMemoryObservationWindow() override;
 
   // Check if the memory is under one of the limits.
@@ -114,6 +115,7 @@ class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
  private:
   FRIEND_TEST_ALL_PREFIXES(ObservationWindowTest, FreeMemoryObservationWindow);
 
+  // internal::ObservationWindow:
   void OnSampleAdded(const int& sample) override;
   void OnSampleRemoved(const int& sample) override;
 
@@ -126,6 +128,47 @@ class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
   Config config_ = {};
 
   DISALLOW_COPY_AND_ASSIGN(FreeMemoryObservationWindow);
+};
+
+// Implementation of an observation window that can be used to track the disk
+// idle time over time. The user is responsible for providing the samples via
+// the |OnSample| method, these samples should represent the percentage of time
+// the disk has been idle since the last observation and should have a value in
+// the [0.0, 1.0] range.
+class DiskIdleTimeObservationWindow
+    : public internal::ObservationWindow<float> {
+ public:
+  // This window computes the average disk idle time value over time, so it
+  // should have a relatively short length to ensure that it doesn't take too
+  // many new samples to move the average.
+  // |threshold| is the limit that will be used to determine that the disk idle
+  // time is low, should have a value in the [0, 1.0] range.
+  //
+  // TODO(sebmarchand): Use an exponential moving average instead of a simple
+  // average, the age of the sample could be used to compute its weight.
+  DiskIdleTimeObservationWindow(const base::TimeDelta window_length,
+                                const float threshold);
+  ~DiskIdleTimeObservationWindow() override;
+
+  // Check if the disk idle time was low over the observation period.
+  bool DiskIdleTimeIsLow();
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ObservationWindowTest,
+                           DiskIdleTimeObservationWindow);
+
+  // internal::ObservationWindow:
+  void OnSampleAdded(const float& sample) override;
+  void OnSampleRemoved(const float& sample) override;
+
+  // The current sum of all the samples.
+  float sum_ = 0.0;
+
+  // The threshold under which the disk idle time will be considered as low, in
+  // the [0, 1] range.
+  const float threshold_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiskIdleTimeObservationWindow);
 };
 
 }  // namespace memory

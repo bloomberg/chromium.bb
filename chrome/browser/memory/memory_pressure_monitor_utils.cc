@@ -8,8 +8,10 @@
 
 namespace memory {
 
-FreeMemoryObservationWindow::FreeMemoryObservationWindow(const Config& config)
-    : ObservationWindow(config.window_length), config_(config) {}
+FreeMemoryObservationWindow::FreeMemoryObservationWindow(
+    const base::TimeDelta window_length,
+    const Config& config)
+    : ObservationWindow(window_length), config_(config) {}
 
 FreeMemoryObservationWindow::~FreeMemoryObservationWindow() = default;
 
@@ -42,6 +44,31 @@ bool FreeMemoryObservationWindow::MemoryIsUnderLimitImpl(
     return false;
   return (static_cast<float>(sample_under_limit_cnt) / sample_count) >=
          config_.sample_ratio_to_be_positive;
+}
+
+DiskIdleTimeObservationWindow::DiskIdleTimeObservationWindow(
+    const base::TimeDelta window_length,
+    const float threshold)
+    : ObservationWindow(window_length), threshold_(threshold) {
+  DCHECK_GE(threshold_, 0.0);
+  DCHECK_LE(threshold_, 1.0);
+}
+
+DiskIdleTimeObservationWindow::~DiskIdleTimeObservationWindow() = default;
+
+bool DiskIdleTimeObservationWindow::DiskIdleTimeIsLow() {
+  if (SampleCount() == 0)
+    return false;
+  DCHECK_GE(sum_, 0.0);
+  return (sum_ / SampleCount()) <= threshold_;
+}
+
+void DiskIdleTimeObservationWindow::OnSampleAdded(const float& sample) {
+  sum_ += sample;
+}
+
+void DiskIdleTimeObservationWindow::OnSampleRemoved(const float& sample) {
+  sum_ -= sample;
 }
 
 }  // namespace memory
