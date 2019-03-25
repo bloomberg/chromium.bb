@@ -273,15 +273,15 @@ void ChildViewSpacing::AddViewIndex(size_t view_index,
 
 base::Optional<size_t> ChildViewSpacing::GetPreviousViewIndex(
     size_t view_index) const {
-  auto it = leading_spacings_.lower_bound(view_index);
+  const auto it = leading_spacings_.lower_bound(view_index);
   if (it == leading_spacings_.begin())
     return base::nullopt;
-  return (--it)->first;
+  return std::prev(it)->first;
 }
 
 base::Optional<size_t> ChildViewSpacing::GetNextViewIndex(
     size_t view_index) const {
-  auto it = leading_spacings_.upper_bound(view_index);
+  const auto it = leading_spacings_.upper_bound(view_index);
   if (it == leading_spacings_.end())
     return base::nullopt;
   return it->first;
@@ -644,9 +644,7 @@ void FlexLayoutInternal::AllocateFlexSpace(
     int flex_total = 0;
     std::for_each(flex_it->second.begin(), flex_it->second.end(),
                   [&](size_t index) {
-                    auto weight = layout->child_layouts[index].flex.weight();
-                    if (weight > 0)
-                      flex_total += weight;
+                    flex_total += layout->child_layouts[index].flex.weight();
                   });
 
     // Note: because the child views are evaluated in order, if preferred
@@ -891,9 +889,8 @@ bool FlexLayoutInternal::IsLayoutValid(const Layout& cached_layout) const {
       return false;
   }
 
-  DCHECK_EQ(child_index, view->child_count()) << "Child views added without "
-                                                 "clearing the cache - this "
-                                                 "should not happen.";
+  DCHECK_EQ(child_index, view->child_count())
+      << "Child views should not be added without clearing the cache.";
 
   // This layout is still valid. Update the layout counter to show it's valid
   // in the current layout context.

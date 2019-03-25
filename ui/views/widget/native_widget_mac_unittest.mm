@@ -2280,7 +2280,7 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 
     const int kNativeViewCount = 3;
     for (int i = 0; i < kNativeViewCount; ++i) {
-      std::unique_ptr<NativeHostHolder> holder(new NativeHostHolder());
+      auto holder = std::make_unique<NativeHostHolder>();
       native_host_parent_->AddChildView(holder->host());
       holder->AttachNativeView();
       hosts_.push_back(std::move(holder));
