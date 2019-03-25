@@ -592,6 +592,9 @@ void NavigationSimulatorImpl::Commit() {
         response_headers);
   }
 
+  bool is_cross_process_navigation =
+      previous_rfh->GetProcess() != render_frame_host_->GetProcess();
+
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
@@ -601,7 +604,7 @@ void NavigationSimulatorImpl::Commit() {
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
-  if (previous_rfh != render_frame_host_ && !drop_swap_out_ack_) {
+  if (is_cross_process_navigation && !drop_swap_out_ack_) {
     previous_rfh->OnMessageReceived(
         FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
   }
@@ -714,6 +717,9 @@ void NavigationSimulatorImpl::CommitErrorPage() {
   RenderFrameHostImpl* previous_rfh =
       render_frame_host_->frame_tree_node()->current_frame_host();
 
+  bool is_cross_process_navigation =
+      previous_rfh->GetProcess() != render_frame_host_->GetProcess();
+
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, true /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
@@ -724,7 +730,7 @@ void NavigationSimulatorImpl::CommitErrorPage() {
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
-  if (previous_rfh != render_frame_host_ && !drop_swap_out_ack_) {
+  if (is_cross_process_navigation && !drop_swap_out_ack_) {
     previous_rfh->OnMessageReceived(
         FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
   }
