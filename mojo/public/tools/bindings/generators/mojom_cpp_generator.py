@@ -268,7 +268,7 @@ class Generator(generator.Generator):
                 for typename in
                 self.module.structs + all_enums + self.module.unions)
     headers = set()
-    for typename, typemap in self.typemap.items():
+    for typename, typemap in self.typemap.iteritems():
       if typename in types:
         headers.update(typemap.get("public_headers", []))
     return sorted(headers)
