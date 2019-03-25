@@ -8,10 +8,11 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 
 @class ListModel;
 @class ActionSheetCoordinator;
+@protocol CollectionViewFooterLinkDelegate;
 
 // Clear Browswing Data Section Identifiers.
 enum ClearBrowsingDataSectionIdentifier {
@@ -68,7 +69,7 @@ enum class ClearBrowsingDataListType {
 // Manager that serves as the bulk of the logic for
 // ClearBrowsingDataConsumer.
 @interface ClearBrowsingDataManager
-    : NSObject <TimeRangeSelectorCollectionViewControllerDelegate>
+    : NSObject <TimeRangeSelectorTableViewControllerDelegate>
 
 // The manager's consumer.
 @property(nonatomic, assign) id<ClearBrowsingDataConsumer> consumer;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 
 #include "base/files/file_path.h"
 #include "base/test/scoped_task_environment.h"
@@ -10,8 +10,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -21,7 +21,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TimeRangeSelectorCollectionViewController (ExposedForTesting)
+@interface TimeRangeSelectorTableViewController (ExposedForTesting)
 - (void)updatePrefValue:(int)prefValue;
 @end
 
@@ -29,25 +29,25 @@ namespace {
 
 const NSInteger kNumberOfItems = 5;
 
-class TimeRangeSelectorCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class TimeRangeSelectorTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  protected:
-  TimeRangeSelectorCollectionViewControllerTest()
+  TimeRangeSelectorTableViewControllerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     pref_service_ = CreateLocalState();
     delegate_ = [OCMockObject
         mockForProtocol:@protocol(
-                            TimeRangeSelectorCollectionViewControllerDelegate)];
+                            TimeRangeSelectorTableViewControllerDelegate)];
     CreateController();
   }
 
-  CollectionViewController* InstantiateController() override {
+  ChromeTableViewController* InstantiateController() override {
     time_range_selector_controller_ =
-        [[TimeRangeSelectorCollectionViewController alloc]
+        [[TimeRangeSelectorTableViewController alloc]
             initWithPrefs:pref_service_.get()
                  delegate:delegate_];
     return time_range_selector_controller_;
@@ -63,46 +63,45 @@ class TimeRangeSelectorCollectionViewControllerTest
 
   // Verifies that the cell at |item| in |section| has the given |accessory|
   // type.
-  void CheckTextItemAccessoryType(
-      MDCCollectionViewCellAccessoryType accessory_type,
-      int section,
-      int item) {
-    SettingsTextItem* cell = GetCollectionViewItem(section, item);
+  void CheckTextItemAccessoryType(UITableViewCellAccessoryType accessory_type,
+                                  int section,
+                                  int item) {
+    TableViewItem* cell = GetTableViewItem(section, item);
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<PrefService> pref_service_;
   id delegate_;
-  TimeRangeSelectorCollectionViewController* time_range_selector_controller_;
+  TimeRangeSelectorTableViewController* time_range_selector_controller_;
 };
 
-TEST_F(TimeRangeSelectorCollectionViewControllerTest, TestModel) {
+TEST_F(TimeRangeSelectorTableViewControllerTest, TestModel) {
   CheckController();
   EXPECT_EQ(1, NumberOfSections());
 
   // No section header + 5 rows
   EXPECT_EQ(kNumberOfItems, NumberOfItemsInSection(0));
 
-  CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryCheckmark, 0, 0);
-  CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryNone, 0, 1);
-  CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryNone, 0, 2);
-  CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryNone, 0, 3);
-  CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryNone, 0, 4);
+  CheckTextItemAccessoryType(UITableViewCellAccessoryCheckmark, 0, 0);
+  CheckTextItemAccessoryType(UITableViewCellAccessoryNone, 0, 1);
+  CheckTextItemAccessoryType(UITableViewCellAccessoryNone, 0, 2);
+  CheckTextItemAccessoryType(UITableViewCellAccessoryNone, 0, 3);
+  CheckTextItemAccessoryType(UITableViewCellAccessoryNone, 0, 4);
 
-  CheckTextCellTitleWithId(
+  CheckTextCellTextWithId(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_HOUR, 0, 0);
-  CheckTextCellTitleWithId(
+  CheckTextCellTextWithId(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_DAY, 0, 1);
-  CheckTextCellTitleWithId(
+  CheckTextCellTextWithId(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_WEEK, 0, 2);
-  CheckTextCellTitleWithId(
+  CheckTextCellTextWithId(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS, 0, 3);
-  CheckTextCellTitleWithId(
+  CheckTextCellTextWithId(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME, 0, 4);
 }
 
-TEST_F(TimeRangeSelectorCollectionViewControllerTest, TestUpdateCheckedState) {
+TEST_F(TimeRangeSelectorTableViewControllerTest, TestUpdateCheckedState) {
   CheckController();
   ASSERT_EQ(1, NumberOfSections());
   ASSERT_EQ(kNumberOfItems, NumberOfItemsInSection(0));
@@ -111,28 +110,26 @@ TEST_F(TimeRangeSelectorCollectionViewControllerTest, TestUpdateCheckedState) {
     [time_range_selector_controller_ updatePrefValue:checkedItem];
     for (NSInteger item = 0; item < kNumberOfItems; ++item) {
       if (item == checkedItem) {
-        CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryCheckmark, 0,
-                                   item);
+        CheckTextItemAccessoryType(UITableViewCellAccessoryCheckmark, 0, item);
       } else {
-        CheckTextItemAccessoryType(MDCCollectionViewCellAccessoryNone, 0, item);
+        CheckTextItemAccessoryType(UITableViewCellAccessoryNone, 0, item);
       }
     }
   }
 }
 
-TEST_F(TimeRangeSelectorCollectionViewControllerTest, TestUpdatePrefValue) {
+TEST_F(TimeRangeSelectorTableViewControllerTest, TestUpdatePrefValue) {
   CheckController();
-  UICollectionView* collectionView =
-      time_range_selector_controller_.collectionView;
+  UITableView* tableView = time_range_selector_controller_.tableView;
   for (NSInteger checkedItem = 0; checkedItem < kNumberOfItems; ++checkedItem) {
-    NSIndexPath* indexPath = [NSIndexPath indexPathForItem:checkedItem
-                                                 inSection:0];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:checkedItem
+                                                inSection:0];
     [[delegate_ expect]
         timeRangeSelectorViewController:time_range_selector_controller_
                     didSelectTimePeriod:static_cast<browsing_data::TimePeriod>(
                                             checkedItem)];
-    [time_range_selector_controller_ collectionView:collectionView
-                           didSelectItemAtIndexPath:indexPath];
+    [time_range_selector_controller_ tableView:tableView
+                       didSelectRowAtIndexPath:indexPath];
     EXPECT_EQ(
         pref_service_->GetInteger(browsing_data::prefs::kDeleteTimePeriod),
         checkedItem);

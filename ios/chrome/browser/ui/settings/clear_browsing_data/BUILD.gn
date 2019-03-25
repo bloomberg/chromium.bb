@@ -15,8 +15,8 @@ source_set("clear_browsing_data") {
     "clear_browsing_data_table_view_controller.mm",
     "clear_browsing_data_ui_constants.h",
     "clear_browsing_data_ui_constants.mm",
-    "time_range_selector_collection_view_controller.h",
-    "time_range_selector_collection_view_controller.mm",
+    "time_range_selector_table_view_controller.h",
+    "time_range_selector_table_view_controller.mm",
   ]
   deps = [
     "//components/browsing_data/core",
@@ -32,6 +32,7 @@ source_set("clear_browsing_data") {
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
@@ -59,7 +60,7 @@ source_set("unit_tests") {
   sources = [
     "clear_browsing_data_collection_view_controller_unittest.mm",
     "clear_browsing_data_manager_unittest.mm",
-    "time_range_selector_collection_view_controller_unittest.mm",
+    "time_range_selector_table_view_controller_unittest.mm",
   ]
   deps = [
     ":clear_browsing_data",
@@ -82,6 +83,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/collection_view:test_support",
     "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view:test_support",
     "//ios/chrome/common",
     "//ios/web/public/test",
     "//services/identity/public/cpp:test_support",

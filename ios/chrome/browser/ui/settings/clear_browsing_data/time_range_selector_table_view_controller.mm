@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 
 #import "base/mac/foundation_util.h"
 #include "base/stl_util.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -48,47 +47,45 @@ static_assert(
 
 }  // namespace
 
-@interface TimeRangeSelectorCollectionViewController () {
-  // Instance of the parent view controller needed in order to set the time
-  // range for the browsing data deletion.
-  __weak id<TimeRangeSelectorCollectionViewControllerDelegate> _weakDelegate;
-  IntegerPrefMember timeRangePref_;
+@interface TimeRangeSelectorTableViewController () {
+  IntegerPrefMember _timeRangePref;
 }
 
-// Updates the checked state of the cells to match the preferences.
-- (void)updateCheckedState;
+@property(nonatomic, weak) id<TimeRangeSelectorTableViewControllerDelegate>
+    delegate;
 
-// Updates the PrefService with the given value.
-- (void)updatePrefValue:(int)prefValue;
 @end
 
-@implementation TimeRangeSelectorCollectionViewController
+@implementation TimeRangeSelectorTableViewController
 
 #pragma mark Initialization
 
 - (instancetype)initWithPrefs:(PrefService*)prefs
-                     delegate:
-                         (id<TimeRangeSelectorCollectionViewControllerDelegate>)
-                             delegate {
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
-  self = [super initWithLayout:layout
-                         style:CollectionViewControllerStyleDefault];
+                     delegate:(id<TimeRangeSelectorTableViewControllerDelegate>)
+                                  delegate {
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? UITableViewStylePlain
+                               : UITableViewStyleGrouped;
+  self = [super initWithTableViewStyle:style
+                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    _weakDelegate = delegate;
+    _delegate = delegate;
     self.title = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
-    timeRangePref_.Init(browsing_data::prefs::kDeleteTimePeriod, prefs);
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
+    _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod, prefs);
     self.shouldHideDoneButton = YES;
   }
   return self;
 }
 
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self loadModel];
+}
+
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierOptions];
 
@@ -116,18 +113,16 @@ static_assert(
 }
 
 - (void)updateCheckedState {
-  int timeRangePrefValue = timeRangePref_.GetValue();
-  CollectionViewModel* model = self.collectionViewModel;
+  int timeRangePrefValue = _timeRangePref.GetValue();
+  TableViewModel* model = self.tableViewModel;
 
   NSMutableArray* modifiedItems = [NSMutableArray array];
-  for (SettingsTextItem* item in
+  for (TableViewItem* item in
        [model itemsInSectionWithIdentifier:SectionIdentifierOptions]) {
     NSInteger itemPrefValue = item.type - kItemTypeEnumZero;
-
-    MDCCollectionViewCellAccessoryType desiredType =
-        itemPrefValue == timeRangePrefValue
-            ? MDCCollectionViewCellAccessoryCheckmark
-            : MDCCollectionViewCellAccessoryNone;
+    UITableViewCellAccessoryType desiredType =
+        itemPrefValue == timeRangePrefValue ? UITableViewCellAccessoryCheckmark
+                                            : UITableViewCellAccessoryNone;
     if (item.accessoryType != desiredType) {
       item.accessoryType = desiredType;
       [modifiedItems addObject:item];
@@ -138,33 +133,33 @@ static_assert(
 }
 
 - (void)updatePrefValue:(int)prefValue {
-  timeRangePref_.SetValue(prefValue);
+  _timeRangePref.SetValue(prefValue);
   [self updateCheckedState];
 }
 
-- (SettingsTextItem*)timeRangeItemWithOption:(ItemType)itemOption
-                               textMessageID:(int)textMessageID {
-  SettingsTextItem* item = [[SettingsTextItem alloc] initWithType:itemOption];
-  [item setText:l10n_util::GetNSString(textMessageID)];
-  [item setAccessibilityTraits:UIAccessibilityTraitButton];
+- (TableViewDetailTextItem*)timeRangeItemWithOption:(ItemType)itemOption
+                                      textMessageID:(int)textMessageID {
+  TableViewDetailTextItem* item =
+      [[TableViewDetailTextItem alloc] initWithType:itemOption];
+  item.text = l10n_util::GetNSString(textMessageID);
+  item.accessibilityTraits = UIAccessibilityTraitButton;
   return item;
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   int timePeriod = itemType - kItemTypeEnumZero;
   DCHECK_LE(timePeriod,
             static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST));
   [self updatePrefValue:timePeriod];
-  [_weakDelegate
+  [self.delegate
       timeRangeSelectorViewController:self
                   didSelectTimePeriod:static_cast<browsing_data::TimePeriod>(
                                           timePeriod)];
+  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark - Class methods
