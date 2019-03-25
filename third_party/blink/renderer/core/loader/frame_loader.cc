@@ -795,8 +795,7 @@ static mojom::RequestContextType DetermineRequestContextFromNavigationType(
 }
 
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
-                                  WebFrameLoadType frame_load_type,
-                                  NavigationPolicy policy) {
+                                  WebFrameLoadType frame_load_type) {
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
@@ -825,7 +824,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   // Downloads and navigations which specifically target a *new* frame
   // (e.g. because of a ctrl-click) should ignore the target.
-  bool should_navigate_target_frame = policy == kNavigationPolicyCurrentTab;
+  bool should_navigate_target_frame =
+      request.GetNavigationPolicy() == kNavigationPolicyCurrentTab;
 
   if (target_frame && target_frame != frame_ && should_navigate_target_frame) {
     bool was_in_same_page = target_frame->GetPage() == frame_->GetPage();
@@ -858,7 +858,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       KURL(), frame_load_type);
 
   bool same_document_navigation =
-      policy == kNavigationPolicyCurrentTab &&
+      request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
       ShouldPerformFragmentNavigation(
           request.Form(), resource_request.HttpMethod(), frame_load_type, url);
 
@@ -941,8 +941,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_document,
-      nullptr /* document_loader */, navigation_type, policy,
-      has_transient_activation, frame_load_type,
+      nullptr /* document_loader */, navigation_type,
+      request.GetNavigationPolicy(), has_transient_activation, frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.TriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),

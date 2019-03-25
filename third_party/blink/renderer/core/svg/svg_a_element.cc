@@ -136,12 +136,12 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       FrameLoadRequest frame_request(
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
           target);
+      frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
                             : WebTriggeringEventInfo::kFromUntrustedEvent);
       frame->Loader().StartNavigation(frame_request,
-                                      WebFrameLoadType::kStandard,
-                                      NavigationPolicyFromEvent(&event));
+                                      WebFrameLoadType::kStandard);
       return;
     }
   }

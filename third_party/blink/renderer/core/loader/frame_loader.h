@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
-#include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -98,8 +97,7 @@ class CORE_EXPORT FrameLoader final {
   // kStandard should be used (and the final WebFrameLoadType
   // will be computed).
   void StartNavigation(const FrameLoadRequest&,
-                       WebFrameLoadType = WebFrameLoadType::kStandard,
-                       NavigationPolicy = kNavigationPolicyCurrentTab);
+                       WebFrameLoadType = WebFrameLoadType::kStandard);
 
   // Called when the browser process has asked this renderer process to commit
   // a navigation in this frame. This method skips most of the checks assuming

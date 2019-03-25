@@ -238,9 +238,9 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
         CreateUserGestureIndicator();
     FrameLoadRequest frame_request =
         submission_->CreateFrameLoadRequest(OriginDocument());
+    frame_request.SetNavigationPolicy(submission_->GetNavigationPolicy());
     frame_request.SetInputStartTime(InputTimestamp());
-    frame->Loader().StartNavigation(frame_request, frame_load_type_,
-                                    submission_->GetNavigationPolicy());
+    frame->Loader().StartNavigation(frame_request, frame_load_type_);
   }
 
   KURL Url() const override { return submission_->RequestURL(); }

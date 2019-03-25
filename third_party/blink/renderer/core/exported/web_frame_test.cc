@@ -7371,13 +7371,13 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   Event* event =
       MouseEvent::Create(nullptr, event_type_names::kClick, mouse_initializer);
   FrameLoadRequest frame_request(document, ResourceRequest(destination));
+  frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(event));
   frame_request.SetTriggeringEventInfo(
       WebTriggeringEventInfo::kFromTrustedEvent);
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);
   web_frame_client.IgnoreNavigations();
-  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
-                                  NavigationPolicyFromEvent(event));
+  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard);
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
 

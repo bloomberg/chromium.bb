@@ -422,6 +422,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   FrameLoadRequest frame_request(&GetDocument(), request,
                                  getAttribute(kTargetAttr));
+  frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetShouldSendReferrer(kNeverSendReferrer);
     frame_request.SetShouldSetOpener(kNeverSetOpener);
@@ -442,8 +443,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   // Why doesn't this go through NavigationScheduler?
 
   frame->MaybeLogAdClickNavigation();
-  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
-                                  NavigationPolicyFromEvent(&event));
+  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard);
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {
