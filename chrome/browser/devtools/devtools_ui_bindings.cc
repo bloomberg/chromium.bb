@@ -47,6 +47,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -55,6 +56,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -725,14 +727,27 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
   resource_request->site_for_cookies = gurl;
   resource_request->headers.AddHeadersFromString(headers);
 
-  auto* partition = content::BrowserContext::GetStoragePartitionForSite(
-      web_contents_->GetBrowserContext(), gurl);
-  auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
+  std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> network_url_loader_factory;
+  network::mojom::URLLoaderFactory* url_loader_factory;
+  if (gurl.SchemeIsFile()) {
+    file_url_loader_factory = content::CreateFileURLLoaderFactory(
+        base::FilePath() /* profile_path */,
+        nullptr /* shared_cors_origin_access_list */);
+    url_loader_factory = file_url_loader_factory.get();
+  } else {
+    auto* partition = content::BrowserContext::GetStoragePartitionForSite(
+        web_contents_->GetBrowserContext(), gurl);
+    network_url_loader_factory =
+        partition->GetURLLoaderFactoryForBrowserProcess();
+    url_loader_factory = network_url_loader_factory.get();
+  }
 
   auto simple_url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   auto resource_loader = std::make_unique<NetworkResourceLoader>(
-      stream_id, this, std::move(simple_url_loader), factory.get(), callback);
+      stream_id, this, std::move(simple_url_loader), url_loader_factory,
+      callback);
   loaders_.insert(std::move(resource_loader));
 }
 
