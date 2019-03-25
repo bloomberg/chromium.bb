@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace base {
 class FilePath;
@@ -53,6 +54,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
   void Init(const base::FilePath& user_data_directory,
+            scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
             scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
   void Shutdown();
 
@@ -89,6 +91,9 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
 
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_ = false;
+
+  // Initialized in Init().
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   // Only accessed on the IO thread.
   scoped_refptr<CacheStorageManager> cache_manager_;

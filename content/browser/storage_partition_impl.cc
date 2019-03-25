@@ -664,7 +664,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       indexed_db::GetDefaultLevelDBFactory());
 
   partition->cache_storage_context_ = new CacheStorageContextImpl(context);
-  partition->cache_storage_context_->Init(path, quota_manager_proxy);
+  partition->cache_storage_context_->Init(
+      path, context->GetSpecialStoragePolicy(), quota_manager_proxy);
 
   partition->service_worker_context_ = new ServiceWorkerContextWrapper(context);
   partition->service_worker_context_->set_storage_partition(partition.get());
