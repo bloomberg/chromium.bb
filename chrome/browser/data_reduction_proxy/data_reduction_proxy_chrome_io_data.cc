@@ -93,12 +93,8 @@ CreateDataReductionProxyChromeIOData(
   DCHECK(profile);
   DCHECK(profile->GetPrefs());
 
-  data_reduction_proxy::DataReductionProxySettings*
-      data_reduction_proxy_settings =
-          DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-              profile);
-  bool enabled = data_reduction_proxy_settings &&
-                 data_reduction_proxy_settings->IsDataSaverEnabledByUser();
+  bool enabled = data_reduction_proxy::DataReductionProxySettings::
+      IsDataSaverEnabledByUser(profile->GetPrefs());
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data(
