@@ -488,6 +488,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // destroyed (see |cleanup_corb_exception_for_plugin_upon_destruction_|).
   static void AddCorbExceptionForPlugin(int process_id);
 
+  using IpcSendWatcher = base::RepeatingCallback<void(const IPC::Message& msg)>;
+  void SetIpcSendWatcherForTesting(IpcSendWatcher watcher) {
+    ipc_send_watcher_for_testing_ = std::move(watcher);
+  }
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -923,6 +928,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // If the RenderProcessHost is being shutdown via Shutdown(), this records the
   // exit code.
   int shutdown_exit_code_;
+
+  IpcSendWatcher ipc_send_watcher_for_testing_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

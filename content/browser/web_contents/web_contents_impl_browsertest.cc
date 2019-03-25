@@ -3312,4 +3312,57 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                     ->RegisteredViewCountForTesting());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ShutdownDuringSpeculativeNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/hello.html"));
+
+  WebContents* attached_web_contents = shell()->web_contents();
+
+  WebContents::CreateParams create_params(
+      attached_web_contents->GetBrowserContext(), /*site_instance=*/nullptr);
+  create_params.initial_size = gfx::Size(100, 100);
+  std::unique_ptr<WebContents> public_web_contents =
+      WebContents::Create(create_params);
+  auto* web_contents = static_cast<WebContentsImpl*>(public_web_contents.get());
+
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Complete a navigation.
+  GURL url1 = embedded_test_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(web_contents, url1));
+
+  // Start navigating to a second page.
+  GURL url2 = embedded_test_server()->GetURL("b.com", "/title2.html");
+  TestNavigationManager manager(web_contents, url2);
+  web_contents->GetController().LoadURL(
+      url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // While there is a speculative RenderFrameHost in the root FrameTreeNode...
+  ASSERT_TRUE(root->render_manager()->speculative_frame_host());
+
+  auto* frame_process = static_cast<RenderProcessHostImpl*>(
+      root->render_manager()->speculative_frame_host()->GetProcess());
+  int frame_routing_id =
+      root->render_manager()->speculative_frame_host()->GetRoutingID();
+
+  std::vector<int> deleted_routing_ids;
+  auto watcher = base::BindRepeating(
+      [](std::vector<int>* deleted_routing_ids, const IPC::Message& message) {
+        if (message.type() == FrameMsg_Delete::ID) {
+          deleted_routing_ids->push_back(message.routing_id());
+        }
+      },
+      &deleted_routing_ids);
+  frame_process->SetIpcSendWatcherForTesting(watcher);
+
+  // ...shutdown the WebContents.
+  public_web_contents.reset();
+
+  // What should have happened is the speculative RenderFrameHost deletes the
+  // provisional RenderFrame. The |watcher| verifies that this happened.
+  EXPECT_THAT(deleted_routing_ids, testing::Contains(frame_routing_id));
+}
+
 }  // namespace content
