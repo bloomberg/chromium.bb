@@ -115,7 +115,13 @@ TEST_F(BrowsingDataRemoverTest, DifferentRemoverForDifferentBrowserState) {
 }
 
 // Tests that removing the cookies remove them from the cookie store.
-TEST_F(BrowsingDataRemoverTest, RemoveCookie) {
+// TODO(crbug.com/940880): Fix this test on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_RemoveCookie RemoveCookie
+#else
+#define MAYBE_RemoveCookie DISABLED_RemoveCookie
+#endif
+TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveCookie) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
@@ -127,7 +133,13 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookie) {
 }
 
 // Tests that removing the anything but cookies leave the cookies in the store.
-TEST_F(BrowsingDataRemoverTest, RemoveNothing) {
+// TODO(crbug.com/940880): Fix this test for devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_RemoveNothing RemoveNothing
+#else
+#define MAYBE_RemoveNothing DISABLED_RemoveNothing
+#endif
+TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveNothing) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
