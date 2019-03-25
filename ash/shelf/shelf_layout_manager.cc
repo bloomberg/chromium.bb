@@ -1273,6 +1273,11 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
 }
 
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
+  if (Shell::Get()->app_list_controller()->GetTargetVisibility() &&
+      !IsHomeLauncherEnabledInTabletMode()) {
+    return false;
+  }
+
   const aura::Window* fullscreen_window =
       wm::GetWindowForFullscreenMode(shelf_widget_->GetNativeWindow());
   return fullscreen_window &&
