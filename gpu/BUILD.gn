@@ -465,7 +465,7 @@ test("gpu_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || use_ozone) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_native_pixmap_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_native_pixmap_unittest.cc",

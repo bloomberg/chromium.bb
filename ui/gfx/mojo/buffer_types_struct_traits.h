@@ -191,7 +191,7 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferIdDataView,
   }
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
 template <>
 struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
                     gfx::NativePixmapPlane> {
@@ -207,7 +207,7 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
   static uint64_t modifier(const gfx::NativePixmapPlane& plane) {
     return plane.modifier;
   }
-  static mojo::ScopedHandle fd(gfx::NativePixmapPlane& plane);
+  static mojo::ScopedHandle buffer_handle(gfx::NativePixmapPlane& plane);
   static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
                    gfx::NativePixmapPlane* out);
 };
@@ -223,7 +223,7 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
   static bool Read(gfx::mojom::NativePixmapHandleDataView data,
                    gfx::NativePixmapHandle* out);
 };
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(USE_OZONE)
 
 template <>
 struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,

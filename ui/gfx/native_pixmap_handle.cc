@@ -6,9 +6,16 @@
 
 #include <utility>
 
+#include "build/build_config.h"
+
 #if defined(OS_LINUX)
 #include <drm_fourcc.h>
 #include "base/posix/eintr_wrapper.h"
+#endif
+
+#if defined(OS_FUCHSIA)
+#include <lib/zx/vmo.h>
+#include "base/fuchsia/fuchsia_logging.h"
 #endif
 
 namespace gfx {
@@ -27,6 +34,8 @@ NativePixmapPlane::NativePixmapPlane(int stride,
                                      uint64_t size,
 #if defined(OS_LINUX)
                                      base::ScopedFD fd,
+#elif defined(OS_FUCHSIA)
+                                     zx::vmo vmo,
 #endif
                                      uint64_t modifier)
     : stride(stride),
@@ -36,6 +45,9 @@ NativePixmapPlane::NativePixmapPlane(int stride,
 #if defined(OS_LINUX)
       ,
       fd(std::move(fd))
+#elif defined(OS_FUCHSIA)
+      ,
+      vmo(std::move(vmo))
 #endif
 {
 }
@@ -55,10 +67,10 @@ NativePixmapHandle::~NativePixmapHandle() = default;
 NativePixmapHandle& NativePixmapHandle::operator=(NativePixmapHandle&& other) =
     default;
 
-#if defined(OS_LINUX)
 NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
   NativePixmapHandle clone;
   for (auto& plane : handle.planes) {
+#if defined(OS_LINUX)
     DCHECK(plane.fd.is_valid());
     base::ScopedFD fd_dup(HANDLE_EINTR(dup(plane.fd.get())));
     if (!fd_dup.is_valid()) {
@@ -67,9 +79,20 @@ NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
     }
     clone.planes.emplace_back(plane.stride, plane.offset, plane.size,
                               std::move(fd_dup), plane.modifier);
+#elif defined(OS_FUCHSIA)
+    zx::vmo vmo_dup;
+    zx_status_t status = plane.vmo.duplicate(ZX_RIGHT_DUPLICATE, &vmo_dup);
+    if (status != ZX_OK) {
+      ZX_DLOG(ERROR, status) << "zx_handle_duplicate";
+      return NativePixmapHandle();
+    }
+    clone.planes.emplace_back(plane.stride, plane.offset, plane.size,
+                              std::move(vmo_dup), plane.modifier);
+#else
+#error Unsupported OS
+#endif
   }
   return clone;
 }
-#endif  // defined(OS_LINUX)
 
 }  // namespace gfx

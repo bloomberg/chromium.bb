@@ -17,6 +17,10 @@
 #include "base/files/scoped_file.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include <lib/zx/vmo.h>
+#endif
+
 namespace gfx {
 
 // NativePixmapPlane is used to carry the plane related information for GBM
@@ -33,6 +37,8 @@ struct GFX_EXPORT NativePixmapPlane {
                     uint64_t size,
 #if defined(OS_LINUX)
                     base::ScopedFD fd,
+#elif defined(OS_FUCHSIA)
+                    zx::vmo vmo,
 #endif
                     uint64_t modifier = kNoModifier);
   NativePixmapPlane(NativePixmapPlane&& other);
@@ -51,9 +57,12 @@ struct GFX_EXPORT NativePixmapPlane {
   // Generally it's platform specific, and we don't need to modify it in
   // Chromium code. Also one per plane per entry.
   uint64_t modifier;
+
 #if defined(OS_LINUX)
   // File descriptor for the underlying memory object (usually dmabuf).
   base::ScopedFD fd;
+#elif defined(OS_FUCHSIA)
+  zx::vmo vmo;
 #endif
 };
 
@@ -68,13 +77,11 @@ struct GFX_EXPORT NativePixmapHandle {
   std::vector<NativePixmapPlane> planes;
 };
 
-#if defined(OS_LINUX)
 // Returns an instance of |handle| which can be sent over IPC. This duplicates
 // the file-handles, so that the IPC code take ownership of them, without
 // invalidating |handle|.
 GFX_EXPORT NativePixmapHandle
 CloneHandleForIPC(const NativePixmapHandle& handle);
-#endif
 
 }  // namespace gfx
 
