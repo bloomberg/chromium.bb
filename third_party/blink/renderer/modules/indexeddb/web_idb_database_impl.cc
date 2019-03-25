@@ -224,11 +224,6 @@ void WebIDBDatabaseImpl::Abort(int64_t transaction_id) {
   database_->Abort(transaction_id);
 }
 
-void WebIDBDatabaseImpl::Commit(int64_t transaction_id,
-                                int64_t num_errors_handled) {
-  database_->Commit(transaction_id, num_errors_handled);
-}
-
 mojom::blink::IDBCallbacksAssociatedPtrInfo
 WebIDBDatabaseImpl::GetCallbacksProxy(
     std::unique_ptr<WebIDBCallbacks> callbacks) {

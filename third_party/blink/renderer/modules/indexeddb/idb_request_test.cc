@@ -155,7 +155,6 @@ class BackendDatabaseWithMockedClose
                    int64_t index_id,
                    const WTF::String& new_name) override {}
   void Abort(int64_t transaction_id) override {}
-  void Commit(int64_t transaction_id, int64_t num_errors_handled) override {}
 
   bool destroyed() { return destroyed_; }
 
@@ -235,6 +234,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
       scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
       kTransactionId);
+  EXPECT_CALL(*transaction_backend, Commit(0)).Times(1);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -261,6 +261,7 @@ TEST_F(IDBRequestTest, EventsAfterDoneStop) {
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
       scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
       kTransactionId);
+  EXPECT_CALL(*transaction_backend, Commit(0)).Times(1);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -286,6 +287,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
       scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
       kTransactionId);
+  EXPECT_CALL(*transaction_backend, Commit(0)).Times(1);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -314,6 +316,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
       scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
       kTransactionId);
+  EXPECT_CALL(*transaction_backend, Commit(0)).Times(1);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));

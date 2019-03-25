@@ -34,6 +34,7 @@ class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
                     mojom::IDBPutMode,
                     WebIDBCallbacks*,
                     Vector<IDBIndexKeys>));
+  MOCK_METHOD1(Commit, void(int64_t num_errors_handled));
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 };

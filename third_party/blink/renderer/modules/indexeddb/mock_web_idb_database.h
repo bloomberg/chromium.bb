@@ -30,8 +30,6 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(VersionChangeIgnored, void());
   MOCK_METHOD1(Abort, void(int64_t transaction_id));
-  MOCK_METHOD2(Commit,
-               void(int64_t transaction_id, int64_t num_errors_handled));
   MOCK_METHOD7(CreateIndex,
                void(int64_t transaction_id,
                     int64_t object_store_id,

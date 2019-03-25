@@ -35,6 +35,7 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
            mojom::IDBPutMode,
            WebIDBCallbacks*,
            Vector<IDBIndexKeys>) override;
+  void Commit(int64_t num_errors_handled) override;
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 

@@ -356,7 +356,7 @@ TEST_F(IDBTransactionTest, TransactionFinish) {
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
       scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
       kTransactionId);
-  EXPECT_CALL(*database_backend, Commit(kTransactionId, 0)).Times(1);
+  EXPECT_CALL(*transaction_backend, Commit(0)).Times(1);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));

@@ -14,7 +14,6 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -117,12 +116,6 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
                    int64_t index_id,
                    const base::string16& new_name) override;
   void Abort(int64_t transaction_id) override;
-  void Commit(int64_t transaction_id, int64_t num_errors_handled) override;
-
-  void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
-                                   blink::mojom::QuotaStatusCode status,
-                                   int64_t usage,
-                                   int64_t quota);
 
  private:
   // This raw pointer is safe because all DatabaseImpl instances are owned by
@@ -134,8 +127,6 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  base::WeakPtrFactory<DatabaseImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseImpl);
 };

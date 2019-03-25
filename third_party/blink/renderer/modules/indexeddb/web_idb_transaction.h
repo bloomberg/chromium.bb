@@ -52,6 +52,7 @@ class MODULES_EXPORT WebIDBTransaction {
                    mojom::IDBPutMode,
                    WebIDBCallbacks*,
                    Vector<IDBIndexKeys>) = 0;
+  virtual void Commit(int64_t num_errors_handled) = 0;
 
   virtual mojom::blink::IDBTransactionAssociatedRequest CreateRequest() = 0;
 
