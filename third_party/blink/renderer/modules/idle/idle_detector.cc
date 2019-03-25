@@ -23,6 +23,7 @@ const char kFeaturePolicyBlocked[] =
     "Access to the feature \"idle-detection\" is disallowed by feature policy.";
 
 const uint32_t kDefaultThresholdSeconds = 60;
+const int32_t kMinThresholdSeconds = 60;
 
 }  // namespace
 
@@ -32,8 +33,8 @@ IdleDetector* IdleDetector::Create(ScriptState* script_state,
   int32_t threshold_seconds =
       options->hasThreshold() ? options->threshold() : kDefaultThresholdSeconds;
 
-  if (threshold_seconds <= 0) {
-    exception_state.ThrowTypeError("Invalid threshold");
+  if (threshold_seconds < kMinThresholdSeconds) {
+    exception_state.ThrowTypeError("Minimum threshold is 60 seconds.");
     return nullptr;
   }
 
