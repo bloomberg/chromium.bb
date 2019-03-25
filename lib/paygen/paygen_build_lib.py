@@ -669,6 +669,29 @@ class PaygenBuild(object):
 
     return results
 
+  def _DiscoverRequiredDLCDeltasBuildToBuild(self, source_images, images):
+    """Find the DLC deltas to generate between two builds.
+
+    One DLC (a unique DLC ID) has at most one source image/target image.
+
+    Args:
+      source_images: All DLC images associated with the source build.
+      images: All DLC images associated with the target build.
+
+    Returns:
+      A list of gspaths.Payload objects.
+    """
+    results = []
+
+    for source_image in source_images:
+      for image in images:
+        if (source_image.dlc_id == image.dlc_id and
+            source_image.dlc_package == image.dlc_package):
+          results.append(gspaths.Payload(tgt_image=image,
+                                         src_image=source_image))
+
+    return results
+
   def _DiscoverRequiredPayloads(self):
     """Find the payload definitions for the current build.
 
@@ -747,11 +770,19 @@ class PaygenBuild(object):
 
       source_images = self._DiscoverSignedImages(source_build)
       source_test_image = self._DiscoverTestImage(source_build)
+      source_dlc_module_images = self._DiscoverDLCImages(source_build)
+
+      _LogList('Images found (source)', (source_images + [source_test_image] +
+                                         source_dlc_module_images))
 
       if not self._skip_delta_payloads and source['generate_delta']:
         # Generate the signed deltas.
         payloads.extend(self._DiscoverRequiredDeltasBuildToBuild(
             source_images, images+[test_image]))
+
+        # Generate DLC deltas.
+        payloads.extend(self._DiscoverRequiredDLCDeltasBuildToBuild(
+            source_dlc_module_images, dlc_module_images))
 
         # Generate the test delta.
         test_payload = gspaths.Payload(

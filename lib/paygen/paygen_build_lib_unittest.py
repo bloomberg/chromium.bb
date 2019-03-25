@@ -123,6 +123,11 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
   """Test PaygenBuildLib class."""
 
   def setUp(self):
+    self.dlc_id = 'dummy-dlc'
+    self.dlc_id2 = 'dummy-dlc2'
+    self.dlc_package = 'dummy-package'
+    self.dlc_package2 = 'dummy-package2'
+
     self.prev_build = gspaths.Build(bucket='crt',
                                     channel='foo-channel',
                                     board='foo-board',
@@ -132,6 +137,18 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
     self.prev_premp_image = gspaths.Image(build=self.prev_build, key='premp')
     self.prev_test_image = gspaths.UnsignedImageArchive(
         build=self.prev_build, image_type='test')
+    self.prev_dlc_package_image = gspaths.DLCImage(
+        build=self.prev_build, key=None, dlc_id=self.dlc_id,
+        dlc_package=self.dlc_package,
+        dlc_image=gspaths.ChromeosReleases.DLCImageName())
+    self.prev_dlc_package2_image = gspaths.DLCImage(
+        build=self.prev_build, key=None, dlc_id=self.dlc_id,
+        dlc_package=self.dlc_package2,
+        dlc_image=gspaths.ChromeosReleases.DLCImageName())
+    self.prev_dlc2_image = gspaths.DLCImage(
+        build=self.prev_build, key=None, dlc_id=self.dlc_id2,
+        dlc_package=self.dlc_package,
+        dlc_image=gspaths.ChromeosReleases.DLCImageName())
 
     self.target_build = gspaths.Build(bucket='crt',
                                       channel='foo-channel',
@@ -148,6 +165,10 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
     self.premp_image = gspaths.Image(build=self.target_build, key='premp')
     self.test_image = gspaths.UnsignedImageArchive(
         build=self.target_build, image_type='test')
+    self.dlc_image = gspaths.DLCImage(
+        build=self.target_build, key=None, dlc_id=self.dlc_id,
+        dlc_package=self.dlc_package,
+        dlc_image=gspaths.ChromeosReleases.DLCImageName())
 
     self.mp_full_payload = gspaths.Payload(tgt_image=self.basic_image)
     self.test_full_payload = gspaths.Payload(tgt_image=self.test_image)
@@ -244,10 +265,10 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
     """Test a function that validates expected DLC images are found."""
 
     paygen = self._GetPaygenBuildInstance()
-    dlc_image = gspaths.DLCImage(build=self.target_build,
-                                 dlc_id='dummy-dlc',
-                                 dlc_package='dummy-package',
-                                 dlc_image='dlc.img')
+    dlc_image = gspaths.DLCImage(
+        build=self.target_build, dlc_id=self.dlc_id,
+        dlc_package=self.dlc_package,
+        dlc_image=gspaths.ChromeosReleases.DLCImageName())
     paygen._ValidateExpectedDLCBuildImages(self.target_build, (dlc_image,))
 
   def testDefaultPayloadUri(self):
@@ -424,6 +445,33 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
                         tgt_image=self.test_image),
     ])
 
+  def testDiscoverRequiredDLCDeltasBuildToBuild(self):
+    """Test _DiscoverRequiredDLCDeltasBuildToBuild"""
+    paygen = self._GetPaygenBuildInstance()
+
+    # Test the empty case.
+    results = paygen._DiscoverRequiredDLCDeltasBuildToBuild([], [])
+    self.assertItemsEqual(results, [])
+
+    # Fully populated prev and current.
+    results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
+        [self.prev_dlc_package_image],
+        [self.dlc_image])
+    self.assertItemsEqual(results, [
+        gspaths.Payload(src_image=self.prev_dlc_package_image,
+                        tgt_image=self.dlc_image),
+    ])
+
+    # Mismatch DLC image
+    results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
+        [self.prev_dlc2_image],
+        [self.dlc_image])
+    self.assertItemsEqual(results, [])
+    results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
+        [self.prev_dlc_package2_image],
+        [self.dlc_image])
+    self.assertItemsEqual(results, [])
+
   def testDiscoverDLCImages(self):
     """Test _DiscoverDLCImages."""
     paygen = self._GetPaygenBuildInstance()
@@ -437,7 +485,7 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
             uri='gs://crt/foo-channel/foo-board/1.2.3/dlc/dummy-dlc/'
                 'dummy-package/dlc.img',
             dlc_id='dummy-dlc', dlc_package='dummy-package',
-            dlc_image='dlc.img')]
+            dlc_image=gspaths.ChromeosReleases.DLCImageName())]
     self.assertEqual(dlc_module_images, dlc_module_images_expected)
 
 class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
@@ -504,7 +552,8 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
 
   def addDLCImage(self, build, dlc_id, dlc_package):
     image = gspaths.DLCImage(build=build, key=None, dlc_id=dlc_id,
-                             dlc_package=dlc_package, dlc_image='dlc.img')
+                             dlc_package=dlc_package,
+                             dlc_image=gspaths.ChromeosReleases.DLCImageName())
     self.dlcResults.append((build, [image]))
     return image
 
@@ -562,6 +611,8 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
     prev_test_image = self.addTestImage(prev_build)
     dlc_image = self.addDLCImage(target_build, dlc_id=dlc_id,
                                  dlc_package=dlc_package)
+    prev_dlc_image = self.addDLCImage(prev_build, dlc_id=dlc_id,
+                                      dlc_package=dlc_package)
 
     # Run the test.
     paygen = self._GetPaygenBuildInstance(target_build)
@@ -599,6 +650,12 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
         uri=('gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/dlc/%s/%s/'
              'dlc_%s_%s_9999.0.0_auron-yuna_canary-channel_full.bin'
              '-<random>.signed' % (dlc_id, dlc_package, dlc_id, dlc_package)))
+    dlc_delta = gspaths.Payload(
+        tgt_image=dlc_image,
+        src_image=prev_dlc_image,
+        uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/dlc/%s/%s/'
+            'dlc_%s_%s_9756.0.0-9999.0.0_auron-yuna_canary-channel_delta.bin'
+            '-<random>.signed' % (dlc_id, dlc_package, dlc_id, dlc_package))
 
     # Verify the results.
     self.assertItemsEqual(
@@ -612,6 +669,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             premp_delta,
             test_delta,
             dlc_full,
+            dlc_delta,
         ])
 
     self.assertItemsEqual(

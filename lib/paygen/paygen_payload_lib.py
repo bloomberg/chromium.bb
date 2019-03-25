@@ -112,9 +112,7 @@ class PaygenPayload(object):
                                self.payload.tgt_image.dlc_package),)
       # DLC partition is the image itself.
       self.tgt_partitions = (self.tgt_image_file,)
-      # We only generate full DLC payloads, set src_partitions so we avoid
-      # accidentally generating delta DLC payloads.
-      self.src_partitions = ()
+      self.src_partitions = (self.src_image_file,)
     else:
       self.partition_names = (self._ROOTFS, self._KERNEL)
       self.tgt_partitions = tuple(os.path.join(self.work_dir,
