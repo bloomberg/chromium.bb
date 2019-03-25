@@ -847,16 +847,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   SetReferrerForFrameRequest(request);
 
-  if (!target_frame && !request.FrameName().IsEmpty()) {
-    if (policy == kNavigationPolicyDownload) {
-      Client()->DownloadURL(resource_request,
-                            DownloadCrossOriginRedirects::kFollow);
-      return;  // Navigation/download will be handled by the client.
-    } else if (should_navigate_target_frame) {
-      request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
-      CreateWindowForRequest(request, *frame_);
-      return;  // Navigation will be handled by the new frame/window.
-    }
+  if (!target_frame && !request.FrameName().IsEmpty() &&
+      should_navigate_target_frame) {
+    request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
+    CreateWindowForRequest(request, *frame_);
+    return;  // Navigation will be handled by the new frame/window.
   }
 
   // TODO(dgozman): merge page dismissal check and FrameNavigationDisabler.
