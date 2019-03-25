@@ -107,7 +107,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
 
   // Callback from |history_| when an item was successfully inserted into the
   // database.
-  void ItemAdded(uint32_t id, bool success);
+  void ItemAdded(uint32_t id, const history::DownloadRow& info, bool success);
 
   // AllDownloadItemNotifier::Observer
   void OnDownloadCreated(content::DownloadManager* manager,
