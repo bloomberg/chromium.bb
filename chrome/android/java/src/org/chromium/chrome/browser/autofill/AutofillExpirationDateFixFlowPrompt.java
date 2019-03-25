@@ -79,14 +79,12 @@ public class AutofillExpirationDateFixFlowPrompt
         mMonthInput.addTextChangedListener(this);
         mMonthInput.setOnFocusChangeListener((view, hasFocus) -> {
             mDidFocusOnMonth |= hasFocus;
-            validate();
         });
 
         mYearInput = (EditText) mDialogView.findViewById(R.id.cc_year_edit);
         mYearInput.addTextChangedListener(this);
         mYearInput.setOnFocusChangeListener((view, hasFocus) -> {
             mDidFocusOnYear |= hasFocus;
-            validate();
         });
 
         mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
@@ -204,17 +202,14 @@ public class AutofillExpirationDateFixFlowPrompt
      * @param errorType The type of error detected.
      */
     private void moveFocus(@ErrorType int errorType) {
-        if (errorType != ErrorType.NOT_ENOUGH_INFO) {
-            // There is an error or the month and year is filled and valid.
-            return;
-        }
         if (mMonthInput.isFocused()
                 && mMonthInput.getText().length() == AutofillUiUtils.EXPIRATION_FIELDS_LENGTH) {
-            // The user just finished typing in the month field and there are no validation
-            // errors.
-            // Year was not filled, move focus there.
-            mYearInput.requestFocus();
-            mDidFocusOnYear = true;
+            // The user just finished typing in the month field and if there are no errors in the
+            // month, then move focus to the year input.
+            if (errorType != ErrorType.EXPIRATION_MONTH) {
+                mYearInput.requestFocus();
+                mDidFocusOnYear = true;
+            }
         }
     }
 }
