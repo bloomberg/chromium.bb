@@ -42,11 +42,6 @@
 
 namespace blink {
 
-DataTransferItem* DataTransferItem::Create(DataTransfer* data_transfer,
-                                           DataObjectItem* item) {
-  return MakeGarbageCollected<DataTransferItem>(data_transfer, item);
-}
-
 String DataTransferItem::kind() const {
   DEFINE_STATIC_LOCAL(const String, kind_string, ("string"));
   DEFINE_STATIC_LOCAL(const String, kind_file, ("file"));
