@@ -96,4 +96,57 @@ TEST(DrmOverlayManagerTest, CacheLogic) {
   EXPECT_EQ(manager.requests().size(), 0u);
 }
 
+// Tests that the crop rect changing will make a new request.
+TEST(DrmOverlayManagerTest, CropRectCacheLogic) {
+  TestDrmOverlayManager manager;
+
+  // Candidates fo single-on-top quad.
+  std::vector<OverlaySurfaceCandidate> candidates = {
+      CreateCandidate(gfx::Rect(0, 0, 100, 100), 0)};
+
+  // The first three times won't send a validation request. The fourth will send
+  // a request.
+  for (int i = 0; i < 3; ++i) {
+    manager.CheckOverlaySupport(&candidates, kWidget);
+    EXPECT_FALSE(candidates.back().overlay_handled);
+    EXPECT_EQ(manager.requests().size(), 0u);
+  }
+  manager.CheckOverlaySupport(&candidates, kWidget);
+  EXPECT_EQ(manager.requests().size(), 1u);
+
+  // Receive response that the overlay configuration will work.
+  manager.UpdateCacheForOverlayCandidates(
+      manager.requests().front(),
+      std::vector<OverlayStatus>(candidates.size(), OVERLAY_STATUS_ABLE));
+  manager.requests().clear();
+
+  // Overlay configuration should work.
+  manager.CheckOverlaySupport(&candidates, kWidget);
+  EXPECT_TRUE(candidates.back().overlay_handled);
+
+  // Now, adjust the crop rect.
+  candidates.back().overlay_handled = false;
+  candidates.back().crop_rect = gfx::RectF(0, 0, 0.5f, 0.5f);
+
+  // The first three times won't send a validation request. The fourth will send
+  // a request.
+  for (int i = 0; i < 3; ++i) {
+    manager.CheckOverlaySupport(&candidates, kWidget);
+    EXPECT_FALSE(candidates.back().overlay_handled);
+    EXPECT_EQ(manager.requests().size(), 0u);
+  }
+  manager.CheckOverlaySupport(&candidates, kWidget);
+  EXPECT_EQ(manager.requests().size(), 1u);
+
+  // Receive response that the overlay configuration won't work.
+  manager.UpdateCacheForOverlayCandidates(
+      manager.requests().front(),
+      std::vector<OverlayStatus>(candidates.size(), OVERLAY_STATUS_NOT));
+  manager.requests().clear();
+
+  // Overlay configuration should not work.
+  manager.CheckOverlaySupport(&candidates, kWidget);
+  EXPECT_FALSE(candidates.back().overlay_handled);
+}
+
 }  // namespace ui
