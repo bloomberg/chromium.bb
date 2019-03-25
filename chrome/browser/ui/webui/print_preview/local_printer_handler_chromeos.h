@@ -52,6 +52,9 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
                   PrintCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LocalPrinterHandlerChromeosTest,
+                           GetNativePrinterPolicies);
+
   explicit LocalPrinterHandlerChromeos(
       Profile* profile,
       content::WebContents* preview_web_contents,

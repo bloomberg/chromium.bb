@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/test_print_backend.h"
@@ -288,6 +289,35 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityInvalidPrinter) {
 
   ASSERT_TRUE(fetched_caps);
   EXPECT_TRUE(fetched_caps->is_none());
+}
+
+TEST_F(LocalPrinterHandlerChromeosTest, GetNativePrinterPolicies) {
+  sync_preferences::TestingPrefServiceSyncable* prefs =
+      profile_.GetTestingPrefService();
+
+  prefs->SetUserPref(prefs::kPrintingAllowedColorModes,
+                     std::make_unique<base::Value>(1));
+  prefs->SetUserPref(prefs::kPrintingAllowedDuplexModes,
+                     std::make_unique<base::Value>(0));
+  prefs->SetUserPref(prefs::kPrintingAllowedPinModes,
+                     std::make_unique<base::Value>(1));
+  prefs->SetUserPref(prefs::kPrintingColorDefault,
+                     std::make_unique<base::Value>(2));
+  prefs->SetUserPref(prefs::kPrintingDuplexDefault,
+                     std::make_unique<base::Value>(4));
+  prefs->SetUserPref(prefs::kPrintingPinDefault,
+                     std::make_unique<base::Value>(0));
+
+  base::Value expected_policies(base::Value::Type::DICTIONARY);
+  expected_policies.SetKey(kAllowedColorModes, base::Value(1));
+  expected_policies.SetKey(kAllowedDuplexModes, base::Value(0));
+  expected_policies.SetKey(kAllowedPinModes, base::Value(1));
+  expected_policies.SetKey(kDefaultColorMode, base::Value(2));
+  expected_policies.SetKey(kDefaultDuplexMode, base::Value(4));
+  expected_policies.SetKey(kDefaultPinMode, base::Value(0));
+
+  EXPECT_EQ(expected_policies,
+            local_printer_handler_->GetNativePrinterPolicies());
 }
 
 }  // namespace printing
