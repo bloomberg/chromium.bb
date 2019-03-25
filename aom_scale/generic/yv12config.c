@@ -232,7 +232,7 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 // aligned to 128. Currently variance calculation of
 // simple_motion_search_get_best_ref() function is done
 // for full sb size (i.e integral multiple of max sb
-// size = 128 or 64). Hence partial sbs need upto 127
+// size = 128 or 64). Hence partial sbs need up to 127
 // pixels beyond frame boundary. 128 aligned limitation of
 // lookahead buffer can be removed if variance calculation
 // is adjusted for partial sbs

@@ -76,7 +76,7 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
     for (i = 0; i < cm->tile_cols; i++) {
       int size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
       widest_tile_sb = AOMMAX(widest_tile_sb, size_sb);
-      // ignore the rightmost tile in frame for detrmining the narrowest
+      // ignore the rightmost tile in frame for determining the narrowest
       if (i < cm->tile_cols - 1)
         narrowest_tile_sb = AOMMIN(narrowest_tile_sb, size_sb);
     }

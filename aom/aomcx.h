@@ -750,7 +750,7 @@ enum aome_enc_control_id {
    * valid values are [4, 8, 16, 32, 64, 128]
    * min_partition_size is applied to both width and height of the partition.
    * i.e, both width and height of a partition can not be smaller than
-   * the min_partition_size, except the partitoin at the picture boundary
+   * the min_partition_size, except the partition at the picture boundary.
    *
    */
   AV1E_SET_MIN_PARTITION_SIZE,
@@ -798,7 +798,7 @@ enum aome_enc_control_id {
    * transforms.
    *
    * This will enable or disable usage of flip and identity transform
-   * typess in any direction. The default value is 1. Including:
+   * types in any direction. The default value is 1. Including:
    * FLIPADST_DCT, DCT_FLIPADST, FLIPADST_FLIPADST, ADST_FLIPADST,
    * FLIPADST_ADST, IDTX, V_DCT, H_DCT, V_ADST, H_ADST, V_FLIPADST,
    * H_FLIPADST
@@ -807,7 +807,7 @@ enum aome_enc_control_id {
 
   /*!\brief Codec control function to set transform block size search method.
    *
-   * This will set the trasnform block size search method.
+   * This will set the transform block size search method.
    * 0: use Full RD search, 1: use Fast RD search, 2: always use largest
    * allowed transform block size based on partition size.
    */
