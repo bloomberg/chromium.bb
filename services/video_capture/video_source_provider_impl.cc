@@ -11,18 +11,23 @@
 
 namespace video_capture {
 
-VideoSourceProviderImpl::VideoSourceProviderImpl(DeviceFactory* device_factory)
-    : device_factory_(device_factory) {}
+VideoSourceProviderImpl::VideoSourceProviderImpl(
+    DeviceFactory* device_factory,
+    base::RepeatingClosure on_last_client_disconnected_cb)
+    : device_factory_(device_factory),
+      on_last_client_disconnected_cb_(
+          std::move(on_last_client_disconnected_cb)) {
+  // Unretained |this| is safe because |bindings_| is owned by |this|.
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &VideoSourceProviderImpl::OnClientDisconnected, base::Unretained(this)));
+}
 
 VideoSourceProviderImpl::~VideoSourceProviderImpl() = default;
 
-void VideoSourceProviderImpl::SetServiceRef(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
-  if (service_ref)
-    device_factory_->SetServiceRef(service_ref->Clone());
-  else
-    device_factory_->SetServiceRef(nullptr);
-  service_ref_ = std::move(service_ref);
+void VideoSourceProviderImpl::AddClient(
+    mojom::VideoSourceProviderRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+  client_count_++;
 }
 
 void VideoSourceProviderImpl::GetSourceInfos(GetSourceInfosCallback callback) {
@@ -69,6 +74,32 @@ void VideoSourceProviderImpl::RegisterVirtualDevicesChangedObserver(
     bool raise_event_if_virtual_devices_already_present) {
   device_factory_->RegisterVirtualDevicesChangedObserver(
       std::move(observer), raise_event_if_virtual_devices_already_present);
+}
+
+void VideoSourceProviderImpl::Close(CloseCallback callback) {
+  closed_but_not_yet_disconnected_client_count_++;
+  // |callback must be run before OnClientDisconnectedOrClosed(), because if the
+  // latter leads to the destruction of |this|, the message pipe to the client
+  // gets severed, and the callback never makes it through.
+  std::move(callback).Run();
+  OnClientDisconnectedOrClosed();
+}
+
+void VideoSourceProviderImpl::OnClientDisconnected() {
+  if (closed_but_not_yet_disconnected_client_count_ > 0) {
+    closed_but_not_yet_disconnected_client_count_--;
+    return;
+  }
+  OnClientDisconnectedOrClosed();
+}
+
+void VideoSourceProviderImpl::OnClientDisconnectedOrClosed() {
+  client_count_--;
+  if (client_count_ == 0) {
+    // No member access allowed after this call, because it may lead to the
+    // destruction of |this|.
+    on_last_client_disconnected_cb_.Run();
+  }
 }
 
 void VideoSourceProviderImpl::OnVideoSourceLastClientDisconnected(

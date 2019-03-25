@@ -40,6 +40,8 @@ class MockVideoSourceProvider
     NOTIMPLEMENTED();
   }
 
+  void Close(CloseCallback callback) override;
+
   MOCK_METHOD1(DoGetSourceInfos, void(GetSourceInfosCallback& callback));
   MOCK_METHOD2(DoGetVideoSource,
                void(const std::string& device_id,
@@ -53,6 +55,7 @@ class MockVideoSourceProvider
       DoAddTextureVirtualDevice,
       void(const media::VideoCaptureDeviceInfo& device_info,
            video_capture::mojom::TextureVirtualDeviceRequest* virtual_device));
+  MOCK_METHOD1(DoClose, void(CloseCallback& callback));
 };
 
 }  // namespace video_capture

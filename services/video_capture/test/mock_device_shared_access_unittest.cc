@@ -49,9 +49,9 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     service_device_factory_ = std::make_unique<DeviceFactoryMediaToMojoAdapter>(
         std::move(video_capture_system), base::DoNothing(),
         base::ThreadTaskRunnerHandle::Get());
+    service_device_factory_->SetServiceRef(service_keepalive_.CreateRef());
     source_provider_ = std::make_unique<VideoSourceProviderImpl>(
-        service_device_factory_.get());
-    source_provider_->SetServiceRef(service_keepalive_.CreateRef());
+        service_device_factory_.get(), base::DoNothing());
 
     // Obtain the mock device backed source from |source_provider_|.
     base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
