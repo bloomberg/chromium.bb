@@ -61,8 +61,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
 
-  static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
-                                                      LineDirectionMode);
+  static LayoutUnit SynthesizedBaselineFromBorderBox(const LayoutBox&,
+                                                     LineDirectionMode);
 
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;

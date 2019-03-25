@@ -154,15 +154,11 @@ float LayoutFlexibleBox::CountIntrinsicSizeForAlgorithmChange(
   return max_content_flex_fraction;
 }
 
-LayoutUnit LayoutFlexibleBox::SynthesizedBaselineFromContentBox(
+LayoutUnit LayoutFlexibleBox::SynthesizedBaselineFromBorderBox(
     const LayoutBox& box,
     LineDirectionMode direction) {
-  if (direction == kHorizontalLine) {
-    return box.Size().Height() - box.BorderBottom() - box.PaddingBottom() -
-           box.BottomScrollbarHeight();
-  }
-  return box.Size().Width() - box.BorderLeft() - box.PaddingLeft() -
-         box.LeftScrollbarWidth();
+  return direction == kHorizontalLine ? box.Size().Height()
+                                      : box.Size().Width();
 }
 
 LayoutUnit LayoutFlexibleBox::BaselinePosition(FontBaseline,
@@ -171,8 +167,10 @@ LayoutUnit LayoutFlexibleBox::BaselinePosition(FontBaseline,
                                                LinePositionMode mode) const {
   DCHECK_EQ(mode, kPositionOnContainingLine);
   LayoutUnit baseline = FirstLineBoxBaseline();
-  if (baseline == -1)
-    baseline = SynthesizedBaselineFromContentBox(*this, direction);
+  if (baseline == -1) {
+    return SynthesizedBaselineFromBorderBox(*this, direction) +
+           MarginLogicalHeight();
+  }
 
   return BeforeMarginInLineDirection(direction) + baseline;
 }
@@ -221,7 +219,7 @@ LayoutUnit LayoutFlexibleBox::FirstLineBoxBaseline() const {
     // cases where the flexbox is orthogonal to its container.
     LineDirectionMode direction =
         IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine;
-    return SynthesizedBaselineFromContentBox(*baseline_child, direction) +
+    return SynthesizedBaselineFromBorderBox(*baseline_child, direction) +
            baseline_child->LogicalTop();
   }
 
@@ -230,13 +228,7 @@ LayoutUnit LayoutFlexibleBox::FirstLineBoxBaseline() const {
 
 LayoutUnit LayoutFlexibleBox::InlineBlockBaseline(
     LineDirectionMode direction) const {
-  LayoutUnit baseline = FirstLineBoxBaseline();
-  if (baseline != -1)
-    return baseline;
-
-  LayoutUnit margin_ascent =
-      direction == kHorizontalLine ? MarginTop() : MarginRight();
-  return SynthesizedBaselineFromContentBox(*this, direction) + margin_ascent;
+  return FirstLineBoxBaseline();
 }
 
 bool LayoutFlexibleBox::HasTopOverflow() const {
