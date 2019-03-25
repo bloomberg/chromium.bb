@@ -1674,7 +1674,7 @@
     ],
 
     'official_goma_chromeos_no_symbols': [
-      'official', 'goma', 'chromeos',
+      'official', 'goma', 'chromeos', 'no_symbols',
     ],
 
     'official_goma_minimal_symbols_android': [
