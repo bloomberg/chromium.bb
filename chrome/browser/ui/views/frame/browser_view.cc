@@ -3172,6 +3172,11 @@ BrowserView::GetActiveTabPermissionGranter() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ImmersiveModeController::Observer implementation:
 void BrowserView::OnImmersiveRevealStarted() {
+  AppMenuButton* app_menu_button =
+      toolbar_button_provider()->GetAppMenuButton();
+  if (app_menu_button)
+    app_menu_button->CloseMenu();
+
   top_container()->SetPaintToLayer();
   top_container()->layer()->SetFillsBoundsOpaquely(false);
   overlay_view_->AddChildView(top_container());
