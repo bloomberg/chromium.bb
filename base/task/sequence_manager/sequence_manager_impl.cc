@@ -421,6 +421,30 @@ void SequenceManagerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
   controller_->SetNextDelayedDoWork(lazy_now, run_time);
 }
 
+namespace {
+
+const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
+  switch (priority) {
+    case TaskQueue::QueuePriority::kControlPriority:
+      return "RunControlPriorityTask";
+    case TaskQueue::QueuePriority::kHighestPriority:
+      return "RunHighestPriorityTask";
+    case TaskQueue::QueuePriority::kHighPriority:
+      return "RunHighPriorityTask";
+    case TaskQueue::QueuePriority::kNormalPriority:
+      return "RunNormalPriorityTask";
+    case TaskQueue::QueuePriority::kLowPriority:
+      return "RunLowPriorityTask";
+    case TaskQueue::QueuePriority::kBestEffortPriority:
+      return "RunBestEffortPriorityTask";
+    case TaskQueue::QueuePriority::kQueuePriorityCount:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+}  // namespace
+
 Optional<PendingTask> SequenceManagerImpl::TakeTask() {
   Optional<PendingTask> task = TakeTaskImpl();
   if (!task)
@@ -431,10 +455,10 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
 
   // It's important that there are no active trace events here which will
   // terminate before we finish executing the task.
-  TRACE_EVENT_BEGIN2(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                     "SequenceManager::RunTask", "queue_type",
-                     executing_task.task_queue->GetName(), "task_type",
-                     executing_task.task_type);
+  TRACE_EVENT_BEGIN1("sequence_manager",
+                     RunTaskTraceNameForPriority(executing_task.priority),
+                     "task_type", executing_task.task_type);
+  TRACE_EVENT_BEGIN0("sequence_manager", executing_task.task_queue_name);
 
   return task;
 }
@@ -443,7 +467,8 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  TRACE_EVENT0("sequence_manager", "SequenceManagerImpl::TakeTask");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+               "SequenceManagerImpl::TakeTask");
 
   ReloadEmptyWorkQueues();
   LazyNow lazy_now(controller_->GetClock());
@@ -501,8 +526,9 @@ void SequenceManagerImpl::DidRunTask() {
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
 
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-                   "SequenceManagerImpl::RunTask");
+  TRACE_EVENT_END0("sequence_manager", executing_task.task_queue_name);
+  TRACE_EVENT_END0("sequence_manager",
+                   RunTaskTraceNameForPriority(executing_task.priority));
 
   NotifyDidProcessTask(&executing_task, &lazy_now);
   main_thread_only().task_execution_stack.pop_back();

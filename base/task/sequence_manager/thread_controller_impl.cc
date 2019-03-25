@@ -173,7 +173,7 @@ void ThreadControllerImpl::BindToCurrentThread(
 
 void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task,
                                          const char* task_queue_name) {
-  task_annotator_.WillQueueTask("SequenceManager::PostTask", pending_task,
+  task_annotator_.WillQueueTask("SequenceManager PostTask", pending_task,
                                 task_queue_name);
 }
 
@@ -194,7 +194,9 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
 
     {
       TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
-      task_annotator_.RunTask("ThreadControllerImpl::RunTask", &*task);
+      // Trace events should finish before we call DidRunTask to ensure that
+      // SequenceManager trace events do not interfere with them.
+      task_annotator_.RunTask("SequenceManager RunTask", &*task);
     }
 
     if (!weak_ptr)
