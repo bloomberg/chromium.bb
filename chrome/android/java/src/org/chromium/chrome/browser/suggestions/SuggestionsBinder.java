@@ -29,7 +29,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
@@ -232,16 +231,13 @@ public class SuggestionsBinder {
         if (mIsContextual) {
             mThumbnailView.setImageResource(
                     R.drawable.contextual_suggestions_placeholder_thumbnail);
-        } else if (ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
+        } else {
             ColorDrawable colorDrawable =
                     new ColorDrawable(mSuggestion.getThumbnailDominantColor() != null
                                     ? mSuggestion.getThumbnailDominantColor()
                                     : ApiCompatibilityUtils.getColor(mThumbnailView.getResources(),
                                             R.color.thumbnail_placeholder_on_primary_bg));
             mThumbnailView.setImageDrawable(colorDrawable);
-        } else {
-            mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         }
         if (!mIsContextual) ApiCompatibilityUtils.setImageTintList(mThumbnailView, null);
 

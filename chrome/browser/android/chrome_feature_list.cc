@@ -116,7 +116,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
-    &kContentSuggestionsThumbnailDominantColor,
     &kContextualSearchDefinitions,
     &kContextualSearchMlTapSuppression,
     &kContextualSearchSecondTap,
@@ -318,10 +317,6 @@ const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContentSuggestionsThumbnailDominantColor{
-    "ContentSuggestionsThumbnailDominantColor",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchDefinitions{
     "ContextualSearchDefinitions", base::FEATURE_DISABLED_BY_DEFAULT};
