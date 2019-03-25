@@ -37,6 +37,10 @@ struct ApplyViewportChangesArgs {
   // main_thread_scale * delta == impl_thread_scale.
   float page_scale_delta;
 
+  // Indicates that a pinch gesture is currently active or not; used to allow
+  // subframe compositors to throttle their re-rastering during the gesture.
+  bool is_pinch_gesture_active;
+
   // How much the browser controls have been shown or hidden. The ratio runs
   // between 0 (hidden) and 1 (full-shown). This is additive.
   float browser_controls_delta;

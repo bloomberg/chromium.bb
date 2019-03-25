@@ -233,6 +233,7 @@ class CORE_EXPORT ChromeClient
   virtual bool DoubleTapToZoomEnabled() const { return false; }
 
   virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
+  // Call during pinch gestures, or when page-scale changes on main-frame load.
   virtual void PageScaleFactorChanged() const {}
   virtual float ClampPageScaleFactorToLimits(float scale) const {
     return scale;

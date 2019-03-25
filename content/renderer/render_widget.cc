@@ -3466,7 +3466,8 @@ bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
 }
 
-void RenderWidget::PageScaleFactorChanged(float page_scale_factor) {
+void RenderWidget::PageScaleFactorChanged(float page_scale_factor,
+                                          bool is_pinch_gesture_active) {
   // The page scale is controlled by the WebView for the local main frame of
   // the Page. So this is called from blink by for the RenderWidget of that
   // local main frame. We forward the value on to each child RenderWidget (each
@@ -3481,6 +3482,9 @@ void RenderWidget::PageScaleFactorChanged(float page_scale_factor) {
   DCHECK(!is_frozen_);
   DCHECK(delegate());
 
+  // TODO(wjmaclean): In the next CL, plumb |is_pinch_gesture_active| into the
+  // observer via observer.OnPageScaleFactorChanged() and allow it to trigger
+  // SynchronizeVisualProperties if needed.
   for (auto& observer : render_frame_proxies_)
     observer.OnPageScaleFactorChanged(page_scale_factor);
   // Store the value to give to any new RenderFrameProxy that is registered.

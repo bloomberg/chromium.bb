@@ -472,7 +472,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ShowContextMenu(WebMenuSourceType) override;
   WebURL GetURLForDebugTrace() override;
 
-  void SetPageScaleFactorAndLocation(float, const FloatPoint&);
+  void SetPageScaleFactorAndLocation(float scale,
+                                     bool is_pinch_gesture_active,
+                                     const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
 
   float MaximumLegiblePageScale() const;

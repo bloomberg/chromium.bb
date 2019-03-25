@@ -4826,12 +4826,13 @@ void LayerTreeHostImpl::CollectScrollbarUpdates(
 }
 
 std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
-  std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
+  auto scroll_info = std::make_unique<ScrollAndScaleSet>();
 
   CollectScrollDeltas(scroll_info.get());
   CollectScrollbarUpdates(scroll_info.get());
   scroll_info->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
+  scroll_info->is_pinch_gesture_active = active_tree_->PinchGestureActive();
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
   // TODO(wjmaclean): Remove this DCHECK as a pre-condition to closing the bug.
   // https://crbug.com/845097

@@ -1343,8 +1343,9 @@ void FrameLoader::RestoreScrollPositionAndViewState(
 
     VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();
     if (should_restore_scale && should_restore_scroll) {
-      visual_viewport.SetScaleAndLocation(view_state.page_scale_factor_,
-                                          FloatPoint(visual_viewport_offset));
+      visual_viewport.SetScaleAndLocation(
+          view_state.page_scale_factor_, visual_viewport.IsPinchGestureActive(),
+          FloatPoint(visual_viewport_offset));
     } else if (should_restore_scale) {
       visual_viewport.SetScale(view_state.page_scale_factor_);
     } else if (should_restore_scroll) {

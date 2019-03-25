@@ -170,6 +170,7 @@ struct CC_EXPORT ScrollAndScaleSet {
 
   std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
   float page_scale_delta;
+  bool is_pinch_gesture_active;
 
   // Elastic overscroll effect offset delta. This is used only on Mac and shows
   // the pixels that the page is rubber-banned/stretched by.
