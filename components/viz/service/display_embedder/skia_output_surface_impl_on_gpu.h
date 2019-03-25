@@ -163,9 +163,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   class ScopedUseContextProvider;
 
   void SetCapabilitiesForTesting(
-      const OutputSurface::Capabilities& capabilities) {
-    capabilities_ = capabilities;
-  }
+      const OutputSurface::Capabilities& capabilities);
 
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
