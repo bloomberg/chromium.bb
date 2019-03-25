@@ -2544,12 +2544,6 @@ void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
   }
 }
 
-scoped_refptr<const NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
-    const NGConstraintSpace&,
-    const NGBreakToken*) {
-  return nullptr;
-}
-
 bool LayoutBlockFlow::AreCachedLinesValidFor(const NGConstraintSpace&) const {
   return false;
 }

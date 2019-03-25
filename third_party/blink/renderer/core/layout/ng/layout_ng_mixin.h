@@ -17,9 +17,7 @@
 namespace blink {
 
 enum class NGBaselineAlgorithmType;
-class NGBreakToken;
 class NGConstraintSpace;
-class NGLayoutResult;
 class NGPaintFragment;
 class NGPhysicalFragment;
 struct NGInlineNodeData;
@@ -55,13 +53,6 @@ class LayoutNGMixin : public Base {
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
-  // Returns the last layout result for this block flow with the given
-  // constraint space and break token, or null if it is not up-to-date or
-  // otherwise unavailable.
-  scoped_refptr<const NGLayoutResult> CachedLayoutResult(
-      const NGConstraintSpace&,
-      const NGBreakToken*) final;
-
   bool AreCachedLinesValidFor(const NGConstraintSpace&) const final;
 
   NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
@@ -95,7 +86,6 @@ class LayoutNGMixin : public Base {
 
  private:
   void AddScrollingOverflowFromChildren();
-  bool NeedsRelativePositionedLayoutOnly() const;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

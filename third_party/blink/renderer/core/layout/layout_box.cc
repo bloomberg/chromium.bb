@@ -64,8 +64,10 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -2303,6 +2305,81 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
     return;
 
   cached_layout_result_ = &layout_result;
+}
+
+scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
+    const NGConstraintSpace& new_space,
+    const NGBreakToken* break_token) {
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
+    return nullptr;
+
+  // TODO*cbiesinger): Support caching fragmented boxes
+  if (break_token)
+    return nullptr;
+
+  if (SelfNeedsLayoutForStyle() || NormalChildNeedsLayout() ||
+      PosChildNeedsLayout() || NeedsSimplifiedNormalFlowLayout() ||
+      (NeedsPositionedMovementLayout() && !NeedsRelativePositionedLayoutOnly()))
+    return nullptr;
+
+  const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
+  if (!cached_layout_result)
+    return nullptr;
+
+  // If we have an orthogonal flow root descendant, we don't attempt to cache
+  // our layout result. This is because the initial containing block size may
+  // have changed, having a high likelihood of changing the size of the
+  // orthogonal flow root.
+  if (cached_layout_result->HasOrthogonalFlowRoots())
+    return nullptr;
+
+  if (!MaySkipLayout(NGBlockNode(this), *cached_layout_result, new_space))
+    return nullptr;
+
+  const NGConstraintSpace& old_space =
+      cached_layout_result->GetConstraintSpaceForCaching();
+
+  // Check the BFC offset. Even if they don't match, there're some cases we can
+  // still reuse the fragment.
+  base::Optional<LayoutUnit> bfc_block_offset =
+      cached_layout_result->BfcBlockOffset();
+  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
+
+  DCHECK_EQ(old_space.BfcOffset().line_offset,
+            cached_layout_result->BfcLineOffset());
+
+  bool is_bfc_offset_equal = new_space.BfcOffset() == old_space.BfcOffset();
+  if (!is_bfc_offset_equal) {
+    // Earlier floats may affect this box if block offset changes.
+    if (new_space.HasFloats() || old_space.HasFloats())
+      return nullptr;
+
+    // Even for the first fragment, when block fragmentation is enabled, block
+    // offset changes should cause re-layout, since we will fragment at other
+    // locations than before.
+    if (new_space.HasBlockFragmentation() || old_space.HasBlockFragmentation())
+      return nullptr;
+
+    if (bfc_block_offset.has_value()) {
+      bfc_block_offset = *bfc_block_offset -
+                         old_space.BfcOffset().block_offset +
+                         new_space.BfcOffset().block_offset;
+    }
+  }
+
+  // We can safely re-use this fragment if we are position relative, and only
+  // our position constraints changed (left/top/etc). However we need to clear
+  // the dirty layout bit.
+  ClearNeedsLayout();
+
+  // The checks above should be enough to bail if layout is incomplete, but
+  // let's verify:
+  DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
+  if (is_bfc_offset_equal)
+    return cached_layout_result;
+
+  return base::AdoptRef(new NGLayoutResult(*cached_layout_result,
+                                           bfc_line_offset, bfc_block_offset));
 }
 
 void LayoutBox::PositionLineBox(InlineBox* box) {
