@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Nafasi moja</translation>
 <translation id="2610239185026711824">Pendekeza nenosiri</translation>
 <translation id="2612676031748830579">Nambari ya kadi</translation>
+<translation id="2613747923081026172">Unda kikundi</translation>
 <translation id="2621115761605608342">Ruhusu JavaScript ya tovuti mahususi.</translation>
 <translation id="2625189173221582860">Nenosiri limenakiliwa</translation>
 <translation id="2631006050119455616">Iliyookolewa</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Iulize kabla ya kuruhusu tovuti kucheza maudhui yanayolindwa</translation>
 <translation id="2913331724188855103">Ruhusu tovuti zihifadhi na kusoma data ya vidakuzi (imependekezwa)</translation>
 <translation id="2932150158123903946">Hifadhi ya Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Tuma kwenye kifaa changu</translation>
 <translation id="2956410042958133412">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME_1" /> na <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Hakimiliki <ph name="YEAR" /> Google Inc. Haki zote zimehifadhiwa.</translation>
 <translation id="2962095958535813455">Inabadilisha kwenda vichupo fiche</translation>
@@ -826,7 +826,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7031882061095297553">Sawazisha kwenye</translation>
 <translation id="7032663816368481562">Unapogusa aikoni ya Zingine kama hii <ph name="ICON" /> katika sehemu ya anwani, onyesha viungo vya haraka vya kurasa zinazohuaisna. URL za kurasa unazotembelea zitatumwa kwa Google.</translation>
 <translation id="7034608350006174882">Kadi na anwani zinazotumia Google Pay</translation>
-<translation id="7037082443972906537">Jina halipatikani.</translation>
 <translation id="7053983685419859001">Zuia</translation>
 <translation id="7055152154916055070">Imezuiwa kuelekeza kwingine:</translation>
 <translation id="7062545763355031412">Kubali na ubadilishe akaunti</translation>
@@ -880,7 +879,9 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="7475192538862203634">Ikiwa unaona hili kila mara, jaribu <ph name="BEGIN_LINK" />mapendekezo<ph name="END_LINK" /> haya.</translation>
 <translation id="7475688122056506577">SD haikupatikana. Huenda baadhi ya faili zako zinazokosekana.</translation>
+<translation id="7479104141328977413">Udhibiti wa kichupo</translation>
 <translation id="7481312909269577407">Mbele</translation>
+<translation id="7482697587265222445">Kichupo kimetumwa kwenye vifaa vyako</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ilisasishwa <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Onyesha manenosiri</translation>
 <translation id="7494974237137038751">data iliyookolewa</translation>

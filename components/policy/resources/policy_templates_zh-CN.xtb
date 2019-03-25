@@ -287,6 +287,22 @@
       警告：建议您不要委托自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本，因为这可能会阻止相应设备接收软件更新和重要的安全修补程序。委托 <ph name="PRODUCT_OS_NAME" />版本控制可能会将用户置于风险之中。</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
 <translation id="1689963000958717134">允许将推送网络配置应用于安装了 <ph name="PRODUCT_OS_NAME" />的设备的所有用户。网络配置为 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
+<translation id="1704516734140344991">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能的可用性和行为。
+
+      各项具体设置可在 JSON 属性中进行指定：
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果设为 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，用户将能够触发 Powerwash 流程以安装 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />：如果设为 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />，用户将能够调用 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新流程，此流程会保留设备级状态（包括企业注册），但不会保留用户数据。68 及更高版本均支持此更新流程。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />：控制如何对容易受到攻击的 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件强制执行自动 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新。所有流程都会保留本地设备状态。
+        如果设为 1 或未设置，则系统不会强制执行 TPM 固件更新。
+        如果设为 2，系统将在用户确认更新后的下次重启时更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
+        如果设为 3，系统将在下次重启时更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
+        如果设为 4，系统将在注册后、用户登录前更新 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件。
+        74 及更高版本均提供此选项。
+
+      如果未设置此政策，<ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新功能将不可用。</translation>
 <translation id="1708496595873025510">对变体种子的提取设置限制条件</translation>
 <translation id="1717817358640580294">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包括文件元数据、自动安装的扩展程序以及注册表项（如《Chrome 隐私权白皮书》中所述）。
 
@@ -1044,6 +1060,17 @@
       此政策只能设置为建议性质。您可以使用此政策将一些建议的语言区域移至顶部，但用户始终可为其自助服务终端选择 <ph name="PRODUCT_OS_NAME" />支持的任何语言区域。
       </translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
+<translation id="3384115339826100753">启用用电高峰转移电源管理政策。
+
+          “用电高峰转移”是一种节电政策，可在一天中的用电高峰期间尽可能减少对交流电的使用。对于每个工作日，您都可设置开始时间和结束时间以运行“用电高峰转移”模式。在您所设定的时段内，只要电池电量高于指定阈值，即使连接了交流电，系统也会仅使用电池电量来维持运行。待指定的结束时间过后，系统将会使用交流电（如果已连接）来维持运行，但不会为电池充电。待指定的充电开始时间过后，系统会再次使用交流电来维持正常运行，并会为电池充电。
+
+          如果此政策设为 true，并且 DevicePowerPeakShiftBatteryThreshold 和 DevicePowerPeakShiftDayConfig 均已设置，“用电高峰转移”将会始终处于启用状态（如果设备支持的话）。
+
+          如果此政策设为 false，“用电高峰转移”将会始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，“用电高峰转移”从一开始就会处于停用状态，且无法由用户启用。</translation>
 <translation id="3388153794103186066">让您能够以列表的形式设置一系列网址，以指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，该政策将会无效并会被忽略。
 
         USB 权限模型会使用发出相应请求的网站的网址（“请求网址”）和顶级框架网站的网址（“嵌入网址”）来授权请求网址访问 USB 设备。如果发出请求的网站是在 iframe 中加载的，则请求网址可能会与嵌入网址不同。因此，“urls”字段最多可包含 2 个以英文逗号分隔的网址字符串以分别指定请求网址和嵌入网址。如果仅指定了 1 个网址，系统将会在请求网址与这个网址相符（无论嵌入网址的状态为何）时向该网站授予对相应 USB 设备的访问权限。“urls”字段中的网址必须是有效网址，否则系统会忽略此政策。
@@ -1114,6 +1141,7 @@
       如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="355118380775352753">要在替代浏览器中打开的网站</translation>
+<translation id="3554984410014457319">允许 Google 助理听取语音启动词组</translation>
 <translation id="3577251398714997599">针对含侵扰性广告的网站的广告设置</translation>
 <translation id="357917253161699596">允许用户管理用户证书</translation>
 <translation id="3583230441447348508">以列表的形式指定一系列预先配置的网络文件共享。
@@ -1332,6 +1360,12 @@
       如果此政策设为 false 或未配置，<ph name="PRODUCT_OS_NAME" />设备就会自动检查更新。
 
       警告：建议您让自动更新功能始终处于启用状态，以便您的用户接收软件更新和重要的安全修补程序。停用自动更新功能可能会将用户置于风险之中。</translation>
+<translation id="4018000735882846261">此政策用于授权 Google 助理听取语音启动词组。
+
+      如果启用了此政策，Google 助理将会听取语音启动词组。
+      如果停用了此政策，Google 助理将不会听取语音启动词组。
+      如果未设置此政策，Google 助理将不会听取语音启动词组。
+      </translation>
 <translation id="4020682745012723568">Android 应用无法访问已转移到用户个人资料中的 Cookie。</translation>
 <translation id="402759845255257575">不允许任何网站运行 JavaScript</translation>
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
@@ -1475,6 +1509,7 @@
       尽管上述平台均支持此政策，但此政策启用的功能在其中的少数平台上可能无法使用。并非所有已弃用的网络平台功能都可重新启用。只有下面明确列出的功能才能在限定的时间（具体因功能而异）内重新发挥功效。字符串标记的常用格式为 [已弃用功能的名称]_EffectiveUntil[yyyymmdd]。要了解更改网络平台功能的意图，请访问 https://bit.ly/blinkintents。
       </translation>
 <translation id="4442582539341804154">当设备进入待机或暂停状态时启用锁定</translation>
+<translation id="4449469846627734399">设定日间用电高峰转移配置</translation>
 <translation id="4449545651113180484">将屏幕顺时针旋转 270 度</translation>
 <translation id="445270821089253489">控制要报告的用户和设备信息种类。</translation>
 <translation id="4454820008017317557">显示 <ph name="PRODUCT_NAME" /> 工具栏图标</translation>
@@ -1645,6 +1680,11 @@
 <translation id="4986560318567565414">控制用于从替代浏览器切换至 Chrome 的路径。</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
 <translation id="4995548127349206948">是否启用 NTLMv2 身份验证。</translation>
+<translation id="5034604678285451405">用于设定用电高峰转移电量阈值（以百分比表示）。
+
+          仅当 DevicePowerPeakShiftEnabled 设为 true 时才可使用此政策。
+
+          如果未配置或未设置此政策，“用电高峰转移”将始终处于停用状态。</translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
 <translation id="5056708224511062314">放大镜已停用</translation>
@@ -1835,6 +1875,7 @@
 <translation id="5447306928176905178">向网页报告内存信息（JS堆内存大小）（已停止使用）</translation>
 <translation id="5457065417344056871">在浏览器中启用访客模式</translation>
 <translation id="5457924070961220141">可让您在安装 <ph name="PRODUCT_FRAME_NAME" />时配置默认 HTML 呈现器。如果未设置此政策，则使用默认设置，即允许托管浏览器进行呈现。不过您可以视情况替换此设置，让 <ph name="PRODUCT_FRAME_NAME" />默认呈现 HTML 网页。</translation>
+<translation id="5458584148602890023">启用用电高峰转移</translation>
 <translation id="5464816904705580310">为托管用户配置设置。</translation>
 <translation id="546726650689747237">使用交流电源供电时的屏幕变暗延迟时间</translation>
 <translation id="5469143988693423708">允许用户运行 Crostini</translation>
@@ -2123,6 +2164,7 @@
 
       如果此政策未配置，则分离式 USB 设备列表为空。</translation>
 <translation id="6083631234867522991">Windows（Windows 客户端）：</translation>
+<translation id="608788685013546076">设定用电高峰转移电量阈值（以百分比表示）</translation>
 <translation id="6089679180657323464">控制 Wilco 诊断和遥测控制器设置。</translation>
 <translation id="6091233616732024397">强制要求用户登录才能使用浏览器</translation>
 <translation id="6093156968240188330">允许远程用户在远程协助会话中操控提权后的窗口</translation>
@@ -3172,6 +3214,9 @@
 <translation id="8548832052135586762">将打印模式设置为仅限彩色打印、仅限单色打印或无颜色模式限制。如果未设置此政策，则会被视为无限制。</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
 <translation id="8566842294717252664">在“打开新的标签页”页面和应用启动器中不显示网上应用店</translation>
+<translation id="8569734380847633643">
+          如果此政策设为 false，<ph name="PRODUCT_OS_NAME" />将停用 Wi-Fi，并且用户无法重新启用 Wi-Fi。
+          如果此政策设为 true 或未设置，用户将能够随意启用或停用 Wi-Fi。</translation>
 <translation id="857369585509260201">此政策已弃用，请考虑改用 BrowserSignin。
 
       如果此政策设为 true，用户必须先使用其个人资料登录 <ph name="PRODUCT_NAME" />，然后才能使用该浏览器。此外，BrowserGuestModeEnabled 的默认值会设为 false。请注意，启用此政策后，现有的未登录个人资料将处于锁定且不可访问的状态。有关详情，请参阅帮助中心文章。
@@ -3222,6 +3267,13 @@
 <translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8703488928438047864">报告主板状态</translation>
+<translation id="8703872185032220081">用于设定日间用电高峰转移配置。
+
+          仅当 DevicePowerPeakShiftEnabled 设为 true 时才可使用此政策。
+
+          如果未配置或未设置此政策，“用电高峰转移”将始终处于停用状态。
+
+          注意：<ph name="START_TIME_FIELD_NAME" />、<ph name="END_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 所允许的 <ph name="MINUTE_FIELD_NAME" /> 字段值为 0、15、30、45。</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
@@ -3340,6 +3392,7 @@
 <translation id="8976531594979650914">使用系统默认打印机作为默认选项</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
+<translation id="9038839118379817310">启用 Wi-Fi</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="906631898352326790">
       如果此政策处于启用状态，则以英文逗号分隔的列表中指定的每个来源都将在自己的进程中运行。这还会隔离以子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。

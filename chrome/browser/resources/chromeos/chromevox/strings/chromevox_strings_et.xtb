@@ -54,6 +54,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1319608975892113573">Eelmist plokktsitaati ei ole.</translation>
 <translation id="1321576897702511272">Peida ChromeVoxi abi</translation>
 <translation id="1325946044405407859">Helepruun</translation>
+<translation id="1331634987653814322">Braille' seaded</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" />-st</translation>
 <translation id="1334095593597963605">tähemärkide ja sõnade kaja</translation>
 <translation id="1334570596456017464">Allindeks</translation>
@@ -548,6 +549,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="489907760999452556">Siselink</translation>
 <translation id="4915087353619183190">Õppimisrežiimi käivitamine. Vajutage qwerty-klahvi, värskendatavat Braille' klahvi või puuteliigutust, et vaadata selle funktsiooni. Väljumiseks vajutage paoklahvi või korraga juhtklahvi ja klahvi W.</translation>
 <translation id="492295894462528572">Eessõna</translation>
+<translation id="4943781537993885772">Kuva stiil</translation>
 <translation id="495170559598752135">Toimingud</translation>
 <translation id="4953585991029886728">Teksti muutmine</translation>
 <translation id="4954534434583049121">Eelmine tsitaat</translation>
@@ -713,6 +715,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="6006050241733874051">Vorm</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kurakriips}other{# kurakaldkriipsu}}</translation>
 <translation id="6017514345406065928">Roheline</translation>
+<translation id="6021969570711251331">Vaheldumisi tekst</translation>
 <translation id="6034000775414344507">Helehall</translation>
 <translation id="6037602951055904232">Edasi navigeerimine</translation>
 <translation id="6042826534790431634">Aktiveerimiseks vajutage otsinguklahvi + tühikut.</translation>
@@ -763,6 +766,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="6438968337250688271">Menüü <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Hoiatusdialoog</translation>
 <translation id="6452403590345320472">Sisukord</translation>
+<translation id="6454456397828627257">Kõrvuti</translation>
 <translation id="6459511626086141404">Lame klahvitabel</translation>
 <translation id="6468049171101508116">Järgmine nupp</translation>
 <translation id="646954774886932461">Register</translation>

@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">Δεν υπάρχει προηγούμενη ενότητα σε παράθεση.</translation>
 <translation id="1321576897702511272">Απόκρυψη βοήθειας ChromeVox</translation>
 <translation id="1325946044405407859">Ανοιχτό καφέ</translation>
+<translation id="1331634987653814322">Ρυθμίσεις μπράιγ</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> από <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">εκφώνηση χαρακτήρων και λέξεων</translation>
 <translation id="1334570596456017464">Δείκτης</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">Ετικέτα "Εσωτερικός σύνδεσμος" (&lt;a&gt;)</translation>
 <translation id="4915087353619183190">Έναρξη Λειτουργίας εκμάθησης. Πατήστε ένα πλήκτρο qwerty, ένα πλήκτρο Μπράιγ με δυνατότητα ανανέωσης ή κάντε μια κίνηση αφής, για να μάθετε πώς λειτουργεί. Πατήστε control και w ή escape για έξοδο.</translation>
 <translation id="492295894462528572">Εισαγωγή</translation>
+<translation id="4943781537993885772">Στιλ προβολής</translation>
 <translation id="495170559598752135">Ενέργειες</translation>
 <translation id="4953585991029886728">Επεξεργασία κειμένου</translation>
 <translation id="4954534434583049121">Προηγούμενο block quote</translation>
@@ -713,6 +715,7 @@
 <translation id="6006050241733874051">Φόρμα</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ανάστροφη κάθετος}other{# ανάστροφες κάθετοι}}</translation>
 <translation id="6017514345406065928">Πράσινο</translation>
+<translation id="6021969570711251331">Παρεμβολή</translation>
 <translation id="6034000775414344507">Ανοιχτό γκρι</translation>
 <translation id="6037602951055904232">Μετακίνηση προς τα εμπρός</translation>
 <translation id="6042826534790431634">Πατήστε τα πλήκτρα Αναζήτηση+Space για ενεργοποίηση.</translation>
@@ -763,6 +766,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, μενού</translation>
 <translation id="6444046323172968959">Παράθυρο διαλόγου ειδοποιήσεων</translation>
 <translation id="6452403590345320472">Πίνακας περιεχομένων</translation>
+<translation id="6454456397828627257">Δίπλα</translation>
 <translation id="6459511626086141404">Σταθερή αντιστοίχιση πλήκτρων</translation>
 <translation id="6468049171101508116">Επόμενο κουμπί</translation>
 <translation id="646954774886932461">Ευρετήριο</translation>

@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Πρόταση κωδικού πρόσβασης</translation>
 <translation id="2612676031748830579">Αριθμός κάρτας</translation>
+<translation id="2613747923081026172">Δημιουργία ομάδας</translation>
 <translation id="2621115761605608342">Να επιτρέπεται η JavaScript για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="2625189173221582860">Ο κωδικός πρόσβασης αντιγράφηκε</translation>
 <translation id="2631006050119455616">Εξοικονομήθηκαν</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Να γίνεται ερώτηση προτού επιτραπεί στους ιστοτόπους η αναπαραγωγή προστατευόμενου περιεχομένου</translation>
 <translation id="2913331724188855103">Να επιτρέπεται στους ιστότοπους η αποθήκευση και η ανάγνωση δεδομένων cookie (συνιστάται)</translation>
 <translation id="2932150158123903946">Αποθηκευτικός χώρος Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Αποστολή στις συσκευές μου</translation>
 <translation id="2956410042958133412">Αυτός ο λογαριασμός τελεί υπό τη διαχείριση των γονέων <ph name="PARENT_NAME_1" /> και <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Πνευματικά δικαιώματα <ph name="YEAR" /> Google Inc. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="2962095958535813455">Έγινε εναλλαγή σε καρτέλες ανώνυμης περιήγησης</translation>
@@ -826,7 +826,6 @@
 <translation id="7031882061095297553">Συγχρονισμός με</translation>
 <translation id="7032663816368481562">Όταν πατάτε το εικονίδιο "Περισσότερα σαν αυτό" <ph name="ICON" /> στη γραμμή διευθύνσεων, θα εμφανίζονται γρήγοροι σύνδεσμοι για σχετικές σελίδες. Τα URL των σελίδων που επισκέπτεστε αποστέλλονται στην Google.</translation>
 <translation id="7034608350006174882">Κάρτες και διευθύνσεις που χρησιμοποιούν το Google Pay.</translation>
-<translation id="7037082443972906537">Το όνομα δεν είναι διαθέσιμο</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="7055152154916055070">Αποκλεισμένη ανακατεύθυνση:</translation>
 <translation id="7062545763355031412">Αποδοχή και εναλλαγή λογαριασμών</translation>
@@ -880,7 +879,9 @@
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7475192538862203634">Εάν αυτό το μήνυμα εμφανίζεται συχνά, δοκιμάστε αυτές τις <ph name="BEGIN_LINK" />προτάσεις<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Η κάρτα SD δεν βρέθηκε. Μπορεί να λείπουν μερικά από τα αρχεία σας.</translation>
+<translation id="7479104141328977413">Διαχείριση καρτέλας</translation>
 <translation id="7481312909269577407">Προώθηση</translation>
+<translation id="7482697587265222445">Η καρτέλα εστάλη στις συσκευές σας</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ενημέρωση στις <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Εμφάνιση κωδικών πρόσβασης</translation>
 <translation id="7494974237137038751">δεδομένα που εξοικονομήθηκαν</translation>

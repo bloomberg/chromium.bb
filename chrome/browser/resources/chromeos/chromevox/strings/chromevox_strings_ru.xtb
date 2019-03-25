@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">Предыдущей цитаты нет.</translation>
 <translation id="1321576897702511272">Скрыть справку ChromeVox</translation>
 <translation id="1325946044405407859">Дубильная кора</translation>
+<translation id="1331634987653814322">Настройки шрифта Брайля</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> из <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">Озвучивание символов и слов.</translation>
 <translation id="1334570596456017464">Подстрочный</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">Внутренняя ссылка.</translation>
 <translation id="4915087353619183190">Запускается режим обучения. Нажмите клавишу или коснитесь изображения жеста, чтобы узнать, какую функцию они выполняют. Вы можете использовать как стандартную, так и брайлевскую клавиатуру. Для выхода нажмите Ctrl + W или клавишу Esc.</translation>
 <translation id="492295894462528572">Предисловие</translation>
+<translation id="4943781537993885772">Стиль дисплея</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4953585991029886728">Изменение текста</translation>
 <translation id="4954534434583049121">Перейти к предыдущей цитате</translation>
@@ -713,6 +715,7 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обратная косая черта}one{# обратная косая черта}few{# обратные косые черты}many{# обратных косых черт}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Зеленый</translation>
+<translation id="6021969570711251331">Чередующийся</translation>
 <translation id="6034000775414344507">Светло-серый</translation>
 <translation id="6037602951055904232">Перейти вперед</translation>
 <translation id="6042826534790431634">Чтобы активировать элемент, нажмите Поиск + Пробел.</translation>
@@ -763,6 +766,7 @@
 <translation id="6438968337250688271">Меню "<ph name="NAME" />"</translation>
 <translation id="6444046323172968959">Диалоговое окно оповещения</translation>
 <translation id="6452403590345320472">Содержание</translation>
+<translation id="6454456397828627257">Параллельный</translation>
 <translation id="6459511626086141404">Обычная раскладка</translation>
 <translation id="6468049171101508116">Перейти к следующей кнопке</translation>
 <translation id="646954774886932461">Указатель</translation>

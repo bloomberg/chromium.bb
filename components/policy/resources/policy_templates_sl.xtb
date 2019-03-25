@@ -382,6 +382,22 @@
       Opozorilo: ni priporočljivo, da nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /> dodelite aplikaciji za kiosk, saj tako naprava morda ne bo prejemala posodobitev programske opreme in nujnih varnostnih popravkov. Če dodelite nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />, so uporabniki morda ogroženi.</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Konfigurira razpoložljivost in delovanje funkcije posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Posamezne nastavitve je mogoče določiti v lastnostih datoteke JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Če je nastavljeno na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, bodo uporabniki lahko sprožili potek postopka »powerwash« zaradi namestitve posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Če je nastavljeno na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, bodo uporabniki lahko sprožili postopek posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />, ki ohranja stanje za celotno napravo (vključno z včlanitvijo v podjetju), vendar izgubi uporabniške podatke. Ta postopek posodobitve je na voljo z različico 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Nadzira, kako so posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> uveljavljene za vdelano programsko opremo ranljivih modulov <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Pri vseh postopkih se ohranil stanje lokalne naprave.
+        Če je nastavljeno na 1 ali ni nastavljeno, posodobitve vdelane programske opreme modula TPM niso uveljavljene.
+        Če je nastavljeno na 2, bo vdelana programska oprema modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> posodobljena ob naslednjem vnovičnem zagonu, ko uporabnik potrdi posodobitev.
+        Če je nastavljeno na 3, bo vdelana programska oprema modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> posodobljena ob naslednjem vnovičnem zagonu.
+        Če je nastavljeno na 4, bo vdelana programska oprema modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> posodobljena po včlanitvi, vendar pred prijavo uporabnika.
+        Ta možnost je na voljo z različico 74.
+
+      Če pravilnik ni nastavljen, funkcija posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ne bo na voljo.</translation>
 <translation id="1708496595873025510">Nastavitev omejitve prenosa semen različic</translation>
 <translation id="1717817358640580294">Če pravilnik ni nastavljen in Chromovo čiščenje odkrije neželeno programsko opremo, bo Googlu morda poslalo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika nato pozvalo, ali želi počistiti neželeno programsko opremo. Uporabnik se lahko odloči za pošiljanje rezultatov čiščenja Googlu in tako pripomore k odkrivanju neželene programske opreme v prihodnosti. Ti rezultati vsebujejo metapodatke o datotekah, samodejno nameščene razširitve in registrske ključe, kot je opisano v beli knjigi o zasebnosti za Chrome.
 
@@ -567,7 +583,7 @@
 <translation id="2043770014371753404">Onemogočeni tiskalniki v podjetjih</translation>
 <translation id="2050629715135525072">Nadzira možnost uporabnika, povezanega z gostiteljem za oddaljeni dostop, da prenaša datoteke med odjemalcem in gostiteljem. To ne velja za povezave za oddaljeno pomoč, ki ne podpirajo prenosa podatkov.
 
-          Če je ta nastavitev onemogočena, prenos datotek ne bo dovoljen. Če je ta nastavitev omogočena ali ni nastavljena, prenos podatkov ne bo dovoljen.</translation>
+          Če je ta nastavitev onemogočena, prenos datotek ne bo dovoljen. Če je ta nastavitev omogočena ali ni nastavljena, bo prenos podatkov dovoljen.</translation>
 <translation id="2057317273526988987">Dovoli dostop do seznama URL-jev</translation>
 <translation id="2061810934846663491">Nastavitev zahtevanih imen domene za dostop do oddaljenih gostiteljev</translation>
 <translation id="206623763829450685">Določa, katere načine preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME" />.
@@ -694,7 +710,7 @@
       Če to nastavitev onemogočite ali je ne določite, spletnim stranem načeloma dovolite uporabo API-ja WebGL, vtičnikom pa API Pepper 3D. Privzete nastavitve brskalnika lahko še vedno določajo, da je treba za uporabo teh API-jev uporabiti argumente ukazne vrstice.
 
       Če je pravilnik HardwareAccelerationModeEnabled onemogočen, se pravilnik Disable3DAPIs prezre in je enako, kot če je pravilnik Disable3DAPIs omogočen.</translation>
-<translation id="2258126710006312594">Uporabnikom oddaljenega dostopa dovoli prenos datotek iz gostitelju in v njega</translation>
+<translation id="2258126710006312594">Uporabnikom oddaljenega dostopa dovoli prenos datotek iz gostitelja in v njega</translation>
 <translation id="2265214338421787313">Skrbnik lahko s tem pravilnikom določi, da lahko stran med razkladanjem prikazuje pojavna okna.
 
       Če je ta pravilnik omogočen, je stranem med razkladanjem dovoljeno prikazovanje pojavnih oken.
@@ -1259,6 +1275,17 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Ta pravilnik je mogoče nastaviti samo kot priporočenega. S tem pravilnikom lahko pomaknete niz priporočenih jezikov na vrh, vendar je uporabnikom vedno dovoljeno izbrati kateri koli jezik, ki ga operacijski sistem <ph name="PRODUCT_OS_NAME" /> podpira za njihovo sejo.
       </translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
+<translation id="3384115339826100753">Omogočanje pravilnika za upravljanje porabe energije s funkcijo preklopa na akumulatorsko napajanje ob konicah.
+
+          Preklop na akumulatorsko napajanje ob konicah predstavlja pravilnik za varčevanje z energijo, ki zmanjša uporabo izmeničnega toka v obdobjih dneva, ko je poraba energije v električnem omrežju največja. Za vsak dan v tednu je mogoče nastaviti začetni in končni čas delovanja v načinu s preklopom na akumulatorsko napajanje ob konicah. V teh obdobjih bo sistem deloval na energijo iz akumulatorja, tudi če je priklopljen na izmenični tok, dokler raven energije v akumulatorju presega določen prag. Po koncu določenega časa bo sistem deloval na izmenični tok, če je priklopljen nanj, akumulatorja pa ne bo obremenjeval. Sistem bo znova deloval normalno, in sicer tako, da bo uporabljal izmenični tok ter polnil akumulator, po začetku določenega začetnega časa za polnjenje.
+
+          Če je ta pravilnik omogočen in sta nastavljena pravilnika DevicePowerPeakShiftBatteryThreshold in DevicePowerPeakShiftDayConfig, je funkcija preklopa na akumulatorsko napajanje ob konicah v napravi vedno omogočena, če jo naprava podpira.
+
+          Če je pravilnik onemogočen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.
+
+          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+          Če ta pravilnik ni nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah sprva onemogočena in je uporabnik ne more omogočiti.</translation>
 <translation id="3388153794103186066">Omogoča nastavitev seznama URL-jev, ki določajo, katerim spletnim mestom bo samodejno podeljeno dovoljenje za dostop do naprave USB z danim ID-jem izdelka in dobavitelja. Pravilnik je veljaven samo, če vsak element na seznamu vsebuje tako naprave kot tudi URL-je. Vsak element v napravah lahko vsebuje polje z ID-jem dobavitelja in ID-jem izdelka. Vsak izpuščen ID se obravnava kot nadomestni znak z eno izjemo, in sicer, da ID izdelka ne more biti naveden, ne da bi bil naveden tudi ID dobavitelja. Pravilnik sicer ne bo veljaven in bo prezrt.
 
         Model dovoljenj za USB uporablja URL spletnega mesta, ki pošlje zahtevo (»URL z zahtevo«), in URL spletnega mesta z vrhnjim okvirjem (»URL za vdelavo«), da URL-ju z zahtevo podeli dovoljenje za dostop do naprave USB. URL z zahtevo se lahko razlikuje od URL-ja za vdelavo, če je stran, ki pošilja zahtevo, naložena v okviru iframe. Polje »urls« lahko tako vsebuje do dva niza z URL-jem, ločena z vejico, ki določata URL z zahtevo oziroma URL za vdelavo. Če je naveden samo en URL, bo dostop do ustreznih naprav USB podeljen, ko se URL spletnega mesta, ki pošilja zahtevo, ujema s tem URL-jem, ne glede na stanje vdelave. URL-ji v polju »urls« morajo biti veljavni URL-ji, sicer se pravilnik prezre.
@@ -1351,6 +1378,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta pravilnik nastavljen na »DeveloperToolsDisallowed« (vrednost 2), dostop do orodij za razvijalce ni mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="355118380775352753">Spletna mesta za odpiranje v nadomestnem brskalniku</translation>
+<translation id="3554984410014457319">Omogočanje Pomočniku Google, da posluša, ali je izgovorjena besedna zveza za glasovno aktiviranje</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
 <translation id="357917253161699596">Uporabnikom dovoli upravljanje uporabniških potrdil</translation>
 <translation id="3583230441447348508">Določa seznam vnaprej konfiguriranih omrežnih datotečnih sredstev v skupni rabi.
@@ -1585,6 +1613,12 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če nastavitev ni nastavljena ali je onemogočena, naprave s sistemom <ph name="PRODUCT_OS_NAME" /> samodejno preverijo, ali so na voljo posodobitve.
 
       Opozorilo: priporočamo, da so samodejne posodobitve omogočene, tako da bodo uporabniki lahko prejemali posodobitve programske opreme in nujne varnostne popravke. Če izklopite samodejne popravke, so uporabniki morda ogroženi.</translation>
+<translation id="4018000735882846261">Ta pravilnik Pomočniku Google odobri dovoljenje za poslušanje, ali je izgovorjena besedna zveza za govorno aktiviranje.
+
+      Če je pravilnik omogočen, Pomočnik Google posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      Če je pravilnik onemogočen, Pomočnik Google ne posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      Če pravilnik ni nastavljen, Pomočnik Google ne posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      </translation>
 <translation id="4020682745012723568">Aplikacije za Android do piškotkov, prenesenih v uporabnikov profili, ne morejo dostopati.</translation>
 <translation id="402759845255257575">Nobenemu mestu ne dovoli izvajanja JavaScripta</translation>
 <translation id="4027608872760987929">Omogoči privzeti iskalnik</translation>
@@ -1780,6 +1814,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Medtem ko je ta pravilnik podprt v zgornjih okoljih, je funkcija, ki jo omogoča, morda na voljo v manj okoljih. Vseh zastarelih funkcij spletnega okolja ni mogoče znova omogočiti; za omejen čas (različno od funkcije do funkcije) je mogoče samo tiste, ki so izrecno navedene spodaj. Splošna oblika zapisa oznake niza bo [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Če vas zanima referenčno gradivo in namen spremembe funkcij spletnega okolja, obiščite http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Omogoči zaklepanje, ko je naprava nedejavna ali preide v stanje pripravljenosti</translation>
+<translation id="4449469846627734399">Nastavitev dnevne konfiguracije funkcije preklopa na akumulatorsko napajanje ob konicah</translation>
 <translation id="4449545651113180484">Sukanje zaslona v smeri urnega kazalca za 270 stopinj</translation>
 <translation id="445270821089253489">Nadzira, kateri podatki o uporabniku in napravi se poročajo.</translation>
 <translation id="4454820008017317557">Pokaži ikono orodne vrstice <ph name="PRODUCT_NAME" /></translation>
@@ -1978,6 +2013,11 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Ta pravilnik je na voljo samo kot okolje.
       </translation>
+<translation id="5034604678285451405">Nastavitev praga za funkcijo preklopa na akumulatorsko napajanje ob konicah v odstotkih.
+
+          Ta pravilnik se uporablja samo, če je omogočen pravilnik DevicePowerPeakShiftEnabled.
+
+          Če ta pravilnik ni konfiguriran ali nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.</translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
 
@@ -2273,6 +2313,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5457065417344056871">Omogočanje načina za goste v brskalniku</translation>
 <translation id="5457924070961220141">Omogoča nastavitev privzetega upodabljalnika HTML, ko je <ph name="PRODUCT_FRAME_NAME" /> nameščen.
           Če ta pravilnik ni nastavljen, je gostiteljskemu brskalniku upodabljanje privzeto dovoljeno, vendar lahko po želji to preglasite in določite, da bo <ph name="PRODUCT_FRAME_NAME" /> privzeto upodabljal strani HTML.</translation>
+<translation id="5458584148602890023">Omogočanje funkcije preklopa na akumulatorsko napajanje ob konicah</translation>
 <translation id="5464816904705580310">Konfiguriranje nastavitev za upravljane uporabnike.</translation>
 <translation id="546726650689747237">Časovni zamik zatemnitve zaslona ob napajanju iz električnega omrežja</translation>
 <translation id="5469143988693423708">Uporabniku je omogočeno izvajanje Crostinija</translation>
@@ -2616,6 +2657,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen, je seznam naprav USB, katerih povezavo je mogoče prekiniti, prazen.</translation>
 <translation id="6083631234867522991">Windows (odjemalci s sistemom Windows):</translation>
+<translation id="608788685013546076">Nastavitev praga za funkcijo preklopa na akumulatorsko napajanje ob konicah v odstotkih</translation>
 <translation id="6089679180657323464">Nadzira nastavitve diagnostične storitve wilco in kontrolnika telemetrije.</translation>
 <translation id="6091233616732024397">Vsiljenje prijave uporabnikom, če želijo uporabljati brskalnik</translation>
 <translation id="6093156968240188330">Omogoči oddaljenim uporabnikom uporabo oken s skrbniškimi pravicami v sejah oddaljene pomoči</translation>
@@ -3846,6 +3888,9 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8548832052135586762">Nastavi tiskanje na samo barvno, samo enobarvno ali brez omejitve barv. Če pravilnik ni nastavljen, ni omejitve.</translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na novem zavihku s povezavami in v zaganjalniku aplikacij</translation>
+<translation id="8569734380847633643">
+          Če je pravilnik onemogočen, bo operacijski sistem <ph name="PRODUCT_OS_NAME" /> onemogočil povezavo Wi-Fi in uporabniki je ne bodo mogli omogočiti.
+          Če je pravilnik omogočen ali ni nastavljen, bodo uporabniki lahko po želji omogočili ali onemogočili povezavo Wi-Fi.</translation>
 <translation id="857369585509260201">Ta pravilnik je zastarel, namesto njega lahko uporabite BrowserSignin.
 
       Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno. Po omogočanju tega pravilnika bodo obstoječi neprijavljeni profili zaklenjeni in nedostopni. Če želite več informacij, preberite članek centra za pomoč.
@@ -3905,6 +3950,13 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8685024486845674965">Opozorilo zaščite z geslom sproži vnovična uporaba gesla</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8703488928438047864">Poročanje o stanju plošče</translation>
+<translation id="8703872185032220081">Nastavitev dnevne konfiguracije funkcije preklopa na akumulatorsko napajanje ob konicah.
+
+          Ta pravilnik se uporablja samo, če je omogočen pravilnik DevicePowerPeakShiftEnabled.
+
+          Če ta pravilnik ni konfiguriran ali nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.
+
+          Opomba: dovoljene vrednosti za polje <ph name="MINUTE_FIELD_NAME" /> v poljih <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> so 0 15, 30, 45.</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8711086062295757690">Določa ključno besedo, ki kot bližnjica v naslovni vrstici sproži iskanje za tega ponudnika.
 
@@ -4105,6 +4157,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko za avatar, ki ga predstavlja na zaslonu za prijavo.</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
+<translation id="9038839118379817310">Omogočanje povezave Wi-Fi</translation>
 <translation id="9039822628127365650">Če je ta pravilnik nastavljen, določa dolžino časa, po katerem je uporabnik samodejno odjavljen, seja pa se konča. Uporabnik je obveščen o preostalem času s časovnikom, prikazanem v sistemski vrstici.
 
       Če ta pravilnik ni nastavljen, dolžina seje ni omejena.

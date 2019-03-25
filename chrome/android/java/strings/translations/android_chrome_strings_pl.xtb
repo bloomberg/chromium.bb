@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Stała szerokość znaków</translation>
 <translation id="2610239185026711824">Zaproponuj hasło</translation>
 <translation id="2612676031748830579">Numer karty</translation>
+<translation id="2613747923081026172">Utwórz grupę</translation>
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2625189173221582860">Hasło zostało skopiowane</translation>
 <translation id="2631006050119455616">Zaoszczędzono</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Pytaj, zanim zezwolisz stronom na odtwarzanie treści chronionej</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
 <translation id="2932150158123903946">Dane aplikacji Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Wyślij na moje urządzenia</translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2962095958535813455">Przełączono na karty incognito</translation>
@@ -826,7 +826,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7031882061095297553">Synchronizuj z</translation>
 <translation id="7032663816368481562">Gdy klikniesz Więcej <ph name="ICON" /> na pasku adresu, pojawią się szybkie linki do podobnych stron. Adresy URL odwiedzanych przez Ciebie stron są przesyłane do Google.</translation>
 <translation id="7034608350006174882">Karty i adresy z Google Pay</translation>
-<translation id="7037082443972906537">Nazwa jest niedostępna</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7055152154916055070">Zablokowano przekierowanie:</translation>
 <translation id="7062545763355031412">Zaakceptuj i przełącz konta</translation>
@@ -880,7 +879,9 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nie znaleziono karty SD. Może brakować niektórych Twoich plików.</translation>
+<translation id="7479104141328977413">Zarządzanie kartami</translation>
 <translation id="7481312909269577407">Dalej</translation>
+<translation id="7482697587265222445">Karta została wysłana na Twoje urządzenia</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Pokazuj hasła</translation>
 <translation id="7494974237137038751">zaoszczędzone dane</translation>

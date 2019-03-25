@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">Няма предишен блоков цитат.</translation>
 <translation id="1321576897702511272">Скриване на помощта за ChromeVox</translation>
 <translation id="1325946044405407859">бледокафяво</translation>
+<translation id="1331634987653814322">Настройки за брайлово писмо</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> от <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">ехо за знаците и думите</translation>
 <translation id="1334570596456017464">Долен индекс</translation>
@@ -547,6 +548,7 @@
 <translation id="489907760999452556">Вътрешна връзка</translation>
 <translation id="4915087353619183190">Режимът за изговаряне на клавишите стартира. Натиснете стандартен клавиш или клавиш от брайловия дисплей или изпълнете жест с докосване, за да научите функцията му. Натиснете Control и W или Escape, за да излезете.</translation>
 <translation id="492295894462528572">Предговор</translation>
+<translation id="4943781537993885772">Стил на показване</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4953585991029886728">Текстово поле</translation>
 <translation id="4954534434583049121">Предишният блоков цитат</translation>
@@ -712,6 +714,7 @@
 <translation id="6006050241733874051">Формуляр</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обратна наклонена черта}other{# обратни наклонени черти}}</translation>
 <translation id="6017514345406065928">зелено</translation>
+<translation id="6021969570711251331">Редуване</translation>
 <translation id="6034000775414344507">светлосиво</translation>
 <translation id="6037602951055904232">Панорамно придвижване напред</translation>
 <translation id="6042826534790431634">За активиране натиснете клавиша „търсене“ + интервал.</translation>
@@ -762,6 +765,7 @@
 <translation id="6438968337250688271">„<ph name="NAME" />“, меню</translation>
 <translation id="6444046323172968959">Диалогов прозорец със сигнал</translation>
 <translation id="6452403590345320472">Съдържание</translation>
+<translation id="6454456397828627257">Редом</translation>
 <translation id="6459511626086141404">Фиксирана клавиатурна подредба</translation>
 <translation id="6468049171101508116">Следващият бутон</translation>
 <translation id="646954774886932461">Показалец</translation>

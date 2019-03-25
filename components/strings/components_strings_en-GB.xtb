@@ -545,6 +545,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
 <translation id="4032320456957708163">Your browser is managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">The link that you opened goes to a site that you don't usually visit. It might be trying to confuse you.</translation>
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">Add Valid Address</translation>
@@ -801,7 +802,6 @@
 <translation id="5455374756549232013">Bad policy timestamp</translation>
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}}</translation>
-<translation id="5461666840533392417">Looks like you navigated off on your own. I’ll leave you to it. Have a nice day :)</translation>
 <translation id="5470861586879999274">&amp;Redo edit</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">This content might try to install dangerous software on your device that steals or deletes your information. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
@@ -1045,6 +1045,7 @@
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
 <translation id="6964255747740675745">Network configuration failed to be parsed (invalid JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
@@ -1216,7 +1217,6 @@ Additional details:
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7791543448312431591">Add</translation>
-<translation id="7793809570500803535">The web page at <ph name="SITE" /> might be temporarily down or it may have been moved permanently to a new web address.</translation>
 <translation id="7800304661137206267">The connection is encrypted using <ph name="CIPHER" />, with <ph name="MAC" /> for message authentication and <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="7802523362929240268">Site is legitimate</translation>
 <translation id="780301667611848630">No, thank you</translation>

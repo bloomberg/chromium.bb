@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">сега</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минута}other{# минути}}</translation>
+<translation id="1756116796893109054">Разделът се изпраща...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Б</translation>
 <translation id="1801827354178857021">Период</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 месец}other{# месеца}}</translation>
@@ -51,11 +52,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Калибрирането завърши</translation>
 <translation id="252373100621549798">Неизвестен дисплей</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{след 1 ч}other{след # ч}}</translation>
 <translation id="2583543531130364912">Калибриране на сензорния екран</translation>
 <translation id="2666092431469916601">Най-горе</translation>
+<translation id="2701330563083355633">Споделено от <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Копиране в буферната памет</translation>
 <translation id="2803313416453193357">Отваряне на папката</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Преди 1 година}other{Преди # години}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{след 1 д}other{след # д}}</translation>
 <translation id="2931838996092594335">кликвам</translation>
 <translation id="3036649622769666520">Отваряне на файлове</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> МБ</translation>
@@ -114,6 +118,7 @@
 <translation id="5613020302032141669">Стрелка наляво</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ден и }other{# дни и }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{след 1 г}other{след # г}}</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Остава 1 секунда}other{Остават # секунди}}</translation>
 <translation id="5941711191222866238">Намаляване</translation>
@@ -169,6 +174,7 @@
 <translation id="7907591526440419938">Отваряне на файл</translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Повече от 1 непрочетено известие}other{Повече от # непрочетени известия}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{след 1 м}other{след # м}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Преди 1 час}other{Преди # часа}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Остава 1 сек}other{Остават # сек}}</translation>

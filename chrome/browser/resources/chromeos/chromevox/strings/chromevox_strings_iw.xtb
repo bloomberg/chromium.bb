@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">‏אין blockquote קודם.</translation>
 <translation id="1321576897702511272">‏הסתר עזרה של ChromeVox</translation>
 <translation id="1325946044405407859">חום צהבהב</translation>
+<translation id="1331634987653814322">הגדרות ברייל</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> מתוך <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">הד תו ומילה</translation>
 <translation id="1334570596456017464">כתב תחתי</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">קישור פנימי</translation>
 <translation id="4915087353619183190">‏הפעלה של מצב למידה. הקשה על מקש במקלדת qwerty, מקש ברייל בתצוגה הניתנת לרענון או ביצוע תנועת מגע יציגו את הפעולה המבוצעת. כדי לצאת יש להקיש על Control יחד עם W, או על מקש Esc.</translation>
 <translation id="492295894462528572">פתח דבר</translation>
+<translation id="4943781537993885772">סגנון תצוגה</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4953585991029886728">ערוך טקסט</translation>
 <translation id="4954534434583049121">‏Blockquote הקודם</translation>
@@ -713,6 +715,7 @@
 <translation id="6006050241733874051">טופס</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{קו נטוי שמאלי}two{# סימני קו נטוי שמאלי}many{# סימני קו נטוי שמאלי}other{# סימני קו נטוי שמאלי}}</translation>
 <translation id="6017514345406065928">ירוק</translation>
+<translation id="6021969570711251331">משולב</translation>
 <translation id="6034000775414344507">אפור בהיר</translation>
 <translation id="6037602951055904232">הזז קדימה</translation>
 <translation id="6042826534790431634">כדי להפעיל, יש להקיש על המקשים חיפוש+רווח.</translation>
@@ -763,6 +766,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, תפריט</translation>
 <translation id="6444046323172968959">תיבת דו-שיח של התראה</translation>
 <translation id="6452403590345320472">תוכן העניינים</translation>
+<translation id="6454456397828627257">זה לצד זה</translation>
 <translation id="6459511626086141404">מפת מפתחות שטוחה</translation>
 <translation id="6468049171101508116">הלחצן הבא</translation>
 <translation id="646954774886932461">אינדקס</translation>

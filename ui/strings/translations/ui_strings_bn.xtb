@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">এখন</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
+<translation id="1756116796893109054">ট্যাব পাঠানো হচ্ছে...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">পূর্ণচ্ছেদ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{১ মাস}one{# মাস}other{# মাস}}</translation>
@@ -51,11 +52,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ক্রমাঙ্কন সম্পূর্ণ হয়েছে</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{১ ঘন্টার মধ্যে}one{# ঘন্টার মধ্যে}other{# ঘন্টার মধ্যে}}</translation>
 <translation id="2583543531130364912">আপনার টাচস্ক্রীন ক্রমাঙ্কন করুন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
+<translation id="2701330563083355633"><ph name="DEVICE_NAME" />-এর থেকে শেয়ার করা হয়েছে</translation>
 <translation id="2743387203779672305">ক্লিপবোর্ডে কপি করুন</translation>
 <translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{১ বছর আগে}one{# বছর আগে}other{# বছর আগে}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{১ দিনের মধ্যে}one{# দিনের মধ্যে}other{# দিনের মধ্যে}}</translation>
 <translation id="2931838996092594335">ক্লিক করুন</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -114,6 +118,7 @@
 <translation id="5613020302032141669">Left Arrow</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{১ দিন এবং }one{# দিন এবং }other{# দিন এবং }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{১ বছরের মধ্যে}one{# বছরের মধ্যে}other{# বছরের মধ্যে}}</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
@@ -169,6 +174,7 @@
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="7969046989155602842">কমান্ড</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{১টির বেশি অপঠিত বিজ্ঞপ্তি}one{#টির বেশি অপঠিত বিজ্ঞপ্তি}other{#টির বেশি অপঠিত বিজ্ঞপ্তি}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{১ মিনিটের মধ্যে}one{# মিনিটের মধ্যে}other{# মিনিটের মধ্যে}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>

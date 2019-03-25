@@ -54,6 +54,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1319608975892113573">Geen vorig blok met geciteerde tekst.</translation>
 <translation id="1321576897702511272">Help van ChromeVox verbergen</translation>
 <translation id="1325946044405407859">Geelbruin</translation>
+<translation id="1331634987653814322">Braille-instellingen</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> van <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">teken- en woordecho</translation>
 <translation id="1334570596456017464">Subscript</translation>
@@ -547,6 +548,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="489907760999452556">Interne link</translation>
 <translation id="4915087353619183190">Leermodus starten. Druk op een QWERTY-toets, een vernieuwbare brailletoets of tik op een gebaar om de functie ervan te leren. Druk op Control en W of Escape om af te sluiten.</translation>
 <translation id="492295894462528572">Voorwoord</translation>
+<translation id="4943781537993885772">Weergavestijl</translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4953585991029886728">Tekst bewerken</translation>
 <translation id="4954534434583049121">Vorig blok met geciteerde tekst</translation>
@@ -712,6 +714,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6006050241733874051">Formulier</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Groen</translation>
+<translation id="6021969570711251331">Interleave</translation>
 <translation id="6034000775414344507">Lichtgrijs</translation>
 <translation id="6037602951055904232">Vooruit schuiven</translation>
 <translation id="6042826534790431634">Druk op de zoektoets en de spatiebalk om te activeren.</translation>
@@ -762,6 +765,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialoogvenster voor meldingen</translation>
 <translation id="6452403590345320472">Inhoudsopgave</translation>
+<translation id="6454456397828627257">Naast elkaar</translation>
 <translation id="6459511626086141404">Platte toetsenbordindeling</translation>
 <translation id="6468049171101508116">Volgende knop</translation>
 <translation id="646954774886932461">Index</translation>

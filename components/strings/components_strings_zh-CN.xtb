@@ -540,6 +540,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4032320456957708163">您的浏览器由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
+<translation id="4034375457890803692">您打开的链接将转到您不常访问的网站。该网站可能会试图迷惑您。</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY" />”键：<ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">添加有效地址</translation>
@@ -796,7 +797,6 @@
 <translation id="5455374756549232013">策略时间戳无效</translation>
 <translation id="5457113250005438886">无效</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}other{<ph name="CONTACT_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 名联系人}}</translation>
-<translation id="5461666840533392417">看来您已主动离开导航页面，所以我不再提供帮助了。祝您度过愉快的一天 :)</translation>
 <translation id="5470861586879999274">恢复修改(&amp;R)</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">此内容可能会试图在您的设备上安装危险的软件来窃取或删除您的信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
@@ -1039,6 +1039,7 @@
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6964255747740675745">未能解析网络配置（JSON 无效）。</translation>
 <translation id="6965382102122355670">确定</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">设备</translation>
 <translation id="6970216967273061347">区</translation>
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
@@ -1210,7 +1211,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">县</translation>
 <translation id="7791543448312431591">添加</translation>
-<translation id="7793809570500803535">网址为 <ph name="SITE" /> 的网页可能暂时无法连接或已永久性地移动到了新网址。</translation>
 <translation id="7800304661137206267">该连接是使用 <ph name="CIPHER" /> 进行加密的，同时使用 <ph name="MAC" /> 进行讯息身份验证并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="7802523362929240268">网站是合规的</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>

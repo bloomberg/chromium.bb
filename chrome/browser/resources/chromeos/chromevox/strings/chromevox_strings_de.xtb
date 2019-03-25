@@ -54,6 +54,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1319608975892113573">Kein vorheriges blockquote-Element</translation>
 <translation id="1321576897702511272">ChromeVox-Hilfe ausblenden</translation>
 <translation id="1325946044405407859">Gelbbraun</translation>
+<translation id="1331634987653814322">Brailleeinstellungen</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> von <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">Zeichen- und Wortecho</translation>
 <translation id="1334570596456017464">Tiefgestellt</translation>
@@ -547,6 +548,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="489907760999452556">Interner Link</translation>
 <translation id="4915087353619183190">Der Lernmodus wird gestartet. Drücken Sie eine Taste auf der QWERTZ-Tastatur oder der Braillezeile oder führen Sie eine Bewegung (Geste) auf dem Bildschirm aus, um mehr über die Taste bzw. Bewegung zu erfahren. Zum Beenden drücken Sie "Strg + w" oder "Esc".</translation>
 <translation id="492295894462528572">Vorwort</translation>
+<translation id="4943781537993885772">Anzeigestil</translation>
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4953585991029886728">Text bearbeiten</translation>
 <translation id="4954534434583049121">Vorheriges Blockzitat</translation>
@@ -712,6 +714,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{umgekehrter Schrägstrich}other{# umgekehrte Schrägstriche}}</translation>
 <translation id="6017514345406065928">Grün</translation>
+<translation id="6021969570711251331">Überlappend</translation>
 <translation id="6034000775414344507">Hellgrau</translation>
 <translation id="6037602951055904232">Nach vorn verschieben</translation>
 <translation id="6042826534790431634">Zum Aktivieren Suchtaste + Leertaste drücken.</translation>
@@ -762,6 +765,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6438968337250688271">Menü "<ph name="NAME" />"</translation>
 <translation id="6444046323172968959">Benachrichtigungsdialogfeld</translation>
 <translation id="6452403590345320472">Inhaltsverzeichnis</translation>
+<translation id="6454456397828627257">Nebeneinander</translation>
 <translation id="6459511626086141404">Flache Tastaturbelegung</translation>
 <translation id="6468049171101508116">Nächste Schaltfläche</translation>
 <translation id="646954774886932461">Index</translation>

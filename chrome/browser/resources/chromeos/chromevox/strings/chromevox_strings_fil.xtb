@@ -54,6 +54,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1319608975892113573">Walang nakaraang blockquote.</translation>
 <translation id="1321576897702511272">Itago ang tulong sa ChromeVox</translation>
 <translation id="1325946044405407859">Tan</translation>
+<translation id="1331634987653814322">Mga Setting ng Braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ng <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">echo ng character at salita</translation>
 <translation id="1334570596456017464">Subscript</translation>
@@ -548,6 +549,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="489907760999452556">Internal na link</translation>
 <translation id="4915087353619183190">Sinisimulan ang Learn Mode. Pumindot ng “qwerty key,” nare-refresh na “braille key,” o touch gesture para malaman ang function nito. Pindutin ang Ctrl+W o escape para lumabas.</translation>
 <translation id="492295894462528572">Foreword</translation>
+<translation id="4943781537993885772">Istilo ng Display</translation>
 <translation id="495170559598752135">Mga Pagkilos</translation>
 <translation id="4953585991029886728">I-edit ang text</translation>
 <translation id="4954534434583049121">Nakaraang block quote</translation>
@@ -713,6 +715,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}one{# backslash}other{# na backslash}}</translation>
 <translation id="6017514345406065928">Berde</translation>
+<translation id="6021969570711251331">Interleave</translation>
 <translation id="6034000775414344507">Light Grey</translation>
 <translation id="6037602951055904232">I-pan paharap</translation>
 <translation id="6042826534790431634">Pindutin ang Search+Space upang i-activate.</translation>
@@ -763,6 +766,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialog ng alerto</translation>
 <translation id="6452403590345320472">Talaan ng mga nilalaman</translation>
+<translation id="6454456397828627257">Magkatabi</translation>
 <translation id="6459511626086141404">Flat na keymap</translation>
 <translation id="6468049171101508116">Susunod na button</translation>
 <translation id="646954774886932461">Index</translation>

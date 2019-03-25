@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Ravnomjerno raspoređeno</translation>
 <translation id="2610239185026711824">Predloži zaporku</translation>
 <translation id="2612676031748830579">Broj kartice</translation>
+<translation id="2613747923081026172">Izradi grupu</translation>
 <translation id="2621115761605608342">Dopuštanje JavaScripta za određenu web-lokaciju.</translation>
 <translation id="2625189173221582860">Zaporka je kopirana</translation>
 <translation id="2631006050119455616">Spremljeno</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Web-lokacije moraju tražiti dopuštenje za reprodukciju zaštićenog sadržaja</translation>
 <translation id="2913331724188855103">Dopuštanje web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
 <translation id="2932150158123903946">Pohrana aplikacije Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Pošalji na moje uređaje</translation>
 <translation id="2956410042958133412">Računom upravljaju <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2962095958535813455">Prešli ste na anonimne kartice</translation>
@@ -826,7 +826,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7031882061095297553">Sinkronizacija s računima</translation>
 <translation id="7032663816368481562">Kada dodirnite ikonu Više ovakvih prijedloga <ph name="ICON" /> u adresnoj traci, prikazat će se brze veze na povezane stranice. URL-ovi stranica koje posjetite šalju se Googleu.</translation>
 <translation id="7034608350006174882">Kartice i adrese s Google Paya</translation>
-<translation id="7037082443972906537">Naziv nije dostupan</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7055152154916055070">Preusmjeravanje je blokirano:</translation>
 <translation id="7062545763355031412">Prihvati i promijeni račun</translation>
@@ -880,7 +879,9 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Ako se to često prikazuje, pokušajte s ovim <ph name="BEGIN_LINK" />prijedlozima<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD kartica nije pronađena. Neke od vaših datoteka možda nedostaju.</translation>
+<translation id="7479104141328977413">Upravljanje karticama</translation>
 <translation id="7481312909269577407">Naprijed</translation>
+<translation id="7482697587265222445">Kartica je poslana na vaše uređaje</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (ažurirano <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Prikaz zaporki</translation>
 <translation id="7494974237137038751">spremljeni podaci</translation>
@@ -889,7 +890,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="751961395872307827">Povezivanje s web-lokacijom nije uspjelo</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Prijedlozi se ne mogu dohvatiti</translation>
-<translation id="7559245342362162951">Prikaz kartica grupe u rešetki na cijelom zaslonu</translation>
+<translation id="7559245342362162951">Prikaži kartice grupe u rešetki na cijelom zaslonu</translation>
 <translation id="7559975015014302720">Jednostavni je način isključen</translation>
 <translation id="7562080006725997899">Brisanje podataka o pregledavanju</translation>
 <translation id="756809126120519699">Chromeovi su podaci izbrisani</translation>
@@ -1100,9 +1101,9 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9139068048179869749">Web-lokacije moraju tražiti dopuštenje za slanje obavijesti (preporučeno)</translation>
 <translation id="9139318394846604261">Kupnja</translation>
-<translation id="9150694013019234766">Kartice možete izmjenjivati u grupi kartica pri dnu zaslona</translation>
+<translation id="9150694013019234766">Prebacujte se između kartica u grupi kartica pri dnu zaslona</translation>
 <translation id="9155898266292537608">Možete i kratko dodirnuti riječ da biste je pretražili</translation>
-<translation id="9169594135889675189">Dodavanje nove kartice grupi</translation>
+<translation id="9169594135889675189">Dodaj novu karticu grupi</translation>
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>
 <translation id="9204836675896933765">Preostala je 1 datoteka</translation>
 <translation id="9206873250291191720">A</translation>

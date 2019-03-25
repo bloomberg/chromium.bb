@@ -54,6 +54,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1319608975892113573">Ei edellisiä lainauksia.</translation>
 <translation id="1321576897702511272">Piilota ChromeVox-ohje</translation>
 <translation id="1325946044405407859">Kellanruskea</translation>
+<translation id="1331634987653814322">Pistekirjoitusasetukset</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">merkkien ja sanojen puhuminen</translation>
 <translation id="1334570596456017464">Alaindeksi</translation>
@@ -548,6 +549,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="489907760999452556">Sisäinen linkki</translation>
 <translation id="4915087353619183190">Opetustila käynnistyy. Kokeile qwerty-näppäintä, pistekirjoitusnäppäintä tai kosketuselettä, niin näet sen toiminnan. Paina Control ja W tai Esc sulkeaksesi tilan.</translation>
 <translation id="492295894462528572">Esipuhe</translation>
+<translation id="4943781537993885772">Näyttötyyli</translation>
 <translation id="495170559598752135">Toiminnot</translation>
 <translation id="4953585991029886728">Muokkaa tekstiä</translation>
 <translation id="4954534434583049121">Edellinen estoviittaus</translation>
@@ -713,6 +715,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="6006050241733874051">Lomake</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kenoviiva}other{# kenoviivaa}}</translation>
 <translation id="6017514345406065928">Vihreä</translation>
+<translation id="6021969570711251331">Lomittain</translation>
 <translation id="6034000775414344507">Vaaleanharmaa</translation>
 <translation id="6037602951055904232">Panoroi eteenpäin</translation>
 <translation id="6042826534790431634">Aktivoi painamalla haku+välilyönti.</translation>
@@ -763,6 +766,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="6438968337250688271"><ph name="NAME" />, valikko</translation>
 <translation id="6444046323172968959">Ilmoitusvalintaikkuna</translation>
 <translation id="6452403590345320472">Sisällysluettelo</translation>
+<translation id="6454456397828627257">Vierekkäin</translation>
 <translation id="6459511626086141404">Flat-näppäinkartta</translation>
 <translation id="6468049171101508116">Seuraava-painike</translation>
 <translation id="646954774886932461">Hakemisto</translation>

@@ -553,6 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-сторінка поруч}one{# веб-сторінка поруч}few{# веб-сторінки поруч}many{# веб-сторінок поруч}other{# веб-сторінки поруч}}</translation>
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
 <translation id="4032320456957708163">Вашим веб-переглядачем керує домен <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">Натиснуте посилання спрямовує на сайт, який ви зазвичай не відвідуєте. Воно може вас спантеличити.</translation>
 <translation id="4058922952496707368">Ключ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (конверт)</translation>
 <translation id="4067947977115446013">Додайте дійсну адресу</translation>
@@ -809,7 +810,6 @@
 <translation id="5455374756549232013">Недійсна мітка часу правила</translation>
 <translation id="5457113250005438886">Недійсні дані</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">Схоже, моя допомога вже не потрібна. Хорошого вам дня :)</translation>
 <translation id="5470861586879999274">&amp;Повторити редагування</translation>
 <translation id="5478437291406423475">B6/C4 (конверт)</translation>
 <translation id="5481076368049295676">Цей вміст може намагатися встановити на ваш пристрій небезпечну програму, яка викрадає або видаляє інформацію. <ph name="BEGIN_LINK" />Усе одно показати<ph name="END_LINK" /></translation>
@@ -1053,6 +1053,7 @@
 <translation id="6957887021205513506">Схоже, що сертифікат сервера підроблено.</translation>
 <translation id="6964255747740675745">Не вдалося виконати синтаксичний аналіз конфігурації мережі (недійсний формат JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Пристрій</translation>
 <translation id="6970216967273061347">Округ</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
@@ -1227,7 +1228,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791543448312431591">Додати</translation>
-<translation id="7793809570500803535">Веб-сторінка на сайті <ph name="SITE" /> може бути тимчасово недоступна або її назавжди переміщено за новою веб-адресою.</translation>
 <translation id="7800304661137206267">З'єднання зашифровано з використанням <ph name="CIPHER" /> з алгоритмом <ph name="MAC" /> для автентифікації повідомлення та кодування <ph name="KX" /> як механізму обміну ключами.</translation>
 <translation id="7802523362929240268">Сайт законно зареєстрований</translation>
 <translation id="780301667611848630">Ні, дякую</translation>

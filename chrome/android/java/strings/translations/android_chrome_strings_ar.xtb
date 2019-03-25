@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">أحادي المسافة</translation>
 <translation id="2610239185026711824">اقتراح كلمة مرور</translation>
 <translation id="2612676031748830579">رقم البطاقة</translation>
+<translation id="2613747923081026172">إنشاء مجموعة</translation>
 <translation id="2621115761605608342">السماح بجافا سكريبت لموقع ويب معين.</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2631006050119455616">تم الحفظ</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">السؤال قبل السماح لمواقع الويب بتشغيل المحتوى المحمي</translation>
 <translation id="2913331724188855103">السماح للمواقع بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2932150158123903946">‏مساحة تخزين <ph name="APP_NAME" /> Google</translation>
-<translation id="2941880727166628951">إرسال إلى أجهزتي</translation>
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="2962095958535813455">تم التبديل إلى علامات تبويب التصفح المتخفي</translation>
@@ -826,7 +826,6 @@
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7032663816368481562">‏عند النقر على "المزيد من النتائج المشابهة" <ph name="ICON" /> في شريط العناوين، تظهر روابط سريعة للصفحات ذات الصلة. ويُرسِل المتصفّح عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="7034608350006174882">‏البطاقات والعناوين باستخدام Google Pay</translation>
-<translation id="7037082443972906537">الاسم غير متوفِّر</translation>
 <translation id="7053983685419859001">منع</translation>
 <translation id="7055152154916055070">تم حظر إعادة توجيه:</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
@@ -880,7 +879,9 @@
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7475192538862203634">إذا تكرر ظهور هذا، فحاول الاستفادة من <ph name="BEGIN_LINK" />الاقتراحات<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">‏لم يتم العثور على بطاقة SD. قد يكون بعض الملفات مفقودًا.</translation>
+<translation id="7479104141328977413">إدارة علامات التبويب</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
+<translation id="7482697587265222445">يمكنك النقر للإرسال إلى أجهزتك</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">عرض كلمات المرور</translation>
 <translation id="7494974237137038751">البيانات التي تم توفيرها</translation>
@@ -1100,7 +1101,7 @@
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9139068048179869749">السؤال قبل السماح للمواقع بإرسال الإشعارات (موصى به)</translation>
 <translation id="9139318394846604261">التسوّق</translation>
-<translation id="9150694013019234766">التبديل بين علامات التبويب في مجموعة علامة التبويب بالقرب من أسفل الشاشة</translation>
+<translation id="9150694013019234766">يمكنك التبديل بين علامات التبويب ضمن المجموعة بالقرب من أسفل الشاشة.</translation>
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>
 <translation id="9169594135889675189">إضافة علامة تبويب جديدة للمجموعة</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>

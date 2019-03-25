@@ -319,6 +319,22 @@
       警告: <ph name="PRODUCT_OS_NAME" /> のバージョンの制御をキオスクアプリに委ねることはおすすめしません。このようにした場合、デバイスでソフトウェアのアップデートや重要なセキュリティ修正を取得できなくなる可能性があります。つまり、<ph name="PRODUCT_OS_NAME" /> のバージョンの制御を委ねると、ユーザーが危険にさらされる恐れがあります。</translation>
 <translation id="1675002386741412210">サポート対象:</translation>
 <translation id="1689963000958717134"><ph name="PRODUCT_OS_NAME" /> デバイスのすべてのユーザーにプッシュ型ネットワーク設定を適用できます。ネットワーク設定は、Open Network Configuration 形式（<ph name="ONC_SPEC_URL" /> をご覧ください）で定義された JSON 形式の文字列です。</translation>
+<translation id="1704516734140344991"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデート機能を利用可能にするかどうか、利用可能にする場合はその動作を設定します。
+
+      個々の設定は JSON プロパティで指定できます。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> に設定されている場合、ユーザーは <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをインストールするために Powerwash のフローを開始できます。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" /> に設定されている場合、ユーザーはデバイス全体の状態（企業の登録を含む）を保持する <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートのフローを開始できますが、ユーザーデータは失われます。このアップデート フローはバージョン 68 より利用可能です。
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: 脆弱性のある <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアに対して自動的な <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデートをどのように実行するかを制御します。すべてのフローはローカル デバイスの状態を保持します。
+        1 に設定または未設定の場合、TPM ファームウェア アップデートは実行されません。
+        2 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは、ユーザーがアップデートを確認した後に、次の再起動で更新されます。
+        3 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは次の再起動で更新されます。
+        4 に設定した場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェアは登録後、ユーザーのログイン前に更新されます。
+        このオプションはバージョン 74 より利用可能です。
+
+      このポリシーが設定されていない場合、<ph name="TPM_FIRMWARE_UPDATE_TPM" /> ファームウェア アップデート機能は利用できません。</translation>
 <translation id="1708496595873025510">バリエーション シードの取得に制限を設定する</translation>
 <translation id="1717817358640580294">このポリシーが未設定の場合、Chrome クリーンアップで望ましくないソフトウェアが検出されると、SafeBrowsingExtendedReportingEnabled で設定されているポリシーに基づいて、スキャンに関するメタデータのレポートが Google に送信される可能性があります。ユーザーは望ましくないソフトウェアをクリーンアップするかどうかを選択できます。また、望ましくないソフトウェアの検出精度を向上するために、クリーンアップの結果を Google と共有するかどうかも選択できます。これらの結果には、Chrome のプライバシー ホワイトペーパーで説明されているとおり、ファイルのメタデータのほか自動インストールされた拡張機能とレジストリキーが含まれます。
 
@@ -1081,6 +1097,17 @@
       このポリシーについては推奨設定しかできません。このポリシーを使って推奨言語 / 地域を最上位に移動することは可能ですが、ユーザーは <ph name="PRODUCT_OS_NAME" /> でサポートされた言語 / 地域であればどれでもセッションで使用することができます。
       </translation>
 <translation id="3381968327636295719">ホスト ブラウザをデフォルトで使用する</translation>
+<translation id="3384115339826100753">電力ピークシフトの電力管理ポリシーを有効にします。
+
+          ピークシフトは、日中のピーク使用時に交流電流の使用量を最小限に抑える省電力ポリシーです。各平日に、電力ピークシフト モードの開始時刻と終了時刻を設定できます。この時間帯は、電池残量が指定されたしきい値を上回っている限り、交流電流が接続されている場合でも、システムの実行には電池が使用されます。指定した終了時刻を過ぎると、電源に接続されている場合、システムの実行には交流電流が使用されますが、電池は充電されません。指定された充電開始時刻を過ぎると、システムは再び、交流電流を使って通常どおりに動作し、電池が充電されます。
+
+          このポリシーが true に設定されていて、DevicePowerPeakShiftBatteryThreshold と DevicePowerPeakShiftDayConfig が設定されている場合は、デバイスでサポートされている場合、電力ピークシフトは常に有効になります。
+
+          このポリシーを false に設定した場合、電力ピークシフトは常に無効になります。
+
+          このポリシーを設定した場合、ユーザーが変更したりオーバーライドしたりすることはできません。
+
+          このポリシーを設定しない場合、電力ピークシフトは最初から無効になっていて、ユーザーが有効にすることはできません。</translation>
 <translation id="3388153794103186066">指定したベンダー ID と製品 ID の USB デバイスへのアクセスを自動的に許可するサイトを、URL のリストで設定します。このポリシーが有効になるためには、リストの各項目でデバイスと URL の両方を指定する必要があります。デバイスの各項目にはベンダー ID と製品 ID を指定できます。指定されていない ID はワイルドカードとして扱われますが、例外として、製品 ID を指定するのであればベンダー ID も指定する必要があります。ベンダー ID の指定なしで製品 ID のみを指定した場合、このポリシーは無効となり、無視されます。
 
         USB のアクセス許可モデルでは、リクエスト元のサイトの URL（以下「リクエスト元 URL」）と最上位フレームサイトの URL（以下「埋め込み元 URL」）を使用して、リクエスト元 URL に USB デバイスへのアクセスを許可します。リクエスト元のサイトが iframe 内で読み込まれている場合、リクエスト元 URL と埋め込み元 URL は異なる可能性があります。このため、「urls」フィールドには、リクエスト元 URL と埋め込み元 URL をカンマで区切って、最大 2 つの URL 文字列を指定することができます。URL を 1 つだけ指定した場合、対応する USB デバイスへのアクセスは、リクエスト元のサイトの URL がこの URL と一致した場合に、埋め込みの状態にかかわらず許可されます。「urls」フィールドの URL には必ず有効な URL を指定してください。無効な URL を指定した場合、このポリシーは無視されます。
@@ -1153,6 +1180,7 @@
       このポリシーが「DeveloperToolsDisallowed」（値 2）に設定されている場合、デベロッパー ツールへのアクセスやウェブサイト要素の検証は許可されません。デベロッパー ツールや JavaScript コンソールを開くためのキーボード ショートカット、メニューまたはコンテキスト メニューの項目は無効になります。</translation>
 <translation id="3547954654003013442">プロキシ設定</translation>
 <translation id="355118380775352753">代替ブラウザで開くウェブサイト</translation>
+<translation id="3554984410014457319">Google アシスタントで音声サービスの起動ワードを有効にする</translation>
 <translation id="3577251398714997599">煩わしい広告を含むサイトでの広告表示に関する設定</translation>
 <translation id="357917253161699596">ユーザー証明書の管理をユーザーに許可する</translation>
 <translation id="3583230441447348508">事前設定のネットワーク ファイル共有のリストを指定します。
@@ -1376,6 +1404,12 @@
       この設定を未設定のままにするか false に設定した場合、<ph name="PRODUCT_OS_NAME" /> デバイスでは更新が自動的にチェックされます。
 
       警告: ユーザーが各自のデバイスでソフトウェアのアップデートや重要なセキュリティ修正を取得できるように、自動更新は有効のままにしておくことをおすすめします。自動更新を無効にすると、ユーザーが危険にさらされる恐れがあります。</translation>
+<translation id="4018000735882846261">このポリシーでは、Google アシスタントで音声サービスの起動ワードを有効にするかどうかを指定します。
+
+      このポリシーを有効に設定した場合は、Google アシスタントで音声サービスの起動ワードが有効になります。
+      このポリシーを無効に設定した場合は、Google アシスタントで音声サービスの起動ワードが無効になります。
+      このポリシーを設定しない場合は、Google アシスタントで音声サービスの起動ワードが無効になります。
+      </translation>
 <translation id="4020682745012723568">Android アプリは、ユーザーのプロフィールに送信された Cookie にアクセスすることはできません。</translation>
 <translation id="402759845255257575">すべてのサイトに対して Javascript の実行を許可しない</translation>
 <translation id="4027608872760987929">デフォルトの検索プロバイダを有効にする</translation>
@@ -1519,6 +1553,7 @@
       ポリシー自体は上記のプラットフォームでサポートされますが、このポリシーの対象となる機能を利用できるプラットフォームはそれより少ないことがあります。サポートが終了したすべてのウェブ プラットフォーム機能を再び有効にできるとは限りません。一時的に有効になるのは、下記のリストに指定されている機能のみで、有効になる期間は機能によって異なります。文字列タグの一般的な形式は [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd] です。詳しくは、https://bit.ly/blinkintents でウェブ プラットフォーム機能を変更する意図をご確認ください。
       </translation>
 <translation id="4442582539341804154">デバイスがアイドルまたは停止の状態になったときにロックを有効にする</translation>
+<translation id="4449469846627734399">電力ピークシフトの曜日の設定を指定する</translation>
 <translation id="4449545651113180484">画面を時計回りに 270 度回転</translation>
 <translation id="445270821089253489">レポートを送信するユーザーとデバイスの情報の種類を制御します。</translation>
 <translation id="4454820008017317557"><ph name="PRODUCT_NAME" /> ツールバー アイコンを表示する</translation>
@@ -1689,6 +1724,10 @@
 <translation id="4986560318567565414">代替ブラウザから Chrome への切り替えに使用するパスです。</translation>
 <translation id="4988291787868618635">アイドル時間に到達したときに行われる操作</translation>
 <translation id="4995548127349206948">NTLMv2 認証が有効かどうか。</translation>
+<translation id="5034604678285451405">電力ピークシフトの電池のしきい値をパーセントで設定します。
+          このポリシーは DevicePowerPeakShiftEnabled が true に設定されている場合にのみ使用されます。
+
+          このポリシーを設定しない場合、電力ピークシフトは常に無効になります。</translation>
 <translation id="5047604665028708335">コンテンツ パック外部のサイトへのアクセスを許可する</translation>
 <translation id="5052081091120171147">このポリシーを有効にすると、現在の既定のブラウザからインポートされた閲覧履歴を適用します。その場合、このポリシーはインポート ダイアログにも影響します。無効にすると閲覧履歴はインポートされません。このポリシーが未設定の場合、インポートするかどうかをユーザーに尋ねるか、自動的にインポートされます。</translation>
 <translation id="5056708224511062314">画面拡大鏡を無効にする</translation>
@@ -1880,6 +1919,7 @@
 <translation id="5447306928176905178">メモリ情報（JavaScript のヒープ サイズ）がページに報告されるようにする（サポート終了）</translation>
 <translation id="5457065417344056871">ブラウザでゲストモードを有効にする</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> がインストールされている場合、デフォルトの HTML レンダラを設定できます。このポリシーが未設定の場合はデフォルトの設定が使用されホスト ブラウザがレンダリングを実行しますが、この設定をオーバーライドしてデフォルトで <ph name="PRODUCT_FRAME_NAME" /> に HTML ページのレンダリングを実行させることもできます。</translation>
+<translation id="5458584148602890023">電力ピークシフトを有効にする</translation>
 <translation id="5464816904705580310">管理対象ユーザーの設定を行います。</translation>
 <translation id="546726650689747237">画面が暗くなるまでの時間（AC 電源での実行時）</translation>
 <translation id="5469143988693423708">ユーザーは Crostini を実行できます</translation>
@@ -2173,6 +2213,7 @@
 
       このポリシーが設定されていない場合、分離可能な USB デバイスのリストは空になります。</translation>
 <translation id="6083631234867522991">Windows（Windows クライアント）:</translation>
+<translation id="608788685013546076">電力ピークシフトの電池のしきい値をパーセントで設定する</translation>
 <translation id="6089679180657323464">Wilco の診断およびテレメトリー用コントローラの設定を制御します。</translation>
 <translation id="6091233616732024397">ブラウザを使用するにはログインを必須とする</translation>
 <translation id="6093156968240188330">リモート ユーザーがリモート アシスタンス セッションで権限昇格ウィンドウとやり取りできるようにする</translation>
@@ -3254,6 +3295,9 @@
 <translation id="8548832052135586762">カラー印刷のみ、白黒印刷のみ、カラー印刷モードの制限なし、のいずれかに設定します。ポリシーが未設定の場合は、制限なしとして扱われます。</translation>
 <translation id="8549772397068118889">コンテンツ パック外部のサイトを訪問したときに警告する</translation>
 <translation id="8566842294717252664">新しいタブページとアプリ ランチャーでウェブストアを非表示にする</translation>
+<translation id="8569734380847633643">
+          このポリシーが false に設定されている場合、<ph name="PRODUCT_OS_NAME" /> で Wi-Fi が無効になります。ユーザーが元に戻すことはできません。
+          このポリシーが true に設定されているか未設定の場合、ユーザーは必要に応じて Wi-Fi を有効または無効にすることができます。</translation>
 <translation id="857369585509260201">このポリシーはサポート終了となりました。代わりに BrowserSignin の使用を検討してください。
 
       このポリシーが true に設定されている場合、ユーザーがブラウザを使用するには、自分のプロフィールで <ph name="PRODUCT_NAME" /> にログインする必要があります。BrowserGuestModeEnabled のデフォルト値は false に設定されます。このポリシーを有効にした後、ログインしていない既存のポリシーはロックされ、アクセスできなくなります。詳しくはヘルプセンター記事をご覧ください。
@@ -3312,6 +3356,13 @@
 <translation id="8685024486845674965">パスワードが再使用されたときに、パスワード保護について警告する</translation>
 <translation id="8693243869659262736">組み込みの DNS クライアントを使用する</translation>
 <translation id="8703488928438047864">ボードの状態を報告する</translation>
+<translation id="8703872185032220081">電力ピークシフトの曜日の設定を指定します。
+
+          このポリシーは DevicePowerPeakShiftEnabled が true に設定されている場合にのみ使用されます。
+
+          このポリシーを設定しない場合、電力ピークシフトは常に無効になります。
+
+          注: <ph name="START_TIME_FIELD_NAME" />、<ph name="END_TIME_FIELD_NAME" />、<ph name="CHARGE_START_TIME_FIELD_NAME" /> の <ph name="MINUTE_FIELD_NAME" /> フィールドで指定できる値は 0、15、30、45 です。</translation>
 <translation id="8704831857353097849">無効なプラグインのリスト</translation>
 <translation id="8711086062295757690">アドレスバーで使用するショートカットとして、このプロバイダで検索を実行するためのキーワードを指定します。このポリシーは省略可能です。未設定の場合、検索プロバイダをアクティブにするキーワードは設定されません。このポリシーは、「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="8731693562790917685">[コンテンツの設定] では、特定のタイプ（Cookie、画像、Javascript など）のコンテンツの処理方法を指定できます。</translation>
@@ -3446,6 +3497,7 @@
 <translation id="8976531594979650914">システムのデフォルト プリンタをデフォルトとして使用</translation>
 <translation id="8992176907758534924">すべてのサイトに対して画像表示を許可しない</translation>
 <translation id="9035964157729712237">ブラックリストから除外する拡張機能 ID</translation>
+<translation id="9038839118379817310">Wi-Fi を有効にする</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 端末のユーザーごとにプッシュ型ネットワーク設定を適用できます。ネットワーク設定は、Open Network Configuration 形式（<ph name="ONC_SPEC_URL" /> を参照）で定義された JSON 形式の文字列です。</translation>
 <translation id="906631898352326790">
       このポリシーが有効に設定されている場合、カンマ区切りのリストで指定された

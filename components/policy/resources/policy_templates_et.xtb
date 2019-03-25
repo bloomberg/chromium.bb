@@ -385,6 +385,22 @@ loendist, desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Hoiatus. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimist ei ole soovitatav üle anda kioskirakendusele, kuna see võib takistada seadmel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimise üleandmine võib kasutajad ohtu seada.</translation>
 <translation id="1675002386741412210">Toetatud:</translation>
 <translation id="1689963000958717134">Võimaldab jõustada võrgu konfigureerimise kõigile <ph name="PRODUCT_OS_NAME" /> seadme kasutajatele. Võrgu konfigureerimine on JSON-i vormingus string, mille määrab aadressil <ph name="ONC_SPEC_URL" /> kirjeldatud vorming Open Network Configuration</translation>
+<translation id="1704516734140344991">Seadistab rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse funktsiooni saadavaloleku ja käitumise.
+
+      JSON-i atribuutides saab määrata üksikud seaded.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: kui see on määratud väärtusele <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, saavad kasutajad rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse installimiseks käivitada Powerwashi voo.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: kui see on määratud väärtusele <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, saavad kasutajad käivitada rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivara värskendusvoo, mis säilitab kogu seadme oleku (sh ettevõtte registreerimise), ent eemaldab kasutajate andmed. See värskendusvoog on saadaval alates versioonist 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: haldab, kuidas rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> automaatsed püsivaravärskendused rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> turvaauguga püsivara puhul jõustatakse. Kõik vood säilitavad kohaliku seadme oleku.
+        Kui väärtuseks on määratud 1 või see on määramata, siis TPM-i püsivaravärskendusi ei jõustata.
+        Kui väärtuseks on määratud 2, värskendatakse rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivara järgmisel taaskäivitamisel, kui kasutaja on värskenduse kinnitanud.
+        Kui väärtuseks on määratud 3, värskendatakse rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivara järgmisel taaskäivitamisel.
+        Kui väärtuseks on määratud 4, värskendatakse rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivara pärast registreerumist, enne kui kasutaja sisse logib.
+        See valik on saadaval alates versioonist 74.
+
+      Kui reegel on määramata, ei ole rakenduse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse funktsioon saadaval.</translation>
 <translation id="1708496595873025510">Piirangu määramine variatsioonide lähteväärtuse toomisele</translation>
 <translation id="1717817358640580294">Kui reegel on määramata ja Chrome Cleanup tuvastab soovimatu tarkvara, võib teenus edastada skanni metaandmed Google'ile, järgides atribuudiga SafeBrowsingExtendedReportingEnabled määratud reeglit. Chrome Cleanup küsib seejärel kasutajalt, kas ta soovib tuvastatud tarkvara eemaldada. Seejärel võib kasutaja jagada puhastuse tulemusi Google'iga, et täiustada soovimatu tarkvara tuvastamise funktsiooni. Tulemused sisaldavad faili metaandmeid, automaatselt installitud laiendusi ja registrivõtmeid, mida kirjeldatakse Chrome'i privaatsuse juhendis.
 
@@ -1259,6 +1275,17 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
       Reegli saab määrata ainult soovitusena. Reegliga saab teisaldada soovitatud lokaadid loendi ülaossa, kuid kasutajad võivad alati seansi jaoks valida mis tahes muu lokaadi, mida operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> toetab.
       </translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
+<translation id="3384115339826100753">Toitehalduse reeglis elektrikasutuse nihutamise tarbimise tippajast lubamine.
+
+          Elektrikasutuse nihutamine tarbimise tippajast on elektrienergia säästmise reegel, mis minimeerib vahelduvvoolu kasutamise päeva kõige suurema kasutusega aegadel. Elektrikasutuse nihutamise algus- ja lõpuaja saab määrata iga nädalapäeva jaoks. Nendel aegadel kasutab süsteem akut ka siis, kui seade on ühendatud vahelduvvooluvõrku, kui aku tase ületab määratud läve. Pärast määratud lõpuaega kasutab süsteem võimaluse korral vahelduvvoolu, kuid akut ei lae. Pärast määratud laadimise algusaega toimib süsteem jälle tavapäraselt, kasutades vahelduvvoolu ja laadides akut.
+
+          Kui reegli väärtuseks määratakse Tõene ning atribuudid DevicePowerPeakShiftBatteryThreshold ja DevicePowerPeakShiftDayConfig on määratud, siis on elektrikasutuse nihutamine tarbimise tippajast alati lubatud, kui seda seadmes toetatakse.
+
+          Kui selle reegli väärtuseks määratakse Väär, siis on elektrikasutuse nihutamine tarbimise tippajast alati keelatud.
+
+          Selle reegli määramisel ei saa kasutajad seda muuta ega alistada.
+
+          Kui see reegel jäetakse määramata, siis on elektrikasutuse nihutamine tarbimise tippajast esialgu keelatud ja kasutaja ei saa seda lubada.</translation>
 <translation id="3388153794103186066">Võimaldab teil määrata URL-ide loendi, mis määravad, millistele saitidele antakse automaatselt luba määratud hankija ja toote ID-ga USB-seadmele juurdepääsemiseks. Iga loendiüksus peab sisaldama nii seadmeid kui ka URL-e, et reegel kehtiks. Iga seadmete loendi üksus võib sisaldada hankija ID ja toote ID välja. Välja jäetud ID-sid käsitletakse metamärkidena ühe erandiga: ilma hankija ID-d määramata ei saa toote ID-d määrata. Muidu on reegel kehtetu ja seda eiratakse.
 
         USB loamudel kasutab taotluse esitanud saidi URL-i („taotleja URL”) ja ülataseme raamsaidi URL-i („manustamise URL”), et lubada taotluse esitanud URL-il USB-seadmele juurde pääseda. Taotleja URL võib manustamise URL-ist erineda juhul, kui taotluse esitanud sait laaditakse iframe'is. Seetõttu võib väli „URL-id” sisaldada kuni kaht komaga eraldatud URL-i, mis määravad vastavalt taotleja URL-i ja manustamise URL-i. Kui määratud on ainult üks URL, antakse juurdepääs vastavatele USB-seadmetele juhul, kui taotluse esitanud saidi URL kattub selle URL-iga, olenemata manustamise olekust. Väljal „URL-id” olevad URL-id peavad olema kehtivad, muidu reeglit eiratakse.
@@ -1352,6 +1379,7 @@ ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
       Kui reegel on seatud väärtusele „DeveloperToolsDisallowed” (väärtus 2), ei ole arendaja tööriistad saadaval ja veebisaitide elemente ei saa enam uurida. Kõik arendaja tööriistade või JavaScripti konsooli avamiseks kasutatavad klaviatuuri otseteed ning menüü- ja kontekstimenüükirjed keelatakse.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="355118380775352753">Alternatiivses brauseris avatavad veebisaidid</translation>
+<translation id="3554984410014457319">Google'i assistendile loa andmine kuulata häälega aktiveerimise fraasi</translation>
 <translation id="3577251398714997599">Sekkuvate reklaamidega saitide reklaamiseaded</translation>
 <translation id="357917253161699596">Kasutajatel kasutajasertifikaatide haldamise lubamine</translation>
 <translation id="3583230441447348508">Määrab eelseadistatud failide võrguhoidlate loendi.
@@ -1586,6 +1614,12 @@ ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
       Kui seade pole seadistatud või see on määratud väärtusele Väär, siis otsivad teenuse <ph name="PRODUCT_OS_NAME" /> seadmed värskendusi automaatselt.
 
       Hoiatus. Soovitame automaatsed värskendused lubada, et kasutajad saaksid tarkvaravärskendusi ja kriitilisi turvapaikasid. Automaatsete värskenduste väljalülitamine võib kasutajad ohtu seada.</translation>
+<translation id="4018000735882846261">Reegel annab Google'i assistendile loa kuulata häälega aktiveerimise fraasi.
+
+      Kui reegel on lubatud, kuulab Google'i assistent häälega aktiveerimise fraasi.
+      Kui reegel on keelatud, ei kuula Google'i assistent häälega aktiveerimise fraasi.
+      Kui reegel on määramata, ei kuula Google'i assistent häälega aktiveerimise fraasi.
+      </translation>
 <translation id="4020682745012723568">Androidi rakendused ei pääse juurde kasutajaprofiilile ülekantud küpsisefailidele.</translation>
 <translation id="402759845255257575">Keela kõigil saitidel JavaScripti käitamine</translation>
 <translation id="4027608872760987929">Luba vaikeotsingupakkuja</translation>
@@ -1780,6 +1814,7 @@ ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
       Reegel on küll toetatud ülalnimetatud platvormidel, kuid lubatud funktsioon ei pruugi olla saadaval kõikidel platvormidel. Kõiki katkestatud toega veebiplatvormi funktsioone ei saa uuesti lubada. Piiratud ajaks saab lubada ainult allnimetatud funktsioone ja iga funktsiooni ajalimiit on erinev. Stringimärgendi üldine vorming on [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Veebiplatvormi funktsiooni muudatuste eesmärgi kohta leiate lisateavet aadressilt https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Luba lukustamine, kui seade on ootel või peatatud</translation>
+<translation id="4449469846627734399">Elektrikasutuse nihutamise tarbimise tippajast päevase seadistuse määramine</translation>
 <translation id="4449545651113180484">Ekraani pööramine 270 kraadi päripäeva</translation>
 <translation id="445270821089253489">Haldab, mis tüüpi kasutaja- ja seadmeteavet saadetakse.</translation>
 <translation id="4454820008017317557">Teenuse <ph name="PRODUCT_NAME" /> tööriistariba ikooni kuvamine</translation>
@@ -1979,6 +2014,11 @@ ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
 
       Reegel on saadaval ainult platvormina.
       </translation>
+<translation id="5034604678285451405">Aku läve määramine protsentides elektrikasutuse nihutamisele tarbimise tippajast.
+
+          Seda reeglit kasutatakse vaid siis, kui atribuudi DevicePowerPeakShiftEnabled väärtuseks on määratud Tõene.
+
+          Kui seda reeglit pole seadistatud või see on määramata, on elektrikasutuse nihutamine tarbimise tippajast alati keelatud.</translation>
 <translation id="5047604665028708335">Sisupakettidest väljaspool olevatele saitidele juurdepääsu lubamine</translation>
 <translation id="5052081091120171147">Selle reegli lubamisel imporditakse sirvimisajalugu praegusest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 
@@ -2272,6 +2312,7 @@ ja need sisestatakse järgmisel korral saidile sisse logides automaatselt.
 <translation id="5457065417344056871">Külalisrežiimi lubamine brauseris</translation>
 <translation id="5457924070961220141">Võimaldab <ph name="PRODUCT_FRAME_NAME" /> installimisel seadistada HTML-i vaikerenderdaja.
           Kui jätate selle reegli määramata, siis lubatakse vaikeseadena hostbrauseril renderdada, kuid võite selle alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME" /> vaikimisi HTML-lehti renderdada.</translation>
+<translation id="5458584148602890023">Luba elektrikasutuse nihutamine tarbimise tippajast</translation>
 <translation id="5464816904705580310">Hallatud kasutajate seadete konfigureerimine.</translation>
 <translation id="546726650689747237">Ekraani hämardamise viiteaeg võrgutoite kasutamisel</translation>
 <translation id="5469143988693423708">Kasutajal on lubatud Crostinit käitada</translation>
@@ -2615,6 +2656,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
       Kui see reegel jäetakse seadistamata, on eemaldatavate USB-seadmete loend tühi.</translation>
 <translation id="6083631234867522991">Windows (Windowsi kliendid):</translation>
+<translation id="608788685013546076">Määrake aku laetuse lävi elektrikasutuse nihutamisele tarbimise tippajast</translation>
 <translation id="6089679180657323464">Juhib Wilco diagnostika- ja telemeetriakontrolleri seadeid.</translation>
 <translation id="6091233616732024397">Brauseri kasutamiseks sisselogimise nõudmine</translation>
 <translation id="6093156968240188330">Lubab kaugkasutajatel kaugabiseanssides suhelda administraatoriõigusi nõudvate akendega</translation>
@@ -3843,6 +3885,9 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8548832052135586762">Lubab ainult värvilise või mustvalge printimise või eemaldab värvirežiimi piirangu. Määramata reeglit käsitletakse piirangu puudumisena.</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
 <translation id="8566842294717252664">Veebipoe peitmine uuel vahelehel ja rakenduste käivitajas</translation>
+<translation id="8569734380847633643">
+          Kui reegli väärtuseks määratakse Väär, keelab <ph name="PRODUCT_OS_NAME" /> WiFi ja kasutajad ei saa seda uuesti lubada.
+          Kui reegli väärtuseks määratakse Tõene või see jäetakse määramata, saavad kasutajad WiFi lubada ja keelata vastavalt oma soovile.</translation>
 <translation id="857369585509260201">Selle reegli tugi on katkestatud, kaaluge selle asemel reegli BrowserSignin kasutamist.
 
       Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist teenusesse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse reegli BrowserGuestModeEnabled vaikeväärtuseks Väär. Pange tähele, et olemasolevad allkirjastamata profiilid lukustatakse ja nendele ei pääse pärast selle reegli lubamist juurde. Lisateavet leiate abikeskuse artiklist.
@@ -3903,6 +3948,13 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8685024486845674965">Paroolikaitse hoiatuse käivitab parooli uuesti kasutamine</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
 <translation id="8703488928438047864">Teavita paneeli olekust</translation>
+<translation id="8703872185032220081">Päevase seadistuse määramine elektrikasutuse nihutamisele tarbimise tippajast.
+
+          Seda reeglit kasutatakse vaid siis, kui atribuudi DevicePowerPeakShiftEnabled väärtuseks on määratud Tõene.
+
+          Kui seda reeglit pole seadistatud või see on määramata, on elektrikasutuse nihutamine tarbimise tippajast alati keelatud.
+
+          Märkus. Välja <ph name="MINUTE_FIELD_NAME" /> lubatud väärtused väljal <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> ja <ph name="CHARGE_START_TIME_FIELD_NAME" /> on 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
 <translation id="8711086062295757690">Määrab märksõna, mis on otsetee, mida kasutatakse omnikastikeses otsingupakkuja käivitamiseks.
 
@@ -4100,6 +4152,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Kui jätate reegli määramata, saab kasutaja valida avatari pildi, mis neid sisselogimiskuval kujutab.</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
+<translation id="9038839118379817310">WiFi lubamine</translation>
 <translation id="9039822628127365650">Kui reegel on seadistatud, määrab see ajavahemiku, mille möödudes logitakse kasutaja automaatselt välja ja seanss lõpetatakse. Süsteemisalves olev taimer näitab kasutajale järelejäänud aega.
 
       Kui reegel on määramata, ei ole seansi pikkus piiratud.

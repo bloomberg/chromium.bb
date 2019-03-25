@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">不存在上一段引用。</translation>
 <translation id="1321576897702511272">隐藏ChromeVox帮助</translation>
 <translation id="1325946044405407859">棕褐色</translation>
+<translation id="1331634987653814322">盲文设置</translation>
 <translation id="1331702245475014624">第<ph name="INDEX" />个，共<ph name="TOTAL" />个</translation>
 <translation id="1334095593597963605">字符和字词回显</translation>
 <translation id="1334570596456017464">下标</translation>
@@ -547,6 +548,7 @@
 <translation id="489907760999452556">内部链接</translation>
 <translation id="4915087353619183190">正在启动学习模式。要了解该模式的功能，请按 qwerty 键或可刷新的盲文键，也可以使用触摸手势。按 Ctrl+W 键或按 Esc 键即可退出。</translation>
 <translation id="492295894462528572">前言</translation>
+<translation id="4943781537993885772">显示样式</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4953585991029886728">编辑文本</translation>
 <translation id="4954534434583049121">上一个块引用</translation>
@@ -712,6 +714,7 @@
 <translation id="6006050241733874051">表单</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{1个反斜线符号}other{#个反斜线符号}}</translation>
 <translation id="6017514345406065928">绿色</translation>
+<translation id="6021969570711251331">交错</translation>
 <translation id="6034000775414344507">浅灰色</translation>
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6042826534790431634">同时按搜索键和空格键即可启动。</translation>
@@ -762,6 +765,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />，菜单</translation>
 <translation id="6444046323172968959">提醒对话框</translation>
 <translation id="6452403590345320472">目录</translation>
+<translation id="6454456397828627257">并排</translation>
 <translation id="6459511626086141404">降调按键映射</translation>
 <translation id="6468049171101508116">下一个按钮</translation>
 <translation id="646954774886932461">索引</translation>

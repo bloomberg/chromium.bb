@@ -54,6 +54,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="1319608975892113573">Nu există un blockquote anterior.</translation>
 <translation id="1321576897702511272">Ascundeți ajutorul pentru ChromeVox</translation>
 <translation id="1325946044405407859">Bronz</translation>
+<translation id="1331634987653814322">Setări braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> din <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">ecou caracter și cuvânt</translation>
 <translation id="1334570596456017464">Indice</translation>
@@ -548,6 +549,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="489907760999452556">Link intern</translation>
 <translation id="4915087353619183190">Începe modul de învățare. Apasă o tastă qwerty, o tastă Braille actualizabilă sau un gest de atingere pentru a-i învăța funcția. Apasă tasta Control împreună cu w sau Esc pentru a ieși.</translation>
 <translation id="492295894462528572">Cuvânt înainte</translation>
+<translation id="4943781537993885772">Stil de afișare</translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4953585991029886728">Câmp text de editare</translation>
 <translation id="4954534434583049121">Citatul anterior</translation>
@@ -713,6 +715,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{bară oblică inversă}few{# bare oblice inverse}other{# de bare oblice inverse}}</translation>
 <translation id="6017514345406065928">Verde</translation>
+<translation id="6021969570711251331">Intercalat</translation>
 <translation id="6034000775414344507">Gri deschis</translation>
 <translation id="6037602951055904232">Deplasează înainte</translation>
 <translation id="6042826534790431634">Apasă pe tasta de căutare + tasta spațiu pentru a activa.</translation>
@@ -763,6 +766,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6438968337250688271"><ph name="NAME" />, meniu</translation>
 <translation id="6444046323172968959">Casetă de dialog de alertă</translation>
 <translation id="6452403590345320472">Cuprins</translation>
+<translation id="6454456397828627257">Alăturat</translation>
 <translation id="6459511626086141404">Hartă taste plată</translation>
 <translation id="6468049171101508116">Butonul următor</translation>
 <translation id="646954774886932461">Index</translation>

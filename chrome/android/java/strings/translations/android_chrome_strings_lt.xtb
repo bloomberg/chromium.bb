@@ -265,7 +265,6 @@
 <translation id="2910701580606108292">Paklausti prieš leidžiant svetainėms leisti saugomą turinį</translation>
 <translation id="2913331724188855103">Leisti svetainėms išsaugoti ir nuskaityti slapukų duomenis (rekomenduojama)</translation>
 <translation id="2932150158123903946">„Google <ph name="APP_NAME" />“ saugykla</translation>
-<translation id="2941880727166628951">Siųsti į mano įrenginius</translation>
 <translation id="2956410042958133412">Šią paskyrą tvarko <ph name="PARENT_NAME_1" /> ir <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="2962095958535813455">Perjungta į inkognito skirtukus</translation>
@@ -827,7 +826,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7031882061095297553">Sinchronizavimas su</translation>
 <translation id="7032663816368481562">Adreso juostoje palietus „Daugiau panašių į šį“ <ph name="ICON" /> rodomos sparčiosios nuorodos į susijusius puslapius. Puslapių, kuriuose lankotės, URL siunčiami į sistemą „Google“.</translation>
 <translation id="7034608350006174882">„Google Pay“ naudojamos kortelės ir adresai</translation>
-<translation id="7037082443972906537">Pavadinimas nepasiekiamas</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
 <translation id="7055152154916055070">Peradresavimas užblokuotas:</translation>
 <translation id="7062545763355031412">Sutikti ir perjungti paskyras</translation>
@@ -1103,7 +1101,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9139068048179869749">Klausti prieš leidžiant svetainėms siųsti pranešimus (rekomenduojama)</translation>
 <translation id="9139318394846604261">Apsipirkimas</translation>
-<translation id="9150694013019234766">Perjunkite skirtukus skirtukų grupėje netoli ekrano apačios</translation>
+<translation id="9150694013019234766">Skirtukus perjunkite skirtukų grupėje netoli ekrano apačios</translation>
 <translation id="9155898266292537608">Taip pat galite ieškoti greitai paliesdami žodį</translation>
 <translation id="9169594135889675189">Pridėti naują skirtuką prie grupės</translation>
 <translation id="9188680907066685419">Atsijungimas nuo valdomos paskyros</translation>

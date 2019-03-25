@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">કોઈ પાછલું બ્લૉકક્વોટ નથી.</translation>
 <translation id="1321576897702511272">ChromeVox સહાય છુપાવો</translation>
 <translation id="1325946044405407859">ટૅન</translation>
+<translation id="1331634987653814322">બ્રેઇલ સેટિંગ</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> માંથી <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">અક્ષર અને શબ્દ પડઘો</translation>
 <translation id="1334570596456017464">સબસ્ક્રિપ્ટ</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">આંતરિક લિંક</translation>
 <translation id="4915087353619183190">જાણો મોડ શરૂ કરી રહ્યું છે. qwerty કી, રિફ્રેશ યોગ્ય બ્રેઇલ કી અથવા સ્પર્શ સંકેતના કાર્યને જાણવા માટે તેને દબાવો. બહાર નીકળવા માટે wની સાથે control અથવા escape દબાવો.</translation>
 <translation id="492295894462528572">આમુખ</translation>
+<translation id="4943781537993885772">પ્રદર્શન શૈલી</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4953585991029886728">ટેક્સ્ટમાંમાં ફેરફાર કરો</translation>
 <translation id="4954534434583049121">પાછલું બ્લૉક ક્વોટ</translation>
@@ -713,6 +715,7 @@
 <translation id="6006050241733874051">ફોર્મ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{બેકસ્લેશ}one{# બેકસ્લેશ}other{# બેકસ્લેશ}}</translation>
 <translation id="6017514345406065928">લીલો</translation>
+<translation id="6021969570711251331">ઇન્ટરલીવ</translation>
 <translation id="6034000775414344507">આછો ગ્રે</translation>
 <translation id="6037602951055904232">આગળની તરફ પેન કરો</translation>
 <translation id="6042826534790431634">સક્રિય કરવા માટે Search+Spacebar દબાવો.</translation>
@@ -763,6 +766,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, મેનૂ</translation>
 <translation id="6444046323172968959">ચેતવણી સંવાદ</translation>
 <translation id="6452403590345320472">અનુક્રમણિકા</translation>
+<translation id="6454456397828627257">સાથે સાથે</translation>
 <translation id="6459511626086141404">સપાટ કિમેપ</translation>
 <translation id="6468049171101508116">આગલું બટન</translation>
 <translation id="646954774886932461">અનુક્રમણિકા</translation>

@@ -54,6 +54,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="1319608975892113573">Iepriekš nav neviena citāta bloka.</translation>
 <translation id="1321576897702511272">Slēpt ChromeVox palīdzību</translation>
 <translation id="1325946044405407859">Gaiši brūna</translation>
+<translation id="1331634987653814322">Braila raksta iestatījumi</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> no <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">rakstzīmju un vārdu atbalss</translation>
 <translation id="1334570596456017464">Apakšrakstā</translation>
@@ -548,6 +549,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="489907760999452556">Iekšējā saite</translation>
 <translation id="4915087353619183190">Notiek mācību režīma aktivizēšana. Lai uzzinātu par šajā režīmā pieejamajām funkcijām, nospiediet Qwerty taustiņu vai atsvaidzināma Braila raksta taustiņu vai arī veiciet kādu žestu. Lai izietu, nospiediet taustiņu kombināciju Ctrl+W vai nospiediet taustiņu Esc.</translation>
 <translation id="492295894462528572">Priekšvārds</translation>
+<translation id="4943781537993885772">Attēlojuma stils</translation>
 <translation id="495170559598752135">Darbības</translation>
 <translation id="4953585991029886728">Rediģējams teksts</translation>
 <translation id="4954534434583049121">Iepriekšējais citāta bloks</translation>
@@ -713,6 +715,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="6006050241733874051">Veidlapa</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{atpakaļvērstā slīpsvītra}zero{# atpakaļvērsto slīpsvītru}one{# atpakaļvērstā slīpsvītra}other{# atpakaļvērstās slīpsvītras}}</translation>
 <translation id="6017514345406065928">Zaļa</translation>
+<translation id="6021969570711251331">Slāņains</translation>
 <translation id="6034000775414344507">Gaiši pelēka</translation>
 <translation id="6037602951055904232">Pārvietot uz priekšu</translation>
 <translation id="6042826534790431634">Lai aktivizētu vienumu, vienlaikus nospiediet meklēšanas un atstarpes taustiņu.</translation>
@@ -763,6 +766,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="6438968337250688271"><ph name="NAME" />, izvēlne</translation>
 <translation id="6444046323172968959">Brīdinājuma dialoglodziņš</translation>
 <translation id="6452403590345320472">Satura rādītājs</translation>
+<translation id="6454456397828627257">Līdzās</translation>
 <translation id="6459511626086141404">Izplātā taustiņu piesaiste</translation>
 <translation id="6468049171101508116">Nākamā poga</translation>
 <translation id="646954774886932461">Rādītājs</translation>

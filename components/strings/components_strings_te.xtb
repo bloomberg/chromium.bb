@@ -803,7 +803,6 @@
 <translation id="5455374756549232013">చెల్లని విధాన సమయముద్ర</translation>
 <translation id="5457113250005438886">చెల్లదు</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">మీరే స్వయంగా నావిగేట్ చేసినట్లున్నారు, నియంత్రణను మీకే ఇస్తున్నాను. మీకు శుభం కలగాలి :)</translation>
 <translation id="5470861586879999274">&amp;సవరించడాన్ని పునరావృతం చేయి</translation>
 <translation id="5478437291406423475">B6/C4 (ఎన్వలప్)</translation>
 <translation id="5481076368049295676">ఈ కంటెంట్ మీ సమాచారాన్ని దొంగిలించగల లేదా తొలగించగల హానికరమైన సాఫ్ట్‌వేర్‌ను మీ పరికరంలో ఇన్‌స్టాల్ చేయడానికి ప్రయత్నించవచ్చు. <ph name="BEGIN_LINK" />ఏదేమైనా చూపు<ph name="END_LINK" /></translation>
@@ -1218,7 +1217,6 @@
 <translation id="7770259615151589601">పొడవుగా నిర్దేశించబడింది</translation>
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
 <translation id="7791543448312431591">జోడించు</translation>
-<translation id="7793809570500803535"><ph name="SITE" />లోని వెబ్‌పేజీ తాత్కాలికంగా పని చేయకపోవచ్చు లేదా ఇది క్రొత్త వెబ్ చిరునామాకు శాశ్వతంగా తరలించబడి ఉండవచ్చు.</translation>
 <translation id="7800304661137206267"><ph name="KX" />‌ను కీ మార్పిడి విధానం లాగా మరియు సందేశ ప్రామాణీకరణ కోసం <ph name="CIPHER" />‌ను <ph name="MAC" />తో ఉపయోగించడం ద్వారా కనెక్షన్ గుప్తీకరించబడింది.</translation>
 <translation id="7802523362929240268">సైట్ చట్టబద్ధమైనది</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>

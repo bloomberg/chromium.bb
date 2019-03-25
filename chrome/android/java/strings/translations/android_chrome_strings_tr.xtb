@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Eş aralıklı</translation>
 <translation id="2610239185026711824">Şifre öner</translation>
 <translation id="2612676031748830579">Kart numarası</translation>
+<translation id="2613747923081026172">Grup oluştur</translation>
 <translation id="2621115761605608342">Belirli bir site için JavaScript'e izin verin.</translation>
 <translation id="2625189173221582860">Şifre kopyalandı</translation>
 <translation id="2631006050119455616">Tasarruf Edilen</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Sitelerin korumalı içeriği oynatmasına izin verilmeden önce size sorulur</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> depolama alanı</translation>
-<translation id="2941880727166628951">Cihazlarıma gönder</translation>
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2962095958535813455">Gizli mod sekmelerine geçildi</translation>
@@ -826,7 +826,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7031882061095297553">Şununla senkronize et</translation>
 <translation id="7032663816368481562">Adres çubuğunda Buna benzer daha fazla <ph name="ICON" /> simgesine dokunduğunuzda, ilgili sayfaların hızlı bağlantılarını gösterir. Ziyaret ettiğiniz sayfaların URL'leri Google'a gönderilir.</translation>
 <translation id="7034608350006174882">Google Pay'i kullanan kartlar ve adresler</translation>
-<translation id="7037082443972906537">Ad kullanılamıyor</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7055152154916055070">Yönlendirme engellendi:</translation>
 <translation id="7062545763355031412">Kabul et ve hesabı değiştir</translation>
@@ -880,7 +879,9 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="7475192538862203634">Bunu çok sık görüyorsanız bu <ph name="BEGIN_LINK" />önerileri<ph name="END_LINK" /> deneyin.</translation>
 <translation id="7475688122056506577">SD kart bulunamadı. Bazı dosyalarınız eksik olabilir.</translation>
+<translation id="7479104141328977413">Sekme yönetimi</translation>
 <translation id="7481312909269577407">İleri</translation>
+<translation id="7482697587265222445">Sekme, cihazlarınıza gönderildi</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> güncellendi)</translation>
 <translation id="7494879913343971937">Şifreleri göster</translation>
 <translation id="7494974237137038751">tasarruf edilen veri miktarı</translation>

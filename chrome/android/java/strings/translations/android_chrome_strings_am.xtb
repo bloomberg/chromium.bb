@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">ሞኖስፔስ</translation>
 <translation id="2610239185026711824">የይለፍ ቃል ጠቁም</translation>
 <translation id="2612676031748830579">የካርድ ቁጥር</translation>
+<translation id="2613747923081026172">ቡድን ይፍጠሩ</translation>
 <translation id="2621115761605608342">ጃቫስክሪፕትን ለአንድ የተወሰነ ጣቢያ ፍቀድ።</translation>
 <translation id="2625189173221582860">የይለፍ ቃል ተቀድቷል።</translation>
 <translation id="2631006050119455616">ተቀምጧል</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘትን እንዲያጫውቱ ከመፍቀድ በፊት ጠይቅ</translation>
 <translation id="2913331724188855103">ጣቢያዎች የኩኪ ውሂብ እንዲያስቀምጡ እና እንዲያነቡ ይፍቀዱ (የሚመከር)</translation>
 <translation id="2932150158123903946">የGoogle <ph name="APP_NAME" /> ማከማቻ</translation>
-<translation id="2941880727166628951">ወደ የእኔ መሣሪያዎች ላክ</translation>
 <translation id="2956410042958133412">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME_1" /> እና <ph name="PARENT_NAME_2" /> ነው።</translation>
 <translation id="2960796085439532066">የቅጂ መብት <ph name="YEAR" /> Google Inc. ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="2962095958535813455">ወደ ማንነት የማያሳውቁ ትሮች ተቀይሯል</translation>
@@ -826,7 +826,6 @@
 <translation id="7031882061095297553">አሥምር ወደ</translation>
 <translation id="7032663816368481562">እንደዚህ <ph name="ICON" /> ያለ ተጨማሪ በአድራሻ አሞሌ ውስጥ መታ በሚያደርጉበት ጊዜ፣ ለተዛማጅ ገጾች ፈጣን አገናኞችን ያሳዩ። የሚጎበኟቸው ገጾች ዩአርኤሎች ወደ Google ይላካሉ።</translation>
 <translation id="7034608350006174882">Google Payን የሚጠቀሙ ካርዶች እና አድራሻዎች</translation>
-<translation id="7037082443972906537">ስም አይገኝም</translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7055152154916055070">አቅጣጫ ማዞር ታግዷል፦</translation>
 <translation id="7062545763355031412">ይቀበሉ እና መለያዎችን ይቀይሩ</translation>
@@ -880,7 +879,9 @@
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7475192538862203634">ይህን በተደጋጋሚነት እያዩት ከሆኑ እነዚህን <ph name="BEGIN_LINK" />የአስተያየት ጥቆማዎች<ph name="END_LINK" /> ይሞክሩ።</translation>
 <translation id="7475688122056506577">ኤስዲ ካርድ አልተገኘም። አንዳንዶቹ ፋይሎችዎ ሊጎድሉ ይችላሉ።</translation>
+<translation id="7479104141328977413">የትር አስተዳደር</translation>
 <translation id="7481312909269577407">ወደ ፊት</translation>
+<translation id="7482697587265222445">ትር ወደ የእርስዎ መሣሪያዎች ተልከዋል</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (የተዘመነው በ<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">የይለፍ ቃላትን አሳይ</translation>
 <translation id="7494974237137038751">የተቆጠበው ውሂብ</translation>

@@ -54,6 +54,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1319608975892113573">No hi ha cap cita en bloc anterior.</translation>
 <translation id="1321576897702511272">Amaga l'ajuda de ChromeVox.</translation>
 <translation id="1325946044405407859">Canyella</translation>
+<translation id="1331634987653814322">Configuració de braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">retorn de caràcters i de paraules</translation>
 <translation id="1334570596456017464">Subíndex</translation>
@@ -547,6 +548,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="489907760999452556">Enllaç intern</translation>
 <translation id="4915087353619183190">S'està iniciant el mode d'aprenentatge. Fes un gest tàctil o bé prem una tecla qwerty o braille actualitzable per assabentar-te de la funció. Prem Control junt amb w o la tecla d'escapada per sortir.</translation>
 <translation id="492295894462528572">Preàmbul</translation>
+<translation id="4943781537993885772">Estil de visualització</translation>
 <translation id="495170559598752135">Accions</translation>
 <translation id="4953585991029886728">Edita el text</translation>
 <translation id="4954534434583049121">Cita de bloqueig anterior</translation>
@@ -712,6 +714,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6006050241733874051">Formulari</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra invertida}other{# barres invertides}}</translation>
 <translation id="6017514345406065928">Verd</translation>
+<translation id="6021969570711251331">Entrellaça</translation>
 <translation id="6034000775414344507">Gris clar</translation>
 <translation id="6037602951055904232">Desplaça cap endavant.</translation>
 <translation id="6042826534790431634">Prem Cerca+Espai per activar l'opció.</translation>
@@ -762,6 +765,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Diàleg d'alerta</translation>
 <translation id="6452403590345320472">Taula de continguts</translation>
+<translation id="6454456397828627257">En paral·lel</translation>
 <translation id="6459511626086141404">Mapa de teclat pla</translation>
 <translation id="6468049171101508116">Botó següent</translation>
 <translation id="646954774886932461">Índex</translation>
