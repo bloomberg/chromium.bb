@@ -3858,6 +3858,15 @@
   <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
     The <ph name="APP_NAME">PluginVm</ph> environment didn't set. Please try again.
   </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
+    <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_WITHOUT_DOWNLOAD_SIZE_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
+    <ph name="DOWNLOADED_SIZE">$1<ex>1.2 GB</ex></ph>
+  </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_TIME_LEFT_MESSAGE" desc="Text shown in the PluginVm launcher that shows estimated time left before current installation stage ends." translateable="false">
+    <ph name="TIME_LEFT">$1<ex>30 mins</ex></ph> left
+  </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON" desc="Label for the button in the PluginVm launcher dialog to launch PluginVm." translateable="false">
     Launch
   </message>

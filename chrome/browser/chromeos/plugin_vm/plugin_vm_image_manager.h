@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/zlib/google/zip_reader.h"
@@ -42,13 +43,16 @@ class PluginVmImageManager : public KeyedService {
     virtual ~Observer() = default;
     virtual void OnDownloadStarted() = 0;
     virtual void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
-                                           int64_t content_length) = 0;
+                                           int64_t content_length,
+                                           int64_t download_bytes_per_sec) = 0;
     virtual void OnDownloadCompleted() = 0;
     virtual void OnDownloadCancelled() = 0;
     // TODO(https://crbug.com/904851): Add failure reasons.
     virtual void OnDownloadFailed() = 0;
-    virtual void OnUnzippingProgressUpdated(int64_t bytes_unzipped,
-                                            int64_t plugin_vm_image_size) = 0;
+    virtual void OnUnzippingProgressUpdated(
+        int64_t bytes_unzipped,
+        int64_t plugin_vm_image_size,
+        int64_t unzipping_bytes_per_sec) = 0;
     virtual void OnUnzipped() = 0;
     virtual void OnUnzippingFailed() = 0;
   };
@@ -111,7 +115,9 @@ class PluginVmImageManager : public KeyedService {
   base::FilePath plugin_vm_image_dir_;
   // -1 when is not yet determined.
   int64_t plugin_vm_image_size_ = -1;
+  base::TimeTicks download_start_tick_;
   int64_t plugin_vm_image_bytes_unzipped_ = 0;
+  base::TimeTicks unzipping_start_tick_;
 
   class PluginVmImageWriterDelegate : public zip::WriterDelegate {
    public:
