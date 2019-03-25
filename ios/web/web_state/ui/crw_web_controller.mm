@@ -4962,7 +4962,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // appropriate time rather than invoking here.
   web::ExecuteJavaScript(webView, @"__gCrWeb.didFinishNavigation()", nil);
   [self didFinishNavigation:context];
-  [self forgetNullWKNavigation:navigation];
+
+  if (web::features::StorePendingItemInContext()) {
+    // Remove the navigation to immediately get rid of pending item.
+    if (web::WKNavigationState::NONE !=
+        [_navigationStates stateForNavigation:navigation]) {
+      [_navigationStates removeNavigation:navigation];
+    }
+  } else {
+    [self forgetNullWKNavigation:navigation];
+  }
 }
 
 - (void)webView:(WKWebView*)webView
