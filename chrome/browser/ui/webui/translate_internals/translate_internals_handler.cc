@@ -22,6 +22,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_event_details.h"
+#include "components/translate/core/browser/translate_init_details.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
@@ -40,8 +41,13 @@ TranslateInternalsHandler::TranslateInternalsHandler() {
 
   error_subscription_ =
       translate::TranslateManager::RegisterTranslateErrorCallback(
-          base::Bind(&TranslateInternalsHandler::OnTranslateError,
-                     base::Unretained(this)));
+          base::BindRepeating(&TranslateInternalsHandler::OnTranslateError,
+                              base::Unretained(this)));
+
+  init_subscription_ =
+      translate::TranslateManager::RegisterTranslateInitCallback(
+          base::BindRepeating(&TranslateInternalsHandler::OnTranslateInit,
+                              base::Unretained(this)));
 
   translate::TranslateLanguageList* language_list =
       translate::TranslateDownloadManager::GetInstance()->language_list();
@@ -50,13 +56,14 @@ TranslateInternalsHandler::TranslateInternalsHandler() {
     return;
   }
 
-  event_subscription_ = language_list->RegisterEventCallback(base::Bind(
-      &TranslateInternalsHandler::OnTranslateEvent, base::Unretained(this)));
+  event_subscription_ = language_list->RegisterEventCallback(
+      base::BindRepeating(&TranslateInternalsHandler::OnTranslateEvent,
+                          base::Unretained(this)));
 }
 
 TranslateInternalsHandler::~TranslateInternalsHandler() {
-  // |event_subscription_| and |error_subscription_| are deleted automatically
-  // and un-register the callbacks automatically.
+  // |event_subscription_|, |error_subscription_| and |init_subscription_| are
+  // deleted automatically and un-register the callbacks automatically.
 }
 
 void TranslateInternalsHandler::RegisterMessages() {
@@ -119,6 +126,47 @@ void TranslateInternalsHandler::OnTranslateError(
   dict.SetString("url", details.url.spec());
   dict.SetInteger("error", details.error);
   SendMessageToJs("translateErrorDetailsAdded", dict);
+}
+
+void TranslateInternalsHandler::OnTranslateInit(
+    const translate::TranslateInitDetails& details) {
+  if (!TranslateService::IsTranslatableURL(details.url))
+    return;
+  base::DictionaryValue dict;
+  dict.SetKey("time", base::Value(details.time.ToJsTime()));
+  dict.SetKey("url", base::Value(details.url.spec()));
+
+  dict.SetKey("page_language_code", base::Value(details.page_language_code));
+  dict.SetKey("target_lang", base::Value(details.target_lang));
+
+  dict.SetKey("can_auto_translate",
+              base::Value(details.decision.can_auto_translate()));
+  dict.SetKey("can_show_ui", base::Value(details.decision.can_show_ui()));
+  dict.SetKey("can_auto_href_translate",
+              base::Value(details.decision.can_auto_href_translate()));
+  dict.SetKey("can_show_href_translate_ui",
+              base::Value(details.decision.can_show_href_translate_ui()));
+  dict.SetKey(
+      "can_show_predefined_language_translate_ui",
+      base::Value(
+          details.decision.can_show_predefined_language_translate_ui()));
+  dict.SetKey("should_suppress_from_ranker",
+              base::Value(details.decision.should_suppress_from_ranker()));
+  dict.SetKey("is_triggering_possible",
+              base::Value(details.decision.IsTriggeringPossible()));
+  dict.SetKey("should_auto_translate",
+              base::Value(details.decision.ShouldAutoTranslate()));
+  dict.SetKey("should_show_ui", base::Value(details.decision.ShouldShowUI()));
+
+  dict.SetKey("auto_translate_target",
+              base::Value(details.decision.auto_translate_target));
+  dict.SetKey("href_translate_target",
+              base::Value(details.decision.href_translate_target));
+  dict.SetKey("predefined_translate_target",
+              base::Value(details.decision.predefined_translate_target));
+
+  dict.SetKey("ui_shown", base::Value(details.ui_shown));
+  SendMessageToJs("translateInitDetailsAdded", dict);
 }
 
 void TranslateInternalsHandler::OnTranslateEvent(

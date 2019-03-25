@@ -142,3 +142,32 @@ td.detection-logs-content div {
 #country-override input {
  margin-bottom: 1px;
 }
+
+.init-logs-time {
+  width: 10%;
+}
+
+.init-logs-url {
+  width: 20%;
+}
+
+.init-logs-page-language-code,
+.init-logs-target-lang,
+.init-logs-auto-translate-target,
+.init-logs-href-translate-target,
+.init-logs-predefined-translate-target {
+  width: 5%;
+}
+
+.init-logs-can-auto-translate,
+.init-logs-can-show-ui,
+.init-logs-can-auto-href-translate,
+.init-logs-can-show-href-translate-ui,
+.init-logs-can-show-predefined-language-translate-ui,
+.init-logs-should-suppress-from-ranker,
+.init-logs-is-triggering-possible,
+.init-logs-should-auto-translate,
+.init-logs-should-show-ui,
+.init-logs-ui-shown {
+  width: 5%;
+}
