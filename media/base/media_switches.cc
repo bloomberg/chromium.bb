@@ -386,9 +386,16 @@ const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
 const base::Feature kMediaDrmPersistentLicense{
     "MediaDrmPersistentLicense", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables MediaDrmOriginIdManager to provide preprovisioned origin IDs for
+// MediaDrmBridge. If disabled, MediaDrmBridge will get unprovisioned origin IDs
+// which will trigger provisioning process after MediaDrmBridge is created.
+const base::Feature kMediaDrmPreprovisioning{"MediaDrmPreprovisioning",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Determines if MediaDrmOriginIdManager should attempt to pre-provision origin
 // IDs at startup (whenever a profile is loaded). Also used by tests that
 // disable it so that the tests can setup before pre-provisioning is done.
+// Note: Have no effect if kMediaDrmPreprovisioning feature is disabled.
 const base::Feature kMediaDrmPreprovisioningAtStartup{
     "MediaDrmPreprovisioningAtStartup", base::FEATURE_DISABLED_BY_DEFAULT};
 
