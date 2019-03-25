@@ -129,11 +129,15 @@ function pending(caller, message, var_args) {
   message = String(message);
   var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
     var arg = args[index++];
-    switch(pattern) {
-      case '%s': return String(arg);
-      case '%d': return Number(arg);
-      case '%j': return JSON.stringify(arg);
-      default: return pattern;
+    switch (pattern) {
+      case '%s':
+        return String(arg);
+      case '%d':
+        return Number(arg);
+      case '%j':
+        return JSON.stringify(arg);
+      default:
+        return pattern;
     }
   });
   var pendingMarker = Object.create(pending.prototype);
@@ -249,7 +253,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
     return sendTestMessage({
       name: 'addEntries',
       volume: volume,
-      entries: entries
+      entries: entries,
     });
   });
   if (!opt_callback) {

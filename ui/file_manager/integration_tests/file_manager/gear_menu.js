@@ -189,8 +189,7 @@ testcase.showHiddenFilesDrive = async () => {
  * Tests that toggle-hidden-android-folders menu item exists when "Play files"
  * is selected, but hidden in Recents.
  */
-testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles =
-    async () => {
+testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles = async () => {
   // Open Files.App on Play Files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
