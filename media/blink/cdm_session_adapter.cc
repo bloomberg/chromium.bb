@@ -62,7 +62,7 @@ void CdmSessionAdapter::CreateCdm(
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this),
-      base::Bind(&CdmSessionAdapter::OnCdmCreated, this, key_system,
+      base::Bind(&CdmSessionAdapter::OnCdmCreated, this, key_system, cdm_config,
                  start_time));
 }
 
@@ -158,8 +158,14 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
   return key_system_uma_prefix_;
 }
 
+const CdmConfig& CdmSessionAdapter::GetCdmConfig() const {
+  DCHECK(cdm_);
+  return cdm_config_;
+}
+
 void CdmSessionAdapter::OnCdmCreated(
     const std::string& key_system,
+    const CdmConfig& cdm_config,
     base::TimeTicks start_time,
     const scoped_refptr<ContentDecryptionModule>& cdm,
     const std::string& error_message) {
@@ -190,6 +196,8 @@ void CdmSessionAdapter::OnCdmCreated(
   // Only report time for successful CDM creation.
   base::UmaHistogramTimes(key_system_uma_prefix_ + kTimeToCreateCdmUMAName,
                           base::TimeTicks::Now() - start_time);
+
+  cdm_config_ = cdm_config;
 
   cdm_ = cdm;
 
