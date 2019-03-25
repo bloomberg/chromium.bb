@@ -15,6 +15,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
@@ -29,6 +30,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
@@ -1538,6 +1540,35 @@ TEST_F(TabletModeControllerTest,
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
   EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
+}
+
+// Test that when OnKioskNextEnabled() is called the UI mode changes into
+// TabletMode. Ensure that UI mode keeps staying in Tablet Mode.
+TEST_F(TabletModeControllerTest, TestKioskNextModeUI) {
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+
+  tablet_mode_controller()->OnKioskNextEnabled();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attach a mouse. Check that we are still in Tablet Mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(0, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Attach Touchpad
+  ws::InputDeviceClientTestApi().SetTouchpadDevices(
+      {ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+
+  // Attach Keyboard
+  ws::InputDeviceClientTestApi().SetKeyboardDevices(
+      {ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
 }
 
 }  // namespace ash

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
@@ -155,6 +156,9 @@ TabletModeController::TabletModeController()
             &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
             base::Unretained(this)));
   }
+
+  Shell::Get()->kiosk_next_shell_controller()->AddObserver(this);
+
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   power_manager_client->AddObserver(this);
@@ -178,6 +182,8 @@ TabletModeController::~TabletModeController() {
                             tab_drag_in_splitview_count_);
 
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
+
   if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     AccelerometerReader::GetInstance()->RemoveObserver(this);
@@ -618,7 +624,7 @@ void TabletModeController::SetTabletModeEnabledForTesting(
 }
 
 bool TabletModeController::AllowUiModeChange() const {
-  return force_ui_mode_ == UiMode::kNone;
+  return force_ui_mode_ == UiMode::kNone && !kiosk_next_enabled_;
 }
 
 void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
@@ -730,4 +736,8 @@ void TabletModeController::ResetPauser() {
   occlusion_tracker_pauser_.reset();
 }
 
+void TabletModeController::OnKioskNextEnabled() {
+  kiosk_next_enabled_ = true;
+  AttemptEnterTabletMode();
+}
 }  // namespace ash
