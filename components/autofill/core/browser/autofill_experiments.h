@@ -44,9 +44,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 // disables providing suggestions.
 bool IsInAutofillSuggestionsDisabledExperiment();
 
-// Returns whether the Autofill credit card assist infobar should be shown.
-bool IsAutofillCreditCardAssistEnabled();
-
 // Returns whether locally saving card when credit card upload succeeds should
 // be disabled.
 bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
