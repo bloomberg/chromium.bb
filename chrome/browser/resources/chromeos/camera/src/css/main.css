@@ -247,11 +247,11 @@ button.shutter {
   z-index: 1;  /* On top of transforming switch-mode buttons. */
 }
 
-body.record-mode:not(.taking) #start-recordvideo,
-body.record-mode.taking #stop-recordvideo,
-body:not(.taking):not(.record-mode) #start-takephoto,
-body:not(.timer):not(.record-mode) #start-takephoto,
-body.taking.timer:not(.record-mode) #stop-takephoto {
+body.video-mode:not(.taking) #start-recordvideo,
+body.video-mode.taking #stop-recordvideo,
+body:not(.taking):not(.video-mode) #start-takephoto,
+body:not(.timer):not(.video-mode) #start-takephoto,
+body.taking.timer:not(.video-mode) #stop-takephoto {
   display: inline-block;
 }
 
@@ -276,19 +276,19 @@ body.taking.timer:not(.record-mode) #stop-takephoto {
 }
 
 #start-recordvideo {
-  background-image: url(../images/camera_shutter_recording_start.svg);
+  background-image: url(../images/camera_shutter_video_start.svg);
 }
 
 #start-recordvideo:hover {
-  background-image: url(../images/camera_shutter_recording_start_hover.svg);
+  background-image: url(../images/camera_shutter_video_start_hover.svg);
 }
 
 #stop-recordvideo {
-  background-image: url(../images/camera_shutter_recording_stop.svg);
+  background-image: url(../images/camera_shutter_video_stop.svg);
 }
 
 #stop-recordvideo:hover {
-  background-image: url(../images/camera_shutter_recording_stop_hover.svg);
+  background-image: url(../images/camera_shutter_video_stop_hover.svg);
 }
 
 #switch-recordvideo,
@@ -307,25 +307,25 @@ body.taking.timer:not(.record-mode) #stop-takephoto {
   transition: transform 50ms;
 }
 
-body.record-mode #switch-recordvideo {
+body.video-mode #switch-recordvideo {
   transform: translateX(-160px);
 }
 
-body.tablet-landscape.record-mode #switch-recordvideo {
+body.tablet-landscape.video-mode #switch-recordvideo {
   transform: translateY(160px);
 }
 
-body:not(.record-mode) #switch-takephoto {
+body:not(.video-mode) #switch-takephoto {
   transform: translateX(160px);
 }
 
-body.tablet-landscape:not(.record-mode) #switch-takephoto {
+body.tablet-landscape:not(.video-mode) #switch-takephoto {
   transform: translateY(-160px);
 }
 
-body.record-mode #switch-recordvideo,
-body:not(.record-mode) #switch-takephoto,
-body:not(.record-mode) #toggle-mic,
+body.video-mode #switch-recordvideo,
+body:not(.video-mode) #switch-takephoto,
+body:not(.video-mode) #toggle-mic,
 body:not(.multi-camera) #switch-device {
   visibility: hidden;
 }
@@ -337,8 +337,8 @@ body:not(.multi-camera) #switch-device {
   width: 40px;
 }
 
-body.record-mode #camera-mode {
-  background-image: url(../images/camera_mode_recording.svg);
+body.video-mode #camera-mode {
+  background-image: url(../images/camera_mode_video.svg);
 }
 
 body.mode-switching:not(.streaming) #camera-mode {
