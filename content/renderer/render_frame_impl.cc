@@ -87,6 +87,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_visitor.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
@@ -700,7 +701,8 @@ mojom::MhtmlSaveStatus WriteMHTMLToDisk(
   TRACE_EVENT0("page-serialization", "WriteMHTMLToDisk (RenderFrameImpl)");
   SCOPED_UMA_HISTOGRAM_TIMER(
       "PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame");
-  DCHECK(!RenderThread::Get()) << "Should not run in the main renderer thread";
+  DCHECK(!RenderThread::IsMainThread())
+      << "Should not run in the main renderer thread";
   mojom::MhtmlSaveStatus save_status = mojom::MhtmlSaveStatus::kSuccess;
   for (const WebThreadSafeData& data : mhtml_contents) {
     if (!data.IsEmpty() &&
@@ -1304,6 +1306,7 @@ RenderFrame* RenderFrame::FromRoutingID(int routing_id) {
 
 // static
 RenderFrameImpl* RenderFrameImpl::FromRoutingID(int routing_id) {
+  DCHECK(RenderThread::IsMainThread());
   auto iter = g_routing_id_frame_map.Get().find(routing_id);
   if (iter != g_routing_id_frame_map.Get().end())
     return iter->second;
@@ -1593,6 +1596,7 @@ RenderFrame* RenderFrame::FromWebFrame(blink::WebLocalFrame* web_frame) {
 
 // static
 void RenderFrame::ForEach(RenderFrameVisitor* visitor) {
+  DCHECK(RenderThread::IsMainThread());
   FrameMap* frames = g_frame_map.Pointer();
   for (auto it = frames->begin(); it != frames->end(); ++it) {
     if (!visitor->Visit(it->second))
@@ -1613,6 +1617,7 @@ int RenderFrame::GetRoutingIdForWebFrame(blink::WebFrame* web_frame) {
 
 // static
 RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
+  DCHECK(RenderThread::IsMainThread());
   auto iter = g_frame_map.Get().find(web_frame);
   if (iter != g_frame_map.Get().end())
     return iter->second;
@@ -1738,6 +1743,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       input_target_client_impl_(this),
       devtools_frame_token_(params.devtools_frame_token),
       weak_factory_(this) {
+  DCHECK(RenderThread::IsMainThread());
   // The InterfaceProvider to access Mojo services exposed by the RFHI must be
   // provided at construction time. See: https://crbug.com/729021/.
   CHECK(params.interface_provider.is_bound());
@@ -6579,7 +6585,8 @@ void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
   TRACE_EVENT1("page-serialization",
                "RenderFrameImpl::OnWriteMHTMLToDiskComplete",
                "frame save status", save_status);
-  DCHECK(RenderThread::Get()) << "Must run in the main renderer thread";
+  DCHECK(RenderThread::IsMainThread())
+      << "Must run in the main renderer thread";
 
   // Convert the set into a vector for transport.
   std::vector<std::string> digests_of_new_parts(

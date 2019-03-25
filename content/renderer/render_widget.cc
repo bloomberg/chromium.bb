@@ -53,6 +53,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/cursor_utils.h"
@@ -475,7 +476,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       warmup_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
-  DCHECK(RenderThread::Get());
+  DCHECK(RenderThread::IsMainThread());
 
   // In tests there may not be a RenderThreadImpl.
   if (RenderThreadImpl::current()) {
@@ -513,6 +514,7 @@ RenderWidget::~RenderWidget() {
 
 // static
 RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
+  DCHECK(RenderThread::IsMainThread());
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   auto it = widgets->find(routing_id);
   return it == widgets->end() ? NULL : it->second;
@@ -711,7 +713,7 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 }
 
 void RenderWidget::OnClose() {
-  DCHECK(content::RenderThread::Get());
+  DCHECK(RenderThread::IsMainThread());
   // TODO(crbug.com/939262): If this fails we're handling a WidgetMsg_Close IPC
   // in a RenderWidget that is a child local root. This will leave the
   // RenderWidget in a closed state while the blink-side is not closed until the
@@ -1896,7 +1898,7 @@ void RenderWidget::ClosePopupWidgetSoon() {
 }
 
 void RenderWidget::CloseWidgetSoon() {
-  DCHECK(content::RenderThread::Get());
+  DCHECK(RenderThread::IsMainThread());
   // Prevent compositor from setting up new IPC channels, since we know a
   // WidgetMsg_Close is coming. We do this immediately, not in DoDeferredClose,
   // as the caller (eg WebPagePopupImpl) may start tearing down things after

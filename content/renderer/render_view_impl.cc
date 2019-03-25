@@ -64,6 +64,7 @@
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/window_features_converter.h"
@@ -480,6 +481,8 @@ void RenderViewImpl::Initialize(
     mojom::CreateViewParamsPtr params,
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(RenderThread::IsMainThread());
+
   // RenderView used to inherit from RenderWidget. Creating a delegate
   // interface and explicitly passing ownership of ourselves to the
   // RenderWidget preserves the lifetime semantics. This is a stepping
@@ -610,6 +613,7 @@ RenderViewImpl::~RenderViewImpl() {
 
 /*static*/
 RenderViewImpl* RenderViewImpl::FromWebView(WebView* webview) {
+  DCHECK(RenderThread::IsMainThread());
   ViewMap* views = g_view_map.Pointer();
   auto it = views->find(webview);
   return it == views->end() ? NULL : it->second;
@@ -622,6 +626,7 @@ RenderView* RenderView::FromWebView(blink::WebView* webview) {
 
 /*static*/
 RenderViewImpl* RenderViewImpl::FromRoutingID(int32_t routing_id) {
+  DCHECK(RenderThread::IsMainThread());
   RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
   auto it = views->find(routing_id);
   return it == views->end() ? NULL : it->second;
@@ -639,6 +644,7 @@ size_t RenderView::GetRenderViewCount() {
 
 /*static*/
 void RenderView::ForEach(RenderViewVisitor* visitor) {
+  DCHECK(RenderThread::IsMainThread());
   ViewMap* views = g_view_map.Pointer();
   for (auto it = views->begin(); it != views->end(); ++it) {
     if (!visitor->Visit(it->second))
@@ -1526,7 +1532,7 @@ void RenderViewImpl::DoDeferredClose() {
 }
 
 void RenderViewImpl::CloseWindowSoon() {
-  DCHECK(content::RenderThread::Get());
+  DCHECK(RenderThread::IsMainThread());
   if (render_widget_->is_frozen()) {
     // Ask the RenderViewHost with a local main frame to initiate close.  We
     // could be called from deep in Javascript.  If we ask the RenderViewHost to
