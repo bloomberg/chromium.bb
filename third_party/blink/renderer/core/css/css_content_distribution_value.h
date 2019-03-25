@@ -16,13 +16,6 @@ namespace cssvalue {
 
 class CSSContentDistributionValue : public CSSValue {
  public:
-  static CSSContentDistributionValue* Create(CSSValueID distribution,
-                                             CSSValueID position,
-                                             CSSValueID overflow) {
-    return MakeGarbageCollected<CSSContentDistributionValue>(
-        distribution, position, overflow);
-  }
-
   CSSContentDistributionValue(CSSValueID distribution,
                               CSSValueID position,
                               CSSValueID overflow);

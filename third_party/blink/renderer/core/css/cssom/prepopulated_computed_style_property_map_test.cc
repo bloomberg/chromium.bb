@@ -38,8 +38,8 @@ class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    declaration_ =
-        CSSComputedStyleDeclaration::Create(GetDocument().documentElement());
+    declaration_ = MakeGarbageCollected<CSSComputedStyleDeclaration>(
+        GetDocument().documentElement());
   }
 
   Node* PageNode() { return GetDocument().documentElement(); }

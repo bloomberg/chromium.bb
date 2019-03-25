@@ -45,13 +45,6 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   USING_PRE_FINALIZER(CSSCrossfadeValue, Dispose);
 
  public:
-  static CSSCrossfadeValue* Create(CSSValue* from_value,
-                                   CSSValue* to_value,
-                                   CSSPrimitiveValue* percentage_value) {
-    return MakeGarbageCollected<CSSCrossfadeValue>(from_value, to_value,
-                                                   percentage_value);
-  }
-
   CSSCrossfadeValue(CSSValue* from_value,
                     CSSValue* to_value,
                     CSSPrimitiveValue* percentage_value);

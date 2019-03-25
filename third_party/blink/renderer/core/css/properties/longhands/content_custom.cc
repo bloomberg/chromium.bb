@@ -67,7 +67,8 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args,
 
   if (!args.AtEnd())
     return nullptr;
-  return cssvalue::CSSCounterValue::Create(identifier, list_style, separator);
+  return MakeGarbageCollected<cssvalue::CSSCounterValue>(identifier, list_style,
+                                                         separator);
 }
 
 }  // namespace

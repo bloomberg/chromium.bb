@@ -732,7 +732,8 @@ CSSStyleDeclaration* Internals::computedStyleIncludingVisitedInfo(
     Node* node) const {
   DCHECK(node);
   bool allow_visited_style = true;
-  return CSSComputedStyleDeclaration::Create(node, allow_visited_style);
+  return MakeGarbageCollected<CSSComputedStyleDeclaration>(node,
+                                                           allow_visited_style);
 }
 
 ShadowRoot* Internals::createUserAgentShadowRoot(Element* host) {

@@ -15,18 +15,6 @@ namespace blink {
 
 class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
  public:
-  static CSSCustomPropertyDeclaration* Create(
-      const AtomicString& name,
-      scoped_refptr<CSSVariableData> value) {
-    return MakeGarbageCollected<CSSCustomPropertyDeclaration>(name,
-                                                              std::move(value));
-  }
-
-  static CSSCustomPropertyDeclaration* Create(const AtomicString& name,
-                                              CSSValueID id) {
-    return MakeGarbageCollected<CSSCustomPropertyDeclaration>(name, id);
-  }
-
   CSSCustomPropertyDeclaration(const AtomicString& name, CSSValueID id)
       : CSSValue(kCustomPropertyDeclarationClass),
         name_(name),

@@ -964,7 +964,8 @@ CSSStyleDeclaration* LocalDOMWindow::getComputedStyle(
     Element* elt,
     const String& pseudo_elt) const {
   DCHECK(elt);
-  return CSSComputedStyleDeclaration::Create(elt, false, pseudo_elt);
+  return MakeGarbageCollected<CSSComputedStyleDeclaration>(elt, false,
+                                                           pseudo_elt);
 }
 
 ScriptPromise LocalDOMWindow::getComputedAccessibleNode(

@@ -31,7 +31,7 @@ const CSSValue* BorderImageSlice::CSSValueFromComputedStyleInternal(
 const CSSValue* BorderImageSlice::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       Persistent<CSSBorderImageSliceValue>, value,
-      (CSSBorderImageSliceValue::Create(
+      (MakeGarbageCollected<CSSBorderImageSliceValue>(
           CSSQuadValue::Create(
               CSSPrimitiveValue::Create(
                   100, CSSPrimitiveValue::UnitType::kPercentage),

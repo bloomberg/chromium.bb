@@ -38,7 +38,7 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
     if (!list)
       list = CSSValueList::CreateCommaSeparated();
 
-    list->Append(*cssvalue::CSSCursorImageValue::Create(
+    list->Append(*MakeGarbageCollected<cssvalue::CSSCursorImageValue>(
         *image, hot_spot_specified, hot_spot));
     if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range))
       return nullptr;
@@ -86,7 +86,7 @@ const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
     list = CSSValueList::CreateCommaSeparated();
     for (const CursorData& cursor : *cursors) {
       if (StyleImage* image = cursor.GetImage()) {
-        list->Append(*cssvalue::CSSCursorImageValue::Create(
+        list->Append(*MakeGarbageCollected<cssvalue::CSSCursorImageValue>(
             *image->ComputedCSSValue(), cursor.HotSpotSpecified(),
             cursor.HotSpot()));
       }

@@ -1516,7 +1516,7 @@ CSSValue* ConsumeAxis(CSSParserTokenRange& range) {
   if (axis_id == CSSValueID::kX || axis_id == CSSValueID::kY ||
       axis_id == CSSValueID::kZ) {
     ConsumeIdent(range);
-    return CSSAxisValue::Create(axis_id);
+    return MakeGarbageCollected<CSSAxisValue>(axis_id);
   }
 
   CSSValue* x_dimension =
@@ -1530,7 +1530,7 @@ CSSValue* ConsumeAxis(CSSParserTokenRange& range) {
   double x = To<CSSPrimitiveValue>(x_dimension)->GetDoubleValue();
   double y = To<CSSPrimitiveValue>(y_dimension)->GetDoubleValue();
   double z = To<CSSPrimitiveValue>(z_dimension)->GetDoubleValue();
-  return CSSAxisValue::Create(x, y, z);
+  return MakeGarbageCollected<CSSAxisValue>(x, y, z);
 }
 
 static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
@@ -1555,8 +1555,8 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
 
   if (!percentage)
     return nullptr;
-  return CSSCrossfadeValue::Create(from_image_value, to_image_value,
-                                   percentage);
+  return MakeGarbageCollected<CSSCrossfadeValue>(from_image_value,
+                                                 to_image_value, percentage);
 }
 
 static CSSValue* ConsumePaint(CSSParserTokenRange& args,

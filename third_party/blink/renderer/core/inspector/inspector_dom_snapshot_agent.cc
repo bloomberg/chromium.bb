@@ -923,8 +923,8 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
 }
 
 int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(node, true);
+  auto* computed_style_info =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
 
   Vector<String> style;
   bool all_properties_empty = true;
@@ -966,8 +966,8 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
 
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(node, true);
+  auto* computed_style_info =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   std::unique_ptr<protocol::Array<int>> result = protocol::Array<int>::create();
   for (const auto& pair : *css_property_whitelist_) {
     String value = computed_style_info->GetPropertyValue(pair.second);

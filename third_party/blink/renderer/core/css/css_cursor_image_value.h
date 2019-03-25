@@ -31,13 +31,6 @@ namespace cssvalue {
 
 class CSSCursorImageValue : public CSSValue {
  public:
-  static const CSSCursorImageValue* Create(const CSSValue& image_value,
-                                           bool hot_spot_specified,
-                                           const IntPoint& hot_spot) {
-    return MakeGarbageCollected<CSSCursorImageValue>(
-        image_value, hot_spot_specified, hot_spot);
-  }
-
   CSSCursorImageValue(const CSSValue& image_value,
                       bool hot_spot_specified,
                       const IntPoint& hot_spot);

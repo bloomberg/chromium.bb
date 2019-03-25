@@ -14,13 +14,6 @@ namespace cssvalue {
 
 class CSSAxisValue : public CSSValueList {
  public:
-  static CSSAxisValue* Create(CSSValueID axis_name) {
-    return MakeGarbageCollected<CSSAxisValue>(axis_name);
-  }
-  static CSSAxisValue* Create(double x, double y, double z) {
-    return MakeGarbageCollected<CSSAxisValue>(x, y, z);
-  }
-
   explicit CSSAxisValue(CSSValueID axis_name);
   CSSAxisValue(double x, double y, double z);
 

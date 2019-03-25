@@ -72,8 +72,8 @@ Position AdjustedSelectionStartForStyleComputation(const Position& position) {
 bool EditingStyleUtilities::HasAncestorVerticalAlignStyle(Node& node,
                                                           CSSValueID value) {
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(node)) {
-    CSSComputedStyleDeclaration* ancestor_style =
-        CSSComputedStyleDeclaration::Create(&runner);
+    auto* ancestor_style =
+        MakeGarbageCollected<CSSComputedStyleDeclaration>(&runner);
     if (GetIdentifierValue(ancestor_style, CSSPropertyID::kVerticalAlign) ==
         value)
       return true;
@@ -173,8 +173,8 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
   CSSValueID value_id =
       GetIdentifierValue(style_to_check, CSSPropertyID::kVerticalAlign);
   if (value_id == CSSValueSub || value_id == CSSValueSuper) {
-    CSSComputedStyleDeclaration* element_style =
-        CSSComputedStyleDeclaration::Create(element);
+    auto* element_style =
+        MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
     // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of
     // CSS vertical-align property.
     if (GetIdentifierValue(element_style, CSSPropertyID::kVerticalAlign) ==
@@ -228,8 +228,8 @@ bool EditingStyleUtilities::HasTransparentBackgroundColor(
 const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
     Node* node) {
   for (Node* ancestor = node; ancestor; ancestor = ancestor->parentNode()) {
-    CSSComputedStyleDeclaration* ancestor_style =
-        CSSComputedStyleDeclaration::Create(ancestor);
+    auto* ancestor_style =
+        MakeGarbageCollected<CSSComputedStyleDeclaration>(ancestor);
     if (!HasTransparentBackgroundColor(ancestor_style)) {
       return ancestor_style->GetPropertyCSSValue(
           GetCSSPropertyBackgroundColor());

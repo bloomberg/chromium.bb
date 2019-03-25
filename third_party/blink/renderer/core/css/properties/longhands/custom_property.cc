@@ -123,7 +123,7 @@ const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
   if (!data)
     return nullptr;
 
-  return CSSCustomPropertyDeclaration::Create(name_, data);
+  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(name_, data);
 }
 
 const CSSValue* CustomProperty::ParseUntyped(
