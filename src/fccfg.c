@@ -87,7 +87,16 @@ FcConfigRealPath(const FcChar8 *path)
     if (!path)
 	return NULL;
 
+#ifndef _WIN32
     resolved_ret = realpath((const char *) path, resolved_name);
+#else
+    if (GetFullPathNameA ((LPCSTR) path, PATH_MAX, resolved_name, NULL) == 0)
+    {
+        fprintf (stderr, "Fontconfig warning: GetFullPathNameA failed.\n");
+        return NULL;
+    }
+    resolved_ret = resolved_name;
+#endif
     if (resolved_ret)
 	path = (FcChar8 *) resolved_ret;
     return FcStrCopyFilename(path);
