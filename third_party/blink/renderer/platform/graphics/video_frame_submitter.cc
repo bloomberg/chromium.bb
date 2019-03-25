@@ -357,6 +357,10 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
 }
 
 void VideoFrameSubmitter::SubmitEmptyFrameIfNeeded() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!compositor_frame_sink_)
+    return;
+
   // If we are allowed to submit real frames, then don't send a blank frame
   // since the last real frame might actually be visible.
   //
@@ -424,6 +428,9 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   DCHECK(compositor_frame_sink_ && !ShouldSubmit());
   DCHECK(!frame_size_.IsEmpty());
   TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitEmptyFrame");
+
+  if (!compositor_frame_sink_)
+    return;
 
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
