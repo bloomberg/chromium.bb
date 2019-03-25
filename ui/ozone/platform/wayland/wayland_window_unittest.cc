@@ -1105,35 +1105,28 @@ ACTION_P(VerifyRegion, ptr) {
 }
 
 TEST_P(WaylandWindowTest, SetOpaqueRegion) {
-  MockPlatformWindowDelegate delegate;
-
-  PlatformWindowInitProperties properties;
-  properties.bounds = gfx::Rect(0, 0, 700, 600);
-  properties.type = ui::PlatformWindowType::kWindow;
-  properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
-
-  std::unique_ptr<WaylandWindow> window =
-      std::make_unique<WaylandWindow>(&delegate, connection_.get());
-
-  EXPECT_TRUE(window->Initialize(std::move(properties)));
-
-  Sync();
-
   wl::MockSurface* mock_surface =
-      server_.GetObject<wl::MockSurface>(window->GetWidget());
-  SkIRect rect = SkIRect::MakeXYWH(0, 0, 500, 400);
-  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).WillOnce(VerifyRegion(&rect));
+      server_.GetObject<wl::MockSurface>(window_->GetWidget());
 
-  window->SetBounds({0, 0, 500, 400});
+  gfx::Rect new_bounds(0, 0, 500, 600);
+  auto state_array = MakeStateArray({XDG_SURFACE_STATE_ACTIVATED});
+  SendConfigureEvent(new_bounds.width(), new_bounds.height(), 1,
+                     state_array.get());
+
+  SkIRect rect =
+      SkIRect::MakeXYWH(0, 0, new_bounds.width(), new_bounds.height());
+  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).WillOnce(VerifyRegion(&rect));
 
   Sync();
 
   VerifyAndClearExpectations();
 
-  rect = SkIRect::MakeXYWH(0, 0, 1000, 534);
-  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).WillOnce(VerifyRegion(&rect));
+  new_bounds.set_size(gfx::Size(1000, 534));
+  SendConfigureEvent(new_bounds.width(), new_bounds.height(), 2,
+                     state_array.get());
 
-  window->SetBounds({0, 0, 1000, 534});
+  rect = SkIRect::MakeXYWH(0, 0, new_bounds.width(), new_bounds.height());
+  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).WillOnce(VerifyRegion(&rect));
 
   Sync();
 
