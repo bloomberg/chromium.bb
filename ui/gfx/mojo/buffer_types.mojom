@@ -59,8 +59,8 @@ struct NativePixmapPlane {
   uint64 size;
   uint64 modifier;
 
-  // A file descriptor for the underlying memory object (usually dmabuf).
-  handle fd;
+  // A platform-specific handle the underlying memory object.
+  handle buffer_handle;
 };
 
 // gfx::NativePixmapHandle

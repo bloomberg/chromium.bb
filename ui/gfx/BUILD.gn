@@ -505,8 +505,6 @@ jumbo_source_set("memory_buffer_sources") {
     "gpu_fence_handle.cc",
     "gpu_fence_handle.h",
     "native_pixmap.h",
-    "native_pixmap_handle.cc",
-    "native_pixmap_handle.h",
     "overlay_transform.h",
   ]
 
@@ -559,6 +557,13 @@ jumbo_source_set("memory_buffer_sources") {
 
   if (is_win) {
     public_deps += [ "//ipc:message_support" ]
+  }
+
+  if ((is_linux || use_ozone) && !is_nacl) {
+    sources += [
+      "native_pixmap_handle.cc",
+      "native_pixmap_handle.h",
+    ]
   }
 }
 

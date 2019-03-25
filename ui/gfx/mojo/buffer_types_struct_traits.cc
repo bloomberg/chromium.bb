@@ -14,10 +14,6 @@
 #include "mojo/public/cpp/system/scope_to_message_pipe.h"
 #endif
 
-#if !defined(OS_LINUX)
-#include "base/no_destructor.h"
-#endif
-
 namespace mojo {
 
 // static
@@ -28,7 +24,17 @@ bool StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
   return data.ReadUsage(&out->usage) && data.ReadFormat(&out->format);
 }
 
+#if defined(OS_LINUX) || defined(USE_OZONE)
+mojo::ScopedHandle StructTraits<
+    gfx::mojom::NativePixmapPlaneDataView,
+    gfx::NativePixmapPlane>::buffer_handle(gfx::NativePixmapPlane& plane) {
 #if defined(OS_LINUX)
+  return mojo::WrapPlatformFile(plane.fd.release());
+#elif defined(OS_FUCHSIA)
+  return mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(plane.vmo)));
+#endif  // defined(OS_LINUX)
+}
+
 bool StructTraits<
     gfx::mojom::NativePixmapPlaneDataView,
     gfx::NativePixmapPlane>::Read(gfx::mojom::NativePixmapPlaneDataView data,
@@ -38,18 +44,19 @@ bool StructTraits<
   out->size = data.size();
   out->modifier = data.modifier();
 
-  mojo::PlatformHandle handle = mojo::UnwrapPlatformHandle(data.TakeFd());
+  mojo::PlatformHandle handle =
+      mojo::UnwrapPlatformHandle(data.TakeBufferHandle());
+#if defined(OS_LINUX)
   if (!handle.is_fd())
     return false;
   out->fd = handle.TakeFD();
+#elif defined(OS_FUCHSIA)
+  if (!handle.is_valid_handle())
+    return false;
+  out->vmo = zx::vmo(handle.TakeHandle());
+#endif  // defined(OS_LINUX)
 
   return true;
-}
-
-mojo::ScopedHandle
-StructTraits<gfx::mojom::NativePixmapPlaneDataView, gfx::NativePixmapPlane>::fd(
-    gfx::NativePixmapPlane& plane) {
-  return mojo::WrapPlatformFile(plane.fd.release());
 }
 
 bool StructTraits<
@@ -58,7 +65,7 @@ bool StructTraits<
                                    gfx::NativePixmapHandle* out) {
   return data.ReadPlanes(&out->planes);
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(USE_OZONE)
 
 gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
     gfx::mojom::GpuMemoryBufferHandleDataView,
@@ -71,7 +78,7 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewSharedMemoryHandle(
           std::move(handle.region));
     case gfx::NATIVE_PIXMAP:
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewNativePixmapHandle(
           std::move(handle.native_pixmap_handle));
 #else
@@ -147,7 +154,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       out->type = gfx::SHARED_MEMORY_BUFFER;
       out->region = std::move(platform_handle->get_shared_memory_handle());
       return true;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::
         NATIVE_PIXMAP_HANDLE:
       out->type = gfx::NATIVE_PIXMAP;

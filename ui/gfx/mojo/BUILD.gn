@@ -25,7 +25,7 @@ mojom("mojo") {
     "//ui/gfx/geometry/mojo",
   ]
 
-  if (is_linux || is_chromeos) {
+  if (is_linux || use_ozone) {
     enabled_features = [ "supports_native_pixmap" ]
   }
 }
