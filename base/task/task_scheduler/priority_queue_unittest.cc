@@ -25,8 +25,7 @@ namespace {
 
 scoped_refptr<Sequence> MakeSequenceWithTraitsAndTask(
     const TaskTraits& traits) {
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(
-      traits, nullptr, TaskSourceExecutionMode::kParallel);
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits);
   sequence->BeginTransaction().PushTask(
       Task(FROM_HERE, DoNothing(), TimeDelta()));
   return sequence;

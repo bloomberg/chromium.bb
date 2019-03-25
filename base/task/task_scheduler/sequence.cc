@@ -39,12 +39,6 @@ bool Sequence::Transaction::PushTask(Task task) {
   // for details.
   CHECK(task.task);
   DCHECK(task.queue_time.is_null());
-
-  // AddRef() matched by manual Release() when the queue becomes empty again
-  // (in DidRunTask() or Clear()).
-  if (sequence()->queue_.empty() && sequence()->task_runner())
-    sequence()->task_runner()->AddRef();
-
   task.queue_time = base::TimeTicks::Now();
 
   task.task = sequence()->traits_.shutdown_behavior() ==
@@ -72,12 +66,6 @@ Optional<Task> Sequence::TakeTask() {
   return std::move(next_task);
 }
 
-bool Sequence::DidRunTask() {
-  if (queue_.empty())
-    ReleaseTaskRunner();
-  return !queue_.empty();
-}
-
 SequenceSortKey Sequence::GetSortKey() const {
   DCHECK(!IsEmpty());
   return SequenceSortKey(traits_.priority(), queue_.front().queue_time);
@@ -88,34 +76,21 @@ bool Sequence::IsEmpty() const {
 }
 
 void Sequence::Clear() {
-  bool queue_was_empty = queue_.empty();
-  while (!queue_.empty())
+  while (!IsEmpty())
     TakeTask();
-  if (!queue_was_empty) {
-    // No member access after this point, ReleaseTaskRunner() might have deleted
-    // |this|.
-    ReleaseTaskRunner();
-  }
 }
 
-void Sequence::ReleaseTaskRunner() {
-  if (!task_runner())
-    return;
-  if (execution_mode() == TaskSourceExecutionMode::kParallel) {
-    static_cast<SchedulerParallelTaskRunner*>(task_runner())
-        ->UnregisterSequence(this);
+Sequence::Sequence(
+    const TaskTraits& traits,
+    scoped_refptr<SchedulerParallelTaskRunner> scheduler_parallel_task_runner)
+    : TaskSource(traits),
+      scheduler_parallel_task_runner_(scheduler_parallel_task_runner) {}
+
+Sequence::~Sequence() {
+  if (scheduler_parallel_task_runner_) {
+    scheduler_parallel_task_runner_->UnregisterSequence(this);
   }
-  // No member access after this point, releasing |task_runner()| might delete
-  // |this|.
-  task_runner()->Release();
 }
-
-Sequence::Sequence(const TaskTraits& traits,
-                   TaskRunner* task_runner,
-                   TaskSourceExecutionMode execution_mode)
-    : TaskSource(traits, task_runner, execution_mode) {}
-
-Sequence::~Sequence() = default;
 
 Sequence::Transaction Sequence::BeginTransaction() {
   return Transaction(this);

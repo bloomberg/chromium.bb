@@ -13,10 +13,7 @@ SchedulerSequencedTaskRunner::SchedulerSequencedTaskRunner(
     const TaskTraits& traits,
     SchedulerTaskRunnerDelegate* scheduler_task_runner_delegate)
     : scheduler_task_runner_delegate_(scheduler_task_runner_delegate),
-      sequence_(MakeRefCounted<Sequence>(traits,
-                                         this,
-                                         TaskSourceExecutionMode::kSequenced)) {
-}
+      sequence_(MakeRefCounted<Sequence>(traits)) {}
 
 SchedulerSequencedTaskRunner::~SchedulerSequencedTaskRunner() = default;
 
@@ -27,6 +24,7 @@ bool SchedulerSequencedTaskRunner::PostDelayedTask(const Location& from_here,
     return false;
 
   Task task(from_here, std::move(closure), delay);
+  task.sequenced_task_runner_ref = this;
 
   // Post the task as part of |sequence_|.
   return scheduler_task_runner_delegate_->PostTaskWithSequence(std::move(task),
