@@ -293,6 +293,12 @@ interface IDBTransaction {
                     IDBKeyPath key_path,
                     bool auto_increment);
   DeleteObjectStore(int64 object_store_id);
+  Put(int64 object_store_id,
+      IDBValue value,
+      IDBKey key,
+      IDBPutMode mode,
+      array<IDBIndexKeys> index_keys,
+      associated IDBCallbacks callbacks);
 };
 
 interface IDBDatabase {
@@ -325,13 +331,6 @@ interface IDBDatabase {
          bool key_only,
          int64 max_count,
          associated IDBCallbacks callbacks);
-  Put(int64 transaction_id,
-      int64 object_store_id,
-      IDBValue value,
-      IDBKey key,
-      IDBPutMode mode,
-      array<IDBIndexKeys> index_keys,
-      associated IDBCallbacks callbacks);
   SetIndexKeys(int64 transaction_id,
                int64 object_store_id,
                IDBKey primary_key,

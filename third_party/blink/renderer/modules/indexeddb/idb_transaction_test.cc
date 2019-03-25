@@ -119,9 +119,11 @@ class IDBTransactionTest : public testing::Test {
 
 TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -158,9 +160,11 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -203,9 +207,11 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -245,9 +251,11 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -294,9 +302,11 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   // This test covers the conditions of https://crbug.com/733642
 
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -341,9 +351,11 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 
 TEST_F(IDBTransactionTest, TransactionFinish) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Commit(kTransactionId, 0)).Times(1);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),

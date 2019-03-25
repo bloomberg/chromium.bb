@@ -60,13 +60,6 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
               int64_t max_count,
               bool key_only,
               WebIDBCallbacks*) override;
-  void Put(int64_t transaction_id,
-           int64_t object_store_id,
-           std::unique_ptr<IDBValue> value,
-           std::unique_ptr<IDBKey> primary_key,
-           mojom::IDBPutMode,
-           WebIDBCallbacks*,
-           Vector<IDBIndexKeys>) override;
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<IDBKey> primary_key,
@@ -121,16 +114,6 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
-
-  FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, ValueSizeTest);
-  FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, KeyAndValueSizeTest);
-
-  // Maximum size (in bytes) of value/key pair allowed for put requests. Any
-  // requests larger than this size will be rejected.
-  // Used by unit tests to exercise behavior without allocating huge chunks
-  // of memory.
-  size_t max_put_value_size_ =
-      mojom::blink::kIDBMaxMessageSize - mojom::blink::kIDBMaxMessageOverhead;
 
   std::set<int32_t> observer_ids_;
   mojom::blink::IDBDatabaseAssociatedPtr database_;

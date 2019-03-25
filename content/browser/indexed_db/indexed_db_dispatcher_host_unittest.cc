@@ -517,12 +517,12 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
         new_value->bits = std::move(value_vector);
         new_value->blob_or_file_info = std::move(blobs);
 
-        connection->database->Put(kTransactionId, kObjectStoreId,
-                                  std::move(new_value),
-                                  IndexedDBKey(base::UTF8ToUTF16("hello")),
-                                  blink::mojom::IDBPutMode::AddOnly,
-                                  std::vector<IndexedDBIndexKeys>(),
-                                  put_callbacks->CreateInterfacePtrAndBind());
+        connection->version_change_transaction->Put(
+            kObjectStoreId, std::move(new_value),
+            IndexedDBKey(base::UTF8ToUTF16("hello")),
+            blink::mojom::IDBPutMode::AddOnly,
+            std::vector<IndexedDBIndexKeys>(),
+            put_callbacks->CreateInterfacePtrAndBind());
         connection->database->Commit(kTransactionId, 0);
       }));
   loop2.Run();
@@ -1250,12 +1250,12 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
         new_value->blob_or_file_info =
             std::vector<blink::mojom::IDBBlobInfoPtr>();
 
-        connection1->database->Put(kTransactionId1, kObjectStoreId,
-                                   std::move(new_value),
-                                   IndexedDBKey(base::UTF8ToUTF16("key")),
-                                   blink::mojom::IDBPutMode::AddOnly,
-                                   std::vector<IndexedDBIndexKeys>(),
-                                   put_callbacks->CreateInterfacePtrAndBind());
+        connection1->version_change_transaction->Put(
+            kObjectStoreId, std::move(new_value),
+            IndexedDBKey(base::UTF8ToUTF16("key")),
+            blink::mojom::IDBPutMode::AddOnly,
+            std::vector<IndexedDBIndexKeys>(),
+            put_callbacks->CreateInterfacePtrAndBind());
         connection1->database->Commit(kTransactionId1, 0);
       }));
   loop2.Run();

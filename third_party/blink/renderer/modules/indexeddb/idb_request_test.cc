@@ -107,13 +107,6 @@ class BackendDatabaseWithMockedClose
               bool key_only,
               int64_t max_count,
               mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
-  void Put(int64_t transaction_id,
-           int64_t object_store_id,
-           std::unique_ptr<::blink::IDBValue> value,
-           std::unique_ptr<::blink::IDBKey> key,
-           mojom::blink::IDBPutMode mode,
-           WTF::Vector<::blink::IDBIndexKeys> index_keys,
-           mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<::blink::IDBKey> primary_key,
@@ -237,9 +230,11 @@ void EnsureIDBCallbacksDontThrow(IDBRequest* request,
 
 TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -261,9 +256,11 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
 
 TEST_F(IDBRequestTest, EventsAfterDoneStop) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -284,9 +281,11 @@ TEST_F(IDBRequestTest, EventsAfterDoneStop) {
 
 TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -310,9 +309,11 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
 
 TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   V8TestingScope scope;
+  const int64_t kTransactionId = 1234;
   auto database_backend = std::make_unique<MockWebIDBDatabase>();
   auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+      scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+      kTransactionId);
   EXPECT_CALL(*database_backend, Close()).Times(1);
   BuildTransaction(scope, std::move(database_backend),
                    std::move(transaction_backend));
@@ -380,7 +381,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     EXPECT_CALL(*mock_database, Close()).Times(1);
 
     auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-        scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+        scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+        kTransactionId);
     IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
         scope.GetScriptState(), callbacks, std::move(transaction_backend),
         kTransactionId, kVersion, IDBRequest::AsyncTraceState());
@@ -401,7 +403,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     EXPECT_CALL(*mock_database, Close()).Times(1);
 
     auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
-        scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+        scope.GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess),
+        kTransactionId);
     IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
         scope.GetScriptState(), callbacks, std::move(transaction_backend),
         kTransactionId, kVersion, IDBRequest::AsyncTraceState());

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_TRANSACTION_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -37,8 +38,18 @@ class TransactionImpl : public blink::mojom::IDBTransaction {
                          const blink::IndexedDBKeyPath& key_path,
                          bool auto_increment) override;
   void DeleteObjectStore(int64_t object_store_id) override;
+  void Put(int64_t object_store_id,
+           blink::mojom::IDBValuePtr value,
+           const blink::IndexedDBKey& key,
+           blink::mojom::IDBPutMode mode,
+           const std::vector<blink::IndexedDBIndexKeys>& index_keys,
+           blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
 
  private:
+  class IOHelper;
+
+  std::unique_ptr<IOHelper, BrowserThread::DeleteOnIOThread> io_helper_;
+
   base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   base::WeakPtr<IndexedDBTransaction> transaction_;

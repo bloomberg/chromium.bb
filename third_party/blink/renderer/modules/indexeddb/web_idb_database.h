@@ -96,13 +96,6 @@ class MODULES_EXPORT WebIDBDatabase {
                       int64_t max_count,
                       bool key_only,
                       WebIDBCallbacks*) = 0;
-  virtual void Put(int64_t transaction_id,
-                   int64_t object_store_id,
-                   std::unique_ptr<IDBValue> value,
-                   std::unique_ptr<IDBKey> primary_key,
-                   mojom::IDBPutMode,
-                   WebIDBCallbacks*,
-                   Vector<IDBIndexKeys>) = 0;
   virtual void SetIndexKeys(int64_t transaction_id,
                             int64_t object_store_id,
                             std::unique_ptr<IDBKey> primary_key,

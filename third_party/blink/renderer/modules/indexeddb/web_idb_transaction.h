@@ -27,8 +27,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_TRANSACTION_H_
 
 #include <bitset>
+#include <memory>
 
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -44,6 +46,12 @@ class MODULES_EXPORT WebIDBTransaction {
                                  const IDBKeyPath&,
                                  bool auto_increment) = 0;
   virtual void DeleteObjectStore(int64_t object_store_id) = 0;
+  virtual void Put(int64_t object_store_id,
+                   std::unique_ptr<IDBValue> value,
+                   std::unique_ptr<IDBKey> primary_key,
+                   mojom::IDBPutMode,
+                   WebIDBCallbacks*,
+                   Vector<IDBIndexKeys>) = 0;
 
   virtual mojom::blink::IDBTransactionAssociatedRequest CreateRequest() = 0;
 

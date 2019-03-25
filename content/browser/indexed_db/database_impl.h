@@ -68,13 +68,6 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
               bool key_only,
               int64_t max_count,
               blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
-  void Put(int64_t transaction_id,
-           int64_t object_store_id,
-           blink::mojom::IDBValuePtr value,
-           const blink::IndexedDBKey& key,
-           blink::mojom::IDBPutMode mode,
-           const std::vector<blink::IndexedDBIndexKeys>& index_keys,
-           blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void SetIndexKeys(
       int64_t transaction_id,
       int64_t object_store_id,
@@ -132,10 +125,6 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
                                    int64_t quota);
 
  private:
-  class IOHelper;
-
-  std::unique_ptr<IOHelper, BrowserThread::DeleteOnIOThread> io_helper_;
-
   // This raw pointer is safe because all DatabaseImpl instances are owned by
   // an IndexedDBDispatcherHost.
   IndexedDBDispatcherHost* dispatcher_host_;
