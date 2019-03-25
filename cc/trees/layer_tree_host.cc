@@ -902,8 +902,9 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   // may be translated appropriately.
   client_->ApplyViewportChanges(
       {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
-       info.page_scale_delta, info.top_controls_delta,
-       info.browser_controls_constraint, info.scroll_gesture_did_end});
+       info.page_scale_delta, info.is_pinch_gesture_active,
+       info.top_controls_delta, info.browser_controls_constraint,
+       info.scroll_gesture_did_end});
   SetNeedsUpdateLayers();
 }
 

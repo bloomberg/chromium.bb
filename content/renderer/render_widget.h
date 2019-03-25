@@ -604,7 +604,8 @@ class CONTENT_EXPORT RenderWidget
 
   bool IsSurfaceSynchronizationEnabled() const;
 
-  void PageScaleFactorChanged(float page_scale_factor);
+  void PageScaleFactorChanged(float page_scale_factor,
+                              bool is_pinch_gesture_active);
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);

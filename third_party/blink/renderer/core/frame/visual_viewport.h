@@ -149,9 +149,13 @@ class CORE_EXPORT VisualViewport final
   void MainFrameDidChangeSize();
 
   // Sets scale and location in one operation, preventing intermediate clamping.
-  void SetScaleAndLocation(float scale, const FloatPoint& location);
+  void SetScaleAndLocation(float scale,
+                           bool is_pinch_gesture_active,
+                           const FloatPoint& location);
+
   void SetScale(float);
   float Scale() const { return scale_; }
+  bool IsPinchGestureActive() const { return is_pinch_gesture_active_; }
 
   // Convert the given rect in the main LocalFrameView's coordinates into a rect
   // in the viewport. The given and returned rects are in CSS pixels, meaning
@@ -275,7 +279,9 @@ class CORE_EXPORT VisualViewport final
   bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
 
  private:
-  bool DidSetScaleOrLocation(float scale, const FloatPoint& location);
+  bool DidSetScaleOrLocation(float scale,
+                             bool is_pinch_gesture_active,
+                             const FloatPoint& location);
 
   void UpdateStyleAndLayout() const;
 
@@ -352,6 +358,7 @@ class CORE_EXPORT VisualViewport final
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;
   float scale_;
+  bool is_pinch_gesture_active_;
 
   // The Blink viewport size. This is effectively the size of the rect Blink is
   // rendering into and includes space consumed by scrollbars. While it will

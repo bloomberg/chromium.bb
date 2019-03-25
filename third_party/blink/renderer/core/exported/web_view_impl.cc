@@ -2407,11 +2407,13 @@ WebFloatSize WebViewImpl::VisualViewportSize() const {
 }
 
 void WebViewImpl::SetPageScaleFactorAndLocation(float scale_factor,
+                                                bool is_pinch_gesture_active,
                                                 const FloatPoint& location) {
   DCHECK(GetPage());
 
   GetPage()->GetVisualViewport().SetScaleAndLocation(
-      ClampPageScaleFactorToLimits(scale_factor), location);
+      ClampPageScaleFactorToLimits(scale_factor), is_pinch_gesture_active,
+      location);
 }
 
 void WebViewImpl::SetPageScaleFactor(float scale_factor) {
@@ -3069,7 +3071,9 @@ void WebViewImpl::DidChangeContentsSize() {
 void WebViewImpl::PageScaleFactorChanged() {
   GetPageScaleConstraintsSet().SetNeedsReset(false);
   UpdateLayerTreeViewPageScale();
-  AsView().client->PageScaleFactorChanged();
+  auto& viewport = GetPage()->GetVisualViewport();
+  AsView().client->PageScaleFactorChanged(viewport.Scale(),
+                                          viewport.IsPinchGestureActive());
   dev_tools_emulator_->MainFrameScrollOrScaleChanged();
 }
 
@@ -3312,6 +3316,7 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
                                      args.browser_controls_delta);
 
   SetPageScaleFactorAndLocation(PageScaleFactor() * args.page_scale_delta,
+                                args.is_pinch_gesture_active,
                                 visual_viewport_offset);
 
   if (args.page_scale_delta != 1) {

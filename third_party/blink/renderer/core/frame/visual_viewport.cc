@@ -69,6 +69,7 @@ namespace blink {
 VisualViewport::VisualViewport(Page& owner)
     : page_(&owner),
       scale_(1),
+      is_pinch_gesture_active_(false),
       browser_controls_adjustment_(0),
       max_page_scale_(-1),
       track_pinch_zoom_stats_for_page_(false),
@@ -340,7 +341,7 @@ void VisualViewport::SetSize(const IntSize& size) {
 }
 
 void VisualViewport::Reset() {
-  SetScaleAndLocation(1, FloatPoint());
+  SetScaleAndLocation(1, is_pinch_gesture_active_, FloatPoint());
 }
 
 void VisualViewport::MainFrameDidChangeSize() {
@@ -386,7 +387,7 @@ FloatPoint VisualViewport::ViewportCSSPixelsToRootFrame(
 }
 
 void VisualViewport::SetLocation(const FloatPoint& new_location) {
-  SetScaleAndLocation(scale_, new_location);
+  SetScaleAndLocation(scale_, is_pinch_gesture_active_, new_location);
 }
 
 void VisualViewport::Move(const ScrollOffset& delta) {
@@ -394,7 +395,7 @@ void VisualViewport::Move(const ScrollOffset& delta) {
 }
 
 void VisualViewport::SetScale(float scale) {
-  SetScaleAndLocation(scale, FloatPoint(offset_));
+  SetScaleAndLocation(scale, is_pinch_gesture_active_, FloatPoint(offset_));
 }
 
 double VisualViewport::OffsetLeft() const {
@@ -430,8 +431,9 @@ double VisualViewport::ScaleForVisualViewport() const {
 }
 
 void VisualViewport::SetScaleAndLocation(float scale,
+                                         bool is_pinch_gesture_active,
                                          const FloatPoint& location) {
-  if (DidSetScaleOrLocation(scale, location)) {
+  if (DidSetScaleOrLocation(scale, is_pinch_gesture_active, location)) {
     NotifyRootFrameViewport();
     Document* document = MainFrame()->GetDocument();
     if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
@@ -459,12 +461,16 @@ double VisualViewport::VisibleHeightCSSPx() const {
 }
 
 bool VisualViewport::DidSetScaleOrLocation(float scale,
+                                           bool is_pinch_gesture_active,
                                            const FloatPoint& location) {
   if (!MainFrame())
     return false;
 
   bool values_changed = false;
 
+  bool notify_page_scale_factor_changed =
+      is_pinch_gesture_active_ != is_pinch_gesture_active;
+  is_pinch_gesture_active_ = is_pinch_gesture_active;
   if (!std::isnan(scale) && !std::isinf(scale)) {
     float clamped_scale = GetPage()
                               .GetPageScaleConstraintsSet()
@@ -473,10 +479,12 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
     if (clamped_scale != scale_) {
       scale_ = clamped_scale;
       values_changed = true;
-      GetPage().GetChromeClient().PageScaleFactorChanged();
+      notify_page_scale_factor_changed = true;
       EnqueueResizeEvent();
     }
   }
+  if (notify_page_scale_factor_changed)
+    GetPage().GetChromeClient().PageScaleFactorChanged();
 
   ScrollOffset clamped_offset = ClampScrollOffset(ToScrollOffset(location));
 
@@ -872,8 +880,10 @@ scoped_refptr<base::SingleThreadTaskRunner> VisualViewport::GetTimerTaskRunner()
 
 void VisualViewport::UpdateScrollOffset(const ScrollOffset& position,
                                         ScrollType scroll_type) {
-  if (!DidSetScaleOrLocation(scale_, FloatPoint(position)))
+  if (!DidSetScaleOrLocation(scale_, is_pinch_gesture_active_,
+                             FloatPoint(position))) {
     return;
+  }
   if (IsExplicitScrollType(scroll_type)) {
     NotifyRootFrameViewport();
     if (scroll_type != kCompositorScroll && LayerForScrolling())
