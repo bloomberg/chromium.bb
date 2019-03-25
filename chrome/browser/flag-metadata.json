@@ -2210,7 +2210,7 @@
   {
     "name": "interest-feed-content-suggestions",
     "owners": [ "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 74
+    "expiry_milestone": 76
   },
   {
     "name": "keep-prefetched-content-suggestions",
