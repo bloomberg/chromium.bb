@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 
-#include "components/autofill/core/browser/password_requirements_spec_printer.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_printer.h"
 
 namespace {
 constexpr size_t kCacheSizeForDomainKeyedSpecs = 200;

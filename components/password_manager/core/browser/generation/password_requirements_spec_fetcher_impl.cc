@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/password_requirements_spec_fetcher_impl.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_fetcher_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -11,9 +11,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/password_requirements_spec_printer.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/browser/proto/password_requirements_shard.pb.h"
+#include "components/password_manager/core/browser/generation/password_requirements_spec_printer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -91,9 +91,8 @@ GURL GetUrlForRequirementsSpec(int version, const std::string& hash_prefix) {
 
 }  // namespace
 
-void PasswordRequirementsSpecFetcherImpl::Fetch(
-    GURL origin,
-    FetchCallback callback) {
+void PasswordRequirementsSpecFetcherImpl::Fetch(GURL origin,
+                                                FetchCallback callback) {
   DCHECK(origin.is_valid());
   VLOG(1) << "Fetching password requirements spec for " << origin;
 

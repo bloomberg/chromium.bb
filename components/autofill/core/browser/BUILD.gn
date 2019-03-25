@@ -139,11 +139,6 @@ jumbo_static_library("browser") {
     "metrics/form_events.h",
     "name_field.cc",
     "name_field.h",
-    "password_requirements_spec_fetcher.h",
-    "password_requirements_spec_fetcher_impl.cc",
-    "password_requirements_spec_fetcher_impl.h",
-    "password_requirements_spec_printer.cc",
-    "password_requirements_spec_printer.h",
     "payments/account_info_getter.h",
     "payments/autofill_wallet_data_type_controller.cc",
     "payments/autofill_wallet_data_type_controller.h",
@@ -320,7 +315,6 @@ jumbo_static_library("browser") {
     "//third_party/libaddressinput",
   ]
   deps = [
-    ":password_generator",
     "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
@@ -466,19 +460,6 @@ jumbo_static_library("test_support") {
   ]
 }
 
-static_library("password_generator") {
-  sources = [
-    "password_generator.cc",
-    "password_generator.h",
-  ]
-  public_deps = [
-    "//components/autofill/core/browser/proto",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 bundle_data("unit_tests_bundle_data") {
   sources = [
     "//components/test/data/autofill/merge/input/ambiguous.in",
@@ -548,8 +529,6 @@ source_set("unit_tests") {
     "label_formatter_unittest.cc",
     "label_formatter_utils_unittest.cc",
     "name_field_unittest.cc",
-    "password_generator_unittest.cc",
-    "password_requirements_spec_fetcher_unittest.cc",
     "payments/autofill_wallet_data_type_controller_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
@@ -604,7 +583,6 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
-    ":password_generator",
     ":test_support",
     ":unit_tests_bundle_data",
     "proto:legacy_proto_bridge",
@@ -675,17 +653,6 @@ if (use_libfuzzer) {
       "//base:base",
       "//components/autofill/core/browser/proto",
       "//components/autofill/core/common",
-      "//third_party/libprotobuf-mutator",
-    ]
-  }
-
-  fuzzer_test("password_generator_proto_fuzzer") {
-    sources = [
-      "password_generator_proto_fuzzer.cc",
-    ]
-    deps = [
-      ":password_generator",
-      "//components/autofill/core/browser/proto",
       "//third_party/libprotobuf-mutator",
     ]
   }

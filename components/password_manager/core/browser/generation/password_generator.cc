@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/password_generator.h"
+#include "components/password_manager/core/browser/generation/password_generator.h"
 
 #include <algorithm>
 #include <limits>
