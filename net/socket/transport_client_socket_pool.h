@@ -22,7 +22,6 @@
 namespace net {
 
 struct CommonConnectJobParams;
-class ClientSocketFactory;
 class HttpProxySocketParams;
 class SOCKSSocketParams;
 class SSLSocketParams;
@@ -89,6 +88,21 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
   ~TransportClientSocketPool() override;
 
+  // Creates a socket pool with an alternative ConnectJobFactory, for use in
+  // testing.
+  //
+  // |connect_backup_jobs_enabled| can be set to false to disable backup connect
+  // jobs (Which are normally enabled).
+  static std::unique_ptr<TransportClientSocketPool> CreateForTesting(
+      int max_sockets,
+      int max_sockets_per_group,
+      base::TimeDelta unused_idle_socket_timeout,
+      base::TimeDelta used_idle_socket_timeout,
+      std::unique_ptr<ClientSocketPoolBase<SocketParams>::ConnectJobFactory>
+          connect_job_factory,
+      SSLConfigService* ssl_config_service,
+      bool connect_backup_jobs_enabled);
+
   // ClientSocketPool implementation.
   int RequestSocket(const GroupId& group_id,
                     const void* resolve_info,
@@ -131,8 +145,34 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;
 
-  ClientSocketFactory* client_socket_factory() {
-    return client_socket_factory_;
+  // Testing methods.
+
+  size_t NumNeverAssignedConnectJobsInGroupForTesting(
+      const GroupId& group_id) const {
+    return base_.NumNeverAssignedConnectJobsInGroup(group_id);
+  }
+
+  size_t NumUnassignedConnectJobsInGroupForTesting(
+      const GroupId& group_id) const {
+    return base_.NumUnassignedConnectJobsInGroup(group_id);
+  }
+
+  size_t NumConnectJobsInGroupForTesting(const GroupId& group_id) const {
+    return base_.NumConnectJobsInGroup(group_id);
+  }
+
+  int NumActiveSocketsInGroupForTesting(const GroupId& group_id) const {
+    return base_.NumActiveSocketsInGroup(group_id);
+  }
+
+  bool RequestInGroupWithHandleHasJobForTesting(
+      const GroupId& group_id,
+      const ClientSocketHandle* handle) const {
+    return base_.RequestInGroupWithHandleHasJobForTesting(group_id, handle);
+  }
+
+  bool HasGroupForTesting(const ClientSocketPool::GroupId& group_id) const {
+    return base_.HasGroup(group_id);
   }
 
  protected:
@@ -142,6 +182,15 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
  private:
   typedef ClientSocketPoolBase<SocketParams> PoolBase;
+
+  TransportClientSocketPool(
+      int max_sockets,
+      int max_sockets_per_group,
+      base::TimeDelta unused_idle_socket_timeout,
+      base::TimeDelta used_idle_socket_timeout,
+      std::unique_ptr<PoolBase::ConnectJobFactory> connect_job_factory,
+      SSLConfigService* ssl_config_service,
+      bool connect_backup_jobs_enabled);
 
   class TransportConnectJobFactory
       : public PoolBase::ConnectJobFactory {
@@ -166,7 +215,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void OnSSLConfigChanged() override;
 
   PoolBase base_;
-  ClientSocketFactory* const client_socket_factory_;
   SSLConfigService* const ssl_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
