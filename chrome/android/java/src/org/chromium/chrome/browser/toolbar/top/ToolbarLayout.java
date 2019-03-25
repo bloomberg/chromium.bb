@@ -26,6 +26,7 @@ import android.widget.ProgressBar;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
@@ -52,7 +53,8 @@ import org.chromium.ui.UiUtils;
  * interaction that are not from Views inside Toolbar hierarchy all interactions should be done
  * through {@link Toolbar} rather than using this class directly.
  */
-public abstract class ToolbarLayout extends FrameLayout implements TintObserver {
+public abstract class ToolbarLayout
+        extends FrameLayout implements TintObserver, ThemeColorObserver {
     private Invalidator mInvalidator;
 
     private final int[] mTempPosition = new int[2];
@@ -127,6 +129,7 @@ public abstract class ToolbarLayout extends FrameLayout implements TintObserver 
     void destroy() {
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeTintObserver(this);
+            mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider = null;
         }
     }
@@ -138,6 +141,7 @@ public abstract class ToolbarLayout extends FrameLayout implements TintObserver 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
         mThemeColorProvider.addTintObserver(this);
+        mThemeColorProvider.addThemeColorObserver(this);
     }
 
     /**
@@ -156,6 +160,9 @@ public abstract class ToolbarLayout extends FrameLayout implements TintObserver 
 
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {}
+
+    @Override
+    public void onThemeColorChanged(int color, boolean shouldAnimate) {}
 
     /**
      * Set the height that the progress bar should be.
@@ -832,7 +839,6 @@ public abstract class ToolbarLayout extends FrameLayout implements TintObserver 
     /**
      * Sets the menu button's background depending on whether or not we are highlighting and whether
      * or not we are using light or dark assets.
-     * @param highlighting Whether or not the menu button should be highlighted.
      */
     void setMenuButtonHighlightDrawable() {
         if (mMenuButtonWrapper == null) return;
