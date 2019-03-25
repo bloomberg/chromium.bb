@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/data_reduction_proxy_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,12 +126,7 @@ bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     int render_process_id,
     int render_frame_id,
     bool originated_from_service_worker) {
-  // When DataReductionProxyResourceThrottle is enabled for a request, it is
-  // responsible for checking whether the resource is safe, so we skip
-  // SafeBrowsing URL checks in that case.
-  return !base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         IsDataReductionProxyResourceThrottleEnabledForUrl(resource_context,
-                                                           original_url);
+  return false;
 }
 
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(

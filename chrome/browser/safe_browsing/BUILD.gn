@@ -105,8 +105,6 @@ jumbo_static_library("safe_browsing") {
     # "Safe Browsing Basic" files used for safe browsing in full mode
     # (safe_browsing=1) and mobile (=2)
     sources += [
-      "../loader/data_reduction_proxy_resource_throttle_android.cc",
-      "../loader/data_reduction_proxy_resource_throttle_android.h",
       "certificate_reporting_metrics_provider.cc",
       "certificate_reporting_metrics_provider.h",
       "certificate_reporting_service.cc",
