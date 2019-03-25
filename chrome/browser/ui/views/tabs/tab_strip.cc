@@ -28,6 +28,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
@@ -641,6 +643,21 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
       DoLayout();
   }
   SwapLayoutIfNecessary();
+}
+
+void TabStrip::ChangeTabGroup(int model_index,
+                              const TabGroupData* old_group_data,
+                              const TabGroupData* new_group_data) {
+  if (new_group_data && !group_headers_[new_group_data]) {
+    auto header = std::make_unique<TabGroupHeader>(new_group_data->title());
+    group_headers_[new_group_data] = header.get();
+    AddChildView(header.release());
+  }
+  if (old_group_data != nullptr &&
+      controller_->ListTabsInGroup(old_group_data).size() == 0) {
+    delete group_headers_[old_group_data];
+    group_headers_.erase(old_group_data);
+  }
 }
 
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {

@@ -170,6 +170,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     CLOSE_ALL,
     CLOSE_ALL_CANCELED,
     CLOSE_ALL_COMPLETED,
+    GROUP_CHANGED,
   };
 
   struct State {
@@ -182,6 +183,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           dst_index(a_dst_index),
           change_reason(CHANGE_REASON_NONE),
           foreground(false),
+          old_group(nullptr),
+          new_group(nullptr),
           action(a_action) {}
 
     WebContents* src_contents;
@@ -190,6 +193,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     int dst_index;
     int change_reason;
     bool foreground;
+    const TabGroupData* old_group;
+    const TabGroupData* new_group;
     TabStripModelObserverAction action;
   };
 
@@ -230,7 +235,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
             s.dst_contents == state.dst_contents &&
             s.src_index == state.src_index && s.dst_index == state.dst_index &&
             s.change_reason == state.change_reason &&
-            s.foreground == state.foreground && s.action == state.action);
+            s.foreground == state.foreground &&
+            s.old_group == state.old_group && s.new_group == state.new_group &&
+            s.action == state.action);
   }
 
   void PushInsertState(WebContents* contents, int index, bool foreground) {
@@ -277,6 +284,15 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s.src_contents = old_contents;
     states_.push_back(s);
   }
+  void PushGroupChangeState(WebContents* contents,
+                            int index,
+                            const TabGroupData* old_group,
+                            const TabGroupData* new_group) {
+    State s(contents, index, GROUP_CHANGED);
+    s.old_group = old_group;
+    s.new_group = new_group;
+    states_.push_back(s);
+  }
 
   // TabStripModelObserver overrides:
   void OnTabStripModelChanged(
@@ -312,6 +328,15 @@ class MockTabStripModelObserver : public TabStripModelObserver {
         for (const auto& delta : change.deltas()) {
           PushMoveState(delta.move.contents, delta.move.from_index,
                         delta.move.to_index);
+        }
+        break;
+      }
+      case TabStripModelChange::kGroupChanged: {
+        for (const auto& delta : change.deltas()) {
+          PushGroupChangeState(delta.group_change.contents,
+                               delta.group_change.index,
+                               delta.group_change.old_group_data,
+                               delta.group_change.new_group_data);
         }
         break;
       }
@@ -2630,6 +2655,59 @@ TEST_F(TabStripModelTest, AddTabToNewGroup) {
   strip.CloseAllTabs();
 }
 
+namespace {
+
+MockTabStripModelObserver::State ExpectedGroupChangeState(
+    const TabStripModel& strip,
+    int tab_index,
+    const TabGroupData* old_group,
+    const TabGroupData* new_group) {
+  MockTabStripModelObserver::State state(
+      strip.GetWebContentsAt(tab_index), tab_index,
+      MockTabStripModelObserver::GROUP_CHANGED);
+  state.old_group = old_group;
+  state.new_group = new_group;
+  return state;
+}
+
+}  // namespace
+
+TEST_F(TabStripModelTest, AddTabToNewGroupUpdatesObservers) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer(&strip);
+  strip.AddObserver(&observer);
+  strip.AppendWebContents(CreateWebContents(), true);
+
+  observer.ClearStates();
+  strip.AddToNewGroup({0});
+  EXPECT_EQ(1, observer.GetStateCount());
+  observer.StateEquals(0, ExpectedGroupChangeState(strip, 0, nullptr,
+                                                   strip.GetTabGroupForTab(0)));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, ReplacingTabGroupUpdatesObservers) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer(&strip);
+  strip.AddObserver(&observer);
+  strip.AppendWebContents(CreateWebContents(), true);
+
+  observer.ClearStates();
+  strip.AddToNewGroup({0});
+  const TabGroupData* first_group = strip.GetTabGroupForTab(0);
+  strip.AddToNewGroup({0});
+  EXPECT_EQ(2, observer.GetStateCount());
+  observer.StateEquals(
+      0, ExpectedGroupChangeState(strip, 0, nullptr, first_group));
+  observer.StateEquals(1, ExpectedGroupChangeState(strip, 0, first_group,
+                                                   strip.GetTabGroupForTab(0)));
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, AddTabToNewGroupMiddleOfExistingGroup) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -2823,6 +2901,25 @@ TEST_F(TabStripModelTest, AddTabToExistingGroup) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, AddTabToExistingGroupUpdatesObservers) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer(&strip);
+  strip.AddObserver(&observer);
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AppendWebContents(CreateWebContents(), false);
+
+  strip.AddToNewGroup({0});
+  observer.ClearStates();
+  const TabGroupData* group = strip.GetTabGroupForTab(0);
+
+  strip.AddToExistingGroup({1}, group);
+  EXPECT_EQ(1, observer.GetStateCount());
+  observer.StateEquals(0, ExpectedGroupChangeState(strip, 1, nullptr, group));
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, AddTabToExistingGroupReordersToTheRight) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -2944,11 +3041,14 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupUnpins) {
 TEST_F(TabStripModelTest, RemoveTabFromGroupNoopForUngroupedTab) {
   TabStripDummyDelegate delegate;
   TabStripModel strip(&delegate, profile());
-  strip.AppendWebContents(CreateWebContents(), false);
+  MockTabStripModelObserver observer(&strip);
+  strip.AddObserver(&observer);
+  strip.AppendWebContents(CreateWebContents(), true);
 
+  observer.ClearStates();
   strip.RemoveFromGroup({0});
+  EXPECT_EQ(0, observer.GetStateCount());
 
-  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2963,6 +3063,25 @@ TEST_F(TabStripModelTest, RemoveTabFromGroup) {
   EXPECT_EQ(strip.GetTabGroupForTab(0), nullptr);
 
   strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, RemoveTabFromGroupUpdatesObservers) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer(&strip);
+  strip.AddObserver(&observer);
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AppendWebContents(CreateWebContents(), false);
+
+  strip.AddToNewGroup({0});
+  observer.ClearStates();
+  const TabGroupData* group = strip.GetTabGroupForTab(0);
+
+  strip.RemoveFromGroup({0});
+  EXPECT_EQ(1, observer.GetStateCount());
+  observer.StateEquals(0, ExpectedGroupChangeState(strip, 0, group, nullptr));
+
   strip.CloseAllTabs();
 }
 

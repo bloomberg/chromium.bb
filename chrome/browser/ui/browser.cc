@@ -1030,6 +1030,9 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                         delta.replace.index);
       break;
     }
+    case TabStripModelChange::kGroupChanged:
+      // TODO(crbug.com/930991): Save Tab Group data to SessionService.
+      break;
     case TabStripModelChange::kSelectionOnly:
       break;
   }

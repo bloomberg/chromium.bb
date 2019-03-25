@@ -311,6 +311,9 @@ class TabStripModel {
   // Returns the list of tab groups that contain at least one tab in this strip.
   std::vector<TabGroupData*> ListTabGroups() const;
 
+  // Returns the list of tabs affiliated with |group|.
+  std::vector<int> ListTabsInGroup(const TabGroupData* group) const;
+
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.
@@ -575,9 +578,14 @@ class TabStripModel {
                          int destination_index,
                          const TabGroupData* group);
 
-  // Removes the tab at |index| from the group that contains it, if any. Also
-  // deletes that group, if it now contains no tabs.
-  void UngroupTab(int index);
+  // Moves the tab at |index| to |new_index| and sets its group to |new_group|.
+  // Notifies any observers that group affiliation has changed for the tab.
+  void MoveAndSetGroup(int index, int new_index, const TabGroupData* new_group);
+
+  // Helper function for MoveAndSetGroup. Removes the tab at |index| from the
+  // group that contains it, if any. Also deletes that group, if it now contains
+  // no tabs. Returns that group.
+  const TabGroupData* UngroupTab(int index);
 
   // Ensures all tabs indicated by |indices| are pinned, moving them in the
   // process if necessary. Returns the new locations of all of those tabs.
