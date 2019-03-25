@@ -138,9 +138,9 @@ class TestProtoDatabaseProvider : public ProtoDatabaseProvider {
 class TestSharedProtoDatabaseProvider : public SharedProtoDatabaseProvider {
  public:
   TestSharedProtoDatabaseProvider(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       base::WeakPtr<ProtoDatabaseProvider> provider_weak_ptr)
-      : SharedProtoDatabaseProvider(std::move(task_runner),
+      : SharedProtoDatabaseProvider(std::move(client_task_runner),
                                     std::move(provider_weak_ptr)) {}
 };
 
@@ -222,7 +222,8 @@ class ProtoDatabaseImplTest : public testing::Test {
   std::unique_ptr<TestSharedProtoDatabaseProvider> CreateSharedProvider(
       TestProtoDatabaseProvider* db_provider) {
     return std::make_unique<TestSharedProtoDatabaseProvider>(
-        GetTestThreadTaskRunner(), db_provider->weak_factory_.GetWeakPtr());
+        base::SequencedTaskRunnerHandle::Get(),
+        db_provider->weak_factory_.GetWeakPtr());
   }
 
   // Uses ProtoDatabaseImpl's 3 parameter Init to bypass the check that gets
