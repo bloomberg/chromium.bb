@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -200,6 +201,45 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                          DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION)));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       RetryWithEmptyError) {
+  NavigateTo("/payment_request_retry.html");
+
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  AddAutofillProfile(address);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(address.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+  RetryPaymentRequest("{}", dialog_view());
+
+  EXPECT_EQ(base::ASCIIToUTF16(
+                "There was an error processing your order. Please try again."),
+            GetLabelText(DialogViewID::WARNING_LABEL));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       RetryWithError) {
+  NavigateTo("/payment_request_retry.html");
+
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  AddAutofillProfile(address);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(address.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+  RetryPaymentRequest("{ error: 'ERROR MESSAGE' }", dialog_view());
+
+  EXPECT_EQ(base::ASCIIToUTF16("ERROR MESSAGE"),
+            GetLabelText(DialogViewID::WARNING_LABEL));
 }
 
 }  // namespace payments

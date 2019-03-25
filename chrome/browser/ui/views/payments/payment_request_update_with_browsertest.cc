@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestUpdateWithTest, UpdateWithError) {
   WaitForAnimation();
 
   EXPECT_EQ(base::ASCIIToUTF16("This is an error for a browsertest"),
-            GetLabelText(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
+            GetLabelText(DialogViewID::WARNING_LABEL));
 }
 
 }  // namespace payments

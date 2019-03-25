@@ -157,6 +157,7 @@ struct TypeConverter<PaymentValidationErrorsPtr,
       const blink::PaymentValidationErrors* input) {
     PaymentValidationErrorsPtr output =
         payments::mojom::blink::PaymentValidationErrors::New();
+    output->error = input->hasError() ? input->error() : g_empty_string;
     output->payer = input->hasPayer()
                         ? PayerErrors::From(input->payer())
                         : PayerErrors::From(blink::PayerErrors::Create());

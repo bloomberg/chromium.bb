@@ -72,7 +72,18 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   void UpdateWith(mojom::PaymentDetailsPtr details);
 
   // Called when the merchant calls retry().
-  void Retry(mojom::PaymentValidationErrorsPtr errors);
+  void Retry(mojom::PaymentValidationErrorsPtr validation_errors);
+
+  // Gets the display string for the general retry error message.
+  const base::string16& retry_error_message() const {
+    return retry_error_message_;
+  }
+
+  // Reset the display string for the general retry error message. This method
+  // is called in PaymentSheetViewController::ButtonPressed when the user
+  // interacts. That is, the retry error message is displayed  on UI until user
+  // interaction happens since retry() called.
+  void reset_retry_error_message() { retry_error_message_.clear(); }
 
   // Gets the display string for the shipping address error for the given
   // |type|.
@@ -237,6 +248,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // notified.
   base::ObserverList<Observer>::Unchecked observers_;
 
+  base::string16 retry_error_message_;
   mojom::PayerErrorsPtr payer_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);

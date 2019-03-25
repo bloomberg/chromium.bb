@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
   OpenShippingAddressSectionScreen();
   EXPECT_EQ(base::ASCIIToUTF16(
                 "To see shipping methods and requirements, select an address"),
-            GetLabelText(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
+            GetLabelText(DialogViewID::WARNING_LABEL));
 
   ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
 
   // The address selector has this error.
   EXPECT_EQ(base::ASCIIToUTF16("We do not ship to this address"),
-            GetLabelText(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
+            GetLabelText(DialogViewID::WARNING_LABEL));
 
   // There is no a longer shipping option section, because no shipping options
   // are available for Canada.
