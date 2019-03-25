@@ -73,6 +73,26 @@ class CompileDbTest(unittest.TestCase):
     for actual, expected in zip(processed_compile_db, _EXPECTED_COMPILE_DB):
       self.assertDictEqual(actual, expected)
 
+  def testIsGeneratedFiles(self):
+    if sys.platform != 'win32':
+      return
+
+    test_cases = [
+        ({
+            'directory': 'chromium/src/out/Release',
+            'command': 'clang foo.cpp',
+            'file': '../../chrome/foo.cpp'
+        }, False),
+        ({
+            'directory': 'chromium/src/out/Release',
+            'command': 'clang gen.cpp',
+            'file': 'gen/gen.cpp'
+        }, True),
+    ]
+
+    for entry, expected in test_cases:
+      self.assertEqual(compile_db.IsGeneratedFile(entry), expected)
+
 
 if __name__ == '__main__':
   unittest.main()
