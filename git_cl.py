@@ -4142,11 +4142,14 @@ def CMDissue(parser, args):
       args = sorted(issue_branch_map.iterkeys())
     result = {}
     for issue in args:
-      if not issue:
+      try:
+        issue_num = int(issue)
+      except ValueError:
+        print('ERROR cannot parse issue number: %s' % issue, file=sys.stderr)
         continue
-      result[int(issue)] = issue_branch_map.get(int(issue))
+      result[issue_num] = issue_branch_map.get(issue_num)
       print('Branch for issue number %s: %s' % (
-          issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',))))
+          issue, ', '.join(issue_branch_map.get(issue_num) or ('None',))))
     if options.json:
       write_json(options.json, result)
     return 0
