@@ -144,7 +144,6 @@ void GrShaderCache::PurgeMemory(
 bool GrShaderCache::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                  base::trace_event::ProcessMemoryDump* pmd) {
   using base::trace_event::MemoryAllocatorDump;
-  // TODO(triploblastic): Add UMA metric collection for background tracing mode
   std::string dump_name =
       base::StringPrintf("gpu/gr_shader_cache/cache_0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this));
