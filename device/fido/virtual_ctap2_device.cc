@@ -423,7 +423,9 @@ VirtualCtap2Device::VirtualCtap2Device()
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
                                        const Config& config)
-    : VirtualFidoDevice(std::move(state)), weak_factory_(this) {
+    : VirtualFidoDevice(std::move(state)),
+      config_(config),
+      weak_factory_(this) {
   device_info_ =
       AuthenticatorGetInfoResponse({ProtocolVersion::kCtap}, kDeviceAaguid);
 
@@ -634,6 +636,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
 CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
+  // Step numbers in this function refer to
+  // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorGetAssertion
   auto request_and_hash = ParseCtapGetAssertionRequest(request_bytes);
   if (!request_and_hash) {
     DLOG(ERROR) << "Incorrectly formatted GetAssertion request.";
@@ -673,18 +677,24 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
     }
   }
 
-  if (!found_data)
-    return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
+  if (config_.return_immediate_invalid_credential_error && !found_data) {
+    return CtapDeviceResponseCode::kCtap2ErrInvalidCredential;
+  }
 
-  // Step 6.
+  // Step 5.
   if (!options.supports_user_presence && request.user_presence_required()) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
-  // Step 8.
+  // Step 7.
   if (request.user_presence_required() && !user_verified &&
       mutable_state()->simulate_press_callback) {
     mutable_state()->simulate_press_callback.Run();
+  }
+
+  // Step 8.
+  if (!found_data) {
+    return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
   found_data->counter++;

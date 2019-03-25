@@ -34,6 +34,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
 
     bool pin_support = false;
     bool internal_uv_support = false;
+    // return_immediate_invalid_credential_error causes an INVALID_CREDENTIAL
+    // error to be returned from GetAssertion, before getting a touch, when no
+    // credentials are recognised. This behaviour is exhibited by some CTAP2
+    // authenticators in the wild.
+    bool return_immediate_invalid_credential_error = false;
   };
 
   VirtualCtap2Device();
@@ -68,6 +73,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       base::Optional<AttestedCredentialData> attested_credential_data,
       base::Optional<cbor::Value> extensions);
 
+  const Config config_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualCtap2Device);
