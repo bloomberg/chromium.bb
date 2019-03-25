@@ -263,7 +263,7 @@ void CheckCanDownload(
 }
 
 #if defined(OS_ANDROID)
-// TODOD(qinmin): reuse the similar function defined in
+// TODO(qinmin): reuse the similar function defined in
 // DownloadResourceThrottle.
 void OnDownloadAcquireFileAccessPermissionDone(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -300,8 +300,7 @@ void OnDownloadLocationDetermined(
       break;
   }
 }
-
-#endif
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -352,12 +351,12 @@ void ChromeDownloadManagerDelegate::SetDownloadLocationDialogBridgeForTesting(
     DownloadLocationDialogBridge* bridge) {
   location_dialog_bridge_.reset(bridge);
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  download_manager_ = NULL;
+  download_manager_ = nullptr;
 }
 
 content::DownloadIdCallback
@@ -689,7 +688,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(download);
   Browser* browser =
-      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : NULL;
+      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
   std::unique_ptr<chrome::ScopedTabbedBrowserDisplayer> browser_displayer;
   if (!browser ||
       !browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
@@ -707,10 +706,10 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
     browser->OpenURL(params);
 
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_BROWSER);
-#else
+#else   // OS_ANDROID
   // ShouldPreferOpeningInBrowser() should never be true on Android.
   NOTREACHED();
-#endif
+#endif  // OS_ANDROID
 }
 
 bool ChromeDownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
@@ -796,7 +795,7 @@ DownloadProtectionService*
     return sb_service->download_protection_service();
   }
 #endif
-  return NULL;
+  return nullptr;
 }
 
 void ChromeDownloadManagerDelegate::NotifyExtensions(
@@ -1075,7 +1074,7 @@ void ChromeDownloadManagerDelegate::OnDownloadCanceled(
     DownloadController::DownloadCancelReason reason) {
   DownloadManagerService::OnDownloadCanceled(download, reason);
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(
     DownloadItem* download,
@@ -1223,7 +1222,7 @@ void ChromeDownloadManagerDelegate::Observe(
 }
 
 void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
-    int32_t download_id,
+    uint32_t download_id,
     const content::DownloadTargetCallback& callback,
     std::unique_ptr<DownloadTargetInfo> target_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
