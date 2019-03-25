@@ -46,7 +46,7 @@ const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTelemetryForApkDownloads{
-    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingTelemetryForApkDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
