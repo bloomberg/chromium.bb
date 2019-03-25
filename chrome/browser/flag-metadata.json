@@ -997,11 +997,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-content-suggestions-thumbnail-dominant-color",
-    "owners": [ "fgorski" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-credit-card-assist",
     "owners": [ "ftirelo", "gogerald" ],
     "expiry_milestone": 76

@@ -2346,12 +2346,6 @@ const char kEnableCommandLineOnNonRootedName[] =
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
 
-const char kEnableContentSuggestionsThumbnailDominantColorName[] =
-    "Use content suggestions thumbnail dominant color.";
-const char kEnableContentSuggestionsThumbnailDominantColorDescription[] =
-    "Use content suggestions thumbnail dominant color as a placeholder before "
-    "the real thumbnail is fetched (requires Chrome Home).";
-
 const char kEnableCustomContextMenuName[] = "Enable custom context menu";
 const char kEnableCustomContextMenuDescription[] =
     "Enables a new context menu when a link, image, or video is pressed within "

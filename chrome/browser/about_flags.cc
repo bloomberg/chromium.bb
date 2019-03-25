@@ -2200,13 +2200,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSuggestionsOptOutName,
      flag_descriptions::kContextualSuggestionsOptOutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsOptOut)},
-    {"enable-content-suggestions-thumbnail-dominant-color",
-     flag_descriptions::kEnableContentSuggestionsThumbnailDominantColorName,
-     flag_descriptions::
-         kEnableContentSuggestionsThumbnailDominantColorDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         chrome::android::kContentSuggestionsThumbnailDominantColor)},
     {"interest-feed-content-suggestions",
      flag_descriptions::kInterestFeedContentSuggestionsName,
      flag_descriptions::kInterestFeedContentSuggestionsDescription, kOsAndroid,
