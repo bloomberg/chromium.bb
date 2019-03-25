@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -756,6 +757,35 @@ class KioskTest : public OobeBaseTest {
     WaitForAppLaunchSuccess();
   }
 
+  // Waits for a message sent from DOM automation to |message_queue|.
+  // The message is expected to be in JSON format:
+  // {'name': <msg_name>, 'data': <extra_msg_data>}.
+  // This will wait until a message with name set to |message_name| is seen, and
+  // it will return the value set as the message's data. It is acceptable for
+  // the DOM message not to specify 'data' property, in which case this will
+  // return empty value.
+  base::Value WaitForDOMMessage(content::DOMMessageQueue* message_queue,
+                                const std::string& message_name) {
+    std::string message;
+    while (message_queue->WaitForMessage(&message)) {
+      base::Optional<base::Value> message_value =
+          base::JSONReader::Read(message);
+
+      if (!message_value.has_value() || !message_value.value().is_dict())
+        continue;
+
+      const std::string* name = message_value.value().FindStringKey("name");
+      if (!name || *name != message_name)
+        continue;
+
+      const base::Value* data = message_value->FindKey("data");
+      return data ? data->Clone() : base::Value();
+    }
+
+    ADD_FAILURE() << "Message wait failed " << message_name;
+    return base::Value();
+  }
+
   AppLaunchController* GetAppLaunchController() {
     return LoginDisplayHost::default_host()->GetAppLaunchController();
   }
@@ -804,8 +834,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, InstallAndLaunchApp) {
   EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
 }
 
-// Flaky crash failures; see https://crbug.com/856393.
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_ZoomSupport) {
+IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   ExtensionTestMessageListener app_window_loaded_listener("appWindowLoaded",
                                                           false);
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
@@ -820,12 +849,24 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_ZoomSupport) {
       apps::AppWindowWaiter(app_window_registry, test_app_id()).Wait();
   ASSERT_TRUE(window);
 
-  // Gets the original width of the app window.
   int original_width;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
       window->web_contents(),
       "window.domAutomationController.send(window.innerWidth);",
       &original_width));
+
+  content::DOMMessageQueue message_queue;
+
+  // Inject window size observer that should notify this test when the app
+  // window size changes during zoom operations.
+  test::JSChecker(window->web_contents())
+      .Evaluate(
+          "window.addEventListener('resize', function() {"
+          "  window.domAutomationController.send({"
+          "      'name': 'size_changed',"
+          "      'data': window.innerWidth"
+          "  });"
+          "});");
 
   native_app_window::NativeAppWindowViews* native_app_window_views =
       static_cast<native_app_window::NativeAppWindowViews*>(
@@ -836,32 +877,29 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_ZoomSupport) {
   // Zoom in. Text is bigger and content window width becomes smaller.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_ADD, ui::EF_CONTROL_DOWN));
-  int width_zoomed_in;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      window->web_contents(),
-      "window.domAutomationController.send(window.innerWidth);",
-      &width_zoomed_in));
-  DCHECK_LT(width_zoomed_in, original_width);
+
+  base::Value width_zoomed_in =
+      WaitForDOMMessage(&message_queue, "size_changed");
+  ASSERT_TRUE(width_zoomed_in.is_int());
+  ASSERT_LT(width_zoomed_in.GetInt(), original_width);
 
   // Go back to normal. Window width is restored.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_0, ui::EF_CONTROL_DOWN));
-  int width_zoom_normal;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      window->web_contents(),
-      "window.domAutomationController.send(window.innerWidth);",
-      &width_zoom_normal));
-  DCHECK_EQ(width_zoom_normal, original_width);
+
+  base::Value width_zoom_normal =
+      WaitForDOMMessage(&message_queue, "size_changed");
+  ASSERT_TRUE(width_zoom_normal.is_int());
+  ASSERT_EQ(width_zoom_normal.GetInt(), original_width);
 
   // Zoom out. Text is smaller and content window width becomes larger.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN));
-  int width_zoomed_out;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      window->web_contents(),
-      "window.domAutomationController.send(window.innerWidth);",
-      &width_zoomed_out));
-  DCHECK_GT(width_zoomed_out, original_width);
+
+  base::Value width_zoomed_out =
+      WaitForDOMMessage(&message_queue, "size_changed");
+  ASSERT_TRUE(width_zoomed_out.is_int());
+  ASSERT_GT(width_zoomed_out.GetInt(), original_width);
 
   // Terminate the app.
   window->GetBaseWindow()->Close();
