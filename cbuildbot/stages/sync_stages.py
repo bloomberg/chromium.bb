@@ -417,7 +417,7 @@ class SyncStage(generic_stages.BuilderStage):
     """Returns the manifest to use."""
     return self._run.config.manifest
 
-  def ManifestCheckout(self, next_manifest, fetch_all=False):
+  def ManifestCheckout(self, next_manifest, fetch_all=True):
     """Checks out the repository to the given manifest."""
     self._Print('\n'.join([
         'BUILDROOT: %s' % self.repo.directory,
@@ -1098,7 +1098,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     return manifest
 
-  def ManifestCheckout(self, next_manifest, fetch_all=False):
+  def ManifestCheckout(self, next_manifest, fetch_all=True):
     """Checks out the repository to the given manifest."""
     # Sync to the provided manifest on slaves. On the master, we're
     # already synced to this manifest, so self.skip_sync is set and
