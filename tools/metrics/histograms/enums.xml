@@ -40367,6 +40367,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Chose an option then chose skip"/>
   <int value="6" label="Chose an option then chose next"/>
   <int value="7" label="Navigated away through browser history"/>
+  <int value="8" label="Background failed to load"/>
+  <int value="9" label="Background never finished loading"/>
 </enum>
 
 <enum name="NuxSetAsDefaultInteractions">

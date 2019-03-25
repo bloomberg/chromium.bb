@@ -276,11 +276,17 @@ nux.NtpBackgroundMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
       ChoseAnOptionAndChoseSkip: 5,
       ChoseAnOptionAndChoseNext: 6,
       NavigatedAwayThroughBrowserHistory: 7,
+      BackgroundImageFailedToLoad: 8,
+      BackgroundImageNeverLoaded: 9,
     };
 
     super(
         'FirstRun.NewUserExperience.NtpBackgroundInteraction',
         NuxNtpBackgroundInteractions);
+  }
+
+  getInteractions() {
+    return this.interactions_;
   }
 };
 

@@ -26,6 +26,13 @@ cr.define('nux', function() {
      */
     preloadImage(url) {}
 
+    recordBackgroundImageFailedToLoad() {}
+
+    /** @param {number} loadTime */
+    recordBackgroundImageLoadTime(loadTime) {}
+
+    recordBackgroundImageNeverLoaded() {}
+
     /** @param {number} id */
     setBackground(id) {}
   }
@@ -50,6 +57,32 @@ cr.define('nux', function() {
         preloadedImage.onload = resolve;
         preloadedImage.src = url;
       });
+    }
+
+    /** @override */
+    recordBackgroundImageFailedToLoad() {
+      const ntpInteractions =
+          nux.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
+      chrome.metricsPrivate.recordEnumerationValue(
+          'FirstRun.NewUserExperience.NtpBackgroundInteraction',
+          ntpInteractions.BackgroundImageFailedToLoad,
+          Object.keys(ntpInteractions).length);
+    }
+
+    /** @override */
+    recordBackgroundImageLoadTime(loadTime) {
+      chrome.metricsPrivate.recordTime(
+          'FirstRun.NewUserExperience.NtpBackgroundLoadTime', loadTime);
+    }
+
+    /** @override */
+    recordBackgroundImageNeverLoaded() {
+      const ntpInteractions =
+          nux.NtpBackgroundMetricsProxyImpl.getInstance().getInteractions();
+      chrome.metricsPrivate.recordEnumerationValue(
+          'FirstRun.NewUserExperience.NtpBackgroundInteraction',
+          ntpInteractions.BackgroundImageNeverLoaded,
+          Object.keys(ntpInteractions).length);
     }
 
     /** @override */

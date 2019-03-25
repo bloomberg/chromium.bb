@@ -123,12 +123,46 @@ cr.define('onboarding_ntp_background_test', function() {
           });
     });
 
-    test('test metrics for selection an option and skipping', function() {
+    test('test metrics for selecting an option and skipping', function() {
       const options = testElement.shadowRoot.querySelectorAll(
           '.ntp-background-grid-button');
       options[1].click();
       testElement.$.skipButton.click();
       return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseSkip');
+    });
+
+    test(
+        'test metrics for when there is an error previewing the background',
+        function() {
+          testNtpBackgroundProxy.setPreloadImageSuccess(false);
+          const options = testElement.shadowRoot.querySelectorAll(
+              '.ntp-background-grid-button');
+          options[1].click();
+          return testNtpBackgroundProxy.whenCalled(
+              'recordBackgroundImageFailedToLoad');
+        });
+
+    test(
+        `test metrics aren't sent when previewing the background is a success`,
+        function() {
+          testNtpBackgroundProxy.setPreloadImageSuccess(true);
+          const options = testElement.shadowRoot.querySelectorAll(
+              '.ntp-background-grid-button');
+          options[1].click();
+          return testNtpBackgroundProxy.whenCalled('preloadImage').then(() => {
+            assertEquals(
+                0,
+                testNtpBackgroundProxy.getCallCount(
+                    'recordBackgroundImageFailedToLoad'));
+          });
+        });
+
+    test('test metrics for load times of background images', function() {
+      testNtpBackgroundProxy.setPreloadImageSuccess(true);
+      const options = testElement.shadowRoot.querySelectorAll(
+          '.ntp-background-grid-button');
+      options[1].click();
+      return testNtpBackgroundProxy.whenCalled('recordBackgroundImageLoadTime');
     });
 
     test('test metrics for doing nothing and navigating away', function() {
