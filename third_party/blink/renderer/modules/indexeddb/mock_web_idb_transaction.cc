@@ -11,7 +11,8 @@
 namespace blink {
 
 MockWebIDBTransaction::MockWebIDBTransaction(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    int64_t transaction_id) {}
 
 MockWebIDBTransaction::MockWebIDBTransaction() = default;
 

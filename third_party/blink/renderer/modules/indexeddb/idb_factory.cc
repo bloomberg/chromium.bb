@@ -321,7 +321,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
       ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kDatabaseAccess));
+          ->GetTaskRunner(TaskType::kDatabaseAccess),
+      transaction_id);
   mojom::blink::IDBTransactionAssociatedRequest transaction_request =
       transaction_backend->CreateRequest();
   IDBOpenDBRequest* request = IDBOpenDBRequest::Create(

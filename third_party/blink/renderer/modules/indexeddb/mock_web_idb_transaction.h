@@ -16,8 +16,8 @@ namespace blink {
 
 class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
  public:
-  MockWebIDBTransaction(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  MockWebIDBTransaction(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        int64_t transaction_id);
   MockWebIDBTransaction();
   ~MockWebIDBTransaction() override;
 
@@ -27,6 +27,13 @@ class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
                     const IDBKeyPath&,
                     bool auto_increment));
   MOCK_METHOD1(DeleteObjectStore, void(int64_t object_store_id));
+  MOCK_METHOD6(Put,
+               void(int64_t object_store_id,
+                    std::unique_ptr<IDBValue> value,
+                    std::unique_ptr<IDBKey> primary_key,
+                    mojom::IDBPutMode,
+                    WebIDBCallbacks*,
+                    Vector<IDBIndexKeys>));
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 };

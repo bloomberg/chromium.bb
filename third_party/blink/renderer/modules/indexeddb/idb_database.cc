@@ -419,7 +419,9 @@ IDBTransaction* IDBDatabase::transaction(
   int64_t transaction_id = NextTransactionId();
   auto transaction_backend = std::make_unique<WebIDBTransactionImpl>(
       ExecutionContext::From(script_state)
-          ->GetTaskRunner(TaskType::kDatabaseAccess));
+          ->GetTaskRunner(TaskType::kDatabaseAccess),
+      transaction_id);
+
   backend_->CreateTransaction(transaction_backend->CreateRequest(),
                               transaction_id, object_store_ids, mode);
 

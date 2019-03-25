@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_TRANSACTION_IMPL_H_
 
 #include <stdint.h>
+#include <memory>
 #include <set>
 
 #include "base/single_thread_task_runner.h"
@@ -18,7 +19,8 @@ namespace blink {
 
 class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
  public:
-  WebIDBTransactionImpl(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  WebIDBTransactionImpl(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                        int64_t transaction_id);
   ~WebIDBTransactionImpl() override;
 
   // WebIDBTransaction
@@ -27,13 +29,33 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
                          const IDBKeyPath&,
                          bool auto_increment) override;
   void DeleteObjectStore(int64_t object_store_id) override;
+  void Put(int64_t object_store_id,
+           std::unique_ptr<IDBValue> value,
+           std::unique_ptr<IDBKey> primary_key,
+           mojom::IDBPutMode,
+           WebIDBCallbacks*,
+           Vector<IDBIndexKeys>) override;
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 
  private:
+  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
+      std::unique_ptr<WebIDBCallbacks> callbacks);
+
+  FRIEND_TEST_ALL_PREFIXES(WebIDBTransactionImplTest, ValueSizeTest);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBTransactionImplTest, KeyAndValueSizeTest);
+
+  // Maximum size (in bytes) of value/key pair allowed for put requests. Any
+  // requests larger than this size will be rejected.
+  // Used by unit tests to exercise behavior without allocating huge chunks
+  // of memory.
+  size_t max_put_value_size_ =
+      mojom::blink::kIDBMaxMessageSize - mojom::blink::kIDBMaxMessageOverhead;
+
   mojom::blink::IDBTransactionAssociatedPtr transaction_;
   mojom::blink::IDBTransactionAssociatedRequest transaction_request_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  int64_t transaction_id_;
 };
 
 }  // namespace blink
