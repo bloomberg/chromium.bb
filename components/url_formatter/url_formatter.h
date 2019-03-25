@@ -174,8 +174,11 @@ void AppendFormattedHost(const GURL& url, base::string16* output);
 // function does NOT accept UTF-8!
 base::string16 IDNToUnicode(base::StringPiece host);
 
-// Same as IDNToUnicode, but returns more details.
-IDNConversionResult IDNToUnicodeWithDetails(base::StringPiece host);
+// Same as IDNToUnicode, but disables spoof checks and returns more details.
+// In particular, it doesn't fall back to punycode if |host| fails spoof checks
+// in IDN spoof checker or is a lookalike of a top domain.
+// DO NOT use this for displaying URLs.
+IDNConversionResult UnsafeIDNToUnicodeWithDetails(base::StringPiece host);
 
 // If |text| starts with "www." it is removed, otherwise |text| is returned
 // unmodified.

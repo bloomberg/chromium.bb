@@ -59,7 +59,7 @@ const char kInterstitialInteractionMetric[] =
 // The domains here should not private domains (e.g. site.test), otherwise they
 // might test the wrong thing. Also note that site5.com is in the top domain
 // list, so it shouldn't be used here.
-struct SiteEngagementTestCase {
+const struct SiteEngagementTestCase {
   const char* const navigated;
   const char* const suggested;
 } kSiteEngagementTestCases[] = {
@@ -438,6 +438,36 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
 
+// Same as Idn_TopDomain_Match, but this time the domain contains characters
+// from different scripts, failing the checks in IDN spoof checker before
+// reaching the top domain check. In this case, the end result is the same, but
+// the reason we fall back to punycode is different.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       Idn_TopDomainMixedScript_Match) {
+  base::HistogramTester histograms;
+
+  const GURL kNavigatedUrl = GetURL("аррӏе.com");
+  const GURL kExpectedSuggestedUrl = GetURL("apple.com");
+  // Even if the navigated site has a low engagement score, it should be
+  // considered for lookalike suggestions.
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  TestHistogramEventsRecordedAndInterstitialShown(
+      browser(), &histograms, kNavigatedUrl, kExpectedSuggestedUrl,
+      NavigationSuggestionEvent::kMatchTopSite);
+
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
+}
+
+// The navigated domain will fall back to punycode because it fails spoof checks
+// in IDN spoof checker, but there won't be an interstitial because the domain
+// doesn't match a top domain.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       Punycode_NoMatch) {
+  TestInterstitialNotShown(browser(), GetURL("ɴoτ-τoρ-ďoᛖaiɴ.com"));
+  CheckNoUkm();
+}
+
 // The navigated domain itself is a top domain or a subdomain of a top domain.
 // Should not record metrics. The top domain list doesn't contain any IDN, so
 // this only tests the case where the subdomains are IDNs.
@@ -591,6 +621,29 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
     ukm_urls.push_back(kNavigatedUrl);
     CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
   }
+}
+
+// Navigate to a domain whose visual representation looks both like a domain
+// with a site engagement score and also a top domain. This should record
+// metrics for a site engagement match because of the order of checks. It should
+// also show lookalike warning interstitial if configured via a feature param.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       Idn_SiteEngagementAndTopDomain_Match) {
+  base::HistogramTester histograms;
+  const GURL kNavigatedUrl = GetURL("googlé.com");
+  const GURL kExpectedSuggestedUrl = GetURL("google.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kExpectedSuggestedUrl, kHighEngagement);
+
+  // Advance the clock to force LookalikeUrlService to fetch a new engaged
+  // site list.
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
+
+  TestHistogramEventsRecordedAndInterstitialShown(
+      browser(), &histograms, kNavigatedUrl, kExpectedSuggestedUrl,
+      NavigationSuggestionEvent::kMatchSiteEngagement);
+
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kSiteEngagement);
 }
 
 // Similar to Idn_SiteEngagement_Match, but tests a single domain. Also checks

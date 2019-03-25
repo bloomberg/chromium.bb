@@ -115,12 +115,11 @@ std::string GetMatchingSiteEngagementDomain(
     url_formatter::Skeletons skeletons;
     if (it == domain_and_registry_to_skeleton.end()) {
       // Engaged site can be IDN. Decode as unicode and compute the skeleton
-      // from that. At this point, top domain checks have already been done, so
-      // if the site is IDN, it'll always be decoded as unicode (i.e. IDN spoof
-      // checker will not find a matching top domain and fall back to punycode
-      // for it).
-      url_formatter::IDNConversionResult conversion_result =
-          url_formatter::IDNToUnicodeWithDetails(engaged_domain_and_registry);
+      // from that. This skips all spoof checks so it will always return the
+      // unicode version of the domain.
+      const url_formatter::IDNConversionResult conversion_result =
+          url_formatter::UnsafeIDNToUnicodeWithDetails(
+              engaged_domain_and_registry);
 
       skeletons = url_formatter::GetSkeletons(conversion_result.result);
       domain_and_registry_to_skeleton[engaged_domain_and_registry] = skeletons;
@@ -266,10 +265,13 @@ LookalikeUrlNavigationThrottle::GetDomainInfo(const GURL& url) {
     return DomainInfo(domain_and_registry, url_formatter::IDNConversionResult(),
                       url_formatter::Skeletons());
   }
-  // Compute skeletons using eTLD+1.
-  url_formatter::IDNConversionResult idn_result =
-      url_formatter::IDNToUnicodeWithDetails(domain_and_registry);
-  url_formatter::Skeletons skeletons =
+  // Compute skeletons using eTLD+1, skipping all spoofing checks. Spoofing
+  // checks in url_formatter can cause the converted result to be punycode.
+  // We want to avoid this in order to get an accurate skeleton for the unicode
+  // version of the domain.
+  const url_formatter::IDNConversionResult idn_result =
+      url_formatter::UnsafeIDNToUnicodeWithDetails(domain_and_registry);
+  const url_formatter::Skeletons skeletons =
       url_formatter::GetSkeletons(idn_result.result);
   return DomainInfo(domain_and_registry, idn_result, skeletons);
 }
@@ -340,8 +342,17 @@ bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
   DCHECK(!navigated_domain.domain_and_registry.empty());
 
   if (navigated_domain.idn_result.has_idn_component) {
-    // If the navigated domain is IDN, check its skeleton against top domains
-    // and engaged sites.
+    // If the navigated domain is IDN, check its skeleton against engaged sites
+    // and top domains.
+    const std::string matched_engaged_domain =
+        GetMatchingSiteEngagementDomain(engaged_sites, navigated_domain);
+    if (!matched_engaged_domain.empty()) {
+      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+      *matched_domain = matched_engaged_domain;
+      *match_type = MatchType::kSiteEngagement;
+      return true;
+    }
+
     if (!navigated_domain.idn_result.matching_top_domain.empty()) {
       // In practice, this is not possible since the top domain list does not
       // contain IDNs, so domain_and_registry can't both have IDN and be a top
@@ -353,15 +364,6 @@ bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
       RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
       *matched_domain = navigated_domain.idn_result.matching_top_domain;
       *match_type = MatchType::kTopSite;
-      return true;
-    }
-
-    const std::string matched_engaged_domain =
-        GetMatchingSiteEngagementDomain(engaged_sites, navigated_domain);
-    if (!matched_engaged_domain.empty()) {
-      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
-      *matched_domain = matched_engaged_domain;
-      *match_type = MatchType::kSiteEngagement;
       return true;
     }
   }
