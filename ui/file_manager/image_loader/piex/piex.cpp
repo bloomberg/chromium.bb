@@ -74,7 +74,7 @@ class PiexReader {
     assert(callbacks.as<bool>());
 
     auto context = emscripten::val::undefined();
-    callbacks[index].call<emscripten::val>("call", context, result);
+    callbacks[index].call<void>("call", context, result);
   }
 
   static emscripten::val GetProperties(const piex::PreviewImageData& image) {
