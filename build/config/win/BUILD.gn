@@ -75,10 +75,6 @@ config("compiler") {
   cflags_cc = [ "/TP" ]
 
   cflags += [
-    # Tell the compiler to crash on failures. This is undocumented
-    # and unsupported but very handy.
-    "/d2FastFail",
-
     # Work around crbug.com/526851, bug in VS 2015 RTM compiler.
     "/Zc:sizedDealloc-",
   ]
@@ -365,7 +361,6 @@ config("sdk_link") {
 # their own.
 config("common_linker_setup") {
   ldflags = [
-    "/fastfail",
     "/FIXED:NO",
     "/ignore:4199",
     "/ignore:4221",
