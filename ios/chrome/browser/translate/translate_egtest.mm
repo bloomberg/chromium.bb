@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -37,6 +36,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/fakes/fake_language_detection_tab_helper_observer.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -189,15 +189,6 @@ id<GREYMatcher> ElementIsSelected(BOOL selected) {
           ? grey_accessibilityTrait(UIAccessibilityTraitSelected)
           : grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)),
       nil);
-}
-
-// Assigns the testing callback for the current WebState's language detection
-// helper.
-void SetTestingLanguageDetectionCallback(
-    const language::IOSLanguageDetectionTabHelper::Callback& callback) {
-  language::IOSLanguageDetectionTabHelper::FromWebState(
-      chrome_test_util::GetCurrentWebState())
-      ->SetExtraCallbackForTesting(callback);
 }
 
 #pragma mark - TestResponseProvider
@@ -389,8 +380,8 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 // Tests for translate.
 @interface TranslateTestCase : ChromeTestCase {
-  std::unique_ptr<translate::LanguageDetectionDetails>
-      _language_detection_details;
+  std::unique_ptr<FakeLanguageDetectionTabHelperObserver>
+      language_detection_tab_helper_observer_;
   std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
       network_change_notifier_disabler_;
   std::unique_ptr<FakeNetworkChangeNotifier> network_change_notifier_;
@@ -417,13 +408,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Allow offering translate in builds without an API key.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
 
-  language::IOSLanguageDetectionTabHelper::Callback copyDetailsCallback =
-      base::BindRepeating(^(
-          const translate::LanguageDetectionDetails& details) {
-        _language_detection_details =
-            std::make_unique<translate::LanguageDetectionDetails>(details);
-      });
-  SetTestingLanguageDetectionCallback(copyDetailsCallback);
+  language_detection_tab_helper_observer_ =
+      std::make_unique<FakeLanguageDetectionTabHelperObserver>(
+          chrome_test_util::GetCurrentWebState());
 
   // Reset translate prefs to default.
   std::unique_ptr<translate::TranslatePrefs> translatePrefs(
@@ -442,9 +429,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 }
 
 - (void)tearDown {
-  SetTestingLanguageDetectionCallback(
-      language::IOSLanguageDetectionTabHelper::Callback());
-  _language_detection_details.reset();
+  language_detection_tab_helper_observer_.reset();
 
   // Reset translate prefs to default.
   std::unique_ptr<translate::TranslatePrefs> translatePrefs(
@@ -538,15 +523,17 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   [ChromeEarlGrey loadURL:noTranslateContentURL];
 
   // Check that no language has been detected.
-  GREYAssert(_language_detection_details.get() == nullptr,
-             @"A language has been detected");
+  GREYAssert(
+      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      @"A language has been detected");
 
   // Load some french page with |value="notranslate"| meta tag.
   [ChromeEarlGrey loadURL:noTranslateValueURL];
 
   // Check that no language has been detected.
-  GREYAssert(_language_detection_details.get() == nullptr,
-             @"A language has been detected");
+  GREYAssert(
+      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      @"A language has been detected");
 }
 
 // Tests that history.pushState triggers a new detection.
@@ -715,8 +702,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Open some webpage.
   [ChromeEarlGrey loadURL:URL];
   // Check that no language has been detected.
-  GREYAssert(_language_detection_details.get() == nullptr,
-             @"A language has been detected");
+  GREYAssert(
+      !language_detection_tab_helper_observer_->GetLanguageDetectionDetails(),
+      @"A language has been detected");
 
   // Enable translate.
   chrome_test_util::SetBooleanUserPref(
@@ -828,6 +816,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Load a page with French text in an incognito tab.
   GURL URL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
+  // Stop observing the current IOSLanguageDetectionTabHelper before opening the
+  // incognito tab.
+  language_detection_tab_helper_observer_.reset();
   [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey loadURL:URL];
 
@@ -1144,33 +1135,32 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   GREYAssert(WaitUntilConditionOrTimeout(
                  kWaitForJSCompletionTimeout,
                  ^{
-                   return _language_detection_details.get() != nullptr;
+                   return language_detection_tab_helper_observer_
+                              ->GetLanguageDetectionDetails() != nullptr;
                  }),
              @"Language not detected");
-
-  translate::LanguageDetectionDetails details =
-      *_language_detection_details.get();
-  _language_detection_details.reset();
+  translate::LanguageDetectionDetails* details =
+      language_detection_tab_helper_observer_->GetLanguageDetectionDetails();
 
   NSString* contentLanguageError =
       [NSString stringWithFormat:@"Wrong content-language: %s (expected %s)",
-                                 details.content_language.c_str(),
+                                 details->content_language.c_str(),
                                  expectedDetails.content_language.c_str()];
-  GREYAssert(expectedDetails.content_language == details.content_language,
+  GREYAssert(expectedDetails.content_language == details->content_language,
              contentLanguageError);
 
   NSString* htmlRootLanguageError =
       [NSString stringWithFormat:@"Wrong html root language: %s (expected %s)",
-                                 details.html_root_language.c_str(),
+                                 details->html_root_language.c_str(),
                                  expectedDetails.html_root_language.c_str()];
-  GREYAssert(expectedDetails.html_root_language == details.html_root_language,
+  GREYAssert(expectedDetails.html_root_language == details->html_root_language,
              htmlRootLanguageError);
 
   NSString* adoptedLanguageError =
       [NSString stringWithFormat:@"Wrong adopted language: %s (expected %s)",
-                                 details.adopted_language.c_str(),
+                                 details->adopted_language.c_str(),
                                  expectedDetails.adopted_language.c_str()];
-  GREYAssert(expectedDetails.adopted_language == details.adopted_language,
+  GREYAssert(expectedDetails.adopted_language == details->adopted_language,
              adoptedLanguageError);
 }
 

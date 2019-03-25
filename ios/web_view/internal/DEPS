@@ -33,6 +33,7 @@ include_rules = [
   "+components/sync_sessions",
   "+components/translate/core",
   "+components/translate/ios",
+  "+components/language/ios",
   "+components/version_info",
   "+components/webdata_services",
   "+components/web_resource",

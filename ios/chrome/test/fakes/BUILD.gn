@@ -19,6 +19,8 @@ source_set("fakes") {
     "fake_download_manager_tab_helper_delegate.mm",
     "fake_java_script_console_tab_helper_delegate.cc",
     "fake_java_script_console_tab_helper_delegate.h",
+    "fake_language_detection_tab_helper_observer.h",
+    "fake_language_detection_tab_helper_observer.mm",
     "fake_overscroll_actions_controller_delegate.h",
     "fake_overscroll_actions_controller_delegate.mm",
     "fake_pass_kit_tab_helper_delegate.h",
@@ -33,6 +35,8 @@ source_set("fakes") {
 
   deps = [
     "//base",
+    "//components/language/ios/browser",
+    "//components/translate/core/common",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/ui",
