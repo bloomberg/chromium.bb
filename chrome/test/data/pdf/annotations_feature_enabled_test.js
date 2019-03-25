@@ -9,6 +9,16 @@ function animationFrame() {
   return new Promise(resolve => requestAnimationFrame(resolve));
 }
 
+// Async spin until predicate() returns true.
+function waitFor(predicate) {
+  if (predicate()) {
+    return;
+  }
+  return new Promise(resolve => setTimeout(() => {
+                       resolve(waitFor(predicate));
+                     }, 0));
+}
+
 function contentElement() {
   return document.elementFromPoint(innerWidth / 2, innerHeight / 2);
 }
@@ -136,6 +146,43 @@ chrome.test.runTests([
       chrome.test.assertEq('highlighter', tool.tool);
       chrome.test.assertEq(1, tool.size);
       chrome.test.assertEq('#d1c4e9', tool.color);
+    });
+  },
+  function testStrokeUndoRedo() {
+    testAsync(async () => {
+      const inkHost = contentElement();
+      const viewerPdfToolbar = document.querySelector('viewer-pdf-toolbar');
+      const undo = viewerPdfToolbar.$$('#undo');
+      const redo = viewerPdfToolbar.$$('#redo');
+
+      const pen = {
+        pointerId: 2,
+        pointerType: 'pen',
+        pressure: 0.5,
+        clientX: inkHost.offsetWidth / 2,
+        clientY: inkHost.offsetHeight / 2,
+        buttons: 0,
+      };
+
+      // Initial state.
+      chrome.test.assertEq(undo.disabled, true);
+      chrome.test.assertEq(redo.disabled, true);
+
+      // Draw a stroke.
+      inkHost.dispatchEvent(new PointerEvent('pointerdown', pen));
+      inkHost.dispatchEvent(new PointerEvent('pointermove', pen));
+      inkHost.dispatchEvent(new PointerEvent('pointerup', pen));
+
+      await waitFor(() => undo.disabled == false);
+      chrome.test.assertEq(redo.disabled, true);
+
+      undo.click();
+      await waitFor(() => undo.disabled == true);
+      chrome.test.assertEq(redo.disabled, false);
+
+      redo.click();
+      await waitFor(() => undo.disabled == false);
+      chrome.test.assertEq(redo.disabled, true);
     });
   },
   function testPointerEvents() {
