@@ -5469,8 +5469,7 @@ crbug.com/869364 virtual/binary-for-devtools/http/tests/devtools/console/console
 crbug.com/869364 virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Pass Timeout ]
 
 # Sheriff 2018-08-01
-crbug.com/869773 [ Mac ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
-crbug.com/869773 [ Linux ] http/tests/misc/window-dot-stop.html [ Pass Failure ]
+crbug.com/869773 http/tests/misc/window-dot-stop.html [ Pass Failure ]
 crbug.com/862806 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Pass Timeout ]
 
 # Sheriff 2018-08-08
