@@ -69,7 +69,8 @@ enum class WMIRefresher::RefreshStatus {
   kGetObjectFailed,
   kGetPropertyHandleFailed,
   kReadValueFailed,
-  kMaxValue = kReadValueFailed
+  kGetObjectReturnedNoObjects,
+  kMaxValue = kGetObjectReturnedNoObjects
 };
 
 WMIRefresher::WMIRefresher() : initialized_called_(false) {
@@ -168,7 +169,7 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
 base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_called_);
-  WMIRefresher::RefreshStatus result = WMIRefresher::RefreshStatus::kRefreshOk;
+  RefreshStatus result = WMIRefresher::RefreshStatus::kRefreshOk;
   auto idle_time = RefreshAndGetDiskIdleTimeInPercentImpl(&result);
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -183,8 +184,6 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
   DCHECK(refresh_ready_);
   AssertComApartmentType(base::win::ComApartmentType::MTA);
 
-  base::Optional<float> idle_time;
-
   // Don't use the SCOPED_UMA_HISTOGRAM_TIMER to ensure that we only report this
   // on success.
   base::ElapsedTimer elapsed_timer;
@@ -193,7 +192,7 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
   if (FAILED(hr)) {
     LOG(ERROR) << "Error while trying to use the WMI refresher.";
     *res = RefreshStatus::kRefreshFailed;
-    return idle_time;
+    return base::nullopt;
   }
 
   // Get the objects owned by the enumerator.
@@ -210,6 +209,11 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
                                        &wmi_refresher_enum_objects[0],
                                        &number_of_objects);
 
+  if (number_of_objects == 0U) {
+    *res = RefreshStatus::kGetObjectReturnedNoObjects;
+    return base::nullopt;
+  }
+
   // The number of objects returned might change over time (e.g. when connecting
   // an external hard drive). If the number of objects returned is smaller than
   // the size of the vector then the latest(s) element(s) will be left
@@ -225,7 +229,7 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
                    0L, wmi_refresher_enum_objects.size(),
                    &wmi_refresher_enum_objects[0], &number_of_objects))) {
       *res = RefreshStatus::kGetObjectFailed;
-      return idle_time;
+      return base::nullopt;
     }
   }
 
@@ -237,14 +241,14 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
       !GetPropertyHandle(&percent_idle_time_prop_handle_,
                          wmi_refresher_enum_objects[0], L"PercentIdleTime")) {
     *res = RefreshStatus::kGetPropertyHandleFailed;
-    return idle_time;
+    return base::nullopt;
   }
   if (!percent_idle_time_base_prop_handle_ &&
       !GetPropertyHandle(&percent_idle_time_base_prop_handle_,
                          wmi_refresher_enum_objects[0],
                          L"PercentIdleTime_Base")) {
     *res = RefreshStatus::kGetPropertyHandleFailed;
-    return idle_time;
+    return base::nullopt;
   }
 
   // Read the property values.
@@ -259,14 +263,16 @@ base::Optional<float> WMIRefresher::RefreshAndGetDiskIdleTimeInPercentImpl(
   if (FAILED(hr = wmi_refresher_enum_objects[0]->ReadDWORD(
                  percent_idle_time_prop_handle_.value(), &new_idle_time))) {
     *res = RefreshStatus::kReadValueFailed;
-    return idle_time;
+    return base::nullopt;
   }
   if (FAILED(hr = wmi_refresher_enum_objects[0]->ReadDWORD(
                  percent_idle_time_base_prop_handle_.value(),
                  &new_percent_idle_time_base))) {
     *res = RefreshStatus::kReadValueFailed;
-    return idle_time;
+    return base::nullopt;
   }
+
+  base::Optional<float> idle_time;
 
   // Compute the delta if we have at least 2 samples.
   if (latest_percent_idle_time_val_ && latest_percent_idle_time_base_val_) {
