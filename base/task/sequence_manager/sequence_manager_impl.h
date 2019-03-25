@@ -228,12 +228,18 @@ class BASE_EXPORT SequenceManagerImpl
                   TaskQueue::TaskTiming task_timing)
         : pending_task(std::move(task)),
           task_queue(task_queue),
+          task_queue_name(task_queue->GetName()),
           task_timing(task_timing),
+          priority(task_queue->GetQueuePriority()),
           task_type(pending_task.task_type) {}
 
     Task pending_task;
     internal::TaskQueueImpl* task_queue = nullptr;
+    // Save task_queue_name as the task queue can be deleted within the task.
+    const char* task_queue_name;
     TaskQueue::TaskTiming task_timing;
+    // Save priority as it might change after running a task.
+    TaskQueue::QueuePriority priority;
     // Save task metadata to use in after running a task as |pending_task|
     // won't be available then.
     int task_type;

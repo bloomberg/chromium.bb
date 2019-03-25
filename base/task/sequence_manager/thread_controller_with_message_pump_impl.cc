@@ -113,7 +113,7 @@ void ThreadControllerWithMessagePumpImpl::SetTimerSlack(
 void ThreadControllerWithMessagePumpImpl::WillQueueTask(
     PendingTask* pending_task,
     const char* task_queue_name) {
-  task_annotator_.WillQueueTask("ThreadController::Task", pending_task,
+  task_annotator_.WillQueueTask("SequenceManager PostTask", pending_task,
                                 task_queue_name);
 }
 
@@ -331,10 +331,18 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     main_thread_only().task_execution_allowed = false;
 
     work_id_provider_->IncrementWorkId();
-    TRACE_TASK_EXECUTION("ThreadController::Task", *task);
-    task_annotator_.RunTask("ThreadController::Task", &*task);
-    *ran_task = true;
 
+    {
+      // Trace events should finish before we call DidRunTask to ensure that
+      // SequenceManager trace events do not interfere with them.
+      TRACE_TASK_EXECUTION("ThreadController::Task", *task);
+      // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
+      // to determine long tasks.
+      // See https://crbug.com/681863 and https://crbug.com/874982
+      task_annotator_.RunTask("ThreadController::Task", &*task);
+    }
+
+    *ran_task = true;
     main_thread_only().task_execution_allowed = true;
     main_thread_only().task_source->DidRunTask();
 
