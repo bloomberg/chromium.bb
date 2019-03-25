@@ -229,6 +229,10 @@ bool QuadHighlightTool::ForwardEventsToOverlay() {
   return false;
 }
 
+bool QuadHighlightTool::HideOnHideHighlight() {
+  return true;
+}
+
 void QuadHighlightTool::Draw(float scale) {
   InspectorHighlight highlight(scale);
   highlight.AppendQuad(*quad_, color_, outline_color_);
@@ -251,6 +255,10 @@ CString NodeHighlightTool::GetDataResourceName() {
 
 bool NodeHighlightTool::ForwardEventsToOverlay() {
   return false;
+}
+
+bool NodeHighlightTool::HideOnHideHighlight() {
+  return true;
 }
 
 void NodeHighlightTool::Draw(float scale) {

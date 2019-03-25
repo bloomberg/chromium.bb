@@ -95,6 +95,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
   virtual void Draw(float scale) {}
   virtual void Trace(blink::Visitor* visitor);
   virtual void Dispose() {}
+  virtual bool HideOnHideHighlight();
 
  protected:
   virtual void DoInit() {}
