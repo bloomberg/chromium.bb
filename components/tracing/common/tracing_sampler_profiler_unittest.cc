@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -21,6 +22,7 @@ namespace tracing {
 namespace {
 
 using base::trace_event::TraceLog;
+using base::StackSamplingProfiler;
 
 class TracingSampleProfilerTest : public testing::Test {
  public:
@@ -193,14 +195,14 @@ TEST(TracingProfileBuilderTest, ValidModule) {
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       (base::PlatformThreadId()));
   profile_builder.OnSampleCompleted(
-      {base::ProfileBuilder::Frame(0x1010, &module)});
+      {base::StackSamplingProfiler::Frame(0x1010, &module)});
 }
 
 TEST(TracingProfileBuilderTest, InvalidModule) {
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       (base::PlatformThreadId()));
   profile_builder.OnSampleCompleted(
-      {base::ProfileBuilder::Frame(0x1010, nullptr)});
+      {base::StackSamplingProfiler::Frame(0x1010, nullptr)});
 }
 
 }  // namespace tracing

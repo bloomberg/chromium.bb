@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/stack_sampler.h"
+#include "base/profiler/native_stack_sampler.h"
 
 #include <windows.h>
 
@@ -19,17 +19,18 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/profile_builder.h"
 #include "base/profiler/unwind_result.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/scoped_handle.h"
 #include "build/build_config.h"
 
 namespace base {
+
+using Frame = StackSamplingProfiler::Frame;
+using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 // Stack recording functions --------------------------------------------------
 
@@ -139,28 +140,12 @@ void CopyStackContentsAndRewritePointers(const uintptr_t* original_stack_bottom,
 #if defined(ARCH_CPU_64_BITS)
   DWORD64 CONTEXT::*const nonvolatile_registers[] = {
 #if defined(ARCH_CPU_X86_64)
-    &CONTEXT::R12,
-    &CONTEXT::R13,
-    &CONTEXT::R14,
-    &CONTEXT::R15,
-    &CONTEXT::Rdi,
-    &CONTEXT::Rsi,
-    &CONTEXT::Rbx,
-    &CONTEXT::Rbp,
-    &CONTEXT::Rsp
+      &CONTEXT::R12, &CONTEXT::R13, &CONTEXT::R14, &CONTEXT::R15, &CONTEXT::Rdi,
+      &CONTEXT::Rsi, &CONTEXT::Rbx, &CONTEXT::Rbp, &CONTEXT::Rsp
 #elif defined(ARCH_CPU_ARM64)
-    &CONTEXT::X19,
-    &CONTEXT::X20,
-    &CONTEXT::X21,
-    &CONTEXT::X22,
-    &CONTEXT::X23,
-    &CONTEXT::X24,
-    &CONTEXT::X25,
-    &CONTEXT::X26,
-    &CONTEXT::X27,
-    &CONTEXT::X28,
-    &CONTEXT::Fp,
-    &CONTEXT::Lr
+      &CONTEXT::X19, &CONTEXT::X20, &CONTEXT::X21, &CONTEXT::X22, &CONTEXT::X23,
+      &CONTEXT::X24, &CONTEXT::X25, &CONTEXT::X26, &CONTEXT::X27, &CONTEXT::X28,
+      &CONTEXT::Fp, &CONTEXT::Lr
 #else
 #error Unsupported Windows 64-bit Arch
 #endif
@@ -265,16 +250,16 @@ bool PointsToGuardPage(uintptr_t stack_pointer) {
 
 }  // namespace
 
-// StackSamplerWin ------------------------------------------------------
+// NativeStackSamplerWin ------------------------------------------------------
 
-class StackSamplerWin : public StackSampler {
+class NativeStackSamplerWin : public NativeStackSampler {
  public:
-  StackSamplerWin(win::ScopedHandle thread_handle,
-                  ModuleCache* module_cache,
-                  StackSamplerTestDelegate* test_delegate);
-  ~StackSamplerWin() override;
+  NativeStackSamplerWin(win::ScopedHandle thread_handle,
+                        ModuleCache* module_cache,
+                        NativeStackSamplerTestDelegate* test_delegate);
+  ~NativeStackSamplerWin() override;
 
-  // StackSamplingProfiler::StackSampler:
+  // StackSamplingProfiler::NativeStackSampler:
   void RecordStackFrames(StackBuffer* stack_buffer,
                          ProfileBuilder* profile_builder) override;
 
@@ -292,41 +277,42 @@ class StackSamplerWin : public StackSampler {
 
   // Walks the stack represented by |thread_context|, recording and returning
   // the frames.
-  std::vector<ProfileBuilder::Frame> WalkStack(CONTEXT* thread_context);
+  std::vector<Frame> WalkStack(CONTEXT* thread_context);
 
   // Attempts to walk native frames in the stack represented by
   // |thread_context|, appending frames to |stack|. Returns a result indicating
   // the disposition of the unwinding.
   UnwindResult WalkNativeFrames(CONTEXT* thread_context,
-                                std::vector<ProfileBuilder::Frame>* stack);
+                                std::vector<Frame>* stack);
 
   win::ScopedHandle thread_handle_;
 
   ModuleCache* module_cache_;
 
-  StackSamplerTestDelegate* const test_delegate_;
+  NativeStackSamplerTestDelegate* const test_delegate_;
 
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
 
-  DISALLOW_COPY_AND_ASSIGN(StackSamplerWin);
+  DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerWin);
 };
 
-StackSamplerWin::StackSamplerWin(win::ScopedHandle thread_handle,
-                                 ModuleCache* module_cache,
-                                 StackSamplerTestDelegate* test_delegate)
+NativeStackSamplerWin::NativeStackSamplerWin(
+    win::ScopedHandle thread_handle,
+    ModuleCache* module_cache,
+    NativeStackSamplerTestDelegate* test_delegate)
     : thread_handle_(thread_handle.Take()),
       module_cache_(module_cache),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
           GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
 
-StackSamplerWin::~StackSamplerWin() {}
+NativeStackSamplerWin::~NativeStackSamplerWin() {}
 
-void StackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
-                                        ProfileBuilder* profile_builder) {
+void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
+                                              ProfileBuilder* profile_builder) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
-               "StackSamplerWin::RecordStackFrames");
+               "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
   CONTEXT thread_context;
@@ -350,11 +336,11 @@ void StackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
 // the default heap acquired by the target thread before it was suspended.
 //
 // static
-bool StackSamplerWin::CopyStack(HANDLE thread_handle,
-                                const void* base_address,
-                                StackBuffer* stack_buffer,
-                                ProfileBuilder* profile_builder,
-                                CONTEXT* thread_context) {
+bool NativeStackSamplerWin::CopyStack(HANDLE thread_handle,
+                                      const void* base_address,
+                                      StackBuffer* stack_buffer,
+                                      ProfileBuilder* profile_builder,
+                                      CONTEXT* thread_context) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "SuspendThread");
 
@@ -399,10 +385,9 @@ bool StackSamplerWin::CopyStack(HANDLE thread_handle,
   return true;
 }
 
-std::vector<ProfileBuilder::Frame> StackSamplerWin::WalkStack(
-    CONTEXT* thread_context) {
+std::vector<Frame> NativeStackSamplerWin::WalkStack(CONTEXT* thread_context) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"), "WalkStack");
-  std::vector<ProfileBuilder::Frame> stack;
+  std::vector<Frame> stack;
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
   // fewer.
@@ -413,9 +398,9 @@ std::vector<ProfileBuilder::Frame> StackSamplerWin::WalkStack(
   return stack;
 }
 
-UnwindResult StackSamplerWin::WalkNativeFrames(
+UnwindResult NativeStackSamplerWin::WalkNativeFrames(
     CONTEXT* thread_context,
-    std::vector<ProfileBuilder::Frame>* stack) {
+    std::vector<Frame>* stack) {
   Win32StackFrameUnwinder frame_unwinder;
   while (ContextPC(thread_context)) {
     const ModuleCache::Module* const module =
@@ -452,13 +437,13 @@ UnwindResult StackSamplerWin::WalkNativeFrames(
   return UnwindResult::COMPLETED;
 }
 
-// StackSampler ---------------------------------------------------------
+// NativeStackSampler ---------------------------------------------------------
 
 // static
-std::unique_ptr<StackSampler> StackSampler::Create(
+std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
     ModuleCache* module_cache,
-    StackSamplerTestDelegate* test_delegate) {
+    NativeStackSamplerTestDelegate* test_delegate) {
 #if _WIN64
   // Get the thread's handle.
   HANDLE thread_handle = ::OpenThread(
@@ -466,15 +451,15 @@ std::unique_ptr<StackSampler> StackSampler::Create(
       FALSE, thread_id);
 
   if (thread_handle) {
-    return std::make_unique<StackSamplerWin>(win::ScopedHandle(thread_handle),
-                                             module_cache, test_delegate);
+    return std::unique_ptr<NativeStackSampler>(new NativeStackSamplerWin(
+        win::ScopedHandle(thread_handle), module_cache, test_delegate));
   }
 #endif
-  return nullptr;
+  return std::unique_ptr<NativeStackSampler>();
 }
 
 // static
-size_t StackSampler::GetStackBufferSize() {
+size_t NativeStackSampler::GetStackBufferSize() {
   // The default Win32 reserved stack size is 1 MB and Chrome Windows threads
   // currently always use the default, but this allows for expansion if it
   // occurs. The size beyond the actual stack size consists of unallocated
