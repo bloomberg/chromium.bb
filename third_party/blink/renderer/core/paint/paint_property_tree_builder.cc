@@ -1473,18 +1473,28 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
 
       if (object_.IsLayoutReplaced()) {
         const LayoutReplaced& replaced = ToLayoutReplaced(object_);
+
+        // Videos need to be pre-snapped so that they line up with the
+        // display_rect and can enable hardware overlays. Adjust the base rect
+        // here, before applying padding and corner rounding.
+        LayoutRect content_rect =
+            LayoutRect(context_.current.paint_offset, replaced.Size());
+        if (replaced.IsVideo()) {
+          content_rect =
+              LayoutReplaced::PreSnappedRectForPersistentSizing(content_rect);
+        }
         // LayoutReplaced clips the foreground by rounded content box.
         state.clip_rect = replaced.StyleRef().GetRoundedInnerBorderFor(
-            LayoutRect(context_.current.paint_offset, replaced.Size()),
+            content_rect,
             LayoutRectOutsets(
                 -(replaced.PaddingTop() + replaced.BorderTop()),
                 -(replaced.PaddingRight() + replaced.BorderRight()),
                 -(replaced.PaddingBottom() + replaced.BorderBottom()),
                 -(replaced.PaddingLeft() + replaced.BorderLeft())));
         if (replaced.IsLayoutEmbeddedContent()) {
-          // Embedded objects are always sized to fit the content rect, but
-          // they could overflow by 1px due to pre-snapping. Adjust clip rect
-          // to match pre-snapped box as a special case.
+          // Embedded objects are always sized to fit the content rect, but they
+          // could overflow by 1px due to pre-snapping. Adjust clip rect to
+          // match pre-snapped box as a special case.
           FloatRect adjusted_rect = state.clip_rect.Rect();
           adjusted_rect.SetSize(
               FloatSize(replaced.ReplacedContentRect().Size()));

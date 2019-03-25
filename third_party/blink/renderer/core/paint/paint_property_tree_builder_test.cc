@@ -6536,4 +6536,37 @@ TEST_P(PaintPropertyTreeBuilderTest,
   }
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, VideoClipRect) {
+  SetBodyInnerHTML(R"HTML(
+    <video id="video" style="position:absolute;top:0;left:0;" controls
+       src="missing_file.webm" width=320.2 height=240>
+    </video>
+  )HTML");
+
+  Element* video_element = GetDocument().getElementById("video");
+  ASSERT_NE(nullptr, video_element);
+  video_element->SetInlineStyleProperty(CSSPropertyID::kWidth, "320.2px");
+  video_element->SetInlineStyleProperty(CSSPropertyID::kTop, "0.1px");
+  video_element->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.1px");
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  const ObjectPaintProperties* video_element_properties =
+      video_element->GetLayoutObject()->FirstFragment().PaintProperties();
+  // |video_element| is now sub-pixel positioned, at 0.1,0.1 320.2x240. With or
+  // without pixel-snapped clipping, this will get clipped at 0,0 320x240.
+  EXPECT_EQ(FloatRoundedRect(0, 0, 320, 240),
+            video_element_properties->OverflowClip()->ClipRect());
+
+  // Now, move |video_element| to 10.4,10.4. At this point, without pixel
+  // snapping that doesn't depend on paint offset, it will be clipped at 10,10
+  // 321x240. With proper pixel snapping, the clip will be at 10,10,320,240.
+  video_element->SetInlineStyleProperty(CSSPropertyID::kTop, "10.4px");
+  video_element->SetInlineStyleProperty(CSSPropertyID::kLeft, "10.4px");
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  EXPECT_EQ(FloatRoundedRect(10, 10, 320, 240),
+            video_element_properties->OverflowClip()->ClipRect());
+}
+
 }  // namespace blink
