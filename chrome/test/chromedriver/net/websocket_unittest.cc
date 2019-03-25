@@ -96,7 +96,7 @@ class WebSocketTest : public testing::Test {
             ? new WebSocket(url, listener)
             : new WebSocket(url, listener, read_buffer_size_));
     base::RunLoop run_loop;
-    sock->Connect(base::Bind(&OnConnectFinished, &run_loop, &error));
+    sock->Connect(base::BindOnce(&OnConnectFinished, &run_loop, &error));
     loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
                                          base::TimeDelta::FromSeconds(10));
     run_loop.Run();
