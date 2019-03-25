@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -28,7 +29,6 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Arrays;
@@ -109,7 +110,6 @@ public class AutofillAssistantUiTest {
     // highlight chips and so on.
     @Test
     @MediumTest
-    @DisabledTest // TODO(crbug.com/943483) test fails on "Android CFI" builder.
     public void testStartAndAccept() throws Exception {
         InOrder inOrder = inOrder(mRunnableMock);
 
@@ -120,6 +120,11 @@ public class AutofillAssistantUiTest {
         // Bottom sheet is shown when creating the AssistantCoordinator.
         View bottomSheet = findViewByIdInMainCoordinator(R.id.autofill_assistant);
         Assert.assertTrue(bottomSheet.isShown());
+
+        // Disable bottom sheet container animations. This is a workaround for http://crbug/943483.
+        ViewGroup bottomSheetContainer =
+                bottomSheet.findViewById(R.id.autofill_assistant_bottombar_container);
+        TestThreadUtils.runOnUiThreadBlocking(() -> bottomSheetContainer.setLayoutTransition(null));
 
         // Show onboarding.
         ThreadUtils.runOnUiThreadBlocking(() -> assistantCoordinator.showOnboarding(mRunnableMock));

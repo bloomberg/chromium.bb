@@ -122,6 +122,7 @@ android_library("test_java") {
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
+    "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_support_test_runner:runner_java",
