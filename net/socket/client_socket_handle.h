@@ -78,36 +78,15 @@ class NET_EXPORT ClientSocketHandle {
   // Init may be called multiple times.
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
-  //
-  template <typename PoolType>
   int Init(const ClientSocketPool::GroupId& group_id,
-           const scoped_refptr<typename PoolType::SocketParams>& socket_params,
+           scoped_refptr<ClientSocketPool::SocketParams> socket_params,
            RequestPriority priority,
            const SocketTag& socket_tag,
            ClientSocketPool::RespectLimits respect_limits,
            CompletionOnceCallback callback,
            const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
-           PoolType* pool,
+           ClientSocketPool* pool,
            const NetLogWithSource& net_log);
-
-  // Temporary overload of Init that takes a bool instead of
-  // ClientSocketPool::RespectLimits.
-  // TODO(mmenke): Remove once the socket pool refactor is complete.
-  template <typename PoolType>
-  int Init(const std::string& group_id,
-           const scoped_refptr<typename PoolType::SocketParams>& socket_params,
-           RequestPriority priority,
-           const SocketTag& socket_tag,
-           bool respect_limits,
-           CompletionOnceCallback callback,
-           const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
-           PoolType* pool,
-           const NetLogWithSource& net_log) {
-    return Init(group_id, socket_params, priority, socket_tag,
-                respect_limits ? ClientSocketPool::RespectLimits::ENABLED
-                               : ClientSocketPool::RespectLimits::DISABLED,
-                std::move(callback), proxy_auth_callback, pool, net_log);
-  }
 
   // Changes the priority of the ClientSocketHandle to the passed value.
   // This function is a no-op if |priority| is the same as the current
@@ -256,38 +235,6 @@ class NET_EXPORT ClientSocketHandle {
 
   DISALLOW_COPY_AND_ASSIGN(ClientSocketHandle);
 };
-
-// Template function implementation:
-template <typename PoolType>
-int ClientSocketHandle::Init(
-    const ClientSocketPool::GroupId& group_id,
-    const scoped_refptr<typename PoolType::SocketParams>& socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    ClientSocketPool::RespectLimits respect_limits,
-    CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
-    PoolType* pool,
-    const NetLogWithSource& net_log) {
-  requesting_source_ = net_log.source();
-
-  CHECK(!group_id.destination().IsEmpty());
-  ResetInternal(true);
-  ResetErrorState();
-  pool_ = pool;
-  group_id_ = group_id;
-  CompletionOnceCallback io_complete_callback =
-      base::BindOnce(&ClientSocketHandle::OnIOComplete, base::Unretained(this));
-  int rv = pool_->RequestSocket(
-      group_id, &socket_params, priority, socket_tag, respect_limits, this,
-      std::move(io_complete_callback), proxy_auth_callback, net_log);
-  if (rv == ERR_IO_PENDING) {
-    callback_ = std::move(callback);
-  } else {
-    HandleInitCompletion(rv);
-  }
-  return rv;
-}
 
 }  // namespace net
 

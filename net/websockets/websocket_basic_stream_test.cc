@@ -140,12 +140,12 @@ class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
     factory_.AddSocketDataProvider(socket_data_.get());
 
     auto transport_socket = std::make_unique<ClientSocketHandle>();
-    scoped_refptr<MockTransportSocketParams> params;
+    scoped_refptr<ClientSocketPool::SocketParams> null_params;
     ClientSocketPool::GroupId group_id(HostPortPair("a", 80),
                                        ClientSocketPool::SocketType::kHttp,
                                        false /* privacy_mode */);
     transport_socket->Init(
-        group_id, params, MEDIUM, SocketTag(),
+        group_id, null_params, MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return transport_socket;

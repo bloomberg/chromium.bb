@@ -6,17 +6,108 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "net/http/http_proxy_connect_job.h"
+#include "net/socket/socks_connect_job.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/stream_socket.h"
+#include "net/socket/transport_connect_job.h"
+#include "net/socket/websocket_transport_connect_job.h"
+
+namespace net {
 
 namespace {
 
 // The maximum duration, in seconds, to keep used idle persistent sockets alive.
 int64_t g_used_idle_socket_timeout_s = 300;  // 5 minutes
 
+// TODO(mmenke): Once the socket pool arguments are no longer needed, remove
+// this method and use TransportConnectJob::CreateTransportConnectJob()
+// directly.
+std::unique_ptr<ConnectJob> CreateTransportConnectJob(
+    scoped_refptr<TransportSocketParams> transport_socket_params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
+    ConnectJob::Delegate* delegate) {
+  return TransportConnectJob::CreateTransportConnectJob(
+      std::move(transport_socket_params), priority, socket_tag,
+      common_connect_job_params, delegate, nullptr /* net_log */);
+}
+
+std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
+    scoped_refptr<SOCKSSocketParams> socks_socket_params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
+    ConnectJob::Delegate* delegate) {
+  return std::make_unique<SOCKSConnectJob>(
+      priority, socket_tag, common_connect_job_params,
+      std::move(socks_socket_params), delegate, nullptr /* net_log */);
+}
+
+std::unique_ptr<ConnectJob> CreateSSLConnectJob(
+    scoped_refptr<SSLSocketParams> ssl_socket_params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
+    ConnectJob::Delegate* delegate) {
+  return std::make_unique<SSLConnectJob>(
+      priority, socket_tag, common_connect_job_params,
+      std::move(ssl_socket_params), delegate, nullptr /* net_log */);
+}
+
+std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
+    scoped_refptr<HttpProxySocketParams> http_proxy_socket_params,
+    RequestPriority priority,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
+    ConnectJob::Delegate* delegate) {
+  return std::make_unique<HttpProxyConnectJob>(
+      priority, socket_tag, common_connect_job_params,
+      std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
+}
+
 }  // namespace
 
-namespace net {
+ClientSocketPool::SocketParams::SocketParams(
+    const CreateConnectJobCallback& create_connect_job_callback)
+    : create_connect_job_callback_(create_connect_job_callback) {}
+
+scoped_refptr<ClientSocketPool::SocketParams>
+ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
+    scoped_refptr<TransportSocketParams> transport_client_params) {
+  CreateConnectJobCallback callback = base::BindRepeating(
+      &CreateTransportConnectJob, std::move(transport_client_params));
+  return base::MakeRefCounted<SocketParams>(callback);
+}
+
+scoped_refptr<ClientSocketPool::SocketParams>
+ClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+    scoped_refptr<SOCKSSocketParams> socks_socket_params) {
+  CreateConnectJobCallback callback = base::BindRepeating(
+      &CreateSOCKSConnectJob, std::move(socks_socket_params));
+  return base::MakeRefCounted<SocketParams>(callback);
+}
+
+scoped_refptr<ClientSocketPool::SocketParams>
+ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+    scoped_refptr<SSLSocketParams> ssl_socket_params) {
+  CreateConnectJobCallback callback =
+      base::BindRepeating(&CreateSSLConnectJob, std::move(ssl_socket_params));
+  return base::MakeRefCounted<SocketParams>(callback);
+}
+
+scoped_refptr<ClientSocketPool::SocketParams>
+ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
+    scoped_refptr<HttpProxySocketParams> http_proxy_socket_params) {
+  CreateConnectJobCallback callback = base::BindRepeating(
+      &CreateHttpProxyConnectJob, std::move(http_proxy_socket_params));
+  return base::MakeRefCounted<SocketParams>(callback);
+}
+
+ClientSocketPool::SocketParams::~SocketParams() = default;
 
 ClientSocketPool::GroupId::GroupId()
     : socket_type_(SocketType::kHttp), privacy_mode_(false) {}

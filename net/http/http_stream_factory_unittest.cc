@@ -425,7 +425,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
 
   int RequestSocket(
       const ClientSocketPool::GroupId& group_id,
-      const void* socket_params,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       RequestPriority priority,
       const SocketTag& socket_tag,
       ClientSocketPool::RespectLimits respect_limits,
@@ -437,10 +437,11 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     return ERR_UNEXPECTED;
   }
 
-  void RequestSockets(const ClientSocketPool::GroupId& group_id,
-                      const void* socket_params,
-                      int num_sockets,
-                      const NetLogWithSource& net_log) override {
+  void RequestSockets(
+      const ClientSocketPool::GroupId& group_id,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      int num_sockets,
+      const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
     last_group_id_ = group_id;
   }

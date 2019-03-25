@@ -68,7 +68,7 @@ void WebSocketTransportClientSocketPool::UnlockEndpoint(
 
 int WebSocketTransportClientSocketPool::RequestSocket(
     const GroupId& group_id,
-    const void* params,
+    scoped_refptr<SocketParams> params,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -84,14 +84,11 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   NetLogTcpClientSocketPoolRequestedSocket(request_net_log, group_id);
   request_net_log.BeginEvent(NetLogEventType::SOCKET_POOL);
 
-  const scoped_refptr<SocketParams>& casted_params =
-      *static_cast<const scoped_refptr<SocketParams>*>(params);
-
   if (ReachedMaxSocketsLimit() &&
       respect_limits == ClientSocketPool::RespectLimits::ENABLED) {
     request_net_log.AddEvent(NetLogEventType::SOCKET_POOL_STALLED_MAX_SOCKETS);
-    stalled_request_queue_.emplace_back(group_id, casted_params, priority,
-                                        handle, std::move(callback),
+    stalled_request_queue_.emplace_back(group_id, params, priority, handle,
+                                        std::move(callback),
                                         proxy_auth_callback, request_net_log);
     auto iterator = stalled_request_queue_.end();
     --iterator;
@@ -115,9 +112,9 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   // nested socket pools for the proxy case, which use standard proxy socket
   // pool types on top of a standard TransportClientSocketPool.
   std::unique_ptr<ConnectJob> connect_job =
-      casted_params->create_connect_job_callback().Run(
-          priority, SocketTag(), common_connect_job_params_,
-          connect_job_delegate.get());
+      params->create_connect_job_callback().Run(priority, SocketTag(),
+                                                common_connect_job_params_,
+                                                connect_job_delegate.get());
 
   int result = connect_job_delegate->Connect(std::move(connect_job));
 
@@ -141,7 +138,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
 
 void WebSocketTransportClientSocketPool::RequestSockets(
     const GroupId& group_id,
-    const void* params,
+    scoped_refptr<SocketParams> params,
     int num_sockets,
     const NetLogWithSource& net_log) {
   NOTIMPLEMENTED();
@@ -416,7 +413,7 @@ void WebSocketTransportClientSocketPool::ActivateStalledRequest() {
         base::AdaptCallbackForRepeating(std::move(request.callback));
 
     int rv = RequestSocket(
-        request.group_id, &request.params, request.priority, SocketTag(),
+        request.group_id, request.params, request.priority, SocketTag(),
         // Stalled requests can't have |respect_limits|
         // DISABLED.
         RespectLimits::ENABLED, request.handle, copyable_callback,

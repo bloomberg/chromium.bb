@@ -91,7 +91,7 @@ class MockClientSocketHandleFactory {
         ClientSocketPool::GroupId(HostPortPair("a", 80),
                                   ClientSocketPool::SocketType::kHttp,
                                   false /* privacy_mode */),
-        scoped_refptr<MockTransportSocketParams>(), MEDIUM, SocketTag(),
+        scoped_refptr<ClientSocketPool::SocketParams>(), MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return socket_handle;

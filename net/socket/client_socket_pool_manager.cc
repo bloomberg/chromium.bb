@@ -225,8 +225,8 @@ int InitSocketPoolHelper(
     respect_limits = ClientSocketPool::RespectLimits::DISABLED;
 
   if (num_preconnect_streams) {
-    RequestSocketsForPool(pool, connection_group, std::move(socket_params),
-                          num_preconnect_streams, net_log);
+    pool->RequestSockets(connection_group, std::move(socket_params),
+                         num_preconnect_streams, net_log);
     return OK;
   }
 

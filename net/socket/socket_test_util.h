@@ -1160,8 +1160,6 @@ class MockTransportSocketParams
 
 class MockTransportClientSocketPool : public TransportClientSocketPool {
  public:
-  typedef MockTransportSocketParams SocketParams;
-
   class MockConnectJob {
    public:
     MockConnectJob(std::unique_ptr<StreamSocket> socket,
@@ -1211,7 +1209,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
 
   // TransportClientSocketPool implementation.
   int RequestSocket(const GroupId& group_id,
-                    const void* socket_params,
+                    scoped_refptr<ClientSocketPool::SocketParams> socket_params,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
                     RespectLimits respect_limits,
