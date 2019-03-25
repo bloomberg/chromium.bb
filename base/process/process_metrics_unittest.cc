@@ -41,7 +41,7 @@ void BusyWork(std::vector<std::string>* vec) {
   int64_t test_value = 0;
   for (int i = 0; i < 100000; ++i) {
     ++test_value;
-    vec->push_back(Int64ToString(test_value));
+    vec->push_back(NumberToString(test_value));
   }
 }
 

@@ -93,7 +93,7 @@ bool AdjustOOMScoreHelper::AdjustOOMScore(ProcessId process, int score) {
   // Attempt to write the newer oom_score_adj file first.
   FilePath oom_file = oom_path.AppendASCII("oom_score_adj");
   if (PathExists(oom_file)) {
-    std::string score_str = IntToString(score);
+    std::string score_str = NumberToString(score);
     DVLOG(1) << "Adjusting oom_score_adj of " << process << " to "
              << score_str;
     int score_len = static_cast<int>(score_str.length());
@@ -109,7 +109,7 @@ bool AdjustOOMScoreHelper::AdjustOOMScore(ProcessId process, int score) {
     const int kMaxOldOomScore = 15;
 
     int converted_score = score * kMaxOldOomScore / kMaxOomScore;
-    std::string score_str = IntToString(converted_score);
+    std::string score_str = NumberToString(converted_score);
     DVLOG(1) << "Adjusting oom_adj of " << process << " to " << score_str;
     int score_len = static_cast<int>(score_str.length());
     return (score_len == WriteFile(oom_file, score_str.c_str(), score_len));

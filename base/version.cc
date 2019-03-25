@@ -38,7 +38,7 @@ bool ParseVersionNumbers(const std::string& version_str,
       return false;
 
     // This throws out leading zeros for the first item only.
-    if (it == numbers.begin() && UintToString(num) != *it)
+    if (it == numbers.begin() && NumberToString(num) != *it)
       return false;
 
     // StringToUint returns unsigned int but Version fields are uint32_t.
@@ -156,10 +156,10 @@ const std::string Version::GetString() const {
   std::string version_str;
   size_t count = components_.size();
   for (size_t i = 0; i < count - 1; ++i) {
-    version_str.append(UintToString(components_[i]));
+    version_str.append(NumberToString(components_[i]));
     version_str.append(".");
   }
-  version_str.append(UintToString(components_[count - 1]));
+  version_str.append(NumberToString(components_[count - 1]));
   return version_str;
 }
 

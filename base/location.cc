@@ -43,7 +43,7 @@ Location::Location(const char* function_name,
 std::string Location::ToString() const {
   if (has_source_info()) {
     return std::string(function_name_) + "@" + file_name_ + ":" +
-           IntToString(line_number_);
+           NumberToString(line_number_);
   }
   return StringPrintf("pc:%p", program_counter_);
 }

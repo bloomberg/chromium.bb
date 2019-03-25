@@ -65,7 +65,7 @@ bool GetValueAsTime(const Value& value, Time* time) {
 // |Value| does not support 64-bit integers, and doubles do not have enough
 // precision, so we store the 64-bit time value as a string instead.
 Value CreateTimeDeltaValue(const TimeDelta& time_delta) {
-  std::string string_value = base::Int64ToString(time_delta.InMicroseconds());
+  std::string string_value = base::NumberToString(time_delta.InMicroseconds());
   return Value(string_value);
 }
 

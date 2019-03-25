@@ -59,7 +59,7 @@ void GetDebugInfoForModule(HMODULE module_handle,
   if (result != kGUIDSize)
     return;
   RemoveChars(buffer, STRING16_LITERAL("{}-"), &buffer);
-  buffer.append(IntToString16(age));
+  buffer.append(NumberToString16(age));
   *build_id = UTF16ToUTF8(buffer);
 }
 

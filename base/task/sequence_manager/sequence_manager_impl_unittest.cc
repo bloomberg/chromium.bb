@@ -4035,7 +4035,7 @@ class PostTaskWhenDeleted {
   }
 
  private:
-  std::string full_name() { return name_ + " " + IntToString(depth_); }
+  std::string full_name() { return name_ + " " + NumberToString(depth_); }
 
   std::string name_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
