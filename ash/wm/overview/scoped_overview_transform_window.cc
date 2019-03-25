@@ -446,18 +446,26 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 }
 
 void ScopedOverviewTransformWindow::UpdateMask(bool show) {
-  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
-      !show) {
-    mask_.reset();
-    return;
-  }
-
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = minimized_widget_
                          ? minimized_widget_->GetNativeWindow()->layer()
                          : window_->layer();
-
+  if (ash::features::ShouldUseShaderRoundedCorner()) {
+    const float scale = layer->transform().Scale2d().x();
+    static constexpr std::array<uint32_t, 4> kEmptyRadii = {0, 0, 0, 0};
+    const std::array<uint32_t, 4> kRadii = {
+        kOverviewWindowRoundingDp / scale, kOverviewWindowRoundingDp / scale,
+        kOverviewWindowRoundingDp / scale, kOverviewWindowRoundingDp / scale};
+    layer->SetRoundedCornerRadius(show ? kRadii : kEmptyRadii);
+    layer->SetIsFastRoundedCorner(true);
+    return;
+  }
+  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
+      !show) {
+    mask_.reset();
+    return;
+  }
   mask_ = std::make_unique<WindowMask>(GetOverviewWindow());
   mask_->layer()->SetBounds(layer->bounds());
   mask_->set_top_inset(GetTopInset());

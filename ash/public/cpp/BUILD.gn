@@ -228,6 +228,7 @@ source_set("unit_tests") {
     ":cpp",
     ":test_interfaces",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/gfx:test_support",

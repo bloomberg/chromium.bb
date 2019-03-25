@@ -184,7 +184,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   friend class OverviewSessionTest;
   class LayerCachingAndFilteringObserver;
   class WindowMask;
-  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowTest,
+  FRIEND_TEST_ALL_PREFIXES(ScopedOverviewTransformWindowWithMaskTest,
                            WindowBoundsChangeTest);
 
   // Closes the window managed by |this|.
