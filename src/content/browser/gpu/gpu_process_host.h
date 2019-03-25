@@ -172,6 +172,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void TerminateGpuProcess(const std::string& message) override;
   void SendGpuProcessMessage(IPC::Message* message) override;
 #endif
+  void OnEstablishGpuChannelTimeout(int client_id,
+                                    uint64_t client_tracing_id,
+                                    bool is_gpu_host) override;
 
   // Message handlers.
   void OnFieldTrialActivated(const std::string& trial_name);
