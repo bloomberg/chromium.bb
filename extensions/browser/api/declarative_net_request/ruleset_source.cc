@@ -138,7 +138,7 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::Value& rules,
 
 void OnSafeJSONParserSuccess(
     const RulesetSource& source,
-    RulesetSource::IndexAndPersistRulesCallback callback,
+    RulesetSource::IndexAndPersistJSONRulesetCallback callback,
     std::unique_ptr<base::Value> root) {
   DCHECK(root);
 
@@ -146,7 +146,7 @@ void OnSafeJSONParserSuccess(
   ReadJSONRulesResult result =
       ParseRulesFromJSON(*root, source.rule_count_limit());
   if (result.status != ReadJSONRulesStatus::kSuccess) {
-    std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
+    std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(source.json_path(), result.error)));
     return;
   }
@@ -156,34 +156,37 @@ void OnSafeJSONParserSuccess(
   const ParseInfo info =
       source.IndexAndPersistRules(std::move(result.rules), &ruleset_checksum);
   if (info.result() == ParseResult::SUCCESS) {
-    std::move(callback).Run(IndexAndPersistRulesResult::CreateSuccessResult(
-        ruleset_checksum, std::move(result.rule_parse_warnings), rules_count,
-        timer.Elapsed()));
+    std::move(callback).Run(
+        IndexAndPersistJSONRulesetResult::CreateSuccessResult(
+            ruleset_checksum, std::move(result.rule_parse_warnings),
+            rules_count, timer.Elapsed()));
     return;
   }
 
   std::string error =
       GetErrorWithFilename(source.json_path(), info.GetErrorDescription());
   std::move(callback).Run(
-      IndexAndPersistRulesResult::CreateErrorResult(std::move(error)));
+      IndexAndPersistJSONRulesetResult::CreateErrorResult(std::move(error)));
 }
 
-void OnSafeJSONParserError(RulesetSource::IndexAndPersistRulesCallback callback,
-                           const base::FilePath& json_path,
-                           const std::string& json_parse_error) {
-  std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
+void OnSafeJSONParserError(
+    RulesetSource::IndexAndPersistJSONRulesetCallback callback,
+    const base::FilePath& json_path,
+    const std::string& json_parse_error) {
+  std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
       GetErrorWithFilename(json_path, json_parse_error)));
 }
 
 }  // namespace
 
 // static
-IndexAndPersistRulesResult IndexAndPersistRulesResult::CreateSuccessResult(
+IndexAndPersistJSONRulesetResult
+IndexAndPersistJSONRulesetResult::CreateSuccessResult(
     int ruleset_checksum,
     std::vector<InstallWarning> warnings,
     size_t rules_count,
     base::TimeDelta index_and_persist_time) {
-  IndexAndPersistRulesResult result;
+  IndexAndPersistJSONRulesetResult result;
   result.success = true;
   result.ruleset_checksum = ruleset_checksum;
   result.warnings = std::move(warnings);
@@ -193,20 +196,20 @@ IndexAndPersistRulesResult IndexAndPersistRulesResult::CreateSuccessResult(
 }
 
 // static
-IndexAndPersistRulesResult IndexAndPersistRulesResult::CreateErrorResult(
-    std::string error) {
-  IndexAndPersistRulesResult result;
+IndexAndPersistJSONRulesetResult
+IndexAndPersistJSONRulesetResult::CreateErrorResult(std::string error) {
+  IndexAndPersistJSONRulesetResult result;
   result.success = false;
   result.error = std::move(error);
   return result;
 }
 
-IndexAndPersistRulesResult::~IndexAndPersistRulesResult() = default;
-IndexAndPersistRulesResult::IndexAndPersistRulesResult(
-    IndexAndPersistRulesResult&&) = default;
-IndexAndPersistRulesResult& IndexAndPersistRulesResult::operator=(
-    IndexAndPersistRulesResult&&) = default;
-IndexAndPersistRulesResult::IndexAndPersistRulesResult() = default;
+IndexAndPersistJSONRulesetResult::~IndexAndPersistJSONRulesetResult() = default;
+IndexAndPersistJSONRulesetResult::IndexAndPersistJSONRulesetResult(
+    IndexAndPersistJSONRulesetResult&&) = default;
+IndexAndPersistJSONRulesetResult& IndexAndPersistJSONRulesetResult::operator=(
+    IndexAndPersistJSONRulesetResult&&) = default;
+IndexAndPersistJSONRulesetResult::IndexAndPersistJSONRulesetResult() = default;
 
 // static
 ReadJSONRulesResult ReadJSONRulesResult::CreateErrorResult(
@@ -252,13 +255,14 @@ RulesetSource RulesetSource::Clone() const {
                        rule_count_limit_);
 }
 
-IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {
+IndexAndPersistJSONRulesetResult
+RulesetSource::IndexAndPersistJSONRulesetUnsafe() const {
   DCHECK(IsAPIAvailable());
 
   base::ElapsedTimer timer;
   ReadJSONRulesResult result = ReadJSONRulesUnsafe();
   if (result.status != ReadJSONRulesStatus::kSuccess) {
-    return IndexAndPersistRulesResult::CreateErrorResult(
+    return IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(json_path_, result.error));
   }
 
@@ -267,31 +271,31 @@ IndexAndPersistRulesResult RulesetSource::IndexAndPersistRulesUnsafe() const {
   const ParseInfo info =
       IndexAndPersistRules(std::move(result.rules), &ruleset_checksum);
   if (info.result() == ParseResult::SUCCESS) {
-    return IndexAndPersistRulesResult::CreateSuccessResult(
+    return IndexAndPersistJSONRulesetResult::CreateSuccessResult(
         ruleset_checksum, std::move(result.rule_parse_warnings), rules_count,
         timer.Elapsed());
   }
 
   std::string error =
       GetErrorWithFilename(json_path_, info.GetErrorDescription());
-  return IndexAndPersistRulesResult::CreateErrorResult(std::move(error));
+  return IndexAndPersistJSONRulesetResult::CreateErrorResult(std::move(error));
 }
 
-void RulesetSource::IndexAndPersistRules(
+void RulesetSource::IndexAndPersistJSONRuleset(
     service_manager::Connector* connector,
     const base::Optional<base::Token>& decoder_batch_id,
-    IndexAndPersistRulesCallback callback) const {
+    IndexAndPersistJSONRulesetCallback callback) const {
   DCHECK(IsAPIAvailable());
 
   if (!base::PathExists(json_path_)) {
-    std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
+    std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(json_path_, kFileDoesNotExistError)));
     return;
   }
 
   std::string json_contents;
   if (!base::ReadFileToString(json_path_, &json_contents)) {
-    std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
+    std::move(callback).Run(IndexAndPersistJSONRulesetResult::CreateErrorResult(
         GetErrorWithFilename(json_path_, kFileReadError)));
     return;
   }

@@ -690,7 +690,7 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
 
   auto ruleset_source =
       declarative_net_request::RulesetSource::Create(*extension_);
-  ruleset_source.IndexAndPersistRules(
+  ruleset_source.IndexAndPersistJSONRuleset(
       connector_.get(), *data_decoder_service_filter_.instance_id(),
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this,
                      std::move(manifest)));
@@ -698,7 +698,7 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
 
 void SandboxedUnpacker::OnJSONRulesetIndexed(
     std::unique_ptr<base::DictionaryValue> manifest,
-    declarative_net_request::IndexAndPersistRulesResult result) {
+    declarative_net_request::IndexAndPersistJSONRulesetResult result) {
   if (result.success) {
     if (!result.warnings.empty())
       extension_->AddInstallWarnings(std::move(result.warnings));

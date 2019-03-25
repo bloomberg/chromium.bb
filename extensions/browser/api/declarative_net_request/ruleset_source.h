@@ -33,18 +33,19 @@ struct Rule;
 namespace declarative_net_request {
 class ParseInfo;
 
-struct IndexAndPersistRulesResult {
+struct IndexAndPersistJSONRulesetResult {
  public:
-  static IndexAndPersistRulesResult CreateSuccessResult(
+  static IndexAndPersistJSONRulesetResult CreateSuccessResult(
       int ruleset_checksum,
       std::vector<InstallWarning> warnings,
       size_t rules_count,
       base::TimeDelta index_and_persist_time);
-  static IndexAndPersistRulesResult CreateErrorResult(std::string error);
+  static IndexAndPersistJSONRulesetResult CreateErrorResult(std::string error);
 
-  ~IndexAndPersistRulesResult();
-  IndexAndPersistRulesResult(IndexAndPersistRulesResult&&);
-  IndexAndPersistRulesResult& operator=(IndexAndPersistRulesResult&&);
+  ~IndexAndPersistJSONRulesetResult();
+  IndexAndPersistJSONRulesetResult(IndexAndPersistJSONRulesetResult&&);
+  IndexAndPersistJSONRulesetResult& operator=(
+      IndexAndPersistJSONRulesetResult&&);
 
   // Whether IndexAndPersistRules succeeded.
   bool success;
@@ -66,8 +67,8 @@ struct IndexAndPersistRulesResult {
   std::string error;
 
  private:
-  IndexAndPersistRulesResult();
-  DISALLOW_COPY_AND_ASSIGN(IndexAndPersistRulesResult);
+  IndexAndPersistJSONRulesetResult();
+  DISALLOW_COPY_AND_ASSIGN(IndexAndPersistJSONRulesetResult);
 };
 
 struct ReadJSONRulesResult {
@@ -136,22 +137,21 @@ class RulesetSource {
   // Indexes and persists the JSON ruleset. This is potentially unsafe since the
   // JSON rules file is parsed in-process. Note: This must be called on a
   // sequence where file IO is allowed.
-  // TODO(karandeepb): Rename to IndexAndPersistJSONRulesetUnsafe.
-  IndexAndPersistRulesResult IndexAndPersistRulesUnsafe() const;
+  IndexAndPersistJSONRulesetResult IndexAndPersistJSONRulesetUnsafe() const;
 
-  using IndexAndPersistRulesCallback =
-      base::OnceCallback<void(IndexAndPersistRulesResult)>;
-  // Same as IndexAndPersistRulesUnsafe but parses the JSON rules file out-of-
-  // process. |connector| should be a connector to the ServiceManager usable on
-  // the current sequence. Optionally clients can pass a valid
+  using IndexAndPersistJSONRulesetCallback =
+      base::OnceCallback<void(IndexAndPersistJSONRulesetResult)>;
+  // Same as IndexAndPersistJSONRulesetUnsafe but parses the JSON rules file
+  // out-of-process. |connector| should be a connector to the ServiceManager
+  // usable on the current sequence. Optionally clients can pass a valid
   // |decoder_batch_id| to be used when accessing the data decoder service,
   // which is used internally to parse JSON.
   //
   // NOTE: This must be called on a sequence where file IO is allowed.
-  // TODO(karandeepb): Rename to IndexAndPersistJSONRuleset.
-  void IndexAndPersistRules(service_manager::Connector* connector,
-                            const base::Optional<base::Token>& decoder_batch_id,
-                            IndexAndPersistRulesCallback callback) const;
+  void IndexAndPersistJSONRuleset(
+      service_manager::Connector* connector,
+      const base::Optional<base::Token>& decoder_batch_id,
+      IndexAndPersistJSONRulesetCallback callback) const;
 
   // Indexes the given |rules| in indexed/flatbuffer format. Populates
   // |ruleset_checksum| on success. The number of |rules| must be less than the

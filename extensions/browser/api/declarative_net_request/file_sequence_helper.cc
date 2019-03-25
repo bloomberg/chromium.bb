@@ -57,8 +57,8 @@ class ReindexHelper {
                                      base::Unretained(this), &ruleset);
       callback_count_++;
       did_post_task = true;
-      ruleset.source().IndexAndPersistRules(connector, token,
-                                            std::move(callback));
+      ruleset.source().IndexAndPersistJSONRuleset(connector, token,
+                                                  std::move(callback));
     }
 
     // It's possible that the callbacks return synchronously and we are deleted
@@ -69,7 +69,7 @@ class ReindexHelper {
 
   // Callback invoked when a single ruleset is re-indexed.
   void OnReindexCompleted(RulesetInfo* ruleset,
-                          IndexAndPersistRulesResult result) {
+                          IndexAndPersistJSONRulesetResult result) {
     DCHECK(ruleset);
 
     // The checksum of the reindexed ruleset should have been the same as the

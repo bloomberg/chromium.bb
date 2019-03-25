@@ -46,7 +46,8 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
   JSONFileValueSerializer(source.json_path()).Serialize(*builder.Build());
 
   // Index ruleset.
-  IndexAndPersistRulesResult result = source.IndexAndPersistRulesUnsafe();
+  IndexAndPersistJSONRulesetResult result =
+      source.IndexAndPersistJSONRulesetUnsafe();
   if (!result.success) {
     DCHECK(result.error.empty());
     return false;
