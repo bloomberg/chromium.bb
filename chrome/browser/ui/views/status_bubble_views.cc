@@ -237,6 +237,7 @@ StatusBubbleViews::StatusView::StatusView(StatusBubbleViews* status_bubble,
       0.6f);
   text->SetEnabledColor(color_utils::GetColorWithMinimumContrast(
       blended_text_color, bubble_color));
+  text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_ = AddChildView(std::move(text));
   ResizeText();
 }
