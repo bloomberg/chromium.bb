@@ -85,6 +85,10 @@ class LoadingPredictor : public KeyedService,
     return active_navigations_.size();
   }
 
+  const std::map<GURL, base::TimeTicks>& active_hints_for_testing() const {
+    return active_hints_;
+  }
+
  private:
   // Cancels an active hint, from its iterator inside |active_hints_|. If the
   // iterator is .end(), does nothing. Returns the iterator after deletion of

@@ -494,6 +494,10 @@ const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows Chrome to do preconnect when prerender fails.
+const base::Feature kPrerenderFallbackToPreconnect{
+    "PrerenderFallbackToPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728
