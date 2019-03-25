@@ -152,21 +152,35 @@ TransportClientSocketPool::TransportClientSocketPool(
     base::TimeDelta unused_idle_socket_timeout,
     const CommonConnectJobParams* common_connect_job_params,
     SSLConfigService* ssl_config_service)
-    : base_(max_sockets,
-            max_sockets_per_group,
-            unused_idle_socket_timeout,
-            ClientSocketPool::used_idle_socket_timeout(),
-            new TransportConnectJobFactory(common_connect_job_params)),
-      client_socket_factory_(common_connect_job_params->client_socket_factory),
-      ssl_config_service_(ssl_config_service) {
-  base_.EnableConnectBackupJobs();
-  if (ssl_config_service_)
-    ssl_config_service_->AddObserver(this);
-}
+    : TransportClientSocketPool(max_sockets,
+                                max_sockets_per_group,
+                                unused_idle_socket_timeout,
+                                ClientSocketPool::used_idle_socket_timeout(),
+                                std::make_unique<TransportConnectJobFactory>(
+                                    common_connect_job_params),
+                                ssl_config_service,
+                                true /* connect_backup_jobs_enabled */) {}
 
 TransportClientSocketPool::~TransportClientSocketPool() {
   if (ssl_config_service_)
     ssl_config_service_->RemoveObserver(this);
+}
+
+std::unique_ptr<TransportClientSocketPool>
+TransportClientSocketPool::CreateForTesting(
+    int max_sockets,
+    int max_sockets_per_group,
+    base::TimeDelta unused_idle_socket_timeout,
+    base::TimeDelta used_idle_socket_timeout,
+    std::unique_ptr<ClientSocketPoolBase<SocketParams>::ConnectJobFactory>
+        connect_job_factory,
+    SSLConfigService* ssl_config_service,
+    bool connect_backup_jobs_enabled) {
+  return base::WrapUnique<TransportClientSocketPool>(
+      new TransportClientSocketPool(
+          max_sockets, max_sockets_per_group, unused_idle_socket_timeout,
+          used_idle_socket_timeout, std::move(connect_job_factory),
+          ssl_config_service, connect_backup_jobs_enabled));
 }
 
 int TransportClientSocketPool::RequestSocket(
@@ -288,6 +302,26 @@ void TransportClientSocketPool::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_dump_absolute_name) const {
   base_.DumpMemoryStats(pmd, parent_dump_absolute_name);
+}
+
+TransportClientSocketPool::TransportClientSocketPool(
+    int max_sockets,
+    int max_sockets_per_group,
+    base::TimeDelta unused_idle_socket_timeout,
+    base::TimeDelta used_idle_socket_timeout,
+    std::unique_ptr<PoolBase::ConnectJobFactory> connect_job_factory,
+    SSLConfigService* ssl_config_service,
+    bool connect_backup_jobs_enabled)
+    : base_(max_sockets,
+            max_sockets_per_group,
+            unused_idle_socket_timeout,
+            used_idle_socket_timeout,
+            connect_job_factory.release()),
+      ssl_config_service_(ssl_config_service) {
+  if (connect_backup_jobs_enabled)
+    base_.EnableConnectBackupJobs();
+  if (ssl_config_service_)
+    ssl_config_service_->AddObserver(this);
 }
 
 void TransportClientSocketPool::OnSSLConfigChanged() {
