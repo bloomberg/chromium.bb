@@ -55,7 +55,6 @@ class GL_EXPORT GLImageAHardwareBuffer : public GLImageEGL {
  private:
   class ScopedHardwareBufferFenceSyncImpl;
 
-  base::ScopedFD release_fence_;
   base::android::ScopedHardwareBufferHandle handle_;
   unsigned internal_format_ = GL_RGBA;
 
