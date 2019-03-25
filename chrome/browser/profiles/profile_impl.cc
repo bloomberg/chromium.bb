@@ -85,6 +85,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/common/buildflags.h"
@@ -797,6 +798,8 @@ ProfileImpl::~ProfileImpl() {
 #endif
   }
 
+  FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
+
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
   // The SimpleDependencyManager should always be called after the
@@ -953,6 +956,8 @@ void ProfileImpl::OnLocaleReady() {
 #if defined(OS_CHROMEOS)
   arc::ArcServiceLauncher::Get()->MaybeSetProfile(this);
 #endif
+
+  FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateBrowserContextServicesTime");

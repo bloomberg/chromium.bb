@@ -53,6 +53,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -499,6 +500,8 @@ void TestingProfile::Init() {
         pref_registry);
   }
 
+  FullBrowserTransitionManager::Get()->OnProfileCreated(this);
+
   simple_dependency_manager_->CreateServicesForTest(key);
   browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
       this);
@@ -534,6 +537,8 @@ TestingProfile::~TestingProfile() {
   TemplateURLFetcherFactory::ShutdownForProfile(this);
 
   MaybeSendDestroyedNotification();
+
+  FullBrowserTransitionManager::Get()->OnProfileDestroyed(this);
 
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
   simple_dependency_manager_->DestroyKeyedServices(GetSimpleFactoryKey());
