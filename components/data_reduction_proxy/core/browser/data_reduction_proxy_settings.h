@@ -100,11 +100,14 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
       const SyntheticFieldTrialRegistrationCallback&
           on_data_reduction_proxy_enabled);
 
-  // Returns true if the Data Saver feature is enabled by the user. This checks
-  // only the Data Saver prefs or forcing flag, and does not check any holdback
-  // experiments. Note that this may be different from the value of
-  // |IsDataReductionProxyEnabled|.
+  // Returns true if the Data Saver feature is enabled by the user on Android.
+  // This checks only the Data Saver prefs on Android or forcing flag on any
+  // platform. Does not check any holdback experiments. Note that this may be
+  // different from the value of |IsDataReductionProxyEnabled|.
   static bool IsDataSaverEnabledByUser(PrefService* prefs);
+
+  // Enables or disables Data Saver, regardless of platform.
+  static void SetDataSaverEnabledForTesting(PrefService* prefs, bool enabled);
 
   // Returns true if the Data Reduction HTTP Proxy is enabled. Note that this
   // may be different from the value of |IsDataSaverEnabledByUser|.

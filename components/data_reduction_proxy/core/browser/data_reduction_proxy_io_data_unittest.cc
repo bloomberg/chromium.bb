@@ -194,7 +194,7 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
   EXPECT_EQ(2UL, bad_proxy_list.size());
 
   // Turn Data Saver off.
-  drp_test_context->settings()->SetDataReductionProxyEnabled(false);
+  drp_test_context->SetDataReductionProxyEnabled(false);
   base::RunLoop().RunUntilIdle();
 
   // Verify that bad proxy list is empty.
