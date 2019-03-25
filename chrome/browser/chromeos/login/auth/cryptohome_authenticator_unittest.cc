@@ -36,7 +36,6 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/util/account_identifier_operators.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
@@ -299,8 +298,6 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     cryptohome::HomedirMethods::Initialize();
 
     fake_cryptohome_client_ = new TestCryptohomeClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
 
     SystemSaltGetter::Initialize();
 
@@ -311,7 +308,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   // Tears down the test fixture.
   void TearDown() override {
     SystemSaltGetter::Shutdown();
-    DBusThreadManager::Shutdown();
+    CryptohomeClient::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_caller_ = NULL;

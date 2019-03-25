@@ -172,7 +172,7 @@ void AttestationPolicyObserver::Start() {
   }
 
   if (!cryptohome_client_)
-    cryptohome_client_ = DBusThreadManager::Get()->GetCryptohomeClient();
+    cryptohome_client_ = CryptohomeClient::Get();
 
   if (!attestation_flow_) {
     std::unique_ptr<ServerProxy> attestation_ca_client(

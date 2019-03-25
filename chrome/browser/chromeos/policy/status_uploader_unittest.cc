@@ -89,7 +89,10 @@ class StatusUploaderTest : public testing::Test {
   }
 
   void SetUp() override {
+    // Required for policy::DeviceStatusCollector
     chromeos::DBusThreadManager::Initialize();
+
+    chromeos::CryptohomeClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     client_.SetDMToken("dm_token");
     collector_.reset(new MockDeviceStatusCollector(&prefs_));
@@ -102,6 +105,7 @@ class StatusUploaderTest : public testing::Test {
   void TearDown() override {
     content::RunAllTasksUntilIdle();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::CryptohomeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

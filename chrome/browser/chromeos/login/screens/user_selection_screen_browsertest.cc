@@ -46,18 +46,6 @@ class UserSelectionScreenTest : public LoginManagerTest {
                          true /* should_initialize_webui */) {}
   ~UserSelectionScreenTest() override = default;
 
-  // LoginManagerTest:
-  void SetUpInProcessBrowserTestFixture() override {
-    auto cryptohome_client = std::make_unique<chromeos::FakeCryptohomeClient>();
-    fake_cryptohome_client_ = cryptohome_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::move(cryptohome_client));
-  }
-
-  FakeCryptohomeClient* fake_cryptohome_client() {
-    return fake_cryptohome_client_;
-  }
-
   OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
 
   void FocusUserPod(int pod_id) {
@@ -70,9 +58,6 @@ class UserSelectionScreenTest : public LoginManagerTest {
   }
 
  private:
-  // DBusThreadManager owns this.
-  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreenTest);
 };
 
@@ -97,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(UserSelectionScreenTest, ShowDircryptoMigrationBanner) {
       "!$('signin-banner').classList.contains('message-set')");
 
   // Change the needs dircrypto migration response.
-  fake_cryptohome_client()->set_needs_dircrypto_migration(true);
+  FakeCryptohomeClient::Get()->set_needs_dircrypto_migration(true);
 
   // Focus the 2nd user pod (consumer).
   FocusUserPod(1);

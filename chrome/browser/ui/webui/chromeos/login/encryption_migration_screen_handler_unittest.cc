@@ -17,7 +17,6 @@
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/util/account_identifier_operators.h"
@@ -129,10 +128,9 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     cryptohome::AsyncMethodCaller::InitializeForTesting(
         mock_async_method_caller_);
 
-    // Set up fake DBusThreadManager parts.
-    fake_cryptohome_client_ = new FakeCryptohomeClient();
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        base::WrapUnique<CryptohomeClient>(fake_cryptohome_client_));
+    // Set up fake dbus clients.
+    CryptohomeClient::InitializeFake();
+    fake_cryptohome_client_ = FakeCryptohomeClient::Get();
     PowerManagerClient::InitializeFake();
 
     PowerPolicyController::Initialize(PowerManagerClient::Get());
@@ -162,8 +160,8 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     encryption_migration_screen_handler_.reset();
 
     PowerPolicyController::Shutdown();
-    DBusThreadManager::Shutdown();
     PowerManagerClient::Shutdown();
+    CryptohomeClient::Shutdown();
     cryptohome::AsyncMethodCaller::Shutdown();
   }
 
@@ -172,7 +170,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
-  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
+  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;  // unowned
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;
   JSCallsContainer js_calls_container_;
   std::unique_ptr<TestEncryptionMigrationScreenHandler>

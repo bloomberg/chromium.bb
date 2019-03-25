@@ -65,10 +65,9 @@ bool TPMTokenLoader::IsInitialized() {
 TPMTokenLoader::TPMTokenLoader(bool for_test)
     : initialized_for_test_(for_test),
       tpm_token_state_(TPM_STATE_UNKNOWN),
-      tpm_token_info_getter_(
-          TPMTokenInfoGetter::CreateForSystemToken(
-              DBusThreadManager::Get()->GetCryptohomeClient(),
-              base::ThreadTaskRunnerHandle::Get())),
+      tpm_token_info_getter_(TPMTokenInfoGetter::CreateForSystemToken(
+          CryptohomeClient::Get(),
+          base::ThreadTaskRunnerHandle::Get())),
       tpm_token_slot_id_(-1),
       can_start_before_login_(false),
       weak_factory_(this) {

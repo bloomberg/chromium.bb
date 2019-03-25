@@ -398,9 +398,6 @@ class DisplayResolutionBootTest
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client_));
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<chromeos::CryptohomeClient>(
-            new chromeos::FakeCryptohomeClient));
 
     test_helper_.InstallOwnerKey();
     test_helper_.MarkAsEnterpriseOwned();

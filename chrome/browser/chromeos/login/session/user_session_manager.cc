@@ -1509,7 +1509,7 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
   auto callback =
       base::BindOnce(&UserSessionManager::OnCryptohomeOperationCompleted,
                      AsWeakPtr(), profile);
-  CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
+  CryptohomeClient* client = CryptohomeClient::Get();
   if (tpm_util::TpmIsOwned())
     client->TpmClearStoredPassword(std::move(callback));
   else

@@ -7,8 +7,6 @@
 #include "base/command_line.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cras_audio_client.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
@@ -45,11 +43,6 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
     cras_audio_client_.reset(CrasAudioClient::Create());
   else
     cras_audio_client_.reset(new FakeCrasAudioClient);
-
-  if (use_real_clients)
-    cryptohome_client_.reset(CryptohomeClient::Create());
-  else
-    cryptohome_client_.reset(new FakeCryptohomeClient);
 
   if (use_real_clients) {
     shill_manager_client_.reset(ShillManagerClient::Create());
@@ -103,7 +96,6 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
   cras_audio_client_->Init(system_bus);
-  cryptohome_client_->Init(system_bus);
   gsm_sms_client_->Init(system_bus);
   modem_messaging_client_->Init(system_bus);
   permission_broker_client_->Init(system_bus);

@@ -65,15 +65,13 @@ std::string GetVersion(VersionFormat format) {
 }
 
 void GetTpmVersion(GetTpmVersionCallback callback) {
-  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->TpmGetVersion(
-      base::BindOnce(
-          [](GetTpmVersionCallback callback,
-             base::Optional<CryptohomeClient::TpmVersionInfo>
-                 tpm_version_info) {
-            std::move(callback).Run(
-                tpm_version_info.value_or(CryptohomeClient::TpmVersionInfo()));
-          },
-          std::move(callback)));
+  chromeos::CryptohomeClient::Get()->TpmGetVersion(base::BindOnce(
+      [](GetTpmVersionCallback callback,
+         base::Optional<CryptohomeClient::TpmVersionInfo> tpm_version_info) {
+        std::move(callback).Run(
+            tpm_version_info.value_or(CryptohomeClient::TpmVersionInfo()));
+      },
+      std::move(callback)));
 }
 
 std::string GetARCVersion() {

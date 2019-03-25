@@ -27,7 +27,6 @@ TEST(DBusThreadManagerTest, Initialize) {
   EXPECT_TRUE(manager->GetConciergeClient());
   EXPECT_TRUE(manager->GetCrasAudioClient());
   EXPECT_TRUE(manager->GetCrosDisksClient());
-  EXPECT_TRUE(manager->GetCryptohomeClient());
   EXPECT_TRUE(manager->GetDebugDaemonClient());
   EXPECT_TRUE(manager->GetEasyUnlockClient());
   EXPECT_TRUE(manager->GetGsmSMSClient());
@@ -58,7 +57,6 @@ TEST(DBusThreadManagerTest, InitializeForBrowser) {
 
   // Common clients were created.
   EXPECT_TRUE(manager->GetCrasAudioClient());
-  EXPECT_TRUE(manager->GetCryptohomeClient());
   EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
   EXPECT_TRUE(manager->GetPermissionBrokerClient());
@@ -96,7 +94,6 @@ TEST(DBusThreadManagerTest, InitializeForAsh) {
 
   // Common clients were created.
   EXPECT_TRUE(manager->GetCrasAudioClient());
-  EXPECT_TRUE(manager->GetCryptohomeClient());
   EXPECT_TRUE(manager->GetGsmSMSClient());
   EXPECT_TRUE(manager->GetModemMessagingClient());
   EXPECT_TRUE(manager->GetPermissionBrokerClient());

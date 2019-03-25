@@ -20,7 +20,6 @@
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_clients_browser.h"
 #include "chromeos/dbus/dbus_clients_common.h"
@@ -152,10 +151,6 @@ CrasAudioClient* DBusThreadManager::GetCrasAudioClient() {
 CrosDisksClient* DBusThreadManager::GetCrosDisksClient() {
   return clients_browser_ ? clients_browser_->cros_disks_client_.get()
                           : nullptr;
-}
-
-CryptohomeClient* DBusThreadManager::GetCryptohomeClient() {
-  return clients_common_->cryptohome_client_.get();
 }
 
 DebugDaemonClient* DBusThreadManager::GetDebugDaemonClient() {
@@ -369,12 +364,6 @@ void DBusThreadManagerSetter::SetCrasAudioClient(
 void DBusThreadManagerSetter::SetCrosDisksClient(
     std::unique_ptr<CrosDisksClient> client) {
   DBusThreadManager::Get()->clients_browser_->cros_disks_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetCryptohomeClient(
-    std::unique_ptr<CryptohomeClient> client) {
-  DBusThreadManager::Get()->clients_common_->cryptohome_client_ =
       std::move(client);
 }
 

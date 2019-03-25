@@ -50,6 +50,7 @@ void DeviceSettingsTestBase::SetUp() {
   owner_key_util_ = new ownership::MockOwnerKeyUtil();
   device_settings_service_ = std::make_unique<DeviceSettingsService>();
   dbus_setter_ = DBusThreadManager::GetSetterForTesting();
+  CryptohomeClient::InitializeFake();
   PowerManagerClient::InitializeFake();
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
       device_settings_service_.get());
@@ -75,6 +76,7 @@ void DeviceSettingsTestBase::TearDown() {
   device_settings_service_->UnsetSessionManager();
   device_settings_service_.reset();
   PowerManagerClient::Shutdown();
+  CryptohomeClient::Shutdown();
   DBusThreadManager::Shutdown();
   device_policy_.reset();
   base::RunLoop().RunUntilIdle();

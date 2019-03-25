@@ -87,12 +87,10 @@ class ComponentActiveDirectoryPolicyTest
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         base::WrapUnique(session_manager_client_));
 
-    // TODO(crbug.com/836857): Can probably be removed after the bug is fixed.
-    // Right now, this is necessary since tpm_util talks to CryptohomeClient
-    // directly instead of using InstallAttributes, but other code checks state
-    // like InstallAttributes::IsActiveDirectoryManaged().
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::make_unique<chromeos::FakeCryptohomeClient>());
+    // CryptohomeClient needs to be initialized before
+    // tpm_util::LockDeviceActiveDirectoryForTesting.
+    chromeos::CryptohomeClient::InitializeFake();
+
     ASSERT_TRUE(
         chromeos::tpm_util::LockDeviceActiveDirectoryForTesting(kTestDomain));
     ExtensionBrowserTest::SetUp();

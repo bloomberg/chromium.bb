@@ -78,8 +78,7 @@ void InstallAttributes::Initialize() {
 
   DCHECK(!g_install_attributes);
   DCHECK(DBusThreadManager::IsInitialized());
-  g_install_attributes =
-      new InstallAttributes(DBusThreadManager::Get()->GetCryptohomeClient());
+  g_install_attributes = new InstallAttributes(CryptohomeClient::Get());
   base::FilePath install_attrs_file;
   CHECK(base::PathService::Get(dbus_paths::FILE_INSTALL_ATTRIBUTES,
                                &install_attrs_file));

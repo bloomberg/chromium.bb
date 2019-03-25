@@ -57,8 +57,7 @@ void EnableDebuggingScreenHandler::ShowWithParams() {
   DVLOG(1) << "Showing enable debugging screen.";
 
   // Wait for cryptohomed before checking debugd. See http://crbug.com/440506.
-  chromeos::CryptohomeClient* client =
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
+  chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
   client->WaitForServiceToBeAvailable(base::Bind(
       &EnableDebuggingScreenHandler::OnCryptohomeDaemonAvailabilityChecked,
       weak_ptr_factory_.GetWeakPtr()));

@@ -83,8 +83,7 @@ EPKPChallengeKeyBase::PrepareKeyContext::~PrepareKeyContext() {
 }
 
 EPKPChallengeKeyBase::EPKPChallengeKeyBase()
-    : cryptohome_client_(
-          chromeos::DBusThreadManager::Get()->GetCryptohomeClient()),
+    : cryptohome_client_(chromeos::CryptohomeClient::Get()),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
       install_attributes_(g_browser_process->platform_part()
                               ->browser_policy_connector_chromeos()

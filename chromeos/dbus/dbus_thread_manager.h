@@ -33,7 +33,6 @@ class CiceroneClient;
 class ConciergeClient;
 class CrasAudioClient;
 class CrosDisksClient;
-class CryptohomeClient;
 class DBusClientsBrowser;
 class DBusClientsCommon;
 class DBusThreadManagerSetter;
@@ -129,7 +128,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ConciergeClient* GetConciergeClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
-  CryptohomeClient* GetCryptohomeClient();
   DebugDaemonClient* GetDebugDaemonClient();
   DiagnosticsdClient* GetDiagnosticsdClient();
   EasyUnlockClient* GetEasyUnlockClient();
@@ -191,7 +189,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetConciergeClient(std::unique_ptr<ConciergeClient> client);
   void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
-  void SetCryptohomeClient(std::unique_ptr<CryptohomeClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
   void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);

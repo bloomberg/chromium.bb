@@ -1116,9 +1116,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
-  WizardControllerDeviceStateTest()
-      : fake_cryptohome_client_(nullptr),
-        fake_session_manager_client_(nullptr) {
+  WizardControllerDeviceStateTest() : fake_session_manager_client_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKeyForTest, "test");
     fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
@@ -1144,9 +1142,6 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   void SetUpInProcessBrowserTestFixture() override {
     WizardControllerFlowTest::SetUpInProcessBrowserTestFixture();
 
-    fake_cryptohome_client_ = new FakeCryptohomeClient();
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
     fake_session_manager_client_ = new FakeSessionManagerClient(
         FakeSessionManagerClient::PolicyStorageType::kOnDisk);
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -1186,7 +1181,6 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  protected:
-  FakeCryptohomeClient* fake_cryptohome_client_;
   FakeSessionManagerClient* fake_session_manager_client_;
 
  private:
@@ -1235,7 +1229,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
   EXPECT_EQ(1,
-            fake_cryptohome_client_
+            FakeCryptohomeClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
   EXPECT_EQ(1, fake_session_manager_client_
                    ->clear_forced_re_enrollment_vpd_call_count());
@@ -1304,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
 
   EXPECT_EQ(0,
-            fake_cryptohome_client_
+            FakeCryptohomeClient::Get()
                 ->remove_firmware_management_parameters_from_tpm_call_count());
   EXPECT_EQ(0, fake_session_manager_client_
                    ->clear_forced_re_enrollment_vpd_call_count());
@@ -1396,7 +1390,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // explicitly required).
     EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
     EXPECT_EQ(
-        0, fake_cryptohome_client_
+        0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
     EXPECT_EQ(0, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
@@ -1404,7 +1398,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // Check that guest sign-in is allowed if FRE was not explicitly required.
     EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
     EXPECT_EQ(
-        1, fake_cryptohome_client_
+        1, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
     EXPECT_EQ(1, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
@@ -1528,7 +1522,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
     EXPECT_EQ(
-        0, fake_cryptohome_client_
+        0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
     EXPECT_EQ(0, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
@@ -1549,7 +1543,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
     login_screen_waiter.Wait();
     EXPECT_EQ(
-        0, fake_cryptohome_client_
+        0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());
     EXPECT_EQ(0, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());

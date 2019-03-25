@@ -46,15 +46,14 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
     // DBusThreadManager::GetSetterForTesting initializes DBusThreadManager.
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::move(session_manager_client));
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::make_unique<FakeCryptohomeClient>());
-
+    CryptohomeClient::InitializeFake();
     AuthPolicyClient::InitializeFake();
     authpolicy_client()->DisableOperationDelayForTesting();
   }
 
   void TearDown() override {
     AuthPolicyClient::Shutdown();
+    CryptohomeClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
 

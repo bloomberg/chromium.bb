@@ -304,7 +304,7 @@ policy::TpmStatusInfo GetTpmStatusReplyToTpmStatusInfo(
 void ReadTpmStatus(policy::DeviceStatusCollector::TpmStatusReceiver callback) {
   // D-Bus calls are allowed only on the UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->GetTpmStatus(
+  chromeos::CryptohomeClient::Get()->GetTpmStatus(
       cryptohome::GetTpmStatusRequest(),
       base::BindOnce(
           [](policy::DeviceStatusCollector::TpmStatusReceiver callback,

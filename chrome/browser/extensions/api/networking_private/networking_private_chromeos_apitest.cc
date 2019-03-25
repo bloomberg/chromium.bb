@@ -225,7 +225,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     user_manager::User* user = user_manager->GetActiveUser();
     CHECK(user);
     std::string userhash;
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
+    CryptohomeClient::Get()->GetSanitizedUsername(
         cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(
             [](std::string* out, base::Optional<std::string> result) {

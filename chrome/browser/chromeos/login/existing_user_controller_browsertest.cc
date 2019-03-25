@@ -837,6 +837,8 @@ class ExistingUserControllerActiveDirectoryTest
     // other ChromeBrowserMain initialization occurs.
     AuthPolicyClient::InitializeFake();
     FakeAuthPolicyClient::Get()->DisableOperationDelayForTesting();
+    // Required for tpm_util. Will be destroyed in browser shutdown.
+    chromeos::CryptohomeClient::InitializeFake();
 
     ASSERT_TRUE(
         tpm_util::LockDeviceActiveDirectoryForTesting(kActiveDirectoryRealm));

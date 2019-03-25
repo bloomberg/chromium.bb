@@ -1559,7 +1559,7 @@ void ChromeUserManagerImpl::AsyncRemoveCryptohome(
   cryptohome::AccountIdentifier account_id_proto;
   account_id_proto.set_account_id(cryptohome::Identification(account_id).id());
 
-  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+  CryptohomeClient::Get()->RemoveEx(
       account_id_proto, base::BindOnce(&OnRemoveUserComplete, account_id));
 }
 

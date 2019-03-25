@@ -300,11 +300,9 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(
-            base::Bind(&DircryptoMigrationChecker::RunCryptohomeCheck,
-                       weak_ptr_factory_.GetWeakPtr(), account_id));
+    CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+        base::Bind(&DircryptoMigrationChecker::RunCryptohomeCheck,
+                   weak_ptr_factory_.GetWeakPtr(), account_id));
   }
 
  private:
@@ -316,7 +314,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->NeedsDircryptoMigration(
+    CryptohomeClient::Get()->NeedsDircryptoMigration(
         cryptohome::CreateAccountIdentifierFromAccountId(account_id),
         base::BindOnce(&DircryptoMigrationChecker::
                            OnCryptohomeNeedsDircryptoMigrationCallback,

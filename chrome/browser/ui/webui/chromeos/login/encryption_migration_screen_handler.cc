@@ -265,7 +265,7 @@ EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
 }
 
 EncryptionMigrationScreenHandler::~EncryptionMigrationScreenHandler() {
-  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
+  CryptohomeClient::Get()->RemoveObserver(this);
   PowerManagerClient::Get()->RemoveObserver(this);
   if (delegate_)
     delegate_->OnViewDestroyed(this);
@@ -578,7 +578,7 @@ void EncryptionMigrationScreenHandler::StartMigration() {
   } else {
     auth_request = CreateAuthorizationRequest();
   }
-  DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
+  CryptohomeClient::Get()->MountEx(
       cryptohome::CreateAccountIdentifierFromAccountId(
           user_context_.GetAccountId()),
       auth_request, mount,
@@ -605,8 +605,8 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
 
   cryptohome::MigrateToDircryptoRequest request;
   request.set_minimal_migration(IsMinimalMigration());
-  DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetCryptohomeClient()->MigrateToDircrypto(
+  CryptohomeClient::Get()->AddObserver(this);
+  CryptohomeClient::Get()->MigrateToDircrypto(
       cryptohome::CreateAccountIdentifierFromAccountId(
           user_context_.GetAccountId()),
       request,
@@ -653,7 +653,7 @@ void EncryptionMigrationScreenHandler::RemoveCryptohome() {
   cryptohome::AccountIdentifier account_id_proto;
   account_id_proto.set_account_id(cryptohome_id.id());
 
-  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveEx(
+  CryptohomeClient::Get()->RemoveEx(
       account_id_proto,
       base::BindOnce(&EncryptionMigrationScreenHandler::OnRemoveCryptohome,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -714,7 +714,7 @@ void EncryptionMigrationScreenHandler::DircryptoMigrationProgress(
       RecordMigrationResultSuccess(IsResumingIncompleteMigration(),
                                    IsArcKiosk());
       // Stop listening to the progress updates.
-      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
+      CryptohomeClient::Get()->RemoveObserver(this);
       // If the battery level decreased during migration, record the consumed
       // battery level.
       if (current_battery_percent_ &&
@@ -751,7 +751,7 @@ void EncryptionMigrationScreenHandler::DircryptoMigrationProgress(
       RecordMigrationResultGeneralFailure(IsResumingIncompleteMigration(),
                                           IsArcKiosk());
       // Stop listening to the progress updates.
-      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
+      CryptohomeClient::Get()->RemoveObserver(this);
       // Shows error screen after removing user directory is completed.
       RemoveCryptohome();
       break;

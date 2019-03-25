@@ -162,11 +162,9 @@ class UserAffiliationBrowserTest
         base::WrapUnique<chromeos::SessionManagerClient>(
             fake_session_manager_client));
 
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::make_unique<chromeos::FakeCryptohomeClient>());
-
     // Initialize clients here so they are available during setup. They will be
     // shutdown in ChromeBrowserMain.
+    chromeos::CryptohomeClient::InitializeFake();
     chromeos::UpstartClient::InitializeFake();
     chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
     if (GetParam().active_directory) {

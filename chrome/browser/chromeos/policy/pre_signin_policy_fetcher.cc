@@ -73,7 +73,7 @@ void PreSigninPolicyFetcher::FetchPolicy(PolicyFetchResultCallback callback) {
   key->set_secret(auth_key_.secret);
   cryptohome::MountRequest mount;
   mount.set_hidden_mount(true);
-  chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
+  chromeos::CryptohomeClient::Get()->MountEx(
       cryptohome::CreateAccountIdentifierFromAccountId(account_id_), auth,
       mount,
       base::Bind(&PreSigninPolicyFetcher::OnMountTemporaryUserHome,
