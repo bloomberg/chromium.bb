@@ -14,6 +14,7 @@
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "services/video_capture/service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,13 +128,90 @@ TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
 }
 
 // Tests that the service quits when the only client disconnects after not
-// having done anything other than obtaining a connection to the fake device
-// factory.
+// having done anything other than obtaining a connection to the device factory.
 TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
-       ServiceQuitsWhenSingleClientDisconnected) {
+       ServiceQuitsWhenSingleDeviceFactoryClientDisconnected) {
   mojom::DeviceFactoryPtr factory;
   factory_provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
   factory.reset();
+  factory_provider_.reset();
+
+  service_destroyed_wait_loop_.Run();
+}
+
+// Tests that the service quits when the only client disconnects after not
+// having done anything other than obtaining a connection to the video source
+// provider.
+TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
+       ServiceQuitsWhenSingleVideoSourceProviderClientDisconnected) {
+  mojom::VideoSourceProviderPtr source_provider;
+  factory_provider_->ConnectToVideoSourceProvider(
+      mojo::MakeRequest(&source_provider));
+  source_provider.reset();
+  factory_provider_.reset();
+
+  service_destroyed_wait_loop_.Run();
+}
+
+// Tests that the service quits when the only client disconnects after
+// enumerating devices via the video source provider.
+TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
+       ServiceQuitsAfterEnumeratingDevices) {
+  mojom::VideoSourceProviderPtr source_provider;
+  factory_provider_->ConnectToVideoSourceProvider(
+      mojo::MakeRequest(&source_provider));
+
+  base::RunLoop wait_loop;
+  EXPECT_CALL(device_info_receiver_, Run(_))
+      .WillOnce(
+          Invoke([&wait_loop](
+                     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+            wait_loop.Quit();
+          }));
+  source_provider->GetSourceInfos(device_info_receiver_.Get());
+  wait_loop.Run();
+
+  source_provider.reset();
+  factory_provider_.reset();
+
+  service_destroyed_wait_loop_.Run();
+}
+
+// Tests that enumerating devices works after the only client disconnects and
+// reconnects via the video source provider.
+TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
+       EnumerateDevicesAfterReconnect) {
+  // Connect |source_provider|.
+  mojom::VideoSourceProviderPtr source_provider;
+  factory_provider_->ConnectToVideoSourceProvider(
+      mojo::MakeRequest(&source_provider));
+
+  // Disconnect |source_provider| and wait for the disconnect to propagate to
+  // the service.
+  {
+    base::RunLoop wait_loop;
+    source_provider->Close(base::BindOnce(
+        [](base::RunLoop* wait_loop) { wait_loop->Quit(); }, &wait_loop));
+    wait_loop.Run();
+    source_provider.reset();
+  }
+
+  // Reconnect |source_provider|.
+  factory_provider_->ConnectToVideoSourceProvider(
+      mojo::MakeRequest(&source_provider));
+
+  // Enumerate devices.
+  base::RunLoop wait_loop;
+  EXPECT_CALL(device_info_receiver_, Run(_))
+      .WillOnce(
+          Invoke([&wait_loop](
+                     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+            wait_loop.Quit();
+          }));
+  source_provider->GetSourceInfos(device_info_receiver_.Get());
+  wait_loop.Run();
+
+  source_provider.reset();
   factory_provider_.reset();
 
   service_destroyed_wait_loop_.Run();
@@ -178,8 +256,6 @@ TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
   factory_provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
 
   // Connect to and start first device (in this case a fake camera).
-  base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
-      device_info_receiver_;
   media::VideoCaptureDeviceInfo fake_device_info;
   {
     base::RunLoop wait_loop;
@@ -249,6 +325,40 @@ TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
               wait_loop.Quit();
             }));
     factory->GetDeviceInfos(device_info_receiver_.Get());
+    wait_loop.Run();
+  }
+}
+
+// Tests that the service does not quit when the only client discards the
+// DeviceFactoryProvider but holds on to a VideoSourceProvider.
+TEST_F(ShortShutdownDelayDeviceFactoryProviderConnectorTest,
+       VideoSourceProviderCanStillBeUsedAfterReleaseingDeviceFactoryProvider) {
+  mojom::VideoSourceProviderPtr source_provider;
+  factory_provider_->ConnectToVideoSourceProvider(
+      mojo::MakeRequest(&source_provider));
+
+  // Exercise: Disconnect DeviceFactoryProvider
+  {
+    base::RunLoop wait_loop;
+    service_impl_->SetFactoryProviderClientDisconnectedObserver(
+        wait_loop.QuitClosure());
+    factory_provider_.reset();
+    wait_loop.Run();
+  }
+
+  EXPECT_FALSE(service_impl_->HasNoContextRefs());
+
+  // Verify that |source_provider| is still functional by calling
+  // GetDeviceInfos().
+  {
+    base::RunLoop wait_loop;
+    EXPECT_CALL(device_info_receiver_, Run(_))
+        .WillOnce(Invoke(
+            [&wait_loop](
+                const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+              wait_loop.Quit();
+            }));
+    source_provider->GetSourceInfos(device_info_receiver_.Get());
     wait_loop.Run();
   }
 }

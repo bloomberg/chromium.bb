@@ -34,4 +34,8 @@ void MockVideoSourceProvider::AddTextureVirtualDevice(
   DoAddTextureVirtualDevice(device_info, &virtual_device);
 }
 
+void MockVideoSourceProvider::Close(CloseCallback callback) {
+  DoClose(callback);
+}
+
 }  // namespace video_capture
