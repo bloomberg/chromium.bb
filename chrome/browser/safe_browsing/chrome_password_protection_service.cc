@@ -977,7 +977,7 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
   auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
       profile_->GetOriginalProfile());
 
-  return identity_manager ? identity_manager->GetPrimaryAccountInfo()
+  return identity_manager ? identity_manager->GetPrimaryAccountInfoDeprecated()
                           : AccountInfo();
 }
 

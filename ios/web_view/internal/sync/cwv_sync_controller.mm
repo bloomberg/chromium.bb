@@ -152,7 +152,7 @@ class WebViewSyncControllerObserverBridge
   if (!_identityManager->HasPrimaryAccount()) {
     return nil;
   }
-  AccountInfo accountInfo = _identityManager->GetPrimaryAccountInfo();
+  AccountInfo accountInfo = _identityManager->GetPrimaryAccountInfoDeprecated();
   NSString* email = base::SysUTF8ToNSString(accountInfo.email);
   NSString* fullName = base::SysUTF8ToNSString(accountInfo.full_name);
   NSString* gaiaID = base::SysUTF8ToNSString(accountInfo.gaia);
