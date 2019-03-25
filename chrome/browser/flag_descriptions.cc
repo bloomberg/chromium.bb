@@ -1762,11 +1762,6 @@ const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
 
-const char kShowOverdrawFeedbackName[] = "Show overdraw feedback";
-const char kShowOverdrawFeedbackDescription[] =
-    "Visualize overdraw by color-coding elements based on if they have other "
-    "elements drawn underneath.";
-
 const char kHistoryManipulationIntervention[] =
     "History Manipulation Intervention";
 const char kHistoryManipulationInterventionDescription[] =
