@@ -730,7 +730,7 @@ class KioskTest : public OobeBaseTest {
     WaitForAppLaunchNetworkTimeout();
 
     // Configure network link should be visible.
-    test::OobeJS().ExpectTrue("$('splash-config-network').hidden == false");
+    test::OobeJS().ExpectVisible("splash-config-network");
 
     // Set up fake user manager with an owner for the test.
     LoginDisplayHost::default_host()->GetOobeUI()->ShowOobeUI(false);
@@ -914,8 +914,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest,
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
 
   // Continue button should be visible since we are online.
-  test::OobeJS().ExpectTrue(
-      "$('error-message-md-continue-button').hidden == false");
+  test::OobeJS().ExpectVisible("error-message-md-continue-button");
 
   // Let app launching resume.
   AppLaunchController::SetBlockAppLaunchForTesting(false);
@@ -942,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   WaitForAppLaunchNetworkTimeout();
 
   // Configure network link should not be visible.
-  test::OobeJS().ExpectTrue("$('splash-config-network').hidden == true");
+  test::OobeJS().ExpectHidden("splash-config-network");
 
   // Network becomes online and app launch is resumed.
   SimulateNetworkOnline();
