@@ -15,12 +15,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provides access to native implementation of usage stats storage.
  */
 @JNINamespace("usage_stats")
 public class UsageStatsBridge {
+    private final UsageStatsService mUsageStatsService;
+
     private long mNativeUsageStatsBridge;
 
     /**
@@ -29,8 +32,9 @@ public class UsageStatsBridge {
      *
      * @param profile {@link Profile} of the user for whom we are tracking usage stats.
      */
-    public UsageStatsBridge(Profile profile) {
+    public UsageStatsBridge(Profile profile, UsageStatsService usageStatsService) {
         mNativeUsageStatsBridge = nativeInit(profile);
+        mUsageStatsService = usageStatsService;
     }
 
     /** Cleans up native side of this bridge. */
@@ -45,9 +49,12 @@ public class UsageStatsBridge {
         nativeGetAllEvents(mNativeUsageStatsBridge, callback);
     }
 
-    public void queryEventsInRange(long start, long end, Callback<List<WebsiteEvent>> callback) {
+    public void queryEventsInRange(
+            long startMs, long endMs, Callback<List<WebsiteEvent>> callback) {
         assert mNativeUsageStatsBridge != 0;
-        nativeQueryEventsInRange(mNativeUsageStatsBridge, start, end, callback);
+        long startSeconds = TimeUnit.MILLISECONDS.toSeconds(startMs);
+        long endSeconds = TimeUnit.MILLISECONDS.toSeconds(endMs);
+        nativeQueryEventsInRange(mNativeUsageStatsBridge, startSeconds, endSeconds, callback);
     }
 
     public void addEvents(List<WebsiteEvent> events, Callback<Boolean> callback) {
@@ -68,9 +75,11 @@ public class UsageStatsBridge {
         nativeDeleteAllEvents(mNativeUsageStatsBridge, callback);
     }
 
-    public void deleteEventsInRange(long start, long end, Callback<Boolean> callback) {
+    public void deleteEventsInRange(long startMs, long endMs, Callback<Boolean> callback) {
         assert mNativeUsageStatsBridge != 0;
-        nativeDeleteEventsInRange(mNativeUsageStatsBridge, start, end, callback);
+        long startSeconds = TimeUnit.MILLISECONDS.toSeconds(startMs);
+        long endSeconds = TimeUnit.MILLISECONDS.toSeconds(endMs);
+        nativeDeleteEventsInRange(mNativeUsageStatsBridge, startSeconds, endSeconds, callback);
     }
 
     public void deleteEventsWithMatchingDomains(String[] domains, Callback<Boolean> callback) {
@@ -139,6 +148,16 @@ public class UsageStatsBridge {
         }
 
         callback.onResult(events);
+    }
+
+    @CalledByNative
+    private void onAllHistoryDeleted() {
+        mUsageStatsService.onAllHistoryDeleted();
+    }
+
+    @CalledByNative
+    private void onHistoryDeletedInRange(long startTimeMs, long endTimeMs) {
+        mUsageStatsService.onHistoryDeletedInRange(startTimeMs, endTimeMs);
     }
 
     private native long nativeInit(Profile profile);
