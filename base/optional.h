@@ -5,6 +5,7 @@
 #ifndef BASE_OPTIONAL_H_
 #define BASE_OPTIONAL_H_
 
+#include <functional>
 #include <type_traits>
 #include <utility>
 
