@@ -146,6 +146,8 @@ class TabDragController : public views::WidgetObserver {
 
   class SourceTabStripEmptinessTracker;
 
+  class DraggedTabsClosedTracker;
+
   // Used to indicate the direction the mouse has moved when attached.
   static const int kMovedMouseLeft  = 1 << 0;
   static const int kMovedMouseRight = 1 << 1;
@@ -257,6 +259,9 @@ class TabDragController : public views::WidgetObserver {
   // Forget the source tabstrip. It doesn't exist any more, so it doesn't
   // make sense to insert dragged tabs back into it if the drag is reverted.
   void OnSourceTabStripEmpty();
+
+  // A tab was closed in the active tabstrip. Clean up if we were dragging it.
+  void OnActiveStripWebContentsRemoved(content::WebContents* contents);
 
   // Initialize the offset used to calculate the position to create windows
   // in |GetWindowCreatePoint|. This should only be invoked from |Init|.
@@ -641,6 +646,9 @@ class TabDragController : public views::WidgetObserver {
 
   std::unique_ptr<SourceTabStripEmptinessTracker>
       source_tab_strip_emptiness_tracker_;
+
+  std::unique_ptr<DraggedTabsClosedTracker>
+      attached_tabstrip_tabs_closed_tracker_;
 
   std::unique_ptr<WindowFinder> window_finder_;
 
