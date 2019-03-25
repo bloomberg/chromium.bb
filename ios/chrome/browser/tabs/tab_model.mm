@@ -846,7 +846,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  DCHECK(!webState->IsLoading());
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   [self notifyTabChanged:tab];
 
