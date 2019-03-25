@@ -9,9 +9,11 @@
 #include "base/task/sequence_manager/test/fake_task.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -57,6 +59,10 @@ class MainThreadMetricsHelperTest : public testing::Test {
   ~MainThreadMetricsHelperTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {} /* enabled_features */,
+        {features::
+             kPurgeRendererMemoryWhenBackgrounded} /* disabled_features */);
     histogram_tester_.reset(new base::HistogramTester());
     scheduler_ = std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::SequenceManagerForTest::Create(
@@ -237,6 +243,7 @@ class MainThreadMetricsHelperTest : public testing::Test {
     return builder.Build();
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
   MainThreadMetricsHelper* metrics_helper_;  // NOT OWNED
