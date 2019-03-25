@@ -414,7 +414,7 @@ void ToolkitImpl::startMessageLoop(const sandbox::SandboxInterfaceInfo& sandboxI
         // that was installed above.  Once a message loop is created, it
         // places a reference to itself in TLS.  It can be looked up by
         // calling MessageLoop::current().
-        new base::MessageLoop(base::MessageLoop::TYPE_UI);
+        d_renderMainMessageLoop = std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_UI);
     }
     else {
         DCHECK(Statics::isOriginalThreadMode());
@@ -685,6 +685,7 @@ ToolkitImpl::~ToolkitImpl()
     }
 
     if (Statics::isRendererMainThreadMode()) {
+        d_renderMainMessageLoop.reset();
         d_browserThread.reset();
     }
     else {
