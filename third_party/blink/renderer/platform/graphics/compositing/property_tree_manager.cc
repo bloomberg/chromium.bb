@@ -39,47 +39,66 @@ PropertyTreeManager::EffectState::Transform() const {
                                               : clip->LocalTransformSpace();
 }
 
-PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client,
-                                         cc::PropertyTrees& property_trees,
-                                         cc::Layer* root_layer,
-                                         LayerListBuilder* layer_list_builder)
-    : client_(client),
-      property_trees_(property_trees),
-      root_layer_(root_layer),
-      layer_list_builder_(layer_list_builder) {
+PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client)
+    : client_(client) {}
+
+void PropertyTreeManager::Initialize(cc::PropertyTrees* property_trees,
+                                     LayerListBuilder* layer_list_builder) {
+  DCHECK(root_layer_);
+  property_trees_ = property_trees;
+  layer_list_builder_ = layer_list_builder;
+
+  // If we're initializing the manager again, it means that we will be
+  // rebuilding everything. Clear the current maps.
+  transform_node_map_.clear();
+  clip_node_map_.clear();
+  scroll_node_map_.clear();
+
   SetupRootTransformNode();
   SetupRootClipNode();
   SetupRootEffectNode();
   SetupRootScrollNode();
+#if DCHECK_IS_ON()
+  DCHECK(!initialized_);
+  initialized_ = true;
+#endif
 }
 
 void PropertyTreeManager::Finalize() {
   while (effect_stack_.size())
     CloseCcEffect();
+  DCHECK(effect_stack_.IsEmpty());
+  property_trees_ = nullptr;
+  layer_list_builder_ = nullptr;
+#if DCHECK_IS_ON()
+  effect_nodes_converted_.clear();
+  DCHECK(initialized_);
+  initialized_ = false;
+#endif
 }
 
 cc::TransformTree& PropertyTreeManager::GetTransformTree() {
-  return property_trees_.transform_tree;
+  return property_trees_->transform_tree;
 }
 
 cc::ClipTree& PropertyTreeManager::GetClipTree() {
-  return property_trees_.clip_tree;
+  return property_trees_->clip_tree;
 }
 
 cc::EffectTree& PropertyTreeManager::GetEffectTree() {
-  return property_trees_.effect_tree;
+  return property_trees_->effect_tree;
 }
 
 cc::ScrollTree& PropertyTreeManager::GetScrollTree() {
-  return property_trees_.scroll_tree;
+  return property_trees_->scroll_tree;
 }
 
 void PropertyTreeManager::SetupRootTransformNode() {
   // cc is hardcoded to use transform node index 1 for device scale and
   // transform.
-  cc::TransformTree& transform_tree = property_trees_.transform_tree;
+  cc::TransformTree& transform_tree = property_trees_->transform_tree;
   transform_tree.clear();
-  property_trees_.element_id_to_transform_node_index.clear();
+  property_trees_->element_id_to_transform_node_index.clear();
   cc::TransformNode& transform_node = *transform_tree.Node(
       transform_tree.Insert(cc::TransformNode(), kRealRootNodeId));
   DCHECK_EQ(transform_node.id, kSecondaryRootNodeId);
@@ -107,7 +126,7 @@ void PropertyTreeManager::SetupRootTransformNode() {
 
 void PropertyTreeManager::SetupRootClipNode() {
   // cc is hardcoded to use clip node index 1 for viewport clip.
-  cc::ClipTree& clip_tree = property_trees_.clip_tree;
+  cc::ClipTree& clip_tree = property_trees_->clip_tree;
   clip_tree.clear();
   cc::ClipNode& clip_node =
       *clip_tree.Node(clip_tree.Insert(cc::ClipNode(), kRealRootNodeId));
@@ -128,9 +147,9 @@ void PropertyTreeManager::SetupRootClipNode() {
 
 void PropertyTreeManager::SetupRootEffectNode() {
   // cc is hardcoded to use effect node index 1 for root render surface.
-  cc::EffectTree& effect_tree = property_trees_.effect_tree;
+  cc::EffectTree& effect_tree = property_trees_->effect_tree;
   effect_tree.clear();
-  property_trees_.element_id_to_effect_node_index.clear();
+  property_trees_->element_id_to_effect_node_index.clear();
   cc::EffectNode& effect_node =
       *effect_tree.Node(effect_tree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effect_node.id, kSecondaryRootNodeId);
@@ -150,9 +169,9 @@ void PropertyTreeManager::SetupRootEffectNode() {
 }
 
 void PropertyTreeManager::SetupRootScrollNode() {
-  cc::ScrollTree& scroll_tree = property_trees_.scroll_tree;
+  cc::ScrollTree& scroll_tree = property_trees_->scroll_tree;
   scroll_tree.clear();
-  property_trees_.element_id_to_scroll_node_index.clear();
+  property_trees_->element_id_to_scroll_node_index.clear();
   cc::ScrollNode& scroll_node =
       *scroll_tree.Node(scroll_tree.Insert(cc::ScrollNode(), kRealRootNodeId));
   DCHECK_EQ(scroll_node.id, kSecondaryRootNodeId);
@@ -271,7 +290,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 
   auto compositor_element_id = transform_node.GetCompositorElementId();
   if (compositor_element_id) {
-    property_trees_.element_id_to_transform_node_index[compositor_element_id] =
+    property_trees_->element_id_to_transform_node_index[compositor_element_id] =
         id;
     compositor_node.element_id = compositor_element_id;
   }
@@ -395,7 +414,8 @@ void PropertyTreeManager::CreateCompositorScrollNode(
   auto compositor_element_id = scroll_node.GetCompositorElementId();
   if (compositor_element_id) {
     compositor_node.element_id = compositor_element_id;
-    property_trees_.element_id_to_scroll_node_index[compositor_element_id] = id;
+    property_trees_->element_id_to_scroll_node_index[compositor_element_id] =
+        id;
   }
 
   compositor_node.transform_id = scroll_offset_translation.id;
@@ -695,82 +715,108 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   effect_nodes_converted_.insert(&next_effect);
 #endif
 
-  SkBlendMode used_blend_mode;
-  int output_clip_id;
-  const auto* output_clip = SafeUnalias(next_effect.OutputClip());
-  if (output_clip) {
-    used_blend_mode = SynthesizeCcEffectsForClipsIfNeeded(
-        *output_clip, next_effect.BlendMode());
-    output_clip_id = EnsureCompositorClipNode(*output_clip);
-  } else {
+  // If we don't have an output clip, then we'll use the clip of the last
+  // non-synthetic effect. This means we should close all synthetic effects on
+  // the stack first.
+  if (!next_effect.OutputClip()) {
     while (IsCurrentCcEffectSynthetic())
       CloseCcEffect();
-    // An effect node can't omit render surface if it has child with exotic
-    // blending mode.
-    // TODO(crbug.com/504464): Remove premature optimization here.
-    if (next_effect.BlendMode() != SkBlendMode::kSrcOver)
-      SetCurrentEffectHasRenderSurface();
-
-    used_blend_mode = next_effect.BlendMode();
-    output_clip = current_.clip;
-    DCHECK(output_clip);
-    output_clip_id = GetEffectTree().Node(current_.effect_id)->clip_id;
-    DCHECK_EQ(output_clip_id, EnsureCompositorClipNode(*output_clip));
   }
 
-  cc::EffectNode& effect_node = *GetEffectTree().Node(
+  SkBlendMode blend_mode;
+  const ClipPaintPropertyNode* output_clip;
+  int output_clip_id;
+  std::tie(blend_mode, output_clip, output_clip_id) =
+      GetBlendModeAndOutputClipForEffect(next_effect);
+
+  auto& effect_node = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
-  effect_node.stable_id =
-      next_effect.GetCompositorElementId().GetInternalValue();
-  effect_node.clip_id = output_clip_id;
 
-  // An effect with filters or backdrop filters needs a render surface.
-  // Also, kDstIn and kSrcOver blend modes have fast paths if only one layer
-  // is under the blend mode. This value is adjusted in PaintArtifactCompositor
-  // ::UpdateRenderSurfaceForEffects() to account for more than one layer.
-  if (!next_effect.Filter().IsEmpty() ||
-      next_effect.HasActiveFilterAnimation() ||
-      !next_effect.BackdropFilter().IsEmpty() ||
-      next_effect.HasActiveBackdropFilterAnimation() ||
-      (used_blend_mode != SkBlendMode::kSrcOver &&
-       used_blend_mode != SkBlendMode::kDstIn))
-    effect_node.has_render_surface = true;
+  PopulateCcEffectNode(effect_node, next_effect, output_clip_id, blend_mode);
 
-  effect_node.opacity = next_effect.Opacity();
-  if (next_effect.GetColorFilter() != kColorFilterNone) {
-    // Currently color filter is only used by SVG masks.
-    // We are cutting corner here by support only specific configuration.
-    DCHECK(next_effect.GetColorFilter() == kColorFilterLuminanceToAlpha);
-    DCHECK(used_blend_mode == SkBlendMode::kDstIn);
-    DCHECK(next_effect.Filter().IsEmpty());
-    effect_node.filters.Append(cc::FilterOperation::CreateReferenceFilter(
-        sk_make_sp<ColorFilterPaintFilter>(SkLumaColorFilter::Make(),
-                                           nullptr)));
-  } else {
-    effect_node.filters = next_effect.Filter().AsCcFilterOperations();
-    effect_node.backdrop_filters =
-        next_effect.BackdropFilter().AsCcFilterOperations();
-    effect_node.backdrop_filter_bounds = next_effect.BackdropFilterBounds();
-    effect_node.filters_origin = next_effect.FiltersOrigin();
-    effect_node.transform_id =
-        EnsureCompositorTransformNode(next_effect.LocalTransformSpace());
-  }
-  effect_node.blend_mode = used_blend_mode;
-  effect_node.double_sided =
-      !next_effect.LocalTransformSpace().IsBackfaceHidden();
   CompositorElementId compositor_element_id =
       next_effect.GetCompositorElementId();
   if (compositor_element_id) {
-    DCHECK(property_trees_.element_id_to_effect_node_index.find(
+    DCHECK(property_trees_->element_id_to_effect_node_index.find(
                compositor_element_id) ==
-           property_trees_.element_id_to_effect_node_index.end());
-    property_trees_.element_id_to_effect_node_index[compositor_element_id] =
+           property_trees_->element_id_to_effect_node_index.end());
+    property_trees_->element_id_to_effect_node_index[compositor_element_id] =
         effect_node.id;
   }
 
   effect_stack_.emplace_back(current_);
   SetCurrentEffectState(effect_node, CcEffectType::kEffect, next_effect,
                         *output_clip);
+}
+
+std::tuple<SkBlendMode, const ClipPaintPropertyNode*, int>
+PropertyTreeManager::GetBlendModeAndOutputClipForEffect(
+    const EffectPaintPropertyNode& effect) {
+  SkBlendMode blend_mode;
+  int output_clip_id;
+  const auto* output_clip = SafeUnalias(effect.OutputClip());
+  if (output_clip) {
+    blend_mode =
+        SynthesizeCcEffectsForClipsIfNeeded(*output_clip, effect.BlendMode());
+    output_clip_id = EnsureCompositorClipNode(*output_clip);
+  } else {
+    DCHECK(!IsCurrentCcEffectSynthetic());
+    // An effect node can't omit render surface if it has child with exotic
+    // blending mode.
+    // TODO(crbug.com/504464): Remove premature optimization here.
+    if (effect.BlendMode() != SkBlendMode::kSrcOver)
+      SetCurrentEffectHasRenderSurface();
+
+    blend_mode = effect.BlendMode();
+    output_clip = current_.clip;
+    DCHECK(output_clip);
+    output_clip_id = GetEffectTree().Node(current_.effect_id)->clip_id;
+    DCHECK_EQ(output_clip_id, EnsureCompositorClipNode(*output_clip));
+  }
+  return std::make_tuple(blend_mode, output_clip, output_clip_id);
+}
+
+void PropertyTreeManager::PopulateCcEffectNode(
+    cc::EffectNode& effect_node,
+    const EffectPaintPropertyNode& effect,
+    int output_clip_id,
+    SkBlendMode blend_mode) {
+  effect_node.stable_id = effect.GetCompositorElementId().GetInternalValue();
+  effect_node.clip_id = output_clip_id;
+
+  // An effect with filters or backdrop filters needs a render surface.
+  // Also, kDstIn and kSrcOver blend modes have fast paths if only one layer
+  // is under the blend mode. This value is adjusted in PaintArtifactCompositor
+  // ::UpdateRenderSurfaceForEffects() to account for more than one layer.
+  if (!effect.Filter().IsEmpty() || effect.HasActiveFilterAnimation() ||
+      !effect.BackdropFilter().IsEmpty() ||
+      effect.HasActiveBackdropFilterAnimation() ||
+      (blend_mode != SkBlendMode::kSrcOver &&
+       blend_mode != SkBlendMode::kDstIn)) {
+    effect_node.has_render_surface = true;
+  }
+
+  effect_node.opacity = effect.Opacity();
+  if (effect.GetColorFilter() != kColorFilterNone) {
+    // Currently color filter is only used by SVG masks.
+    // We are cutting corner here by support only specific configuration.
+    DCHECK(effect.GetColorFilter() == kColorFilterLuminanceToAlpha);
+    DCHECK(blend_mode == SkBlendMode::kDstIn);
+    DCHECK(effect.Filter().IsEmpty());
+    effect_node.filters.Append(cc::FilterOperation::CreateReferenceFilter(
+        sk_make_sp<ColorFilterPaintFilter>(SkLumaColorFilter::Make(),
+                                           nullptr)));
+  } else {
+    effect_node.filters = effect.Filter().AsCcFilterOperations();
+    effect_node.backdrop_filters =
+        effect.BackdropFilter().AsCcFilterOperations();
+    effect_node.backdrop_filter_bounds = effect.BackdropFilterBounds();
+    effect_node.filters_origin = effect.FiltersOrigin();
+    effect_node.transform_id =
+        EnsureCompositorTransformNode(effect.LocalTransformSpace());
+  }
+  effect_node.blend_mode = blend_mode;
+  effect_node.double_sided = !effect.LocalTransformSpace().IsBackfaceHidden();
 }
 
 }  // namespace blink

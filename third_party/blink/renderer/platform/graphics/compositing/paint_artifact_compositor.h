@@ -252,6 +252,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
 
+  PropertyTreeManager property_tree_manager_;
+
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;
 
