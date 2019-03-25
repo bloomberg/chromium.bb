@@ -51,7 +51,7 @@ const BASIC_LOCAL_ENTRY_SET = [
   ENTRIES.world,
   ENTRIES.desktop,
   ENTRIES.beautiful,
-  ENTRIES.photos
+  ENTRIES.photos,
 ];
 
 /**
@@ -74,7 +74,7 @@ const BASIC_DRIVE_ENTRY_SET = [
   ENTRIES.photos,
   ENTRIES.unsupported,
   ENTRIES.testDocument,
-  ENTRIES.testSharedDocument
+  ENTRIES.testSharedDocument,
 ];
 
 /**
@@ -109,7 +109,7 @@ const COMPLEX_DRIVE_ENTRY_SET = [
 const NESTED_ENTRY_SET = [
   ENTRIES.directoryA,
   ENTRIES.directoryB,
-  ENTRIES.directoryC
+  ENTRIES.directoryC,
 ];
 
 /**
@@ -121,7 +121,7 @@ const NESTED_ENTRY_SET = [
  */
 const BASIC_FAKE_ENTRY_SET = [
   ENTRIES.hello,
-  ENTRIES.directoryA
+  ENTRIES.directoryA,
 ];
 
 /**
@@ -146,7 +146,7 @@ const RECENT_ENTRY_SET = [
  */
 const OFFLINE_ENTRY_SET = [
   ENTRIES.testDocument,
-  ENTRIES.testSharedDocument
+  ENTRIES.testSharedDocument,
 ];
 
 /**
@@ -157,7 +157,7 @@ const OFFLINE_ENTRY_SET = [
  * @const
  */
 const SHARED_WITH_ME_ENTRY_SET = [
-  ENTRIES.testSharedDocument
+  ENTRIES.testSharedDocument,
 ];
 
 /**
