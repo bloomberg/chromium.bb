@@ -33,31 +33,19 @@ namespace {
 const int kMaxBookmarks = 10;
 const int kMaxBookmarkAgeInDays = 7;
 
-const char* kMaxBookmarksParamName = "bookmarks_max_count";
-const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
-const char* kConsiderDesktopVisitsParamName =
-    "bookmarks_consider_desktop_visits";
-
 // Any bookmark created or visited after this time will be considered recent.
 // Note that bookmarks can be shown that do not meet this threshold.
 base::Time GetThresholdTime() {
-  return base::Time::Now() -
-         base::TimeDelta::FromDays(variations::GetVariationParamByFeatureAsInt(
-             ntp_snippets::kBookmarkSuggestionsFeature,
-             kMaxBookmarkAgeInDaysParamName, kMaxBookmarkAgeInDays));
+  return base::Time::Now() - base::TimeDelta::FromDays(kMaxBookmarkAgeInDays);
 }
 
 // The maximum number of suggestions ever provided.
 int GetMaxCount() {
-  return variations::GetVariationParamByFeatureAsInt(
-      ntp_snippets::kBookmarkSuggestionsFeature, kMaxBookmarksParamName,
-      kMaxBookmarks);
+  return kMaxBookmarks;
 }
 
 bool AreDesktopVisitsConsidered() {
-  return variations::GetVariationParamByFeatureAsBool(
-      ntp_snippets::kBookmarkSuggestionsFeature,
-      kConsiderDesktopVisitsParamName, true);
+  return true;
 }
 
 }  // namespace

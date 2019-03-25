@@ -36,9 +36,7 @@ bool IsDownloadsProviderEnabled() {
 }
 
 bool IsBookmarkProviderEnabled() {
-  return !IsSimplifiedNtpEnabled() &&
-         base::FeatureList::IsEnabled(
-             ntp_snippets::kBookmarkSuggestionsFeature);
+  return false;
 }
 
 }  // namespace ntp_snippets

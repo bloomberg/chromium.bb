@@ -2365,12 +2365,6 @@ const char kEnableNtpAssetDownloadSuggestionsDescription[] =
     "contain assets (e.g. books, pictures, audio) that the user downloaded for "
     "later use.";
 
-const char kEnableNtpBookmarkSuggestionsName[] =
-    "Show recently visited bookmarks on the New Tab page";
-const char kEnableNtpBookmarkSuggestionsDescription[] =
-    "If enabled, the list of content suggestions on the New Tab page will "
-    "contain recently visited bookmarks.";
-
 const char kEnableNtpOfflinePageDownloadSuggestionsName[] =
     "Show offline page downloads on the New Tab page";
 const char kEnableNtpOfflinePageDownloadSuggestionsDescription[] =

@@ -23,7 +23,6 @@ const base::Feature kRemoteSuggestionsBackendFeature{
 // Keep sorted, and keep nullptr at the end.
 const base::Feature* const kAllFeatures[] = {
     &kArticleSuggestionsFeature,
-    &kBookmarkSuggestionsFeature,
     &kBreakingNewsPushFeature,
     &kCategoryOrder,
     &kCategoryRanker,
@@ -34,9 +33,6 @@ const base::Feature* const kAllFeatures[] = {
 
 const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kBookmarkSuggestionsFeature{
-    "NTPBookmarkSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBreakingNewsPushFeature{"BreakingNewsPush",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
