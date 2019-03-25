@@ -105,7 +105,9 @@ public class ChromeGcmListenerService extends GcmListenerService {
         if (!ApplicationStatus.hasVisibleActivities()) {
             boolean isSubscriptionLazy = false;
             long time = SystemClock.elapsedRealtime();
-            if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)) {
+            // TODO(crbug.com/945402): Add metrics for the new high priority message logic.
+            if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)
+                    && message.getOriginalPriority() != GCMMessage.Priority.HIGH) {
                 isSubscriptionLazy = true;
                 LazySubscriptionsManager.persistMessage(subscriptionId, message);
             }
