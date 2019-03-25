@@ -242,13 +242,14 @@ TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
       coordinator_.viewController.view, [OmniboxTextFieldIOS class]);
 
   // Time how long it takes to "focus" on omnibox.
-  RepeatTimedRuns("Begin editing",
-                  ^base::TimeDelta(int index) {
-                    return EnableKeyboard(textField);
-                  },
-                  ^{
-                    DisableKeyboard(textField);
-                  });
+  RepeatTimedRuns(
+      "Begin editing",
+      ^base::TimeDelta(int index) {
+        return EnableKeyboard(textField);
+      },
+      ^{
+        DisableKeyboard(textField);
+      });
 }
 
 // Measures the amount of time it takes to type in the first character
@@ -256,15 +257,16 @@ TEST_F(OmniboxPerfTest, TestTextFieldDidBeginEditing) {
 TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
       coordinator_.viewController.view, [OmniboxTextFieldIOS class]);
-  RepeatTimedRuns("Type first character",
-                  ^base::TimeDelta(int index) {
-                    EnableKeyboard(textField);
-                    return TimeInsertText(textField, @"G");
-                  },
-                  ^{
-                    [textField setText:@""];
-                    DisableKeyboard(textField);
-                  });
+  RepeatTimedRuns(
+      "Type first character",
+      ^base::TimeDelta(int index) {
+        EnableKeyboard(textField);
+        return TimeInsertText(textField, @"G");
+      },
+      ^{
+        [textField setText:@""];
+        DisableKeyboard(textField);
+      });
 }
 
 // Measures the amount of time it takes to type in the word "google" one

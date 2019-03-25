@@ -105,8 +105,8 @@ test("ios_chrome_perftests") {
     ios_packed_resources_target,
 
     # Add perf_tests target here.
-    "//ios/chrome/browser/ui:perf_tests",
     "//ios/chrome/browser/ui/ntp:perf_tests",
+    "//ios/chrome/browser/ui/omnibox:perf_tests",
     "//ios/chrome/browser/web:perf_tests",
   ]
 
