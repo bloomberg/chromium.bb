@@ -6,6 +6,7 @@ import argparse
 import filecmp
 import json
 import logging
+from logging import handlers
 import os
 import posixpath
 import shutil
@@ -291,9 +292,25 @@ def Yesterday():
   return pd.Timestamp.now(TZ) - pd.DateOffset(days=1)
 
 
+def SetUpLogging(level):
+  """Set up logging to log both to stderr and a file."""
+  logger = logging.getLogger()
+  logger.setLevel(level)
+  formatter = logging.Formatter(
+      '(%(levelname)s) %(asctime)s [%(module)s] %(message)s')
+
+  h1 = logging.StreamHandler()
+  h1.setFormatter(formatter)
+  logger.addHandler(h1)
+
+  h2 = handlers.TimedRotatingFileHandler(
+     filename=CachedFilePath('pinboard.log'), when='W0', backupCount=5)
+  h2.setFormatter(formatter)
+  logger.addHandler(h2)
+
+
 def Main():
-  logging.basicConfig(format='%(asctime)-15s %(levelname)-8s - %(message)s',
-                      level=logging.INFO)
+  SetUpLogging(level=logging.INFO)
   actions = ('start', 'collect', 'upload')
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -307,6 +324,7 @@ def Main():
             'MTV time). Defaults to the last commit landed yesterday.'))
   args = parser.parse_args()
   if 'auto' in args.actions:
+    logging.info('=== auto run for %s ===', args.date)
     args.actions = actions
 
   state = LoadJobsState()
