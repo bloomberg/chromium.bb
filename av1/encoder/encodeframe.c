@@ -4825,8 +4825,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
       // Do the first pass if we need two pass partition search
       if (cpi->two_pass_partition_search &&
           cpi->sf.use_square_partition_only_threshold > BLOCK_4X4 &&
-          mi_row + mi_size_high[sb_size] < cm->mi_rows &&
-          mi_col + mi_size_wide[sb_size] < cm->mi_cols &&
+          mi_row + mi_size_high[sb_size] <= cm->mi_rows &&
+          mi_col + mi_size_wide[sb_size] <= cm->mi_cols &&
           cm->current_frame.frame_type != KEY_FRAME) {
         first_partition_search_pass(cpi, td, tile_data, mi_row, mi_col, tp);
       }
