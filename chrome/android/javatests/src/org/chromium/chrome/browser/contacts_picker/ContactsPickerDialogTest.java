@@ -99,8 +99,8 @@ public class ContactsPickerDialogTest
     // ContactsPickerDialog.ContactsPickerListener:
 
     @Override
-    public void onContactsPickerUserAction(@ContactsPickerAction int action, String contactsJson,
-            List<ContactsPickerListener.Contact> contacts) {
+    public void onContactsPickerUserAction(
+            @ContactsPickerAction int action, List<ContactsPickerListener.Contact> contacts) {
         mLastActionRecorded = action;
         mLastSelectedContacts = (contacts != null) ? new ArrayList<>(contacts) : null;
         onActionCallback.notifyCalled();

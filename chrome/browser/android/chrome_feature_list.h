@@ -75,7 +75,6 @@ extern const base::Feature kLanguagesPreference;
 extern const base::Feature kModalPermissionDialogView;
 extern const base::Feature kSearchEnginePromoExistingDevice;
 extern const base::Feature kSearchEnginePromoNewDevice;
-extern const base::Feature kNewContactsPicker;
 extern const base::Feature kNewPhotoPicker;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPButton;

@@ -1463,9 +1463,6 @@ extern const char kMediaScreenCaptureDescription[];
 extern const char kModalPermissionDialogViewName[];
 extern const char kModalPermissionDialogViewDescription[];
 
-extern const char kNewContactsPickerName[];
-extern const char kNewContactsPickerDescription[];
-
 extern const char kNewNetErrorPageUIName[];
 extern const char kNewNetErrorPageUIDescription[];
 

@@ -2467,10 +2467,6 @@ const char kModalPermissionDialogViewName[] = "Modal Permission Dialog";
 const char kModalPermissionDialogViewDescription[] =
     "Enable this option to use ModalDialogManager for permission Dialogs.";
 
-const char kNewContactsPickerName[] = "Enable new contacts picker";
-const char kNewContactsPickerDescription[] =
-    "Activates the new picker for selecting contacts.";
-
 const char kNewNetErrorPageUIName[] = "Enable new UI for net-error page";
 const char kNewNetErrorPageUIDescription[] =
     "Enables showing available offline content on the net-error (Dino) page.";

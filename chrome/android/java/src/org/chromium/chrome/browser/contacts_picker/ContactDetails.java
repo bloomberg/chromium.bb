@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
-import android.util.JsonWriter;
 
 import org.chromium.chrome.R;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -124,37 +122,6 @@ public class ContactDetails implements Comparable<ContactDetails> {
         }
 
         return builder.toString();
-    }
-
-    /**
-     * Appends to a string |builder| this contact (in json form).
-     * @param writer The JsonWriter object to add the data to.
-     */
-    public void appendJson(JsonWriter writer) throws IOException {
-        writer.beginObject();
-        writer.name("name");
-
-        writer.value(getDisplayName());
-        writer.name("emails");
-
-        writer.beginArray();
-        if (mEmails != null) {
-            for (String email : mEmails) {
-                writer.value(email);
-            }
-        }
-        writer.endArray();
-
-        writer.name("phoneNumbers");
-        writer.beginArray();
-        if (mPhoneNumbers != null) {
-            for (String phoneNumber : mPhoneNumbers) {
-                writer.value(phoneNumber);
-            }
-        }
-        writer.endArray();
-
-        writer.endObject();
     }
 
     /**
