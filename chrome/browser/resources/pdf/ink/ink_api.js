@@ -12,6 +12,14 @@
 let AnnotationTool;
 
 /**
+ * @typedef {{
+ *   canUndo: boolean,
+ *   canRedo: boolean,
+ * }}
+ */
+let UndoState;
+
+/**
  * Wraps the Ink component with an API that can be called
  * across an IFrame boundary.
  */
@@ -21,6 +29,19 @@ class InkAPI {
     this.embed_ = embed;
     this.brush_ = ink.BrushModel.getInstance(embed);
     this.camera_ = null;
+  }
+
+  /** @param {function(!UndoState)} listener */
+  addUndoStateListener(listener) {
+    /** @param {!ink.UndoStateChangeEvent} e */
+    function wrapper(e) {
+      listener({
+        canUndo: e.getCanUndo(),
+        canRedo: e.getCanRedo(),
+      });
+    }
+
+    this.embed_.addEventListener(ink.UndoStateChangeEvent.EVENT_TYPE, wrapper);
   }
 
   /**

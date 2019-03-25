@@ -289,6 +289,7 @@
       <div id="annotation-separator"></div>
 
       <paper-icon-button id="undo"
+          disabled="[[!canUndoAnnotation]]"
           icon="pdf:undo"
           on-click="undo"
           aria-label$="{{strings.annotationUndo}}"
@@ -296,6 +297,7 @@
       </paper-icon-button>
 
       <paper-icon-button id="redo"
+          disabled="[[!canRedoAnnotation]]"
           icon="pdf:redo"
           on-click="redo"
           aria-label$="{{strings.annotationRedo}}"

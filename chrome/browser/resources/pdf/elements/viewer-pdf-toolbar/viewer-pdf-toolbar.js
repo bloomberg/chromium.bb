@@ -62,6 +62,16 @@ Polymer({
       value: true,
     },
 
+    canUndoAnnotation: {
+      type: Boolean,
+      value: false,
+    },
+
+    canRedoAnnotation: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * Whether the PDF Annotations feature is enabled.
      */
