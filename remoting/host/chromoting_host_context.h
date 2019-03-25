@@ -55,6 +55,7 @@ class ChromotingHostContext {
   // Instead, we re-use the |url_request_context_getter| in the browser process.
   static std::unique_ptr<ChromotingHostContext> CreateForChromeOS(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -116,6 +117,7 @@ class ChromotingHostContext {
       scoped_refptr<AutoThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> video_encode_task_runner,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory,
       ui::SystemInputInjectorFactory* system_input_injector_factory);
 
   // Caller-supplied UI thread. This is usually the application main thread.
@@ -141,6 +143,10 @@ class ChromotingHostContext {
 
   // Serves URLRequestContexts that use the network and UI task runners.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // The system URLLoaderFactory, used when this class runs in the browser
+  // process, null otherwise.
+  scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory_;
 
   // Makes a SharedURLLoaderFactory out of |url_request_context_getter_|
   std::unique_ptr<network::TransitionalURLLoaderFactoryOwner>
