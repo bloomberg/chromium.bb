@@ -113,27 +113,34 @@ WallpaperManager.prototype.getCollectionsInfo_ = function() {
       .get(
           Constants.AccessLocalImagesInfoKey, items => {
             var imagesInfoJson = items[Constants.AccessLocalImagesInfoKey];
+            var currentLanguage = loadTimeData.data_.language;
+            var previousLanguage = null;
             if (imagesInfoJson) {
-              var imagesInfoMap = JSON.parse(imagesInfoJson);
-              Object.entries(imagesInfoMap).forEach(([
-                                                      collectionId, imagesInfo
-                                                    ]) => {
-                var wallpapersDataModel =
-                    new cr.ui.ArrayDataModel(imagesInfo.array_);
-                this.imagesInfoMap_[collectionId] = wallpapersDataModel;
-                if (wallpapersDataModel.length > 0) {
-                  var imageInfo = wallpapersDataModel.item(0);
-                  // Prefer to build |collectionsInfo_| from |imagesInfoMap_|
-                  // than to save it in local storage separately, in case of
-                  // version mismatch.
-                  if (!this.collectionsInfo_)
-                    this.collectionsInfo_ = [];
-                  this.collectionsInfo_.push({
-                    collectionId: imageInfo.collectionId,
-                    collectionName: imageInfo.collectionName
-                  });
-                }
-              });
+              var imagesInfo = JSON.parse(imagesInfoJson);
+              var imagesInfoMap =
+                  imagesInfo[Constants.LastUsedLocalImageMappingKey];
+              previousLanguage = imagesInfo[Constants.LastUsedLanguageKey];
+              if (imagesInfoMap) {
+                Object.entries(imagesInfoMap).forEach(([
+                                                        collectionId, imagesInfo
+                                                      ]) => {
+                  var wallpapersDataModel =
+                      new cr.ui.ArrayDataModel(imagesInfo.array_);
+                  this.imagesInfoMap_[collectionId] = wallpapersDataModel;
+                  if (wallpapersDataModel.length > 0) {
+                    var imageInfo = wallpapersDataModel.item(0);
+                    // Prefer to build |collectionsInfo_| from |imagesInfoMap_|
+                    // than to save it in local storage separately, in case of
+                    // version mismatch.
+                    if (!this.collectionsInfo_)
+                      this.collectionsInfo_ = [];
+                    this.collectionsInfo_.push({
+                      collectionId: imageInfo.collectionId,
+                      collectionName: imageInfo.collectionName
+                    });
+                  }
+                });
+              }
             }
 
             // There're four cases to consider:
@@ -145,11 +152,14 @@ WallpaperManager.prototype.getCollectionsInfo_ = function() {
             // category list after the server responds.
             // 3) Non-first-time user / Network error: show the complete
             // cateogry list based on the image info in local storage.
-            // 4) Non-first-time user / No network error: the same with 3). If
-            // the image info fetched from server contain updates, save them to
-            // local storage to be used next time (avoid updating the already
-            // initialized category list).
-            this.postDownloadDomInit_();
+            // 4) Non-first-time user / No network error: the same with 3),
+            // unless updates reflect system language changes.  If there is
+            // a change in system language, the same path as 2) occurs.  For
+            // other updates, save them to local storage to be used next time
+            // (avoid updating the already initialized category list).
+            if (!previousLanguage || previousLanguage == currentLanguage) {
+              this.postDownloadDomInit_();
+            }
             chrome.wallpaperPrivate.getCollectionsInfo(collectionsInfo => {
               if (chrome.runtime.lastError) {
                 // TODO(crbug.com/800945): Distinguish the error types and show
@@ -197,16 +207,22 @@ WallpaperManager.prototype.getCollectionsInfo_ = function() {
 
                       ++index;
                       if (index >= collectionsInfo.length) {
-                        if (!this.collectionsInfo_) {
+                        if (!this.collectionsInfo_ ||
+                            previousLanguage != currentLanguage) {
                           // Update the UI to show the complete category list,
-                          // corresponding to case 2) above.
+                          // corresponding to case 2) and 4) above.
                           this.collectionsInfo_ = collectionsInfo;
                           this.imagesInfoMap_ = imagesInfoMap;
                           this.postDownloadDomInit_();
                         }
+                        var imagesInfo = {};
+                        imagesInfo[Constants.LastUsedLocalImageMappingKey] =
+                            imagesInfoMap;
+                        imagesInfo[Constants.LastUsedLanguageKey] =
+                            currentLanguage;
                         WallpaperUtil.saveToLocalStorage(
                             Constants.AccessLocalImagesInfoKey,
-                            JSON.stringify(imagesInfoMap));
+                            JSON.stringify(imagesInfo));
                       } else {
                         // Fetch the info for the next collection.
                         getIndividualCollectionInfo(index);
