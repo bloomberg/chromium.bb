@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -24,7 +24,7 @@ public class TabProperties {
     public static final WritableObjectPropertyKey<TabListMediator.TabActionListener>
             TAB_CLOSED_LISTENER = new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<Bitmap> FAVICON =
+    public static final WritableObjectPropertyKey<Drawable> FAVICON =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<TabListMediator.ThumbnailFetcher>
