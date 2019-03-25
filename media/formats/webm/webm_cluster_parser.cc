@@ -36,7 +36,7 @@ enum {
 };
 
 WebMClusterParser::WebMClusterParser(
-    int64_t timecode_scale,
+    int64_t timecode_scale_ns,
     int audio_track_num,
     base::TimeDelta audio_default_duration,
     int video_track_num,
@@ -47,7 +47,7 @@ WebMClusterParser::WebMClusterParser(
     const std::string& video_encryption_key_id,
     const AudioCodec audio_codec,
     MediaLog* media_log)
-    : timecode_multiplier_(timecode_scale / 1000.0),
+    : timecode_multiplier_(timecode_scale_ns / 1000.0),
       ignored_tracks_(ignored_tracks),
       audio_encryption_key_id_(audio_encryption_key_id),
       video_encryption_key_id_(video_encryption_key_id),
