@@ -62,6 +62,17 @@ aura::Window* GetVirtualKeyboardWindow() {
       ->GetKeyboardWindow();
 }
 
+void ShowAppListNow() {
+  Shell::Get()->app_list_controller()->presenter()->Show(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      base::TimeTicks::Now());
+}
+
+void DismissAppListNow() {
+  Shell::Get()->app_list_controller()->presenter()->Dismiss(
+      base::TimeTicks::Now());
+}
+
 }  // namespace
 
 class AppListControllerImplTest : public AshTestBase {
@@ -120,9 +131,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
 
   // Show the app list view and click on the search box with mouse. So the
   // VirtualKeyboard is shown.
-  Shell::Get()->app_list_controller()->presenter()->Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      base::TimeTicks::Now());
+  ShowAppListNow();
   GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
 
   // Wait until the virtual keyboard shows on the screen.
@@ -155,6 +164,52 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
+}
+
+// Verifies that in clamshell mode the bounds of AppListView are correct when
+// the AppListView is in PEEKING state and the virtual keyboard is enabled (see
+// https://crbug.com/944233).
+TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
+  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
+      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+
+  // Show the AppListView and click on the search box with mouse. So the
+  // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
+  ShowAppListNow();
+  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
+
+  // Hide the AppListView. Wait until the virtual keyboard is hidden as well.
+  DismissAppListNow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
+
+  // Show the AppListView again. Check the following things:
+  // (1) Virtual keyboard does not show.
+  // (2) AppListView is in PEEKING state.
+  // (3) AppListView's bounds are the same with the preferred bounds for
+  // the PEEKING state.
+  ShowAppListNow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(app_list::AppListViewState::PEEKING,
+            GetAppListView()->app_list_state());
+  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
+  gfx::Rect current_app_list_bounds_in_screen =
+      GetAppListView()
+          ->get_fullscreen_widget_for_test()
+          ->GetNativeView()
+          ->GetBoundsInScreen();
+  gfx::Rect expected_app_list_bounds_in_parent =
+      GetAppListView()->GetPreferredWidgetBoundsForState(
+          app_list::AppListViewState::PEEKING);
+
+  // The expected bounds are in the parent coordinate. But it should still be
+  // the same with the AppListView's bounds in screen coordinate. Because the
+  // parent window of the AppListView should have the same size with the display
+  // root window.
+  EXPECT_EQ(expected_app_list_bounds_in_parent,
+            current_app_list_bounds_in_screen);
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {

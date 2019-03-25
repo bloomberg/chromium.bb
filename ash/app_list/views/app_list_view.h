@@ -32,6 +32,11 @@ namespace ui {
 class AnimationMetricsReporter;
 }  // namespace ui
 
+namespace ash {
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenVKeyboardEnabled);
+}
+
 namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
@@ -295,6 +300,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   SkColor GetAppListBackgroundShieldColorForTest();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
+                           CheckAppListViewBoundsWhenVKeyboardEnabled);
+
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
   // TODO(newcomer): Merge this class into AppListView once the old app list
