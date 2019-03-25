@@ -385,17 +385,6 @@ void ProtoDatabaseImpl<P, T>::Init(const char* client_uma_name,
 
 template <typename P, typename T>
 void ProtoDatabaseImpl<P, T>::Init(
-    const std::string& client_uma_name,
-    typename Callbacks::InitStatusCallback callback) {
-  bool use_shared_db =
-      !force_unique_db_ &&
-      SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
-  InitInternal(client_uma_name, CreateSimpleOptions(), use_shared_db,
-               std::move(callback));
-}
-
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(
     typename Callbacks::InitStatusCallback callback) {
   bool use_shared_db =
       !force_unique_db_ &&
@@ -418,6 +407,17 @@ void ProtoDatabaseImpl<P, T>::Init(
       SharedProtoDatabaseClientList::ProtoDbTypeToString(db_type_);
 
   InitInternal(client_uma_name, unique_db_options, use_shared_db,
+               std::move(callback));
+}
+
+template <typename P, typename T>
+void ProtoDatabaseImpl<P, T>::Init(
+    const std::string& client_uma_name,
+    typename Callbacks::InitStatusCallback callback) {
+  bool use_shared_db =
+      !force_unique_db_ &&
+      SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
+  InitInternal(client_uma_name, CreateSimpleOptions(), use_shared_db,
                std::move(callback));
 }
 

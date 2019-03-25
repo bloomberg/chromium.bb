@@ -57,7 +57,10 @@ download::DownloadService* DownloadServiceFactory::GetForBrowserContext(
 DownloadServiceFactory::DownloadServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "download::DownloadService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  // Add this when this factory is a SimpleKeyedServiceFactory:
+  // DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
+}
 
 DownloadServiceFactory::~DownloadServiceFactory() = default;
 
@@ -122,9 +125,12 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     task_scheduler = std::make_unique<DownloadTaskSchedulerImpl>(context);
 #endif
 
+    Profile* profile = Profile::FromBrowserContext(context);
+
     return download::BuildDownloadService(
-        context, std::move(clients), content::GetNetworkConnectionTracker(),
-        storage_dir, background_task_runner, std::move(task_scheduler));
+        context, profile->GetSimpleFactoryKey(), profile->GetPrefs(),
+        std::move(clients), content::GetNetworkConnectionTracker(), storage_dir,
+        background_task_runner, std::move(task_scheduler));
   }
 }
 

@@ -22,6 +22,7 @@
 #include "components/download/internal/background_service/proto/entry.pb.h"
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
 #include "components/download/public/task/empty_task_scheduler.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 #if defined(OS_ANDROID)
@@ -94,6 +95,8 @@ DownloadService* CreateDownloadServiceInternal(
 // Create download service for normal profile.
 DownloadService* BuildDownloadService(
     content::BrowserContext* browser_context,
+    SimpleFactoryKey* simple_factory_key,
+    PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
@@ -105,11 +108,14 @@ DownloadService* BuildDownloadService(
       content::BrowserContext::GetDownloadManager(browser_context));
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
-  auto entry_db =
-      leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<protodb::Entry>(
-          background_task_runner);
-  auto store = std::make_unique<DownloadStore>(entry_db_storage_dir,
-                                               std::move(entry_db));
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(simple_factory_key,
+                                                             prefs);
+  auto entry_db = db_provider->GetDB<protodb::Entry>(
+      leveldb_proto::ProtoDbType::DOWNLOAD_STORE, entry_db_storage_dir,
+      background_task_runner);
+  auto store = std::make_unique<DownloadStore>(std::move(entry_db));
 
   auto files_storage_dir = storage_dir.Append(kFilesStorageDir);
   auto file_monitor = std::make_unique<FileMonitorImpl>(

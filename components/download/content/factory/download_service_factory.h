@@ -14,6 +14,9 @@
 #include "components/download/internal/background_service/blob_task_proxy.h"
 #include "components/download/public/background_service/clients.h"
 
+class SimpleFactoryKey;
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -40,6 +43,8 @@ class TaskScheduler;
 // |background_task_runner| will be used for all disk reads and writes.
 DownloadService* BuildDownloadService(
     content::BrowserContext* browser_context,
+    SimpleFactoryKey* simple_factory_key,
+    PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
