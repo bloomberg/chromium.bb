@@ -293,6 +293,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory,
     gpu::raster::GrShaderCache* gr_shader_cache,
     VulkanContextProvider* vulkan_context_provider,
+    const RendererSettings& renderer_settings,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
@@ -303,6 +304,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       shared_image_representation_factory_(std::move(sir_factory)),
       gr_shader_cache_(gr_shader_cache),
       vulkan_context_provider_(vulkan_context_provider),
+      renderer_settings_(renderer_settings),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
       context_lost_callback_(context_lost_callback),
@@ -314,6 +316,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
+    const RendererSettings& renderer_settings,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
@@ -325,6 +328,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
           CreateSharedImageRepresentationFactory(gpu_service),
           gpu_service->gr_shader_cache(),
           gpu_service->vulkan_context_provider(),
+          renderer_settings,
           did_swap_buffer_complete_callback,
           buffer_presented_callback,
           context_lost_callback) {
@@ -351,6 +355,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::SharedContextState> shared_context_state,
     gpu::SequenceId sequence_id,
+    const RendererSettings& renderer_settings,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
@@ -362,6 +367,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
           CreateSharedImageRepresentationFactory(task_executor),
           nullptr /* gr_shader_cache */,
           nullptr /* vulkan_context_provider */,
+          renderer_settings,
           did_swap_buffer_complete_callback,
           buffer_presented_callback,
           context_lost_callback) {
@@ -430,7 +436,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     if (!output_device_) {
       if (surface_handle_ == gpu::kNullSurfaceHandle) {
         output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-            gr_context(), false /* flipped */, false /* has_alpha */);
+            gr_context(), false /* flipped */,
+            renderer_settings_.requires_alpha_channel);
       } else {
         output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(
             vulkan_context_provider_, surface_handle_);
@@ -838,7 +845,7 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
   capabilities_ = capabilities;
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
       gr_context(), capabilities_.flipped_output_surface,
-      false /* has_alpha */);
+      renderer_settings_.requires_alpha_channel);
 }
 
 #if defined(OS_WIN)
@@ -940,10 +947,11 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGLWithGpuService(
   }
   if (!surface_handle_) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        gr_context(), true /* flipped */, false /* has_alpha */);
+        gr_context(), true /* flipped */,
+        renderer_settings_.requires_alpha_channel);
     capabilities_.flipped_output_surface = true;
     capabilities_.supports_stencil = false;
-    supports_alpha_ = false;
+    supports_alpha_ = renderer_settings_.requires_alpha_channel;
   }
   InitializeForGL();
 }
@@ -952,14 +960,16 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
     GpuServiceImpl* gpu_service) {
   context_state_ = gpu_service->GetContextStateForVulkan();
   DCHECK(context_state_);
-  supports_alpha_ = true;
   capabilities_.flipped_output_surface = true;
 #if BUILDFLAG(ENABLE_VULKAN)
   if (surface_handle_ == gpu::kNullSurfaceHandle) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        gr_context(), false /* flipped */, false /* has_alpha */);
+        gr_context(), false /* flipped */,
+        renderer_settings_.requires_alpha_channel);
+    supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
 #if defined(USE_X11)
+    supports_alpha_ = true;
     if (gpu_preferences_.disable_vulkan_surface) {
       output_device_ =
           std::make_unique<SkiaOutputDeviceX11>(gr_context(), surface_handle_);

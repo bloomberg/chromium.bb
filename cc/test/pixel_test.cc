@@ -66,12 +66,12 @@ class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
       viz::GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
       viz::SyntheticBeginFrameSource* synthetic_begin_frame_source,
-      bool show_overdraw_feedback,
+      const viz::RendererSettings& renderer_settings,
       bool flipped_output_surface)
       : SkiaOutputSurfaceImpl(gpu_service,
                               surface_handle,
                               synthetic_begin_frame_source,
-                              show_overdraw_feedback),
+                              renderer_settings),
         flipped_output_surface_(flipped_output_surface) {}
 
   // |capabilities_| is set in InitializeForGL(), so wrap BindToClient() and set
@@ -354,8 +354,8 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
   // Set up the skia renderer.
   output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
       gpu_service_.get(), gpu::kNullSurfaceHandle,
-      nullptr /* synthetic_begin_frame_source */,
-      renderer_settings_.show_overdraw_feedback, flipped_output_surface);
+      nullptr /* synthetic_begin_frame_source */, renderer_settings_,
+      flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,

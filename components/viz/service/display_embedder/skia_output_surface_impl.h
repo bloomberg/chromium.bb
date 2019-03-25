@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -55,7 +56,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   SkiaOutputSurfaceImpl(GpuServiceImpl* gpu_service,
                         gpu::SurfaceHandle surface_handle,
                         SyntheticBeginFrameSource* synthetic_begin_frame_source,
-                        bool show_overdraw_feedback);
+                        const RendererSettings& renderer_settings);
   SkiaOutputSurfaceImpl(
       gpu::CommandBufferTaskExecutor* task_executor,
       scoped_refptr<gl::GLSurface> gl_surface,
@@ -186,8 +187,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // The task runner for running task on the client (compositor) thread.
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
 
-  // The flag is used for overdraw feedback.
-  const bool show_overdraw_feedback_;
+  const RendererSettings renderer_settings_;
 
   // |impl_on_gpu| is created and destroyed on the GPU thread.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;

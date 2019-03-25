@@ -274,13 +274,13 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
-    bool show_overdraw_feedback)
+    const RendererSettings& renderer_settings)
     : gpu_service_(gpu_service),
       task_executor_(nullptr),
       is_using_vulkan_(gpu_service->is_using_vulkan()),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
-      show_overdraw_feedback_(show_overdraw_feedback),
+      renderer_settings_(renderer_settings),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
@@ -296,7 +296,6 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
       is_using_vulkan_(false),
       surface_handle_(gpu::kNullSurfaceHandle),
       synthetic_begin_frame_source_(nullptr),
-      show_overdraw_feedback_(false),
       weak_ptr_factory_(this) {}
 
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
@@ -475,11 +474,11 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   }
 
   recorder_.emplace(characterization_);
-  if (!show_overdraw_feedback_)
+  if (!renderer_settings_.show_overdraw_feedback)
     return recorder_->getCanvas();
 
   DCHECK(!overdraw_surface_recorder_);
-  DCHECK(show_overdraw_feedback_);
+  DCHECK(renderer_settings_.show_overdraw_feedback);
 
   SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       gfx::Size(characterization_.width(), characterization_.height()),
@@ -582,7 +581,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
   DCHECK(ddl);
   recorder_.reset();
   std::unique_ptr<SkDeferredDisplayList> overdraw_ddl;
-  if (show_overdraw_feedback_ && !painting_render_pass) {
+  if (renderer_settings_.show_overdraw_feedback && !painting_render_pass) {
     overdraw_ddl = overdraw_surface_recorder_->detach();
     DCHECK(overdraw_ddl);
     overdraw_canvas_.reset();
@@ -683,7 +682,7 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
     // class. The SurfacesInstance will do it.
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
         task_executor_, gl_surface_, std::move(shared_context_state_),
-        sequence_->GetSequenceId(),
+        sequence_->GetSequenceId(), renderer_settings_,
         base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
                                     const gfx::Size&>(),
         base::DoNothing::Repeatedly<const gfx::PresentationFeedback&>(),
@@ -702,8 +701,9 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
     context_lost_callback =
         CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-        gpu_service_, surface_handle_, did_swap_buffer_complete_callback,
-        buffer_presented_callback, context_lost_callback);
+        gpu_service_, surface_handle_, renderer_settings_,
+        did_swap_buffer_complete_callback, buffer_presented_callback,
+        context_lost_callback);
   }
   capabilities_ = impl_on_gpu_->capabilities();
 }
