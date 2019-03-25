@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Antrojo lygio klavišas</translation>
 <translation id="1710340000377843106">dabar</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minutė}one{# minutė}few{# minutės}many{# minutės}other{# minučių}}</translation>
+<translation id="1756116796893109054">Siunčiamas skirtukas...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Laikotarpis</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mėnuo}one{# mėnuo}few{# mėnesiai}many{# mėnesio}other{# mėnesių}}</translation>
@@ -51,11 +52,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Kalibravimas baigtas</translation>
 <translation id="252373100621549798">Nežinoma pateiktis</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{po 1 val.}one{po # val.}few{po # val.}many{po # val.}other{po # val.}}</translation>
 <translation id="2583543531130364912">Jutiklinio ekrano kalibravimas</translation>
 <translation id="2666092431469916601">Į viršų</translation>
+<translation id="2701330563083355633">Bendrinta iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="2743387203779672305">Kopijuoti į iškarpinę</translation>
 <translation id="2803313416453193357">Atidaryti aplanką</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Prieš 1 metus}one{Prieš # metus}few{Prieš # metus}many{Prieš # metų}other{Prieš # metų}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{po 1 d.}one{po # d.}few{po # d.}many{po # d.}other{po # d.}}</translation>
 <translation id="2931838996092594335">spustelėti</translation>
 <translation id="3036649622769666520">Atidaryti failus</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -114,6 +118,7 @@
 <translation id="5613020302032141669">Rodyklė į kairę</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min.}one{# min.}few{# min.}many{# min.}other{# min.}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 diena ir }one{# diena ir }few{# dienos ir }many{# dienos ir }other{# dienų ir }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{po 1 m.}one{po # m.}few{po # m.}many{po # m.}other{po # m.}}</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Liko 1 sekundė}one{Liko # sekundė}few{Liko # sekundės}many{Liko # sekundės}other{Liko # sekundžių}}</translation>
 <translation id="5941711191222866238">Sumažinti</translation>
@@ -169,6 +174,7 @@
 <translation id="7907591526440419938">Atidaryti failą</translation>
 <translation id="7969046989155602842">Komanda</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Daugiau nei 1 neskaitytas pranešimas}one{Daugiau nei # neskaitytas pranešimas}few{Daugiau nei # neskaityti pranešimai}many{Daugiau nei # neskaityto pranešimo}other{Daugiau nei # neskaitytų pranešimų}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{po 1 min.}one{po # min.}few{po # min.}many{po # min.}other{po # min.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + „<ph name="KEY_COMBO_NAME" />“</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Liko 1 sek.}one{Liko # sek.}few{Liko # sek.}many{Liko # sek.}other{Liko # sek.}}</translation>

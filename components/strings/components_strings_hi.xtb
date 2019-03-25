@@ -105,7 +105,7 @@
 <translation id="147358896496811705">2ए0</translation>
 <translation id="1484290072879560759">शिपिंग पता चुनें</translation>
 <translation id="1501859676467574491">अपने Google खाते में मौजूद कार्ड दिखाएं</translation>
-<translation id="1507202001669085618">&lt;p&gt;अगर आप ऐसे वाई-फ़ाई पोर्टल का उपयोग कर रहे हैं जिसमें ऑनलाइन होने से पहले साइन इन ज़रूरी है, तो आपको यह गड़बड़ी दिखाई देगी.&lt;/p&gt;
+<translation id="1507202001669085618">&lt;p&gt;अगर आप ऐसे वाई-फ़ाई पोर्टल का इस्तेमाल कर रहे हैं जिसमें ऑनलाइन होने से पहले साइन इन ज़रूरी है, तो आपको यह गड़बड़ी दिखाई देगी.&lt;/p&gt;
     &lt;p&gt;गड़बड़ी ठीक करने के लिए, उस पेज पर &lt;strong&gt;कनेक्ट करें&lt;/strong&gt; को क्लिक करें जिसे आप खोलने की कोशिश कर रहे हैं.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">फ़ोन नंबर आवश्यक है</translation>
 <translation id="1517500485252541695">स्वीकृत क्रेडिट और डेबिट कार्ड</translation>
@@ -483,7 +483,7 @@
 <translation id="3614103345592970299">आकार 2</translation>
 <translation id="3615877443314183785">खत्म होने की मान्य तारीख डालें</translation>
 <translation id="36224234498066874">ब्राउज़िंग डेटा साफ़ करें...</translation>
-<translation id="362276910939193118">संपूर्ण इतिहास दिखाएं</translation>
+<translation id="362276910939193118">पूरा इतिहास दिखाएं</translation>
 <translation id="3630155396527302611">यदि वह नेटवर्क एक्सेस करने की अनुमति प्राप्त प्रोग्राम के रूप में पहले से सूचीबद्ध है, तो
       उसे सूची से निकालें और पुन: जोड़कर देखें.</translation>
 <translation id="3640766068866876100">इंडेक्स-4x6-एक्स्ट्रा</translation>
@@ -804,7 +804,6 @@
 <translation id="5455374756549232013">खराब नीति टाइमस्टैम्प</translation>
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
-<translation id="5461666840533392417">ऐसा लगता है कि आपने नेविगेशन की सुविधा बंद कर दी है, मैं यहां आपकी मदद नहीं कर सकती. आपका दिन मंगलमय हो :)</translation>
 <translation id="5470861586879999274">&amp;संपादित करना फिर से करें</translation>
 <translation id="5478437291406423475">बी6/सी4 (एन्वेलप)</translation>
 <translation id="5481076368049295676">यह सामग्री आपके डिवाइस पर ऐसा खतरनाक सॉफ़्टवेयर इंस्टॉल करने की कोशिश कर सकती है जो आपकी जानकारी चुरा सकता है या उसे हटा सकता है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
@@ -880,7 +879,7 @@
 <translation id="5863847714970149516">आगे आने वाला पेज आपसे शुल्क लेने की कोशिश कर सकता है</translation>
 <translation id="5866257070973731571">फ़ोन नंबर जोड़ें</translation>
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
-<translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
+<translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
 <translation id="5887400589839399685">कार्ड सेव किया गया</translation>
 <translation id="5893752035575986141">क्रेडिट कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="5901630391730855834">पीला</translation>
@@ -962,7 +961,7 @@
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्‍य सुझाव}one{# अन्‍य सुझाव}other{# अन्‍य सुझाव}}</translation>
 <translation id="6387754724289022810">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड और बिलिंग पते को अपने Google खाते में और इस डिवाइस में सेव करें.</translation>
 <translation id="6390662030813198813">इंजीनियरिंग-ई</translation>
-<translation id="6404511346730675251">बुकमार्क संपादित करें</translation>
+<translation id="6404511346730675251">बुकमार्क में बदलाव करें</translation>
 <translation id="6406765186087300643">सी0 (एन्वेलप)</translation>
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> का समाप्ति दिनांक और CVC डालें</translation>
 <translation id="6414888972213066896">आपने अपने अभिभावक से पूछा है कि इस साइट पर जाना ठीक है या नहीं</translation>
@@ -1091,7 +1090,7 @@
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="7182878459783632708">कोई नीति सेट नहीं की गई है</translation>
 <translation id="7186367841673660872">इस पेज का <ph name="ORIGINAL_LANGUAGE" />से<ph name="LANGUAGE_LANGUAGE" /> में अनुवाद कर दिया गया है</translation>
-<translation id="7192203810768312527"><ph name="SIZE" /> जगह खाली करता है. जब आप अगली बार विज़िट करेंगे तो, कुछ साइटें और धीमे लोड हो सकती हैं.</translation>
+<translation id="7192203810768312527"><ph name="SIZE" /> जगह खाली करता है. अगली बार आप जब कुछ साइटों पर जाएंगे, तो उन्हें लोड होने में ज़्यादा समय लग सकता है.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">आपका एडमिन यह देख सकता है:</translation>
 <translation id="7202346780273620635">लेटर-एक्स्ट्रा</translation>
@@ -1150,7 +1149,7 @@
 <translation id="7451311239929941790">इस समस्या के बारे में <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">वैश्विक डिफ़ॉल्ट का उपयोग करें (अवरोधित करें)</translation>
 <translation id="7460618730930299168">यह स्क्रीनिंग आपकी चुनी गई स्क्रीनिंग से अलग है. क्या आप जारी रखना चाहते हैं?</translation>
-<translation id="7473891865547856676">जी रहने दें</translation>
+<translation id="7473891865547856676">नहीं, रहने दें</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
 <translation id="7498234416455752244">बदलाव करना जारी रखें</translation>
@@ -1220,10 +1219,9 @@
 <translation id="7770259615151589601">लंबाई वाला फ़ॉर्मैट</translation>
 <translation id="777702478322588152">प्रांत</translation>
 <translation id="7791543448312431591">जोड़ें</translation>
-<translation id="7793809570500803535"><ph name="SITE" /> पर मौजूद वेबपेज संभवत: अस्थायी रूप से कार्य नहीं कर रहा है या उसे स्थायी रूप से नए वेब पते पर स्थानांतरित कर दिया गया है.</translation>
 <translation id="7800304661137206267">कनेक्शन को संदेश प्रमाणीकरण के लिए <ph name="MAC" /> और मुख्य एक्सचेंज क्रियाविधि के रूप में <ph name="KX" /> के साथ, <ph name="CIPHER" /> का उपयोग करते हुए एन्क्रिप्ट किया गया है.</translation>
 <translation id="7802523362929240268">साइट वैध है</translation>
-<translation id="780301667611848630">जी नहीं, रहने दें </translation>
+<translation id="780301667611848630">नहीं, रहने दें</translation>
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="7806344367022510803">Chrome में जाकर 'सर्च इंजन' सेटिंग बदलें</translation>
 <translation id="7812922009395017822">Mir</translation>
@@ -1371,7 +1369,7 @@
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, खोज सुझाव</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8728672262656704056">आप गुप्त मोड में चले गए हैं</translation>
-<translation id="8730621377337864115">पूर्ण</translation>
+<translation id="8730621377337864115">हो गया</translation>
 <translation id="8738058698779197622">सुरक्षित कनेक्‍शन स्‍थापित करने के लिए, आपकी घड़ी को ठीक से सेट किए जाने की आवश्‍यकता है. ऐसा इसलिए क्‍योंकि वेबसाइटों द्वारा स्‍वयं की पहचान करने के लिए उपयोग किए जाने वाले प्रमाण पत्र केवल विशिष्‍ट समयावधियों के लिए ही मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए क्रोमियम इन प्रमाणपत्रों को सत्‍यापित नहीं कर सकता.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> का &lt;abbr id="dnsDefinition"&gt;DNS पता&lt;/abbr&gt; प्राप्त नहीं किया जा सका. समस्या का निदान किया जा रहा है.</translation>
 <translation id="874846938927089722">स्वीकार किए जाने वाले क्रेडिट और प्रीपेड कार्ड</translation>
@@ -1426,19 +1424,19 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">आपने <ph name="DOMAIN" /> पर पहुंचने की कोशिश की लेकिन सर्वर ने एक अमान्‍य प्रमाणपत्र पेश किया.</translation>
 <translation id="9050666287014529139">पासफ़्रेज़</translation>
-<translation id="9065203028668620118">संपादित करें</translation>
+<translation id="9065203028668620118">बदलाव करें</translation>
 <translation id="9065745800631924235"><ph name="TEXT" /> इतिहास में खोजें</translation>
 <translation id="9069693763241529744">किसी एक्सटेंशन से अवरोधित है</translation>
 <translation id="9076283476770535406">इसमें वयस्क सामग्री हो सकती है</translation>
 <translation id="9076630408993835509">यह ब्राउज़र कोई कंपनी या दूसरा संगठन प्रबंधित नहीं करता. शायद इस डिवाइस की गतिविधि को Chrome से बाहर प्रबंधित किया जाए. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">अधिक जानकारी की आवश्यकता है</translation>
 <translation id="9080712759204168376">आदेश सारांश</translation>
-<translation id="9103872766612412690"><ph name="SITE" /> आपकी जानकारी की सुरक्षा करने के लिए आमतौर पर एन्क्रिप्शन का उपयोग करती है. जब क्रोमियम ने इस बार <ph name="SITE" /> से कनेक्ट करने का प्रयास किया, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दिखाना करने की कोशिश कर रहा हो या किसी वाई-फ़ाई साइन इन स्क्रीन ने कनेक्शन को बाधित कर दिया हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा के लेन-देन से पहले ही क्रोमियम ने कनेक्शन को रोक दिया था.</translation>
+<translation id="9103872766612412690"><ph name="SITE" /> आपकी जानकारी की सुरक्षा करने के लिए आमतौर पर एन्क्रिप्शन का उपयोग करती है. जब क्रोमियम ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने की कोशिश कर रहा हो या किसी वाई-फ़ाई साइन इन स्क्रीन ने कनेक्शन को रोक दिया हो. आपकी जानकारी अब भी सुरक्षित है क्योंकि किसी भी डेटा के लेन-देन से पहले ही क्रोमियम ने कनेक्शन को रोक दिया था.</translation>
 <translation id="9106062320799175032">बिलिंग पता जोड़ें</translation>
 <translation id="9114524666733003316">कार्ड की पुष्टि की जा रही है...</translation>
 <translation id="9128870381267983090">नेटवर्क से कनेक्ट करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
-<translation id="9137248913990643158">इस ऐप्लिकेशन का उपयोग करने से पहले कृपया Chrome शुरू करके उसमें साइन इन करें.</translation>
+<translation id="9137248913990643158">इस ऐप्लिकेशन का उपयोग करने से पहले, कृपया Chrome शुरू करके उसमें साइन इन करें.</translation>
 <translation id="9148088599418889305">शिपिंग का तरीका चुनें</translation>
 <translation id="9148507642005240123">&amp;संपादन वापस लाएं</translation>
 <translation id="9154194610265714752">अपडेट किया गया</translation>
@@ -1455,7 +1453,7 @@
 <translation id="9205078245616868884">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट किया गया है. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="9207861905230894330">लेख जोड़ने में विफल रहा.</translation>
 <translation id="9215416866750762878">एक ऐप्‍लिकेशन Chrome को इस साइट से सुरक्षित तरीके से कनेक्‍ट होने से रोक रहा है</translation>
-<translation id="9219103736887031265">चित्र</translation>
+<translation id="9219103736887031265">इमेज</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">फ़ॉर्म साफ़ करें</translation>
 <translation id="936474030629450166">सुपर-बी</translation>

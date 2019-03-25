@@ -552,6 +552,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{जवळपास 1 वेब पृष्‍ठ}one{जवळपास # वेब पृष्‍ठ}other{जवळपास # वेब पेज}}</translation>
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
 <translation id="4032320456957708163">तुमचा ब्राउझर <ph name="ENROLLMENT_DOMAIN" /> द्वारे व्यवस्थापित केला आहे</translation>
+<translation id="4034375457890803692">तुम्ही उघडलेली लिंक अशा साइटवर जाते ज्या साइटला तुम्ही नेहमी भेट देत नाही. हे कदाचित तुम्हाला गोंधळात टाकू शकते.</translation>
 <translation id="4058922952496707368">की "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">वैध पत्ता जोडा</translation>
@@ -808,7 +809,6 @@
 <translation id="5455374756549232013">खराब धोरण टाइमस्टँप</translation>
 <translation id="5457113250005438886">चुकीचा</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> आणखी}one{<ph name="CONTACT_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> आणखी}other{<ph name="CONTACT_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> आणखी}}</translation>
-<translation id="5461666840533392417">तुम्ही स्वतः नेव्हिगेट केले असल्याचे दिसत आहे, तुम्ही आता हे माझ्या मदतीशिवाय पूर्ण करू शकता. तुमचा दिवस मजेत जावो :)</translation>
 <translation id="5470861586879999274">&amp;संपादित करा पुन्हा करा</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">हा आशय तुमच्या डिव्हाइसवर तुमची माहिती चोरू किंवा मिटवू शकणारे धोकादायक सॉफ्टवेअर इंस्टॉल करण्याचा कदाचित प्रयत्न करेल. <ph name="BEGIN_LINK" />तरीही दाखवा<ph name="END_LINK" /></translation>
@@ -1053,6 +1053,7 @@
 <translation id="6957887021205513506">सर्व्हरचे सर्टिफिकेट बनावट असल्याचे दिसून येते.</translation>
 <translation id="6964255747740675745">नेटवर्क कॉन्फिगरेशन पार्स करता आले नाही (चुकीची JSON).</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">डिव्हाइस</translation>
 <translation id="6970216967273061347">जिल्हा</translation>
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
@@ -1227,7 +1228,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">परफेक्चुअर</translation>
 <translation id="7791543448312431591">जोडा</translation>
-<translation id="7793809570500803535"><ph name="SITE" />येथील वेबपृष्ठ कदाचित तात्पुरते बंद आहे किंवा ते कदाचित नवीन वेब पत्त्यावर कायमचे हलवले आहे.</translation>
 <translation id="7800304661137206267">मेसेज अॉथेंटिकेशनसाठी <ph name="MAC" /> आणि महत्त्वाचे एक्स्चेंज तंत्र म्हणून <ph name="KX" /> सह <ph name="CIPHER" /> वापरून कनेक्शन एंक्रिप्ट केले आहे.</translation>
 <translation id="7802523362929240268">साइट कायदेशीर आहे</translation>
 <translation id="780301667611848630">नाही, नको</translation>

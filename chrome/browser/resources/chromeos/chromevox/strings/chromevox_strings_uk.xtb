@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">Немає попереднього блоку цитати.</translation>
 <translation id="1321576897702511272">Сховати довідку ChromeVox</translation>
 <translation id="1325946044405407859">Жовто-брунатний</translation>
+<translation id="1331634987653814322">Налаштування шрифту Брайля</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> з <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">озвучення символів і слів</translation>
 <translation id="1334570596456017464">Підрядковий текст</translation>
@@ -547,6 +548,7 @@
 <translation id="489907760999452556">Внутрішнє посилання</translation>
 <translation id="4915087353619183190">Увімкнення режиму довідки. Натисніть клавішу на клавіатурі QWERTY, клавішу оновлення на брайлівській клавіатурі або торкніться жесту, щоб дізнатися про функції. Щоб вийти з цього режиму, натисніть клавіші Ctrl + w або Esc.</translation>
 <translation id="492295894462528572">Передмова</translation>
+<translation id="4943781537993885772">Стиль відображення</translation>
 <translation id="495170559598752135">Дії</translation>
 <translation id="4953585991029886728">Редагування тексту</translation>
 <translation id="4954534434583049121">Цитування попереднього блока</translation>
@@ -712,6 +714,7 @@
 <translation id="6006050241733874051">Форма</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{зворотна коса риска}one{# зворотна коса риска}few{# зворотні косі риски}many{# зворотних косих рисок}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Зелений</translation>
+<translation id="6021969570711251331">Чергування</translation>
 <translation id="6034000775414344507">Світло-сірий</translation>
 <translation id="6037602951055904232">На задній план</translation>
 <translation id="6042826534790431634">Натисніть клавішу пошуку та пробіл, щоб активувати.</translation>
@@ -762,6 +765,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, меню</translation>
 <translation id="6444046323172968959">Діалогове вікно сповіщень</translation>
 <translation id="6452403590345320472">Зміст</translation>
+<translation id="6454456397828627257">Поруч</translation>
 <translation id="6459511626086141404">Звичайна розкладка</translation>
 <translation id="6468049171101508116">Наступна кнопка</translation>
 <translation id="646954774886932461">Покажчик</translation>

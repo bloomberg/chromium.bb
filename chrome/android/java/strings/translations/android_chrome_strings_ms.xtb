@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Cadangkan kata laluan</translation>
 <translation id="2612676031748830579">Nombor kad</translation>
+<translation id="2613747923081026172">Buat kumpulan</translation>
 <translation id="2621115761605608342">Benarkan JavaScript untuk tapak tertentu.</translation>
 <translation id="2625189173221582860">Kata laluan disalin</translation>
 <translation id="2631006050119455616">Disimpan</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi</translation>
 <translation id="2913331724188855103">Benarkan tapak untuk menyimpan dan membaca data kuki (disyorkan)</translation>
 <translation id="2932150158123903946">Storan Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Hantar ke peranti saya</translation>
 <translation id="2956410042958133412">Akaun ini diurus oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Hak Cipta <ph name="YEAR" /> Google Inc. Hak cipta terpelihara.</translation>
 <translation id="2962095958535813455">Beralih ke tab inkognito</translation>
@@ -826,7 +826,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7031882061095297553">Segerakkan ke</translation>
 <translation id="7032663816368481562">Apabila anda mengetik Lagi seperti ini <ph name="ICON" /> dalam bar alamat, tunjukkan pautan pantas ke halaman yang berkaitan. URL halaman yang anda lawati dihantar kepada Google.</translation>
 <translation id="7034608350006174882">Kad dan alamat yang menggunakan Google Pay</translation>
-<translation id="7037082443972906537">Nama tidak tersedia</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7055152154916055070">Ubah hala disekat:</translation>
 <translation id="7062545763355031412">Terima dan tukar akaun</translation>
@@ -880,7 +879,9 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7475192538862203634">Jika anda kerap melihatnya, cuba <ph name="BEGIN_LINK" />cadangan<ph name="END_LINK" /> ini.</translation>
 <translation id="7475688122056506577">Kad SD tidak ditemui. Sesetengah fail anda mungkin tiada.</translation>
+<translation id="7479104141328977413">Pengurusan tab</translation>
 <translation id="7481312909269577407">Majukan</translation>
+<translation id="7482697587265222445">Tab yang dihantar ke paranti anda</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dikemas kini <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Tunjukkan kata laluan</translation>
 <translation id="7494974237137038751">data disimpan</translation>

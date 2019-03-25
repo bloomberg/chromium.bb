@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">മോണോസ്പെ‌യ്‌സ്</translation>
 <translation id="2610239185026711824">പാസ്‌വേഡ് നിർദ്ദേശിക്കുക</translation>
 <translation id="2612676031748830579">കാർഡ് നമ്പർ</translation>
+<translation id="2613747923081026172">ഗ്രൂപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="2621115761605608342">ഒരു നിർദ്ദിഷ്‌ട സൈറ്റിന് വേണ്ടി JavaScript അനുവദിക്കുക.</translation>
 <translation id="2625189173221582860">പാസ്‌വേഡ് പകർത്തി</translation>
 <translation id="2631006050119455616">ലാഭിച്ചത്</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക</translation>
 <translation id="2913331724188855103">കുക്കി ഡാറ്റ സംരക്ഷിക്കുന്നതിനും വായിക്കുന്നതിനും സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> സ്‌റ്റോറേജ്</translation>
-<translation id="2941880727166628951">എന്‍റെ ഉപകരണങ്ങളിലേക്ക് അയയ്ക്കുക</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />, <ph name="PARENT_NAME_2" /> എന്നിവരാണ് ഈ അക്കൗണ്ട് നിയന്ത്രിക്കുന്നത്.</translation>
 <translation id="2960796085439532066">പകർപ്പവകാശം <ph name="YEAR" /> Google Inc. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്‌തം.</translation>
 <translation id="2962095958535813455">ആൾമാറാട്ട ടാബുകളിലേക്ക് മാറി</translation>
@@ -826,7 +826,6 @@
 <translation id="7031882061095297553">ഇതിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
 <translation id="7032663816368481562">വിലാസ ബാറിലുള്ള 'മോർ ലൈക്ക് ദിസ്' <ph name="ICON" /> ടാപ്പ് ചെയ്യുമ്പോൾ, ബന്ധപ്പെട്ട പേജുകളിലേക്ക് ദ്രുത ലിങ്കുകൾ കാണിക്കുന്നു. നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകളുടെ URL-കൾ Google-ന് അയയ്ക്കുന്നു.</translation>
 <translation id="7034608350006174882">Google Pay ഉപയോഗിക്കുന്ന കാർഡുകളും വിലാസങ്ങളും</translation>
-<translation id="7037082443972906537">പേര് ലഭ്യമല്ല</translation>
 <translation id="7053983685419859001">തടയുക</translation>
 <translation id="7055152154916055070">റീഡയറക്‌റ്റ് ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തു</translation>
 <translation id="7062545763355031412">അംഗീകരിച്ചശേഷം, അക്കൗണ്ടുകൾ മാറുക</translation>
@@ -880,7 +879,9 @@
 <translation id="7473891865547856676">വേണ്ട, നന്ദി</translation>
 <translation id="7475192538862203634">നിങ്ങൾ ഇത് പതിവായി കാണുന്നുണ്ടെങ്കിൽ, ഈ <ph name="BEGIN_LINK" />നിർദ്ദേശങ്ങൾ<ph name="END_LINK" /> പരീക്ഷിക്കൂ.</translation>
 <translation id="7475688122056506577">SD കാർഡ് കണ്ടെത്തിയില്ല. നിങ്ങളുടെ ചില ഫയലുകൾ നഷ്‌ടപ്പെട്ടേക്കാം.</translation>
+<translation id="7479104141328977413">ടാബ് മാനേജ്മെൻ്റ്</translation>
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
+<translation id="7482697587265222445">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് ടാബ് അയച്ചു</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (അപ്‌ഡേറ്റുചെയ്‌തു, <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">പാസ്‌വേ‌ഡുകൾ കാണിക്കുക</translation>
 <translation id="7494974237137038751">ലാഭിച്ച ഡാറ്റ</translation>

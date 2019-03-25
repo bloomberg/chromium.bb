@@ -380,6 +380,22 @@
       Babala: Hindi inirerekomenda ang pagtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" /> sa isang kiosk app dahil maaari nitong pigilan ang pagtanggap ng device ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung magtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
 <translation id="1689963000958717134">Nagbibigay-daan na malapat sa lahat ng user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang string na naka-format sa JSON tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Kino-configure ang availability at gawi ng functionality ng pag-update sa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware.
+
+      Matutukoy ang mga indibidwal na setting sa mga JSON property:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Kung nakatakda sa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, mati-trigger ng mga user ang powerwash flow para mag-install ng pag-update sa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Kung nakatakda sa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, mai-invoke ng mga user ang update flow ng <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware na nagpapanatili sa status ng buong device (kabilang ang pag-enroll sa enterprise), pero mawawala nito ang data ng user. Available ang update flow na ito simula bersyon 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Kinokontrol kung paano ipinapatupad ng mga awtomatikong update sa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware para sa nanganganib na <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware. Pinapanatili ng lahat ng flow ang status ng lokal na device.
+        Kung nakatakda sa 1 o hindi naitakda, hindi ipapatupad ang mga update sa TPM firmware.
+        Kung nakatakda sa 2, ia-update ang <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sa susunod na pag-reboot pagkatapos kilalanin ng user ang update.
+        Kung nakatakda sa 3, ia-update ang <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware sa susunod na pag-reboot.
+        Kung nakatakda sa 4, ia-update ang <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware pagkatapos ng pag-enroll bago ang pag-sign in ng user.
+        Available ang opsyong ito simula bersyon 74.
+
+      Kung hindi naitakda ang patakaran, hindi magiging available ang functionality ng pag-update sa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware.</translation>
 <translation id="1708496595873025510">Itakda ang paghihigpit sa pagkuha ng seed ng Mga Variation</translation>
 <translation id="1717817358640580294">Kung hindi ito nakatakda at makatukoy ang Chrome Cleanup ng hindi gustong software, maaari itong mag-ulat ng metadata tungkol sa pag-scan sa Google alinsunod sa patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Pagkatapos, tatanungin ng Chrome Cleanup ang user kung gusto niyang linisin ang hindi gustong software. Maaaring piliin ng user na ibahagi ang mga resulta ng paglilinis sa Google para makatulong sa pagtukoy ng hindi gustong software sa hinaharap. Ang mga resultang ito ay naglalaman ng metadata ng file, mga awtomatikong na-install na extension, at mga key ng registry, ayon sa inilalarawan sa Whitepaper sa Privacy ng Chrome.
 
@@ -985,9 +1001,9 @@
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2836621397261130126">Nagkokontrol kung susundin ba ang pag-apruba ng patakaran ng KDC para magpasya kung maglalaan ba ng mga ticket ng <ph name="KERBEROS" />.
 
-          Kung true ang patakarang ito, susundin ng pag-authenticate ng HTTP ang pag-apruba ng patakaran ng KDC, ibig sabihin, maglalaan lang ang Chrome ng mga kredensyal kung itatakda ng KDC ang <ph name="OK_AS_DELEGATE" /> sa isang ticket ng serbisyo. Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon. Dapat ding tumugma ang serbisyo sa patakaran ng 'AuthNegotiateDelegateWhitelist.'
+          Kung "true" ang patakarang ito, susundin ng pag-authenticate ng HTTP ang pag-apruba ng patakaran ng KDC, ibig sabihin, maglalaan lang ang Chrome ng mga kredensyal kung itatakda ng KDC ang <ph name="OK_AS_DELEGATE" /> sa isang ticket ng serbisyo. Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon. Dapat ding tumugma ang serbisyo sa patakaran ng 'AuthNegotiateDelegateWhitelist.'
 
-          Kung hindi nakatakda o nakatakda sa false ang patakarang ito, babalewalain ang patakaran ng KDC sa mga sinusuportahang platform at ang patakaran ng 'AuthNegotiateDelegateWhitelist' lang ang susundin.
+          Kung hindi nakatakda o nakatakda sa "false" ang patakarang ito, babalewalain ang patakaran ng KDC sa mga sinusuportahang platform at ang patakaran ng 'AuthNegotiateDelegateWhitelist' lang ang susundin.
 
           Sa Windows, palaging sinusunod ang patakaran ng KDC.</translation>
 <translation id="283695852388224413">Kung itatakda ang patakaran, ipapatupad ang naka-configure na maximal na haba ng PIN. Ang value na 0 o mas mababa ay nangangahulugang walang maximum na haba; sa ganitong sitwasyon, puwedeng magtakda ang user ng PIN gaano man kahaba nila gusto. Kung ang setting na ito ay mas mababa sa <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> ngunit mas malaki sa 0, pareho ang maximum na haba at ang minimum na haba.
@@ -1256,6 +1272,17 @@
       Maitatakda lang bilang inirerekomenda ang patakarang ito. Magagamit mo ang patakarang ito para maglipat ng hanay ng mga inirerekomendang lokalidad sa itaas, ngunit maaaring pumili anumang oras ang mga user ng anumang lokalidad na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> para sa kanilang session.
       </translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
+<translation id="3384115339826100753">I-enable ang patakaran sa pamamahala ng baterya sa power peak shift.
+
+          Ang Peak Shift ay isang patakaran sa pagtitipid ng baterya na nagpapababa sa paggamit ng alternating current sa panahong pinakaginagamit ito sa buong araw. Maaaring itakda mula Lunes hanggang Biyernes ang isang oras ng pagsisimula at oras ng pagtatapos sa power Peak Shift mode. Sa panahong ito, gagamitin ng system ang baterya kahit na nakasaksak ang alternating current hangga't mas mataas sa tinukoy na limitasyon ang baterya. Pagkatapos ng tinukoy na oras ng pagtatapos, gagamitin ng system ang alternating current kung nakasaksak ito pero hindi icha-charge ang baterya. Gaganang muli nang normal ang system gamit ang alternating current at muling icha-charge ang baterya pagkatapos ng oras ng Pagsisimula ng Pag-charge.
+
+          Kung nakatakda sa true ang patakarang ito, at nakatakda ang DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig, palaging ie-enable ang power peak shift kung sinusuportahan sa device.
+
+          Kung nakatakda sa false ang patakarang ito, palaging idi-disable ang power peak shift.
+
+          Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
+
+          Kung hindi naitakda ang patakarang ito, idi-disable muna ang power peak shift at hindi maaaring i-enable ng user.</translation>
 <translation id="3388153794103186066">Nagbibigay-daan sa iyong magtakda ng listahan ng mga url na tumutukoy kung aling mga site ang awtomatikong bibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat makita sa bawat item sa listahan ang mga device at url para maging valid ang patakaran. Maaaring makakita sa bawat item sa mga device ng field ng vendor ID at product ID. Ang anumang ID na aalisin ay ituturing na wildcard maliban sa isang exception, at iyon ay hindi makakatukoy ng product ID kung hindi tutukoy ng vendor ID. Kung hindi, hindi magiging valid ang patakaran at babalewalain ito.
 
         Ginagamit ng model ng pahintulot sa USB ang URL ng humihiling na site ("humihiling na URL") at ang URL ng nangungunang frame site ("nag-e-embed na URL") para magbigay ng pahintulot sa humihiling na URL na i-access ang USB device. Maaaring iba ang humihiling na URL sa nag-e-embed na URL kapag na-load ang humihiling na site sa iframe. Kung kaya, maaaring magkaroon ang field ng "mga url" ng hanggang dalawang string ng URL na dine-delimit ng kuwit para matukoy ang humihiling at nag-e-embed na URL. Kung isang URL lang ang tutukuyin, magbibigay ng access sa mga kaukulang USB device kapag tumugma ang URL ng humihiling na site sa URL na ito anuman ang status ng pag-embed. Ang mga URL sa "mga url" ay dapat mga valid na URL, kung hindi ay babalewalain ang patakaran.
@@ -1348,6 +1375,7 @@
       Kung itatakda ang patakarang ito sa 'DeveloperToolsDisallowed' (value 2), ang Mga Tool ng Developer ay hindi maa-access at ang mga elemento ng website ay hindi na masisiyasat. Ang anumang keyboard shortcut at anumang menu o entry sa menu ng konteksto para buksan ang Mga Tool ng Developer o JavaScript Console ay madi-disable.</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="355118380775352753">Mga website na bubuksan sa alternatibong browser</translation>
+<translation id="3554984410014457319">Payagan ang Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses</translation>
 <translation id="3577251398714997599">Setting ng mga ad para sa mga site na may mga nakakasagabal na ad</translation>
 <translation id="357917253161699596">Payagan ang mga user na pamahalaan ang mga certificate ng user</translation>
 <translation id="3583230441447348508">Tumutukoy ng listahan ng mga naka-preconfigure na file share sa network.
@@ -1582,6 +1610,12 @@
       Awtomatikong tumitingin ng mga update ang mga device ng <ph name="PRODUCT_OS_NAME" /> kapag hindi naka-configure, o nakatakda sa False ang setting na ito.
 
       Babala: Inirerekomendang panatilihing naka-enable ang mga awtomatikong pag-update upang makatanggap ang mga user ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung io-off ang mga awtomatikong pag-update.</translation>
+<translation id="4018000735882846261">Ang patakarang ito ay nagbibigay ng pahintulot sa Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses.
+
+      Kung naka-enable ang patakaran, makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
+      Kung naka-disable ang patakaran, hindi makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
+      Kung hindi nakatakda ang patakaran, hindi makikinig ang Google Assistant sa parirala para sa pag-activate gamit ang boses.
+      </translation>
 <translation id="4020682745012723568">Hindi maa-access sa mga Android app ang cookies na inilipat sa profile ng user.</translation>
 <translation id="402759845255257575">Huwag payagang magpatakbo ng JavaScript ang anumang site</translation>
 <translation id="4027608872760987929">Paganahin ang default na provider ng paghahanap</translation>
@@ -1777,6 +1811,7 @@
       Kahit ang mismong patakaran ay sinusuportahan sa mga platform sa itaas, maaaring available sa mas kaunting platform ang ine-enable nitong feature. Hindi lahat ng mga hindi na ginagamit na feature ng Web Platform ay maaaring i-enable muli. Sa mga feature lang na nakikitang nakalista sa ibaba ang maaaring maging sa limitadong yugto ng panahon, na magkakaiba para sa bawat feature. Ang pangkalahatang format ng string tag ay magiging [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Bilang sanggunian, makikita mo ang layunin sa likod ng mga pagbabago ng feature ng Web Platform sa https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Paganahin ang lock kapag naging idle o nasuspinde ang device.</translation>
+<translation id="4449469846627734399">Itakda ang power peak shift day config</translation>
 <translation id="4449545651113180484">I-rotate ang screen pakanan nang 270 degrees</translation>
 <translation id="445270821089253489">Nagkokontrol sa iniuulat na uri ng impormasyon ng user at device.</translation>
 <translation id="4454820008017317557">Ipakita ang icon ng toolbar ng <ph name="PRODUCT_NAME" /></translation>
@@ -1975,6 +2010,11 @@
 
       Available lang ang patakarang ito bilang platform.
       </translation>
+<translation id="5034604678285451405">Itakda ang limitasyon ng baterya ng power peak shift sa porsyento.
+
+          Ginagamit lang ang patakarang ito kung nakatakda sa true ang DevicePowerPeakShiftEnabled.
+
+          Kung hindi naka-configure o hindi naitakda ang patakarang ito, palaging idi-disable ang power peak shift.</translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
 
@@ -2267,6 +2307,7 @@
 <translation id="5457065417344056871">I-enable ang guest mode sa browser</translation>
 <translation id="5457924070961220141">Binibigyang-daan kang i-configure ang default na taga-render ng HTML kapag naka-install ang <ph name="PRODUCT_FRAME_NAME" />.
           Ang default na setting na ginagamit kapag hinayaang hindi nakatakda ang patakarang ito ay ang pagpayag sa browser ng host na gawin ang pag-render, ngunit maaari mo itong i-override at ipa-render sa <ph name="PRODUCT_FRAME_NAME" /> ang mga pahina ng HTML bilang default.</translation>
+<translation id="5458584148602890023">I-enable ang power peak shift</translation>
 <translation id="5464816904705580310">I-configure ang mga setting para sa mga pinapamahalaang user.</translation>
 <translation id="546726650689747237">Delay ng pag-dim ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="5469143988693423708">Naka-enable ang user na patakbuhin ang Crostini</translation>
@@ -2611,6 +2652,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi mako-configure ang patakarang ito, hindi magkakaroon ng laman ang listahan ng mga nade-detach na USB device.</translation>
 <translation id="6083631234867522991">Windows (mga Windows client):</translation>
+<translation id="608788685013546076">Itakda ang limitasyon ng baterya ng power peak shift sa porsyento.</translation>
 <translation id="6089679180657323464">Nagkokontrol sa mga setting ng wilco diagnostics and telemetry controller.</translation>
 <translation id="6091233616732024397">Pwersahin ang mga user na mag-sign in para magamit ang browser</translation>
 <translation id="6093156968240188330">Binibigyang-daan ang mga remote na user na makipag-ugnayan sa mga elevated window sa mga session ng remote na tulong</translation>
@@ -3843,6 +3885,9 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8548832052135586762">Itinatakda ang pag-print sa may kulay lang, monochrome lang, o walang paghihigpit sa color mode. Itinuturing na walang paghihigpit ang hindi nakatakdang patakaran.</translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
+<translation id="8569734380847633643">
+          Kung nakatakda sa false ang patakaran, idi-disable ng<ph name="PRODUCT_OS_NAME" /> ang WiFi at hindi na ito mae-enable muli ng mga user.
+          Kung nakatakda sa true o hindi naitakda ang patakaran, magagawa ng mga user na mag-enable o mag-disable ng Wi-Fi kung gusto nila.</translation>
 <translation id="857369585509260201">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang BrowserSignin.
 
       Kung itatakda ang patakarang ito sa true, kailangang mag-sign in ang user sa <ph name="PRODUCT_NAME" /> gamit ang kanyang profile bago gamitin ang browser. Gayundin, itatakda sa false ang default na value ng BrowserGuestModeEnabled. Tandaang mala-lock at hindi na maa-access ang mga kasalukuyang unsigned na profile pagkatapos i-enable ang patakarang ito. Para sa higit pang impormasyon, tingnan ang artikulo sa help center.
@@ -3902,6 +3947,13 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8685024486845674965">Ang babala ng proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="8693243869659262736">Gamitin ang built-in na DNS client</translation>
 <translation id="8703488928438047864">Iulat ang status ng board</translation>
+<translation id="8703872185032220081">Itakda ang power peak shift day config.
+
+          Ginagamit lang ang patakarang ito kung nakatakda sa true ang DevicePowerPeakShiftEnabled.
+
+          Kung hindi naka-configure o hindi naitakda ang patakarang ito, palaging idi-disable ang power peak shift.
+
+          Tandaan: ang mga pinapayagang value para sa field na <ph name="MINUTE_FIELD_NAME" /> sa <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> at <ph name="CHARGE_START_TIME_FIELD_NAME" /> ay 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Listahan ng mga hindi pinaganang plugin</translation>
 <translation id="8711086062295757690">Tinutukoy ang keyword, ang shortcut na ginamit sa omnibox upang i-trigger ang paghahanap para sa provider na ito.
 
@@ -4100,6 +4152,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Kung hahayaang hindi nakatakda ang patakaran, puwedeng piliin ng user ang larawan ng avatar na kumakatawan sa kanya sa screen sa pag-log in.</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
+<translation id="9038839118379817310">I-enable ang Wi-Fi</translation>
 <translation id="9039822628127365650">Kapag nakatakda ang patakarang ito, isinasaad nito ang haba ng oras kung kailan awtomatikong mala-log out ang user pagkatapos nito, at matatapos ang session. Ipapaalam sa user ang tungkol sa natitirang oras sa pamamagitan ng timer ng countdown na ipapakita sa system tray.
 
       Kapag hindi nakatakda ang patakarang ito, hindi limitado ang haba ng session.

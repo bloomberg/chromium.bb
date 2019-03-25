@@ -312,6 +312,22 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Advertencia: No se recomienda delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una aplicación de kiosco porque puede evitar que el dispositivo reciba actualizaciones de software y correcciones de seguridad muy importantes. Delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> podría suponer un riesgo para los usuarios.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
 <translation id="1689963000958717134">Permite aplicar la configuración de red para todos los usuarios de un dispositivo <ph name="PRODUCT_OS_NAME" />. La configuración de red es una cadena en formato JSON, tal y como se define en la página sobre el formato Open Network Configuration (<ph name="ONC_SPEC_URL" />).</translation>
+<translation id="1704516734140344991">Configura la disponibilidad y el comportamiento de la función de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Los ajustes individuales se pueden especificar en las propiedades de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si se le asigna el valor "<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />", los usuarios podrán activar el flujo de Powerwash para instalar una actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si se le asigna el valor "<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />", los usuarios podrán ejecutar el flujo de la actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> que mantiene el estado en todos los dispositivos (incluido el registro de empresa), pero se perderán los datos de usuario. Este flujo de actualizaciones está disponible a partir de la versión 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: controla cómo se ejecutan las actualizaciones automáticas del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para firmware vulnerable de <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Todos los flujos conservan el estado local del dispositivo.
+        Si se le asigna 1 como valor o no se le asigna ningún valor, las actualizaciones del firmware de TPM no se aplicarán.
+        Si se le asigna 2 como valor, el firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará cuando se reinicie el equipo después de que el usuario haya aceptado la actualización.
+        Si se le asigna 3 como valor, el firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará cuando se reinicie el equipo.
+        Si se le asigna 4 como valor, el firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará tras el registro, antes del inicio de sesión del usuario.
+        Esta opción está disponible a partir de la versión 74.
+
+      Si no se le asigna ningún valor a esta política, la función de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> no estará disponible.</translation>
 <translation id="1708496595873025510">Establecer restricción en obtención de base de variaciones</translation>
 <translation id="1717817358640580294">Si no se define esta política, cuando Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis a Google, según la política definida por SafeBrowsingExtendedReportingEnabled. Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. El usuario tendrá la opción de compartir los resultados de la limpieza con Google para ayudar a detectar software no deseado en el futuro. Estos resultados contienen metadatos de archivos, extensiones instaladas de forma automática y claves de registro, tal como se describe en la página de información sobre privacidad de Chrome.
 
@@ -1068,7 +1084,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
 <translation id="3284094172359247914">Controlar el uso de la API WebUSB</translation>
-<translation id="3288595667065905535">Canal de versiones</translation>
+<translation id="3288595667065905535">Canal de lanzamiento</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> actúe como proxy entre <ph name="CLOUD_PRINT_NAME" /> y las impresoras anteriores conectadas al ordenador.
 
       Si esta opción se habilita o no se configura, los usuarios podrán habilitar el proxy de Google Cloud Print si realizan el proceso de autenticación con sus cuentas de Google.
@@ -1111,6 +1127,17 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Esta política solo se puede establecer según los ajustes recomendados. Puedes utilizarla para mover un conjunto de configuraciones regionales recomendadas al principio de la lista, pero los usuarios siempre pueden elegir cualquier configuración regional admitida por <ph name="PRODUCT_OS_NAME" /> para su sesión.
       </translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
+<translation id="3384115339826100753">Habilitar la política de gestión de energía Peak Shift.
+
+          Peak Shift es una política de ahorro de energía que minimiza el uso de corriente alterna durante las horas de mayor uso de energía del día. Para ejecutar el modo de energía Peak Shift, se puede configurar una hora de inicio y de finalización para cada día de la semana. Durante ese tiempo, el sistema funcionará con la batería, incluso si la corriente alterna funciona, siempre que la batería se mantenga por encima del umbral especificado. Después del tiempo especificado, el sistema funcionará con corriente alterna, pero no cargará la batería. El sistema volverá a funcionar con normalidad usando la corriente alterna y cargando la batería después de la hora de inicio de carga especificada.
+
+          Si a esta política se le asigna el valor "True" y las políticas DevicePowerPeakShiftBatteryThreshold y DevicePowerPeakShiftDayConfig están configuradas, Peak Shift siempre estará habilitado si el dispositivo lo permite.
+
+          Si se le asigna el valor "False" a esta política, Peak Shift siempre estará inhabilitado.
+
+          Si asignas un valor a esta política, el usuario no podrá cambiarlo o anularlo.
+
+          Si no le asignas ningún valor, Peak Shift estará inhabilitado inicialmente y el usuario no podrá habilitarlo.</translation>
 <translation id="3388153794103186066">Permite configurar una lista con las URL de los sitios web a los que se concederá permiso automáticamente para acceder a un dispositivo USB con los ID de proveedor y producto facilitados. Cada elemento de la lista debe contener tanto el dispositivo como la URL para que la política sea válida. Cada elemento de los dispositivos puede incluir un campo de ID de proveedor e ID de producto. Los ID que se omitan se considerarán comodines, con una excepción: no se puede especificar un ID de producto sin que se especifique también un ID de proveedor. De lo contrario, la política no será válida y se ignorará.
 
         El modelo de permiso de USB usa la URL del sitio web solicitante ("URL solicitante") y la URL del sitio web marco de nivel superior ("URL de inserción") para otorgar permiso a la URL solicitante para acceder al dispositivo USB. La URL solicitante puede ser distinta a la de inserción si el sitio web solicitante se encuentra en un iframe. Por lo tanto, el campo "urls" puede contener un máximo de dos cadenas de URL delimitadas por una coma para especificar la URL solicitante y la de inserción, respectivamente. Si solo se especifica una URL, se otorgará acceso a los dispositivos USB correspondientes cuando la URL del sitio web solicitante coincida con esta URL, independientemente del estado de inserción. Las URL del campo "urls" deben ser URL válidas; de lo contrario, la política se ignorará.
@@ -1183,6 +1210,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna el valor "True" a la antigua política DeveloperToolsDisabled, el valor de esta política se ignorará y las herramientas para desarrolladores se inhabilitarán.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="355118380775352753">Sitios web que se abren en el navegador alternativo</translation>
+<translation id="3554984410014457319">Permite que el Asistente de Google escuche la frase de activación</translation>
 <translation id="3577251398714997599">Configuración de anuncios de sitios web con anuncios invasivos</translation>
 <translation id="357917253161699596">Permitir que los usuarios gestionen certificados de usuario</translation>
 <translation id="3583230441447348508">Define una lista de sistemas de archivos compartidos en red preconfigurados.
@@ -1407,6 +1435,12 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si se asigna el valor False a esta política o no se configura, los dispositivos con <ph name="PRODUCT_OS_NAME" /> comprobarán automáticamente si existe alguna actualización.
 
       Advertencia: Se recomienda mantener habilitadas las actualizaciones automáticas para que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. Desactivar las actualizaciones automáticas podría suponer un riesgo para los usuarios.</translation>
+<translation id="4018000735882846261">Esta política autoriza al Asistente de Google a escuchar la frase de activación.
+
+      Si se habilita esta política, el Asistente de Google escuchará la frase de activación.
+      De lo contrario, el Asistente de Google no escuchará la frase de activación.
+      Si no se configura esta política, el Asistente de Google no escuchará la frase de activación.
+      </translation>
 <translation id="4020682745012723568">Las aplicaciones para Android no pueden acceder a las cookies transferidas al perfil del usuario.</translation>
 <translation id="402759845255257575">No permitir que ningún sitio ejecute JavaScript</translation>
 <translation id="4027608872760987929">Habilitar proveedor de búsquedas predeterminadas</translation>
@@ -1554,6 +1588,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Aunque la política en sí es compatible con las plataformas anteriores, es posible que la función que habilita no esté disponible en todas ellas. No todas las funciones de Web Platform obsoletas se pueden volver a habilitar. Solo es posible hacerlo con las indicadas específicamente y durante un periodo de tiempo limitado diferente para cada función. El formato general de la etiqueta de cadena será:[NombreDeFunciónObsoleta]_EffectiveUntil[aaaammdd]. Como referencia, puedes consultar los intentos detrás de los cambios de la función Web Platform en la página https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Habilitar el bloqueo cuando el dispositivo esté inactivo o suspendido</translation>
+<translation id="4449469846627734399">Define la configuración diaria de Peak Shift</translation>
 <translation id="4449545651113180484">Girar la pantalla 270 grados hacia la derecha</translation>
 <translation id="445270821089253489">Controla el tipo de información del usuario y del dispositivo que se proporciona.</translation>
 <translation id="4454820008017317557">Mostrar el icono de la barra de herramientas de <ph name="PRODUCT_NAME" /></translation>
@@ -1732,6 +1767,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo.</translation>
 <translation id="4988291787868618635">Acción que se realiza al alcanzar el retraso de inactividad</translation>
 <translation id="4995548127349206948">Si la autenticación NTLMv2 está habilitada.</translation>
+<translation id="5034604678285451405">Establece el umbral del ahorro de batería de Peak Shift en forma de porcentaje.
+
+          Esta política solo se utilizará si se le asigna el valor "True" a la política DevicePowerPeakShiftEnabled.
+
+          Si no se configura esta política o no se le asigna ningún valor, Peak Shift siempre estará inhabilitado.</translation>
 <translation id="5047604665028708335">Permitir acceso a sitios no incluidos en paquetes de contenido</translation>
 <translation id="5052081091120171147">Si se habilita, esta política fuerza la importación del historial de navegación desde el navegador predeterminado actual. Si está habilitada, la política también afecta al cuadro de diálogo de importación.
 
@@ -1949,6 +1989,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5457065417344056871">Habilitar el modo invitados en el navegador</translation>
 <translation id="5457924070961220141">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
           Si no se establece esta política, se permitirá que el navegador del host muestre las páginas HTML de forma predeterminada, pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME" /> muestre las páginas HTML de forma predeterminada.</translation>
+<translation id="5458584148602890023">Habilitar Peak Shift</translation>
 <translation id="5464816904705580310">Permite establecer opciones de configuración de usuarios administrados.</translation>
 <translation id="546726650689747237">Retraso de atenuación de pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="5469143988693423708">El usuario tiene permiso para ejecutar Crostini</translation>
@@ -2246,6 +2287,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se configura esta política, la lista de dispositivos USB que se pueden separar está vacía.</translation>
 <translation id="6083631234867522991">Windows (clientes de Windows):</translation>
+<translation id="608788685013546076">Establece el umbral de batería de Peak Shift en forma de porcentaje</translation>
 <translation id="6089679180657323464">Controla los ajustes del controlador de diagnóstico y telemetría wilco.</translation>
 <translation id="6091233616732024397">Forzar a los usuarios a iniciar sesión para usar el navegador</translation>
 <translation id="6093156968240188330">Permite que los usuarios remotos interactúen con ventanas con permisos de administrador en sesiones de asistencia remota</translation>
@@ -3354,6 +3396,9 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8548832052135586762">Establece el modo de impresión: solo en color, solo monocromo o sin restricción. Si no se asigna ningún valor a esta política, no se aplica ninguna restricción.</translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
 <translation id="8566842294717252664">Oculta tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
+<translation id="8569734380847633643">
+          Si se le asigna el valor "False" a esta política, <ph name="PRODUCT_OS_NAME" /> inhabilitará el Wi-Fi y los usuarios no podrán habilitarlo.
+          Si se le asigna el valor "True" o no se le asigna ningún valor, los usuarios podrán habilitar e inhabilitar el Wi‑Fi cuando quieran.</translation>
 <translation id="857369585509260201">Esta política está obsoleta, pero puedes utilizar BrowserSignin en su lugar.
 
       Si se asigna el valor "True" a esta política, el usuario deberá iniciar sesión en <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado que se asignará a BrowserGuestModeEnabled es "False". Ten en cuenta que, después de habilitar esta política, los perfiles con los que no se haya iniciado sesión se bloquearán y no se podrá acceder a ellos. Para obtener más información, consulta el artículo del Centro de Ayuda.
@@ -3404,6 +3449,13 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
 <translation id="8703488928438047864">Informar sobre el estado de la placa</translation>
+<translation id="8703872185032220081">Define la configuración diaria de Peak Shift.
+
+          Esta política solo se utilizará si se le asigna el valor "True" a la política DevicePowerPeakShiftEnabled.
+
+          Si no se configura esta política o no se le asigna ningún valor, Peak Shift siempre estará inhabilitado.
+
+          Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> y <ph name="CHARGE_START_TIME_FIELD_NAME" /> son 0, 15, 30 y 45.</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
 <translation id="8711086062295757690">Permite especificar la palabra clave, que se usa como acceso directo en el omnibox para generar resultados de búsqueda de este proveedor.
 
@@ -3548,6 +3600,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8976531594979650914">Usar impresora predeterminada del sistema como opción predeterminada</translation>
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
+<translation id="9038839118379817310">Habilitar Wi‑Fi</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">
       Si se habilita la política, cada uno de los orígenes especificados en una lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán los orígenes de los subdominios correspondientes (por ejemplo, especificar https://example.com/ aísla https://foo.example.com/ como parte del sitio web https://example.com/).

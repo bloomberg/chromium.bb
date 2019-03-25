@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">ምንም ቀዳሚ የጽሑፍ ጥቅስ የለም።</translation>
 <translation id="1321576897702511272">የChromeVox እገዛን ደብቅ</translation>
 <translation id="1325946044405407859">ቡናማ የሚመስል</translation>
+<translation id="1331634987653814322">የብራይል ቅንብሮች</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ከ<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">የቁምፊ እና ቃል ማስተጋባት</translation>
 <translation id="1334570596456017464">ግርጌ አደር</translation>
@@ -547,6 +548,7 @@
 <translation id="489907760999452556">ውስጣዊ አገናኝ</translation>
 <translation id="4915087353619183190">መማር ሁነታን በማስጀመር ላይ። የqwerty ቁልፍን፣ ሊታደስ የሚችል የብሬይል ቁልፍን ይጫኑ ወይም ተግባሩን ለመረዳት በጣት ይጥረጉ። ለመውጣት control ከw ጋር ወይም escapeን ይጫኑ።</translation>
 <translation id="492295894462528572">መቅድም</translation>
+<translation id="4943781537993885772">የማሳያ ዘይቤ</translation>
 <translation id="495170559598752135">እርምጃዎች</translation>
 <translation id="4953585991029886728">ጽሑፍ ያርትዑ</translation>
 <translation id="4954534434583049121">ቀዳሚ የጽሑፍ ጥቅስ</translation>
@@ -712,6 +714,7 @@
 <translation id="6006050241733874051">ቅጽ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{የኋላ እዝባር}one{# የኋላ እዝባሮች}other{# የኋላ እዝባሮች}}</translation>
 <translation id="6017514345406065928">አረንጓዴ</translation>
+<translation id="6021969570711251331">በውስጥ ትቶ መውጣት</translation>
 <translation id="6034000775414344507">ፈካ ያለ ግራጫ</translation>
 <translation id="6037602951055904232">ወደፊት አንፏቅቅ</translation>
 <translation id="6042826534790431634">ለማግበር ፍለጋ+Space ይጫኑ።</translation>
@@ -762,6 +765,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />፣ ምናሌ</translation>
 <translation id="6444046323172968959">የማንቂያ መገናኛ</translation>
 <translation id="6452403590345320472">ማውጫ</translation>
+<translation id="6454456397828627257">ጎን ለጎን</translation>
 <translation id="6459511626086141404">ልሙጥ የቁልፍ አደራደር</translation>
 <translation id="6468049171101508116">ቀጣይ አዝራር</translation>
 <translation id="646954774886932461">መረጃ ጠቋሚ</translation>

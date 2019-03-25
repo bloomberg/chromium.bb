@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Un singur spațiu</translation>
 <translation id="2610239185026711824">Sugerează o parolă</translation>
 <translation id="2612676031748830579">Număr card</translation>
+<translation id="2613747923081026172">Creează grupul</translation>
 <translation id="2621115761605608342">Permite JavaScript pentru un anumit site.</translation>
 <translation id="2625189173221582860">Parola a fost copiată</translation>
 <translation id="2631006050119455616">Economisite</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Întreabă înainte de a permite site-urilor să redea conținut protejat</translation>
 <translation id="2913331724188855103">Permite site-urilor să salveze și să citească datele asociate cookie-urilor (recomandat)</translation>
 <translation id="2932150158123903946">Stocarea Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Trimite pe dispozitivele mele</translation>
 <translation id="2956410042958133412">Acest cont este gestionat de <ph name="PARENT_NAME_1" /> și de <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="2962095958535813455">Ai comutat la filele incognito</translation>
@@ -826,7 +826,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7031882061095297553">Sincronizează cu</translation>
 <translation id="7032663816368481562">Când atingi Mai multe similare <ph name="ICON" /> în bara de adrese, afișezi linkuri rapide către pagini similare. Adresele URL ale paginilor pe care le accesezi sunt trimise la Google.</translation>
 <translation id="7034608350006174882">Carduri și adrese care folosesc Google Pay</translation>
-<translation id="7037082443972906537">Numele nu este disponibil</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7055152154916055070">Redirecționarea a fost blocată:</translation>
 <translation id="7062545763355031412">Acceptă și comută conturile</translation>
@@ -880,7 +879,9 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nu s-a găsit cardul SD. Este posibil ca unele fișiere să lipsească.</translation>
+<translation id="7479104141328977413">Gestionarea filelor</translation>
 <translation id="7481312909269577407">Înainte</translation>
+<translation id="7482697587265222445">Fila a fost trimisă pe dispozitivele tale</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Actualizată la <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Afișează parolele</translation>
 <translation id="7494974237137038751">date economisite</translation>

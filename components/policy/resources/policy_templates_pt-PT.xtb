@@ -381,6 +381,22 @@
       Aviso: não é recomendado delegar o controlo da versão do <ph name="PRODUCT_OS_NAME" /> a uma aplicação de quiosque, pois tal pode impedir o dispositivo de receber atualizações de software e correções de segurança críticas. Delegar o controlo da versão do <ph name="PRODUCT_OS_NAME" /> pode colocar os utilizadores em risco.</translation>
 <translation id="1675002386741412210">Suportado em:</translation>
 <translation id="1689963000958717134">Permite que a configuração de rede seja aplicada para todos os utilizadores de um dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      É possível especificar definições individuais nas propriedades de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se estiver definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, os utilizadores podem acionar o fluxo de Powerwash para instalar uma atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: se estiver definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, os utilizadores podem invocar o fluxo de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que preserva o estado em todo o dispositivo (incluindo inscrição empresarial), mas perde dados dos utilizadores. Este fluxo de atualização está disponível desde a versão 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: controla de que modo as atualizações automáticas de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> são aplicadas para o firmware vulnerável do <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Todos os fluxos preservam o estado do dispositivo local.
+        Se estiver definida como 1 ou não for definida, as atualizações de firmware do TPM não são aplicadas.
+        Se estiver definida como 2, o firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> será atualizado no próximo reinício, depois de o utilizador ter tomado conhecimento da atualização.
+        Se estiver definida como 3, o firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> será atualizado no próximo reinício.
+        Se estiver definida como 4, o firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> será atualizado após a inscrição, antes do início de sessão do utilizador.
+        Esta opção está disponível desde a versão 74.
+
+      Se a política não estiver definida, a funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> não estará disponível.</translation>
 <translation id="1708496595873025510">Definir a restrição para a obtenção da semente Variações</translation>
 <translation id="1717817358640580294">Se não estiver definida, caso a Limpeza do Chrome detete software indesejado, pode comunicar os metadados da verificação à Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. Em seguida, a Limpeza do Chrome irá perguntar ao utilizador se pretende limpar o software indesejado. O utilizador pode optar por partilhar os resultados da limpeza com a Google para ajudar em futuras deteções de software indesejado. Estes resultados contêm metadados de ficheiros, extensões instaladas automaticamente e chaves de registo, conforme descrito no documento técnico da Privacidade do Chrome.
 
@@ -1229,6 +1245,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Apenas pode definir esta política conforme recomendado. Pode utilizá-la para mover um conjunto de locais recomendados para o topo, mas os utilizadores podem sempre escolher qualquer local suportado pelo <ph name="PRODUCT_OS_NAME" /> para a respetiva sessão.
       </translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
+<translation id="3384115339826100753">Ative a política de gestão de energia de desvio de picos de energia.
+
+          O Desvio de picos é uma política de poupança de energia que minimiza a utilização de corrente alternada durante as horas de pico de utilização durante o dia. Para cada dia da semana, pode ser definida uma hora de início e uma hora de fim para que seja utilizado o modo de Desvio de picos de energia. Durante estas horas, o sistema é alimentado pela bateria, mesmo se a corrente alternada estiver ligada, desde que a bateria se mantenha acima do limiar especificado. Após a hora de fim especificada, o sistema é alimentado pela corrente alternada, caso esteja ligada, mas não carrega a bateria. O sistema volta a funcionar normalmente com corrente alternada e recarrega a bateria após a hora de Início de carregamento especificada.
+
+          Se esta política estiver definida como verdadeira e DevicePowerPeakShiftBatteryThreshold e DevicePowerPeakShiftDayConfig estiverem definidas, o desvio de picos de energia está sempre ativado, caso seja suportado no dispositivo.
+
+          Se esta política estiver definida como falsa, o desvio de picos de energia está sempre desativado.
+
+          Se definir esta política, os utilizadores não a podem alterar nem substituir.
+
+          Se esta política não for definida, o desvio de picos de energia está inicialmente desativado e não pode ser ativado pelo utilizador.</translation>
 <translation id="3388153794103186066">Permite-lhe definir uma lista de URLs que especificam os sites aos quais será concedida automaticamente autorização para aceder a um dispositivo USB com os IDs de fornecedor e do produto indicados. Todos os itens na lista devem conter dispositivos e URLs para que a política seja válida. Todos os itens nos dispositivos podem conter um campo de ID de fornecedor e de ID do produto. Os IDs omitidos são tratados como carateres universais, com a exceção de que não é possível especificar um ID do produto sem que o ID de fornecedor também seja especificado. Caso contrário, a política não é válida e será ignorada.
 
         O modelo de autorização de USB utiliza o URL do site requerente ("URL requerente") e o URL do site de nível superior ("URL incorporante") para autorizar o URL requerente a aceder ao dispositivo USB. O URL requerente pode ser diferente do URL incorporante se o site requerente for carregado num iFrame. Assim, o campo "URLs" pode conter até duas strings de URL separadas por vírgula para especificar o URL requerente e o URL incorporante, respetivamente. Se apenas for especificado um URL, é concedido acesso aos dispositivos USB correspondentes quando o URL do site requerente corresponder a este URL, independentemente do estado de incorporação. Os URLs no campo "URLs" têm de ser URLs válidos; caso contrário, a política será ignorada.
@@ -1321,6 +1348,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como "DeveloperToolsDisallowed" (valor 2), não é possível aceder às Ferramentas do programador e deixa de ser possível inspecionar os elementos do Website. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="355118380775352753">Websites a abrir num navegador alternativo</translation>
+<translation id="3554984410014457319">Permitir ao Assistente Google ouvir a frase de ativação por voz</translation>
 <translation id="3577251398714997599">Definição dos anúncios para sites com anúncios intrusivos</translation>
 <translation id="357917253161699596">Permitir que os utilizadores efetuem a gestão de certificados do utilizador</translation>
 <translation id="3583230441447348508">Especifica uma lista de partilhas de ficheiros de rede pré-configuradas.
@@ -1553,6 +1581,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Os dispositivos com o <ph name="PRODUCT_OS_NAME" /> procuram automaticamente atualizações se esta definição não estiver configurada ou se estiver definida como Falsa.
 
       Aviso: recomenda-se manter as atualizações automáticas ativadas, para que os utilizadores recebam atualizações de software e correções de segurança críticas. Desativar as atualizações automáticas pode colocar os utilizadores em risco.</translation>
+<translation id="4018000735882846261">Esta política autoriza o Assistente Google a ouvir a frase de ativação por voz.
+
+      Se a política estiver ativada, o Assistente Google vai ouvir a frase de ativação por voz.
+      Se a política estiver desativada, o Assistente Google não vai ouvir a frase de ativação por voz.
+      Se a política não estiver definida, o Assistente Google não vai ouvir a frase de ativação por voz.
+      </translation>
 <translation id="4020682745012723568">Não é possível aceder aos cookies transferidos para o perfil do utilizador nas aplicações para Android.</translation>
 <translation id="402759845255257575">Não permitir que os sites executem JavaScript</translation>
 <translation id="4027608872760987929">Ativar o fornecedor de pesquisas personalizado</translation>
@@ -1746,6 +1780,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Embora a política em si seja suportada nas plataformas acima, a funcionalidade que está a ativar pode estar disponível em menos plataformas. Nem todas as funcionalidades de plataformas Web descontinuadas podem ser reativadas. Apenas podem ser reativadas por um período limitado de tempo as que estão indicadas explicitamente na lista abaixo, o que difere consoante a funcionalidade. O formato geral da etiqueta de string é [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Como referência, pode encontrar a intenção por detrás das alterações às funcionalidades de plataformas Web em https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
+<translation id="4449469846627734399">Defina a configuração de dia de desvio de picos de energia</translation>
 <translation id="4449545651113180484">Rodar o ecrã 270 graus para a direita</translation>
 <translation id="445270821089253489">Controla o tipo de informações do utilizador e do dispositivo comunicadas.</translation>
 <translation id="4454820008017317557">Apresentar o ícone da barra de ferramentas do <ph name="PRODUCT_NAME" /></translation>
@@ -1936,6 +1971,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Esta política só está disponível como plataforma.
       </translation>
+<translation id="5034604678285451405">Defina o limiar da bateria de desvio de picos de energia em percentagem.
+
+          Esta política só é utilizada se DevicePowerPeakShiftEnabled estiver definida como verdadeira.
+
+          Se esta política não estiver configurada ou permanecer indefinida, o desvio de picos de energia está sempre desativado.</translation>
 <translation id="5047604665028708335">Permitir o acesso a sites fora dos pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se esta política estiver ativada, força a importação do histórico de navegação a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o histórico de navegação não é importado. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5055312535952606505">Configura as definições de proxy para o <ph name="PRODUCT_NAME" />. Estas definições de proxy também estão disponíveis para aplicações ARC.
@@ -2208,6 +2248,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5447306928176905178">Ativar informações de memória de relatórios (tamanho da área dinâmica para dados JS) para a página (descontinuado)</translation>
 <translation id="5457065417344056871">Ativar o modo convidado no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador de HTML predefinido quando o <ph name="PRODUCT_FRAME_NAME" /> é instalado. Se esta política não for definida, será utilizada a predefinição para permitir que o processamento seja efetuado pelo navegador anfitrião. Opcionalmente, pode substituir esta definição e configurar o <ph name="PRODUCT_FRAME_NAME" /> para processar páginas HTML por predefinição.</translation>
+<translation id="5458584148602890023">Ativar desvio de picos de energia</translation>
 <translation id="5464816904705580310">Configura definições para utilizadores geridos.</translation>
 <translation id="546726650689747237">Atraso do escurecimento do ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="5469143988693423708">O utilizador pode executar o Crostini</translation>
@@ -2541,6 +2582,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não estiver configurada, a lista de dispositivos USB amovíveis fica vazia.</translation>
 <translation id="6083631234867522991">Windows (clientes Windows):</translation>
+<translation id="608788685013546076">Definir limiar da bateria de desvio de picos de energia em percentagem</translation>
 <translation id="6089679180657323464">Controla as definições do controlador de diagnóstico e telemetria do Wilco.</translation>
 <translation id="6091233616732024397">Forçar os utilizadores a iniciar sessão para utilizar o navegador</translation>
 <translation id="6093156968240188330">Permitir que os utilizadores remotos interajam com janelas de prioridade elevada nas sessões de assistência remota</translation>
@@ -3733,6 +3775,9 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8548832052135586762">Define a impressão para cores apenas, monocromática apenas ou sem restrição do modo de cores. Uma política não definida é tratada como sem restrição.</translation>
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a Web Store da página Novo separador e do iniciador de aplicações</translation>
+<translation id="8569734380847633643">
+          Se a política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> desativa o Wi-Fi e os utilizadores não o podem ativar novamente.
+          Se a política estiver definida como verdadeira ou não for definida, os utilizadores podem ativar ou desativar o Wi-Fi conforme pretendam.</translation>
 <translation id="857369585509260201">Esta política foi descontinuada. Considere a utilização de BrowserSignin em alternativa.
 
       Se esta política estiver definida como verdadeira, o utilizador tem de iniciar sessão no <ph name="PRODUCT_NAME" /> com o respetivo perfil antes de utilizar o navegador e o valor predefinido de BrowserGuestModeEnabled é definido como falso. Tenha em atenção que os perfis não assinados existentes serão bloqueados e estarão inacessíveis após a ativação desta política. Para mais informações, consulte o artigo do Centro de Ajuda.
@@ -3792,6 +3837,13 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8685024486845674965">O aviso de proteção por palavra-passe é acionado pela reutilização da palavra-passe.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS incorporado</translation>
 <translation id="8703488928438047864">Comunicar o estado da placa</translation>
+<translation id="8703872185032220081">Definir configuração do dia de desvio de picos de energia.
+
+          Esta política só é utilizada se DevicePowerPeakShiftEnabled estiver definida como verdadeira.
+
+          Se esta política não estiver configurada ou permanecer indefinida, o desvio de picos de energia está sempre desativado.
+
+          Nota: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> e <ph name="CHARGE_START_TIME_FIELD_NAME" /> são 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave a utilizar como atalho na caixa geral para acionar a pesquisa para este fornecedor. Esta política é opcional. Se não for definida, não será utilizada nenhuma palavra-chave para ativar o fornecedor. Esta política é apenas considerada se a política DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="8731693562790917685">As Definições de Conteúdo permitem-lhe especificar como são processados os conteúdos de um determinado tipo (por exemplo, cookies, imagens ou JavaScript).</translation>
@@ -3985,6 +4037,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Se não definir a política, o utilizador pode escolher a imagem do avatar que o representa no ecrã de início de sessão.</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
+<translation id="9038839118379817310">Ativar o Wi-Fi</translation>
 <translation id="9039822628127365650">Quando esta política está definida, especifica a duração após a qual a sessão de um utilizador é automaticamente terminada, encerrando a sessão. O utilizador é informado sobre o tempo restante através de um temporizador de contagem decrescente mostrado no tabuleiro do sistema.
 
       Quando esta política não está definida, a duração da sessão não é limitada.

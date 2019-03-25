@@ -485,6 +485,7 @@
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Størrelse 2</translation>
+<translation id="361438452008624280">Listepost "<ph name="LANGUAGE_ID" />": Ukendt eller ikke-understøttet sprog.</translation>
 <translation id="3615877443314183785">Angiv en gyldig udløbsdato</translation>
 <translation id="36224234498066874">Ryd browserdata...</translation>
 <translation id="362276910939193118">Vis hele historikken</translation>
@@ -552,6 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 webside tæt på}one{# webside tæt på}other{# websider tæt på}}</translation>
 <translation id="4030383055268325496">&amp;Fortryd tilføjelse</translation>
 <translation id="4032320456957708163">Din browser administreres af <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">Linket, du åbnede, fører til et website, som du ikke normalt besøger. Det forsøger muligvis at forvirre dig.</translation>
 <translation id="4058922952496707368">Nøgle "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">Tilføj gyldig adresse</translation>
@@ -808,7 +810,6 @@
 <translation id="5455374756549232013">Forkert tidsstempel for politik</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}one{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andre}}</translation>
-<translation id="5461666840533392417">Det ser ud til, at du har navigeret væk. Jeg vil fordufte, mens du kigger dig omkring. Hav en god dag!</translation>
 <translation id="5470861586879999274">&amp;Annuller fortryd redigering</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Dette indhold forsøger muligvis at installere farlig software på din enhed, der kan stjæle eller slette dine oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
@@ -1052,6 +1053,7 @@
 <translation id="6957887021205513506">Serverens certifikat ser ud til at være en forfalskning.</translation>
 <translation id="6964255747740675745">Netværkskonfigurationen kunne ikke parses (ugyldig JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Enhed</translation>
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="6973656660372572881">Både faste proxyservere og en webadresse for .pac-script angives.</translation>
@@ -1226,7 +1228,6 @@ Yderligere oplysninger:
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Præfektur</translation>
 <translation id="7791543448312431591">Tilføj</translation>
-<translation id="7793809570500803535">Websitet på <ph name="SITE" /> kan være midlertidigt nede, eller også er den permanent flyttet til en ny webadresse.</translation>
 <translation id="7800304661137206267">Forbindelsen er krypteret ved hjælp af <ph name="CIPHER" /> med <ph name="MAC" /> til meddelelsesgodkendelse og <ph name="KX" /> som hovedudvekslingsmekanisme.</translation>
 <translation id="7802523362929240268">Websitet er pålideligt</translation>
 <translation id="780301667611848630">Nej tak</translation>
@@ -1389,6 +1390,7 @@ Yderligere oplysninger:
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
 <translation id="8792621596287649091">Du kan miste adgangen til din <ph name="ORG_NAME" />-konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>
 <translation id="8800988563907321413">Her vises de forslag, der er tæt på dig</translation>
+<translation id="8805819170075074995">Listepost "<ph name="LANGUAGE_ID" />": Posten blev ignoreret, fordi den også er inkluderet i politikken SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="883848425547221593">Andre bogmærker</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>
@@ -1412,6 +1414,7 @@ Yderligere oplysninger:
 <translation id="8968766641738584599">Gem kort</translation>
 <translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>
 <translation id="8975012916872825179">Omfatter oplysninger såsom telefonnumre, mailadresser og leveringsadresser</translation>
+<translation id="8975263830901772334">Navne på filer, som du udskriver</translation>
 <translation id="8978053250194585037">Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede phishing<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Phishing-websites udgiver sig for at være andre websites med det formål at narre dig.</translation>
 <translation id="8983003182662520383">Betalingsmetoder og adresser, der bruger Google Pay</translation>
 <translation id="8987927404178983737">Måned</translation>

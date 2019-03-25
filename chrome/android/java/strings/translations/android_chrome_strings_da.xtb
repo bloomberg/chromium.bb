@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Enkelt tegnafstand</translation>
 <translation id="2610239185026711824">Foreslå en adgangskode</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
+<translation id="2613747923081026172">Opret gruppe</translation>
 <translation id="2621115761605608342">Tillad JavaScript for et bestemt website.</translation>
 <translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2631006050119455616">Sparet</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Spørg om tilladelse, før websites begynder at afspille beskyttet indhold</translation>
 <translation id="2913331724188855103">Tillad, at websites gemmer og læser cookiedata (anbefales)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagerplads</translation>
-<translation id="2941880727166628951">Send til mine enheder</translation>
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
@@ -746,7 +746,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6496823230996795692">Opret forbindelse til internettet, første gang du bruger <ph name="APP_NAME" />.</translation>
 <translation id="6508722015517270189">Genstart Chrome</translation>
 <translation id="6527303717912515753">Del</translation>
-<translation id="6532866250404780454">Websites, du besøger i Chrome, vise ikke. Alle timere for websites slettes.</translation>
+<translation id="6532866250404780454">Websites, du besøger i Chrome, vises ikke. Alle timere for websites slettes.</translation>
 <translation id="6534565668554028783">Google var for lang tid om at svare</translation>
 <translation id="6538442820324228105">Der er downloadet <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Vælg en fane, der skal overføres</translation>
@@ -826,7 +826,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7031882061095297553">Synkroniser til</translation>
 <translation id="7032663816368481562">Se hurtige links til relaterede sider, når du trykker på Se lignende indhold <ph name="ICON" /> i adresselinjen. Webadresserne på de sider, du besøger, sendes til Google.</translation>
 <translation id="7034608350006174882">Kort og adresser, der bruger Google Pay</translation>
-<translation id="7037082443972906537">Navnet er ikke tilgængeligt</translation>
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7055152154916055070">Omdirigeringen blev blokeret:</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
@@ -880,7 +879,9 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7475192538862203634">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD-kortet blev fundet. Nogle af dine filer mangler muligvis.</translation>
+<translation id="7479104141328977413">Faneadministration</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7482697587265222445">Fanen blev sendt til dine enheder</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Vis adgangskoder</translation>
 <translation id="7494974237137038751">databesparelse</translation>

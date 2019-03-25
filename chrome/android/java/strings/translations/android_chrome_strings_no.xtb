@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Foreslå passord</translation>
 <translation id="2612676031748830579">Kortnummer</translation>
+<translation id="2613747923081026172">Opprett en gruppe</translation>
 <translation id="2621115761605608342">Tillat JavaScript for et bestemt nettsted.</translation>
 <translation id="2625189173221582860">Passordet er kopiert</translation>
 <translation id="2631006050119455616">Spart</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Spør før nettsteder kan spille av beskyttet innhold</translation>
 <translation id="2913331724188855103">Tillat at nettsteder lagrer og leser data i informasjonskapsler (anbefales).</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagring</translation>
-<translation id="2941880727166628951">Send til enhetene mine</translation>
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2962095958535813455">Byttet til inkognitofaner</translation>
@@ -826,7 +826,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7031882061095297553">Synkroniser med</translation>
 <translation id="7032663816368481562">Når du trykker på Mer av dette <ph name="ICON" /> i adressefeltet, vises linker til relaterte sider. Nettadressene til sidene du besøker, sendes til Google.</translation>
 <translation id="7034608350006174882">Kort og adresser ved bruk av Google Pay</translation>
-<translation id="7037082443972906537">Navnet er ikke tilgjengelig</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7055152154916055070">Viderekoblingen er blokkert:</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
@@ -880,7 +879,9 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Finner ikke SD-kort. Noen av filene dine kan mangle.</translation>
+<translation id="7479104141328977413">Faneadministrering</translation>
 <translation id="7481312909269577407">Frem</translation>
+<translation id="7482697587265222445">Fanen er sendt til enheten din</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Vis passord</translation>
 <translation id="7494974237137038751">data spart</translation>

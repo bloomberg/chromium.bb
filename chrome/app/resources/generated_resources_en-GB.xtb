@@ -54,6 +54,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1070705170564860382">Opening in alternative browser in <ph name="COUNTDOWN_SECONDS" /> seconds</translation>
 <translation id="1071917609930274619">Data Encipherment</translation>
+<translation id="1072700771426194907">USB device detected</translation>
 <translation id="1076698951459398590">Enable Theme</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Always block camera access</translation>
@@ -113,6 +114,7 @@
 <translation id="1167199480815330007">Find the 6-digit PIN on the back of your security key</translation>
 <translation id="1168020859489941584">Opening in <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Google name servers</translation>
+<translation id="1169909785351611170">PIN incorrect.</translation>
 <translation id="1171135284592304528">Highlight the object with keyboard focus when it changes</translation>
 <translation id="1173894706177603556">Rename</translation>
 <translation id="1174073918202301297">Shortcut added</translation>
@@ -181,6 +183,7 @@
 <translation id="126156426083987769">A problem with demo mode device licences occurred.</translation>
 <translation id="126710816202626562">Translation language:</translation>
 <translation id="126768002343224824">16x</translation>
+<translation id="1270277066486377738">Please touch the same security key again to confirm the reset. This will erase all credentials stored on the security key and remove any configured PIN.</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
 <translation id="1274977772557788323">Adobe Flash Player Storage settings</translation>
@@ -234,6 +237,7 @@
 <translation id="1361655923249334273">Unused</translation>
 <translation id="1361872463926621533">Play sound on startup</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Close tab}other{Close tabs}}</translation>
+<translation id="1365804713255256726">Failed to reset device. Error <ph name="ERROR_CODE" />.</translation>
 <translation id="1366177842110999534">Run Linux tools, editors and IDEs on your <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Find out more&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Choose a file</translation>
 <translation id="1371301976177520732">Your bookmarks, passwords, history and more on all your devices</translation>
@@ -372,6 +376,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;JavaScript console</translation>
 <translation id="1587907146729660231">Touch the power button with your finger</translation>
+<translation id="1587949806845069687">Enter new PIN. A PIN must be at least four characters long and can contain letters, numbers and other characters.</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="158849752021629804">Need home network</translation>
 <translation id="1588870296199743671">Open Link With...</translation>
@@ -385,6 +390,7 @@
 <translation id="1600857548979126453">Access the page debugger backend</translation>
 <translation id="1601560923496285236">Apply</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
+<translation id="1606402239727171183">Please insert and touch your security key to begin setting or changing a PIN</translation>
 <translation id="1607139524282324606">Clear entry</translation>
 <translation id="1608626060424371292">Remove this user</translation>
 <translation id="1609170755653088773">Sync this password to your iPhone</translation>
@@ -491,6 +497,7 @@
 <translation id="1763808908432309942">Opens in a new tab</translation>
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;New Window</translation>
+<translation id="1766575458646819543">Exited full screen</translation>
 <translation id="1768278914020124551">Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.</translation>
 <translation id="1769104665586091481">Open Link in New &amp;Window</translation>
 <translation id="1773212559869067373">Authentication certificate rejected locally</translation>
@@ -498,6 +505,7 @@
 <translation id="1774833706453699074">Bookmark open pages...</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Please enter this passkey on "<ph name="DEVICE_NAME" />":</translation>
+<translation id="1781291988450150470">Current PIN</translation>
 <translation id="1781502536226964113">Open the New Tab page</translation>
 <translation id="1781771911845953849">Accounts and sync</translation>
 <translation id="1782196717298160133">Finding your phone</translation>
@@ -912,6 +920,7 @@
 <translation id="2453021845418314664">Advanced sync settings</translation>
 <translation id="2453860139492968684">Finish</translation>
 <translation id="2454247629720664989">Keyword</translation>
+<translation id="2455122176076606103">That security key is locked due to too many incorrect PIN attempts. It must be reset in order to perform any PIN-based operations.</translation>
 <translation id="245661998428026871">The video in picture-in-picture mode will stop playing.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> wants to copy files from <ph name="VOLUME_NAME" />.</translation>
 <translation id="2458591546854598341">Device management token is invalid.</translation>
@@ -933,6 +942,7 @@
 <translation id="2487067538648443797">Add new bookmark</translation>
 <translation id="2489829450872380594">Next time, a new phone will unlock this <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings.</translation>
 <translation id="2489918096470125693">Add &amp;Folder...</translation>
+<translation id="2490575462301446554">PIN successfully set.</translation>
 <translation id="249113932447298600">Sorry, the device <ph name="DEVICE_LABEL" /> is not supported at this time.</translation>
 <translation id="249303669840926644">Could not complete registration</translation>
 <translation id="2495777824269688114">Discover more features or get answers. Select '?' for help.</translation>
@@ -976,6 +986,7 @@
 <translation id="2549985041256363841">Start recording</translation>
 <translation id="2550212893339833758">Swapped memory</translation>
 <translation id="2550596535588364872">Allow <ph name="EXTENSION_NAME" /> to open <ph name="FILE_NAME" />?</translation>
+<translation id="2552966063069741410">Timezone</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> was unable to connect to <ph name="NETWORK_ID" />. Please select another network or try again.</translation>
 <translation id="2553440850688409052">Hide This Plug-in</translation>
 <translation id="2554553592469060349">Selected file is too big (max size: 3mb).</translation>
@@ -1003,6 +1014,7 @@
 <translation id="2588636910004461974">Devices from <ph name="VENDOR_NAME" /></translation>
 <translation id="258932246702879617">Select <ph name="BEGIN_BOLD" />Pin to taskbar<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Search Google or type URL</translation>
+<translation id="2600730035760241059">Reset devices, set and change PINs.</translation>
 <translation id="2603115962224169880">Clean up computer</translation>
 <translation id="2603463522847370204">Open in &amp;Incognito window</translation>
 <translation id="2604255671529671813">Network connection error</translation>
@@ -1018,6 +1030,7 @@
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2619761439309613843">Daily Refresh</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2622053291576368721">Please remove, reinsert and then touch your security key to begin the reset process.</translation>
 <translation id="26224892172169984">Do not allow any site to handle protocols</translation>
 <translation id="2624142942574147739">This page is accessing your camera and microphone.</translation>
 <translation id="2626799779920242286">Please try again later.</translation>
@@ -1027,6 +1040,7 @@
 <translation id="2633199387167390344"><ph name="NAME" /> is using <ph name="USAGE" /> MB of disk space.</translation>
 <translation id="2633212996805280240">Remove "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> couldn't complete installation, but will continue to run from its disk image.</translation>
+<translation id="2634486338302512222">Enter your &lt;i&gt;current&lt;/i&gt; PIN to change it. If you do not know the current PIN then the token has to be reset to clear it.</translation>
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">Signing</translation>
 <translation id="2636625531157955190">Chrome cannot access the image.</translation>
@@ -1067,6 +1081,7 @@
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.</translation>
 <translation id="2695749433451188613">Internet Printing Protocol (HTTPS)</translation>
+<translation id="2699911226086014512">PIN operation failed with code <ph name="RETRIES" />.</translation>
 <translation id="270358213449696159">Google Chrome OS Terms contents</translation>
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">Touchpad speed</translation>
@@ -1226,7 +1241,6 @@
 <translation id="2938225289965773019">Open <ph name="PROTOCOL" /> links</translation>
 <translation id="2939938020978911855">Show available Bluetooth devices</translation>
 <translation id="2941112035454246133">Low</translation>
-<translation id="2941880727166628951">Send to my devices</translation>
 <translation id="2942560570858569904">Waiting...</translation>
 <translation id="2942581856830209953">Customise this page</translation>
 <translation id="2944060181911631861">Send usage and diagnostic data. Help improve your Android experience by automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
@@ -1316,6 +1330,7 @@
 <translation id="3085752524577180175">SOCKS Host</translation>
 <translation id="3088325635286126843">&amp;Rename...</translation>
 <translation id="3089137131053189723">Search cleared</translation>
+<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{Incorrect PIN. You only have one attempt remaining.}other{Incorrect PIN. You have # attempts remaining.}}</translation>
 <translation id="3090193911106258841">Accessing audio and video input</translation>
 <translation id="3090819949319990166">Can't copy external crx file to <ph name="TEMP_CRX_FILE" />.</translation>
 <translation id="3090871774332213558">"<ph name="DEVICE_NAME" />" paired</translation>
@@ -1375,6 +1390,7 @@
 <translation id="3192947282887913208">Audio Files</translation>
 <translation id="3194737229810486521"><ph name="URL" /> wants to permanently store data on your device</translation>
 <translation id="3199127022143353223">Servers</translation>
+<translation id="3201422919974259695">Available USB devices will appear here.</translation>
 <translation id="3202131003361292969">Path</translation>
 <translation id="3202173864863109533">This tab's audio is being muted.</translation>
 <translation id="3208703785962634733">Unconfirmed</translation>
@@ -1395,6 +1411,7 @@
 <translation id="323803881985677942">Open extension options</translation>
 <translation id="3241680850019875542">Select the root directory of the extension to pack. To update an extension, also select the private key file to reuse.</translation>
 <translation id="3244294424315804309">Continue muting sound</translation>
+<translation id="3246263372552241767">Your security key has been removed.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – Network error</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Not Part Of Certificate&gt;</translation>
@@ -1441,6 +1458,7 @@
 <translation id="3308006649705061278">Organisational Unit (OU)</translation>
 <translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="3308134619352333507">Hide Button</translation>
+<translation id="3308634184507184485">Security Keys</translation>
 <translation id="3308852433423051161">Loading Google Assistant...</translation>
 <translation id="3312424061798279731">Enabled languages</translation>
 <translation id="3313590242757056087">To set which websites the supervised user can view, you can configure restrictions
@@ -1522,7 +1540,6 @@
 <translation id="3440663250074896476">More actions for <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Ask when a site wants to use a plug-in to access your computer</translation>
 <translation id="3441653493275994384">Screen</translation>
-<translation id="3442151986393356303">Include recent Assistant history via Sherlog. This may include your identity, location and debug info <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="344630545793878684">Read your data on a number of websites</translation>
 <translation id="3449839693241009168">Press <ph name="SEARCH_KEY" /> to send commands to <ph name="EXTENSION_NAME" /></translation>
@@ -1549,7 +1566,6 @@
 <translation id="347785443197175480">Continue allowing <ph name="HOST" /> to access your camera and microphone</translation>
 <translation id="3478685642445675458">Please unlock your profile before removing a person.</translation>
 <translation id="3479552764303398839">Not now</translation>
-<translation id="3480119035619598820">Send to My Devices</translation>
 <translation id="3484273680291419129">Removing harmful software...</translation>
 <translation id="3484869148456018791">Get new certificate</translation>
 <translation id="3487007233252413104">anonymous function</translation>
@@ -1623,6 +1639,7 @@
 <translation id="3593965109698325041">Certificate Name Constraints</translation>
 <translation id="3596235046596950091">Enable cloud services</translation>
 <translation id="3599863153486145794">Clears history from all signed-in devices. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="3600051066689725006">Web request info</translation>
 <translation id="3600792891314830896">Mute sites that play sound</translation>
 <translation id="360180734785106144">Offer new features as they become available</translation>
 <translation id="3602290021589620013">Preview</translation>
@@ -1733,6 +1750,7 @@
 <translation id="3752673729237782832">My devices</translation>
 <translation id="3755411799582650620">Your <ph name="PHONE_NAME" /> can now unlock this <ph name="DEVICE_TYPE" /> too.</translation>
 <translation id="375636864092143889">Site is using your microphone</translation>
+<translation id="3756578970075173856">Set PIN</translation>
 <translation id="3757733214359997190">No sites found</translation>
 <translation id="375841316537350618">Downloading proxy script...</translation>
 <translation id="3758842566811519622">Cookies set</translation>
@@ -1835,6 +1853,7 @@
 <translation id="3898521660513055167">Token Status</translation>
 <translation id="389901847090970821">Select keyboard</translation>
 <translation id="3899879303189199559">Offline for more than a year</translation>
+<translation id="3900105072479897941">Reset was not permitted. Some security keys may only allow a reset within the first few seconds after being inserted — you may wish to reattempt the process more quickly.</translation>
 <translation id="3900966090527141178">Export passwords</translation>
 <translation id="3901991538546252627">Connecting to <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Repair app</translation>
@@ -1896,6 +1915,7 @@
 <translation id="3981760180856053153">Invalid save type entered.</translation>
 <translation id="3982375475032951137">Set up your browser in a few simple steps</translation>
 <translation id="3983400541576569538">Data from some apps may be lost</translation>
+<translation id="3983503144326094739">That security key is temporarily locked due to too many incorrect PIN attempts. Remove it and reinsert to unlock.</translation>
 <translation id="3983586614702900908">devices from an unknown vendor</translation>
 <translation id="3984159763196946143">Couldn't start demo mode</translation>
 <translation id="3987348946546879621">Saved data</translation>
@@ -2059,6 +2079,7 @@
 <translation id="4268025649754414643">Key Encipherment</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No matches</translation>
+<translation id="4273065492769210106">You have <ph name="RETRIES" /> attempts remaining.</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4278101229438943600">Your Assistant is ready</translation>
 <translation id="4278390842282768270">Allowed</translation>
@@ -2118,6 +2139,7 @@
 <translation id="4378154925671717803">Phone</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4378556263712303865">Device requisition</translation>
+<translation id="4380648069038809855">Entered full screen</translation>
 <translation id="4384312707950789900">Add to preferred</translation>
 <translation id="4384652540891215547">Activate the extension</translation>
 <translation id="438503109373656455">Spirit</translation>
@@ -2190,7 +2212,6 @@
 <translation id="4514542542275172126">Set up new supervised user</translation>
 <translation id="4514610446763173167">Toggle video to play or pause</translation>
 <translation id="451515744433878153">Remove</translation>
-<translation id="4518677423782794009">Is Chrome crashing, showing unusual start-up pages, toolbars or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Clean-Up Tool.</translation>
 <translation id="4519935350946509010">Connection error.</translation>
 <translation id="4520385623207007473">Cookies in use</translation>
 <translation id="452039078290142656">unknown devices from <ph name="VENDOR_NAME" /></translation>
@@ -2199,6 +2220,7 @@
 <translation id="4524832533047962394">The supplied enrolment mode is not supported by this version of the operating system. Please make sure that you are running the newest version.</translation>
 <translation id="4525382759303819021">Get the latest updates and recommendations on Play Store apps</translation>
 <translation id="4530494379350999373">Origin</translation>
+<translation id="4531586020343813806">That security key does not support being reset.</translation>
 <translation id="4533846798469727141">Now say "Hey Google"</translation>
 <translation id="4533985347672295764">CPU Time</translation>
 <translation id="4534661889221639075">Try again.</translation>
@@ -2450,6 +2472,7 @@
 <translation id="4927846293686536410">Sign in to get your bookmarks, history, passwords and other settings on all your devices. You'll also automatically be signed in to your Google services.</translation>
 <translation id="4929386379796360314">Print Destinations</translation>
 <translation id="4931132176527519925">Always use mirroring</translation>
+<translation id="4932733599132424254">Date</translation>
 <translation id="4933484234309072027">embedded on <ph name="URL" /></translation>
 <translation id="493571969993549666">Add supervised user</translation>
 <translation id="4941246025622441835">Use this device requisition when enrolling the device for enterprise management:</translation>
@@ -2480,13 +2503,13 @@
 <translation id="4988526792673242964">Pages</translation>
 <translation id="49896407730300355">Rotate a&amp;nti-clockwise</translation>
 <translation id="4989966318180235467">Inspect &amp;background page</translation>
-<translation id="4990343175649730969">Download Chrome Clean-Up Tool</translation>
 <translation id="4991420928586866460">Treat top-row keys as function keys</translation>
 <translation id="499165176004408815">Use high contrast mode</translation>
 <translation id="4992066212339426712">Unmute</translation>
 <translation id="4992458225095111526">Confirm Powerwash</translation>
 <translation id="4992473555164495036">Your administrator has limited the available input methods.</translation>
 <translation id="4992926179187649719">Turn on "Ok Google"</translation>
+<translation id="4994021816031734614">Reset Security Key</translation>
 <translation id="4994474651455208930">Allow sites to ask to become default handlers for protocols</translation>
 <translation id="4994754230098574403">Setting up</translation>
 <translation id="4996978546172906250">Share via</translation>
@@ -2724,6 +2747,7 @@
 <translation id="540296380408672091">Always block cookies on <ph name="HOST" /></translation>
 <translation id="5405146885510277940">Reset settings</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
+<translation id="5409075533903495802">PIN contains invalid characters.</translation>
 <translation id="5411472733320185105">Do not use the proxy settings for these hosts and domains:</translation>
 <translation id="5414566801737831689">Read the icons of the websites that you visit</translation>
 <translation id="5417312524372586921">Browser themes</translation>
@@ -2845,6 +2869,7 @@
 <translation id="557722062034137776">Resetting your device will not affect your Google accounts or any data synced to these accounts. However, all files saved locally on your device will be deleted.</translation>
 <translation id="5578059481725149024">Auto sign-in</translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
+<translation id="5582778940656297282">Only some devices are currently supported.</translation>
 <translation id="5582839680698949063">Main menu</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Save username?</translation>
@@ -2925,6 +2950,7 @@
 <translation id="5696143504434933566">Report abuse from '<ph name="EXTENSION_NAME" />'</translation>
 <translation id="5696679855467848181">Current PPD file in use: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">The extension "<ph name="EXTENSION_NAME" />" has been installed.</translation>
+<translation id="5699804453758089950">Tap your security key again to complete the request.</translation>
 <translation id="570043786759263127">Google Play apps and services</translation>
 <translation id="5700836101007545240">Add connection is disabled by your administrator</translation>
 <translation id="5701080607174488915">Error when fetching policy from the server.</translation>
@@ -3284,6 +3310,7 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">System: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Update ready</translation>
+<translation id="6248279564564080162">Reset successful.</translation>
 <translation id="6248988683584659830">Search settings</translation>
 <translation id="6251870443722440887">GDI handles</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> Terms of Service</translation>
@@ -3295,6 +3322,7 @@
 <translation id="6264365405983206840">Select &amp;All</translation>
 <translation id="6267166720438879315">Select a certificate to which you want to authenticate <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Open with <ph name="APP" /></translation>
+<translation id="6270770586500173387">Send <ph name="BEGIN_LINK1" />system and app information<ph name="END_LINK1" />, and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">There was an error (<ph name="ERROR" />) while downloading the plug-in</translation>
 <translation id="6273677812470008672">Quality</translation>
 <translation id="6277105963844135994">Network timeout</translation>
@@ -3366,6 +3394,7 @@
 <translation id="6390799748543157332">Pages that you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files that you download, however, will be preserved.</translation>
 <translation id="6390994422085833176">Review sync and personalisation features following setup</translation>
 <translation id="6393156038355142111">Suggest strong password</translation>
+<translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6397094776139756010">Sync and personalisation options</translation>
 <translation id="6398715114293939307">Remove Google Play Store</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
@@ -3482,6 +3511,7 @@
 <translation id="6578664922716508575">Encrypt synced passwords with your Google username and password</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – Desktop content shared</translation>
 <translation id="6580151766480067746">ARC Version</translation>
+<translation id="6580231304296467005">Set a PIN on a security key to identify yourself</translation>
 <translation id="6582080224869403177">Reset your <ph name="DEVICE_TYPE" /> to upgrade your security.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">Swap the primary mouse button</translation>
@@ -3510,6 +3540,7 @@
 <translation id="6622980291894852883">Continue blocking images</translation>
 <translation id="6624687053722465643">Sweetness</translation>
 <translation id="6628328486509726751">Uploaded <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
+<translation id="662887686112111256">You only have one attempt remaining!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> wants permanent access to a certificate to authenticate itself on your behalf.</translation>
 <translation id="6635956300022133031">Select and customise text-to-speech voices</translation>
 <translation id="6637585982786704944">Apps and websites that have your permission can access the account information that they need to work properly.
@@ -3808,6 +3839,7 @@
 <translation id="7099337801055912064">Can’t load large PPD. Maximum size is 250 KB.</translation>
 <translation id="7102687220333134671">Automatic updates are turned on</translation>
 <translation id="7102832101143475489">The request timed out</translation>
+<translation id="7105390788077117391">USB preferences</translation>
 <translation id="7108338896283013870">Hide</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> wants to use your camera</translation>
 <translation id="7108668606237948702">enter</translation>
@@ -3819,6 +3851,7 @@
 <translation id="7117247127439884114">Sign in Again...</translation>
 <translation id="711840821796638741">Show Managed Bookmarks</translation>
 <translation id="711902386174337313">Read the list of your signed-in devices</translation>
+<translation id="7120683273130936452">A PIN consists of four or more characters and serves to prove that the owner of a security key is present during certain operations. Once set, a PIN can be changed but cannot be removed without fully resetting the security key.</translation>
 <translation id="7120865473764644444">Couldn't connect to the sync server. Retrying...</translation>
 <translation id="7121362699166175603">Clears history and autocompletions in the address bar. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7121389946694989825">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
@@ -3911,6 +3944,7 @@
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="7258697411818564379">Your PIN is added</translation>
 <translation id="7262004276116528033">This sign-in service is hosted by <ph name="SAML_DOMAIN" /></translation>
+<translation id="7268127947535186412">This setting is managed by the device owner.</translation>
 <translation id="7270858098575133036">Ask when a site wants to use system exclusive messages to access MIDI devices</translation>
 <translation id="7272674038937250585">No description provided</translation>
 <translation id="7273110280511444812">last attached on <ph name="DATE" /></translation>
@@ -4395,6 +4429,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Shortcut edited</translation>
 <translation id="8018313076035239964">Control what information websites can use and what content they can show you</translation>
+<translation id="802376096974994842">Resetting a Security Key will erase all keys associated with the device and clear all configured PINs.</translation>
 <translation id="8023801379949507775">Update extensions now</translation>
 <translation id="8024483450737722621">Apps that you’ve downloaded from Google Play will be deleted from this Chromebook.
       <ph name="LINE_BREAKS1" />
@@ -4408,6 +4443,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8030656706657716245">Add Printer</translation>
 <translation id="8032244173881942855">Unable to cast tab.</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Open all in &amp;incognito window}=1{Open in &amp;incognito window}other{Open all (#) in &amp;incognito window}}</translation>
+<translation id="8034467234497743242">That security key does not support setting a PIN.</translation>
 <translation id="8037117027592400564">Read all text spoken using synthesised speech</translation>
 <translation id="8037357227543935929">Ask (default)</translation>
 <translation id="803771048473350947">File</translation>
@@ -4448,6 +4484,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="80974698889265265">PINs do not match</translation>
 <translation id="8101987792947961127">Powerwash required on next reboot</translation>
 <translation id="8102159139658438129">Go to <ph name="LINK_BEGIN" />Settings<ph name="LINK_END" /> to see options for your connected phone</translation>
+<translation id="8102652888659661176">Incorrect PIN.</translation>
 <translation id="8104696615244072556">Powerwash your <ph name="IDS_SHORT_PRODUCT_NAME" /> device and return to the previous version.</translation>
 <translation id="8105368624971345109">Turn Off</translation>
 <translation id="8107015733319732394">Installing the Google Play Store on your <ph name="DEVICE_TYPE" />. This could take a few minutes.</translation>
@@ -4533,6 +4570,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8244514732452879619">Lights out soon</translation>
 <translation id="8246209727385807362">Unknown operator</translation>
 <translation id="8248050856337841185">&amp;Paste</translation>
+<translation id="8248880015234923589">Factory-reset a security key</translation>
 <translation id="8249048954461686687">OEM folder</translation>
 <translation id="8249672078237421304">Offer to translate pages that aren't in a language you read</translation>
 <translation id="8251578425305135684">Thumbnail removed.</translation>
@@ -4757,7 +4795,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8637688295594795546">System update available. Preparing to download…</translation>
 <translation id="8639047128869322042">Checking for harmful software…</translation>
 <translation id="8642171459927087831">Access Token</translation>
-<translation id="8642895855701880552">Send <ph name="BEGIN_LINK1" />system and app information<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Make Text Larger</translation>
 <translation id="8643418457919840804">To continue, choose an option:</translation>
 <translation id="8645354835496065562">Continue allowing sensor access</translation>
@@ -4913,6 +4950,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">When you connect your devices, you agree that your Chromebook can:</translation>
 <translation id="8850251000316748990">See more...</translation>
+<translation id="885246833287407341">API function arguments</translation>
 <translation id="8853586775156634952">This card will be saved to this device only</translation>
 <translation id="8859057652521303089">Select your language:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
@@ -5050,6 +5088,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9066773882585798925">Hear text read aloud</translation>
 <translation id="9066782832737749352">Text-to-Speech</translation>
+<translation id="907264006778172906">Give Linux permission to access USB devices. Linux won't remember a USB device once it's removed.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">USB mouse connected</translation>

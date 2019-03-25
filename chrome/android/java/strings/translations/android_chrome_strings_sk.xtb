@@ -264,7 +264,6 @@
 <translation id="2910701580606108292">Opýtať sa pred udelením povolenia umožňujúceho webom prehrať chránený obsah</translation>
 <translation id="2913331724188855103">Povoliť stránkam ukladať a čítať údaje súborov cookie (odporučané)</translation>
 <translation id="2932150158123903946">Úložisko Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Odoslanie do mojich zariadení</translation>
 <translation id="2956410042958133412">Tento účet je spravovaný používateľmi <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všetky práva vyhradené.</translation>
 <translation id="2962095958535813455">Prepnuté na karty inkognito</translation>
@@ -826,7 +825,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7031882061095297553">Kam synchronizovať</translation>
 <translation id="7032663816368481562">Zobrazujte si rýchle odkazy na súvisiace stránky po klepnutí na ikonu Ďalšie podobné položky <ph name="ICON" /> v paneli s adresou. Webové adresy navštívených stránok sa odosielajú Googlu.</translation>
 <translation id="7034608350006174882">Karty a adresy pomocou služby Google Pay</translation>
-<translation id="7037082443972906537">Názov nie je k dispozícii</translation>
 <translation id="7053983685419859001">Blokovať</translation>
 <translation id="7055152154916055070">Presmerovanie bolo zablokované:</translation>
 <translation id="7062545763355031412">Prijať a prepnúť účty</translation>
@@ -972,7 +970,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Navrhovať súvisiace stránky</translation>
 <translation id="8109613176066109935">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu</translation>
-<translation id="8110087112193408731">Chcete v digitálnej rovnováhe zobrazovať svoju aktivitu z Chromu?</translation>
+<translation id="8110087112193408731">Chcete v digitálnej rovnováhe zobrazovať svoju aktivitu v Chrome?</translation>
 <translation id="8116925261070264013">Zvuk bol vypnutý</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
@@ -1068,7 +1066,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8912362522468806198">účtu Google</translation>
 <translation id="8920114477895755567">Čaká sa na podrobnosti o rodičoch.</translation>
 <translation id="8922289737868596582">Stiahnite si stránky pomocou tlačidla Ďalšie možnosti, aby ste ich mohli použiť offline</translation>
-<translation id="8937772741022875483">Chcete z digitálnej rovnováhy odstrániť svoju aktivitu z Chromu?</translation>
+<translation id="8937772741022875483">Chcete z digitálnej rovnováhy odstrániť svoju aktivitu v Chrome?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otvoriť v ďalšom okne</translation>
 <translation id="8951232171465285730">Chrome ušetril <ph name="MEGABYTES" /> MB</translation>
@@ -1108,7 +1106,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Ušetrite až 60 percent dát a načítavajte weby rýchlejšie. Servery Google budú optimalizovať stránky, ktoré navštívite.</translation>
 <translation id="9219103736887031265">Obrázky</translation>
-<translation id="926205370408745186">Odstránenie aktivity z Chromu z digitálnej rovnováhy</translation>
+<translation id="926205370408745186">Odstránenie aktivity v Chrome z digitálnej rovnováhy</translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="932599481871055447">Šetrite dáta a prehliadajte rýchlejšie</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>

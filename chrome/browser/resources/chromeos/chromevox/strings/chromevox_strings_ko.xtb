@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">이전 인용구가 없습니다.</translation>
 <translation id="1321576897702511272">ChromeVox 도움말 숨기기</translation>
 <translation id="1325946044405407859">탠</translation>
+<translation id="1331634987653814322">점자 설정</translation>
 <translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">문자 및 단어 에코</translation>
 <translation id="1334570596456017464">아래 첨자</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">내부 링크</translation>
 <translation id="4915087353619183190">학습 모드를 시작합니다. 쿼티 키, 새로고침할 수 있는 점자 키, 터치 동작을 눌러 기능을 확인하세요. Control 키와 W를 누르거나 Esc 키로 종료하세요.</translation>
 <translation id="492295894462528572">서문</translation>
+<translation id="4943781537993885772">표시 스타일</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4953585991029886728">텍스트 수정</translation>
 <translation id="4954534434583049121">이전 블록 인용</translation>
@@ -713,6 +715,7 @@
 <translation id="6006050241733874051">양식</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{역슬래시}other{역슬래시 #개}}</translation>
 <translation id="6017514345406065928">녹색</translation>
+<translation id="6021969570711251331">인터리브</translation>
 <translation id="6034000775414344507">연한 회색</translation>
 <translation id="6037602951055904232">앞으로 이동</translation>
 <translation id="6042826534790431634">활성화하려면 Search + Space를 누르세요.</translation>
@@ -763,6 +766,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, 메뉴</translation>
 <translation id="6444046323172968959">알림 대화상자</translation>
 <translation id="6452403590345320472">목차</translation>
+<translation id="6454456397828627257">나란히</translation>
 <translation id="6459511626086141404">플랫 키맵</translation>
 <translation id="6468049171101508116">다음 버튼</translation>
 <translation id="646954774886932461">색인</translation>

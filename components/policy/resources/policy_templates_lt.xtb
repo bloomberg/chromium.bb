@@ -382,6 +382,22 @@
       Įspėjimas: nerekomenduojama viešojo terminalo programai perduoti leidimo valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją, nes ji gali neleisti įrenginiui gauti naujinių ir svarbių saugos pataisų. Perdavus leidimą valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją gali kilti grėsmė naudotojų saugai.</translation>
 <translation id="1675002386741412210">Palaikoma naudojant:</translation>
 <translation id="1689963000958717134">Leidžiama naudoti tinklo konfigūraciją, kad būtų taikoma visiems „<ph name="PRODUCT_OS_NAME" />“ įrenginio naudotojams. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip nurodyta atvirojo tinklo konfigūracijos formato, aprašyto šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Konfigūruojamas <ph name="TPM_FIRMWARE_UPDATE_TPM" /> aparatinės programinės įrangos atnaujinimo funkcijų pasiekiamumas ir elgsena.
+
+      Atskirus nustatymus galima nurodyti JSON nuosavybėse.
+
+      „<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />“: jei nustatyta kaip „<ph name="TPM_FIRMWARE_UPDATE_TPM" />“, naudotojai galės suaktyvinti funkcijos „Powerwash“ eigą ir įdiegti <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" /> aparatinės programinės įrangos naujinį.
+
+      „<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />“: jei nustatyta kaip „<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />“, naudotojai galės iškviesti <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinės aparatinės įrangos atnaujinimo eigą, kuri išsaugos įrenginio būseną (įskaitant įmonės užregistravimą), bet bus prarasti naudotojo duomenys. Ši atnaujinimo eiga pasiekiama 68 ir naujesnės versijos sistemoje.
+
+      „<ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />“: kontroliuojama, kaip automatiniai <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinės aparatinės įrangos naujiniai pritaikomi pažeistai <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinei aparatinei įrangai. Visa eiga išsaugo vietos įrenginio būseną.
+        Jei nustatyta kaip 1 arba nenustatyta, TPM programinei aparatinei įrangai naujiniai nepritaikomi.
+        Jei nustatyta kaip 2, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinė aparatinė įranga bus atnaujinta kitą kartą paleidžiant iš naujo po to, kai naudotojas susipažins su naujiniu.
+        Jei nustatyta kaip 3, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinė aparatinė įranga bus atnaujinta kitą kartą paleidžiant iš naujo.
+        Jei nustatyta kaip 4, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinė aparatinė įranga bus atnaujinta užregistravus prieš prisijungiant naudotojui.
+        Ši parinktis pasiekiama 74 ir naujesnės versijos sistemoje.
+
+      Jei politika nenustatyta, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> aparatinės programinės įrangos atnaujinimo funkcijos nebus pasiekiamos.</translation>
 <translation id="1708496595873025510">Nustatykite variantų pirminės reikšmės pateikimo apribojimą</translation>
 <translation id="1717817358640580294">Jei nustatymas nenustatytas, „Chrome“ valymo funkcijai aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Tada naudojant „Chrome“ valymo funkciją naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. Naudotojas gali pasirinkti bendrinti valymo rezultatus su „Google“, kad padėtų vėliau aptikti nepageidaujamą programinę įrangą. Šie rezultatai apima failų metaduomenis, automatiškai įdiegtus plėtinius ir registro raktus, kaip aprašyta „Chrome“ privatumo baltojoje knygoje.
 
@@ -1258,6 +1274,17 @@
       Šią politiką galima nustatyti tik kaip rekomenduojamą. Galite naudoti šią politiką, kad perkeltumėte rekomenduojamų lokalių rinkinį į viršų, bet naudotojams visada leidžiama sesijai pasirinkti bet kurią „<ph name="PRODUCT_OS_NAME" />“ palaikomą lokalę.
       </translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
+<translation id="3384115339826100753">Įgalinama šaltinio pakeitimo suvartojant daugiausiai energijos valdymo politika.
+
+          Šaltinio pakeitimas suvartojant daugiausiai energijos – tai energijos taupymo politika, kuria mažinamas kintamosios srovės suvartojimas aktyviausiu dienos metu. Galima nustatyti kiekvienos darbo dienos šaltinio pakeitimo suvartojant daugiausiai energijos pradžios ir pabaigos laiką. Šiuo laiku sistema veiks tolygiai naudodama akumuliatoriaus energiją, jei bus prijungta prie kintamosios srovės, tol, kol akumuliatoriaus įkrova viršys nurodytą slenkstį. Pasiekus sistemoje nurodytą pabaigos laiką, sistema veiks naudodama kintamosios srovės energiją, bet akumuliatorius nebebus įkraunamas. Pasibaigus nurodytam įkrovimo pradžios laikui sistema vėl veiks įprastai, naudojant kintamąją srovę.
+
+          Jei ši politika nustatyta kaip „Tiesa“ ir nustatyta „DevicePowerPeakShiftBatteryThreshold“ bei „DevicePowerPeakShiftDayConfig“, šaltinio pakeitimas suvartojant daugiausiai energijos visada bus įgalintas (jei palaikomas tame įrenginyje).
+
+          Jei ši politika nustatyta kaip „Netiesa“, šaltinio pakeitimas suvartojant daugiausiai energijos visada bus išjungtas.
+
+          Jums nustačius šią politiką naudotojai negalės jos pakeisti ar nepaisyti.
+
+          Jei ši politika nenustatyta, šaltinio pakeitimas suvartojant daugiausiai energijos iš karto yra išjungtas ir naudotojas jo įjungti negali.</translation>
 <translation id="3388153794103186066">Galima nustatyti URL sąrašą, kuriame nurodoma, kurioms svetainėms automatiškai suteikiamas leidimas pasiekti USB įrenginį su duotais paslaugos teikėjo ir produkto ID. Kad politika galiotų, kiekviename sąraše esančiame elemente turi būti įrenginių ir URL. Kiekvienas įrenginiuose esantis elementas gali turėti paslaugos teikėjo ID ir produkto ID lauką. Kiekvienas nenurodytas ID laikomas pakaitos simboliu su viena išimtimi – produkto ID negali būti nurodytas, jei nenurodytas paslaugos teikėjo ID. Priešingu atveju politika negalios ir jos bus nepaisoma.
 
         Siekiant suteikti užklausą pateikusiam URL leidimą pasiekti USB įrenginį, USB leidimo modeliui naudojamas užklausą pateikusios svetainės URL („užklausą pateikęs URL“) ir aukščiausiojo lygio „iframe“ svetainės URL („įterptasis URL“). Užklausą pateikęs URL gali skirtis nuo įterptojo URL, kai užklausa įkeliama „iframe“. Todėl URL lauke gali būti iki dviejų URL eilučių, atskirtų kableliu, taip atskirai nurodant užklausą pateikusį ir įterptąjį URL. Jei nurodomas tik vienas URL, prieiga prie atitinkamų USB įrenginių suteikiama, kai užklausą pateikusios svetainės URL atitinka šį URL, nepaisant įterpimo būsenos. URL atitinkamame lauke turi būti tinkami, kitu atveju politikos bus nepaisoma.
@@ -1350,6 +1377,7 @@
       Jei ši politika nustatyta kaip „DeveloperToolsDisallowed“ (2 vertė), kūrėjo įrankių negalima pasiekti ir nebegalima tikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="355118380775352753">Svetainės, skirtos atidaryti alternatyvioje naršyklėje</translation>
+<translation id="3554984410014457319">Leiskite „Google“ padėjėjui klausytis suaktyvinimo balsu frazės</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
 <translation id="357917253161699596">Leisti naudotojams tvarkyti naudotojų sertifikatus</translation>
 <translation id="3583230441447348508">Nurodomas iš anksto sukonfigūruotų tinklo failų bendrinimo įrenginių sąrašas.
@@ -1584,6 +1612,12 @@
       „<ph name="PRODUCT_OS_NAME" />“ įrenginiai automatiškai tikrina, ar yra naujinių, kai šis nustatymas nesukonfigūruotas ar nustatytas į „false“.
 
       Įspėjimas: rekomenduojama įgalinti automatinius naujinius, kad naudotojai gautų programinės įrangos naujinius ir svarbias saugos pataisas. Išjungus automatinius naujinius gali kilti grėsmė naudotojų saugai.</translation>
+<translation id="4018000735882846261">Pagal šią politiką „Google“ padėjėjui suteikiamas leidimas klausyti suaktyvinimo balsu frazės.
+
+      Jei politika įgalinta, „Google“ padėjėjas klauso suaktyvinimo balsu frazės.
+      Jei politika išjungta, „Google“ padėjėjas neklauso suaktyvinimo balsu frazės.
+      Jei politika nenustatyta, „Google“ padėjėjas neklauso suaktyvinimo balsu frazės.
+      </translation>
 <translation id="4020682745012723568">Į naudotojo profilį perkeltų slapukų „Android“ programos pasiekti negali.</translation>
 <translation id="402759845255257575">Neleisti jokioje svetainėje paleisti „JavaScript“</translation>
 <translation id="4027608872760987929">Įgalinti numatytąjį paieškos teikėją</translation>
@@ -1779,6 +1813,7 @@
       Politika palaikoma anksčiau nurodytose platformose, tačiau įgalinama funkcija gali būti pasiekiama mažiau platformų. Ne visas nebenaudojamas žiniatinklio platformos funkcijas galima įgalinti. Tik šiame sąraše pateiktas funkcijas galima laikinai (atsižvelgiant į funkciją) įgalinti. Bendra eilutės žymos forma [NebeteikiamosFunkcijosPavadinimas]_GaliojaIki[yyyymmdd]. Informacijos apie žiniatinklio platformos funkcijos pakeitimus galite gauti apsilankę adresu https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Įgalinti užraktą, kai įrenginys nenaudojamas arba laikinai sustabdytas</translation>
+<translation id="4449469846627734399">Šaltinio pakeitimo suvartojant daugiausiai energijos dienos konfigūravimo nustatymas</translation>
 <translation id="4449545651113180484">Sukti ekraną pagal laikrodžio rodyklę 270 laipsnių kampu</translation>
 <translation id="445270821089253489">Valdoma, kokios naudotojų ir įrenginių informacijos ataskaitos teikiamos.</translation>
 <translation id="4454820008017317557">Rodyti „<ph name="PRODUCT_NAME" />“ įrankių juostos piktogramą</translation>
@@ -1976,6 +2011,11 @@
 
       Ši politika pasiekiama tik kaip platforma.
       </translation>
+<translation id="5034604678285451405">Nustatomas šaltinio pakeitimo suvartojant daugiausiai energijos akumuliatoriaus įkrovos slenkstis procentais.
+
+          Ši politika naudojama, tik jei pasirinktas politikos „DevicePowerPeakShiftEnabled“ nustatymas „Tiesa“.
+
+          Jei ši politika nesukonfigūruota arba nenustatyta, šaltinio pakeitimas suvartojant daugiausiai energijos visada bus išjungtas.</translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
@@ -2273,6 +2313,7 @@
 <translation id="5457065417344056871">Svečio režimo įgalinimas naršyklėje</translation>
 <translation id="5457924070961220141">Leidžiama konfigūruoti numatytąją HTML pateikimo programą, kai įdiegta „<ph name="PRODUCT_FRAME_NAME" />“.
           Numatytasis nustatymas, kuris naudojamas, kai ši politika nenustatyta, – leisti prieglobos naršyklei atlikti pateikimo veiksmus. Bet galite tai pakeisti ir nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus pateikti HTML puslapius.</translation>
+<translation id="5458584148602890023">Šaltinio pakeitimo suvartojant daugiausiai energijos įgalinimas</translation>
 <translation id="5464816904705580310">Konfigūruojami tvarkomų naudotojų paskyrų nustatymai.</translation>
 <translation id="546726650689747237">Ekrano pritemdymo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="5469143988693423708">Naudotojui leidžiama paleisti „Crostini“</translation>
@@ -2615,6 +2656,7 @@
 
       Jei ši politika nesukonfigūruota, atjungiamų USB įrenginių sąrašas yra tuščias.</translation>
 <translation id="6083631234867522991">„Windows“ („Windows“ klientai):</translation>
+<translation id="608788685013546076">Šaltinio pakeitimo suvartojant daugiausiai energijos akumuliatoriaus įkrovos slenksčio procentais nustatymas</translation>
 <translation id="6089679180657323464">Valdomi „Wilco“ diagnostikos ir telemetrijos valdiklio nustatymai.</translation>
 <translation id="6091233616732024397">Priverstinis naudotojų prisijungimas norint naudoti naršyklę</translation>
 <translation id="6093156968240188330">Leisti nuotoliniams naudotojams sąveikauti su pakeltais langais nuotolinės pagalbos sesijose</translation>
@@ -3845,6 +3887,9 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8548832052135586762">Nustatomas tik spalvoto, tik vienspalvio arba nespalvoto režimo apribojimas. Jei politika nenustatyta, netaikomi jokie apribojimai.</translation>
 <translation id="8549772397068118889">Įspėti, kai apsilankoma svetainėse, nesančiose turinio paketuose</translation>
 <translation id="8566842294717252664">Internetinės parduotuvės slėpimas Naujo skirtuko puslapyje ir programų paleidimo priemonėje</translation>
+<translation id="8569734380847633643">
+          Jei politika nustatyta kaip „Netiesa“, „<ph name="PRODUCT_OS_NAME" />“ išjungs „Wi-Fi“ ir naudotojai negalės jo įjungti vėl.
+          Jei politika nustatyta kaip „Tiesa“ arba nenustatyta, naudotojai galės pasirinkti įgalinti arba išjungti „Wi-Fi“.</translation>
 <translation id="857369585509260201">Ši politika nebenaudojama. Vietoje jos turėtumėte naudoti „BrowserSignin“.
 
       Jei ši politika nustatyta kaip „tiesa“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta kaip „netiesa“. Atminkite, kad įgalinus šią politiką esami profiliai, prie kurių neprisijungta, bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį.
@@ -3904,6 +3949,13 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8685024486845674965">Įspėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>
 <translation id="8693243869659262736">Naudoti integruotą DNS kliento programą</translation>
 <translation id="8703488928438047864">Pranešimas apie plokštės būseną</translation>
+<translation id="8703872185032220081">Nustatomas šaltinio pakeitimo suvartojant daugiausiai energijos dienos konfigūravimas.
+
+          Ši politika naudojama, tik jei pasirinktas politikos „DevicePowerPeakShiftEnabled“ nustatymas „Tiesa“.
+
+          Jei ši politika nesukonfigūruota arba nenustatyta, šaltinio pakeitimas suvartojant daugiausiai energijos visada bus išjungtas.
+
+          Pastaba: leistinos lauko „<ph name="MINUTE_FIELD_NAME" />“ vertės laukuose „<ph name="START_TIME_FIELD_NAME" />“, „<ph name="END_TIME_FIELD_NAME" />“ ir „<ph name="CHARGE_START_TIME_FIELD_NAME" />“ yra 0, 15, 30 bei 45.</translation>
 <translation id="8704831857353097849">Neleidžiamų papildinių sąrašas</translation>
 <translation id="8711086062295757690">Nurodomas raktinis žodis, kuris yra spartusis klavišas, naudojamas „Omnibox“ šio teikėjo paieškai suaktyvinti.
 
@@ -4103,6 +4155,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
       Jei politika nenustatyta, naudotojas gali pasirinkti pseudoportreto vaizdą, rodomą prisijungimo ekrane.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
+<translation id="9038839118379817310">„Wi-Fi“ įgalinimas</translation>
 <translation id="9039822628127365650">Kai ši politika nustatyta, nurodoma trukmė, po kurios naudotojas automatiškai atjungiamas ir sesija nutraukiama. Naudotojui likusi trukmė nurodoma atvirkštiniu laikmačiu, pateikiamu sistemos juostelėje.
 
       Kai ši politika nenustatyta, sesijos trukmė neribojama.

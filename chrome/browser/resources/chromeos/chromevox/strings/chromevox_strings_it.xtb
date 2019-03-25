@@ -54,6 +54,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1319608975892113573">Nessuna citazione lunga precedente.</translation>
 <translation id="1321576897702511272">Nascondi guida di ChromeVox</translation>
 <translation id="1325946044405407859">Marrone chiaro</translation>
+<translation id="1331634987653814322">Impostazioni Braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> di <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">eco caratteri e parole</translation>
 <translation id="1334570596456017464">Pedice</translation>
@@ -547,6 +548,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="489907760999452556">Link interno</translation>
 <translation id="4915087353619183190">Avvio modalità di apprendimento in corso. Premi un tasto Qwerty o un tasto braille aggiornabile oppure esegui un gesto tattile per imparare come funziona. Premi CTRL + W o ESC per uscire.</translation>
 <translation id="492295894462528572">Premessa</translation>
+<translation id="4943781537993885772">Stile del display</translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4953585991029886728">Modifica testo</translation>
 <translation id="4954534434583049121">Citazione lunga precedente</translation>
@@ -712,6 +714,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6006050241733874051">Modulo</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra rovesciata}other{# barre rovesciate}}</translation>
 <translation id="6017514345406065928">Verde</translation>
+<translation id="6021969570711251331">Interfoliazione</translation>
 <translation id="6034000775414344507">Grigio chiaro</translation>
 <translation id="6037602951055904232">Panoramica avanti</translation>
 <translation id="6042826534790431634">Premi il tasto per la ricerca + barra spaziatrice per attivare.</translation>
@@ -762,6 +765,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Finestra di avviso</translation>
 <translation id="6452403590345320472">Sommario</translation>
+<translation id="6454456397828627257">Affiancato</translation>
 <translation id="6459511626086141404">Mappa di chiavi di tipo "flat"</translation>
 <translation id="6468049171101508116">Pulsante Avanti</translation>
 <translation id="646954774886932461">Indice</translation>

@@ -973,6 +973,7 @@
 <translation id="2549985041256363841">Comenzar grabación</translation>
 <translation id="2550212893339833758">Memoria en el espacio de intercambio</translation>
 <translation id="2550596535588364872">¿Quieres permitir que <ph name="EXTENSION_NAME" /> abra <ph name="FILE_NAME" />?</translation>
+<translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no se pudo conectar a <ph name="NETWORK_ID" />. Selecciona otra red o inténtalo de nuevo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
@@ -1224,7 +1225,6 @@
 <translation id="2938225289965773019">Abrir vínculos de <ph name="PROTOCOL" /></translation>
 <translation id="2939938020978911855">Mostrar dispositivos Bluetooth disponibles</translation>
 <translation id="2941112035454246133">Baja</translation>
-<translation id="2941880727166628951">Enviar a mis dispositivos</translation>
 <translation id="2942560570858569904">Esperando…</translation>
 <translation id="2942581856830209953">Personalizar esta página</translation>
 <translation id="2944060181911631861">Envía datos de uso y diagnóstico. Para ayudar a mejorar tu experiencia de Android, envía a Google datos de diagnóstico y uso de dispositivos y apps de forma automática. Esta información ayudará a lograr la estabilidad de las apps y el sistema, entre otras mejoras. Algunos datos agregados también ayudarán a las apps y los socios de Google, como los desarrolladores de Android. Si habilitaste la "Actividad de web y de aplicaciones adicional", es posible que se almacenen estos datos en tu Cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
@@ -1545,7 +1545,6 @@
 <translation id="347785443197175480">Continuar permitiendo que <ph name="HOST" /> acceda a la cámara y al micrófono</translation>
 <translation id="3478685642445675458">Desbloquea tu perfil antes de quitar a una persona.</translation>
 <translation id="3479552764303398839">Ahora no</translation>
-<translation id="3480119035619598820">Enviar a mis dispositivos</translation>
 <translation id="3484273680291419129">Quitando software dañino…</translation>
 <translation id="3484869148456018791">Obtener nuevo certificado</translation>
 <translation id="3487007233252413104">función anónima</translation>
@@ -2186,7 +2185,6 @@
 <translation id="4514542542275172126">Configurar un nuevo usuario supervisado</translation>
 <translation id="4514610446763173167">Reproduce o pausa el video</translation>
 <translation id="451515744433878153">Quitar</translation>
-<translation id="4518677423782794009">¿Se producen fallos en Chrome, se muestran páginas de inicio o barras de herramientas inusuales, aparecen anuncios inesperados que no puedes cerrar, o la experiencia de navegación cambia de alguna manera? Puedes solucionar el problema con la Herramienta para limpiar Chrome.</translation>
 <translation id="4519935350946509010">Se produjo un error en la conexión.</translation>
 <translation id="4520385623207007473">Cookies en uso</translation>
 <translation id="452039078290142656">dispositivos desconocidos de <ph name="VENDOR_NAME" /></translation>
@@ -2446,6 +2444,7 @@
 <translation id="4927846293686536410">Accede para obtener tus favoritos, historial, contraseñas y otras opciones de configuración en todos tus dispositivos. Además, accederás de forma automática a los servicios de Google.</translation>
 <translation id="4929386379796360314">Destinos de impresión</translation>
 <translation id="4931132176527519925">Usar siempre la duplicación</translation>
+<translation id="4932733599132424254">Fecha</translation>
 <translation id="4933484234309072027">insertado en <ph name="URL" /></translation>
 <translation id="493571969993549666">Agregar usuario supervisado</translation>
 <translation id="4941246025622441835">Utiliza esta solicitud de dispositivo al registrar el dispositivo para la administración empresarial:</translation>
@@ -2476,7 +2475,6 @@
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="49896407730300355">Girar &amp;a la izquierda</translation>
 <translation id="4989966318180235467">Inspeccionar página &amp;de fondo</translation>
-<translation id="4990343175649730969">Descargar la Herramienta para limpiar Chrome</translation>
 <translation id="4991420928586866460">Tratar las teclas de la fila superior como teclas de función</translation>
 <translation id="499165176004408815">Usar el modo de contraste alto</translation>
 <translation id="4992066212339426712">Dejar de silenciar</translation>
@@ -3291,6 +3289,7 @@
 <translation id="6264365405983206840">Seleccion&amp;ar todo</translation>
 <translation id="6267166720438879315">Seleccionar un certificado para autenticarte como <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Abrir con <ph name="APP" /></translation>
+<translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />información de apps y el sistema<ph name="END_LINK1" /></translation>
 <translation id="6272643420381259437">Se produjo un error (<ph name="ERROR" />) al descargar el complemento</translation>
 <translation id="6273677812470008672">Calidad</translation>
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
@@ -3362,6 +3361,7 @@
 <translation id="6390799748543157332">Las páginas a las que accedas desde esta ventana no aparecerán en el historial del navegador ni dejarán rastros (por ejemplo, cookies) en la computadora después de cerrar todas las ventanas abiertas de la sesión de invitado. Los archivos descargados permanecerán intactos.</translation>
 <translation id="6390994422085833176">Después de establecer la configuración, revisa las funciones de sincronización y personalización</translation>
 <translation id="6393156038355142111">Sugerir contraseña segura</translation>
+<translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />información del sistema<ph name="END_LINK1" /> y <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
 <translation id="6397094776139756010">Opciones de personalización y sincronización</translation>
 <translation id="6398715114293939307">Quitar Google Play Store</translation>
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
@@ -4752,7 +4752,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8637688295594795546">Actualización del sistema disponible. Preparando para descargar...</translation>
 <translation id="8639047128869322042">Buscando software dañino…</translation>
 <translation id="8642171459927087831">Token de acceso</translation>
-<translation id="8642895855701880552">Enviar <ph name="BEGIN_LINK1" />información del sistema y la app<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Aumentar el tamaño del texto</translation>
 <translation id="8643418457919840804">Para continuar, elige una opción:</translation>
 <translation id="8645354835496065562">Seguir permitiendo el acceso a los sensores</translation>

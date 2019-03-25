@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Wachtwoord voorstellen</translation>
 <translation id="2612676031748830579">Kaartnummer</translation>
+<translation id="2613747923081026172">Groep maken</translation>
 <translation id="2621115761605608342">JavaScript toestaan voor een specfieke site.</translation>
 <translation id="2625189173221582860">Wachtwoord gekopieerd</translation>
 <translation id="2631006050119455616">Opgeslagen</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Vragen voordat sites beveiligde content mogen afspelen</translation>
 <translation id="2913331724188855103">Sites toestaan cookiegegevens op te slaan en te lezen (aanbevolen)</translation>
 <translation id="2932150158123903946">Opslag van Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Naar mijn apparaten verzenden</translation>
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="2962095958535813455">Overgeschakeld naar incognitotabbladen</translation>
@@ -826,7 +826,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7031882061095297553">Synchroniseren met</translation>
 <translation id="7032663816368481562">Wanneer je op Meer zoals dit <ph name="ICON" /> in de adresbalk klikt, worden snelle links naar gerelateerde pagina's weergegeven. De URL's van pagina's die je bezoekt, worden verzonden naar Google.</translation>
 <translation id="7034608350006174882">Kaarten en adressen die Google Pay gebruiken</translation>
-<translation id="7037082443972906537">Naam is niet beschikbaar</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7055152154916055070">Omleiding geblokkeerd:</translation>
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
@@ -880,7 +879,9 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7475192538862203634">Als je deze melding vaker ziet, kun je deze <ph name="BEGIN_LINK" />suggesties<ph name="END_LINK" /> proberen.</translation>
 <translation id="7475688122056506577">SD-kaart niet gevonden. Sommige van je bestanden kunnen ontbreken.</translation>
+<translation id="7479104141328977413">Tabbladbeheer</translation>
 <translation id="7481312909269577407">Vooruit</translation>
+<translation id="7482697587265222445">Tabblad is verzonden naar je apparaten</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Wachtwoorden weergeven</translation>
 <translation id="7494974237137038751">data bespaard</translation>

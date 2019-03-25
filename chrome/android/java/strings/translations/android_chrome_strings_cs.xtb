@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Neproporcionální</translation>
 <translation id="2610239185026711824">Navrhnout heslo</translation>
 <translation id="2612676031748830579">Číslo karty</translation>
+<translation id="2613747923081026172">Vytvořit skupinu</translation>
 <translation id="2621115761605608342">Povolit JavaScript pro konkrétní web.</translation>
 <translation id="2625189173221582860">Heslo bylo zkopírováno</translation>
 <translation id="2631006050119455616">Uloženo</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Před povolením spuštění chráněného obsahu na webu se zeptat</translation>
 <translation id="2913331724188855103">Povolit webům ukládat a číst data souborů cookie (doporučeno)</translation>
 <translation id="2932150158123903946">Úložiště aplikace Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Odeslat do mých zařízení</translation>
 <translation id="2956410042958133412">Tento účet spravují uživatelé <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2962095958535813455">Přepnuto na anonymní karty</translation>
@@ -740,7 +740,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6447842834002726250">Soubory cookie</translation>
 <translation id="6448273550210938826">Vyhledávání a návrhy adres URL</translation>
 <translation id="6461962085415701688">Soubor nelze otevřít</translation>
-<translation id="6464977750820128603">Můžete se podívat, které stránky v Chromu navštěvujete, a nastavit pro ně časovače.\n\nGoogle obdrží informace o webech, pro které nastavíte časovače, a o tom, jak dlouho je navštěvujete. Tyto informace slouží ke zlepšování digitální rovnováhy.</translation>
+<translation id="6464977750820128603">Můžete se podívat, které stránky v Chromu navštěvujete, a nastavit pro ně časovače.\n\nGoogle obdrží informace o webech, pro které nastavíte časovače, a o tom, jak dlouho jste na nich byli. Tyto informace slouží ke zlepšování digitální rovnováhy.</translation>
 <translation id="6475951671322991020">Stáhnout video</translation>
 <translation id="6482749332252372425">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu nedostatku místa v úložišti.</translation>
 <translation id="6496823230996795692">Chcete-li poprvé použít aplikaci <ph name="APP_NAME" />, připojte se k internetu.</translation>
@@ -826,7 +826,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7031882061095297553">Synchronizace s účty</translation>
 <translation id="7032663816368481562">Když v adresním řádku klepnete na Další podobné návrhy <ph name="ICON" />, zobrazí se rychlé odkazy na související stránky. Adresy URL navštívených stránek se odesílají do Googlu.</translation>
 <translation id="7034608350006174882">Karty a adresy pomocí služby Google Pay</translation>
-<translation id="7037082443972906537">Název není k dispozici</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7055152154916055070">Bylo zablokováno přesměrování:</translation>
 <translation id="7062545763355031412">Přijmout a přepnout účet</translation>
@@ -880,7 +879,9 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7475192538862203634">Pokud se vám tato stránka zobrazuje často, vyzkoušejte tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karta nebyla nalezena. Některé vaše soubory mohou chybět.</translation>
+<translation id="7479104141328977413">Správa karet</translation>
 <translation id="7481312909269577407">Vpřed</translation>
+<translation id="7482697587265222445">Karta byla odeslána do vašich zařízení</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Zobrazovat hesla</translation>
 <translation id="7494974237137038751">uspořená data</translation>

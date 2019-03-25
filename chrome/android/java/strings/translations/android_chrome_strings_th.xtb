@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">แนะนำรหัสผ่าน</translation>
 <translation id="2612676031748830579">หมายเลขบัตร</translation>
+<translation id="2613747923081026172">สร้างกลุ่ม</translation>
 <translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ใดเว็บไซต์หนึ่ง</translation>
 <translation id="2625189173221582860">คัดลอกรหัสผ่านแล้ว</translation>
 <translation id="2631006050119455616">ประหยัดได้</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">ถามก่อนอนุญาตให้เว็บไซต์เล่นเนื้อหาที่มีการคุ้มครอง</translation>
 <translation id="2913331724188855103">อนุญาตให้ไซต์บันทึกและอ่านข้อมูลคุกกี้ (แนะนำ)</translation>
 <translation id="2932150158123903946">พื้นที่เก็บข้อมูล Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">ส่งไปที่อุปกรณ์ของฉัน</translation>
 <translation id="2956410042958133412">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME_1" /> และ <ph name="PARENT_NAME_2" /></translation>
 <translation id="2960796085439532066">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2962095958535813455">สลับเป็นแท็บไม่ระบุตัวตนแล้ว</translation>
@@ -826,7 +826,6 @@
 <translation id="7031882061095297553">ซิงค์กับ</translation>
 <translation id="7032663816368481562">เมื่อคุณแตะ "ดูคำแนะนำแบบนี้อีก" <ph name="ICON" /> ในแถบที่อยู่ คำแนะนำจะแสดงลิงก์ด่วนไปยังหน้าที่เกี่ยวข้อง ระบบจะส่ง URL ของหน้าที่คุณเข้าถึงไปยัง Google</translation>
 <translation id="7034608350006174882">ใช้ข้อมูลบัตรและที่อยู่จาก Google Pay</translation>
-<translation id="7037082443972906537">ไม่มีชื่อ</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7055152154916055070">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
@@ -880,7 +879,9 @@
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
 <translation id="7475688122056506577">ไม่พบการ์ด SD ไฟล์บางไฟล์อาจหายไป</translation>
+<translation id="7479104141328977413">การจัดการแท็บ</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
+<translation id="7482697587265222445">ส่งแท็บไปยังอุปกรณ์ของคุณแล้ว</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (อัปเดตเมื่อ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">แสดงรหัสผ่าน</translation>
 <translation id="7494974237137038751">อินเทอร์เน็ตที่ประหยัดได้</translation>
@@ -1102,7 +1103,7 @@
 <translation id="9139318394846604261">ช็อปปิ้ง</translation>
 <translation id="9150694013019234766">สลับไปมาระหว่างแท็บในกลุ่มแท็บบริเวณด้านล่างของหน้าจอ</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
-<translation id="9169594135889675189">เพิ่มแท็บลงในกลุ่ม</translation>
+<translation id="9169594135889675189">เพิ่มแท็บใหม่ลงในกลุ่ม</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>

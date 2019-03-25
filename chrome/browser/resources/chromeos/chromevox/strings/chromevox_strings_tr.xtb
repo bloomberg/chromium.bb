@@ -54,6 +54,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1319608975892113573">Önceki blok alıntı yok.</translation>
 <translation id="1321576897702511272">ChromeVox yardımını gizle</translation>
 <translation id="1325946044405407859">Ten Rengi</translation>
+<translation id="1331634987653814322">Braille Ayarları</translation>
 <translation id="1331702245475014624">toplam: <ph name="TOTAL" />, öğe: <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">karakter ve kelime yansıtma</translation>
 <translation id="1334570596456017464">Alt simge</translation>
@@ -547,6 +548,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="489907760999452556">Dahili bağlantı</translation>
 <translation id="4915087353619183190">Öğrenme Modu başlatılıyor. İşlevini öğrenmek istediğiniz qwerty tuşuna, yenilenebilir braille tuşuna veya dokunma hareketine basın. Çıkmak için control+w tuş kombinasyonuna ya da escape tuşuna basın.</translation>
 <translation id="492295894462528572">Önsöz</translation>
+<translation id="4943781537993885772">Görüntüleme Stili</translation>
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4953585991029886728">Metni düzenle</translation>
 <translation id="4954534434583049121">Önceki blok alıntı</translation>
@@ -712,6 +714,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ters eğik çizgi}other{# ters eğik çizgi}}</translation>
 <translation id="6017514345406065928">Yeşil</translation>
+<translation id="6021969570711251331">Üst üste</translation>
 <translation id="6034000775414344507">Açık Gri</translation>
 <translation id="6037602951055904232">İleri kaydır</translation>
 <translation id="6042826534790431634">Etkinleştirmek için Arama+Boşluk tuşlarına basın.</translation>
@@ -762,6 +765,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6438968337250688271"><ph name="NAME" />, menü</translation>
 <translation id="6444046323172968959">Uyarı iletişim kutusu</translation>
 <translation id="6452403590345320472">İçindekiler</translation>
+<translation id="6454456397828627257">Yan yana</translation>
 <translation id="6459511626086141404">Düz tuş eşleme</translation>
 <translation id="6468049171101508116">Sonraki düğmesi</translation>
 <translation id="646954774886932461">Dizin</translation>

@@ -484,6 +484,7 @@
 <translation id="3592413004129370115">Italian (ซองจดหมาย)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">ขนาด 2</translation>
+<translation id="361438452008624280">ข้อมูลในรายการ "<ph name="LANGUAGE_ID" />": ภาษาที่ไม่รู้จักหรือไม่รองรับ</translation>
 <translation id="3615877443314183785">ป้อนวันที่หมดอายุที่ถูกต้อง</translation>
 <translation id="36224234498066874">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="362276910939193118">แสดงประวัติการเข้าชมทั้งหมด</translation>
@@ -551,6 +552,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
 <translation id="4032320456957708163">เบราว์เซอร์ของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">ลิงก์ที่เปิดนำไปยังเว็บไซต์ที่คุณไม่ค่อยเข้าชม และอาจพยายามทำให้คุณสับสน</translation>
 <translation id="4058922952496707368">คีย์ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (ซองจดหมาย)</translation>
 <translation id="4067947977115446013">เพิ่มที่อยู่ที่ถูกต้อง</translation>
@@ -807,7 +809,6 @@
 <translation id="5455374756549232013">เวลาบันทึกของนโยบายไม่เหมาะสม</translation>
 <translation id="5457113250005438886">ไม่ถูกต้อง</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}other{<ph name="CONTACT_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}}</translation>
-<translation id="5461666840533392417">ฉันหยุดการป้อนอัตโนมัติเพราะดูเหมือนคุณจะเลือกกรอกข้อมูลในช่องต่างๆ เอง ขอให้โชคดี :)</translation>
 <translation id="5470861586879999274">&amp;ทำซ้ำการแก้ไข</translation>
 <translation id="5478437291406423475">B6/C4 (ซองจดหมาย)</translation>
 <translation id="5481076368049295676">เนื้อหานี้อาจพยายามติดตั้งซอฟต์แวร์อันตรายที่จะขโมยหรือลบข้อมูลในอุปกรณ์ของคุณ <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
@@ -1051,6 +1052,7 @@
 <translation id="6957887021205513506">ใบรับรองของเซิร์ฟเวอร์น่าจะเป็นของปลอม</translation>
 <translation id="6964255747740675745">แยกวิเคราะห์การกำหนดค่าเครือข่ายไม่ได้ (JSON ไม่ถูกต้อง)</translation>
 <translation id="6965382102122355670">ตกลง</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="6970216967273061347">อำเภอ</translation>
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
@@ -1225,7 +1227,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">เขตปกครอง</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
-<translation id="7793809570500803535">หน้าเว็บที่ <ph name="SITE" /> อาจหยุดให้บริการชั่วคราวหรืออาจถูกย้ายไปยังที่อยู่เว็บใหม่อย่างถาวร</translation>
 <translation id="7800304661137206267">การเชื่อมต่อถูกเข้ารหัสโดยใช้ <ph name="CIPHER" /> โดยใช้ <ph name="MAC" /> สำหรับตรวจสอบสิทธิ์ข้อความและ <ph name="KX" /> เป็นกลไลการแลกเปลี่ยนกุญแจ</translation>
 <translation id="7802523362929240268">ไซต์ถูกต้อง</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
@@ -1388,6 +1389,7 @@
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
 <translation id="8792621596287649091">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="8800988563907321413">คำแนะนำในบริเวณใกล้เคียงจะปรากฏที่นี่</translation>
+<translation id="8805819170075074995">รายการ "<ph name="LANGUAGE_ID" />": ระบบไม่สนใจรายการนี้เพราะมีอยู่ในนโยบาย SpellcheckLanguage เช่นกัน</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="883848425547221593">บุ๊กมาร์กอื่นๆ</translation>
 <translation id="884264119367021077">ที่อยู่จัดส่ง</translation>
@@ -1411,6 +1413,7 @@
 <translation id="8968766641738584599">บันทึกบัตร</translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8975012916872825179">รวมข้อมูล เช่น หมายเลขโทรศัพท์ ที่อยู่อีเมล และที่อยู่สำหรับจัดส่ง</translation>
+<translation id="8975263830901772334">ชื่อของไฟล์ที่คุณพิมพ์</translation>
 <translation id="8978053250194585037">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบฟิชชิง<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ฟิชชิงปลอมเป็นเว็บไซต์อื่นๆ เพื่อหลอกคุณ</translation>
 <translation id="8983003182662520383">วิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="8987927404178983737">เดือน</translation>

@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Đề xuất mật khẩu</translation>
 <translation id="2612676031748830579">Số thẻ</translation>
+<translation id="2613747923081026172">Tạo nhóm</translation>
 <translation id="2621115761605608342">Cho phép JavaScript cho trang web cụ thể.</translation>
 <translation id="2625189173221582860">Đã sao chép mật khẩu</translation>
 <translation id="2631006050119455616">Đã tiết kiệm</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Hỏi trước khi cho phép trang web phát nội dung được bảo vệ</translation>
 <translation id="2913331724188855103">Cho phép trang web lưu và đọc dữ liệu cookie (được đề xuất)</translation>
 <translation id="2932150158123903946">Bộ nhớ Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Gửi đến các thiết bị của tôi</translation>
 <translation id="2956410042958133412">Tài khoản này do <ph name="PARENT_NAME_1" /> và <ph name="PARENT_NAME_2" /> quản lý.</translation>
 <translation id="2960796085439532066">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2962095958535813455">Đã chuyển sang tab ẩn danh</translation>
@@ -740,7 +740,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Đề xuất tìm kiếm và URL</translation>
 <translation id="6461962085415701688">Không thể mở tệp</translation>
-<translation id="6464977750820128603">Bạn có thể xem các trang web mà mình truy cập trên Chrome và đặt lịch hẹn giờ cho các trang web này.\n\nGoogle thu thập thông tin về các trang web mà bạn đã đặt lịch hẹn giờ và khoảng thời gian bạn truy cập các trang web đó. Thông tin này dùng để cải thiện Digital Wellbeing.</translation>
+<translation id="6464977750820128603">Bạn có thể xem các trang web mà mình truy cập trên Chrome và hẹn giờ cho các trang web này.\n\nGoogle thu thập thông tin về các trang web mà bạn đã hẹn giờ và khoảng thời gian bạn truy cập các trang web đó. Thông tin này dùng để cải thiện Digital Wellbeing.</translation>
 <translation id="6475951671322991020">Tải video xuống</translation>
 <translation id="6482749332252372425">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu dung lượng bộ nhớ.</translation>
 <translation id="6496823230996795692">Để sử dụng <ph name="APP_NAME" /> lần đầu tiên, vui lòng kết nối Internet.</translation>
@@ -826,7 +826,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
 <translation id="7032663816368481562">Khi nhấn vào biểu tượng Đề xuất khác tương tự <ph name="ICON" /> trên thanh địa chỉ, bạn sẽ thấy các liên kết nhanh đến trang liên quan. URL của các trang bạn truy cập sẽ được gửi tới Google.</translation>
 <translation id="7034608350006174882">Thẻ và địa chỉ sử dụng Google Pay</translation>
-<translation id="7037082443972906537">Chưa có tên</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="7055152154916055070">Liên kết chuyển hướng đã chặn:</translation>
 <translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
@@ -880,7 +879,9 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="7475688122056506577">Không tìm thấy thẻ SD. Một số tệp của bạn có thể bị thiếu.</translation>
+<translation id="7479104141328977413">Quản lý tab</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
+<translation id="7482697587265222445">Đã gửi tab đến các thiết bị của bạn</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Hiển thị mật khẩu</translation>
 <translation id="7494974237137038751">dữ liệu đã tiết kiệm</translation>
@@ -972,7 +973,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Đề xuất các trang liên quan</translation>
 <translation id="8109613176066109935">Để sử dụng dấu trang trên tất cả các thiết bị, hãy bật tính năng đồng bộ hóa</translation>
-<translation id="8110087112193408731">Bạn có muốn hiển thị hoạt động trên Chrome của mình trong Digital Wellbeing?</translation>
+<translation id="8110087112193408731">Bạn có muốn hiển thị hoạt động của mình trên Chrome trong Digital Wellbeing không?</translation>
 <translation id="8116925261070264013">Đã ẩn</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
@@ -1068,7 +1069,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8922289737868596582">Tải trang xuống từ nút Thêm tùy chọn để sử dụng ngoại tuyến</translation>
-<translation id="8937772741022875483">Bạn có muốn xóa hoạt động trên Chrome của mình khỏi Digital Wellbeing?</translation>
+<translation id="8937772741022875483">Bạn có muốn xóa hoạt động của mình trên Chrome khỏi Digital Wellbeing không?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8951232171465285730">Chrome đã tiết kiệm <ph name="MEGABYTES" /> MB cho bạn</translation>
@@ -1108,7 +1109,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Tiết kiệm tới 60 phần trăm dữ liệu và tăng tốc độ tải trang. Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
-<translation id="926205370408745186">Xóa hoạt động trên Chrome của bạn khỏi Digital Wellbeing</translation>
+<translation id="926205370408745186">Xóa hoạt động của bạn trên Chrome khỏi Digital Wellbeing</translation>
 <translation id="932327136139879170">Trang chủ</translation>
 <translation id="932599481871055447">Tiết kiệm dữ liệu và duyệt web nhanh hơn</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>

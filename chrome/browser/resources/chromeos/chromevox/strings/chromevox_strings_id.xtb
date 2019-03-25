@@ -54,6 +54,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="1319608975892113573">Tidak ada blockquote sebelumnya.</translation>
 <translation id="1321576897702511272">Menyembunyikan bantuan ChromeVox</translation>
 <translation id="1325946044405407859">Tan</translation>
+<translation id="1331634987653814322">Setelan Braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> dari <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">pengulangan karakter dan kata</translation>
 <translation id="1334570596456017464">Subskrip</translation>
@@ -548,6 +549,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="489907760999452556">Tautan internal</translation>
 <translation id="4915087353619183190">Memulai Mode Belajar. Tekan tombol qwerty, tombol braille yang dapat dimuat ulang, atau sentuh gestur untuk mempelajari fungsinya. Tekan tombol Ctrl plus tombol W atau escape untuk keluar.</translation>
 <translation id="492295894462528572">Kata pengantar</translation>
+<translation id="4943781537993885772">Gaya Tampilan</translation>
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4953585991029886728">Edit teks</translation>
 <translation id="4954534434583049121">Blockquote sebelumnya</translation>
@@ -713,6 +715,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="6006050241733874051">Formulir</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{garis miring terbalik}other{# garis miring terbalik}}</translation>
 <translation id="6017514345406065928">Hijau</translation>
+<translation id="6021969570711251331">Dipisahkan</translation>
 <translation id="6034000775414344507">Abu-abu Muda</translation>
 <translation id="6037602951055904232">Geser ke depan</translation>
 <translation id="6042826534790431634">Tekan Search+Space untuk mengaktifkan.</translation>
@@ -763,6 +766,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialog notifikasi</translation>
 <translation id="6452403590345320472">Daftar isi</translation>
+<translation id="6454456397828627257">Berdampingan</translation>
 <translation id="6459511626086141404">Peta tombol datar</translation>
 <translation id="6468049171101508116">Tombol berikutnya</translation>
 <translation id="646954774886932461">Indeks</translation>

@@ -552,6 +552,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web di sekitar}other{# halaman web di sekitar}}</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
 <translation id="4032320456957708163">Browser Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">Link yang Anda buka menuju ke situs yang tidak biasanya Anda kunjungi. Situs tersebut mungkin mencoba membingungkan Anda.</translation>
 <translation id="4058922952496707368">Kunci "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">Tambahkan Alamat yang Valid</translation>
@@ -808,7 +809,6 @@
 <translation id="5455374756549232013">Stempel waktu kebijakan salah</translation>
 <translation id="5457113250005438886">Tidak valid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}other{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}}</translation>
-<translation id="5461666840533392417">Sepertinya Anda sudah menutupnya sendiri, jadi saya akan membiarkan Anda melakukannya. Sampai ketemu lagi :)</translation>
 <translation id="5470861586879999274">&amp;Ulangi pengeditan</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Konten ini mungkin mencoba menginstal software berbahaya yang mencuri atau menghapus informasi Anda di perangkat. <ph name="BEGIN_LINK" />Tetap tampilkan<ph name="END_LINK" /></translation>
@@ -1052,6 +1052,7 @@
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6964255747740675745">Konfigurasi jaringan gagal diuraikan (JSON tidak valid).</translation>
 <translation id="6965382102122355670">Oke</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Perangkat</translation>
 <translation id="6970216967273061347">Distrik</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
@@ -1224,7 +1225,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="7791543448312431591">Tambahkan</translation>
-<translation id="7793809570500803535">Halaman web di <ph name="SITE" /> mungkin sedang tidak aktif untuk sementara atau telah dipindahkan secara permanen ke alamat web baru.</translation>
 <translation id="7800304661137206267">Sambungan dienkripsi menggunakan <ph name="CIPHER" />, dengan <ph name="MAC" /> untuk autentikasi pesan dan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
 <translation id="7802523362929240268">Situs ini sah</translation>
 <translation id="780301667611848630">Lain kali</translation>

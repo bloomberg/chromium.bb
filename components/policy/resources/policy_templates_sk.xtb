@@ -297,6 +297,22 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Upozornenie: Neodporúča sa delegovať ovládanie verzie systému <ph name="PRODUCT_OS_NAME" /> verejnej aplikácii, pretože môže zariadeniu zabrániť získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Delegovanie ovládania verzie systému <ph name="PRODUCT_OS_NAME" /> môže používateľov vystaviť riziku.</translation>
 <translation id="1675002386741412210">Podporované na:</translation>
 <translation id="1689963000958717134">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre všetkých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Umožňuje konfigurovať dostupnosť a správanie funkcií aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Jednotlivé nastavenia môžete určiť vo vlastnostiach JSON:
+
+      Ak pravidlo <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" /> nastavíte na hodnotu <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, používatelia budú môcť spustiť funkciu Powerwash na inštaláciu aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Ak pravidlo <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" /> nastavíte na hodnotu <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, používatelia budú môcť spustiť postup aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />, ktorý uchová stav v celom zariadení (vrátane registrácie podniku), ale nezachová údaje používateľa. Tento postup aktualizácie je k dispozícii od verzie 68.
+
+      Pravidlo <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" /> ovláda, ako sa presadzujú automatické aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" /> v prípade nezabezpečeného firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Všetky postupy zachovávajú stav miestneho zariadenia.
+        Ak pravidlo nastavíte na hodnotu 1 alebo ho nenastavíte, aktualizácie firmvéru TPM sa nebudú presadzovať.
+        Ak pravidlo nastavíte na hodnotu 2 a používateľ potvrdí aktualizáciu, firmvér <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sa aktualizuje po najbližšom reštartovaní.
+        Ak pravidlo nastavíte na hodnotu 3, firmvér <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sa aktualizuje po najbližšom reštartovaní.
+        Ak pravidlo nastavíte na hodnotu 4, firmvér <ph name="TPM_FIRMWARE_UPDATE_TPM" /> sa aktualizuje po registrácii pred prihlásením používateľa.
+        Táto možnosť je k dispozícii od verzie 74.
+
+      Ak toto pravidlo nenastavíte, funkcie aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" /> nebudú k dispozícii.</translation>
 <translation id="1708496595873025510">Nastaviť obmedzenie pre načítanie počiatočnej hodnoty variácie</translation>
 <translation id="1717817358640580294">Ak ho nenastavíte a Chrome Cleanup rozpozná nechcený softvér, môže Googlu nahlásiť metadáta o vyhľadávaní v súlade s pravidlami určenými parametrom SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa potom používateľa spýta, či chce vymazať nechcený softvér. Používateľ sa môže rozhodnúť zdieľať výsledky vymazania s Googlom, čím mu pomôže s rozpoznávaním nechcených softvérov v budúcnosti. Tieto výsledky obsahujú metadáta súboru, automaticky nainštalované rozšírenia a kľúče databázy tak, ako je uvedené v informáciách o ochrane súkromia v Chrome.
 
@@ -1094,6 +1110,17 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Toto pravidlo sa dá nastaviť iba ako odporúčané. Môžete pomocou neho presunúť skupinu odporúčaných miestnych nastavení do hornej časti, ale používatelia si môžu pre svoju reláciu kedykoľvek vybrať ľubovoľné miestne nastavenie podporované systémom <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
+<translation id="3384115339826100753">Povoľte pravidlo na správu prepínania napájania počas špičky.
+
+          Peak Shift je pravidlo na šetrenie energie, ktoré minimalizuje používanie striedavého prúdu v špičke počas dňa. Pre každý pracovný deň je možné nastaviť čas začatia a ukončenia režimu prepnutia napájania počas špičky. V tomto čase bude systém napájaný z batérie, a to dokonca aj vtedy, keď bude pripojený striedavý prúd. Stav nabitia batérie však musí byť nad špecifikovaným prahom. Po čase ukončenia bude systém napájaný striedavým prúdom (ak bude pripojený), ale nebude nabíjať batériu. Po špecifikovanom čase začatia nabíjania bude systém opäť fungovať ako zvyčajne. Bude používať striedavý prúd a nabíjať batériu.
+
+          Ak toto pravidlo nastavíte na hodnotu true a nastavíte pravidlá DevicePowerPeakShiftBatteryThreshold a DevicePowerPeakShiftDayConfig, funkcia prepnutia napájania počas špičky bude vždy povolená (ak ju zariadenie podporuje).
+
+          Ak toto pravidlo nastavíte na hodnotu false, funkcia prepnutia napájania počas špičky bude vždy zakázaná.
+
+          Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
+
+          Ak toto pravidlo nenastavíte, funkcia prepnutia napájania počas špičky bude počiatočne zakázaná a používateľ ju nebude môcť povoliť.</translation>
 <translation id="3388153794103186066">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušným dodávateľom alebo ID produktu. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátor dodávateľa a ID produktu. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že ID produktu sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. Ak to neurobíte, pravidlo bude neplatné a ignorované.
 
 Model povolení USB udeľuje pomocou adresy webu odosielajúceho žiadosť (žiadajúcej webovej adresy) a adresy rámcového webu najvyššej úrovne (webová adresa vkladania) povolenie žiadajúcej webovej adrese na prístup k zariadeniu USB. Žiadajúca webová adresa sa môže od webovej adresy vkladania líšiť, ak je načítaná v prvku iframe. Preto môže pole pre webové adresy obsahovať až dva reťazce webovej adresy oddelené čiarkou, ktoré špecifikujú žiadajúcu webovú adresu a webovú adresu vkladania. Ak určíte iba jednu webovú adresu, prístup k príslušným zariadeniam USB bude udelený iba vtedy, keď sa adresa webu odosielajúceho žiadosť zhoduje s touto webovou adresu bez ohľadu na stav vloženia. V poli pre webové adresy musíte zadať platné webové adresy, inak bude pravidlo ignorované.
@@ -1166,6 +1193,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak toto pravidlo nastavíte na možnosť „DeveloperToolsDisallowed“ (hodnota 2), nástroje pre vývojárov nebude možné používať ani nebude možné kontrolovať prvky webov. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné otvoriť nástroje pre vývojárov alebo konzolu JavaScriptu.</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="355118380775352753">Weby, ktoré sa majú otvárať v alternatívnom prehliadači</translation>
+<translation id="3554984410014457319">Povoliť Asistentovi Google počúvať frázy aktivácie hlasom</translation>
 <translation id="3577251398714997599">Nastavenie reklám pre weby s obťažujúcimi reklamami</translation>
 <translation id="357917253161699596">Povoliť používateľom spravovať používateľské certifikáty</translation>
 <translation id="3583230441447348508">Umožňuje špecifikovať zoznam vopred nakonfigurovaných zdieľaných úložísk v sieti.
@@ -1394,6 +1422,12 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak je toto nastavenie nenakonfigurované, alebo je nastavené na hodnotu False, budú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> automaticky kontrolovať aktualizácie.
 
       Upozornenie: Odporúča sa ponechať automatické aktualizácie povolené, aby mohli používatelia získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Vypnutie automatických aktualizácií môže vystaviť používateľov riziku.</translation>
+<translation id="4018000735882846261">Toto pravidlo povoľuje Asistentovi Google počúvať frázy aktivácie hlasom.
+
+      Ak toto pravidlo povolíte, Asistent Google bude počúvať frázy aktivácie hlasom.
+      Ak toto pravidlo zakážete, Asistent Google nebude počúvať frázy aktivácie hlasom.
+      Ak toto pravidlo nenastavíte, Asistent Google nebude počúvať frázy aktivácie hlasom.
+      </translation>
 <translation id="4020682745012723568">Aplikácie pre Android nemajú prístup k súborom cookie preneseným do profilu používateľa.</translation>
 <translation id="402759845255257575">Nepovoliť žiadnym stránkam spúšťať JavaScript</translation>
 <translation id="4027608872760987929">Povoliť predvoleného poskytovateľa vyhľadávania</translation>
@@ -1539,6 +1573,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Zatiaľ čo samotné pravidlo podporujú platformy uvedené vyššie, funkcie, ktoré povoľuje, môžu byť k dispozícii na menšom množstve platforiem. Niektoré zastarané funkcie webovej platformy nie je možné znova povoliť. Je možné povoliť iba tie funkcie, ktoré sú výslovne uvedené nižšie (na obmedzený čas, ktorý sa líši podľa funkcie). Všeobecný formát značky reťazca je [NázovZastaranejFunkcie]_EffectiveUntil[rrrrmmdd]. Dôvody na zmenu funkcií webovej platformy nájdete na adrese https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Povoliť zámok, ak je zariadenie nečinné alebo pozastavené</translation>
+<translation id="4449469846627734399">Nastaviť dennú konfiguráciu funkcie prepnutia napájania počas špičky</translation>
 <translation id="4449545651113180484">Otočiť obrazovku v smere hodinových ručičiek o 270 stupňov</translation>
 <translation id="445270821089253489">Umožňuje ovládať, aké typy informácií o používateľoch a zariadeniach sa budú nahlasovať.</translation>
 <translation id="4454820008017317557">Zobraziť ikonu panela s nástrojmi <ph name="PRODUCT_NAME" /></translation>
@@ -1717,6 +1752,11 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4986560318567565414">Cesta prepnutia na Chrome v alternatívnom prehliadači</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
+<translation id="5034604678285451405">Nastavenie prahu batérie (v percentách) pre funkciu prepnutia napájania počas špičky.
+
+          Toto pravidlo sa použije iba vtedy, ak je pravidlo DevicePowerPeakShiftEnabled nastavené na hodnotu true.
+
+          Ak pravidlo nenakonfigurujete alebo nenastavíte, funkcia prepnutia napájania počas špičky bude vždy zakázaná.</translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -1930,6 +1970,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5457065417344056871">Povoliť v prehliadači režim pre hostí</translation>
 <translation id="5457924070961220141">Umožňuje konfigurovať vykresľovací modul HTML, keď je nainštalovaný doplnok <ph name="PRODUCT_FRAME_NAME" />.
           V predvolenom nastavení, ktoré sa používa v prípade, ak je toto pravidlo ponechané nenastavené, môže vykresľovanie vykonávať hostiteľský prehliadač. Toto nastavenie však môžete prepísať a namiesto toho vykresľovať stránky HTML pomocou doplnku <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="5458584148602890023">Povoliť funkciu prepnutia napájania počas špičky</translation>
 <translation id="5464816904705580310">Umožňuje nakonfigurovať nastavenia pre spravovaných používateľov.</translation>
 <translation id="546726650689747237">Oneskorenie zníženia jasu obrazovky pri používaní napájacieho zdroja</translation>
 <translation id="5469143988693423708">Používateľ má povolené spustiť Crostini</translation>
@@ -2224,6 +2265,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
 <translation id="6083631234867522991">Windows (klienty Windows):</translation>
+<translation id="608788685013546076">Nastaviť prah batérie (v percentách) pre funkciu prepnutia napájania počas špičky</translation>
 <translation id="6089679180657323464">Ovláda nastavenia diagnostického a telemetrického ovládača Wilco</translation>
 <translation id="6091233616732024397">Presadzovať prihlásenie používateľov pred použitím prehliadača</translation>
 <translation id="6093156968240188330">Umožnite vzdialeným používateľom interagovať počas relácií vzdialenej pomoci s privilegovanými oknami</translation>
@@ -3331,6 +3373,9 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8548832052135586762">Nastaví iba farebnú tlač, iba monochromatickú tlač alebo žiadne obmedzenie farebného režimu. Ak toto pravidlo nenastavíte, znamená to, že sa nepoužijú žiadne obmedzenia.</translation>
 <translation id="8549772397068118889">Upozorniť na návštevu stránky, ktorá je mimo balíkov obsahu</translation>
 <translation id="8566842294717252664">Skryť internetový obchod zo stránky na novej karte a zo spúšťača aplikácií</translation>
+<translation id="8569734380847633643">
+          Ak toto pravidlo nastavíte na hodnotu false, <ph name="PRODUCT_OS_NAME" /> vypne pripojenie Wi‑Fi a používatelia ho nebudú môcť znova zapnúť.
+          Ak too pravidlo nastavíte na hodnotu true alebo ho nenastavíte, používatelia budú môcť zapínať a vypínať pripojenie Wi‑Fi podľa potreby.</translation>
 <translation id="857369585509260201">Podpora tohto pravidla je ukončená. Skúste namiesto toho použiť pravidlo BrowserSignin.
 
       Ak toto pravidlo nastavíte na hodnotu true, používateľ sa musí prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho profilu ešte predtým, ako ho začne používať. Predvolená hodnota parametra BrowserGuestModeEnabled bude nastavená na hodnotu false. Upozorňujeme, že po povolení tohto pravidla sa existujúce nepriradené profily uzamknú a budú neprístupné. Ďalšie informácie získate v článku centra pomoci.
@@ -3389,6 +3434,13 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8685024486845674965">Upozornenie ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="8703488928438047864">Nahlásiť stav panela</translation>
+<translation id="8703872185032220081">Nastavte dennú konfiguráciu funkcie prepnutia napájania počas špičky.
+
+          Toto pravidlo sa použije iba vtedy, ak je pravidlo DevicePowerPeakShiftEnabled nastavené na hodnotu true.
+
+          Ak pravidlo nenakonfigurujete alebo nenastavíte, funkcia prepnutia napájania počas špičky bude vždy zakázaná.
+
+          Poznámka: Povolené hodnoty pre pole <ph name="MINUTE_FIELD_NAME" /> v poliach <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> a <ph name="CHARGE_START_TIME_FIELD_NAME" /> sú 0, 15, 30 a 45.</translation>
 <translation id="8704831857353097849">Zoznam zakázaných doplnkov</translation>
 <translation id="8711086062295757690">Určuje kľúčové slovo, ktoré vo všeobecnom poli spúšťa vyhľadávanie tohto poskytovateľa. Toto pravidlo je voliteľné.
 
@@ -3520,6 +3572,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="8976531594979650914">Ako predvolenú tlačiareň použiť predvolenú tlačiareň systému</translation>
 <translation id="8992176907758534924">Zakázať všetkým stránkam zobrazovať obrázky</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
+<translation id="9038839118379817310">Povoliť Wi‑Fi</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">
       Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.

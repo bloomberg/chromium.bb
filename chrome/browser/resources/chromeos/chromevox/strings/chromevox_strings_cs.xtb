@@ -54,6 +54,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1319608975892113573">Žádná předchozí bloková citace.</translation>
 <translation id="1321576897702511272">Skrýt nápovědu programu ChromeVox</translation>
 <translation id="1325946044405407859">Šedobéžová</translation>
+<translation id="1331634987653814322">Nastavení Brailleova písma</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">vyslovovat znaky a slova</translation>
 <translation id="1334570596456017464">Dolní index</translation>
@@ -547,6 +548,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="489907760999452556">Interní odkaz</translation>
 <translation id="4915087353619183190">Spouští se režim výuky. Stisknutím klávesy na běžné klávesnici, tlačítka obnovitelného braillského řádku nebo provedením dotykového gesta získáte informace o jeho funkci. Režim výuky ukončíte stisknutím kombinace kláves Ctrl+W nebo klávesy Escape.</translation>
 <translation id="492295894462528572">Předmluva</translation>
+<translation id="4943781537993885772">Styl zobrazení</translation>
 <translation id="495170559598752135">Akce</translation>
 <translation id="4953585991029886728">Upravit text</translation>
 <translation id="4954534434583049121">Předchozí blok citace</translation>
@@ -712,6 +714,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6006050241733874051">Formulář</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{zpětné lomítko}few{# zpětná lomítka}many{# backslashes}other{# zpětných lomítek}}</translation>
 <translation id="6017514345406065928">Zelená</translation>
+<translation id="6021969570711251331">Prokládání</translation>
 <translation id="6034000775414344507">Světle šedá</translation>
 <translation id="6037602951055904232">Posunout dopředu</translation>
 <translation id="6042826534790431634">Lze aktivovat stisknutím kláves Hledat + mezerník.</translation>
@@ -762,6 +765,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6438968337250688271"><ph name="NAME" />, nabídka</translation>
 <translation id="6444046323172968959">Dialog upozornění</translation>
 <translation id="6452403590345320472">Obsah</translation>
+<translation id="6454456397828627257">Vedle sebe</translation>
 <translation id="6459511626086141404">Plochá mapa kláves</translation>
 <translation id="6468049171101508116">Další tlačítko</translation>
 <translation id="646954774886932461">Rejstřík</translation>

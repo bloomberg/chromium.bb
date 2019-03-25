@@ -54,6 +54,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1319608975892113573">Brak poprzedniego cytatu blokowego.</translation>
 <translation id="1321576897702511272">Ukryj pomoc dotyczącą ChromeVox</translation>
 <translation id="1325946044405407859">Pastelowobrązowy</translation>
+<translation id="1331634987653814322">Ustawienia brajla</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">odczytywanie znaków i słów</translation>
 <translation id="1334570596456017464">Indeks dolny</translation>
@@ -548,6 +549,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="489907760999452556">Link wewnętrzny</translation>
 <translation id="4915087353619183190">Włączam tryb informacyjny. Naciśnij klawisz na klawiaturze QWERTY lub na monitorze brajlowskim albo wykonaj gest dotykowy, by poznać jego funkcję. Przytrzymaj Control i naciśnij W lub Escape, by wyłączyć tryb informacyjny.</translation>
 <translation id="492295894462528572">Przedmowa</translation>
+<translation id="4943781537993885772">Styl wyświetlania</translation>
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4953585991029886728">Edytowanie tekstu</translation>
 <translation id="4954534434583049121">Poprzedni cytat blokowy</translation>
@@ -713,6 +715,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="6006050241733874051">Formularz</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ukośnik wsteczny}few{# ukośniki wsteczne}many{# ukośników wstecznych}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Zielony</translation>
+<translation id="6021969570711251331">Łączony</translation>
 <translation id="6034000775414344507">Jasnoszary</translation>
 <translation id="6037602951055904232">Przesuń do przodu</translation>
 <translation id="6042826534790431634">Naciśnij klawisz wyszukiwania + spację, aby aktywować.</translation>
@@ -763,6 +766,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Okno dialogowe alertu</translation>
 <translation id="6452403590345320472">Spis treści</translation>
+<translation id="6454456397828627257">Obok siebie</translation>
 <translation id="6459511626086141404">Płaska mapa klawiszy</translation>
 <translation id="6468049171101508116">Następny przycisk</translation>
 <translation id="646954774886932461">Indeks</translation>

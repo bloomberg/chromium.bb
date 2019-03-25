@@ -54,6 +54,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1319608975892113573">No hay ninguna etiqueta "blockquote" anterior.</translation>
 <translation id="1321576897702511272">Oculta la ayuda de ChromeVox</translation>
 <translation id="1325946044405407859">Bronce</translation>
+<translation id="1331634987653814322">Ajustes de braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">decir palabras y caracteres</translation>
 <translation id="1334570596456017464">Subíndice</translation>
@@ -548,6 +549,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="489907760999452556">Enlace interno</translation>
 <translation id="4915087353619183190">Se está iniciando el modo de aprendizaje. Pulsa una tecla del teclado QWERTY, una tecla de braille actualizable o un gesto táctil para saber su función. Para salir, pulsa Ctrl + W o Esc.</translation>
 <translation id="492295894462528572">Prefacio</translation>
+<translation id="4943781537993885772">Estilo de visualización</translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4953585991029886728">Edita texto</translation>
 <translation id="4954534434583049121">Cita de bloque anterior</translation>
@@ -713,6 +715,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6006050241733874051">Formulario</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra inversa}other{# barras inversas}}</translation>
 <translation id="6017514345406065928">Verde</translation>
+<translation id="6021969570711251331">Intercalado</translation>
 <translation id="6034000775414344507">Gris claro</translation>
 <translation id="6037602951055904232">Se desplaza hacia delante</translation>
 <translation id="6042826534790431634">Pulsa la tecla de búsqueda y la barra espaciadora para activar la opción.</translation>
@@ -763,6 +766,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Cuadro de diálogo de alerta</translation>
 <translation id="6452403590345320472">Índice</translation>
+<translation id="6454456397828627257">Visualización en paralelo</translation>
 <translation id="6459511626086141404">Mapa de teclado plano</translation>
 <translation id="6468049171101508116">Botón siguiente</translation>
 <translation id="646954774886932461">Índice</translation>

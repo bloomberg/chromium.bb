@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">ಈಗ</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 ನಿಮಿಷ}one{# ನಿಮಿಷಗಳು}other{# ನಿಮಿಷಗಳು}}</translation>
+<translation id="1756116796893109054">ಟ್ಯಾಬ್ ಅನ್ನು ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">ಅವಧಿ</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 ತಿಂಗಳು}one{# ತಿಂಗಳುಗಳು}other{# ತಿಂಗಳುಗಳು}}</translation>
@@ -51,11 +52,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ಮಾಪನಾಂಕವು ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="252373100621549798">ಅಪರಿಚಿತ ಪ್ರದರ್ಶನ</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{1ಗಂ. ಯಲ್ಲಿ}one{#ಗಂ. ಗಳಲ್ಲಿ}other{#ಗಂ. ಗಳಲ್ಲಿ}}</translation>
 <translation id="2583543531130364912">ನಿಮ್ಮ ಟಚ್‌ಸ್ಕ್ರೀನ್ ಕ್ಯಾಲಿಬ್ರೇಟ್ ಮಾಡಿ</translation>
 <translation id="2666092431469916601">ಮೇಲೆ</translation>
+<translation id="2701330563083355633"><ph name="DEVICE_NAME" /> ನಿಂದ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="2743387203779672305">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಿ</translation>
 <translation id="2803313416453193357">ಫೋಲ್ಡರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ವರ್ಷದ ಹಿಂದೆ}one{# ವರ್ಷಗಳ ಹಿಂದೆ}other{# ವರ್ಷಗಳ ಹಿಂದೆ}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{1ದಿ. ದಲ್ಲಿ}one{#ದಿ. ಗಳಲ್ಲಿ}other{#ದಿ. ಗಳಲ್ಲಿ}}</translation>
 <translation id="2931838996092594335">ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="3036649622769666520">ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -114,6 +118,7 @@
 <translation id="5613020302032141669">ಎಡ ಬಾಣದ ಗುರುತು</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ನಿಮಿ}one{# ನಿಮಿಷಗಳು}other{# ನಿಮಿಷಗಳು}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ದಿನ ಮತ್ತು }one{# ದಿನಗಳು ಮತ್ತು }other{# ದಿನಗಳು ಮತ್ತು }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{1ವ. ದಲ್ಲಿ}one{#ವ. ಗಳಲ್ಲಿ}other{#ವ. ಗಳಲ್ಲಿ}}</translation>
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="5941711191222866238">ಕುಗ್ಗಿಸು</translation>
@@ -169,6 +174,7 @@
 <translation id="7907591526440419938">ಫೈಲ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7969046989155602842">ಕಮಾಂಡ್</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 ಕ್ಕಿಂತ ಹೆಚ್ಚು ಓದದಿರುವ ಅಧಿಸೂಚನೆ}one{# ಕ್ಕಿಂತ ಹೆಚ್ಚು ಓದದಿರುವ ಅಧಿಸೂಚನೆಗಳು}other{# ಕ್ಕಿಂತ ಹೆಚ್ಚು ಓದದಿರುವ ಅಧಿಸೂಚನೆಗಳು}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{1ನಿ ದಲ್ಲಿ}one{#ನಿ ಗಳಲ್ಲಿ}other{#ನಿ ಗಳಲ್ಲಿ}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ಗಂಟೆ ಹಿಂದೆ}one{# ಗಂಟೆಗಳ ಹಿಂದೆ}other{# ಗಂಟೆಗಳ ಹಿಂದೆ}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಸೆಕೆಂಡುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>

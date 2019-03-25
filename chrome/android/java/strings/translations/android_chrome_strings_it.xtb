@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Suggerisci password</translation>
 <translation id="2612676031748830579">Numero carta</translation>
+<translation id="2613747923081026172">Crea gruppo</translation>
 <translation id="2621115761605608342">Consenti JavaScript per un sito specifico.</translation>
 <translation id="2625189173221582860">Password copiata</translation>
 <translation id="2631006050119455616">Risparmiati</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Chiedi prima di consentire ai siti di riprodurre contenuti protetti</translation>
 <translation id="2913331724188855103">Consenti ai siti di salvare e leggere i dati dei cookie (opzione consigliata)</translation>
 <translation id="2932150158123903946">Spazio di archiviazione di Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Invia ai miei dispositivi</translation>
 <translation id="2956410042958133412">Questo account è gestito da <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" /></translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2962095958535813455">Schede in incognito attivate</translation>
@@ -826,7 +826,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7031882061095297553">Sincronizza con</translation>
 <translation id="7032663816368481562">Quando tocchi Altri simili <ph name="ICON" /> nella barra degli indirizzi, ti vengono mostrati i link diretti alle pagine correlate. Gli URL delle pagine che visiti vengono inviati a Google.</translation>
 <translation id="7034608350006174882">Carte e indirizzi che utilizzano Google Pay</translation>
-<translation id="7037082443972906537">Nome non disponibile</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7055152154916055070">Reindirizzamento bloccato:</translation>
 <translation id="7062545763355031412">Accetta e cambia account</translation>
@@ -880,7 +879,9 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7475192538862203634">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Scheda SD non trovata. Potrebbero mancare alcuni dei tuoi file.</translation>
+<translation id="7479104141328977413">Gestione schede</translation>
 <translation id="7481312909269577407">Avanti</translation>
+<translation id="7482697587265222445">Scheda inviata ai tuoi dispositivi</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostra password</translation>
 <translation id="7494974237137038751">dati risparmiati</translation>
@@ -1068,7 +1069,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
 <translation id="8922289737868596582">Usa il pulsante Altre opzioni per scaricare le pagine da usare offline</translation>
-<translation id="8937772741022875483">Vuoi rimuovere la tua attività Chrome da Benessere digitale?</translation>
+<translation id="8937772741022875483">Vuoi rimuovere la tua attività di Chrome da Benessere digitale?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Apri nell'altra finestra</translation>
 <translation id="8951232171465285730">Chrome ti ha fatto risparmiare <ph name="MEGABYTES" /> MB</translation>
@@ -1108,7 +1109,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="9206873250291191720">A</translation>
 <translation id="9215534869786664672">Utilizza fino al 60 percento di dati in meno e velocizza il Web. I server di Google ottimizzeranno le pagine che visiti.</translation>
 <translation id="9219103736887031265">Immagini</translation>
-<translation id="926205370408745186">Rimuovi la tua attività di Chrome da Benessere digitale.</translation>
+<translation id="926205370408745186">Rimuovi la tua attività di Chrome da Benessere digitale</translation>
 <translation id="932327136139879170">Home page</translation>
 <translation id="932599481871055447">Risparmia dati e naviga più velocemente</translation>
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>

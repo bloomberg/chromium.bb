@@ -809,7 +809,6 @@
 <translation id="5455374756549232013">Marca de tiempo de política incorrecta</translation>
 <translation id="5457113250005438886">Sin validez</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}other{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}}</translation>
-<translation id="5461666840533392417">Parece que puedes navegar por tu cuenta, lo dejo en tus manos. Que tengas un lindo día.</translation>
 <translation id="5470861586879999274">&amp;Rehacer Editar</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Es posible que este contenido intente instalar software peligroso que robe o borre tu información en tu dispositivo . <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
@@ -1227,7 +1226,6 @@ Detalles adicionales:
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7791543448312431591">Agregar</translation>
-<translation id="7793809570500803535">Es posible que la página web en <ph name="SITE" /> no funcione temporalmente o se haya trasladado de manera permanente a una nueva dirección web.</translation>
 <translation id="7800304661137206267">La conexión está encriptada mediante <ph name="CIPHER" />, con <ph name="MAC" /> para la autenticación de mensajes y <ph name="KX" /> como mecanismo de intercambio clave.</translation>
 <translation id="7802523362929240268">El sitio es legítimo</translation>
 <translation id="780301667611848630">No, gracias</translation>

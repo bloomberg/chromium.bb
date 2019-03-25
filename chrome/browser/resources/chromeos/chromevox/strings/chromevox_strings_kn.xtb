@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">ಹಿಂದಿನ ಬ್ಲಾಕ್‌ಕೋಟ್ ಇಲ್ಲ.</translation>
 <translation id="1321576897702511272">ChromeVox ಸಹಾಯವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1325946044405407859">ಟ್ಯಾನ್</translation>
+<translation id="1331634987653814322">ಬ್ರೈಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> / <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">ಅಕ್ಷರ ಮತ್ತು ಪದ ಇಕೋ</translation>
 <translation id="1334570596456017464">ಸಬ್‌ಸ್ಕ್ರಿಪ್ಟ್</translation>
@@ -548,6 +549,7 @@
 <translation id="489907760999452556">ಆಂತರಿಕ ಲಿಂಕ್</translation>
 <translation id="4915087353619183190">ಕಲಿಕೆ ಮೋಡ್ ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತಿದೆ. ಅದರ ಕಾರ್ಯವಿಧಾನವನ್ನು ತಿಳಿದುಕೊಳ್ಳಲು qwerty ಕೀ, ರಿಫ್ರೆಶ್ ಮಾಡಬಹುದಾದ ಬ್ರೇಲ್ ಕೀಯನ್ನು ಒತ್ತಿರಿ ಅಥವಾ ಸನ್ನೆಯನ್ನು ಸ್ಪರ್ಶಿಸಿ. ನಿರ್ಗಮಿಸಲು w ಅಥವಾ escape ಜೊತೆಗೆ control ಒತ್ತಿರಿ.</translation>
 <translation id="492295894462528572">ಮುನ್ನುಡಿ</translation>
+<translation id="4943781537993885772">ಡಿಸ್‌ಪ್ಲೇ ಶೈಲಿ</translation>
 <translation id="495170559598752135">ಕ್ರಿಯೆಗಳು</translation>
 <translation id="4953585991029886728">ಪಠ್ಯ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="4954534434583049121">ಹಿಂದಿನ ನಿರ್ಬಂಧನೆಯ ಖೋಟ್</translation>
@@ -713,6 +715,7 @@
 <translation id="6006050241733874051">ಫಾರ್ಮ್</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ಬ್ಯಾಕ್‌ಸ್ಲ್ಯಾಶ್‌}one{# ಬ್ಯಾಕ್‌ಸ್ಲ್ಯಾಶ್‌ಗಳು}other{# ಬ್ಯಾಕ್‌ಸ್ಲ್ಯಾಶ್‌ಗಳು}}</translation>
 <translation id="6017514345406065928">ಹಸಿರು</translation>
+<translation id="6021969570711251331">ಒಂದರ ಮೇಲೆ ಮತ್ತೊಂದು</translation>
 <translation id="6034000775414344507">ತಿಳಿ ಬೂದು</translation>
 <translation id="6037602951055904232">ಮುಂದಕ್ಕೆ ಪ್ಯಾನ್ ಮಾಡಿ</translation>
 <translation id="6042826534790431634">ಸಕ್ರಿಯಗೊಳಿಸಲು, ಹುಡುಕಾಟ+ಸ್ಪೇಸ್ ಕೀಲಿ ಒತ್ತಿರಿ.</translation>
@@ -763,6 +766,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, ಮೆನು</translation>
 <translation id="6444046323172968959">ಎಚ್ಚರಿಕೆ ಸಂವಾದ</translation>
 <translation id="6452403590345320472">ಪರಿವಿಡಿ</translation>
+<translation id="6454456397828627257">ಅಕ್ಕ ಪಕ್ಕ</translation>
 <translation id="6459511626086141404">ಚಪ್ಪಟೆ ಕೀಮ್ಯಾಪ್</translation>
 <translation id="6468049171101508116">ಮುಂದಿನ ಬಟನ್</translation>
 <translation id="646954774886932461">ಸೂಚಿಕೆ</translation>

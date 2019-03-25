@@ -54,6 +54,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1319608975892113573">Ingen tidligere blockquotes.</translation>
 <translation id="1321576897702511272">Skjul Hjælp til ChromeVox</translation>
 <translation id="1325946044405407859">Gyldenbrun</translation>
+<translation id="1331634987653814322">Indstillinger for braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">tegn- og ordekko</translation>
 <translation id="1334570596456017464">Sænket skrift</translation>
@@ -548,6 +549,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="489907760999452556">Internt link</translation>
 <translation id="4915087353619183190">Indlæringstilstanden startes. Tryk på en qwerty-tast, en opdaterbar brailletast eller en berøring for at få indblik i den tilknyttede funktion. Tryk på Ctrl og w eller escape for at afslutte.</translation>
 <translation id="492295894462528572">Forord</translation>
+<translation id="4943781537993885772">Visningsstil</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4953585991029886728">Rediger tekst</translation>
 <translation id="4954534434583049121">Forrige citatblok</translation>
@@ -713,6 +715,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstreg}one{ # omvendte skråstreger}other{# omvendte skråstreger}}</translation>
 <translation id="6017514345406065928">Grøn</translation>
+<translation id="6021969570711251331">Sammenflet</translation>
 <translation id="6034000775414344507">Lysegrå</translation>
 <translation id="6037602951055904232">Panorer fremad</translation>
 <translation id="6042826534790431634">Tryk på søgetasten+mellemrumstasten for at aktivere.</translation>
@@ -763,6 +766,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6438968337250688271">Menuen <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Underretningsdialogboks</translation>
 <translation id="6452403590345320472">Indholdsfortegnelse</translation>
+<translation id="6454456397828627257">Side om side</translation>
 <translation id="6459511626086141404">Flad tasteoversigt</translation>
 <translation id="6468049171101508116">Knappen Næste</translation>
 <translation id="646954774886932461">Indeks</translation>

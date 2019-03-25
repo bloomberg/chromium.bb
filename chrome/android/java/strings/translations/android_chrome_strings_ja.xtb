@@ -264,7 +264,6 @@
 <translation id="2910701580606108292">保護されたコンテンツの再生をサイトに許可する前に確認します</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ストレージ</translation>
-<translation id="2941880727166628951">デバイスに送信</translation>
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2962095958535813455">シークレット タブに切り替えました</translation>
@@ -826,7 +825,6 @@
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7032663816368481562">アドレスバーの「もっと見る」<ph name="ICON" /> をタップしたときに関連ページへのクイックリンクを表示します。このとき、アクセスしたページの URL が Google に送信されます。</translation>
 <translation id="7034608350006174882">Google Pay のカードと住所</translation>
-<translation id="7037082443972906537">その名前は使用できません</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7055152154916055070">リダイレクトがブロックされました:</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>

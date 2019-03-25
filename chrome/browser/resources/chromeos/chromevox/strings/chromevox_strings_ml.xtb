@@ -54,6 +54,7 @@
 <translation id="1319608975892113573">മുൻ ബ്ലോക്ക്ക്വോട്ട് ഒന്നുമില്ല.</translation>
 <translation id="1321576897702511272">ChromeVox സഹായം മറയ്ക്കുക</translation>
 <translation id="1325946044405407859">തവിട്ടുനിറം</translation>
+<translation id="1331634987653814322">ബ്രെയ്‌ലി ക്രമീകരണം</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">പ്രതീക, പദ എക്കോ</translation>
 <translation id="1334570596456017464">സബ്‌സ്‌ക്രി‌പ്‌റ്റ്</translation>
@@ -547,6 +548,7 @@
 <translation id="489907760999452556">ആന്തരിക ലിങ്ക്</translation>
 <translation id="4915087353619183190">'അറിയുക മോഡ്' ആരംഭിക്കുന്നു. ഇതിന്‍റെ പ്രവർത്തനം പഠിക്കാൻ ക്വെട്ടി കീയോ പുതുക്കിയെടുക്കാനാവുന്ന ബ്രെയ്‌ലി കീയോ അമർത്തുകയോ വിരൽ ഉപയോഗിച്ച് സ്‌പർശിക്കുകയോ ചെയ്യുക. പുറത്ത് കടക്കാൻ കൺട്രോൾ, w എന്നീ കീകൾ ഒരുമിച്ച് അമർത്തുകയോ എസ്‌കേപ്പ് കീ അമർത്തുകയോ ചെയ്യുക.</translation>
 <translation id="492295894462528572">മുഖവുര</translation>
+<translation id="4943781537993885772">ഡിസ്‌പ്ലേ സ്‌റ്റൈൽ</translation>
 <translation id="495170559598752135">പ്രവര്‍ത്തനങ്ങള്‍</translation>
 <translation id="4953585991029886728">വാചകം എഡിറ്റുചെയ്യുക</translation>
 <translation id="4954534434583049121">മുൻ ബ്ലോക്ക് ഉദ്ധരണി</translation>
@@ -712,6 +714,7 @@
 <translation id="6006050241733874051">ഫോം</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ബാക്ക്‌സ്ലാഷ്}other{# ബാക്ക്‌സ്ലാഷുകൾ}}</translation>
 <translation id="6017514345406065928">പച്ച</translation>
+<translation id="6021969570711251331">ഇടകലർന്നിരിക്കുന്നു</translation>
 <translation id="6034000775414344507">ഇളം ചാരനിറം</translation>
 <translation id="6037602951055904232">മുന്നിലേക്ക് പാൻ ചെയ്യുക</translation>
 <translation id="6042826534790431634">സജീവമാക്കാൻ തിരയൽ+സ്‌പെയ്‌സ് അമർത്തുക.</translation>
@@ -762,6 +765,7 @@
 <translation id="6438968337250688271"><ph name="NAME" />, മെനു</translation>
 <translation id="6444046323172968959">അലേർട്ട് ഡയലോഗ്</translation>
 <translation id="6452403590345320472">ഉള്ളടക്ക പട്ടിക</translation>
+<translation id="6454456397828627257">വശങ്ങളിലായി</translation>
 <translation id="6459511626086141404">ഫ്ലാറ്റ് കീമാപ്പ്</translation>
 <translation id="6468049171101508116">അടുത്ത ബട്ടൺ</translation>
 <translation id="646954774886932461">സൂചിക</translation>

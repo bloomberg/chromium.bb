@@ -485,6 +485,7 @@
 <translation id="3592413004129370115">Italian (Phong bì)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Kích thước 2</translation>
+<translation id="361438452008624280">Mục nhập danh sách "<ph name="LANGUAGE_ID" />": Ngôn ngữ không xác định hoặc không được hỗ trợ.</translation>
 <translation id="3615877443314183785">Nhập ngày hết hạn hợp lệ</translation>
 <translation id="36224234498066874">Xóa DL duyệt web</translation>
 <translation id="362276910939193118">Hiển thị Toàn bộ Lịch sử</translation>
@@ -552,6 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
 <translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> quản lý trình duyệt của bạn</translation>
+<translation id="4034375457890803692">Đường dẫn liên kết bạn mở dẫn đến một trang web mà bạn không thường xuyên truy cập. Có thể trang web này đang cố gây nhầm lẫn cho bạn.</translation>
 <translation id="4058922952496707368">Khóa "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Phong bì)</translation>
 <translation id="4067947977115446013">Thêm địa chỉ hợp lệ</translation>
@@ -808,7 +810,6 @@
 <translation id="5455374756549232013">Dấu thời gian chính sách không hợp lệ</translation>
 <translation id="5457113250005438886">Không hợp lệ</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> liên hệ khác}other{<ph name="CONTACT_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> liên hệ khác}}</translation>
-<translation id="5461666840533392417">Có vẻ như bạn đã chuyển sang trang khác nên tôi sẽ không can thiệp nữa. Chúc bạn một ngày tốt lành :)</translation>
 <translation id="5470861586879999274">&amp;Làm lại chỉnh sửa</translation>
 <translation id="5478437291406423475">B6/C4 (Phong bì)</translation>
 <translation id="5481076368049295676">Nội dung này có thể tìm cách cài đặt phần mềm nguy hiểm trên thiết bị của bạn để lấy cắp hoặc xóa thông tin. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
@@ -1052,6 +1053,7 @@
 <translation id="6957887021205513506">Chứng chỉ của máy chủ dường như giả mạo.</translation>
 <translation id="6964255747740675745">Không thể phân tích cú pháp cấu hình mạng (JSON không hợp lệ).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Thiết bị</translation>
 <translation id="6970216967273061347">Quận</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
@@ -1226,7 +1228,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Quận</translation>
 <translation id="7791543448312431591">Thêm</translation>
-<translation id="7793809570500803535">Trang web tại <ph name="SITE" /> có thể tạm thời không hoạt động hay được chuyển vĩnh viễn sang địa chỉ web mới.</translation>
 <translation id="7800304661137206267">Kết nối được mã hóa bằng <ph name="CIPHER" />, với <ph name="MAC" /> để xác thực thư và <ph name="KX" /> là cơ chế trao đổi chính.</translation>
 <translation id="7802523362929240268">Trang web hợp pháp</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
@@ -1389,6 +1390,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
 <translation id="8792621596287649091">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="8800988563907321413">Đề xuất ở gần bạn xuất hiện ở đây</translation>
+<translation id="8805819170075074995">Mục nhập danh sách "<ph name="LANGUAGE_ID" />": Mục nhập bị bỏ qua vì cũng được bao gồm trong chính sách SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883848425547221593">Dấu trang Khác</translation>
 <translation id="884264119367021077">Ðịa chỉ giao hàng</translation>
@@ -1412,6 +1414,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8968766641738584599">Lưu thẻ</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>
+<translation id="8975263830901772334">Tên của các tệp mà bạn in</translation>
 <translation id="8978053250194585037">Tính năng Duyệt web an toàn của Google gần đây đã <ph name="BEGIN_LINK" />phát hiện dấu hiệu lừa đảo<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web lừa đảo sẽ giả mạo các trang web khác để đánh lừa bạn.</translation>
 <translation id="8983003182662520383">Địa chỉ và phương thức thanh toán lưu trong Google Pay</translation>
 <translation id="8987927404178983737">Tháng</translation>

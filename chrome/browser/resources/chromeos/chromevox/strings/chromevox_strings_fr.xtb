@@ -54,6 +54,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1319608975892113573">Aucune balise blockquote précédente</translation>
 <translation id="1321576897702511272">Masquer l'aide ChromeVox</translation>
 <translation id="1325946044405407859">Brun clair</translation>
+<translation id="1331634987653814322">Paramètres du braille</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> sur <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">écho des caractères et des mots</translation>
 <translation id="1334570596456017464">Indice</translation>
@@ -548,6 +549,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="489907760999452556">Lien interne</translation>
 <translation id="4915087353619183190">Démarrage du mode d'apprentissage. Appuyez sur une touche du clavier, sur une touche braille actualisable ou sur un geste pour en savoir plus sur son fonctionnement. Appuyez sur Ctrl+W ou sur Échap pour quitter.</translation>
 <translation id="492295894462528572">Avant-propos</translation>
+<translation id="4943781537993885772">Style d'affichage</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Modifier le texte</translation>
 <translation id="4954534434583049121">Bloc de citation précédent</translation>
@@ -713,6 +715,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6006050241733874051">Formulaire</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barre oblique inverse}one{# barre oblique inverse}other{# barres obliques inverses}}</translation>
 <translation id="6017514345406065928">Vert</translation>
+<translation id="6021969570711251331">Braille et texte standard</translation>
 <translation id="6034000775414344507">Gris clair</translation>
 <translation id="6037602951055904232">Panoramique avant</translation>
 <translation id="6042826534790431634">Appuyez sur Recherche+Espace pour activer la commande.</translation>
@@ -763,6 +766,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Boîte de dialogue d'alerte</translation>
 <translation id="6452403590345320472">Sommaire</translation>
+<translation id="6454456397828627257">Côte à côte</translation>
 <translation id="6459511626086141404">Mappage plat du clavier</translation>
 <translation id="6468049171101508116">Bouton suivant</translation>
 <translation id="646954774886932461">Index</translation>

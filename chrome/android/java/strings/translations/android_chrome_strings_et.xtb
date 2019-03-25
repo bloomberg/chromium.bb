@@ -265,7 +265,6 @@
 <translation id="2910701580606108292">Küsi enne saitidel kaitstud sisu esitamise lubamist</translation>
 <translation id="2913331724188855103">Lubab saitidel salvestada küpsiseid ja lugeda küpsiste andmeid (soovitatav)</translation>
 <translation id="2932150158123903946">Rakenduse Google <ph name="APP_NAME" /> salvestusruum</translation>
-<translation id="2941880727166628951">Minu seadmetele saatmine</translation>
 <translation id="2956410042958133412">Seda kontot haldavad <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Autoriõigus <ph name="YEAR" /> Google Inc. Kõik õigused on kaitstud.</translation>
 <translation id="2962095958535813455">Inkognito režiimi vahelehed on aktiveeritud</translation>
@@ -747,7 +746,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6496823230996795692">Rakenduse <ph name="APP_NAME" /> esmakordseks kasutamiseks looge ühendus Internetiga.</translation>
 <translation id="6508722015517270189">Taaskäivitage Chrome</translation>
 <translation id="6527303717912515753">Jaga</translation>
-<translation id="6532866250404780454">Chrome'is külastatud saite ei kuvata. Kõik saidi taimerid kustutatakse.</translation>
+<translation id="6532866250404780454">Chrome'is külastatud saite ei kuvata. Kõik saitide taimerid kustutatakse.</translation>
 <translation id="6534565668554028783">Google'il kulus reageerimiseks liiga kaua aega</translation>
 <translation id="6538442820324228105">Alla on laaditud <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Valige kiirega edastatav vaheleht</translation>
@@ -827,7 +826,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7031882061095297553">Sünkroonimine:</translation>
 <translation id="7032663816368481562">Kui puudutate aadressiribal ikooni Rohkem sarnaseid <ph name="ICON" />, kuvatakse kiirlingid seotud lehtede juurde. Külastatavate lehtede URL-id saadetakse Google'ile.</translation>
 <translation id="7034608350006174882">Kaardid ja aadressid, mis kasutavad teenust Google Pay</translation>
-<translation id="7037082443972906537">Nimi ei ole saadaval</translation>
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7055152154916055070">Ümbersuunamine blokeeriti:</translation>
 <translation id="7062545763355031412">Nõustu ja vaheta kontosid</translation>

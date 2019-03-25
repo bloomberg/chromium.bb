@@ -21,6 +21,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">עכשיו</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{דקה אחת}two{# דקות}many{# דקות}other{# דקות}}</translation>
+<translation id="1756116796893109054">שולח כרטיסייה…</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">תקופה</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{חודש אחד}two{חודשיים}many{# חודשים}other{# חודשים}}</translation>
@@ -51,11 +52,14 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">הכיול הושלם</translation>
 <translation id="252373100621549798">תצוגה לא ידועה</translation>
+<translation id="2573731672208488250">{HOURS,plural, =1{עוד שעה}two{עוד 2 שעות}many{עוד # שעות}other{עוד # שעות}}</translation>
 <translation id="2583543531130364912">כיול מסך המגע</translation>
 <translation id="2666092431469916601">למעלה</translation>
+<translation id="2701330563083355633">שותפה על ידי <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">העתק ללוח</translation>
 <translation id="2803313416453193357">פתח את התיקייה</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{לפני שנה אחת}two{לפני שנתיים}many{לפני # שנים}other{לפני # שנים}}</translation>
+<translation id="2907671656515444832">{DAYS,plural, =1{עוד יום אחד}two{עוד 2 ימים}many{עוד # ימים}other{עוד # ימים}}</translation>
 <translation id="2931838996092594335">לחץ</translation>
 <translation id="3036649622769666520">פתח קבצים</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
@@ -114,6 +118,7 @@
 <translation id="5613020302032141669">חץ לשמאל</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{דק‘ אחת}two{# דק‘}many{# דק‘}other{# דק‘}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{יום אחד ו }two{יומיים ו }many{# ימים ו }other{# ימים ו }}</translation>
+<translation id="5866104238061687188">{YEARS,plural, =1{עוד שנה אחת}two{עוד 2 שנים}many{עוד # שנים}other{עוד # שנים}}</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{נותרה שנייה אחת}two{נותרו # שניות}many{נותרו # שניות}other{נותרו # שניות}}</translation>
 <translation id="5941711191222866238">מזער</translation>
@@ -169,6 +174,7 @@
 <translation id="7907591526440419938">פתח קובץ</translation>
 <translation id="7969046989155602842">פקודה</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{יותר מהודעה אחת שלא נקראה}two{יותר מ-2 הודעות שלא נקראו}many{יותר מ-# הודעות שלא נקראו}other{יותר מ-# הודעות שלא נקראו}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{עוד דקה}two{עוד 2 דקות}many{עוד # דקות}other{עוד # דקות}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{לפני שעה אחת}two{לפני שעתיים}many{לפני # שעות}other{לפני # שעות}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{נותרה שנ‘ אחת}two{נותרו # שנ‘}many{נותרו # שנ‘}other{נותרו # שנ‘}}</translation>

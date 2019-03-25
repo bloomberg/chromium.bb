@@ -223,6 +223,7 @@
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2610239185026711824">Suggérer un mot de passe</translation>
 <translation id="2612676031748830579">Numéro de carte</translation>
+<translation id="2613747923081026172">Créer un groupe</translation>
 <translation id="2621115761605608342">Autorise le langage JavaScript pour un site spécifique.</translation>
 <translation id="2625189173221582860">Mot de passe copié</translation>
 <translation id="2631006050119455616">Enregistrées</translation>
@@ -264,7 +265,6 @@
 <translation id="2910701580606108292">Demander avant d'autoriser les sites à lire les contenus protégés</translation>
 <translation id="2913331724188855103">Autoriser les sites à enregistrer et à lire les données des cookies (recommandé)</translation>
 <translation id="2932150158123903946">Stockage Google <ph name="APP_NAME" /></translation>
-<translation id="2941880727166628951">Envoyer à mes appareils</translation>
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright Google Inc. <ph name="YEAR" />. Tous droits réservés.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
@@ -826,7 +826,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7032663816368481562">Lorsque vous appuyez sur Plus de suggestions similaires <ph name="ICON" /> dans la barre d'adresse, des liens rapides s'affichent vers des pages associées. Les URL des pages que vous consultez sont envoyées à Google.</translation>
 <translation id="7034608350006174882">Cartes et adresses utilisées dans Google Pay</translation>
-<translation id="7037082443972906537">Nom indisponible</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7055152154916055070">Redirection bloquée :</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
@@ -880,7 +879,9 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="7475688122056506577">Carte SD introuvable. Certains de vos fichiers risquent d'être manquants.</translation>
+<translation id="7479104141328977413">Gestion des onglets</translation>
 <translation id="7481312909269577407">Avancer</translation>
+<translation id="7482697587265222445">Onglet envoyé à vos appareils</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Afficher les mots de passe</translation>
 <translation id="7494974237137038751">données économisées</translation>

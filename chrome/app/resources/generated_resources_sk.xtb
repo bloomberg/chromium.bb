@@ -54,6 +54,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1070705170564860382">Otvorí sa v alternatívnom prehliadači o <ph name="COUNTDOWN_SECONDS" /> s</translation>
 <translation id="1071917609930274619">Zašifrovanie údajov</translation>
+<translation id="1072700771426194907">Zistilo sa zariadenie USB</translation>
 <translation id="1076698951459398590">Povoliť motív</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1079766198702302550">Vždy blokovať prístup ku kamere</translation>
@@ -113,6 +114,7 @@
 <translation id="1167199480815330007">Nájdite šesťčíselný kód PIN na zadnej strane bezpečnostného kľúča</translation>
 <translation id="1168020859489941584">Čas do otvorenia: <ph name="TIME_REMAINING" /></translation>
 <translation id="1168100932582989117">Menné servery Google</translation>
+<translation id="1169909785351611170">Kód PIN je nesprávny.</translation>
 <translation id="1171135284592304528">Pri zmene zvýrazňovať objekt so zameraním klávesnice</translation>
 <translation id="1173894706177603556">Premenovať</translation>
 <translation id="1174073918202301297">Odkaz bol pridaný</translation>
@@ -181,6 +183,7 @@
 <translation id="126156426083987769">Vyskytol sa problém s licenciami zariadení v režime ukážky</translation>
 <translation id="126710816202626562">Jazyk prekladu:</translation>
 <translation id="126768002343224824">16x</translation>
+<translation id="1270277066486377738">Potvrďte resetovanie opätovným stlačením tlačidla na rovnakom bezpečnostnom kľúči. Vymažú sa všetky poverenia uložené v bezpečnostnom kľúči a nakonfigurovaný kód PIN.</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1272978324304772054">Tento používateľský účet nepatrí do domény, do ktorej je zaregistrované toto zariadenie. Ak sa chcete zaregistrovať do inej domény, musíte najprv zariadenie obnoviť.</translation>
 <translation id="1274977772557788323">Nastavenia úložiska aplikácie Adobe Flash Player</translation>
@@ -234,6 +237,7 @@
 <translation id="1361655923249334273">Nepoužitý</translation>
 <translation id="1361872463926621533">Pri spustení prehrávať zvuk</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Zavrieť kartu}few{Zavrieť karty}many{Zavrieť karty}other{Zavrieť karty}}</translation>
+<translation id="1365804713255256726">Zariadenie sa nepodarilo resetovať. Chyba <ph name="ERROR_CODE" />.</translation>
 <translation id="1366177842110999534">Vo svojom zariadení <ph name="DEVICE_TYPE" /> používate linuxové nástroje, editory a prostredia IDE. &lt;a target="_blank" href="<ph name="URL" />"&gt;Ďalšie nástroje&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Vybrať súbor</translation>
 <translation id="1371301976177520732">Záložky, heslá, história a ďalší obsah vo všetkých vašich zariadeniach</translation>
@@ -372,6 +376,7 @@
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1587275751631642843">&amp;Konzola jazyka JavaScript</translation>
 <translation id="1587907146729660231">Dotknite sa prstom vypínača</translation>
+<translation id="1587949806845069687">Zadajte nový kód PIN. Kód PIN musí mať aspoň štyri znaky a môže obsahovať písmená, čísla a ďalšie znaky.</translation>
 <translation id="1588438908519853928">Normálny</translation>
 <translation id="158849752021629804">Je potrebná domáca sieť</translation>
 <translation id="1588870296199743671">Otvoriť odkaz pomocou...</translation>
@@ -385,6 +390,7 @@
 <translation id="1600857548979126453">Pristupovať k ladiacemu nástroju stránok na strane servera</translation>
 <translation id="1601560923496285236">Použiť</translation>
 <translation id="1603914832182249871">(Inkognito)</translation>
+<translation id="1606402239727171183">Ak chcete nastaviť alebo zmeniť kód PIN, pripojte bezpečnostný kľúč a stlačte na ňom tlačidlo</translation>
 <translation id="1607139524282324606">Vymazať záznam</translation>
 <translation id="1608626060424371292">Odstrániť tohto používateľa</translation>
 <translation id="1609170755653088773">Synchronizujte si toto heslo do zariadenia iPhone</translation>
@@ -491,6 +497,7 @@
 <translation id="1763808908432309942">Otvorí sa na novej karte</translation>
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nové okno</translation>
+<translation id="1766575458646819543">Ukončenie režimu celej obrazovky</translation>
 <translation id="1768278914020124551">Ojoj! Pri pokuse o kontaktovanie registračného servera sa vyskytol problém. Skontrolujte pripojenie k sieti a názov domény a potom to skúste znova.</translation>
 <translation id="1769104665586091481">Otvoriť odkaz v novom &amp;okne</translation>
 <translation id="1773212559869067373">Certifikát na overenie totožnosti bol zamietnutý miestne</translation>
@@ -498,6 +505,7 @@
 <translation id="1774833706453699074">Pridať otvorené stránky medzi záložky...</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="1779652936965200207">Zadajte tento prístupový kľúč v zariadení <ph name="DEVICE_NAME" />:</translation>
+<translation id="1781291988450150470">Aktuálny kód PIN</translation>
 <translation id="1781502536226964113">Otvoriť stránku Nová karta</translation>
 <translation id="1781771911845953849">Účty a synchronizácia</translation>
 <translation id="1782196717298160133">Nájsť telefón</translation>
@@ -911,6 +919,7 @@
 <translation id="2453021845418314664">Rozšírené nastavenia synchronizácie</translation>
 <translation id="2453860139492968684">Dokončiť</translation>
 <translation id="2454247629720664989">Kľúčové slovo</translation>
+<translation id="2455122176076606103">Daný bezpečnostný kľúč je uzamknutý pre príliš mnoho nesprávnych pokusov o zadanie kódu PIN. Ak chcete vykonávať operácie vyžadujúce kód PIN, musíte kľúč resetovať.</translation>
 <translation id="245661998428026871">Video v režime obraz v obraze sa prestane prehrávať.</translation>
 <translation id="2457246892030921239">Aplikácia <ph name="APP_NAME" /> chce kopírovať súbory z média <ph name="VOLUME_NAME" />.</translation>
 <translation id="2458591546854598341">Token správy zariadenia je neplatný.</translation>
@@ -932,6 +941,7 @@
 <translation id="2487067538648443797">Pridať novú záložku</translation>
 <translation id="2489829450872380594">Toto zariadenie <ph name="DEVICE_TYPE" /> sa najbližšie odomkne novým telefónom. Smart Lock vypnete v Nastaveniach.</translation>
 <translation id="2489918096470125693">Pridať &amp;priečinok...</translation>
+<translation id="2490575462301446554">Kód PIN bol úspešne nastavený.</translation>
 <translation id="249113932447298600">Je nám ľúto, ale zariadenie <ph name="DEVICE_LABEL" /> nie je momentálne podporované.</translation>
 <translation id="249303669840926644">Registráciu sa nepodarilo dokončiť</translation>
 <translation id="2495777824269688114">Objavte ďalšie funkcie alebo získajte odpovede. Ak potrebujete pomoc, vyberte „?“.</translation>
@@ -975,6 +985,7 @@
 <translation id="2549985041256363841">Spustiť zaznamenávanie</translation>
 <translation id="2550212893339833758">Swapovaná pamäť</translation>
 <translation id="2550596535588364872">Povoliť rozšíreniu <ph name="EXTENSION_NAME" /> otvoriť súbor <ph name="FILE_NAME" />?</translation>
+<translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2553340429761841190">Systém <ph name="PRODUCT_NAME" /> sa nemohol pripojiť k sieti <ph name="NETWORK_ID" />. Vyberte inú sieť alebo to skúste znova.</translation>
 <translation id="2553440850688409052">Skryť tento doplnok</translation>
 <translation id="2554553592469060349">Vybratý súbor je príliš veľký (maximálna veľkosť: 3 MB).</translation>
@@ -1002,6 +1013,7 @@
 <translation id="2588636910004461974">Zariadenia od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="258932246702879617">Vyberte možnosť <ph name="BEGIN_BOLD" />Pripnúť na panel úloh<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Vyhľadávajte na Googli alebo zadajte webovú adresu</translation>
+<translation id="2600730035760241059">Resetovanie zariadení, nastavenie a zmena kódov PIN</translation>
 <translation id="2603115962224169880">Vyčistiť počítač</translation>
 <translation id="2603463522847370204">Otvoriť v okne &amp;inkognito</translation>
 <translation id="2604255671529671813">Chyba sieťového pripojenia</translation>
@@ -1017,6 +1029,7 @@
 <translation id="2617342710774726426">SIM karta je uzamknutá</translation>
 <translation id="2619761439309613843">Obnovovať denne</translation>
 <translation id="2620436844016719705">Systém</translation>
+<translation id="2622053291576368721">Ak chcete spustiť proces resetovania, odpojte kľúč, znova ho pripojte a potom stlačte na ňom tlačidlo.</translation>
 <translation id="26224892172169984">Nepovoliť žiadnym stránkam obsluhovať protokoly</translation>
 <translation id="2624142942574147739">Táto stránka má prístup k vašej kamere a mikrofónu.</translation>
 <translation id="2626799779920242286">Skúste to znova neskôr.</translation>
@@ -1026,6 +1039,7 @@
 <translation id="2633199387167390344">Aplikácia alebo rozšírenie <ph name="NAME" /> využíva <ph name="USAGE" /> MB miesta na disku.</translation>
 <translation id="2633212996805280240">Odstrániť rozšírenie <ph name="EXTENSION_NAME" />?</translation>
 <translation id="263325223718984101">Inštaláciu prehliadača <ph name="PRODUCT_NAME" /> sa nepodarilo dokončiť, ale bude sa naďalej spúšťať z jeho obrazu disku.</translation>
+<translation id="2634486338302512222">Ak chcete zmeniť PIN, zadajte &lt;i&gt;aktuálny&lt;/i&gt;. Ak aktuálny PIN nepoznáte a chcete ho vymazať, musíte resetovať token.</translation>
 <translation id="2635094637295383009">Twitter</translation>
 <translation id="2635276683026132559">Podpísanie</translation>
 <translation id="2636625531157955190">Prehliadač Chrome nemôže získať prístup k obrazu.</translation>
@@ -1066,6 +1080,7 @@
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Ojoj, vyskytla sa neznáma chyba. Skúste to znova neskôr alebo, ak problém pretrváva, kontaktujte správcu.</translation>
 <translation id="2695749433451188613">Protokol IPP (HTTPS)</translation>
+<translation id="2699911226086014512">Operácia kódu PIN zlyhala. Kód chyby: <ph name="RETRIES" />.</translation>
 <translation id="270358213449696159">Obsah zmluvných podmienok systému Google Chrome OS</translation>
 <translation id="2704184184447774363">Podpis dokumentu Microsoft</translation>
 <translation id="270516211545221798">Rýchlosť touchpadu</translation>
@@ -1225,7 +1240,6 @@
 <translation id="2938225289965773019">Otvárať odkazy protokolu <ph name="PROTOCOL" /></translation>
 <translation id="2939938020978911855">Zobraziť dostupné zariadenia Bluetooth</translation>
 <translation id="2941112035454246133">Nízka</translation>
-<translation id="2941880727166628951">Odoslanie do mojich zariadení</translation>
 <translation id="2942560570858569904">Čaká sa...</translation>
 <translation id="2942581856830209953">Prispôsobiť túto stránku</translation>
 <translation id="2944060181911631861">Odosielať údaje o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Ak aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť vo vašom účte Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
@@ -1292,6 +1306,7 @@
 <translation id="3045447014237878114">Tento web automaticky stiahol viacero súborov</translation>
 <translation id="3046910703532196514">Webová stránka, Úplné</translation>
 <translation id="304747341537320566">Nástroje hlasovej odozvy</translation>
+<translation id="3047644958362961983">Tieto informácie nám pomôžu lepšie pochopiť problém s vaším Asistentom. Budú uložené maximálne 90 dní a prístup k nim je obmedzený len na príslušné tímy zodpovedajúce za programovanie a spätnú väzbu.</translation>
 <translation id="3053013834507634016">Použitie kľúča certifikátu</translation>
 <translation id="3058498974290601450">Synchronizáciu môžete kedykoľvek zapnúť v nastaveniach</translation>
 <translation id="3060379269883947824">Povoliť počúvanie vybraného textu</translation>
@@ -1314,6 +1329,7 @@
 <translation id="3085752524577180175">Hostiteľ SOCKS</translation>
 <translation id="3088325635286126843">&amp;Premenovať...</translation>
 <translation id="3089137131053189723">Vyhľadávanie bolo vymazané</translation>
+<translation id="3089732468175192706">{NUM_ATTEMPTS,plural, =1{Nesprávny kód PIN. Zostáva iba jeden pokus.}few{Nesprávny kód PIN. Zostávajú # pokusy.}many{Nesprávny kód PIN. You have # attempts remaining.}other{Nesprávny kód PIN. Zostáva # pokusov.}}</translation>
 <translation id="3090193911106258841">Pristupovanie k zvukovému vstupu a vstupu videa</translation>
 <translation id="3090819949319990166">Externý súbor crx nie je možné skopírovať do súboru <ph name="TEMP_CRX_FILE" /></translation>
 <translation id="3090871774332213558">Zariadenie „<ph name="DEVICE_NAME" />“ bolo spárované</translation>
@@ -1373,6 +1389,7 @@
 <translation id="3192947282887913208">Zvukové súbory</translation>
 <translation id="3194737229810486521"><ph name="URL" /> chce natrvalo ukladať dáta vo vašom zariadení</translation>
 <translation id="3199127022143353223">Servery</translation>
+<translation id="3201422919974259695">Tu sa budú zobrazovať dostupné zariadenia USB.</translation>
 <translation id="3202131003361292969">Cesta</translation>
 <translation id="3202173864863109533">Zvuk tejto karty bol stlmený.</translation>
 <translation id="3208703785962634733">Nepotvrdené</translation>
@@ -1393,6 +1410,7 @@
 <translation id="323803881985677942">Otvoriť možnosti rozšírenia</translation>
 <translation id="3241680850019875542">Vyberte koreňový adresár rozšírenia, ktoré chcete zbaliť. Ak chcete rozšírenie aktualizovať, vyberte tiež súbor súkromného kľúča, ktorý sa má znova použiť.</translation>
 <translation id="3244294424315804309">Ponechať zvuk vypnutý</translation>
+<translation id="3246263372552241767">Bezpečnostný kľúč bol odpojený.</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> – Chyba siete</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Nie je súčasťou certifikátu&gt;</translation>
@@ -1439,6 +1457,7 @@
 <translation id="3308006649705061278">Organizačná jednotka (OU)</translation>
 <translation id="3308116878371095290">Tejto stránke bolo zabránené nastaviť súbory cookie.</translation>
 <translation id="3308134619352333507">Skryť tlačidlo</translation>
+<translation id="3308634184507184485">Bezpečnostné kľúče</translation>
 <translation id="3308852433423051161">Načítava sa Asistent Google…</translation>
 <translation id="3312424061798279731">Povolené jazyky</translation>
 <translation id="3313590242757056087">Ak chcete nastaviť, ktoré stránky môže kontrolovaný používateľ zobraziť, môžete na stránke <ph name="MANAGEMENT_URL" /> nakonfigurovať
@@ -1546,7 +1565,6 @@
 <translation id="347785443197175480">Aj naďalej povoliť stránkam <ph name="HOST" /> prístup ku kamere a mikrofónu</translation>
 <translation id="3478685642445675458">Skôr ako odstránite osobu, odomknite svoj profil.</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
-<translation id="3480119035619598820">Odoslať do mojich zariadení</translation>
 <translation id="3484273680291419129">Odstraňujte sa škodlivý softvér…</translation>
 <translation id="3484869148456018791">Získať nový certifikát</translation>
 <translation id="3487007233252413104">anonymná funkcia</translation>
@@ -1620,6 +1638,7 @@
 <translation id="3593965109698325041">Obmedzenia názvu certifikátu</translation>
 <translation id="3596235046596950091">Povoliť cloudové služby</translation>
 <translation id="3599863153486145794">Vymaže históriu zo všetkých prihlásených zariadení. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="3600051066689725006">Informácie o webovej žiadosti</translation>
 <translation id="3600792891314830896">Vypnutie zvuku webov, ktoré prehrávajú zvuk</translation>
 <translation id="360180734785106144">Poskytovať nové funkcie, keď budú k dispozícii</translation>
 <translation id="3602290021589620013">Ukážka</translation>
@@ -1730,6 +1749,7 @@
 <translation id="3752673729237782832">Moje zariadenia</translation>
 <translation id="3755411799582650620">Váš telefón <ph name="PHONE_NAME" /> teraz dokáže odomknúť aj toto zariadenie <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">Web používa váš mikrofón</translation>
+<translation id="3756578970075173856">Nastavenie kódu PIN</translation>
 <translation id="3757733214359997190">Nenašli sa žiadne weby</translation>
 <translation id="375841316537350618">Sťahovanie skriptu servera proxy...</translation>
 <translation id="3758842566811519622">Boli nastavené súbory cookie</translation>
@@ -1832,6 +1852,7 @@
 <translation id="3898521660513055167">Stav tokenu</translation>
 <translation id="389901847090970821">Výber klávesnice</translation>
 <translation id="3899879303189199559">Offline viac ako rok</translation>
+<translation id="3900105072479897941">Resetovanie nebolo povolené. Niektoré bezpečnostné kľúče umožňujú resetovanie iba do niekoľkých sekúnd od vloženia. Skúste tento postup zopakovať rýchlejšie.</translation>
 <translation id="3900966090527141178">Exportovanie hesiel</translation>
 <translation id="3901991538546252627">Pripája sa k sieti <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Opraviť aplikáciu</translation>
@@ -1893,6 +1914,7 @@
 <translation id="3981760180856053153">Zadali ste neplatný typ uloženia.</translation>
 <translation id="3982375475032951137">Nastavte si prehliadač niekoľkými jednoduchými krokmi</translation>
 <translation id="3983400541576569538">Údaje z určitých aplikácií sa môžu stratiť</translation>
+<translation id="3983503144326094739">Daný bezpečnostný kľúč je dočasne uzamknutý pre príliš mnoho nesprávnych pokusov o zadanie kódu PIN. Ak ho chcete odomknúť, odpojte ho a znova ho pripojte.</translation>
 <translation id="3983586614702900908">zariadenia od neznámeho dodávateľa</translation>
 <translation id="3984159763196946143">Nepodarilo sa spustiť režim ukážky</translation>
 <translation id="3987348946546879621">Uložené dáta</translation>
@@ -2056,6 +2078,7 @@
 <translation id="4268025649754414643">Zašifrovanie kľúča</translation>
 <translation id="4270393598798225102">Verzia <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Žiadne zhody</translation>
+<translation id="4273065492769210106">Zostáva niekoľko pokusov (<ph name="RETRIES" />).</translation>
 <translation id="4275830172053184480">Reštart zariadenia</translation>
 <translation id="4278101229438943600">Váš Asistent je k dispozícii</translation>
 <translation id="4278390842282768270">Povolené</translation>
@@ -2115,6 +2138,7 @@
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4378556263712303865">Rekvizícia zariadenia</translation>
+<translation id="4380648069038809855">Zapnutie režimu celej obrazovky</translation>
 <translation id="4384312707950789900">Pridať k preferovaným</translation>
 <translation id="4384652540891215547">Aktivovať rozšírenie</translation>
 <translation id="438503109373656455">Saratoga</translation>
@@ -2187,7 +2211,6 @@
 <translation id="4514542542275172126">Nastavenie nového kontrolovaného používateľa</translation>
 <translation id="4514610446763173167">Prepnutím prehráte alebo pozastavíte video</translation>
 <translation id="451515744433878153">Odstrániť</translation>
-<translation id="4518677423782794009">Dochádza k zlyhaniam prehliadača Chrome, zobrazujú sa pri spustení nezvyčajné stránky, panely s nástrojmi, prípadne neočakávané reklamy, ktorých sa nemôžete zbaviť alebo ktoré iným spôsobom ovplyvňujú vaše prehliadanie? Tento problém môžete vyriešiť spustením nástroja Chrome Cleanup Tool.</translation>
 <translation id="4519935350946509010">Chyba pripojenia.</translation>
 <translation id="4520385623207007473">Používané súbory cookie</translation>
 <translation id="452039078290142656">neznáme zariadenia od dodávateľa <ph name="VENDOR_NAME" /></translation>
@@ -2196,6 +2219,7 @@
 <translation id="4524832533047962394">Poskytnutý režim registrácie táto verzia operačného systému nepodporuje. Uistite sa, že používate najnovšiu verziu.</translation>
 <translation id="4525382759303819021">Získavať najaktuálnejšie informácie a odporúčania týkajúce sa aplikácií Obchodu Play</translation>
 <translation id="4530494379350999373">Pôvod</translation>
+<translation id="4531586020343813806">Bezpečnostný kľúč nepodporuje resetovanie.</translation>
 <translation id="4533846798469727141">Teraz povedzte „Hej Google“</translation>
 <translation id="4533985347672295764">Čas využitia procesora</translation>
 <translation id="4534661889221639075">Skúste to znova.</translation>
@@ -2447,6 +2471,7 @@
 <translation id="4927846293686536410">Prihláste sa, aby ste získali svoje záložky, históriu, heslá a ďalšie nastavenia na všetkých zariadeniach. Navyše vás bude systém automaticky prihlasovať do služieb Google.</translation>
 <translation id="4929386379796360314">Tlač destinácií</translation>
 <translation id="4931132176527519925">Vždy zrkadliť</translation>
+<translation id="4932733599132424254">Dátum</translation>
 <translation id="4933484234309072027">vložené do <ph name="URL" /></translation>
 <translation id="493571969993549666">Pridať kontrolovaného používateľa</translation>
 <translation id="4941246025622441835">Pri zaraďovaní zariadenia do správy firmy použite nasledujúcu rekvizíciu zariadenia:</translation>
@@ -2477,13 +2502,13 @@
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="49896407730300355">Otočiť &amp;proti smeru hodinových ručičiek</translation>
 <translation id="4989966318180235467">Skontrolovať &amp;stránku na pozadí</translation>
-<translation id="4990343175649730969">Stiahnuť Chrome Cleanup Tool</translation>
 <translation id="4991420928586866460">Považovať klávesy v hornom riadku za funkčné klávesy</translation>
 <translation id="499165176004408815">Použiť režim s vysokým kontrastom</translation>
 <translation id="4992066212339426712">Zapnúť zvuk</translation>
 <translation id="4992458225095111526">Potvrdenia obnovenia Powerwash</translation>
 <translation id="4992473555164495036">Správca obmedzil dostupné metódy vstupu.</translation>
 <translation id="4992926179187649719">Zapnutie kľúčového výrazu „Ok Google“</translation>
+<translation id="4994021816031734614">Resetovanie bezpečnostného kľúča</translation>
 <translation id="4994474651455208930">Povoliť stránkam požiadať o nastavenie za predvolené obslužné nástroje protokolov</translation>
 <translation id="4994754230098574403">Nastavuje sa</translation>
 <translation id="4996978546172906250">Zdieľať prostredníctvom</translation>
@@ -2721,6 +2746,7 @@
 <translation id="540296380408672091">Vždy blokovať súbory cookie na stránkach <ph name="HOST" /></translation>
 <translation id="5405146885510277940">Resetovať nastavenia</translation>
 <translation id="5408750356094797285">Lupa: <ph name="PERCENT" /></translation>
+<translation id="5409075533903495802">Kód PIN obsahuje neplatné znaky.</translation>
 <translation id="5411472733320185105">Nepoužívať nastavenia servera proxy pre nasledujúcich hostiteľov a domény:</translation>
 <translation id="5414566801737831689">Čítať ikony webov, ktoré navštevujete</translation>
 <translation id="5417312524372586921">Motívy prehliadača</translation>
@@ -2842,6 +2868,7 @@
 <translation id="557722062034137776">Obnovenie vášho zariadenia neovplyvní účty Google ani údaje synchronizované do týchto účtov. Všetky súbory uložené miestne v zariadení sa však odstránia.</translation>
 <translation id="5578059481725149024">Automaticky prihlasovať</translation>
 <translation id="558170650521898289">Overovanie ovládačov hardvéru systému Microsoft Windows</translation>
+<translation id="5582778940656297282">Momentálne sú podporované iba niektoré zariadenia.</translation>
 <translation id="5582839680698949063">Hlavná ponuka</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Chcete uložiť používateľské meno?</translation>
@@ -2922,6 +2949,7 @@
 <translation id="5696143504434933566">Nahlásiť obťažovanie rozšírením <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">Aktuálny používaný súbor PPD: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané.</translation>
+<translation id="5699804453758089950">Ak chcete dokončiť žiadosť, znova klepnite na bezpečnostný kľúč.</translation>
 <translation id="570043786759263127">Aplikácie a služby Google Play</translation>
 <translation id="5700836101007545240">Možnosť Pridať pripojenie je zakázaná správcom</translation>
 <translation id="5701080607174488915">Pri načítavaní pravidla zo servera sa vyskytla chyba.</translation>
@@ -3281,6 +3309,7 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6247802389331535091">Systém: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Aktualizácia je pripravená</translation>
+<translation id="6248279564564080162">Resetovanie bolo úspešné.</translation>
 <translation id="6248988683584659830">Hľadať v nastaveniach</translation>
 <translation id="6251870443722440887">GDI – popisovače</translation>
 <translation id="6251889282623539337"><ph name="DOMAIN" /> – Zmluvné podmienky</translation>
@@ -3292,6 +3321,7 @@
 <translation id="6264365405983206840">Vybrať &amp;všetko</translation>
 <translation id="6267166720438879315">Vyberte certifikát, ktorý overí vašu osobu pre <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Otvoriť pomocou aplikácie <ph name="APP" /></translation>
+<translation id="6270770586500173387">Posielať <ph name="BEGIN_LINK1" />informácie o systéme a aplikáciách<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Pri sťahovaní doplnku došlo k chybe (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Kvalita</translation>
 <translation id="6277105963844135994">Časový limit siete</translation>
@@ -3363,6 +3393,7 @@
 <translation id="6390799748543157332">Stránky otvorené v tomto okne sa nezobrazia v histórii prehliadača. Po zavretí všetkých otvorených okien režimu hosťa nezanechajú na počítači žiadne ďalšie stopy, ako napríklad súbory cookie. Všetky stiahnuté súbory však zostanú zachované.</translation>
 <translation id="6390994422085833176">Skontrolovať funkcie synchronizácie a prispôsobenia po dokončení nastavovania</translation>
 <translation id="6393156038355142111">Navrhnúť silné heslo</translation>
+<translation id="6395423953133416962">Odosielať <ph name="BEGIN_LINK1" />informácie o systéme<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="6397094776139756010">Možnosti synchronizácie a prispôsobenia</translation>
 <translation id="6398715114293939307">Odstrániť Obchod Google Play</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
@@ -3479,6 +3510,7 @@
 <translation id="6578664922716508575">Šifrovať synchronizované heslá pomocou používateľského mena a hesla Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – bol zdieľaný obsah pracovnej plochy</translation>
 <translation id="6580151766480067746">Verzia ARC</translation>
+<translation id="6580231304296467005">Nastavte v bezpečnostnom kľúči kód PIN na overovanie svojej totožnosti</translation>
 <translation id="6582080224869403177">Obnovte zariadenie <ph name="DEVICE_TYPE" /> a inovujte tak svoje zabezpečenie.</translation>
 <translation id="6584878029876017575">Podpisovanie s neobmedzenou platnosťou spoločnosti Microsoft</translation>
 <translation id="6586451623538375658">Zameniť primárne tlačidlo myši</translation>
@@ -3507,6 +3539,7 @@
 <translation id="6622980291894852883">Pokračovať v blokovaní obrázkov</translation>
 <translation id="6624687053722465643">Sladkosť</translation>
 <translation id="6628328486509726751">Nahrané <ph name="WEBRTC_LOG_UPLOAD_TIME" /></translation>
+<translation id="662887686112111256">Zostáva iba jeden pokus!</translation>
 <translation id="6630752851777525409">Rozšírenie <ph name="EXTENSION_NAME" /> požaduje trvalý prístup k certifikátu na vlastné overenie vo vašom mene.</translation>
 <translation id="6635956300022133031">Vybrať a prispôsobiť hlasy prevodu textu na reč</translation>
 <translation id="6637585982786704944">Aplikácie a weby, ktoré povolíte, môžu používať informácie o účte, ktoré potrebujú na správne fungovanie.
@@ -3804,6 +3837,7 @@
 <translation id="7099337801055912064">Súbor PPD sa nedá načítať, pretože je príliš veľký. Maximálna veľkosť je 250 kB.</translation>
 <translation id="7102687220333134671">Automatické aktualizácie sú zapnuté</translation>
 <translation id="7102832101143475489">Platnosť žiadosti vypršala</translation>
+<translation id="7105390788077117391">Predvoľby USB</translation>
 <translation id="7108338896283013870">Skryť</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> chce použiť váš fotoaparát</translation>
 <translation id="7108668606237948702">enter</translation>
@@ -3815,6 +3849,7 @@
 <translation id="7117247127439884114">Znova prihlásiť...</translation>
 <translation id="711840821796638741">Zobraziť spravované záložky</translation>
 <translation id="711902386174337313">Čítať zoznam zariadení, v ktorých ste prihlásení</translation>
+<translation id="7120683273130936452">Kód PIN pozostáva zo štyroch alebo viacerých znakov a slúži na overenie prítomnosti vlastníka bezpečnostného kľúča pri určitých operáciách. Kód PIN je možné po nastavení zmeniť, ale nedá sa odstrániť bez úplného resetovania bezpečnostného kľúča.</translation>
 <translation id="7120865473764644444">K serveru synchronizácie sa nepodarilo pripojiť. Prebieha ďalší pokus…</translation>
 <translation id="7121362699166175603">Vymaže históriu a záznamy automatického dopĺňania v paneli s adresou. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7121389946694989825">Odosielať údaje o využití a diagnostiky. Toto zariadenie momentálne automaticky odosiela Googlu diagnostiky a údaje o používaní zariadenia a aplikácií. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Ak pre dieťa aktivujete nastavenie dodatočnej aktivity na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
@@ -3907,6 +3942,7 @@
 <translation id="7257666756905341374">Čítať údaje, ktoré kopírujete a prilepujete</translation>
 <translation id="7258697411818564379">Váš kód PIN bol pridaný</translation>
 <translation id="7262004276116528033">Túto prihlasovaciu službu hostí doména <ph name="SAML_DOMAIN" /></translation>
+<translation id="7268127947535186412">Toto nastavenie spravuje vlastník zariadenia.</translation>
 <translation id="7270858098575133036">Opýtať sa, keď bude chcieť web použiť na prístup k zariadeniam MIDI správy exkluzívne pre systém</translation>
 <translation id="7272674038937250585">Popis nie je k dispozícii</translation>
 <translation id="7273110280511444812">naposledy pripojené dňa <ph name="DATE" /></translation>
@@ -4390,6 +4426,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Skratka bola upravená</translation>
 <translation id="8018313076035239964">Aké dáta môžu weby používať a aký obsah vám môžu zobrazovať</translation>
+<translation id="802376096974994842">Resetovaním bezpečnostného kľúča vymažete všetky kľúče spojené so zariadením a vymažete všetky nakonfigurované kódy PIN.</translation>
 <translation id="8023801379949507775">Aktualizovať rozšírenia</translation>
 <translation id="8024483450737722621">Z tohto Chromebooku sa odstránia aplikácie, ktoré ste stiahli zo služby Google Play.
       <ph name="LINE_BREAKS1" />
@@ -4403,6 +4440,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8030656706657716245">Pridať tlačiareň</translation>
 <translation id="8032244173881942855">Kartu nie je možné prenášať.</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Otvoriť všetky v okne inkognito}=1{Otvoriť v okne inkognito}few{Otvoriť všetky (#) v okne inkognito}many{Otvoriť všetky (#) v okne inkognito}other{Otvoriť všetky (#) v okne inkognito}}</translation>
+<translation id="8034467234497743242">Bezpečnostný kľúč nepodporuje nastavenie kódu PIN.</translation>
 <translation id="8037117027592400564">Čítať akýkoľvek hovorený text prenesený pomocou hlasového syntetizátora</translation>
 <translation id="8037357227543935929">Opýtať sa (predvolené)</translation>
 <translation id="803771048473350947">Súbor</translation>
@@ -4443,6 +4481,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="80974698889265265">Kódy PIN sa nezhodujú</translation>
 <translation id="8101987792947961127">Pri ďalšom spustení sa bude vyžadovať funkcia Powerwash</translation>
 <translation id="8102159139658438129">Ak si chcete zobraziť možnosti pre pripojený telefón, prejdite do časti <ph name="LINK_BEGIN" />Nastavenia<ph name="LINK_END" /></translation>
+<translation id="8102652888659661176">Nesprávny kód PIN.</translation>
 <translation id="8104696615244072556">Vykonajte obnovenie Powerwash na svojom zariadení <ph name="IDS_SHORT_PRODUCT_NAME" /> a obnovte na ňom predchádzajúcu verziu.</translation>
 <translation id="8105368624971345109">Vypnúť</translation>
 <translation id="8107015733319732394">Inštaluje sa Obchod Google Play na zariadení <ph name="DEVICE_TYPE" />. Môžete to chvíľu trvať.</translation>
@@ -4527,6 +4566,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8244514732452879619">Blíži sa večierka</translation>
 <translation id="8246209727385807362">Neznámy operátor</translation>
 <translation id="8248050856337841185">&amp;Prilepiť</translation>
+<translation id="8248880015234923589">Obnovenie výrobných nastavení bezpečnostného kľúča</translation>
 <translation id="8249048954461686687">Priečinok OEM</translation>
 <translation id="8249672078237421304">Ponúkať preklad stránok, ktorým by ste nemuseli rozumieť</translation>
 <translation id="8251578425305135684">Miniatúra odstránená.</translation>
@@ -4751,7 +4791,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8637688295594795546">K dispozícii je systémová aktualizácia. Pripravuje sa stiahnutie...</translation>
 <translation id="8639047128869322042">Vyhľadáva sa škodlivý softvér…</translation>
 <translation id="8642171459927087831">Prístupový token</translation>
-<translation id="8642895855701880552">Odosielať <ph name="BEGIN_LINK1" />informácie o systéme a aplikácii<ph name="END_LINK1" /></translation>
 <translation id="8642947597466641025">Zväčšiť text</translation>
 <translation id="8643418457919840804">Ak chcete pokračovať, vyberte možnosť:</translation>
 <translation id="8645354835496065562">Naďalej umožňovať prístup k senzorom</translation>
@@ -4906,6 +4945,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">Keď prepojíte svoje zariadenia, súhlasíte s tým, že Chromebook bude môcť:</translation>
 <translation id="8850251000316748990">Zobraziť ďalšie…</translation>
+<translation id="885246833287407341">Argumenty funkcie rozhrania API</translation>
 <translation id="8853586775156634952">Táto karta sa uloží iba do tohto zariadenia</translation>
 <translation id="8859057652521303089">Vyberte svoj jazyk:</translation>
 <translation id="8859174528519900719">Podrámec: <ph name="SUBFRAME_SITE" /></translation>
@@ -5043,6 +5083,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9065203028668620118">Upraviť</translation>
 <translation id="9066773882585798925">Čítanie textu nahlas</translation>
 <translation id="9066782832737749352">Prevod textu na reč</translation>
+<translation id="907264006778172906">Povoľte systému Linux prístup k zariadeniam USB. Linux si nezapamätá odstránené zariadenia USB.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Myš s konektorom USB bola pripojená</translation>

@@ -379,6 +379,22 @@
       Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME" /> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME" /> version might leave users at risk.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Configures availability and behaviour of <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality.
+
+      Individual settings can be specified in JSON properties:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update flow that preserves device-wide state (including enterprise enrolment), but loses user data. This update flow is available starting from version 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Controls how automatic <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware updates are enforced for vulnerable <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware. All flows preserve local device state.
+        If set to 1 or left not set, TPM firmware updates are not enforced.
+        If set to 2, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware will be updated at the next reboot after user acknowledges the update.
+        If set to 3, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware will be updated at the next reboot.
+        If set to 4, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware will be updated after enrolment, before user sign-in.
+        This option is available starting from version 74.
+
+      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update functionality will not be available.</translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
 <translation id="1717817358640580294">If unset, should Chrome Clean-Up detect unwanted software, it may report metadata about the scan to Google, in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will then ask the user if they wish to clean up the unwanted software. The user can choose to share results of the clean up with Google to assist with future unwanted software detection. These results contain file metadata, automatically installed extensions and registry keys as described by the Chrome Privacy Whitepaper.
 
@@ -1254,6 +1270,17 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME" /> for their session.
       </translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
+<translation id="3384115339826100753">Enable the power peak shift power-management policy.
+
+          Peak shift is a power-saving policy that minimises alternating current usage during the peak usage times during the day. For each weekday, a start and end time to run in power peak shift mode can be set. During these times the system will run from the battery even if the alternating current is attached, as long as the battery stays above the threshold specified. After the end time specified, the system will run from alternating current if attached but will not charge the battery. The system will again function normally using alternating current and recharging the battery after the specified charge start time.
+
+          If this policy is set to true, and DevicePowerPeakShiftBatteryThreshold, DevicePowerPeakShiftDayConfig are set, then power peak shift will always be enabled if supported on the device.
+
+          If this policy is set to false, power peak shift will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, power peak shift is disabled initially and cannot be enabled by the user.</translation>
 <translation id="3388153794103186066">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
 
         The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'urls' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'urls' must be valid URLs, otherwise the policy will be ignored.
@@ -1343,6 +1370,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools cannot be accessed and website elements can no longer be inspected. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="355118380775352753">Websites to open in alternative browser</translation>
+<translation id="3554984410014457319">Allow Google Assistant to listen for the voice activation phrase</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
 <translation id="357917253161699596">Allow users to manage user certificates</translation>
 <translation id="3583230441447348508">Specifies a list of pre-configured network file shares.
@@ -1577,6 +1605,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       <ph name="PRODUCT_OS_NAME" /> devices automatically check for updates when this setting is not configured or set to False.
 
       Warning: It is recommended to keep auto-updates enabled so that users receive software updates and critical security fixes. Turning off auto-updates might leave users at risk.</translation>
+<translation id="4018000735882846261">This policy gives Google Assistant permission to listen for the voice activation phrase.
+
+      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
+      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
+      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
+      </translation>
 <translation id="4020682745012723568">Cookies transferred to the user's profile are not accessible to Android apps.</translation>
 <translation id="402759845255257575">Do not allow any site to run JavaScript</translation>
 <translation id="4027608872760987929">Enable the default search provider</translation>
@@ -1772,6 +1806,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       While the policy itself is supported on the above platforms, the feature that it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Enable lock when the device become idle or suspended</translation>
+<translation id="4449469846627734399">Set power peak shift day config</translation>
 <translation id="4449545651113180484">Rotate screen clockwise by 270 degrees</translation>
 <translation id="445270821089253489">Controls what kind of user and device information is reported.</translation>
 <translation id="4454820008017317557">Show the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
@@ -1970,6 +2005,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       This policy is only available as a platform.
       </translation>
+<translation id="5034604678285451405">Set power peak shift battery threshold in per cent.
+
+          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
+
+          If this policy is not configured or left unset, power peak shift will always be disabled.</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -2261,6 +2301,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5457065417344056871">Enable guest mode in browser</translation>
 <translation id="5457924070961220141">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
           The default setting used when this policy is left unset is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>
+<translation id="5458584148602890023">Enable power peak shift</translation>
 <translation id="5464816904705580310">Configure settings for managed users.</translation>
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
 <translation id="5469143988693423708">User is enabled to run Crostini</translation>
@@ -2604,6 +2645,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is not configured, the list of a detachable USB devices is empty.</translation>
 <translation id="6083631234867522991">Windows (Windows clients):</translation>
+<translation id="608788685013546076">Set power peak shift battery threshold in per cent</translation>
 <translation id="6089679180657323464">Controls wilco diagnostics and telemetry controller settings.</translation>
 <translation id="6091233616732024397">Force users to sign-in to use the browser</translation>
 <translation id="6093156968240188330">Allow remote users to interact with elevated windows in remote assistance sessions</translation>
@@ -3830,6 +3872,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8548832052135586762">Sets printing to colour only, monochrome only or no colour mode restriction. Unset policy is treated as no restriction.</translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
+<translation id="8569734380847633643">
+          If the policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Wi-Fi and users cannot re-enable it.
+          If the policy is set to true or left unset, users will be able to enable or disable Wi-Fi as they wish.</translation>
 <translation id="857369585509260201">This policy is deprecated. Consider using BrowserSignin instead.
 
       If this policy is set to true, the user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note: Existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article.
@@ -3889,6 +3934,13 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8703488928438047864">Report board status</translation>
+<translation id="8703872185032220081">Set power peak shift day config.
+
+          This policy is only used if DevicePowerPeakShiftEnabled is set to true.
+
+          If this policy is not configured or left unset, power peak shift will always be disabled.
+
+          Note: Allowed values for <ph name="MINUTE_FIELD_NAME" /> field in <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> and <ph name="CHARGE_START_TIME_FIELD_NAME" /> are 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
 
@@ -4089,6 +4141,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       If the policy is left not set, the user can choose the avatar image representing them on the login screen.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
+<translation id="9038839118379817310">Enable Wi-Fi</translation>
 <translation id="9039822628127365650">When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
 
       When this policy is not set, the session length is not limited.

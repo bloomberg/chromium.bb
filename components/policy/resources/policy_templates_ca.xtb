@@ -302,6 +302,22 @@
       Advertiment: no et recomanem delegar el control de la versió de <ph name="PRODUCT_OS_NAME" /> a una aplicació de quiosc, ja que podria impedir que el dispositiu rebi actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es delega el control de la versió de <ph name="PRODUCT_OS_NAME" />, es pot posar els usuaris en perill.</translation>
 <translation id="1675002386741412210">Compatible amb:</translation>
 <translation id="1689963000958717134">Permet aplicar la configuració de la xarxa per a tots els usuaris d'un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
+<translation id="1704516734140344991">Configura la disponibilitat i el comportament de la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Les opcions de configuració individuals es poden especificar a les propietats de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si s'estableix en <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, els usuaris podran activar el flux de Powerwash per instal·lar una actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si s'estableix en <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, els usuaris podran invocar el flux d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que conserva l'estat en tot el dispositiu (inclosa la inscripció d'empresa), però perd les dades de l'usuari. Aquest flux d'actualització està disponible a partir de la versió 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: controla de quina manera les actualitzacions automàtiques del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'apliquen al microprogramari vulnerable de <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Tots els fluxos conserven l'estat del dispositiu local.
+        Si s'estableix en 1 o es deixa sense establir, les actualitzacions del microprogramari de TPM no s'aplicaran.
+        Si s'estableix en 2, el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà la propera vegada que l'usuari reiniciï el dispositiu després d'haver acceptat l'actualització.
+        Si s'estableix en 3, el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà la propera vegada que l'usuari reiniciï el dispositiu.
+        Si s'estableix en 4, el microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> s'actualitzarà després de la inscripció, abans que l'usuari iniciï la sessió.
+        Aquesta opció està disponible a partir de la versió 74.
+
+      Si la política no s'estableix, la funcionalitat d'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> no estarà disponible.</translation>
 <translation id="1708496595873025510">Defineix la restricció de l'obtenció del valor seed de les variacions</translation>
 <translation id="1717817358640580294">Si no s'estableix, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. A continuació, Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. L'usuari podrà optar per compartir els resultats de la neteja amb Google per contribuir a la detecció de programari no desitjat en el futur. Aquests resultats contenen metadades de fitxers, extensions instal·lades automàticament i claus de registre, segons es descriu al llibre blanc de privadesa de Chrome.
 
@@ -842,7 +858,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2836621397261130126">Controla si es respecta l'aprovació de la política del KDC per decidir si es poden delegar els tiquets de <ph name="KERBEROS" />.
 
-          Si aquesta política s'estableix en "true", l'autenticació HTTP respecta l'aprovació per part de la política del KDC. És a dir, Chrome només delega les credencials si el KDC estableix <ph name="OK_AS_DELEGATE" /> en un tiquet de servei. Per obtenir més informació, consulta https://tools.ietf.org/html/rfc5896.html.  El servei també ha de coincidir amb la política AuthNegotiateDelegateWhitelist.
+          Si aquesta política s'estableix en "true", l'autenticació HTTP respecta l'aprovació per part de la política del KDC. És a dir, Chrome només delega les credencials si el KDC estableix <ph name="OK_AS_DELEGATE" /> en un tiquet de servei. Per obtenir més informació, consulta https://tools.ietf.org/html/rfc5896.html. El servei també ha de coincidir amb la política AuthNegotiateDelegateWhitelist.
 
           Si aquesta política no s'estableix o s'estableix en "false", s'ignora la política del KDC a les plataformes admeses i només es respecta la política AuthNegotiateDelegateWhitelist.
 
@@ -1071,6 +1087,17 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Aquesta política només es pot establir com a recomanada. Pots fer-la servir per moure una sèrie de configuracions regionals recomanades al capdamunt de la llista, però els usuaris sempre poden triar per a la sessió qualsevol de les configuracions admeses a <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
+<translation id="3384115339826100753">Activa la política de gestió del canvi d'alimentació en els pics d'ús.
+
+          El canvi d'alimentació en els pics d'ús és una política d'estalvi d'energia durant les hores del dia en què el dispositiu s'utilitza més. Per a cada dia laborable es pot establir una hora d'inici i una de finalització entre les quals funcionarà el mode de canvi d'alimentació en els pics d'ús. Durant aquestes hores, encara que el sistema estigui endollat, s'utilitzarà la bateria mentre aquesta estigui per sobre del llindar especificat. Quan hagi transcorregut el temps indicat per l'hora de finalització especificada, el sistema passarà a funcionar amb corrent altern sempre que estigui endollat, però la bateria no es carregarà. Quan sigui l'hora d'inici de càrrega especificada, el sistema tornarà a funcionarà normalment, utilitzant el corrent altern i carregant la bateria.
+
+          Si aquesta política s'estableix en "true", i les polítiques DevicePowerPeakShiftBatteryThreshold i DevicePowerPeakShiftDayConfig s'han establert, el canvi d'alimentació en pics d'ús estarà sempre activat si el dispositiu ho admet.
+
+          Si aquesta política s'estableix en "false", el canvi d'alimentació en pics d'ús estarà sempre desactivat.
+
+          Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
+
+          Si aquesta política es deixa sense establir, el canvi d'alimentació en pics d'ús estarà desactivat d'entrada i l'usuari no el podrà activar.</translation>
 <translation id="3388153794103186066">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors de proveïdor i producte que s'indiquin. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no hi ha un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
 
         El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
@@ -1141,6 +1168,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
+<translation id="3554984410014457319">Permet que l'Assistent de Google escolti la frase d'activació per veu</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
 <translation id="357917253161699596">Permet que els usuaris gestionin els certificats electrònics</translation>
 <translation id="3583230441447348508">Especifica una llista de fitxers compartits de la xarxa configurats prèviament.
@@ -1361,6 +1389,12 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Quan aquesta opció de configuració no es configura o s'estableix en "false", els dispositius <ph name="PRODUCT_OS_NAME" /> cerquen actualitzacions automàticament.
 
       Advertiment: et recomanem mantenir activades les actualitzacions automàtiques perquè els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es desactiven les actualitzacions automàtiques, es pot posar els usuaris en perill.</translation>
+<translation id="4018000735882846261">Aquesta política dona permís a l'Assistent de Google perquè escolti la frase d'activació per veu.
+
+      Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
+      Si la política es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
+      Si la política no s'estableix, l'Assistent de Google no escoltarà la frase d'activació per veu.
+      </translation>
 <translation id="4020682745012723568">Les aplicacions per a Android no poden accedir a les galetes transferides al perfil de l'usuari.</translation>
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
@@ -1505,6 +1539,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Tot i que la política s'admet en les plataformes anteriors, pot ser que la funció que activi no estigui disponible en totes les plataformes. No totes les funcions obsoletes de la plataforma web es poden tornar a activar; només les que s'indiquin explícitament a continuació durant un període de temps limitat, que varia segons la funció. El format general de l'etiqueta de cadena és el següent: [FuncióObsoleta]_EffectiveUntil[aaaammdd]. Com a referència, podeu consultar la finalitat dels canvis de la funció de la plataforma web a la pàgina https://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Activació del bloqueig quan el dispositiu està inactiu o se suspèn</translation>
+<translation id="4449469846627734399">Estableix la configuració diària per al canvi d'alimentació en els pics d'ús</translation>
 <translation id="4449545651113180484">Gira la pantalla 270 graus en sentit horari</translation>
 <translation id="445270821089253489">Controla quin tipus d'informació de l'usuari i del dispositiu es proporciona.</translation>
 <translation id="4454820008017317557">Mostra la icona de la barra d'eines de: <ph name="PRODUCT_NAME" /></translation>
@@ -1675,6 +1710,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4986560318567565414">Camí a Chrome per canviar des del navegador alternatiu.</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
 <translation id="4995548127349206948">Si l'autenticació NTLMv2 està activada.</translation>
+<translation id="5034604678285451405">Estableix el percentatge del llindar de bateria en què s'ha d'aplicar el canvi d'alimentació en els pics d'ús.
+
+          Aquesta política només es fa servir si DevicePowerPeakShiftEnabled s'estableix en "true".
+
+          Si aquesta política no es configura o es deixa sense establir, el canvi d'alimentació en els pics d'ús estarà sempre desactivat.</translation>
 <translation id="5047604665028708335">Permet l'accés a llocs situats fora de paquets de contingut.</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5056708224511062314">Lupa desactivada</translation>
@@ -1865,6 +1905,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5447306928176905178">Activa els informes d'informació de memòria (mida de pila JS) a la pàgina (no disponible)</translation>
 <translation id="5457065417344056871">Activa el mode de convidat al navegador</translation>
 <translation id="5457924070961220141">Us permet configurar el processador HTML predeterminat quan <ph name="PRODUCT_FRAME_NAME" /> està instal·lat. La configuració predeterminada que s'utilitza quan no es defineix aquesta política és permetre que el navegador amfitrió dugui a terme la renderització, però si ho desitgeu podeu modificar-ho i fer que <ph name="PRODUCT_FRAME_NAME" /> renderitzi de manera predeterminada les pàgines HTML.</translation>
+<translation id="5458584148602890023">Activa el canvi d'alimentació en els pics d'ús</translation>
 <translation id="5464816904705580310">Defineix les opcions de configuració per a usuaris gestionats.</translation>
 <translation id="546726650689747237">Retard de l'atenuació de pantalla quan s'utilitza alimentació</translation>
 <translation id="5469143988693423708">L'usuari té permís per executar Crostini</translation>
@@ -2153,6 +2194,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si aquesta política no està configurada, la llista de dispositius USB que es poden separar és buida.</translation>
 <translation id="6083631234867522991">Windows (clients amb Windows):</translation>
+<translation id="608788685013546076">Estableix el percentatge del llindar de bateria en què s'ha d'aplicar el canvi d'alimentació en els pics d'ús</translation>
 <translation id="6089679180657323464">Controla la configuració del comandament de telemetria i diagnòstic de Wilco.</translation>
 <translation id="6091233616732024397">Força els usuaris a iniciar la sessió per fer servir el navegador</translation>
 <translation id="6093156968240188330">Permet que els usuaris remots interaccionin amb les finestres amb privilegis restringits en sessions d'assistència remota</translation>
@@ -3222,6 +3264,9 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8548832052135586762">Estableix la impressió només en color, només monocroma o sense cap restricció de color. Si la política no s'estableix, no s'aplica cap restricció.</translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
+<translation id="8569734380847633643">
+          Si la política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> desactivarà la Wi-Fi i els usuaris no podran tornar-la a activar.
+          Si la política s'estableix en "true" o es deixa sense establir, els usuaris podran activar o desactivar la Wi-Fi segons els convingui.</translation>
 <translation id="857369585509260201">Aquesta política està obsoleta; substitueix-la per BrowserSignin.
 
       Si aquesta política s'estableix en "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled s'estableix en "false". Tingues en compte que, després d'activar aquesta política, els perfils en què no s'hagi iniciat la sessió es bloquejaran i no s'hi podrà accedir. Per obtenir més informació, consulta l'article del Centre d'ajuda.
@@ -3272,6 +3317,13 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8685024486845674965">L'advertiment sobre la protecció de contrasenyes s'activa quan es reutilitza una contrasenya</translation>
 <translation id="8693243869659262736">Utilitza el client DNS integrat</translation>
 <translation id="8703488928438047864">Informa de l'estat del tauler</translation>
+<translation id="8703872185032220081">Estableix la configuració diària per al canvi d'alimentació en els pics d'ús.
+
+          Aquesta política només es fa servir si DevicePowerPeakShiftEnabled s'estableix en "true".
+
+          Si aquesta política no es configura o es deixa sense establir, el canvi d'alimentació en els pics d'ús estarà sempre desactivat.
+
+          Nota: els valors permesos per al camp <ph name="MINUTE_FIELD_NAME" /> a <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> són 0, 15, 30 i 45.</translation>
 <translation id="8704831857353097849">Llista de connectors desactivats</translation>
 <translation id="8711086062295757690">Especifica la paraula clau, que és la drecera utilitzada a la barra d'adreces per activar la cerca d'aquest proveïdor. Aquesta política és opcional. Si no es defineix, no hi haurà cap paraula clau que activi el proveïdor de cerca. Aquesta política només es té en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="8731693562790917685">Configuració del contingut us permet especificar la manera com es tracta el contingut d'un tipus determinat (per exemple, Galetes, Imatges o JavaScript).</translation>
@@ -3393,6 +3445,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
+<translation id="9038839118379817310">Activa la Wi-Fi</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">
       Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).

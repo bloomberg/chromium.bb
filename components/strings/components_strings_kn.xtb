@@ -548,6 +548,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{ಹತ್ತಿರದ 1 ವೆಬ್ ಪುಟ}one{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}other{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}}</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4032320456957708163">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
+<translation id="4034375457890803692">ನೀವು ತೆರೆದ ಲಿಂಕ್, ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಭೇಟಿ ನೀಡದ ಸೈಟ್‌ಗೆ ಹೋಗುತ್ತದೆ. ಅದು ನಿಮಗೆ ಗೊಂದಲ ಉಂಟುಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರಬಹುದು.</translation>
 <translation id="4058922952496707368">ಕೀ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Envelope)</translation>
 <translation id="4067947977115446013">ಮಾನ್ಯವಾದ ವಿಳಾಸ ಸೇರಿಸಿ</translation>
@@ -804,7 +805,6 @@
 <translation id="5455374756549232013">ತಪ್ಪಾದ ನೀತಿಯ ಸಮಯಸ್ಟ್ಯಾಂಪ್</translation>
 <translation id="5457113250005438886">ಅಮಾನ್ಯ</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ಇನ್ನಷ್ಟು}one{<ph name="CONTACT_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ಇನ್ನಷ್ಟು}other{<ph name="CONTACT_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ಇನ್ನಷ್ಟು}}</translation>
-<translation id="5461666840533392417">ಸ್ವತಃ ನೀವಾಗಿಯೇ ಹೊರಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿರುವಂತಿದೆ, ಈ ನಿರ್ಧಾರವನ್ನು ನಿಮಗೆ ಬಿಡುತ್ತೇನೆ. ಈ ದಿನ ನಿಮಗೆ ಶುಭವಾಗಿರಲಿ :)</translation>
 <translation id="5470861586879999274">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">ಈ ಕಂಟೆಂಟ್‌ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿರುವ ಮಾಹಿತಿಯನ್ನು ಕದಿಯುವ ಅಥವಾ ಅಳಿಸುವ ಅಪಾಯಕಾರಿ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರಬಹುದು. <ph name="BEGIN_LINK" />ಹೇಗಿದ್ದರೂ ತೋರಿಸಿ<ph name="END_LINK" />.</translation>
@@ -1047,6 +1047,7 @@
 <translation id="6957887021205513506">ಸರ್ವರ್‌ಗಳ ಪ್ರಮಾಣಪತ್ರವು ನಕಲಿಯಾಗಿ ಗೋಚರಿಸುತ್ತದೆ.</translation>
 <translation id="6964255747740675745">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ಪಾರ್ಸ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. (ಅಮಾನ್ಯ JSON).</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">ಸಾಧನ</translation>
 <translation id="6970216967273061347">ಜಿಲ್ಲೆ</translation>
 <translation id="6973656660372572881">ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳು ಮತ್ತು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಎರಡನ್ನೂ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
@@ -1220,7 +1221,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">ಪ್ರಿಫೆಕ್ಚರ್‌‌</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
-<translation id="7793809570500803535"><ph name="SITE" /> ನಲ್ಲಿರುವ ವೆಬ್‌ಪುಟವು ತಾತ್ಕಾಲಿಕವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದಿರಬಹುದು ಅಥವಾ ಅದನ್ನು ಶಾಶ್ವತವಾಗಿ ಹೊಸ ವೆಬ್ ವಿಳಾಸಕ್ಕೆ ಸರಿಸಿರಬಹುದು.</translation>
 <translation id="7800304661137206267">ಸಂದೇಶದ ದೃಢೀಕರಣಕ್ಕಾಗಿ <ph name="MAC" /> ಮತ್ತು <ph name="KX" /> ನಂತೆ ಕೀಲಿ ವಿನಿಮಯದ ಯಾಂತ್ರಿಕತೆ ಜೊತೆಗೆ <ph name="CIPHER" /> ಅನ್ನು ಬಳಸಿ ಸಂಪರ್ಕವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="7802523362929240268">ಸೈಟ್‌ ಕಾನೂನುಬದ್ಧವಾಗಿದೆ</translation>
 <translation id="780301667611848630">ಬೇಡ, ಧನ್ಯವಾದಗಳು</translation>

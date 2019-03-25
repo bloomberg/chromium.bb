@@ -485,6 +485,7 @@
 <translation id="3592413004129370115">Italian (Φάκελος)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3614103345592970299">Μέγεθος 2</translation>
+<translation id="361438452008624280">Καταχώριση λίστας "<ph name="LANGUAGE_ID" />": Άγνωστη ή μη υποστηριζόμενη γλώσσα.</translation>
 <translation id="3615877443314183785">Εισαγάγετε μια έγκυρη ημερομηνία λήξης</translation>
 <translation id="36224234498066874">Διαγραφή δεδομένων περιήγησης…</translation>
 <translation id="362276910939193118">Εμφάνιση πλήρους ιστορικού</translation>
@@ -552,6 +553,7 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 ιστοσελίδα σε κοντινή απόσταση}other{# ιστοσελίδες σε κοντινή απόσταση}}</translation>
 <translation id="4030383055268325496">&amp;Αναίρεση προσθήκης</translation>
 <translation id="4032320456957708163">Το πρόγραμμα περιήγησής σας είναι διαχειριζόμενο από τον τομέα <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4034375457890803692">Ο σύνδεσμος που ανοίξατε οδηγεί σε έναν ιστότοπο που δεν επισκέπτεστε συχνά. Πιθανώς, να προσπαθεί να σας προκαλέσει σύγχυση.</translation>
 <translation id="4058922952496707368">Κλειδί "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (Φάκελος)</translation>
 <translation id="4067947977115446013">Προσθήκη έγκυρης διεύθυνσης</translation>
@@ -809,7 +811,6 @@
 <translation id="5455374756549232013">Εσφαλμένη χρονική σήμανση πολιτικής</translation>
 <translation id="5457113250005438886">Μη έγκυρο</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}other{<ph name="CONTACT_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}}</translation>
-<translation id="5461666840533392417">Φαίνεται πως απομακρυνθήκατε με δική σας επιλογή. Αποφασίστε πώς θέλετε να προχωρήσετε. Να έχετε μια όμορφη ημέρα!</translation>
 <translation id="5470861586879999274">&amp;Επανάληψη επεξεργασίας</translation>
 <translation id="5478437291406423475">B6/C4 (Φάκελος)</translation>
 <translation id="5481076368049295676">Αυτό το περιεχόμενο μπορεί να προσπαθήσει να εγκαταστήσει επικίνδυνο λογισμικό στη συσκευή σας το οποίο κλέβει ή διαγράφει τα στοιχεία σας. <ph name="BEGIN_LINK" />Εμφάνιση ούτως ή άλλως<ph name="END_LINK" /></translation>
@@ -1053,6 +1054,7 @@
 <translation id="6957887021205513506">Το πιστοποιητικό του διακομιστή φαίνεται να είναι πλαστό.</translation>
 <translation id="6964255747740675745">Απέτυχε η ανάλυση της διαμόρφωσης δικτύου (μη έγκυρο JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965456981923010628"><ph name="LEFT_PART" /> • <ph name="RIGHT_PART" /></translation>
 <translation id="6965978654500191972">Συσκευή</translation>
 <translation id="6970216967273061347">Περιφέρεια</translation>
 <translation id="6973656660372572881">Καθορίζονται τόσο οι σταθεροί διακομιστές μεσολάβησης όσο και μια διεύθυνση URL σεναρίου .pac.</translation>
@@ -1227,7 +1229,6 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Νομός</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
-<translation id="7793809570500803535">Η ιστοσελίδα στη διεύθυνση <ph name="SITE" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε νέα διεύθυνση ιστού.</translation>
 <translation id="7800304661137206267">Η σύνδεση είναι κρυπτογραφημένη με χρήση <ph name="CIPHER" />, με <ph name="MAC" /> για έλεγχο ταυτότητας μηνυμάτων και <ph name="KX" /> ως μηχανισμό ανταλλαγής κλειδιών.</translation>
 <translation id="7802523362929240268">Ο ιστότοπος είναι νόμιμος</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
@@ -1390,6 +1391,7 @@
 <translation id="8790007591277257123">&amp;Επανάληψη διαγραφής</translation>
 <translation id="8792621596287649091">Μπορεί να χάσετε την πρόσβαση στον λογαριασμό σας <ph name="ORG_NAME" /> ή να πέσετε θύμα κλοπής στοιχείων ταυτότητας. Το Chromium συνιστά να αλλάξετε τον κωδικό πρόσβασής σας τώρα.</translation>
 <translation id="8800988563907321413">Οι προτάσεις σε κοντινή απόσταση εμφανίζονται εδώ</translation>
+<translation id="8805819170075074995">Καταχώριση λίστας "<ph name="LANGUAGE_ID" />": Η καταχώριση παραβλέπεται επειδή περιλαμβάνεται επίσης στην πολιτική SpellcheckLanguage.</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
 <translation id="883848425547221593">Άλλοι σελιδοδείκτες</translation>
 <translation id="884264119367021077">Διεύθυνση αποστολής</translation>
@@ -1413,6 +1415,7 @@
 <translation id="8968766641738584599">Αποθήκευση κάρτας</translation>
 <translation id="8971063699422889582">Το πιστοποιητικό του διακομιστή έχει λήξει.</translation>
 <translation id="8975012916872825179">Περιλαμβάνει πληροφορίες, όπως αριθμούς τηλεφώνου, διευθύνσεις ηλεκτρονικού ταχυδρομείου και διευθύνσεις αποστολής</translation>
+<translation id="8975263830901772334">Ονόματα των αρχείων που εκτυπώνετε</translation>
 <translation id="8978053250194585037">Πρόσφατα, η Ασφαλής περιήγηση Google <ph name="BEGIN_LINK" />εντόπισε εκδηλώσεις ηλεκτρονικού ψαρέματος (phishing)<ph name="END_LINK" /> στον ιστότοπο <ph name="SITE" />. Οι ιστότοποι ηλεκτρονικού ψαρέματος (phishing) παρουσιάζονται ψευδώς σαν άλλου τύπου ιστότοποι, για να σας εξαπατήσουν.</translation>
 <translation id="8983003182662520383">Τρόποι πληρωμής και διευθύνσεις που χρησιμοποιούν το Google Pay</translation>
 <translation id="8987927404178983737">Μήνας</translation>
