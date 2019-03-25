@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
+
+if (is_internal_chrome_cleaner_build) {
+  import("//chrome/chrome_cleaner_internal/internal_test_args.gni")
+}
+
 # Targets used by tests.
 
 shared_library("empty_dll") {
