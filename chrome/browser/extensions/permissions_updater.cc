@@ -37,7 +37,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -307,9 +306,6 @@ void PermissionsUpdater::GrantRuntimePermissions(
     const Extension& extension,
     const PermissionSet& permissions,
     base::OnceClosure completion_callback) {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kRuntimeHostPermissions));
-
   // We don't want to grant the extension object/process more privilege than it
   // requested, even if the user grants additional permission. For instance, if
   // the extension requests https://maps.google.com and the user grants
@@ -372,8 +368,6 @@ void PermissionsUpdater::RevokeRuntimePermissions(
     const Extension& extension,
     const PermissionSet& permissions,
     base::OnceClosure completion_callback) {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kRuntimeHostPermissions));
   // Similar to the process in adding permissions, we might be revoking more
   // permissions than the extension currently has explicit access to. For
   // instance, we might be revoking https://*.google.com/* even if the extension

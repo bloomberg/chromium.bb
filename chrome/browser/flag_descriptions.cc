@@ -2004,12 +2004,6 @@ const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "
     "user gesture tokens.";
 
-const char kUserConsentForExtensionScriptsName[] =
-    "User consent for extension scripts";
-const char kUserConsentForExtensionScriptsDescription[] =
-    "Require user consent for an extension running a script on the page, if "
-    "the extension requested permission to run on all urls.";
-
 const char kUseSuggestionsEvenIfFewFeatureName[] =
     "Disable minimum for server-side tile suggestions on NTP.";
 const char kUseSuggestionsEvenIfFewFeatureDescription[] =

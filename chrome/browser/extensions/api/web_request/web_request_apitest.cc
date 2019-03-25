@@ -17,7 +17,6 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "base/values.h"
@@ -1009,14 +1008,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
 }
 
-// Tests that webRequest works with
-// extensions_features::kRuntimeHostPermissions.
+// Tests that WebRequest works with runtime host permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestWithWithheldPermissions) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1141,10 +1135,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // intercept cross-origin requests from that tab.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestWithheldPermissionsCrossOriginRequests) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1196,10 +1186,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // https://crbug.com/891586.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WithheldHostPermissionsForCrossOriginWithoutInitiator) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -2254,10 +2240,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 // specific permission shouldn't bypass our policy.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
                        WebRequestProtectedByPolicy) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Host protected by policy.
   const std::string protected_domain = "example.com";
 

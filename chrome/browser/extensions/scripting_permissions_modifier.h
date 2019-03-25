@@ -50,7 +50,6 @@ class ScriptingPermissionsModifier {
   ~ScriptingPermissionsModifier();
 
   // Sets whether Chrome should withhold host permissions from the extension.
-  // Used when the features::kRuntimeHostPermissions feature is enabled.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void SetWithholdHostPermissions(bool withhold);
@@ -61,7 +60,7 @@ class ScriptingPermissionsModifier {
   bool HasWithheldHostPermissions() const;
 
   // Returns true if the associated extension can be affected by
-  // features::kRuntimeHostPermissions.
+  // runtime host permissions.
   bool CanAffectExtension() const;
 
   // Returns the current access level for the extension on the specified |url|.

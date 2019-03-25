@@ -13,7 +13,6 @@
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -52,7 +51,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -388,9 +386,6 @@ void DeveloperPrivateApiUnitTest::TearDown() {
 // Test developerPrivate.updateExtensionConfiguration.
 TEST_F(DeveloperPrivateApiUnitTest,
        DeveloperPrivateUpdateExtensionConfiguration) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
   // Sadly, we need a "real" directory here, because toggling prefs causes
   // a reload (which needs a path).
   const Extension* extension = LoadUnpackedExtension();
@@ -1327,10 +1322,6 @@ TEST_F(DeveloperPrivateApiUnitTest, InstallDroppedFileUserScript) {
 }
 
 TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
@@ -1387,10 +1378,6 @@ TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
 }
 
 TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
@@ -1462,10 +1449,6 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
 #define MAYBE_UpdateHostAccess UpdateHostAccess
 #endif
 TEST_F(DeveloperPrivateApiUnitTest, MAYBE_UpdateHostAccess) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
@@ -1485,10 +1468,6 @@ TEST_F(DeveloperPrivateApiUnitTest, MAYBE_UpdateHostAccess) {
 
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_SpecificSitesRemovedOnTransitionToOnClick) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
@@ -1529,10 +1508,6 @@ TEST_F(DeveloperPrivateApiUnitTest,
 
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_SpecificSitesRemovedOnTransitionToAllSites) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("<all_urls>").Build();
   service()->AddExtension(extension.get());
@@ -1556,10 +1531,6 @@ TEST_F(DeveloperPrivateApiUnitTest,
 
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_GrantScopeGreaterThanRequestedScope) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("http://*/*").Build();
   service()->AddExtension(extension.get());
@@ -1622,10 +1593,6 @@ TEST_F(DeveloperPrivateApiUnitTest,
 
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_UnrequestedHostsDispatchUpdateEvents) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("http://google.com/*").Build();
   service()->AddExtension(extension.get());

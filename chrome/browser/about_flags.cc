@@ -1725,12 +1725,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"extension-active-script-permission",
-     flag_descriptions::kUserConsentForExtensionScriptsName,
-     flag_descriptions::kUserConsentForExtensionScriptsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(extensions_features::kRuntimeHostPermissions)},
-#endif  // ENABLE_EXTENSIONS
-#if BUILDFLAG(ENABLE_EXTENSIONS)
     {"enable-embedded-extension-options",
      flag_descriptions::kEmbeddedExtensionOptionsName,
      flag_descriptions::kEmbeddedExtensionOptionsDescription, kOsDesktop,

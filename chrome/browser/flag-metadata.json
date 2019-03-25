@@ -2031,11 +2031,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "extension-active-script-permission",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "extension-apis",
     "owners": [ "rdevlin.cronin" ],
     "expiry_milestone": 76
