@@ -201,7 +201,7 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
 // flash between navigations. The delay should be small enough so that it won't
 // confuse users expecting a new page to appear after navigation and the omnibar
 // has updated the url display.
-constexpr int kAvoidFlashCommitDelayDefaultInMs = 200;
+constexpr int kAvoidFlashCommitDelayDefaultInMs = 500;  // 30 frames @ 60hz
 constexpr char kAvoidFlashCommitDelayParameterName[] = "commit_delay";
 
 // Get the field trial parameter value for AvoidFlashBetweenNavigation.
