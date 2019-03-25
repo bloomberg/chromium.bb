@@ -18936,6 +18936,7 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="PINNED"/>
   <int value="1" label="REGULAR"/>
   <int value="2" label="FULLSCREEN"/>
+  <int value="3" label="WINDOW"/>
 </enum>
 
 <enum name="ExtensionLocation">
