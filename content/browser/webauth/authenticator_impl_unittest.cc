@@ -1281,6 +1281,34 @@ TEST_F(AuthenticatorImplTest, InvalidResponse) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, Ctap2AssertionWithInvalidCredentialError) {
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  device::VirtualCtap2Device::Config config;
+  config.return_immediate_invalid_credential_error = true;
+  scoped_virtual_device.SetCtap2Config(config);
+
+  TestServiceManagerContext service_manager_context;
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+
+  bool pressed = false;
+  scoped_virtual_device.mutable_state()->simulate_press_callback =
+      base::BindRepeating([](bool* flag) { *flag = true; }, &pressed);
+
+  TestGetAssertionCallback callback_receiver;
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  authenticator->GetAssertion(GetTestPublicKeyCredentialRequestOptions(),
+                              callback_receiver.callback());
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+  // TODO(agl): this shouldn't timeout, rather it should return
+  // CREDENTIAL_NOT_RECOGNIZED after a press.
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_FALSE(pressed);
+}
+
 enum class IndividualAttestation {
   REQUESTED,
   NOT_REQUESTED,
