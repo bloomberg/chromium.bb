@@ -182,6 +182,8 @@ mojom("android_mojo_bindings") {
   sources = [
     "input/input_host.mojom",
     "input/input_messages.mojom",
+    "installedapp/installed_app_provider.mojom",
+    "installedapp/related_application.mojom",
     "payments/payment_request.mojom",
     "remote_objects/remote_objects.mojom",
     "webauthn/authenticator.mojom",

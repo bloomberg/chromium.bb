@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/installedapp/related_application.mojom-blink.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
 #include "third_party/blink/public/platform/modules/installedapp/web_related_apps_fetcher.h"
 #include "third_party/blink/public/platform/web_vector.h"

@@ -45,8 +45,8 @@
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
-#include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/components/shortcut_viewer/public/cpp/manifest.h"  // nogncheck
