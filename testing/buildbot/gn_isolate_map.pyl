@@ -1978,7 +1978,7 @@
     "type": "fuzzer",
   },
   "password_generator_proto_fuzzer": {
-    "label": "//components/autofill/core/browser:password_generator_proto_fuzzer",
+    "label": "//components/password_manager/core/browser/generation:password_generator_proto_fuzzer",
     "type": "fuzzer",
   },
   "password_manager_form_parser_fuzzer": {
