@@ -50,6 +50,15 @@ source_set("common") {
     "//mojo/public/cpp/system",
     "//sandbox/win:sandbox",
   ]
+
+  if (!is_official_chrome_cleaner_build) {
+    # Unofficial builds allow loading some target-only code in the broker, for
+    # testing.
+    deps += [
+      "//chrome/chrome_cleaner/engines/target:common",
+      "//chrome/chrome_cleaner/engines/target:engine_delegate_factory",
+    ]
+  }
 }
 
 source_set("disabled_cleaner_sandbox_interface") {
