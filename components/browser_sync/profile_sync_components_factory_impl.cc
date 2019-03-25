@@ -291,7 +291,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                   base::Unretained(sync_client_->GetSessionSyncService()))));
       controllers.push_back(
           std::make_unique<sync_sessions::SessionModelTypeController>(
-              sync_client_->GetPrefService(),
+              sync_service, sync_client_->GetPrefService(),
               std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
                   sync_client_->GetSessionSyncService()
                       ->GetControllerDelegate()
