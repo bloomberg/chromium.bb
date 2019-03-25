@@ -217,12 +217,14 @@ template("msvc_toolchain") {
       if (toolchain_args.current_cpu == "arm64") {
         prefix = rebase_path("$clang_base_path/bin", root_build_dir)
         ml = "${clang_prefix}${prefix}/${clang_cl} --target=arm64-windows"
+        ml += " -c -o{{output}}"
       } else {
         if (toolchain_args.current_cpu == "x64") {
-          ml = "ml64.exe /nologo"
+          ml = "ml64.exe"
         } else {
-          ml = "ml.exe /nologo"
+          ml = "ml.exe"
         }
+        ml += " /nologo /c /Fo{{output}}"
         if (use_lld) {
           # Wrap ml(64).exe with a script that makes its output deterministic.
           # It's lld only because the script zaps obj Timestamp which
@@ -234,12 +236,7 @@ template("msvc_toolchain") {
           ml = "$python_path $ml_py $ml"
         }
       }
-      command = "$python_path $tool_wrapper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} "
-      if (toolchain_args.current_cpu == "arm64") {
-        command += "-c -o{{output}} {{source}}"
-      } else {
-        command += "/c /Fo{{output}} {{source}}"
-      }
+      command = "$python_path $tool_wrapper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} {{source}}"
       description = "ASM {{output}}"
       outputs = [
         "$object_subdir/{{source_name_part}}.obj",
@@ -457,9 +454,6 @@ template("win_64bit_toolchains") {
     environment = "environment." + toolchain_arch
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${clang_prefix}$prefix/${clang_cl}"
-    if (toolchain_arch == "arm64") {
-      cl += " --target=arm64-windows"
-    }
     sys_include_flags = "${win_64bit_toolchain_data.include_flags_imsvc}"
     if (host_os != "win") {
       # For win cross build
@@ -479,17 +473,11 @@ template("win_64bit_toolchains") {
 
 win_64bit_toolchains("x64") {
   toolchain_arch = "x64"
-  toolchain_args = {
-    # Use the defaults.
-  }
 }
 
 if (target_cpu == "arm64") {
   win_64bit_toolchains("arm64") {
     toolchain_arch = "arm64"
-    toolchain_args = {
-      # Use the defaults.
-    }
   }
 }
 
