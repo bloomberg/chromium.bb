@@ -158,7 +158,12 @@ void AudioContext::Uninitialize() {
 }
 
 AudioContext::~AudioContext() {
-  DCHECK(!autoplay_status_.has_value());
+  // TODO(crbug.com/945379) Disable this DCHECK for now.  It's not terrible if
+  // the autoplay metrics aren't recorded in some odd situations.  haraken@ said
+  // that we shouldn't get here without also calling |Uninitialize()|, but it
+  // can happen.  Until that is fixed, disable this DCHECK.
+
+  // DCHECK(!autoplay_status_.has_value());
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: AudioContext::~AudioContext(): %u\n", this,
           context_id_);
