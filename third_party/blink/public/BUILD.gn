@@ -699,8 +699,6 @@ mojom("android_mojo_bindings") {
     "platform/modules/document_metadata/copyless_paste.mojom",
     "platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom",
     "platform/modules/installation/installation.mojom",
-    "platform/modules/installedapp/installed_app_provider.mojom",
-    "platform/modules/installedapp/related_application.mojom",
     "platform/modules/mediasession/media_session.mojom",
   ]
   public_deps = [
