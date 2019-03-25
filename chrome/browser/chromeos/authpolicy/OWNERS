@@ -4,3 +4,5 @@ per-file BUILD.gn=*
 
 rsorokin@chromium.org
 ljusten@chromium.org
+
+# COMPONENT: Enterprise>ActiveDirectory
