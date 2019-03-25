@@ -191,6 +191,10 @@ bool InspectTool::ForwardEventsToOverlay() {
   return true;
 }
 
+bool InspectTool::HideOnHideHighlight() {
+  return false;
+}
+
 void InspectTool::Trace(blink::Visitor* visitor) {
   visitor->Trace(overlay_);
 }
@@ -582,7 +586,8 @@ Response InspectorOverlayAgent::highlightFrame(
 }
 
 Response InspectorOverlayAgent::hideHighlight() {
-  PickTheRightTool();
+  if (inspect_tool_ && inspect_tool_->HideOnHideHighlight())
+    PickTheRightTool();
   return Response::OK();
 }
 

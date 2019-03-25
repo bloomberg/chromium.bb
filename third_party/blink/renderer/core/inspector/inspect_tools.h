@@ -55,6 +55,7 @@ class QuadHighlightTool : public InspectTool {
 
  private:
   bool ForwardEventsToOverlay() override;
+  bool HideOnHideHighlight() override;
   void Draw(float scale) override;
   std::unique_ptr<FloatQuad> quad_;
   Color color_;
@@ -73,6 +74,7 @@ class NodeHighlightTool : public InspectTool {
  private:
   CString GetDataResourceName() override;
   bool ForwardEventsToOverlay() override;
+  bool HideOnHideHighlight() override;
   void Draw(float scale) override;
   void DrawNode();
   void DrawMatchingSelector();
