@@ -2516,6 +2516,12 @@ TEST_P(WebStateObserverTest, RestoreSession) {
 // Tests callbacks for restoring session and subsequently going back to
 // about:blank.
 TEST_P(WebStateObserverTest, RestoreSessionOnline) {
+// TODO(crbug.com/944886): Remove once issue resolved.
+#if !TARGET_IPHONE_SIMULATOR
+  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
+  if (idiom == UIUserInterfaceIdiomPad)
+    return;
+#endif
   // LegacyNavigationManager doesn't trigger load in Restore.
   if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
     return;
