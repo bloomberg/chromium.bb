@@ -476,7 +476,6 @@ public class WebappActivity extends SingleTabActivity {
         if (storage != null) {
             mDisclosureSnackbarController.maybeShowDisclosure(this, storage, false /* force */);
         }
-        AppHooks.get().setDisplayModeForActivity(mWebappInfo.displayMode(), this);
     }
 
     @Override

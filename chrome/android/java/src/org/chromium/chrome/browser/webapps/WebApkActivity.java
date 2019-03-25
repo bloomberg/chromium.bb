@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -72,6 +73,12 @@ public class WebApkActivity extends WebappActivity {
     public void onResume() {
         super.onResume();
         mStartTime = SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public void onResumeWithNative() {
+        super.onResumeWithNative();
+        AppHooks.get().setDisplayModeForActivity(getWebappInfo().displayMode(), this);
     }
 
     @Override
