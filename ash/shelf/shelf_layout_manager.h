@@ -106,9 +106,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
 
-  // Set the height of the accessibility panel, which takes away space from the
-  // available work area from the top of the screen. Used by ChromeVox.
-  void SetAccessibilityPanelHeight(int height);
 
   // Set the height of the Docked Magnifier viewport at the top of the screen,
   // which will reduce the available screen work area similarly to the ChromeVox
@@ -130,6 +127,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
+  void OnAccessibilityPanelBoundsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
   void OnSplitViewModeStarted() override;
   void OnSplitViewModeEnded() override;
@@ -182,6 +180,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Returns the stable work area which is the work area when the shelf is
   // visible.
+  // TODO(agawronska): Wondering if work area computation should belong to
+  // ShelfLayoutManager. Work area depends on the size of independent components
+  // like accessibility panel.
   gfx::Rect ComputeStableWorkArea() const;
 
   ShelfVisibilityState visibility_state() const {
@@ -189,7 +190,6 @@ class ASH_EXPORT ShelfLayoutManager
   }
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
-  int accessibility_panel_height() const { return accessibility_panel_height_; }
   int docked_magnifier_height() const { return docked_magnifier_height_; }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
@@ -460,13 +460,8 @@ class ASH_EXPORT ShelfLayoutManager
   // keyboard.
   gfx::Rect user_work_area_bounds_;
 
-  // The height of the accessibility panel at the top of the screen, which
-  // needs to be removed from the available work area. Used by ChromeVox.
-  int accessibility_panel_height_ = 0;
-
   // The height of the Docked Magnifier viewport at the top of the screen, which
-  // similarly to |accessibility_panel_height_| needs to be removed from the
-  // available work area.
+  // needs to be removed from the available work area.
   int docked_magnifier_height_ = 0;
 
   // Whether background blur is enabled.

@@ -38,6 +38,7 @@ class ScopedCaptureClient;
 }
 
 namespace ash {
+class AccessibilityPanelLayoutManager;
 class AlwaysOnTopController;
 class AshWindowTreeHost;
 class LockScreenActionBackgroundController;
@@ -156,6 +157,9 @@ class ASH_EXPORT RootWindowController {
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot();
 
+  // Returns height of the accessibility panel for this root window.
+  int GetAccessibilityPanelHeight() const;
+
   aura::Window* GetContainer(int container_id);
   const aura::Window* GetContainer(int container_id) const;
 
@@ -203,6 +207,9 @@ class ASH_EXPORT RootWindowController {
   // Called when the login status changes after login (such as lock/unlock).
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
+  // Returns accessibility panel layout manager for this root window.
+  AccessibilityPanelLayoutManager* GetAccessibilityPanelLayoutManagerForTest();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowControllerTest,
                            ContextMenuDisappearsInTabletMode);
@@ -222,6 +229,8 @@ class ASH_EXPORT RootWindowController {
   void Init(RootWindowType root_window_type);
 
   void InitLayoutManagers();
+
+  AccessibilityPanelLayoutManager* GetAccessibilityPanelLayoutManager() const;
 
   // Initializes the shelf for this root window and notifies observers.
   void InitializeShelf();

@@ -230,6 +230,10 @@ class AshTestBase : public testing::Test {
   // Simulates kiosk mode. |user_type| must correlate to a kiosk type user.
   void SimulateKioskMode(user_manager::UserType user_type);
 
+  // Simulates setting height of the accessibility panel.
+  // Note: Accessibility panel widget needs to be setup first.
+  void SetAccessibilityPanelHeight(int panel_height);
+
   // Clears all user sessions and resets to the primary login screen state.
   void ClearLogin();
 

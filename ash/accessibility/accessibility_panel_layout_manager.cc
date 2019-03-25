@@ -26,6 +26,12 @@ AccessibilityPanelLayoutManager::~AccessibilityPanelLayoutManager() {
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
+int AccessibilityPanelLayoutManager::GetPanelHeight() const {
+  bool has_height = panel_window_ && panel_window_->bounds().y() == 0 &&
+                    panel_state_ == mojom::AccessibilityPanelState::FULL_WIDTH;
+  return has_height ? panel_window_->bounds().height() : 0;
+}
+
 void AccessibilityPanelLayoutManager::SetAlwaysVisible(bool always_visible) {
   always_visible_ = always_visible;
   UpdateWindowBounds();
@@ -37,7 +43,10 @@ void AccessibilityPanelLayoutManager::SetPanelBounds(
   panel_bounds_ = bounds;
   panel_state_ = state;
   UpdateWindowBounds();
-  UpdateWorkArea();
+  // TODO(agawronska): Consider routing this through RootWindowController
+  // (public method or repeating callback).
+  Shell::Get()->NotifyAccessibilityPanelBoundsChanged(
+      panel_window_->GetRootWindow());
 }
 
 void AccessibilityPanelLayoutManager::OnWindowAddedToLayout(
@@ -49,12 +58,14 @@ void AccessibilityPanelLayoutManager::OnWindowAddedToLayout(
 
 void AccessibilityPanelLayoutManager::OnWindowRemovedFromLayout(
     aura::Window* child) {
+  aura::Window* root_window = panel_window_->GetRootWindow();
   // NOTE: In browser_tests a second ChromeVoxPanel can be created while the
   // first one is closing due to races between loading the extension and
   // closing the widget. We only track the latest panel.
   if (child == panel_window_)
     panel_window_ = nullptr;
-  UpdateWorkArea();
+
+  Shell::Get()->NotifyAccessibilityPanelBoundsChanged(root_window);
 }
 
 void AccessibilityPanelLayoutManager::OnChildWindowVisibilityChanged(
@@ -62,7 +73,8 @@ void AccessibilityPanelLayoutManager::OnChildWindowVisibilityChanged(
     bool visible) {
   if (child == panel_window_ && visible) {
     UpdateWindowBounds();
-    UpdateWorkArea();
+    Shell::Get()->NotifyAccessibilityPanelBoundsChanged(
+        panel_window_->GetRootWindow());
   }
 }
 
@@ -130,14 +142,6 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
     bounds.set_height(available_height);
 
   panel_window_->SetBounds(bounds);
-}
-
-void AccessibilityPanelLayoutManager::UpdateWorkArea() {
-  bool should_set_height =
-      panel_window_ && panel_window_->bounds().y() == 0 &&
-      panel_state_ == mojom::AccessibilityPanelState::FULL_WIDTH;
-  Shell::GetPrimaryRootWindowController()->shelf()->SetAccessibilityPanelHeight(
-      should_set_height ? panel_window_->bounds().height() : 0);
 }
 
 }  // namespace ash

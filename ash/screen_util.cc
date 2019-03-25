@@ -47,7 +47,8 @@ gfx::Rect GetFullscreenWindowBoundsInParent(aura::Window* window) {
       shelf ? shelf->shelf_layout_manager() : nullptr;
   if (shelf_layout_manager) {
     result.Inset(0,
-                 shelf_layout_manager->accessibility_panel_height() +
+                 RootWindowController::ForWindow(window->GetRootWindow())
+                         ->GetAccessibilityPanelHeight() +
                      shelf_layout_manager->docked_magnifier_height(),
                  0, 0);
   }
