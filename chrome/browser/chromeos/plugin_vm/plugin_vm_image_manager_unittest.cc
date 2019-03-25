@@ -50,13 +50,17 @@ const int kContentSize = kContent1Size + kContent2Size;
 class MockObserver : public PluginVmImageManager::Observer {
  public:
   MOCK_METHOD0(OnDownloadStarted, void());
-  MOCK_METHOD2(OnDownloadProgressUpdated,
-               void(uint64_t bytes_downloaded, int64_t content_length));
+  MOCK_METHOD3(OnDownloadProgressUpdated,
+               void(uint64_t bytes_downloaded,
+                    int64_t content_length,
+                    int64_t download_bytes_per_sec));
   MOCK_METHOD0(OnDownloadCompleted, void());
   MOCK_METHOD0(OnDownloadCancelled, void());
   MOCK_METHOD0(OnDownloadFailed, void());
-  MOCK_METHOD2(OnUnzippingProgressUpdated,
-               void(int64_t unzipped_bytes, int64_t plugin_vm_image_size));
+  MOCK_METHOD3(OnUnzippingProgressUpdated,
+               void(int64_t bytes_unzipped,
+                    int64_t plugin_vm_image_size,
+                    int64_t unzipping_bytes_per_sec));
   MOCK_METHOD0(OnUnzipped, void());
   MOCK_METHOD0(OnUnzippingFailed, void());
 };
@@ -71,7 +75,7 @@ class PluginVmImageManagerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   PluginVmImageManager* manager_;
   download::test::TestDownloadService* download_service_;
-  std::unique_ptr<MockObserver> download_observer_;
+  std::unique_ptr<MockObserver> observer_;
   base::FilePath fake_downloaded_plugin_vm_image_archive_;
 
   void SetUp() override {
@@ -84,15 +88,15 @@ class PluginVmImageManagerTest : public testing::Test {
     download_service_->set_client(
         new PluginVmImageDownloadClient(profile_.get()));
     manager_->SetDownloadServiceForTesting(download_service_);
-    download_observer_ = std::make_unique<MockObserver>();
-    manager_->SetObserver(download_observer_.get());
+    observer_ = std::make_unique<MockObserver>();
+    manager_->SetObserver(observer_.get());
 
     fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
   }
 
   void TearDown() override {
     profile_.reset();
-    download_observer_.reset();
+    observer_.reset();
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
@@ -152,12 +156,12 @@ class PluginVmImageManagerTest : public testing::Test {
 };
 
 TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted());
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContentSize, kContentSize));
-  EXPECT_CALL(*download_observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_));
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
+                                                     testing::_));
+  EXPECT_CALL(*observer_, OnUnzipped());
 
   manager_->StartDownload();
 
@@ -179,12 +183,12 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted());
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContentSize, kContentSize));
-  EXPECT_CALL(*download_observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_));
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
+                                                     testing::_));
+  EXPECT_CALL(*observer_, OnUnzipped());
 
   manager_->StartDownload();
 
@@ -203,14 +207,14 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted()).Times(2);
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContent1Size, kContentSize))
+  EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(2);
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_))
       .Times(2);
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContentSize, kContentSize))
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
+                                                     testing::_))
       .Times(2);
-  EXPECT_CALL(*download_observer_, OnUnzipped()).Times(2);
+  EXPECT_CALL(*observer_, OnUnzipped()).Times(2);
 
   ProcessImage();
 
@@ -222,13 +226,13 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadFailed());
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted());
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContentSize, kContentSize));
-  EXPECT_CALL(*download_observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnDownloadFailed());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_));
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
+                                                     testing::_));
+  EXPECT_CALL(*observer_, OnUnzipped());
 
   manager_->StartDownload();
   std::string guid = manager_->GetCurrentDownloadGuidForTesting();
@@ -241,8 +245,8 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted()).Times(0);
-  EXPECT_CALL(*download_observer_, OnDownloadCancelled());
+  EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
+  EXPECT_CALL(*observer_, OnDownloadCancelled());
 
   manager_->StartDownload();
   manager_->CancelDownload();
@@ -252,12 +256,12 @@ TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, UnzipDownloadedImageTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted());
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
-  EXPECT_CALL(*download_observer_,
-              OnUnzippingProgressUpdated(kContentSize, kContentSize));
-  EXPECT_CALL(*download_observer_, OnUnzipped());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContent1Size,
+                                                     kContentSize, testing::_));
+  EXPECT_CALL(*observer_, OnUnzippingProgressUpdated(kContentSize, kContentSize,
+                                                     testing::_));
+  EXPECT_CALL(*observer_, OnUnzipped());
 
   ProcessImage();
 
@@ -288,8 +292,8 @@ TEST_F(PluginVmImageManagerTest, UnzipDownloadedImageTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, UnzipNonExistingImageTest) {
-  EXPECT_CALL(*download_observer_, OnDownloadCompleted());
-  EXPECT_CALL(*download_observer_, OnUnzippingFailed());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnUnzippingFailed());
 
   manager_->StartDownload();
   test_browser_thread_bundle_.RunUntilIdle();
@@ -305,7 +309,7 @@ TEST_F(PluginVmImageManagerTest, UnzipNonExistingImageTest) {
 }
 
 TEST_F(PluginVmImageManagerTest, CancelUnzippingTest) {
-  EXPECT_CALL(*download_observer_, OnUnzippingFailed());
+  EXPECT_CALL(*observer_, OnUnzippingFailed());
 
   // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
@@ -326,7 +330,7 @@ TEST_F(PluginVmImageManagerTest, CancelUnzippingTest) {
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
   SetPluginVmImagePref("", kHash);
 
-  EXPECT_CALL(*download_observer_, OnDownloadFailed());
+  EXPECT_CALL(*observer_, OnDownloadFailed());
 
   manager_->StartDownload();
   test_browser_thread_bundle_.RunUntilIdle();

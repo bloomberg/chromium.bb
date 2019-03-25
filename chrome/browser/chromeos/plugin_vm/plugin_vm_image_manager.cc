@@ -25,6 +25,16 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/zlib/google/zip.h"
 
+namespace {
+
+int64_t GetSpeed(base::TimeTicks start_tick, int64_t bytes_proceeded) {
+  const base::TimeDelta diff = base::TimeTicks::Now() - start_tick;
+  const int64_t diff_ms = diff.InMilliseconds();
+  return diff_ms == 0 ? 0 : bytes_proceeded * 1000 / diff_ms;
+}
+
+}  // namespace
+
 namespace plugin_vm {
 
 bool PluginVmImageManager::IsProcessingImage() {
@@ -80,14 +90,18 @@ void PluginVmImageManager::RemoveObserver() {
 }
 
 void PluginVmImageManager::OnDownloadStarted() {
+  download_start_tick_ = base::TimeTicks::Now();
   if (observer_)
     observer_->OnDownloadStarted();
 }
 
 void PluginVmImageManager::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                                      int64_t content_length) {
-  if (observer_)
-    observer_->OnDownloadProgressUpdated(bytes_downloaded, content_length);
+  if (observer_) {
+    observer_->OnDownloadProgressUpdated(
+        bytes_downloaded, content_length,
+        GetSpeed(download_start_tick_, bytes_downloaded));
+  }
 }
 
 void PluginVmImageManager::OnDownloadCompleted(
@@ -124,9 +138,11 @@ void PluginVmImageManager::OnDownloadFailed() {
 
 void PluginVmImageManager::OnUnzippingProgressUpdated(int new_unzipped_bytes) {
   plugin_vm_image_bytes_unzipped_ += new_unzipped_bytes;
-  if (observer_)
-    observer_->OnUnzippingProgressUpdated(plugin_vm_image_bytes_unzipped_,
-                                          plugin_vm_image_size_);
+  if (observer_) {
+    observer_->OnUnzippingProgressUpdated(
+        plugin_vm_image_bytes_unzipped_, plugin_vm_image_size_,
+        GetSpeed(unzipping_start_tick_, plugin_vm_image_bytes_unzipped_));
+  }
 }
 
 void PluginVmImageManager::OnUnzipped(bool success) {
@@ -293,6 +309,7 @@ bool PluginVmImageManager::UnzipDownloadedPluginVmImageArchive() {
     return false;
   }
 
+  unzipping_start_tick_ = base::TimeTicks::Now();
   plugin_vm_image_bytes_unzipped_ = 0;
   bool success = zip::UnzipWithFilterAndWriters(
       file.GetPlatformFile(),
