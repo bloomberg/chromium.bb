@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/overscroll/scroll_input_handler.h"
@@ -58,12 +59,8 @@ bool DoesDescendantHaveLayer(View* view) {
 // Returns the position for the view so that it isn't scrolled off the visible
 // region.
 int CheckScrollBounds(int viewport_size, int content_size, int current_pos) {
-  int max = std::max(content_size - viewport_size, 0);
-  if (current_pos < 0)
-    return 0;
-  if (current_pos > max)
-    return max;
-  return current_pos;
+  return base::ClampToRange(current_pos, 0,
+                            std::max(content_size - viewport_size, 0));
 }
 
 // Make sure the content is not scrolled out of bounds

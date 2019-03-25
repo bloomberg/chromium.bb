@@ -239,7 +239,7 @@ int ViewAXPlatformNodeDelegate::GetChildCount() {
 
   const auto child_widgets_result = GetChildWidgets();
   if (child_widgets_result.is_tab_modal_showing) {
-    DCHECK_EQ(child_widgets_result.child_widgets.size(), 1ULL);
+    DCHECK_EQ(child_widgets_result.child_widgets.size(), 1U);
     return 1;
   }
   return static_cast<int>(view()->children().size() +
@@ -263,17 +263,16 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
   // If a visible tab modal dialog is present, ignore |index| and return the
   // dialog.
   if (child_widgets_result.is_tab_modal_showing) {
-    DCHECK_EQ(child_widgets.size(), 1ULL);
+    DCHECK_EQ(child_widgets.size(), 1U);
     return child_widgets[0]->GetRootView()->GetNativeViewAccessible();
   }
 
-  int child_widget_count = static_cast<int>(child_widgets.size());
-  if (index < view()->child_count()) {
+  if (index < view()->child_count())
     return view()->child_at(index)->GetNativeViewAccessible();
-  } else if (index < view()->child_count() + child_widget_count) {
-    Widget* child_widget = child_widgets[index - view()->child_count()];
-    return child_widget->GetRootView()->GetNativeViewAccessible();
-  }
+
+  index -= view()->child_count();
+  if (index < static_cast<int>(child_widgets.size()))
+    return child_widgets[index]->GetRootView()->GetNativeViewAccessible();
 
   return nullptr;
 }
@@ -335,7 +334,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
     if (!child_view->visible())
       continue;
 
-    gfx::Point point_in_child_coords(point);
+    gfx::Point point_in_child_coords = point;
     view()->ConvertPointToTarget(view(), child_view, &point_in_child_coords);
     if (child_view->HitTestPoint(point_in_child_coords))
       return child_view->GetNativeViewAccessible();

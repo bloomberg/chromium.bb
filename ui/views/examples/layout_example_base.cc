@@ -122,10 +122,8 @@ void LayoutExampleBase::ChildPanel::SetSelected(bool value) {
     if (selected_ && parent()) {
       for (int i = 0; i < parent()->child_count(); ++i) {
         View* child = parent()->child_at(i);
-        if (child != this && child->GetGroup() == GetGroup()) {
-          ChildPanel* child_panel = static_cast<ChildPanel*>(child);
-          child_panel->SetSelected(false);
-        }
+        if (child != this && child->GetGroup() == GetGroup())
+          static_cast<ChildPanel*>(child)->SetSelected(false);
       }
     }
     for (Textfield* textfield : margin_)

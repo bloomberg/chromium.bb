@@ -709,14 +709,14 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   MenuPart part = GetMenuPart(source, event.location());
   if (event.IsRightMouseButton() && part.type == MenuPart::MENU_ITEM) {
     MenuItemView* menu = part.menu;
-    // |menu| is NULL means this event is from an empty menu or a separator.
+    // |menu| is null means this event is from an empty menu or a separator.
     // If it is from an empty menu, use parent context menu instead of that.
-    if (menu == nullptr && part.submenu->child_count() == 1 &&
+    if (!menu && part.submenu->child_count() == 1 &&
         part.submenu->child_at(0)->id() == MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
     }
 
-    if (menu != nullptr) {
+    if (menu) {
       gfx::Point screen_location(event.location());
       View::ConvertPointToScreen(source->GetScrollViewContainer(),
                                  &screen_location);

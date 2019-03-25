@@ -277,7 +277,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   DCHECK_GE(index, 0);
   if (!submenu_)
     CreateSubmenu();
-  DCHECK_GE(submenu_->child_count(), index);
+  DCHECK_LE(index, submenu_->child_count());
   if (type == SEPARATOR) {
     submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
     return nullptr;
@@ -942,7 +942,6 @@ void MenuItemView::RemoveEmptyMenus() {
     } else if (child->id() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
       submenu_->RemoveChildView(child);
       delete child;
-      child = nullptr;
     }
   }
 }
@@ -1201,12 +1200,11 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
       width += kChildXPadding;
     width += child->GetPreferredSize().width();
   }
-  int height = 0;
-  if (icon_view_)
-    height = icon_view_->GetPreferredSize().height();
 
   // If there is no icon view it returns a height of 0 to indicate that
   // we should use the title height instead.
+  const int height = icon_view_ ? icon_view_->GetPreferredSize().height() : 0;
+
   return gfx::Size(width, height);
 }
 

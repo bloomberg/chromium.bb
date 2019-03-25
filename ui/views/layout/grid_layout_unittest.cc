@@ -104,10 +104,7 @@ class GridLayoutTest : public testing::Test {
         host_.SetLayoutManager(std::make_unique<views::GridLayout>(&host_));
   }
 
-  void RemoveAll() {
-    for (int i = host_.child_count() - 1; i >= 0; i--)
-      host_.RemoveChildView(host_.child_at(i));
-  }
+  void RemoveAll() { host_.RemoveAllChildViews(false); }
 
   gfx::Size GetPreferredSize() { return layout_->GetPreferredSize(&host_); }
 
@@ -127,10 +124,7 @@ class GridLayoutAlignmentTest : public testing::Test {
     v1_.SetPreferredSize(gfx::Size(10, 20));
   }
 
-  void RemoveAll() {
-    for (int i = host_.child_count() - 1; i >= 0; i--)
-      host_.RemoveChildView(host_.child_at(i));
-  }
+  void RemoveAll() { host_.RemoveAllChildViews(false); }
 
   void TestAlignment(GridLayout::Alignment alignment, gfx::Rect* bounds) {
     ColumnSet* c1 = layout_->AddColumnSet(0);
