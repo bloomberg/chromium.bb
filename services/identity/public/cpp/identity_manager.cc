@@ -76,7 +76,11 @@ IdentityManager::~IdentityManager() {
   gaia_cookie_manager_service_->RemoveObserver(this);
 }
 
-AccountInfo IdentityManager::GetPrimaryAccountInfo() const {
+CoreAccountInfo IdentityManager::GetPrimaryAccountInfo() const {
+  return signin_manager_->GetAuthenticatedAccountInfo();
+}
+
+AccountInfo IdentityManager::GetPrimaryAccountInfoDeprecated() const {
   return signin_manager_->GetAuthenticatedAccountInfo();
 }
 
@@ -435,7 +439,7 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
 }
 
 void IdentityManager::FireOnPrimaryAccountSetNotification(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(primary_account_info);
   }

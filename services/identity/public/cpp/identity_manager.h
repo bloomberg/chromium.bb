@@ -209,12 +209,21 @@ class IdentityManager : public SigninManagerBase::Observer,
       std::unique_ptr<DiagnosticsProvider> diagnostics_provider);
   ~IdentityManager() override;
 
+  // Provides access to the core information of the user's primary account.
+  // Returns an empty struct if no such info is available, either because there
+  // is no primary account or because the extended information for the primary
+  // account has been removed (this happens when the refresh token is revoked,
+  // for example).
+  CoreAccountInfo GetPrimaryAccountInfo() const;
+
   // Provides access to the extended information of the user's primary account.
   // Returns an empty struct if no such info is available, either because there
   // is no primary account or because the extended information for the primary
   // account has been removed (this happens when the refresh token is revoked,
   // for example).
-  AccountInfo GetPrimaryAccountInfo() const;
+  // TODO(crbug.com/926204): remove once all client have been converted to use
+  // GetPrimaryAccountInfo() instead.
+  AccountInfo GetPrimaryAccountInfoDeprecated() const;
 
   // Provides access to the account ID of the user's primary account. Note that
   // this may return a valid string even in cases where GetPrimaryAccountInfo()
@@ -559,7 +568,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // notification between ChromeOS and other platforms and eliminate the need
   // for this helper method.
   void FireOnPrimaryAccountSetNotification(
-      const AccountInfo& primary_account_info);
+      const CoreAccountInfo& primary_account_info);
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;

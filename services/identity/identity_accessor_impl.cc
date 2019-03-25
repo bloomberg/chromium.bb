@@ -53,14 +53,16 @@ IdentityAccessorImpl::~IdentityAccessorImpl() {
 
 void IdentityAccessorImpl::GetPrimaryAccountInfo(
     GetPrimaryAccountInfoCallback callback) {
-  AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
+  AccountInfo account_info =
+      identity_manager_->GetPrimaryAccountInfoDeprecated();
   AccountState account_state = GetStateOfAccount(account_info);
   std::move(callback).Run(account_info, account_state);
 }
 
 void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
     GetPrimaryAccountWhenAvailableCallback callback) {
-  AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
+  AccountInfo account_info =
+      identity_manager_->GetPrimaryAccountInfoDeprecated();
   AccountState account_state = GetStateOfAccount(account_info);
 
   if (!account_state.has_refresh_token ||
