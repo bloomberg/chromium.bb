@@ -37,6 +37,7 @@ EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
       core_oobe_view_(core_oobe_view),
       weak_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.EulaScreen.userActed");
 }
 
 EulaScreenHandler::~EulaScreenHandler() {

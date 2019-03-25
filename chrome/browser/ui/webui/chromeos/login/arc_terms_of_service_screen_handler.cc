@@ -57,6 +57,7 @@ ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
       is_child_account_(
           user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
   set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.ArcTermsOfServiceScreen.userActed");
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
