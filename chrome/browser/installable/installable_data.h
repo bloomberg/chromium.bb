@@ -14,10 +14,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
-// This struct is passed to an InstallableCallback when the InstallableManager
-// has finished working. Each pointer is owned by InstallableManager, and
-// callers should copy any objects which they wish to use later. Non-requested
-// fields will be set to null, empty, or false.
+// This struct contains the results of an InstallableManager::GetData call and
+// is passed to an InstallableCallback. Each pointer and reference is owned by
+// InstallableManager, and callers should copy any objects which they wish to
+// use later. Fields not requested in GetData may or may not be set.
 struct InstallableData {
   InstallableData(std::vector<InstallableStatusCode> errors,
                   const GURL& manifest_url,
@@ -31,18 +31,20 @@ struct InstallableData {
                   bool has_worker);
   ~InstallableData();
 
-  // Empty if there were no issues. Otherwise contains all errors encountered
-  // while InstallableManager was working.
+  // Contains all errors encountered during the InstallableManager::GetData
+  // call. Empty if no errors were encountered.
   std::vector<InstallableStatusCode> errors;
 
-  // Empty if the site has no <link rel="manifest"> tag.
-  const GURL manifest_url;
+  // The URL of the the web app manifest. Empty if the site has no
+  // <link rel="manifest"> tag.
+  const GURL& manifest_url;
 
-  // Empty if the site has an unparseable manifest.
+  // The parsed web app manifest. nullptr if the site has an unparseable
+  // manifest.
   const blink::Manifest* manifest;
 
-  // Empty if no primary_icon was requested.
-  const GURL primary_icon_url;
+  // The URL of the chosen primary icon.
+  const GURL& primary_icon_url;
 
   // nullptr if the most appropriate primary icon couldn't be determined or
   // downloaded. The underlying primary icon is owned by the InstallableManager;
@@ -53,20 +55,20 @@ struct InstallableData {
   // primary_icon was requested.
   const bool has_maskable_primary_icon;
 
-  // Empty if no badge_icon was requested.
-  const GURL badge_icon_url;
+  // The URL of the chosen badge icon.
+  const GURL& badge_icon_url;
 
   // nullptr if the most appropriate badge icon couldn't be determined or
   // downloaded. The underlying badge icon is owned by the InstallableManager;
   // clients must copy the bitmap if they want to to use it. Since the badge
   // icon is optional, no error code is set if it cannot be fetched, and clients
-  // specifying valid_badge_icon must check that the bitmap exists before using
-  // it.
+  // specifying |valid_badge_icon| must check that the bitmap exists before
+  // using it.
   const SkBitmap* badge_icon;
 
-  // true if the site has a viable web app manifest. If valid_manifest or
-  // has_worker was true and the site isn't installable, the reason will be in
-  // error_code.
+  // true if the site has a valid, installable web app manifest. If
+  // |valid_manifest| or |has_worker| was true and the site isn't installable,
+  // the reason will be in |errors|.
   const bool valid_manifest = false;
 
   // true if the site has a service worker with a fetch handler.
