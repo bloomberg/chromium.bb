@@ -164,7 +164,7 @@ bool PluginVmLauncherView::Accept() {
 }
 
 bool PluginVmLauncherView::Cancel() {
-  if (state_ == State::DOWNLOADING)
+  if (state_ == State::DOWNLOADING || state_ == State::START_DOWNLOADING)
     plugin_vm_image_manager_->CancelDownload();
   if (state_ == State::UNZIPPING)
     plugin_vm_image_manager_->CancelUnzipping();
@@ -180,6 +180,9 @@ gfx::Size PluginVmLauncherView::CalculatePreferredSize() const {
 
 void PluginVmLauncherView::OnDownloadStarted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  state_ = State::DOWNLOADING;
+  OnStateUpdated();
 }
 
 void PluginVmLauncherView::OnDownloadProgressUpdated(
@@ -290,8 +293,9 @@ void PluginVmLauncherView::OnStateUpdated() {
   SetDownloadProgressMessageLabel();
   SetBigImage();
 
-  const bool progress_bar_visible =
-      state_ == State::DOWNLOADING || state_ == State::UNZIPPING;
+  const bool progress_bar_visible = state_ == State::START_DOWNLOADING ||
+                                    state_ == State::DOWNLOADING ||
+                                    state_ == State::UNZIPPING;
   progress_bar_->SetVisible(progress_bar_visible);
   // Values outside the range [0,1] display an infinite loading animation.
   progress_bar_->SetValue(-1);
@@ -306,14 +310,16 @@ void PluginVmLauncherView::OnStateUpdated() {
 base::string16 PluginVmLauncherView::GetMessage() const {
   switch (state_) {
     case State::START_DOWNLOADING:
-    case State::FINISHED:
-      return base::string16();
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE);
     case State::DOWNLOADING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE);
     case State::UNZIPPING:
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE);
+    case State::FINISHED:
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
     case State::ERROR:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
   }
@@ -369,10 +375,8 @@ void PluginVmLauncherView::SetBigMessageLabel() {
 }
 
 void PluginVmLauncherView::SetMessageLabel() {
-  base::string16 message = GetMessage();
-  const bool message_visible = !message.empty();
-  message_label_->SetVisible(message_visible);
-  message_label_->SetText(message);
+  message_label_->SetText(GetMessage());
+  message_label_->SetVisible(true);
 }
 
 void PluginVmLauncherView::SetDownloadProgressMessageLabel() {
@@ -393,9 +397,9 @@ void PluginVmLauncherView::SetBigImage() {
 }
 
 void PluginVmLauncherView::StartPluginVmImageDownload() {
+  state_ = State::START_DOWNLOADING;
+  OnStateUpdated();
+
   plugin_vm_image_manager_->SetObserver(this);
   plugin_vm_image_manager_->StartDownload();
-
-  state_ = State::DOWNLOADING;
-  OnStateUpdated();
 }
