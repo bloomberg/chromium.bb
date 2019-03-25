@@ -48,6 +48,7 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_(api|browser|eg|int|perf|pixel|unit|ui)?test(_[a-z]+)?%s' %
         _IMPLEMENTATION_EXTENSIONS,
+    r'.+_(fuzz|fuzzer)(_[a-z]+)?%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.*[\\/](test|tool(s)?)[\\/].*',
     # content_shell is used for running layout tests.
