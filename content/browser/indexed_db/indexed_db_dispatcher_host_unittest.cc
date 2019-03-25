@@ -326,7 +326,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseAfterUpgrade) {
         connection->version_change_transaction->CreateObjectStore(
             kObjectStoreId, base::UTF8ToUTF16(kObjectStoreName),
             blink::IndexedDBKeyPath(), false);
-        connection->database->Commit(kTransactionId, 0);
+        connection->version_change_transaction->Commit(0);
       }));
   loop2.Run();
 
@@ -413,7 +413,7 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
         connection1->version_change_transaction->CreateObjectStore(
             kObjectStoreId, base::UTF8ToUTF16(kObjectStoreName),
             blink::IndexedDBKeyPath(), false);
-        connection1->database->Commit(kTransactionId, 0);
+        connection1->version_change_transaction->Commit(0);
       }));
   loop2.Run();
 
@@ -523,7 +523,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
             blink::mojom::IDBPutMode::AddOnly,
             std::vector<IndexedDBIndexKeys>(),
             put_callbacks->CreateInterfacePtrAndBind());
-        connection->database->Commit(kTransactionId, 0);
+        connection->version_change_transaction->Commit(0);
       }));
   loop2.Run();
 
@@ -591,7 +591,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
         ASSERT_TRUE(connection->database.is_bound());
         ASSERT_TRUE(connection->version_change_transaction.is_bound());
 
-        connection->database->Commit(kTransactionId, 0);
+        connection->version_change_transaction->Commit(0);
         idb_mojo_factory_->AbortTransactionsAndCompactDatabase(base::BindOnce(
             &StatusCallback, std::move(quit_closure), &callback_result));
       }));
@@ -816,7 +816,7 @@ TEST_F(IndexedDBDispatcherHostTest,
         connection->database.Bind(std::move(database_info));
         ASSERT_TRUE(connection->database.is_bound());
         ASSERT_TRUE(connection->version_change_transaction.is_bound());
-        connection->database->Commit(kTransactionId, 0);
+        connection->version_change_transaction->Commit(0);
         idb_mojo_factory_->AbortTransactionsForDatabase(base::BindOnce(
             &StatusCallback, std::move(quit_closure), &callback_result));
       }));
@@ -1053,7 +1053,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
     connection1.database->CreateIndex(kTransactionId1, kObjectStoreId, kIndexId,
                                       base::UTF8ToUTF16(kIndexName),
                                       blink::IndexedDBKeyPath(), false, false);
-    connection1.database->Commit(kTransactionId1, 0);
+    connection1.version_change_transaction->Commit(0);
     loop.Run();
   }
   EXPECT_EQ(2, observer.notify_list_changed_count);
@@ -1105,7 +1105,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
     ASSERT_TRUE(connection2.database.is_bound());
     connection2.database->DeleteIndex(kTransactionId2, kObjectStoreId,
                                       kIndexId);
-    connection2.database->Commit(kTransactionId2, 0);
+    connection2.version_change_transaction->Commit(0);
     loop.Run();
   }
   EXPECT_EQ(3, observer.notify_list_changed_count);
@@ -1156,7 +1156,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
 
     ASSERT_TRUE(connection3.database.is_bound());
     connection3.version_change_transaction->DeleteObjectStore(kObjectStoreId);
-    connection3.database->Commit(kTransactionId3, 0);
+    connection3.version_change_transaction->Commit(0);
     loop.Run();
   }
   EXPECT_EQ(4, observer.notify_list_changed_count);
@@ -1256,7 +1256,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
             blink::mojom::IDBPutMode::AddOnly,
             std::vector<IndexedDBIndexKeys>(),
             put_callbacks->CreateInterfacePtrAndBind());
-        connection1->database->Commit(kTransactionId1, 0);
+        connection1->version_change_transaction->Commit(0);
       }));
   loop2.Run();
 
@@ -1336,7 +1336,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
         connection2->database->Clear(
             kTransactionId2, kObjectStoreId,
             clear_callbacks->CreateInterfacePtrAndBind());
-        connection2->database->Commit(kTransactionId2, 0);
+        connection2->version_change_transaction->Commit(0);
       }));
   loop5.Run();
 

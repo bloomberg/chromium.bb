@@ -55,7 +55,6 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void VersionChangeIgnored() = 0;
 
   virtual void Abort(int64_t transaction_id) = 0;
-  virtual void Commit(int64_t transaction_id, int64_t num_errors_handled) = 0;
 
   virtual void CreateIndex(int64_t transaction_id,
                            int64_t object_store_id,

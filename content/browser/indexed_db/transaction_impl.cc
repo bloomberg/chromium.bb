@@ -300,4 +300,51 @@ void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
   result->blob_info = std::move(blob_info);
 }
 
+void TransactionImpl::Commit(int64_t num_errors_handled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!transaction_)
+    return;
+
+  IndexedDBConnection* connection = transaction_->connection();
+  if (!connection->IsConnected())
+    return;
+
+  transaction_->SetNumErrorsHandled(num_errors_handled);
+
+  // Always allow empty or delete-only transactions.
+  if (transaction_->size() == 0) {
+    connection->database()->Commit(transaction_.get());
+    return;
+  }
+
+  indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
+      indexed_db_context_->TaskRunner(), origin_,
+      blink::mojom::StorageType::kTemporary,
+      base::BindOnce(&TransactionImpl::OnGotUsageAndQuotaForCommit,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void TransactionImpl::OnGotUsageAndQuotaForCommit(
+    blink::mojom::QuotaStatusCode status,
+    int64_t usage,
+    int64_t quota) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!transaction_)
+    return;
+
+  // May have disconnected while quota check was pending.
+  IndexedDBConnection* connection = transaction_->connection();
+  if (!connection->IsConnected())
+    return;
+
+  if (status == blink::mojom::QuotaStatusCode::kOk &&
+      usage + transaction_->size() <= quota) {
+    connection->database()->Commit(transaction_.get());
+  } else {
+    connection->AbortTransaction(
+        transaction_.get(),
+        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionQuotaError));
+  }
+}
+
 }  // namespace content

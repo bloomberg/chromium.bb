@@ -109,7 +109,6 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
                    int64_t index_id,
                    const String& new_name) override;
   void Abort(int64_t transaction_id) override;
-  void Commit(int64_t transaction_id, int64_t num_errors_handled) override;
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(

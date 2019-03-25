@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -44,6 +45,11 @@ class TransactionImpl : public blink::mojom::IDBTransaction {
            blink::mojom::IDBPutMode mode,
            const std::vector<blink::IndexedDBIndexKeys>& index_keys,
            blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+  void Commit(int64_t num_errors_handled) override;
+
+  void OnGotUsageAndQuotaForCommit(blink::mojom::QuotaStatusCode status,
+                                   int64_t usage,
+                                   int64_t quota);
 
  private:
   class IOHelper;

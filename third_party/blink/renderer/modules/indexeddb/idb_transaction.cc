@@ -315,8 +315,8 @@ void IDBTransaction::SetActive(bool active) {
   DCHECK_NE(active, (state_ == kActive));
   state_ = active ? kActive : kInactive;
 
-  if (!active && request_list_.IsEmpty() && BackendDB())
-    BackendDB()->Commit(id_, num_errors_handled_);
+  if (!active && request_list_.IsEmpty() && transaction_backend())
+    transaction_backend()->Commit(num_errors_handled_);
 }
 
 void IDBTransaction::abort(ExceptionState& exception_state) {
@@ -359,8 +359,8 @@ void IDBTransaction::commit(ExceptionState& exception_state) {
 
   state_ = kFinishing;
 
-  if (BackendDB())
-    BackendDB()->Commit(id_, num_errors_handled_);
+  if (transaction_backend())
+    transaction_backend()->Commit(num_errors_handled_);
 }
 
 void IDBTransaction::RegisterRequest(IDBRequest* request) {

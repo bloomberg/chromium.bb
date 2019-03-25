@@ -45,8 +45,7 @@ DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
       indexed_db_context_(dispatcher_host->context()),
       connection_(std::move(connection)),
       origin_(origin),
-      idb_runner_(std::move(idb_runner)),
-      weak_factory_(this) {
+      idb_runner_(std::move(idb_runner)) {
   DCHECK(idb_runner_->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(connection_);
@@ -408,56 +407,6 @@ void DatabaseImpl::Abort(int64_t transaction_id) {
       transaction,
       IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
                              "Transaction aborted by user."));
-}
-
-void DatabaseImpl::Commit(int64_t transaction_id, int64_t num_errors_handled) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  transaction->SetNumErrorsHandled(num_errors_handled);
-
-  // Always allow empty or delete-only transactions.
-  if (transaction->size() == 0) {
-    connection_->database()->Commit(transaction);
-    return;
-  }
-
-  indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
-      indexed_db_context_->TaskRunner(), origin_,
-      blink::mojom::StorageType::kTemporary,
-      base::BindOnce(&DatabaseImpl::OnGotUsageAndQuotaForCommit,
-                     weak_factory_.GetWeakPtr(), transaction_id));
-}
-
-void DatabaseImpl::OnGotUsageAndQuotaForCommit(
-    int64_t transaction_id,
-    blink::mojom::QuotaStatusCode status,
-    int64_t usage,
-    int64_t quota) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // May have disconnected while quota check was pending.
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  if (status == blink::mojom::QuotaStatusCode::kOk &&
-      usage + transaction->size() <= quota) {
-    connection_->database()->Commit(transaction);
-  } else {
-    connection_->AbortTransaction(
-        transaction,
-        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionQuotaError));
-  }
 }
 
 }  // namespace content

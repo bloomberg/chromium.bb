@@ -76,6 +76,10 @@ void WebIDBTransactionImpl::Put(int64_t object_store_id,
                     GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
+void WebIDBTransactionImpl::Commit(int64_t num_errors_handled) {
+  transaction_->Commit(num_errors_handled);
+}
+
 mojom::blink::IDBCallbacksAssociatedPtrInfo
 WebIDBTransactionImpl::GetCallbacksProxy(
     std::unique_ptr<WebIDBCallbacks> callbacks) {
