@@ -1287,7 +1287,7 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
 {
 #ifdef _WIN32
     const FcChar8 *data;
-    FcChar8 buffer[1000];
+    FcChar8 buffer[1000] = { 0 };
 #endif
     FcChar8 *parent = NULL, *retval = NULL;
 
@@ -1321,7 +1321,6 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
 	if (!FcStrIsAbsoluteFilename (path) && path[0] != '~')
 	    FcConfigMessage (parse, FcSevereWarning, "Use of ambiguous path in <%s> element. please add prefix=\"cwd\" if current behavior is desired.", FcElementReverseMap (parse->pstack->element));
     }
-#endif
     if (parent)
     {
 	retval = FcStrBuildFilename (parent, path, NULL);
@@ -1330,7 +1329,7 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
     {
 	retval = FcStrdup (path);
     }
-#ifdef _WIN32
+#else
     if (strcmp ((const char *) path, "CUSTOMFONTDIR") == 0)
     {
 	FcChar8 *p;
@@ -1377,12 +1376,23 @@ _get_real_path_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcCh
 	    strcat ((char *) data, "\\");
 	strcat ((char *) data, "fonts");
     }
-    else if (!prefix)
+    else
     {
-	if (!FcStrIsAbsoluteFilename (path) && path[0] != '~')
-	    FcConfigMessage (parse, FcSevereWarning, "Use of ambiguous path in <%s> element. please add prefix=\"cwd\" if current behavior is desired.", FcElementReverseMap (parse->pstack->element));
+	data = path;
+	if (!prefix)
+	{
+	    if (!FcStrIsAbsoluteFilename (path) && path[0] != '~')
+		FcConfigMessage (parse, FcSevereWarning, "Use of ambiguous path in <%s> element. please add prefix=\"cwd\" if current behavior is desired.", FcElementReverseMap (parse->pstack->element));
+	}
+	if (parent)
+	{
+	    retval = FcStrBuildFilename (parent, data, NULL);
+	}
+	else
+	{
+	    retval = FcStrdup (data);
+	}
     }
-    retval = FcStrdup (data);
 #endif
 
     return retval;
