@@ -61,6 +61,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "services/ws/common/switches.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"  // nogncheck
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 #include "chromeos/services/assistant/public/cpp/manifest.h"  // nogncheck
@@ -186,6 +187,9 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_CHROMEOS)
             .RequireCapability(shortcut_viewer::mojom::kServiceName,
                                shortcut_viewer::mojom::kToggleUiCapability)
+            // This is required for remoting, which runs in the browser and
+            // injects events.
+            .RequireCapability(ws::mojom::kServiceName, "privileged")
             .RequireCapability(tap_visualizer::mojom::kServiceName,
                                tap_visualizer::mojom::kShowUiCapability)
             .ExposeInterfaceFilterCapability_Deprecated(
