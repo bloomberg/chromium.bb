@@ -41,12 +41,12 @@ class SerialPortImpl : public mojom::SerialPort {
  private:
   // mojom::SerialPort methods:
   void Open(mojom::SerialConnectionOptionsPtr options,
+            mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
             mojom::SerialPortClientAssociatedPtrInfo client,
             OpenCallback callback) override;
-  void Write(const std::vector<uint8_t>& data, WriteCallback callback) override;
+  void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override;
   void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override;
-  void CancelWrite(mojom::SerialSendError reason) override;
   void Flush(FlushCallback callback) override;
   void GetControlSignals(GetControlSignalsCallback callback) override;
   void SetControlSignals(mojom::SerialHostControlSignalsPtr signals,
@@ -58,12 +58,18 @@ class SerialPortImpl : public mojom::SerialPort {
   void ClearBreak(ClearBreakCallback callback) override;
 
   void OnOpenCompleted(OpenCallback callback, bool success);
+  void WriteToPort(MojoResult result, const mojo::HandleSignalsState& state);
+  void OnWriteToPortCompleted(uint32_t bytes_expected,
+                              uint32_t bytes_sent,
+                              mojom::SerialSendError error);
   void ReadFromPortAndWriteOut(MojoResult result,
                                const mojo::HandleSignalsState& state);
-  void WriteToOutStream(int bytes_read, mojom::SerialReceiveError error);
+  void WriteToOutStream(uint32_t bytes_read, mojom::SerialReceiveError error);
 
   scoped_refptr<SerialIoHandler> io_handler_;
   mojom::SerialPortClientAssociatedPtr client_;
+  mojo::ScopedDataPipeConsumerHandle in_stream_;
+  mojo::SimpleWatcher in_stream_watcher_;
   mojo::ScopedDataPipeProducerHandle out_stream_;
   mojo::SimpleWatcher out_stream_watcher_;
 
