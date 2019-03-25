@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -52,6 +53,9 @@ class CWVTranslationControllerTest : public PlatformTest {
     CRWTestJSInjectionReceiver* injection_receiver =
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state_.SetJSInjectionReceiver(injection_receiver);
+    language::IOSLanguageDetectionTabHelper::CreateForWebState(
+        &web_state_,
+        /*url_language_histogram=*/nullptr);
     translate_client_ = std::make_unique<FakeWebViewTranslateClient>(
         &web_state_, /*page_lang=*/"en");
     translation_controller_ = [[CWVTranslationController alloc]

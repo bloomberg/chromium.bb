@@ -117,6 +117,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/translate:translate_ui",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/chrome/test/fakes",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",

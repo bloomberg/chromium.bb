@@ -39,21 +39,30 @@ namespace translate {
 
 namespace {
 
-class LanguageDetectionControllerTest : public PlatformTest {
+class LanguageDetectionControllerTest
+    : public PlatformTest,
+      public language::IOSLanguageDetectionTabHelper::Observer {
  protected:
   LanguageDetectionControllerTest() : details_(nullptr) {
     prefs_.registry()->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
 
     language::IOSLanguageDetectionTabHelper::CreateForWebState(
         &web_state_,
-        base::Bind(&LanguageDetectionControllerTest::OnLanguageDetermined,
-                   base::Unretained(this)),
-        nullptr);
+        /*url_language_histogram=*/nullptr);
+    auto* language_detection_tab_helper =
+        language::IOSLanguageDetectionTabHelper::FromWebState(&web_state_);
+    language_detection_tab_helper->AddObserver(this);
 
     MockJsLanguageDetectionManager* js_manager =
         [[MockJsLanguageDetectionManager alloc] init];
     controller_ = std::make_unique<LanguageDetectionController>(
         &web_state_, js_manager, &prefs_);
+  }
+
+  ~LanguageDetectionControllerTest() override {
+    auto* language_detection_tab_helper =
+        language::IOSLanguageDetectionTabHelper::FromWebState(&web_state_);
+    language_detection_tab_helper->RemoveObserver(this);
   }
 
   web::TestWebState& web_state() { return web_state_; }
@@ -66,8 +75,13 @@ class LanguageDetectionControllerTest : public PlatformTest {
   std::unique_ptr<LanguageDetectionController> controller_;
   std::unique_ptr<LanguageDetectionDetails> details_;
 
-  void OnLanguageDetermined(const LanguageDetectionDetails& details) {
+  void OnLanguageDetermined(const LanguageDetectionDetails& details) override {
     details_ = std::make_unique<LanguageDetectionDetails>(details);
+  }
+
+  void IOSLanguageDetectionTabHelperWasDestroyed(
+      language::IOSLanguageDetectionTabHelper* tab_helper) override {
+    // No-op.
   }
 };
 

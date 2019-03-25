@@ -14,6 +14,7 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "google_apis/google_api_keys.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/navigation_item.h"
@@ -39,6 +40,7 @@
 #import "ios/web_view/internal/cwv_scroll_view_internal.h"
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
+#import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -514,6 +516,11 @@ static NSString* gUserAgentProduct = nil;
 }
 
 - (CWVTranslationController*)newTranslationController {
+  language::IOSLanguageDetectionTabHelper::CreateForWebState(
+      _webState.get(),
+      ios_web_view::WebViewUrlLanguageHistogramFactory::GetForBrowserState(
+          ios_web_view::WebViewBrowserState::FromBrowserState(
+              _webState->GetBrowserState())));
   ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
   ios_web_view::WebViewTranslateClient* translateClient =
       ios_web_view::WebViewTranslateClient::FromWebState(_webState.get());
