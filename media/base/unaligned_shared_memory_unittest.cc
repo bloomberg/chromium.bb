@@ -40,6 +40,13 @@ base::UnsafeSharedMemoryRegion CreateRegion(const uint8_t* data, size_t size) {
   return region;
 }
 
+base::ReadOnlySharedMemoryRegion CreateReadOnlyRegion(const uint8_t* data,
+                                                      size_t size) {
+  auto mapped_region = base::ReadOnlySharedMemoryRegion::Create(size);
+  EXPECT_TRUE(mapped_region.IsValid());
+  memcpy(mapped_region.mapping.memory(), data, size);
+  return std::move(mapped_region.region);
+}
 }  // namespace
 
 TEST(UnalignedSharedMemoryTest, CreateAndDestroy) {
@@ -152,6 +159,51 @@ TEST(WritableUnalignedMappingTest, Map_NegativeOffset) {
 TEST(WritableUnalignedMappingTest, Map_SizeOverflow) {
   auto region = CreateRegion(kData, kDataSize);
   WritableUnalignedMapping shm(region, std::numeric_limits<size_t>::max(), 1);
+  ASSERT_FALSE(shm.IsValid());
+}
+
+TEST(ReadOnlyUnalignedMappingTest, CreateAndDestroy) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  ReadOnlyUnalignedMapping shm(region, kDataSize, 0);
+  EXPECT_TRUE(shm.IsValid());
+}
+
+TEST(ReadOnlyUnalignedMappingTest, CreateAndDestroy_InvalidRegion) {
+  base::ReadOnlySharedMemoryRegion region;
+  ReadOnlyUnalignedMapping shm(region, kDataSize, 0);
+  EXPECT_FALSE(shm.IsValid());
+}
+
+TEST(ReadOnlyUnalignedMappingTest, Map) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  ReadOnlyUnalignedMapping shm(region, kDataSize, 0);
+  ASSERT_TRUE(shm.IsValid());
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(ReadOnlyUnalignedMappingTest, Map_Unaligned) {
+  auto region = CreateReadOnlyRegion(kUnalignedData, kUnalignedDataSize);
+  ReadOnlyUnalignedMapping shm(region, kDataSize, kUnalignedOffset);
+  ASSERT_TRUE(shm.IsValid());
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(ReadOnlyUnalignedMappingTest, Map_InvalidRegion) {
+  base::ReadOnlySharedMemoryRegion region;
+  ReadOnlyUnalignedMapping shm(region, kDataSize, 0);
+  ASSERT_FALSE(shm.IsValid());
+  EXPECT_EQ(shm.memory(), nullptr);
+}
+
+TEST(ReadOnlyUnalignedMappingTest, Map_NegativeOffset) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  ReadOnlyUnalignedMapping shm(region, kDataSize, -1);
+  ASSERT_FALSE(shm.IsValid());
+}
+
+TEST(ReadOnlyUnalignedMappingTest, Map_SizeOverflow) {
+  auto region = CreateReadOnlyRegion(kData, kDataSize);
+  ReadOnlyUnalignedMapping shm(region, std::numeric_limits<size_t>::max(), 1);
   ASSERT_FALSE(shm.IsValid());
 }
 
