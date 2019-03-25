@@ -893,7 +893,7 @@ TEST_F(ProcessUtilTest, GetAppOutputWithExitCode) {
   const int kExpectedExitCode = 42;
   command = base::CommandLine(test_helper_path_);
   command.AppendArg("-x");
-  command.AppendArg(base::IntToString(kExpectedExitCode));
+  command.AppendArg(base::NumberToString(kExpectedExitCode));
   command.AppendArg(kEchoMessage2);
 #if defined(OS_WIN)
   // On Windows, anything that quits with a nonzero status code is handled as a
