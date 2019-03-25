@@ -44,7 +44,7 @@ class Extension;
 enum class SandboxedUnpackerFailureReason;
 
 namespace declarative_net_request {
-struct IndexAndPersistRulesResult;
+struct IndexAndPersistJSONRulesetResult;
 }
 
 class SandboxedUnpackerClient
@@ -219,7 +219,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   void OnJSONRulesetIndexed(
       std::unique_ptr<base::DictionaryValue> manifest,
-      declarative_net_request::IndexAndPersistRulesResult result);
+      declarative_net_request::IndexAndPersistJSONRulesetResult result);
 
   // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
   data_decoder::mojom::JsonParser* GetJsonParserPtr();

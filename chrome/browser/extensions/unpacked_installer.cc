@@ -274,8 +274,8 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // in the browser process.
   auto ruleset_source =
       declarative_net_request::RulesetSource::Create(*extension());
-  declarative_net_request::IndexAndPersistRulesResult result =
-      ruleset_source.IndexAndPersistRulesUnsafe();
+  declarative_net_request::IndexAndPersistJSONRulesetResult result =
+      ruleset_source.IndexAndPersistJSONRulesetUnsafe();
   if (!result.success) {
     *error = std::move(result.error);
     return false;
