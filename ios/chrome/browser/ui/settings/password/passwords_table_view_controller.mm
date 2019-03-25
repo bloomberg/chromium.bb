@@ -342,14 +342,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [super loadModel];
   TableViewModel* model = self.tableViewModel;
 
-  // Save passwords switch and manage account message.
-  [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-  savePasswordsItem_ = [self savePasswordsItem];
-  [model addItem:savePasswordsItem_
-      toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-  manageAccountLinkItem_ = [self manageAccountLinkItem];
-  [model setHeader:manageAccountLinkItem_
-      forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+  // Save passwords switch and manage account message. Only show this section
+  // when the searchController is not active.
+  if (!self.navigationItem.searchController.active) {
+    [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    savePasswordsItem_ = [self savePasswordsItem];
+    [model addItem:savePasswordsItem_
+        toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    manageAccountLinkItem_ = [self manageAccountLinkItem];
+    [model setHeader:manageAccountLinkItem_
+        forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+  }
 
   // Saved passwords.
   if (!savedForms_.empty()) {
