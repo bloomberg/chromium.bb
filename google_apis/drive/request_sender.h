@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -99,7 +100,9 @@ class RequestSender {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  std::set<std::unique_ptr<AuthenticatedRequestInterface>> in_flight_requests_;
+  std::set<std::unique_ptr<AuthenticatedRequestInterface>,
+           base::UniquePtrComparator>
+      in_flight_requests_;
   const std::string custom_user_agent_;
 
   base::ThreadChecker thread_checker_;
