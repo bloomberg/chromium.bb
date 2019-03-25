@@ -44,19 +44,19 @@ class PropertyTreeManagerClient {
 class PropertyTreeManager {
 
  public:
-  PropertyTreeManager(PropertyTreeManagerClient&,
-                      cc::PropertyTrees&,
-                      cc::Layer* root_layer,
-                      LayerListBuilder*);
+  PropertyTreeManager(PropertyTreeManagerClient&);
   ~PropertyTreeManager() {
     DCHECK(!effect_stack_.size()) << "PropertyTreeManager::Finalize() must be "
                                      "called at the end of tree conversion.";
   }
 
-  void SetupRootTransformNode();
-  void SetupRootClipNode();
-  void SetupRootEffectNode();
-  void SetupRootScrollNode();
+  void Initialize(cc::PropertyTrees* property_trees,
+                  LayerListBuilder* layer_list_builder);
+
+  void SetRootLayer(cc::Layer* root_layer) {
+    DCHECK(!root_layer_) << "We can only set root layer once.";
+    root_layer_ = root_layer;
+  }
 
   // A brief discourse on cc property tree nodes, identifiers, and current and
   // future design evolution envisioned:
@@ -119,12 +119,26 @@ class PropertyTreeManager {
   void Finalize();
 
  private:
+  void SetupRootTransformNode();
+  void SetupRootClipNode();
+  void SetupRootEffectNode();
+  void SetupRootScrollNode();
+
   void BuildEffectNodesRecursively(const EffectPaintPropertyNode& next_effect);
   SkBlendMode SynthesizeCcEffectsForClipsIfNeeded(
       const ClipPaintPropertyNode& target_clip,
       SkBlendMode delegated_blend);
   void EmitClipMaskLayer();
   void CloseCcEffect();
+
+  // For a given effect node, this returns the blend mode, clip property node,
+  // and an int indicating cc clip node's id.
+  std::tuple<SkBlendMode, const ClipPaintPropertyNode*, int>
+  GetBlendModeAndOutputClipForEffect(const EffectPaintPropertyNode&);
+  void PopulateCcEffectNode(cc::EffectNode&,
+                            const EffectPaintPropertyNode&,
+                            int output_clip_id,
+                            SkBlendMode);
 
   bool IsCurrentCcEffectSynthetic() const {
     return current_.effect_type != CcEffectType::kEffect;
@@ -172,19 +186,20 @@ class PropertyTreeManager {
   PropertyTreeManagerClient& client_;
 
   // Property trees which should be updated by the manager.
-  cc::PropertyTrees& property_trees_;
+  cc::PropertyTrees* property_trees_ = nullptr;
 
   // The special layer which is the parent of every other layers.
   // This is where clip mask layers we generated for synthesized clips are
   // appended into.
-  cc::Layer* root_layer_;
+  cc::Layer* root_layer_ = nullptr;
 
-  LayerListBuilder* layer_list_builder_;
+  LayerListBuilder* layer_list_builder_ = nullptr;
 
   // Maps from Blink-side property tree nodes to cc property node indices.
-  HashMap<const TransformPaintPropertyNode*, int> transform_node_map_;
-  HashMap<const ClipPaintPropertyNode*, int> clip_node_map_;
-  HashMap<const ScrollPaintPropertyNode*, int> scroll_node_map_;
+  HashMap<scoped_refptr<const TransformPaintPropertyNode>, int>
+      transform_node_map_;
+  HashMap<scoped_refptr<const ClipPaintPropertyNode>, int> clip_node_map_;
+  HashMap<scoped_refptr<const ScrollPaintPropertyNode>, int> scroll_node_map_;
 
   struct EffectState {
     // The cc effect node that has the corresponding drawing state to the
@@ -235,6 +250,7 @@ class PropertyTreeManager {
 
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;
+  bool initialized_ = false;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PropertyTreeManager);

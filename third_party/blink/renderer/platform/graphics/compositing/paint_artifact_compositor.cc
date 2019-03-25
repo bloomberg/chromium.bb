@@ -71,11 +71,13 @@ PaintArtifactCompositor::PaintArtifactCompositor(
                                  const cc::ElementId&)> scroll_callback)
     : scroll_callback_(std::move(scroll_callback)),
       tracks_raster_invalidations_(false),
-      needs_update_(true) {
+      needs_update_(true),
+      property_tree_manager_(*this) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
   root_layer_ = cc::Layer::Create();
+  property_tree_manager_.SetRootLayer(root_layer_.get());
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {
@@ -825,13 +827,13 @@ void PaintArtifactCompositor::Update(
 
   LayerListBuilder layer_list_builder;
 
-  PropertyTreeManager property_tree_manager(
-      *this, *host->property_trees(), root_layer_.get(), &layer_list_builder);
+  property_tree_manager_.Initialize(host->property_trees(),
+                                    &layer_list_builder);
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(*paint_artifact, settings, pending_layers);
 
-  UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
-                                     host);
+  UpdateCompositorViewportProperties(viewport_properties,
+                                     property_tree_manager_, host);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());
@@ -878,10 +880,11 @@ void PaintArtifactCompositor::Update(
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
     int transform_id =
-        property_tree_manager.EnsureCompositorTransformNode(transform);
-    int clip_id = property_tree_manager.EnsureCompositorClipNode(clip);
-    int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
-        property_state.Effect(), clip);
+        property_tree_manager_.EnsureCompositorTransformNode(transform);
+    int clip_id = property_tree_manager_.EnsureCompositorClipNode(clip);
+    int effect_id =
+        property_tree_manager_.SwitchToEffectNodeWithSynthesizedClip(
+            property_state.Effect(), clip);
     blink_effects.resize(effect_id + 1);
     blink_effects[effect_id] = &property_state.Effect();
     // The compositor scroll node is not directly stored in the property tree
@@ -889,7 +892,7 @@ void PaintArtifactCompositor::Update(
     const auto& scroll_translation =
         ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
     int scroll_id =
-        property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
+        property_tree_manager_.EnsureCompositorScrollNode(scroll_translation);
 
     layer_list_builder.Add(layer);
 
@@ -923,7 +926,7 @@ void PaintArtifactCompositor::Update(
       root_layer_->SetNeedsCommit();
     }
   }
-  property_tree_manager.Finalize();
+  property_tree_manager_.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
 
