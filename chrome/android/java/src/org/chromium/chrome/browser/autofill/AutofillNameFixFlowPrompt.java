@@ -161,6 +161,7 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogProper
     public void onClick(PropertyModel model, int buttonType) {
         if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
             mDelegate.onUserAccept(mUserNameInput.getText().toString());
+            mModalDialogManager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
         } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }
@@ -168,6 +169,11 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogProper
 
     @Override
     public void onDismiss(PropertyModel model, int dismissalCause) {
-        mDelegate.onPromptDismissed();
+        // Do not call dismissed on the delegate if dialog was dismissed either because the user
+        // accepted to save the card or was dismissed by native code.
+        if (dismissalCause != DialogDismissalCause.POSITIVE_BUTTON_CLICKED
+                && dismissalCause != DialogDismissalCause.DISMISSED_BY_NATIVE) {
+            mDelegate.onPromptDismissed();
+        }
     }
 }

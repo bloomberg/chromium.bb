@@ -145,7 +145,12 @@ public class AutofillExpirationDateFixFlowPrompt
 
     @Override
     public void onDismiss(PropertyModel model, int dismissalCause) {
-        mDelegate.onPromptDismissed();
+        // Do not call dismissed on the delegate if dialog was dismissed either because the user
+        // accepted to save the card or was dismissed by native code.
+        if (dismissalCause != DialogDismissalCause.POSITIVE_BUTTON_CLICKED
+                && dismissalCause != DialogDismissalCause.DISMISSED_BY_NATIVE) {
+            mDelegate.onPromptDismissed();
+        }
     }
 
     private boolean isValidExpirationDate(String monthString, String yearString) {
