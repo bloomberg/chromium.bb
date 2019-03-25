@@ -9,7 +9,13 @@ namespace notifications {
 
 // The type of a list of clients using the notification scheduler system.
 enum class SchedulerClientType {
-  PLACE_HOLDER,
+  // Test only values.
+  kTest1 = -1,
+  kTest2 = -2,
+
+  // Default value of client type.
+  kUnknown = 0,
+  kMaxValue = kUnknown
 };
 
 // The type of user feedback from a displayed notification.
@@ -22,14 +28,16 @@ enum class UserFeedback {
   // The user taps the unhelpful button, potentially a strong indicator of
   // user's negative preference on the notification.
   kNotHelpful = 2,
+  // The user clicks the notification.
+  kClick = 3,
   // The user clicks the body of the notification.
-  kBodyClick = 3,
+  kDismiss = 4,
   // The user has no interaction with the notification for a while.
-  kIgnore = 4,
+  kIgnore = 5,
   kMaxValue = kIgnore
 };
 
-// The user impression result of a particular notification.
+// The user impression of a particular notification.
 enum class ImpressionResult {
   // Unknown user impression.
   kUnknown = 0,
