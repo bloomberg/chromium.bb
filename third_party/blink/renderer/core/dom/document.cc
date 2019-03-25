@@ -1039,6 +1039,8 @@ Element* Document::CreateElementForBinding(
 
   bool is_v1 =
       string_or_options.IsElementCreationOptions() || !RegistrationContext();
+  // V0 is only allowed with the flag.
+  DCHECK(is_v1 || origin_trials::CustomElementsV0Enabled(this));
   bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
@@ -1115,6 +1117,8 @@ Element* Document::createElementNS(
 
   bool is_v1 =
       string_or_options.IsElementCreationOptions() || !RegistrationContext();
+  // V0 is only allowed with the flag.
+  DCHECK(is_v1 || origin_trials::CustomElementsV0Enabled(this));
   bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
