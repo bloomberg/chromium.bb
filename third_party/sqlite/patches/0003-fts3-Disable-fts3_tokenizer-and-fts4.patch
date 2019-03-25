@@ -10,19 +10,19 @@ virtual table until someone explicitly decides to own support for it.
 
 No original review URL because this was part of the initial Chromium commit.
 ---
- third_party/sqlite/src/ext/fts3/fts3.c | 9 +++++++++
+ third_party/sqlite/patched/ext/fts3/fts3.c | 9 +++++++++
  1 file changed, 9 insertions(+)
 
-diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
+diff --git a/third_party/sqlite/patched/ext/fts3/fts3.c b/third_party/sqlite/patched/ext/fts3/fts3.c
 index 823e1b6a81fe..c371d3e8f0b5 100644
---- a/third_party/sqlite/src/ext/fts3/fts3.c
-+++ b/third_party/sqlite/src/ext/fts3/fts3.c
+--- a/third_party/sqlite/patched/ext/fts3/fts3.c
++++ b/third_party/sqlite/patched/ext/fts3/fts3.c
 @@ -287,6 +287,7 @@
  ** query logic likewise merges doclists so that newer data knocks out
  ** older data.
  */
 +#define CHROMIUM_FTS3_CHANGES 1
- 
+
  #include "fts3Int.h"
  #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
 @@ -4016,7 +4017,11 @@ int sqlite3Fts3Init(sqlite3 *db){
@@ -54,7 +54,7 @@ index 823e1b6a81fe..c371d3e8f0b5 100644
 +#endif
      return rc;
    }
- 
--- 
+
+--
 2.21.0.225.g810b269d1ac-goog
 

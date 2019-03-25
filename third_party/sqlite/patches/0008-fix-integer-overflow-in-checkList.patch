@@ -7,13 +7,13 @@ This backports https://www.sqlite.org/src/info/05b87e0755638d31
 
 Bug: 925381
 ---
- third_party/sqlite/src/src/btree.c | 6 +++---
+ third_party/sqlite/patched/src/btree.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btree.c
+diff --git a/third_party/sqlite/patched/src/btree.c b/third_party/sqlite/patched/src/btree.c
 index caa45e507da6..33d63d7b1ce2 100644
---- a/third_party/sqlite/src/src/btree.c
-+++ b/third_party/sqlite/src/src/btree.c
+--- a/third_party/sqlite/patched/src/btree.c
++++ b/third_party/sqlite/patched/src/btree.c
 @@ -9540,10 +9540,10 @@ static void checkList(
    IntegrityCk *pCheck,  /* Integrity checking context */
    int isFreeList,       /* True for a freelist.  False for overflow page list */
@@ -28,7 +28,7 @@ index caa45e507da6..33d63d7b1ce2 100644
    while( iPage!=0 && pCheck->mxErr ){
      DbPage *pOvflPage;
 @@ -9797,7 +9797,7 @@ static int checkTreePage(
- 
+
      /* Check the content overflow list */
      if( info.nPayload>info.nLocal ){
 -      int nPage;       /* Number of pages on the overflow chain */
@@ -36,6 +36,6 @@ index caa45e507da6..33d63d7b1ce2 100644
        Pgno pgnoOvfl;   /* First page of the overflow chain */
        assert( pc + info.nSize - 4 <= usableSize );
        nPage = (info.nPayload - info.nLocal + usableSize - 5)/(usableSize - 4);
--- 
+--
 2.21.0.225.g810b269d1ac-goog
 

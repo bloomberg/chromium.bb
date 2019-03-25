@@ -4,17 +4,17 @@ Date: Sun, 10 Feb 2019 13:12:57 -0800
 Subject: [PATCH 04/10] Fix compilation with SQLITE_OMIT_WINDOWFUNC.
 
 ---
- third_party/sqlite/src/src/resolve.c | 2 ++
+ third_party/sqlite/patched/src/resolve.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/third_party/sqlite/src/src/resolve.c b/third_party/sqlite/src/src/resolve.c
+diff --git a/third_party/sqlite/patched/src/resolve.c b/third_party/sqlite/patched/src/resolve.c
 index 7169152ed6e8..590e8e073f7f 100644
---- a/third_party/sqlite/src/src/resolve.c
-+++ b/third_party/sqlite/src/src/resolve.c
+--- a/third_party/sqlite/patched/src/resolve.c
++++ b/third_party/sqlite/patched/src/resolve.c
 @@ -1556,6 +1556,7 @@ static int resolveSelectStep(Walker *pWalker, Select *p){
        }
      }
- 
+
 +#ifndef SQLITE_OMIT_WINDOWFUNC
      if( IN_RENAME_OBJECT ){
        Window *pWin;
@@ -24,9 +24,9 @@ index 7169152ed6e8..590e8e073f7f 100644
        }
      }
 +#endif
- 
+
      /* If this is part of a compound SELECT, check that it has the right
      ** number of expressions in the select list. */
--- 
+--
 2.21.0.225.g810b269d1ac-goog
 

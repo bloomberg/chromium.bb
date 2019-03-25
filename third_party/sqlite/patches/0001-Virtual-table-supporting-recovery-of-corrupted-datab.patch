@@ -13,38 +13,38 @@ BUG=109482
 Since this implements a new feature for SQLite, the review URLs aren't
 listed.  This patch and the top of recover.c should be considered
 authoritative.  The history is mostly under
-third_party/sqlite/src/src/{recover,recover-alt}.c .
+third_party/sqlite/patched/src/{recover,recover-alt}.c .
 ---
- third_party/sqlite/src/main.mk              |    5 +
- third_party/sqlite/src/src/main.c           |    8 +
- third_party/sqlite/src/src/recover.c        | 2270 +++++++++++++++++++
- third_party/sqlite/src/src/recover.h        |   23 +
- third_party/sqlite/src/src/recover_varint.c |  201 ++
- third_party/sqlite/src/test/recover.test    |  164 ++
- third_party/sqlite/src/test/recover0.test   |  532 +++++
- third_party/sqlite/src/test/recover1.test   |  429 ++++
- third_party/sqlite/src/test/recover2.test   |  157 ++
+ third_party/sqlite/patched/main.mk              |    5 +
+ third_party/sqlite/patched/src/main.c           |    8 +
+ third_party/sqlite/patched/src/recover.c        | 2270 +++++++++++++++++++
+ third_party/sqlite/patched/src/recover.h        |   23 +
+ third_party/sqlite/patched/src/recover_varint.c |  201 ++
+ third_party/sqlite/patched/test/recover.test    |  164 ++
+ third_party/sqlite/patched/test/recover0.test   |  532 +++++
+ third_party/sqlite/patched/test/recover1.test   |  429 ++++
+ third_party/sqlite/patched/test/recover2.test   |  157 ++
  9 files changed, 3789 insertions(+)
- create mode 100644 third_party/sqlite/src/src/recover.c
- create mode 100644 third_party/sqlite/src/src/recover.h
- create mode 100644 third_party/sqlite/src/src/recover_varint.c
- create mode 100644 third_party/sqlite/src/test/recover.test
- create mode 100644 third_party/sqlite/src/test/recover0.test
- create mode 100644 third_party/sqlite/src/test/recover1.test
- create mode 100644 third_party/sqlite/src/test/recover2.test
+ create mode 100644 third_party/sqlite/patched/src/recover.c
+ create mode 100644 third_party/sqlite/patched/src/recover.h
+ create mode 100644 third_party/sqlite/patched/src/recover_varint.c
+ create mode 100644 third_party/sqlite/patched/test/recover.test
+ create mode 100644 third_party/sqlite/patched/test/recover0.test
+ create mode 100644 third_party/sqlite/patched/test/recover1.test
+ create mode 100644 third_party/sqlite/patched/test/recover2.test
 
-diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
+diff --git a/third_party/sqlite/patched/main.mk b/third_party/sqlite/patched/main.mk
 index c4e8b78e911f..57a27c1e3fc1 100644
---- a/third_party/sqlite/src/main.mk
-+++ b/third_party/sqlite/src/main.mk
+--- a/third_party/sqlite/patched/main.mk
++++ b/third_party/sqlite/patched/main.mk
 @@ -77,6 +77,8 @@ LIBOBJ+= vdbe.o parse.o \
  	 vdbetrace.o wal.o walker.o where.o wherecode.o whereexpr.o \
           utf.o vtab.o window.o
- 
+
 +LIBOBJ += recover.o recover_varint.o
 +
  LIBOBJ += sqlite3session.o
- 
+
  # All of the source code files.
 @@ -410,6 +412,8 @@ TESTSRC2 = \
    $(TOP)/src/prepare.c \
@@ -60,17 +60,17 @@ index c4e8b78e911f..57a27c1e3fc1 100644
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_DBPAGE_VTAB
  TESTFIXTURE_FLAGS += -DTCLSH_INIT_PROC=sqlite3TestInit
 +TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
- 
+
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) $(TESTFIXTURE_FLAGS)                            \
-diff --git a/third_party/sqlite/src/src/main.c b/third_party/sqlite/src/src/main.c
+diff --git a/third_party/sqlite/patched/src/main.c b/third_party/sqlite/patched/src/main.c
 index c98cfe99eed3..d58f8c633f8b 100644
---- a/third_party/sqlite/src/src/main.c
-+++ b/third_party/sqlite/src/src/main.c
+--- a/third_party/sqlite/patched/src/main.c
++++ b/third_party/sqlite/patched/src/main.c
 @@ -3244,6 +3244,14 @@ static int openDatabase(
    }
  #endif
- 
+
 +#ifdef DEFAULT_ENABLE_RECOVER
 +  /* Initialize recover virtual table for testing. */
 +  extern int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
@@ -82,11 +82,11 @@ index c98cfe99eed3..d58f8c633f8b 100644
  #if defined(SQLITE_ENABLE_ICU) || defined(SQLITE_ENABLE_ICU_COLLATIONS)
    if( !db->mallocFailed && rc==SQLITE_OK ){
      rc = sqlite3IcuInit(db);
-diff --git a/third_party/sqlite/src/src/recover.c b/third_party/sqlite/src/src/recover.c
+diff --git a/third_party/sqlite/patched/src/recover.c b/third_party/sqlite/patched/src/recover.c
 new file mode 100644
 index 000000000000..ba239a507f9c
 --- /dev/null
-+++ b/third_party/sqlite/src/src/recover.c
++++ b/third_party/sqlite/patched/src/recover.c
 @@ -0,0 +1,2270 @@
 +/*
 +** 2012 Jan 11
@@ -2358,11 +2358,11 @@ index 000000000000..ba239a507f9c
 +  *ppVtab = (sqlite3_vtab *)pRecover;
 +  return SQLITE_OK;
 +}
-diff --git a/third_party/sqlite/src/src/recover.h b/third_party/sqlite/src/src/recover.h
+diff --git a/third_party/sqlite/patched/src/recover.h b/third_party/sqlite/patched/src/recover.h
 new file mode 100644
 index 000000000000..49b0d9e860db
 --- /dev/null
-+++ b/third_party/sqlite/src/src/recover.h
++++ b/third_party/sqlite/patched/src/recover.h
 @@ -0,0 +1,23 @@
 +/* TODO(shess): sqliteicu.h is able to make this include without
 +** trouble.  It doesn't work when used with Chromium's SQLite.  For
@@ -2387,11 +2387,11 @@ index 000000000000..49b0d9e860db
 +#ifdef __cplusplus
 +}  /* End of the 'extern "C"' block */
 +#endif
-diff --git a/third_party/sqlite/src/src/recover_varint.c b/third_party/sqlite/src/src/recover_varint.c
+diff --git a/third_party/sqlite/patched/src/recover_varint.c b/third_party/sqlite/patched/src/recover_varint.c
 new file mode 100644
 index 000000000000..c111e2cedc44
 --- /dev/null
-+++ b/third_party/sqlite/src/src/recover_varint.c
++++ b/third_party/sqlite/patched/src/recover_varint.c
 @@ -0,0 +1,201 @@
 +/*
 +** 2016 Feb 29
@@ -2594,11 +2594,11 @@ index 000000000000..c111e2cedc44
 +  return 9;
 +}
 +
-diff --git a/third_party/sqlite/src/test/recover.test b/third_party/sqlite/src/test/recover.test
+diff --git a/third_party/sqlite/patched/test/recover.test b/third_party/sqlite/patched/test/recover.test
 new file mode 100644
 index 000000000000..bfb788814866
 --- /dev/null
-+++ b/third_party/sqlite/src/test/recover.test
++++ b/third_party/sqlite/patched/test/recover.test
 @@ -0,0 +1,164 @@
 +# 2012 January 11 {}
 +#
@@ -2764,11 +2764,11 @@ index 000000000000..bfb788814866
 +} {{Interior-node-generating line 499} 499 {Interior-node-generating line 999} 999 {Interior-node-generating line 1499} 1499 {Interior-node-generating line 1999} 1999 {Interior-node-generating line 2499} 2499 {Interior-node-generating line 2999} 2999 {Interior-node-generating line 3499} 3499 {Interior-node-generating line 3999} 3999 {Interior-node-generating line 4499} 4499 {Interior-node-generating line 4999} 4999}
 +
 +finish_test
-diff --git a/third_party/sqlite/src/test/recover0.test b/third_party/sqlite/src/test/recover0.test
+diff --git a/third_party/sqlite/patched/test/recover0.test b/third_party/sqlite/patched/test/recover0.test
 new file mode 100644
 index 000000000000..aac2ed9164ba
 --- /dev/null
-+++ b/third_party/sqlite/src/test/recover0.test
++++ b/third_party/sqlite/patched/test/recover0.test
 @@ -0,0 +1,532 @@
 +# 2012 January 4 {}
 +#
@@ -3302,11 +3302,11 @@ index 000000000000..aac2ed9164ba
 +} {1 {unable to parse column 0}}
 +
 +finish_test
-diff --git a/third_party/sqlite/src/test/recover1.test b/third_party/sqlite/src/test/recover1.test
+diff --git a/third_party/sqlite/patched/test/recover1.test b/third_party/sqlite/patched/test/recover1.test
 new file mode 100644
 index 000000000000..1d90f096b727
 --- /dev/null
-+++ b/third_party/sqlite/src/test/recover1.test
++++ b/third_party/sqlite/patched/test/recover1.test
 @@ -0,0 +1,429 @@
 +# 2012 January 4 {}
 +#
@@ -3737,11 +3737,11 @@ index 000000000000..1d90f096b727
 +} {UTF-16be 1 Mjollnir 2 Mjölnir 3 Mjǫlnir 4 Mjölner 5 Mjølner 6 ハンマー}
 +
 +finish_test
-diff --git a/third_party/sqlite/src/test/recover2.test b/third_party/sqlite/src/test/recover2.test
+diff --git a/third_party/sqlite/patched/test/recover2.test b/third_party/sqlite/patched/test/recover2.test
 new file mode 100644
 index 000000000000..8aa4e049a010
 --- /dev/null
-+++ b/third_party/sqlite/src/test/recover2.test
++++ b/third_party/sqlite/patched/test/recover2.test
 @@ -0,0 +1,157 @@
 +# 2012 January 4 {}
 +#
@@ -3900,6 +3900,6 @@ index 000000000000..8aa4e049a010
 +} [list 4 1024 1 text [string length $substr] $substr]
 +
 +finish_test
--- 
+--
 2.21.0.225.g810b269d1ac-goog
 

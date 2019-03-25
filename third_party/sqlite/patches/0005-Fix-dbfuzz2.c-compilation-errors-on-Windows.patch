@@ -4,13 +4,13 @@ Date: Sun, 10 Feb 2019 15:18:43 -0800
 Subject: [PATCH 05/10] Fix dbfuzz2.c compilation errors on Windows.
 
 ---
- third_party/sqlite/src/test/dbfuzz2.c | 4 ++++
+ third_party/sqlite/patched/test/dbfuzz2.c | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/third_party/sqlite/src/test/dbfuzz2.c b/third_party/sqlite/src/test/dbfuzz2.c
+diff --git a/third_party/sqlite/patched/test/dbfuzz2.c b/third_party/sqlite/patched/test/dbfuzz2.c
 index c964ad4f018f..dd1ed061717b 100644
---- a/third_party/sqlite/src/test/dbfuzz2.c
-+++ b/third_party/sqlite/src/test/dbfuzz2.c
+--- a/third_party/sqlite/patched/test/dbfuzz2.c
++++ b/third_party/sqlite/patched/test/dbfuzz2.c
 @@ -43,8 +43,10 @@
  #include <stdarg.h>
  #include <ctype.h>
@@ -20,7 +20,7 @@ index c964ad4f018f..dd1ed061717b 100644
  #include <sys/resource.h>
 +#endif
  #include "sqlite3.h"
- 
+
  /*
 @@ -261,6 +263,7 @@ int LLVMFuzzerInitialize(int *pArgc, char ***pArgv){
          szMax = strtol(argv[++i], 0, 0);
@@ -38,6 +38,6 @@ index c964ad4f018f..dd1ed061717b 100644
      }
      argv[j++] = argv[i];
    }
--- 
+--
 2.21.0.225.g810b269d1ac-goog
 
