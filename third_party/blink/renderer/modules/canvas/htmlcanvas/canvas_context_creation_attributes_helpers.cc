@@ -19,10 +19,10 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.fail_if_major_performance_caveat =
       attrs->failIfMajorPerformanceCaveat();
 #if defined(OS_MACOSX)
-  // TODO(crbug.com/922218): enable lowLatency on Mac.
-  result.low_latency = false;
+  // TODO(crbug.com/922218): enable desynchronized on Mac.
+  result.desynchronized = false;
 #else
-  result.low_latency = attrs->lowLatency();
+  result.desynchronized = attrs->desynchronized();
 #endif
   result.pixel_format = attrs->pixelFormat();
   result.premultiplied_alpha = attrs->premultipliedAlpha();

@@ -10,6 +10,6 @@ dictionary CanvasRenderingContext2DSettings {
     [RuntimeEnabled=CanvasColorManagement] CanvasColorSpace colorSpace = "srgb";
     [RuntimeEnabled=CanvasColorManagement] CanvasPixelFormat pixelFormat = "uint8";
     // TODO(crbug.com/788439): remove OriginTrialEnabled.
-    [OriginTrialEnabled=LowLatencyCanvas] boolean lowLatency = false;
+    [OriginTrialEnabled=LowLatencyCanvas] boolean desynchronized = false;
 };
 
