@@ -707,25 +707,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   waiter->AddMinimumNetworkBytesExpectation(5000);
   waiter->Wait();
 
-  // Verify correct numbers of resources are recorded.
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Network.Mainframe.VanillaResource", 1);
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Network.Mainframe.AdResource", 1);
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 1);
-  // Verify unfinished resource not yet recorded.
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Network.Subframe.VanillaResource", 0);
-
   // Close all tabs instead of navigating as the embedded_test_server will
   // hang waiting for loads to finish when we have an unfinished
-  // ControlledHttpReseonse.
+  // ControllableHttpResponse.
   browser()->tab_strip_model()->CloseAllTabs();
-
-  // Verify unfinished resource recorded when page is destroyed.
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 2);
 
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.FullPage.Network", 5, 1);
@@ -786,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Close all tabs instead of navigating as the embedded_test_server will
   // hang waiting for loads to finish when we have an unfinished
-  // ControlledHttpResponse.
+  // ControllableHttpResponse.
   browser()->tab_strip_model()->CloseAllTabs();
 
   int expected_page_kilobytes = (initial_page_bytes + 2048) / 1024;
@@ -982,54 +967,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       blink::mojom::WebFeature::kAdFrameSizeIntervention, 0);
 }
 
-// Verify that per-resource metrics are reported for cached resources and
-// resources loaded by the network.
+// Verify that UKM metrics are recorded correctly.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       RecordedCacheResourceMetrics) {
-  base::HistogramTester histogram_tester;
-  SetRulesetWithRules(
-      {subresource_filter::testing::CreateSuffixRule("create_frame.js")});
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "chrome/test/data/ad_tagging");
-  content::SetupCrossSiteRedirector(embedded_test_server());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("foo.com", "/cachetime"));
-
-  // Wait for the favicon to be fetched.
-  waiter->AddMinimumCompleteResourcesExpectation(2);
-  waiter->Wait();
-
-  // All resources should have been loaded by network.
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Network.Mainframe.VanillaResource", 2);
-
-  // Open a new tab and navigate so that resources are fetched via the disk
-  // cache. Navigating to the same URL in the same tab triggers a refresh which
-  // will not check the disk cache.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  waiter = CreateAdsPageLoadMetricsTestWaiter();
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("foo.com", "/cachetime"));
-
-  // Wait for the resource to be fetched.
-  waiter->AddMinimumCompleteResourcesExpectation(1);
-  waiter->Wait();
-
-  // Resource should be recorded as loaded from the cache. Favicon not
-  // fetched this time.
-  histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Cache.Mainframe.VanillaResource", 1);
-}
-
-// Verify that Mime type metrics are recorded correctly.
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
-                       RecordedMimeMetrics) {
+                       RecordedUKMMetrics) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -1049,24 +989,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
 
-  // Close all tabs to log metrics, as the video resource request is incomplete.
+  // Close all tabs to report metrics.
   browser()->tab_strip_model()->CloseAllTabs();
-
-  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.HTML",
-                                    1);
-  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.CSS",
-                                    1);
-  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.JS",
-                                    3);
-
-  // Note: png and video/webm mime types are not set explicitly by the
-  // embedded_test_server.
-  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.Image",
-                                    1);
-  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.Video",
-                                    1);
-  histogram_tester.ExpectTotalCount("Ads.ResourceUsage.Size.Network.Mime.Other",
-                                    1);
 
   // Verify UKM Metrics recorded.
   auto entries =

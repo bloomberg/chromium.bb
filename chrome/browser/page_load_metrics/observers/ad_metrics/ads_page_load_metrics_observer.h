@@ -121,13 +121,6 @@ class AdsPageLoadMetricsObserver
       int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  // Records size of resources by mime type.
-  void RecordResourceMimeHistograms(
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
-
-  // Records per-resource histograms.
-  void RecordResourceHistograms(
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
   void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);

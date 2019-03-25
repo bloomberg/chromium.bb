@@ -36,6 +36,7 @@
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/resource_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/scheme_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
@@ -118,6 +119,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         std::make_unique<previews::PreviewsPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<previews::PreviewsUKMObserver>());
+    tracker->AddObserver(std::make_unique<ResourceMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<ServiceWorkerPageLoadMetricsObserver>());
     tracker->AddObserver(

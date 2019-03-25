@@ -712,8 +712,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
   NavigateMainFrame(kNonAdUrl);
   TestHistograms(histogram_tester(), std::vector<ExpectedFrameBytes>(),
                  0u /* non_ad_cached_kb */, 0u /* non_ad_uncached_kb */);
-  histogram_tester().ExpectUniqueSample(
-      "Ads.ResourceUsage.Size.Network.Subframe.AdResource", 10, 1);
 }
 
 // UKM metrics for ad page load are recorded correctly.
