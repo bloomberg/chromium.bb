@@ -130,15 +130,15 @@ HttpProxyTimeoutExperiments* GetProxyTimeoutExperiments() {
 }  // namespace
 
 HttpProxySocketParams::HttpProxySocketParams(
-    const scoped_refptr<TransportSocketParams>& transport_params,
-    const scoped_refptr<SSLSocketParams>& ssl_params,
+    scoped_refptr<TransportSocketParams> transport_params,
+    scoped_refptr<SSLSocketParams> ssl_params,
     bool is_quic,
     const HostPortPair& endpoint,
     bool is_trusted_proxy,
     bool tunnel,
     const NetworkTrafficAnnotationTag traffic_annotation)
-    : transport_params_(transport_params),
-      ssl_params_(ssl_params),
+    : transport_params_(std::move(transport_params)),
+      ssl_params_(std::move(ssl_params)),
       is_quic_(is_quic),
       endpoint_(endpoint),
       is_trusted_proxy_(is_trusted_proxy),
@@ -160,7 +160,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     RequestPriority priority,
     const SocketTag& socket_tag,
     const CommonConnectJobParams* common_connect_job_params,
-    const scoped_refptr<HttpProxySocketParams>& params,
+    scoped_refptr<HttpProxySocketParams> params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
@@ -171,7 +171,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
                  net_log,
                  NetLogSourceType::HTTP_PROXY_CONNECT_JOB,
                  NetLogEventType::HTTP_PROXY_CONNECT_JOB_CONNECT),
-      params_(params),
+      params_(std::move(params)),
       next_state_(STATE_NONE),
       has_restarted_(false),
       using_spdy_(false),

@@ -27,7 +27,7 @@ class TransportSocketParams;
 class NET_EXPORT_PRIVATE SOCKSSocketParams
     : public base::RefCounted<SOCKSSocketParams> {
  public:
-  SOCKSSocketParams(const scoped_refptr<TransportSocketParams>& proxy_server,
+  SOCKSSocketParams(scoped_refptr<TransportSocketParams> proxy_server_params,
                     bool socks_v5,
                     const HostPortPair& host_port_pair,
                     const NetworkTrafficAnnotationTag& traffic_annotation);
@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
   SOCKSConnectJob(RequestPriority priority,
                   const SocketTag& socket_tag,
                   const CommonConnectJobParams* common_connect_job_params,
-                  const scoped_refptr<SOCKSSocketParams>& socks_params,
+                  scoped_refptr<SOCKSSocketParams> socks_params,
                   ConnectJob::Delegate* delegate,
                   const NetLogWithSource* net_log);
   ~SOCKSConnectJob() override;
