@@ -173,6 +173,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     features.EnableIfNotSet(
         autofill::features::kAutofillSkipComparingInferredLabels);
 
+    if (cl->HasSwitch(switches::kWebViewLogJsConsoleMessages)) {
+      features.EnableIfNotSet(features::kLogJsConsoleMessages);
+    }
+
     features.DisableIfNotSet(features::kWebPayments);
 
     // WebView does not and should not support WebAuthN.
