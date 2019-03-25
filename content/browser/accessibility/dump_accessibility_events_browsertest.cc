@@ -485,8 +485,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute.html"));
 }
 
-// TODO(aboxhall): Fix flakiness on Windows
-#if defined(OS_WIN)
+// TODO(aboxhall): Fix flakiness on Windows and Mac
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_AccessibilityEventsReportValidityInvalidField \
   DISABLED_AccessibilityEventsReportValidityInvalidField
 #else
