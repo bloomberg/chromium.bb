@@ -117,7 +117,7 @@ TEST_F(ObservationWindowTest, OnSample) {
 
 TEST_F(ObservationWindowTest, FreeMemoryObservationWindow) {
   FreeMemoryObservationWindow::Config window_config = {};
-  FreeMemoryObservationWindow window(window_config);
+  FreeMemoryObservationWindow window(kDefaultWindowLength, window_config);
   window.set_clock_for_testing(tick_clock_);
 
   DCHECK_GT(window_config.low_memory_early_limit_mb,
@@ -138,7 +138,7 @@ TEST_F(ObservationWindowTest, FreeMemoryObservationWindow) {
   // Test the detection that the system has reached the early limit.
 
   // Remove all the observations from the window.
-  scoped_task_environment_.FastForwardBy(window_config.window_length +
+  scoped_task_environment_.FastForwardBy(kDefaultWindowLength +
                                          base::TimeDelta::FromSeconds(1));
 
   const size_t min_sample_count_to_be_positive =
@@ -166,7 +166,7 @@ TEST_F(ObservationWindowTest, FreeMemoryObservationWindow) {
   // Test the detection that the system has reached the critical limit.
 
   // Remove all the observations from the window.
-  scoped_task_environment_.FastForwardBy(window_config.window_length +
+  scoped_task_environment_.FastForwardBy(kDefaultWindowLength +
                                          base::TimeDelta::FromSeconds(1));
 
   for (size_t i = 0;
@@ -184,6 +184,43 @@ TEST_F(ObservationWindowTest, FreeMemoryObservationWindow) {
   }
   EXPECT_TRUE(window.MemoryIsUnderEarlyLimit());
   EXPECT_TRUE(window.MemoryIsUnderCriticalLimit());
+}
+
+TEST_F(ObservationWindowTest, DiskIdleTimeObservationWindow) {
+  const float kDiskIdleTimeThreshold = 0.5;
+
+  DiskIdleTimeObservationWindow window(kDefaultWindowLength,
+                                       kDiskIdleTimeThreshold);
+  window.set_clock_for_testing(tick_clock_);
+
+  window.OnSample(1.0);
+
+  // The average disk idle time is equal to 1, it's not under the threshold.
+  EXPECT_FALSE(window.DiskIdleTimeIsLow());
+
+  window.OnSample(0.1);
+  // The average disk idle time is equal to (1 + 0.1) / 2 = 0.55, it's still not
+  // under the threshold.
+  EXPECT_FALSE(window.DiskIdleTimeIsLow());
+
+  window.OnSample(0.1);
+  // The average disk idle time is now equal to (1 + 0.1 + 0.1) / 3 = 0.4, it's
+  // now under the threshold.
+  EXPECT_TRUE(window.DiskIdleTimeIsLow());
+
+  // Remove all the observations from the window.
+  scoped_task_environment_.FastForwardBy(kDefaultWindowLength +
+                                         base::TimeDelta::FromSeconds(1));
+
+  // Add a sample under the threshold, the disk idle should be considered as low
+  // as it's under the threshold.
+  window.OnSample(0.1);
+  EXPECT_TRUE(window.DiskIdleTimeIsLow());
+
+  window.OnSample(1.0);
+  // The average disk idle time is equal to (1 + 0.1) / 2 = 0.55, it's not under
+  // the threshold anymore.
+  EXPECT_FALSE(window.DiskIdleTimeIsLow());
 }
 
 }  // namespace memory

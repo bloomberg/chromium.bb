@@ -17,7 +17,7 @@ namespace memory {
 namespace internal {
 
 template <typename T>
-ObservationWindow<T>::ObservationWindow(base::TimeDelta window_length)
+ObservationWindow<T>::ObservationWindow(const base::TimeDelta window_length)
     : window_length_(window_length),
       clock_(base::DefaultTickClock::GetInstance()) {}
 
