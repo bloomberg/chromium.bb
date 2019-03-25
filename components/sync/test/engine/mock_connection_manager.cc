@@ -27,8 +27,6 @@ using sync_pb::SyncEnums;
 
 namespace syncer {
 
-using syncable::WriteTransaction;
-
 static char kValidAuthToken[] = "AuthToken";
 static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
@@ -107,7 +105,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
       ADD_FAILURE();
       return false;
     }
-    WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
+    syncable::WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
   }
 
   if (auth_token.empty()) {
