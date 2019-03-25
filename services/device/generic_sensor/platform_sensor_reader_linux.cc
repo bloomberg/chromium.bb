@@ -89,12 +89,13 @@ class PollingSensorReader : public SensorReader {
   // called on the right thread.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  std::unique_ptr<BlockingTaskHelper> blocking_task_helper_;
-
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  std::unique_ptr<BlockingTaskHelper, base::OnTaskRunnerDeleter>
+      blocking_task_helper_;
 
   base::WeakPtrFactory<PollingSensorReader> weak_factory_;
 
@@ -176,15 +177,18 @@ PollingSensorReader::PollingSensorReader(
     const SensorInfoLinux& sensor_info,
     base::WeakPtr<PlatformSensorLinux> sensor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : SensorReader(sensor, std::move(task_runner)), weak_factory_(this) {
-  blocking_task_helper_ = std::make_unique<BlockingTaskHelper>(
-      weak_factory_.GetWeakPtr(), sensor_info);
+    : SensorReader(sensor, std::move(task_runner)),
+      blocking_task_helper_(nullptr,
+                            base::OnTaskRunnerDeleter(blocking_task_runner_)),
+      weak_factory_(this) {
+  // We need to properly initialize |blocking_task_helper_| here because we need
+  // |weak_factory_| to be created first.
+  blocking_task_helper_.reset(
+      new BlockingTaskHelper(weak_factory_.GetWeakPtr(), sensor_info));
 }
 
 PollingSensorReader::~PollingSensorReader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  blocking_task_runner_->DeleteSoon(FROM_HERE,
-                                    std::move(blocking_task_helper_));
 }
 
 void PollingSensorReader::StartFetchingData(
