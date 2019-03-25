@@ -54,6 +54,7 @@
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -1352,7 +1353,10 @@ void RenderViewContextMenu::AppendPageItems() {
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   AppendMediaRouterItem();
 
-  if (send_tab_to_self::ShouldOfferFeature(GetBrowser())) {
+  if (GetBrowser() &&
+      send_tab_to_self::ShouldOfferFeature(
+          GetBrowser()->profile(),
+          GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
     base::RecordAction(
         UserMetricsAction("ViewContextMenu_SendTabToSelf_Shown"));
     menu_model_.AddItemWithStringId(IDC_SEND_TAB_TO_SELF,

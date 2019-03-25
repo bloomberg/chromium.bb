@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
@@ -82,9 +83,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                     : l10n_util::GetPluralStringFUTF16(
                           IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
 
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(tab_strip->GetWebContentsAt(index));
-  if (send_tab_to_self::ShouldOfferFeature(browser)) {
+  if (send_tab_to_self::ShouldOfferFeature(
+          tab_strip->profile(), tab_strip->GetWebContentsAt(index))) {
     base::RecordAction(UserMetricsAction("TabContextMenu_SendTabToSelf_Shown"));
     AddItemWithStringId(TabStripModel::CommandSendTabToSelf,
                         IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);

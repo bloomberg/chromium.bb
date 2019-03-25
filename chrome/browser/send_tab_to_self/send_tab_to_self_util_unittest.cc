@@ -98,46 +98,6 @@ std::unique_ptr<KeyedService> BuildTestSyncService(
   return std::make_unique<syncer::TestSyncService>();
 }
 
-// SendTabToSelfModelMock
-class SendTabToSelfModelMock : public SendTabToSelfModel {
- public:
-  SendTabToSelfModelMock() = default;
-  ~SendTabToSelfModelMock() override = default;
-
-  MOCK_METHOD3(AddEntry,
-               const SendTabToSelfEntry*(const GURL&,
-                                         const std::string&,
-                                         base::Time));
-  MOCK_METHOD1(DeleteEntry, void(const std::string&));
-  MOCK_METHOD1(DismissEntry, void(const std::string&));
-
-  MOCK_CONST_METHOD0(GetAllGuids, std::vector<std::string>());
-  MOCK_METHOD0(DeleteAllEntries, void());
-  MOCK_CONST_METHOD1(GetEntryByGUID, SendTabToSelfEntry*(const std::string&));
-
-  void AddObserver(SendTabToSelfModelObserver* observer) {}
-  void RemoveObserver(SendTabToSelfModelObserver* observer) {}
-};
-
-// Mock a SendTabToSelfSyncService to get SendTabToSelfModelMock
-class SendTabToSelfSyncServiceMock : public SendTabToSelfSyncService {
- public:
-  SendTabToSelfSyncServiceMock() = default;
-  ~SendTabToSelfSyncServiceMock() override = default;
-
-  SendTabToSelfModel* GetSendTabToSelfModel() override {
-    return &send_tab_to_self_model_mock_;
-  }
-
- protected:
-  SendTabToSelfModelMock send_tab_to_self_model_mock_;
-};
-
-std::unique_ptr<KeyedService> BuildTestSendTabToSelfSyncService(
-    content::BrowserContext* context) {
-  return std::make_unique<SendTabToSelfSyncServiceMock>();
-}
-
 class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
  public:
   SendTabToSelfUtilTest() = default;
@@ -253,19 +213,25 @@ TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_True) {
   SetUpAllTrueEnv();
 
-  EXPECT_TRUE(ShouldOfferFeature(browser()));
+  EXPECT_TRUE(
+      ShouldOfferFeature(browser()->profile(),
+                         browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_IsFlagEnabled_False) {
   SetUpFeatureDisabledEnv();
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
+  EXPECT_FALSE(
+      ShouldOfferFeature(browser()->profile(),
+                         browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeature_IsUserSyncTypeEnabled_False) {
   SetUpAllTrueEnv();
   test_sync_service_->SetPreferredDataTypes(syncer::ModelTypeSet());
 
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
+  EXPECT_FALSE(
+      ShouldOfferFeature(browser()->profile(),
+                         browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 TEST_F(SendTabToSelfUtilTest,
@@ -273,7 +239,9 @@ TEST_F(SendTabToSelfUtilTest,
   SetUpAllTrueEnv();
   mock_device_sync_service_->SetTrackerActiveDevices(0);
 
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
+  EXPECT_FALSE(
+      ShouldOfferFeature(browser()->profile(),
+                         browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 TEST_F(SendTabToSelfUtilTest,
@@ -282,30 +250,9 @@ TEST_F(SendTabToSelfUtilTest,
   url_ = GURL("192.168.0.0");
   NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
 
-  EXPECT_FALSE(ShouldOfferFeature(browser()));
-}
-
-TEST_F(SendTabToSelfUtilTest, CreateNewEntry) {
-  SetUpAllTrueEnv();
-  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::NavigationEntry* entry =
-      tab->GetController().GetLastCommittedEntry();
-
-  GURL url = entry->GetURL();
-  std::string title = base::UTF16ToUTF8(entry->GetTitle());
-  base::Time navigation_time = entry->GetTimestamp();
-
-  SendTabToSelfModelMock* model_mock = static_cast<SendTabToSelfModelMock*>(
-      SendTabToSelfSyncServiceFactory::GetForProfile(profile())
-          ->GetSendTabToSelfModel());
-
-  EXPECT_CALL(*model_mock, AddEntry(url, title, navigation_time))
-      .WillOnce(testing::Return(nullptr));
-
-  CreateNewEntry(tab, profile());
+  EXPECT_FALSE(
+      ShouldOfferFeature(browser()->profile(),
+                         browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 }  // namespace

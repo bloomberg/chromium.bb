@@ -10,6 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,6 +105,18 @@ public class SendTabToSelfAndroidBridge {
         SendTabToSelfAndroidBridgeJni.get().dismissEntry(profile, guid);
     }
 
+    /**
+     * Return whether the feature is available for the current user Profile and
+     * the current WebContents.
+     *
+     * @param profile Profile of the user.
+     * @param WebContents The current WebContents.
+     * @return Whether the feature is available.
+     */
+    public static boolean isFeatureAvailable(Profile profile, WebContents webContents) {
+        return SendTabToSelfAndroidBridgeJni.get().isFeatureAvailable(profile, webContents);
+    }
+
     @NativeMethods
     interface Natives {
         SendTabToSelfEntry addEntry(Profile profile, String url, String title, long navigationTime);
@@ -117,5 +130,7 @@ public class SendTabToSelfAndroidBridge {
         void dismissEntry(Profile profile, String guid);
 
         SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
+
+        boolean isFeatureAvailable(Profile profile, WebContents webContents);
     }
 }

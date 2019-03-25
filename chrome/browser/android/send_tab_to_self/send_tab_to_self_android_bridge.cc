@@ -10,10 +10,12 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/SendTabToSelfAndroidBridge_jni.h"
 #include "jni/SendTabToSelfEntry_jni.h"
 #include "url/gurl.h"
@@ -134,6 +136,19 @@ static void JNI_SendTabToSelfAndroidBridge_DismissEntry(
     const JavaParamRef<jstring>& j_guid) {
   const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
   GetModel(j_profile)->DismissEntry(guid);
+}
+
+// Returns whether the feature is available for the specified |profile| and
+// |web_contents|.
+static jboolean JNI_SendTabToSelfAndroidBridge_IsFeatureAvailable(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jobject>& j_web_contents) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+
+  return ShouldOfferFeature(profile, web_contents);
 }
 
 }  // namespace send_tab_to_self
