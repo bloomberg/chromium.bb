@@ -40,6 +40,7 @@ source_set("unit_tests") {
     ":account_manager",
     "//base",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//net",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",

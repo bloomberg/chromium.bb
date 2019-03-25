@@ -18,6 +18,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/prefs/testing_pref_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -65,6 +66,7 @@ class AccountManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
+    AccountManager::RegisterPrefs(pref_service_.registry());
     ResetAndInitializeAccountManager();
   }
 
@@ -108,16 +110,16 @@ class AccountManagerTest : public testing::Test {
     account_manager_ = std::make_unique<AccountManagerSpy>();
     account_manager_->Initialize(
         tmp_dir_.GetPath(), test_url_loader_factory_.GetSafeWeakWrapper(),
-        immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get());
+        immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get(),
+        &pref_service_);
   }
 
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir tmp_dir_;
-
+  TestingPrefServiceSimple pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-
   std::unique_ptr<AccountManagerSpy> account_manager_;
   const AccountManager::AccountKey kGaiaAccountKey_{
       "gaia_id", account_manager::AccountType::ACCOUNT_TYPE_GAIA};
@@ -185,7 +187,8 @@ TEST_F(AccountManagerTest, TestInitialization) {
             AccountManager::InitializationState::kNotStarted);
   account_manager.Initialize(
       tmp_dir_.GetPath(), test_url_loader_factory_.GetSafeWeakWrapper(),
-      immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get());
+      immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get(),
+      &pref_service_);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(account_manager.init_state_,
             AccountManager::InitializationState::kInitialized);

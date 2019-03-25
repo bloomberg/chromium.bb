@@ -479,8 +479,11 @@ ProfileImpl::ProfileImpl(
   // created when this profile is created.
 
 #if defined(OS_CHROMEOS)
-  if (!chromeos::ProfileHelper::IsSigninProfile(this) &&
-      !chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
+  const bool is_regular_profile =
+      !chromeos::ProfileHelper::IsSigninProfile(this) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(this);
+
+  if (is_regular_profile) {
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(this);
     // A |User| instance should always exist for a profile which is not the
@@ -491,17 +494,6 @@ ProfileImpl::ProfileImpl(
                user->GetAccountId()))
         << "Attempting to construct the profile before starting the user "
            "session";
-    chromeos::AccountManagerFactory* factory =
-        g_browser_process->platform_part()->GetAccountManagerFactory();
-    chromeos::AccountManager* account_manager =
-        factory->GetAccountManager(path.value());
-    account_manager->Initialize(
-        path,
-        g_browser_process->system_network_context_manager()
-            ->GetSharedURLLoaderFactory(),
-        base::BindRepeating(&chromeos::DelayNetworkCall,
-                            base::TimeDelta::FromMilliseconds(
-                                chromeos::kDefaultNetworkRetryDelayMS)));
   }
 #endif
 
@@ -588,6 +580,23 @@ ProfileImpl::ProfileImpl(
     // Register on BrowserContext.
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
+
+#if defined(OS_CHROMEOS)
+  if (is_regular_profile) {
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(path.value());
+    account_manager->Initialize(
+        path,
+        g_browser_process->system_network_context_manager()
+            ->GetSharedURLLoaderFactory(),
+        base::BindRepeating(&chromeos::DelayNetworkCall,
+                            base::TimeDelta::FromMilliseconds(
+                                chromeos::kDefaultNetworkRetryDelayMS)),
+        GetPrefs());
+  }
+#endif
 
   if (async_prefs) {
     // Wait for the notification that prefs has been loaded

@@ -25,6 +25,7 @@
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
 class PrefRegistrySimple;
+class PrefService;
 
 namespace base {
 class SequencedTaskRunner;
@@ -130,7 +131,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   void Initialize(
       const base::FilePath& home_dir,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      DelayNetworkCallRunner delay_network_call_runner);
+      DelayNetworkCallRunner delay_network_call_runner,
+      PrefService* pref_service);
 
   // Gets (async) a list of account keys known to |AccountManager|. Note that
   // |callback| will be immediately called in the same thread if
@@ -243,7 +245,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
       const base::FilePath& home_dir,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DelayNetworkCallRunner delay_network_call_runner,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      PrefService* pref_service);
 
   // Loads accounts from disk and returns the result.
   static AccountMap LoadAccountsFromDisk(
@@ -328,6 +331,9 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // |chromeos::DelayNetworkCall| directly here due to linking/dependency
   // issues.
   DelayNetworkCallRunner delay_network_call_runner_;
+
+  // Non-owning pointer.
+  PrefService* pref_service_;
 
   // A task runner for disk I/O.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
