@@ -17,6 +17,7 @@ namespace content {
 class DevToolsAgentHostImpl;
 class DevToolsIOContext;
 class DevToolsURLLoaderInterceptor;
+class RenderProcessHost;
 struct InterceptedRequestInfo;
 
 namespace protocol {
@@ -29,7 +30,8 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   static std::vector<FetchHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   bool MaybeCreateProxyForInterception(
-      RenderFrameHostImpl* rfh,
+      RenderProcessHost* rph,
+      const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
       network::mojom::URLLoaderFactoryRequest* target_factory_request);

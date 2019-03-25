@@ -2190,13 +2190,15 @@ bool NetworkHandler::ShouldCancelNavigation(
 }
 
 bool NetworkHandler::MaybeCreateProxyForInterception(
-    RenderFrameHostImpl* rfh,
+    RenderProcessHost* rph,
+    const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
-             rfh, is_navigation, is_download, target_factory_request);
+             rph, frame_token, is_navigation, is_download,
+             target_factory_request);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,

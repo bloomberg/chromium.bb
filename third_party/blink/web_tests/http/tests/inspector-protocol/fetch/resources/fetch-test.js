@@ -1,10 +1,11 @@
 (function() {
 
 class FetchHandler {
-  constructor(testRunner, protocol) {
+  constructor(testRunner, protocol, once) {
     this._testRunner = testRunner;
     this._protocol = protocol;
     this._callback = null;
+    this._once = once;
   }
 
   _handle(params) {
@@ -16,24 +17,36 @@ class FetchHandler {
   }
 
   async continueRequest(params) {
-    const request = await this.matched();
-    return this._protocol.Fetch.continueRequest(
-        Object.assign(params || {}, {requestId: request.requestId}))
-            .then(result => this._handleError(result));
+    for (;;) {
+      const request = await this.matched();
+      const result = this._protocol.Fetch.continueRequest(
+          Object.assign(params || {}, {requestId: request.requestId}))
+              .then(result => this._handleError(result));
+      if (this._once)
+        return result;
+    }
   }
 
   async fail(params) {
-    const request = await this.matched();
-    return this._protocol.Fetch.failRequest(
+    for (;;) {
+      const request = await this.matched();
+      const result = this._protocol.Fetch.failRequest(
         Object.assign(params, {requestId: request.requestId}))
             .then(result => this._handleError(result));
+      if (this._once)
+        return result;
+    }
   }
 
   async fulfill(params) {
-    const request = await this.matched();
-    return this._protocol.Fetch.fulfillRequest(
-        Object.assign(params, {requestId: request.requestId}))
-            .then(result => this._handleError(result));
+    for (;;) {
+      const request = await this.matched();
+      const result = this._protocol.Fetch.fulfillRequest(
+          Object.assign(params, {requestId: request.requestId}))
+              .then(result => this._handleError(result));
+      if (this._once)
+        return result;
+    }
   }
 
   _handleError(result) {
@@ -66,13 +79,13 @@ class FetchHelper {
   }
 
   onRequest(pattern) {
-    const handler = new FetchHandler(this._testRunner, this._protocol);
+    const handler = new FetchHandler(this._testRunner, this._protocol, false);
     this._handlers.push({pattern, handler});
     return handler;
   }
 
   onceRequest(pattern) {
-    const handler = new FetchHandler(this._testRunner, this._protocol);
+    const handler = new FetchHandler(this._testRunner, this._protocol, true);
     this._onceHandlers.push({pattern, handler});
     return handler;
   }
@@ -92,9 +105,9 @@ class FetchHelper {
     if (index >= 0) {
       [entry] = this._onceHandlers.splice(index, 1);
     } else {
-      entry = FetchHelper._findHandlerIndex(this._handlers, url);
+      index = FetchHelper._findHandlerIndex(this._handlers, url);
       if (index >= 0)
-        handler = this._handlers[index];
+        entry = this._handlers[index];
     }
     if (entry)
       entry.handler._handle(params);

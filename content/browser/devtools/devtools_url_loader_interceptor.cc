@@ -639,7 +639,8 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
 }
 
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
-    RenderFrameHostImpl* rfh,
+    RenderProcessHost* rph,
+    const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* request) const {
@@ -651,15 +652,12 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *request = MakeRequest(&target_ptr_info);
   network::mojom::CookieManagerPtrInfo cookie_manager;
-  int process_id = is_navigation ? 0 : rfh->GetProcess()->GetID();
-  rfh->GetProcess()
-      ->GetStoragePartition()
-      ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
-  new DevToolsURLLoaderFactoryProxy(rfh->GetDevToolsFrameToken(), process_id,
-                                    is_download, std::move(original_request),
-                                    std::move(target_ptr_info),
-                                    std::move(cookie_manager), weak_impl_);
+  int process_id = is_navigation ? 0 : rph->GetID();
+  rph->GetStoragePartition()->GetNetworkContext()->GetCookieManager(
+      mojo::MakeRequest(&cookie_manager));
+  new DevToolsURLLoaderFactoryProxy(
+      frame_token, process_id, is_download, std::move(original_request),
+      std::move(target_ptr_info), std::move(cookie_manager), weak_impl_);
   return true;
 }
 
