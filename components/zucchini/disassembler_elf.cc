@@ -380,6 +380,7 @@ void DisassemblerElfIntel<Traits>::ParseExecSection(
       offset_t rel32_offset =
           base::checked_cast<offset_t>(rel32->location - image_.begin());
       rva_t rel32_rva = rva_t(rel32_offset + from_offset_to_rva);
+      DCHECK_NE(rel32_rva, kInvalidRva);
       rva_t target_rva = rel32_rva + 4 + image_.read<uint32_t>(rel32_offset);
       if (target_rva_checker.IsValid(target_rva) &&
           (rel32->can_point_outside_section ||
