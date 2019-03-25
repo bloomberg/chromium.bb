@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -265,24 +264,14 @@ void OobeBaseTest::WaitForSigninScreen() {
   login_screen_load_observer_->Wait();
 }
 
-void OobeBaseTest::ExecuteJsInSigninFrame(const std::string& js) {
+test::JSChecker OobeBaseTest::SigninFrameJS() {
   content::RenderFrameHost* frame = signin::GetAuthFrame(
       LoginDisplayHost::default_host()->GetOobeWebContents(),
       gaia_frame_parent_);
-  ASSERT_TRUE(content::ExecuteScript(frame, js));
-}
-
-void OobeBaseTest::SetSignFormField(const std::string& field_id,
-                                    const std::string& field_value) {
-  std::string js =
-      "(function(){"
-      "document.getElementById('$FieldId').value = '$FieldValue';"
-      "var e = new Event('input');"
-      "document.getElementById('$FieldId').dispatchEvent(e);"
-      "})();";
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
-  ExecuteJsInSigninFrame(js);
+  test::JSChecker result = test::JSChecker(frame);
+  // Fake GAIA / fake SAML pages do not use polymer-based UI.
+  result.set_polymer_ui(false);
+  return result;
 }
 
 }  // namespace chromeos

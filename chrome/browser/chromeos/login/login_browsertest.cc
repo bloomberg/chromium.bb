@@ -127,22 +127,10 @@ class LoginTest : public LoginManagerTest {
     const std::string animated_pages =
         "document.querySelector('#offline-gaia /deep/ "
         "#animatedPages')";
-    const std::string email_input =
-        "document.querySelector('#offline-gaia /deep/ #emailInput')";
-    const std::string email_next_button =
-        "document.querySelector('#offline-gaia /deep/ #emailSection "
-        "/deep/ #button')";
-    const std::string password_input =
-        "document.querySelector('#offline-gaia /deep/ "
-        "#passwordInput')";
-    const std::string password_next_button =
-        "document.querySelector('#offline-gaia /deep/ #passwordSection"
-        " /deep/ #button')";
 
     content::DOMMessageQueue message_queue;
-    test::OobeJS().ExpectTrue(
-        "!document.querySelector('#offline-gaia').hidden");
-    test::OobeJS().ExpectTrue("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectVisible("offline-gaia");
+    test::OobeJS().ExpectHidden("signin-frame");
     const std::string js =
         animated_pages +
         ".addEventListener('neon-animation-finish',"
@@ -150,19 +138,15 @@ class LoginTest : public LoginManagerTest {
         "window.domAutomationController.send('switchToPassword');"
         "})";
     test::ExecuteOobeJS(js);
-    std::string set_email = email_input + ".value = '$Email'";
-    base::ReplaceSubstringsAfterOffset(&set_email, 0, "$Email", user_email);
-    test::ExecuteOobeJS(set_email);
-    test::ExecuteOobeJS(email_next_button + ".fire('tap')");
+    test::OobeJS().TypeIntoPath(user_email, {"offline-gaia", "emailInput"});
+    test::OobeJS().TapOnPath({"offline-gaia", "emailSection", "button"});
     std::string message;
     do {
       ASSERT_TRUE(message_queue.WaitForMessage(&message));
     } while (message != "\"switchToPassword\"");
 
-    std::string set_password = password_input + ".value = '$Password'";
-    base::ReplaceSubstringsAfterOffset(&set_password, 0, "$Password", password);
-    test::ExecuteOobeJS(set_password);
-    test::ExecuteOobeJS(password_next_button + ".fire('tap')");
+    test::OobeJS().TypeIntoPath(password, {"offline-gaia", "passwordInput"});
+    test::OobeJS().TapOnPath({"offline-gaia", "passwordSection", "button"});
   }
 
   void PrepareOfflineLogin() {

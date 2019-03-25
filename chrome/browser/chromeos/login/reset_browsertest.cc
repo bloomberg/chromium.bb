@@ -118,11 +118,11 @@ IN_PROC_BROWSER_TEST_F(ResetTest, PRE_ShowAndCancel) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
-  test::OobeJS().ExpectTrue("!!document.querySelector('#reset.hidden')");
+  test::OobeJS().ExpectHidden("reset");
   InvokeResetScreen();
-  test::OobeJS().ExpectTrue("!document.querySelector('#reset.hidden')");
+  test::OobeJS().ExpectVisible("reset");
   CloseResetScreen();
-  test::OobeJS().ExpectTrue("!!document.querySelector('#reset.hidden')");
+  test::OobeJS().ExpectHidden("reset");
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTest, PRE_RestartBeforePowerwash) {
@@ -154,39 +154,39 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
 
   // Rollback unavailable. Show and cancel.
   update_engine_client_->set_can_rollback_check_result(false);
-  test::OobeJS().ExpectTrue("document.querySelector('#reset').hidden");
-  test::OobeJS().ExpectTrue("document.querySelector('#overlay-reset').hidden");
+  test::OobeJS().ExpectHidden("reset");
+  test::OobeJS().ExpectHidden("overlay-reset");
   InvokeResetScreen();
-  test::OobeJS().ExpectTrue("!document.querySelector('#reset').hidden");
-  test::OobeJS().ExpectTrue("document.querySelector('#overlay-reset').hidden");
+  test::OobeJS().ExpectVisible("reset");
+  test::OobeJS().ExpectHidden("overlay-reset");
   CloseResetScreen();
-  test::OobeJS().ExpectTrue("document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectHidden("reset");
 
   // Go to confirmation phase, cancel from there in 2 steps.
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
-  test::OobeJS().ExpectTrue("document.querySelector('#overlay-reset').hidden");
+  test::OobeJS().ExpectHidden("overlay-reset");
   ClickToConfirmButton();
-  test::OobeJS().ExpectTrue("!document.querySelector('#overlay-reset').hidden");
+  test::OobeJS().ExpectVisible("overlay-reset");
   ClickDismissConfirmationButton();
-  test::OobeJS().ExpectTrue("document.querySelector('#overlay-reset').hidden");
-  test::OobeJS().ExpectTrue("!document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectHidden("overlay-reset");
+  test::OobeJS().ExpectVisible("reset");
   CloseResetScreen();
-  test::OobeJS().ExpectTrue("document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectHidden("reset");
 
   // Rollback available. Show and cancel from confirmation screen.
   update_engine_client_->set_can_rollback_check_result(true);
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
   InvokeRollbackOption();
-  test::OobeJS().ExpectTrue("document.querySelector('#overlay-reset').hidden");
+  test::OobeJS().ExpectHidden("overlay-reset");
   ClickToConfirmButton();
-  test::OobeJS().ExpectTrue("!document.querySelector('#overlay-reset').hidden");
+  test::OobeJS().ExpectVisible("overlay-reset");
   ClickDismissConfirmationButton();
-  test::OobeJS().ExpectTrue("document.querySelector('#overlay-reset').hidden");
-  test::OobeJS().ExpectTrue("!document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectHidden("overlay-reset");
+  test::OobeJS().ExpectVisible("reset");
   CloseResetScreen();
-  test::OobeJS().ExpectTrue("document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectHidden("reset");
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
@@ -197,9 +197,9 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
-  test::OobeJS().ExpectTrue("!document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectVisible("reset");
   CloseResetScreen();
-  test::OobeJS().ExpectTrue("document.querySelector('#reset').hidden");
+  test::OobeJS().ExpectHidden("reset");
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
@@ -296,16 +296,14 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
-  test::OobeJS().ExpectTrue(
-      "!$('reset').classList.contains('revert-promise-view')");
+  test::OobeJS().ExpectHasNoClass("revert-promise-view", {"reset"});
   InvokeRollbackOption();
   ClickToConfirmButton();
   ClickResetButton();
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
-  test::OobeJS().ExpectTrue(
-      "$('reset').classList.contains('revert-promise-view')");
+  test::OobeJS().ExpectHasClass("revert-promise-view", {"reset"});
   UpdateEngineClient::Status error_update_status;
   error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
   update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
@@ -324,17 +322,14 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RevertAfterCancel) {
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
-  test::OobeJS().ExpectTrue(
-      "!$('reset').classList.contains('rollback-proposal-view')");
+  test::OobeJS().ExpectHasNoClass("rollback-proposal-view", {"reset"});
   InvokeRollbackOption();
-  test::OobeJS().ExpectTrue(
-      "$('reset').classList.contains('rollback-proposal-view')");
+  test::OobeJS().ExpectHasClass("rollback-proposal-view", {"reset"});
   CloseResetScreen();
   InvokeResetScreen();
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   InvokeRollbackOption();
-  test::OobeJS().ExpectTrue(
-      "$('reset').classList.contains('rollback-proposal-view')");
+  test::OobeJS().ExpectHasClass("rollback-proposal-view", {"reset"});
 }
 
 }  // namespace chromeos

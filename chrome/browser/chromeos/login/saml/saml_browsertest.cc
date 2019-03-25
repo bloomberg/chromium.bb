@@ -462,9 +462,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Saml flow UI expectations.
-  test::OobeJS().ExpectTrue(
-      "$('gaia-signin').classList.contains('full-width')");
-  test::OobeJS().ExpectTrue("!$('saml-notice-container').hidden");
+  test::OobeJS().ExpectHasClass("full-width", {"gaia-signin"});
+  test::OobeJS().ExpectVisible("saml-notice-container");
   std::string js = "$('saml-notice-message').textContent.indexOf('$Host') > -1";
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
   test::OobeJS().ExpectTrue(js);
@@ -483,8 +482,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   } while (message != "\"GaiaLoaded\"");
 
   // Saml flow is gone.
-  test::OobeJS().ExpectTrue(
-      "!$('gaia-signin').classList.contains('full-width')");
+  test::OobeJS().ExpectHasNoClass("full-width", {"gaia-signin"});
 }
 
 // Tests the sign-in flow when the credentials passing API is used.
@@ -498,10 +496,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
       content::NotificationService::AllSources());
 
   // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Dummy", "not_the_password");
-  SetSignFormField("Password", "actual_password");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("not_the_password", {"Dummy"});
+  SigninFrameJS().TypeIntoPath("actual_password", {"Password"});
+
+  SigninFrameJS().TapOn("Submit");
 
   // Login should finish login and a session should start.
   session_start_waiter.Wait();
@@ -532,14 +531,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
       "    });"));
 
   // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   // Scraping a single password should finish the login and start the session.
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TapOn("Submit");
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -553,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  ExecuteJsInSigninFrame(
+  SigninFrameJS().Evaluate(
       "(function() {"
       "  var newPassInput = document.createElement('input');"
       "  newPassInput.id = 'DynamicallyCreatedPassword';"
@@ -563,14 +562,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
       "})();");
 
   // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("DynamicallyCreatedPassword", "fake_password");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"DynamicallyCreatedPassword"});
 
   // Scraping a single password should finish the login and start the session.
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TapOn("Submit");
   session_start_waiter.Wait();
 }
 
@@ -580,20 +579,17 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
 
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
-  SetSignFormField("Password1", "password1");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
-
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+  SigninFrameJS().TypeIntoPath("password1", {"Password1"});
+  SigninFrameJS().TapOn("Submit");
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
-
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
-
   // Either scraped password should be able to sign-in.
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
@@ -608,8 +604,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  SetSignFormField("Email", "fake_user");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TapOn("Submit");
 
   // Lands on confirm password screen with manual input state.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
@@ -639,13 +635,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   // Authenticate as alice@corp.example.com via SAML (the |Email| provided here
   // is irrelevant - the authenticated user's e-mail address that FakeGAIA
   // reports was set via |SetFakeMergeSessionParams|).
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TapOn("Submit");
   session_start_waiter.Wait();
 
   const user_manager::User* user =
@@ -662,9 +658,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
 
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams("", kTestAuthSIDCookie1,
                                                     kTestAuthLSIDCookie1);
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+  SigninFrameJS().TapOn("Submit");
 
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS),
             WaitForAndGetFatalErrorMessage());
@@ -677,10 +673,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
-  SetSignFormField("Password1", "password1");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+  SigninFrameJS().TypeIntoPath("password1", {"Password1"});
+  SigninFrameJS().TapOn("Submit");
 
   // Lands on confirm password screen with no error message.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
@@ -748,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, NoticeUpdatedOnRedirect) {
       GetLoginUI()->GetWebContents(), js, &dummy));
 
   // Verify that the notice is visible.
-  test::OobeJS().ExpectTrue("!$('saml-notice-container').hidden");
+  test::OobeJS().ExpectVisible("saml-notice-container");
 }
 
 // Verifies that when GAIA attempts to redirect to a SAML IdP served over http,
@@ -837,9 +833,8 @@ void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
   }
   // Wait for Gaia is ready.
   OobeBaseTest::WaitForGaiaPageEvent("backButton");
-  SetSignFormField("identifier", gaia_email);
-
-  ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
+  SigninFrameJS().TypeIntoPath(gaia_email, {"identifier"});
+  SigninFrameJS().TapOn("nextButton");
   OobeBaseTest::WaitForGaiaPageEvent("authFlowChange");
 }
 
@@ -863,10 +858,9 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
-
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+  SigninFrameJS().TapOn("Submit");
   OobeBaseTest::WaitForEnrollmentSuccess();
 }
 
@@ -876,9 +870,9 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
+  SigninFrameJS().TapOn("Submit");
 
   OobeBaseTest::WaitForEnrollmentSuccess();
 }
@@ -1130,14 +1124,14 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
                                                     auth_lsid_cookie);
   fake_gaia_.SetupFakeGaiaForLogin(user_id, "", kTestRefreshToken);
 
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   // Scraping a single password should finish the login right away.
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TapOn("Submit");
   session_start_waiter.Wait();
 }
 
@@ -1316,18 +1310,18 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   WaitForSigninScreen();
 
   ShowSAMLInterstitial();
-  test::OobeJS().ExpectTrue("$('signin-frame').hidden == true");
-  test::OobeJS().ExpectTrue("$('offline-gaia').hidden == true");
-  test::OobeJS().ExpectTrue("$('saml-interstitial').hidden == false");
+  test::OobeJS().ExpectHidden("signin-frame");
+  test::OobeJS().ExpectHidden("offline-gaia");
+  test::OobeJS().ExpectVisible("saml-interstitial");
 
   // Click the "change account" link on the SAML interstitial page.
   ClickChangeAccountOnSAMLInterstitialPage();
 
   // Expects that only the gaia signin frame is visible and shown.
-  test::OobeJS().ExpectTrue("$('signin-frame').classList.contains('show')");
-  test::OobeJS().ExpectTrue("$('signin-frame').hidden == false");
-  test::OobeJS().ExpectTrue("$('offline-gaia').hidden == true");
-  test::OobeJS().ExpectTrue("$('saml-interstitial').hidden == true");
+  test::OobeJS().ExpectHasClass("show", {"signin-frame"});
+  test::OobeJS().ExpectVisible("signin-frame");
+  test::OobeJS().ExpectHidden("offline-gaia");
+  test::OobeJS().ExpectHidden("saml-interstitial");
 }
 
 // Tests that clicking "Next" in the SAML interstitial page successfully
@@ -1343,14 +1337,14 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
   ShowSAMLInterstitial();
   ClickNextOnSAMLInterstitialPage();
 
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   // Scraping one password should finish login.
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+  SigninFrameJS().TapOn("Submit");
   session_start_waiter.Wait();
 }
 

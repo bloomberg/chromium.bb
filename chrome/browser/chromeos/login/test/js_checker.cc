@@ -25,6 +25,21 @@ bool CheckConditionIfOobeExists(const std::string& js_condition) {
          chromeos::test::OobeJS().GetBool(js_condition);
 }
 
+bool CheckOobeCondition(content::WebContents* web_contents,
+                        const std::string& js_condition) {
+  return chromeos::test::JSChecker(web_contents).GetBool(js_condition);
+}
+
+std::string ElementHasClassCondition(
+    const std::string& css_class,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string js = "$Element.classList.contains('$ClassName')";
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$ClassName", css_class);
+  base::ReplaceSubstringsAfterOffset(
+      &js, 0, "$Element", chromeos::test::GetOobeElementPath(element_ids));
+  return js;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -34,6 +49,11 @@ JSChecker::JSChecker() = default;
 
 JSChecker::JSChecker(content::WebContents* web_contents)
     : web_contents_(web_contents) {}
+
+JSChecker::JSChecker(content::RenderFrameHost* frame_host) {
+  web_contents_ = content::WebContents::FromRenderFrameHost(frame_host);
+  CHECK(web_contents_);
+}
 
 void JSChecker::Evaluate(const std::string& expression) {
   CHECK(web_contents_);
@@ -102,8 +122,18 @@ void JSChecker::ExpectNE(const std::string& expression, bool result) {
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
     const std::string& js_condition) {
   TestPredicateWaiter::PredicateCheck predicate = base::BindRepeating(
-      &JSChecker::GetBool, base::Unretained(this), js_condition);
+      &CheckOobeCondition, base::Unretained(web_contents_), js_condition);
   return std::make_unique<TestPredicateWaiter>(predicate);
+}
+
+std::unique_ptr<TestConditionWaiter> JSChecker::CreateVisibilityWaiter(
+    bool visibility,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string js_condition = GetOobeElementPath(element_ids) + ".hidden";
+  if (visibility) {
+    js_condition = "!(" + js_condition + ")";
+  }
+  return CreateWaiter(js_condition);
 }
 
 void JSChecker::GetBoolImpl(const std::string& expression, bool* result) {
@@ -150,11 +180,27 @@ void JSChecker::ExpectHidden(const std::string& element_id) {
   ExpectHiddenPath({element_id});
 }
 
+void JSChecker::ExpectHasClass(
+    const std::string& css_class,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectTrue(ElementHasClassCondition(css_class, element_ids));
+}
+void JSChecker::ExpectHasNoClass(
+    const std::string& css_class,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectFalse(ElementHasClassCondition(css_class, element_ids));
+}
+
 void JSChecker::TapOnPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);
   // All OOBE UI should be mobile-friendly, so use "tap" instead of "click".
-  Evaluate(GetOobeElementPath(element_ids) + ".fire('tap')");
+  if (polymer_ui_) {
+    Evaluate(GetOobeElementPath(element_ids) + ".fire('tap')");
+  } else {
+    // Old test-only UI (fake GAIA, fake SAML) only support "click".
+    Evaluate(GetOobeElementPath(element_ids) + ".click()");
+  }
 }
 
 void JSChecker::TapOn(const std::string& element_id) {
@@ -225,11 +271,20 @@ std::string GetOobeElementPath(
   CHECK(element_ids.size() > 0);
   std::initializer_list<base::StringPiece>::const_iterator it =
       element_ids.begin();
-  result.append("$('").append(std::string(*it)).append("')");
+  result.append("document.getElementById('")
+      .append(std::string(*it))
+      .append("')");
   for (it++; it < element_ids.end(); it++) {
     result.append(".$$('#").append(std::string(*it)).append("')");
   }
   return result;
+}
+
+std::unique_ptr<TestConditionWaiter> CreateOobeScreenWaiter(
+    const std::string& oobe_screen_id) {
+  std::string js = "Oobe.getInstance().currentScreen.id=='$ScreenId'";
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$ScreenId", oobe_screen_id);
+  return test::OobeJS().CreateWaiter(js);
 }
 
 }  // namespace test

@@ -133,9 +133,7 @@ class SyncConsentTest : public OobeBaseTest {
                                   FakeGaiaMixin::kFakeUserPassword,
                                   FakeGaiaMixin::kEmptyUserServices);
 
-    test::OobeJS()
-        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'")
-        ->Wait();
+    test::CreateOobeScreenWaiter("sync-consent")->Wait();
   }
 
  protected:
@@ -151,12 +149,12 @@ class SyncConsentTest : public OobeBaseTest {
     screen->SetProfileSyncDisabledByPolicyForTesting(false);
     screen->SetProfileSyncEngineInitializedForTesting(true);
     screen->OnStateChanged(nullptr);
+    test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent-impl"})->Wait();
 
-    test::OobeJS().CreateWaiter("!$('sync-consent-impl').hidden")->Wait();
-    test::OobeJS().ExpectTrue(
-        "!$('sync-consent-impl').$.syncConsentOverviewDialog.hidden");
-    test::OobeJS().Evaluate(
-        "$('sync-consent-impl').$. settingsSaveAndContinueButton.click()");
+    test::OobeJS().ExpectVisiblePath(
+        {"sync-consent-impl", "syncConsentOverviewDialog"});
+    test::OobeJS().TapOnPath(
+        {"sync-consent-impl", "settingsSaveAndContinueButton"});
     consent_recorded_waiter.Wait();
     screen->SetDelegateForTesting(nullptr);  // cleanup
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 
 namespace content {
@@ -71,9 +72,7 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   void WaitForGaiaPageEvent(const std::string& event);
   void WaitForSigninScreen();
   void WaitForEnrollmentSuccess();
-  void ExecuteJsInSigninFrame(const std::string& js);
-  void SetSignFormField(const std::string& field_id,
-                        const std::string& field_value);
+  test::JSChecker SigninFrameJS();
 
   InProcessBrowserTestMixinHost mixin_host_;
 
