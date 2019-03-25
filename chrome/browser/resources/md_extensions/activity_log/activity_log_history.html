@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/promise_resolver.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="activity_log_history_item.html">
@@ -17,6 +18,10 @@
 
         display: flex;
         flex-direction: column;
+      }
+
+      cr-search-field {
+        margin-inline-end: auto;
       }
 
       .activity-table-headings {
@@ -42,6 +47,9 @@
       }
     </style>
     <div class="activity-subpage-header">
+      <cr-search-field label="$i18n{activityLogSearchLabel}"
+        on-search-changed="onSearchChanged_">
+      </cr-search-field >
       <paper-button class="clear-activities-button"
           on-click="onClearActivitiesClick_">
         $i18n{clearActivities}
