@@ -50,17 +50,6 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
 
   class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
    public:
-    static PropertySpecificKeyframe* Create(
-        double offset,
-        scoped_refptr<TimingFunction> easing,
-        EffectModel::CompositeOperation composite,
-        std::unique_ptr<TypedInterpolationValue> value,
-        AnimatableValue* compositor_value) {
-      return MakeGarbageCollected<PropertySpecificKeyframe>(
-          offset, std::move(easing), composite, std::move(value),
-          compositor_value);
-    }
-
     PropertySpecificKeyframe(double offset,
                              scoped_refptr<TimingFunction> easing,
                              EffectModel::CompositeOperation composite,
@@ -94,8 +83,8 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
    private:
     Keyframe::PropertySpecificKeyframe* CloneWithOffset(
         double offset) const final {
-      return Create(offset, easing_, composite_, value_->Clone(),
-                    compositor_value_);
+      return MakeGarbageCollected<PropertySpecificKeyframe>(
+          offset, easing_, composite_, value_->Clone(), compositor_value_);
     }
 
     std::unique_ptr<TypedInterpolationValue> value_;
