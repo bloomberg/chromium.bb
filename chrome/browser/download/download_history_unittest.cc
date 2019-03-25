@@ -900,7 +900,7 @@ TEST_F(DownloadHistoryTest, CreateHistoryItemInDownloadDB) {
   info.received_bytes = 50;
   info.state = history::DownloadState::COMPLETE;
   item(0).NotifyObserversDownloadUpdated();
-  ExpectDownloadUpdated(info, false);
+  ExpectDownloadUpdated(info, true);
 }
 
 // Test creating a in-progress history download item that is non-resumable in
