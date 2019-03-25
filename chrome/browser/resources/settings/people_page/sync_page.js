@@ -531,18 +531,6 @@ Polymer({
   },
 
   /**
-   * Computed binding returning text of the prompt for entering the passphrase.
-   * @private
-   */
-  enterPassphrasePrompt_: function() {
-    if (this.syncPrefs && this.syncPrefs.passphraseTypeIsCustom) {
-      return this.syncPrefs.enterPassphraseBody;
-    }
-
-    return this.syncPrefs.enterGooglePassphraseBody;
-  },
-
-  /**
    * Checks the supplied passphrases to ensure that they are not empty and that
    * they match each other. Additionally, displays error UI if they are invalid.
    * @return {boolean} Whether the check was successful (i.e., that the

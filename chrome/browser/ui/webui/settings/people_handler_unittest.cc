@@ -976,7 +976,6 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "typedUrlsRegistered", true);
   CheckBool(dictionary, "paymentsIntegrationEnabled", true);
   CheckBool(dictionary, "passphraseRequired", false);
-  CheckBool(dictionary, "passphraseTypeIsCustom", false);
   CheckBool(dictionary, "encryptAllData", false);
   CheckConfigDataTypeArguments(dictionary, SYNC_ALL_DATA, GetAllTypes());
 }
@@ -1046,7 +1045,6 @@ TEST_F(PeopleHandlerTest, ShowSetupOldGaiaPassphraseRequired) {
 
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "passphraseRequired", true);
-  CheckBool(dictionary, "passphraseTypeIsCustom", false);
   EXPECT_TRUE(dictionary->FindKey("enterPassphraseBody"));
 }
 
@@ -1063,7 +1061,6 @@ TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
 
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "passphraseRequired", true);
-  CheckBool(dictionary, "passphraseTypeIsCustom", true);
   EXPECT_TRUE(dictionary->FindKey("enterPassphraseBody"));
 }
 

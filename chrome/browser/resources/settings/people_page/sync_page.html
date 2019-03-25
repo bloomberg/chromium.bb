@@ -125,8 +125,8 @@
         <div id="existingPassphraseTitle" class="list-item">
             <div class="start settings-box-text">
               <div>$i18n{existingPassphraseTitle}</div>
-              <div class="secondary" inner-h-t-m-l="[[enterPassphrasePrompt_(
-                  syncPrefs.passphraseTypeIsCustom)]]">
+              <div class="secondary"
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
               </div>
             </div>
         </div>
@@ -173,8 +173,7 @@
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
               <div class="settings-box-text"
-                  inner-h-t-m-l="[[enterPassphrasePrompt_(
-                      syncPrefs.passphraseTypeIsCustom)]]">
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
               </div>
             </div>
             <div id="existingPassphraseContainer" class="list-item">
@@ -272,8 +271,7 @@
               hidden="[[syncPrefs.passphraseRequired]]">
             <cr-radio-group
                 id="encryptionRadioGroup"
-                selected="[[selectedEncryptionRadio_(
-                    syncPrefs.passphraseTypeIsCustom)]]"
+                selected="[[selectedEncryptionRadio_(syncPrefs)]]"
                 on-selected-changed="onEncryptionRadioSelectionChanged_"
                 disabled$="[[disableEncryptionOptions_]]">
               <cr-radio-button name="encrypt-with-google" class="list-item"
