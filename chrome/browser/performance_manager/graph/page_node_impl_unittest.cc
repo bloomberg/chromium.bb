@@ -39,21 +39,25 @@ class PageNodeImplTest : public GraphTestHarness {
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
   auto page_node = CreateNode<PageNodeImpl>();
-  auto frame1_node = CreateNode<FrameNodeImpl>();
-  auto frame2_node = CreateNode<FrameNodeImpl>();
-  auto frame3_node = CreateNode<FrameNodeImpl>();
+  auto parent_frame = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
+  auto child1_frame =
+      CreateNode<FrameNodeImpl>(page_node.get(), parent_frame.get());
+  auto child2_frame =
+      CreateNode<FrameNodeImpl>(page_node.get(), parent_frame.get());
 
-  page_node->AddFrame(frame1_node.get());
-  page_node->AddFrame(frame2_node.get());
-  page_node->AddFrame(frame3_node.get());
+  page_node->AddFrame(parent_frame.get());
+  page_node->AddFrame(child1_frame.get());
+  page_node->AddFrame(child2_frame.get());
   EXPECT_EQ(3u, page_node->GetFrameNodes().size());
 }
 
 TEST_F(PageNodeImplTest, AddReduplicativeFrame) {
   auto page_node = CreateNode<PageNodeImpl>();
-  auto frame1_node = CreateNode<FrameNodeImpl>();
-  auto frame2_node = CreateNode<FrameNodeImpl>();
+  auto frame1_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
+  auto frame2_node =
+      CreateNode<FrameNodeImpl>(page_node.get(), frame1_node.get());
 
+  // TODO(siggi): This test is ... unpretty.
   page_node->AddFrame(frame1_node.get());
   page_node->AddFrame(frame2_node.get());
   page_node->AddFrame(frame1_node.get());
@@ -62,24 +66,23 @@ TEST_F(PageNodeImplTest, AddReduplicativeFrame) {
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
   auto page_node = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
 
-  // Parent-child relationships have not been established yet.
+  // Page-frame relationship has not been established yet.
   EXPECT_EQ(0u, page_node->GetFrameNodes().size());
-  EXPECT_FALSE(frame_node->GetPageNode());
+  EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
 
   page_node->AddFrame(frame_node.get());
 
-  // Ensure correct Parent-child relationships have been established.
+  // Ensure correct page-frame relationship has been established.
   EXPECT_EQ(1u, page_node->GetFrameNodes().size());
   EXPECT_EQ(1u, page_node->GetFrameNodes().count(frame_node.get()));
   EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
 
-  page_node->RemoveFrame(frame_node.get());
+  frame_node.reset();
 
   // Parent-child relationships should no longer exist.
   EXPECT_EQ(0u, page_node->GetFrameNodes().size());
-  EXPECT_FALSE(frame_node->GetPageNode());
 }
 
 TEST_F(PageNodeImplTest, CalculatePageCPUUsageForSinglePageInSingleProcess) {
@@ -281,36 +284,35 @@ void ExpectInitialInterventionPolicyAggregationWorks(
     resource_coordinator::mojom::InterventionPolicy f1_policy,
     resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,
     resource_coordinator::mojom::InterventionPolicy f0f1_policy_aggregated) {
-  // Create two frames not tied to any page.
-  TestNodeWrapper<FrameNodeImpl> f0 =
-      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
-  TestNodeWrapper<FrameNodeImpl> f1 =
-      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
 
-  // Set frame policies before attaching to a page CU.
-  f0->SetAllInterventionPoliciesForTesting(f0_policy);
-  f1->SetAllInterventionPoliciesForTesting(f1_policy);
-
-  // Check the initial values before any frames are added.
   TestNodeWrapper<PageNodeImpl> page =
       TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
+
+  // Check the initial values before any frames are added.
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
 
+  // Create an initial frame.
+  TestNodeWrapper<FrameNodeImpl> f0 =
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), nullptr);
   // Add a frame and expect the values to be invalidated. Reaggregate and
   // ensure the appropriate value results.
   page->AddFrame(f0.get());
+  f0->SetAllInterventionPoliciesForTesting(f0_policy);
   EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(f0_policy_aggregated, page.get());
 
+  TestNodeWrapper<FrameNodeImpl> f1 =
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), nullptr);
   // Do it again. This time the raw values should be the same as the
   // aggregated values above.
   page->AddFrame(f1.get());
+  f1->SetAllInterventionPoliciesForTesting(f1_policy);
   EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
@@ -322,9 +324,6 @@ void ExpectInitialInterventionPolicyAggregationWorks(
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
   ExpectInterventionPolicy(f0_policy_aggregated, page.get());
-
-  f0.reset();
-  page.reset();
 }
 
 }  // namespace
@@ -432,9 +431,9 @@ TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
 
   // Create two frames and immediately attach them to the page.
   TestNodeWrapper<FrameNodeImpl> f0 =
-      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), nullptr);
   TestNodeWrapper<FrameNodeImpl> f1 =
-      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph, page.get(), f0.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
   page->AddFrame(f0.get());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());

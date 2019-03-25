@@ -29,7 +29,12 @@ class FrameNodeImpl
     return resource_coordinator::CoordinationUnitType::kFrame;
   }
 
-  explicit FrameNodeImpl(Graph* graph);
+  // Construct a frame node associated with |page_node| and optionally with a
+  // |parent_frame_node|. For the main frame of |page_node| the
+  // |parent_frame_node| parameter should be nullptr.
+  FrameNodeImpl(Graph* graph,
+                PageNodeImpl* page_node,
+                FrameNodeImpl* parent_frame_node);
   ~FrameNodeImpl() override;
 
   // FrameNode implementation.
@@ -42,9 +47,8 @@ class FrameNodeImpl
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void OnNonPersistentNotificationCreated() override;
 
+  // TODO(siggi): The process node can be provided at construction.
   void SetProcess(ProcessNodeImpl* process_node);
-  void AddChildFrame(FrameNodeImpl* frame_node);
-  void RemoveChildFrame(FrameNodeImpl* frame_node);
 
   FrameNodeImpl* GetParentFrameNode() const;
   PageNodeImpl* GetPageNode() const;
@@ -73,6 +77,10 @@ class FrameNodeImpl
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
+  // Invoked by subframes on joining/leaving the graph.
+  void AddChildFrame(FrameNodeImpl* frame_node);
+  void RemoveChildFrame(FrameNodeImpl* frame_node);
+
   void JoinGraph() override;
   void LeaveGraph() override;
 
@@ -85,19 +93,10 @@ class FrameNodeImpl
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 
-  // The following methods will be called by other FrameNodeImpl,
-  // PageNodeImpl and ProcessNodeImpl respectively to
-  // manipulate their relationship.
-  void AddParentFrame(FrameNodeImpl* parent_frame_node);
-  bool AddChildFrameImpl(FrameNodeImpl* child_frame_node);
-  void RemoveParentFrame(FrameNodeImpl* parent_frame_node);
-  void AddPageNode(PageNodeImpl* page_node);
-  void AddProcessNode(ProcessNodeImpl* process_node);
-  void RemovePageNode(PageNodeImpl* page_node);
   void RemoveProcessNode(ProcessNodeImpl* process_node);
 
-  FrameNodeImpl* parent_frame_node_;
-  PageNodeImpl* page_node_;
+  FrameNodeImpl* const parent_frame_node_;
+  PageNodeImpl* const page_node_;
   ProcessNodeImpl* process_node_;
   std::set<FrameNodeImpl*> child_frame_nodes_;
 

@@ -110,7 +110,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
   page_node->AddFrame(frame_node.get());
 
   page_node->OnMainFrameNavigationCommitted(
@@ -146,7 +146,7 @@ TEST_F(
     MAYBE_MetricsCollectorTest,
     FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
   auto page_node = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateNode<FrameNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
   page_node->AddFrame(frame_node.get());
 
   page_node->OnMainFrameNavigationCommitted(
@@ -218,7 +218,7 @@ TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   auto page_node = CreateNode<PageNodeImpl>();
   auto process_node = CreateNode<ProcessNodeImpl>();
 
-  auto frame_node = CreateNode<FrameNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>(page_node.get(), nullptr);
   page_node->AddFrame(frame_node.get());
   frame_node->SetProcess(process_node.get());
 
